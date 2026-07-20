@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
@@ -83,8 +82,8 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return Collections.singletonList(sourceVariableDescriptor);
+    public VariableDescriptor<Solution_> getSourceVariableDescriptor() {
+        return sourceVariableDescriptor;
     }
 
     @Override
@@ -105,8 +104,4 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
         return super.getValue(entity);
     }
 
-    @Override
-    public boolean isListVariableSource() {
-        return true;
-    }
 }

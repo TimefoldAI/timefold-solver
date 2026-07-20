@@ -88,16 +88,12 @@ public abstract class VariableDescriptor<Solution_> {
         return this instanceof ListVariableDescriptor;
     }
 
-    public boolean canBeUsedAsSource() {
-        return true;
-    }
-
     public void registerSinkVariableDescriptor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         sinkVariableDescriptorList.add(shadowVariableDescriptor);
     }
 
     /**
-     * Inverse of {@link ShadowVariableDescriptor#getSourceVariableDescriptorList()}.
+     * Inverse of {@link ShadowVariableDescriptor#getSourceVariableDescriptor()}.
      *
      * @return never null, only direct shadow variables that are affected by this variable
      */

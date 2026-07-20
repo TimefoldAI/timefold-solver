@@ -550,7 +550,7 @@ public final class SolutionDescriptor<Solution_> {
                 new HashMap<ShadowVariableDescriptor<Solution_>, MutablePair<ShadowVariableDescriptor<Solution_>, Integer>>();
         for (var entityDescriptor : entityDescriptorMap.values()) {
             for (var shadow : entityDescriptor.getDeclaredShadowVariableDescriptors()) {
-                var sourceSize = shadow.getSourceVariableDescriptorList().size();
+                var sourceSize = shadow.getSourceVariableDescriptor() == null ? 0 : 1;
                 var pair = MutablePair.of(shadow, sourceSize);
                 pairList.add(pair);
                 shadowToPairMap.put(shadow, pair);
@@ -577,7 +577,7 @@ public final class SolutionDescriptor<Solution_> {
                 }
                 throw new IllegalStateException(
                         "There is a cyclic shadow variable path that involves the shadowVariable (%s) because it must be later than its sources (%s) and also earlier than its sinks (%s)."
-                                .formatted(shadow.getSimpleEntityAndVariableName(), shadow.getSourceVariableDescriptorList(),
+                                .formatted(shadow.getSimpleEntityAndVariableName(), shadow.getSourceVariableDescriptor(),
                                         shadow.getSinkVariableDescriptorList()));
             }
             for (var sink : shadow.getSinkVariableDescriptorList()) {

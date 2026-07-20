@@ -2,11 +2,9 @@ package ai.timefold.solver.core.impl.domain.variable.violation;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
 final class ShadowVariableSnapshot {
 
@@ -27,13 +25,15 @@ final class ShadowVariableSnapshot {
     void validate(Consumer<String> violationMessageConsumer) {
         Object newValue = shadowVariableDescriptor.getValue(entity);
         if (!Objects.equals(originalValue, newValue)) {
-            violationMessageConsumer.accept(
-                    """
+            var sourceVariableDescriptor = shadowVariableDescriptor.getSourceVariableDescriptor();
+            var variableName =
+                    sourceVariableDescriptor == null ? null : sourceVariableDescriptor.getSimpleEntityAndVariableName();
+            violationMessageConsumer
+                    .accept("""
                             The entity (%s)'s shadow variable (%s)'s corrupted value (%s) changed to uncorrupted value (%s) after all shadow variables were updated without changes to the genuine variables.
                             Maybe one of the listeners (%s) for that shadow variable (%s) forgot to update it when one of its sourceVariables (%s) changed.
                             Or vice versa, maybe one of the listeners computes this shadow variable using a planning variable that is not declared as its source.
-                            Use the repeatable @%s annotation for each source variable that is used to compute this shadow variable.
-                            """
+                            Use the repeatable @%s annotation for each source variable that is used to compute this shadow variable."""
                             .formatted(
                                     entity,
                                     shadowVariableDescriptor.getSimpleEntityAndVariableName(),
@@ -42,9 +42,7 @@ final class ShadowVariableSnapshot {
                                     shadowVariableDescriptor.getUpdaterClasses().stream().map(Class::getSimpleName)
                                             .toList(),
                                     shadowVariableDescriptor.getSimpleEntityAndVariableName(),
-                                    shadowVariableDescriptor.getSourceVariableDescriptorList().stream()
-                                            .map(VariableDescriptor::getSimpleEntityAndVariableName)
-                                            .collect(Collectors.toList()),
+                                    variableName,
                                     ShadowVariable.class.getSimpleName()));
         }
     }

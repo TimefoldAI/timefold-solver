@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import java.lang.reflect.Member;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -15,7 +14,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
@@ -90,11 +88,6 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public Collection<Class<?>> getUpdaterClasses() {
         return Collections.emptyList();
     }
@@ -166,11 +159,6 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         for (var source : sources) {
             source.visitAllReferencedEntities(entity, referencedEntity -> visitor.accept(source, referencedEntity));
         }
-    }
-
-    @Override
-    public boolean isListVariableSource() {
-        return false;
     }
 
     public MemberAccessor getMemberAccessor() {

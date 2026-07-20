@@ -134,11 +134,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public Collection<Class<?>> getUpdaterClasses() {
         return Collections.emptyList();
     }
@@ -146,16 +141,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     @Override
     public Demand<?> getProvidedDemand() {
         throw new UnsupportedOperationException("Cascade update element shadow variable cannot be demanded.");
-    }
-
-    @Override
-    public boolean canBeUsedAsSource() {
-        return false;
-    }
-
-    @Override
-    public boolean isListVariableSource() {
-        return false;
     }
 
     private record ShadowVariableTarget<Solution_>(EntityDescriptor<Solution_> entityDescriptor,

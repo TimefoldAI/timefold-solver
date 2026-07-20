@@ -123,7 +123,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     private void linkShadowVariable(ShadowVariableDescriptor<Solution_> descriptor) {
         var listVariableStateSupply = getListVariableStateSupply();
         if (descriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
-            if (inverseRelationShadowVariableDescriptor.isListVariableSource()) {
+            if (inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor() instanceof ListVariableDescriptor<?>) {
                 if (listVariableStateSupply != null) {
                     processShadowVariableDescriptorWithListVariable(inverseRelationShadowVariableDescriptor,
                             listVariableStateSupply);
