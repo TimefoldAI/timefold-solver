@@ -5,7 +5,6 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -124,7 +123,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
-        counter.outTuple.setIndictmentSource(IndictmentSource.sourceWithSupport(counter.outTuple, rightTuple));
+        // TODO: Add right tuple to support
         counter.countRight++;
     }
 
