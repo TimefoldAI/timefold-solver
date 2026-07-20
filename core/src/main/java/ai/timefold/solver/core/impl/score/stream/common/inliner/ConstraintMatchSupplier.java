@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -21,6 +22,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -40,13 +42,18 @@ import org.jspecify.annotations.NullMarked;
 public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         extends BiFunction<Constraint, Score_, ConstraintMatch<Score_>> {
 
-    static List<Object> collectIndictments(Tuple tuple) {
+    @SuppressWarnings("unchecked")
+    static List<Object> collectIndictments(Constraint constraint, Tuple tuple) {
         if (tuple.getIndictmentSource() == IndictmentSource.DISABLED) {
             return Collections.emptyList();
         }
-        var out = new ArrayList<>();
+        var out = new LinkedHashSet<>();
         tuple.getIndictmentSource().visitSources(out::add);
-        return out;
+        var abstractConstraint = (AbstractConstraint<?, ?, ?>) constraint;
+        for (var involvedNodeId : Objects.requireNonNull(abstractConstraint.getInvolvedNodeIds())) {
+            out.addAll(tuple.getIndictmentSupportForNodeId(involvedNodeId));
+        }
+        return new ArrayList<>(out);
     }
 
     /**
@@ -66,7 +73,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA());
             }
@@ -90,7 +97,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), tuple.getB(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA(), tuple.getB());
             }
@@ -103,7 +110,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), tuple.getB(), tuple.getC(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA(), tuple.getB(), tuple.getC());
             }
@@ -116,7 +123,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
             }
