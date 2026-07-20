@@ -104,7 +104,8 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     public abstract WeightedScoreImpacter<Score_, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint);
 
     protected final ScoreImpact<Score_> addConstraintMatch(Constraint constraint,
-            ConstraintMatchSupplier<Score_> constraintMatchSupplier, ScoreImpact<Score_> scoreImpact) {
+            ConstraintMatchSupplier<Score_> constraintMatchSupplier,
+            ScoreImpact<Score_> scoreImpact) {
         var constraintMatchList = getConstraintMatchList(constraint);
         /*
          * Creating a constraint match is a heavy operation which may yet be undone.

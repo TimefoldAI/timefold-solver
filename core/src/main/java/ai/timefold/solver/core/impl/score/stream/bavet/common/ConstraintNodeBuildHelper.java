@@ -135,6 +135,14 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     public ConstraintStreamsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
             Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
             Map<BavetConstraint<Solution_>, Scorer<?>> constraintToScorerMap, boolean scoreDirectorDerived) {
+        for (var scorerEntry : constraintToScorerMap.entrySet()) {
+            var scorerParentNodes = getParentNodeList(
+                    (BavetAbstractConstraintStream<Solution_>) scorerEntry.getKey().getScoringConstraintStream());
+            var scorerNodeIds = scorerParentNodes.stream()
+                    .mapToLong(AbstractNode::getId)
+                    .toArray();
+            scorerEntry.getValue().setNodeIds(scorerNodeIds);
+        }
         return ConstraintStreamsBavetNodeNetwork.of(nodeList, declaredClassToNodeMap, (Map) constraintToScorerMap, node -> {
             if (constraintProfiler == null) {
                 return node.getPropagator();

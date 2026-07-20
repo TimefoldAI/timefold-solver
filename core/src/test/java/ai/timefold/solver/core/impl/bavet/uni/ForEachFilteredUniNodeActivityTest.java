@@ -26,7 +26,7 @@ class ForEachFilteredUniNodeActivityTest {
     private final Set<String> passing = new HashSet<>();
 
     private ForEachFilteredUniNode<String> node(TupleLifecycle<UniTuple<String>> downstream) {
-        return new ForEachFilteredUniNode<>(String.class, passing::contains, downstream, 1);
+        return new ForEachFilteredUniNode<>(String.class, passing::contains, downstream, false, 1);
     }
 
     @SuppressWarnings("unchecked")
