@@ -462,8 +462,15 @@ public abstract class AbstractUniConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstValueGroup()),
-                assertMatch(valueGroup));
+                assertMatch(solution.getFirstValueGroup())
+                        .withIndictedObjects(
+                                solution.getFirstValueGroup(),
+                                solution.getFirstEntityGroup(),
+                                entityGroup),
+                assertMatch(valueGroup).withIndictedObjects(
+                        valueGroup,
+                        solution.getFirstEntityGroup(),
+                        entityGroup));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup);
