@@ -109,8 +109,6 @@ public enum GraphStructure {
                     }
                     // The group variable is unused/always empty
                 }
-                // LIST_ELEMENT is always arbitrary, even if the list variable is currently empty,
-                // since its contents (and thus the graph's edges) change during solving.
                 case INDIRECT, INVERSE, VARIABLE, LIST_ELEMENT -> isArbitrary = true;
                 case NEXT, PREVIOUS -> {
                     if (parentMetaModel == null) {

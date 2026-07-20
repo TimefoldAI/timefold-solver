@@ -642,8 +642,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         // when the list variable changes.
         var elementSource = source.variableSourceReferences().get(0);
         graphDescriptor.variableReferenceGraphBuilder()
-                .addListElementEdgeMaintainer(listVariableId,
-                        new ListElementEdgeMaintainer(elementSource.variableMetaModel(), fromVariableId,
+                .addListElementSourceLocator(listVariableId,
+                        new ListElementSourceLocator(elementSource.variableMetaModel(), fromVariableId,
                                 elementSource.chainFromRootEntityToVariableEntity()));
     }
 

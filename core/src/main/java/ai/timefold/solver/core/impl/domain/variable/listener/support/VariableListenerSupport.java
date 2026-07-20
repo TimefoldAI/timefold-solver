@@ -311,8 +311,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
-        if (shadowVariableSession != null
-                && shadowVariableSession.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex)) {
+        if (shadowVariableSession != null) {
+            shadowVariableSession.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
             notificationQueuesAreEmpty = false;
         }
     }

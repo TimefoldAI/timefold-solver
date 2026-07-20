@@ -35,16 +35,6 @@ public sealed interface VariableReferenceGraph
     void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity);
 
     /**
-     * True if the graph has edges that depend on the given planning list variable's contents,
-     * in which case {@link #beforeListVariableChanged(VariableMetaModel, Object, List, int, int)}
-     * and {@link #afterListVariableChanged(VariableMetaModel, Object, List, int, int)}
-     * must be called when it changes.
-     */
-    default boolean requiresListVariableChangeEvents(VariableMetaModel<?, ?, ?> variableReference) {
-        return false;
-    }
-
-    /**
      * Called before the planning list variable corresponding to the {@link VariableMetaModel}
      * on the given entity changes.
      * Removes the edges of declarative shadow variables sourced from the elements
@@ -52,12 +42,12 @@ public sealed interface VariableReferenceGraph
      *
      * @param variableReference The planning list variable to be changed.
      * @param entity The entity that has the list variable.
-     * @param elements The current (pre-change) elements of the list variable.
+     * @param elementList The current (pre-change) elements of the list variable.
      * @param fromIndex The start of the changed range, inclusive.
      * @param toIndex The end of the changed range, exclusive.
      */
     default void beforeListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elements, int fromIndex, int toIndex) {
+            List<Object> elementList, int fromIndex, int toIndex) {
         // Most graphs do not have edges that depend on a list variable's contents.
     }
 
@@ -69,12 +59,12 @@ public sealed interface VariableReferenceGraph
      *
      * @param variableReference The planning list variable that changed.
      * @param entity The entity that has the list variable.
-     * @param elements The current (post-change) elements of the list variable.
+     * @param elementList The current (post-change) elements of the list variable.
      * @param fromIndex The start of the changed range, inclusive.
      * @param toIndex The end of the changed range, exclusive.
      */
     default void afterListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elements, int fromIndex, int toIndex) {
+            List<Object> elementList, int fromIndex, int toIndex) {
         // Most graphs do not have edges that depend on a list variable's contents.
     }
 

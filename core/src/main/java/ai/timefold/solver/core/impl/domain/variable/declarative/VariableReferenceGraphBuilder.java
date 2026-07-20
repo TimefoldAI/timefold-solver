@@ -29,7 +29,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> initialDynamicEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
     final Map<Integer, Map<Object, GraphNode<Solution_>>> variableGroupIdToContainingNodeMap;
-    final Map<VariableMetaModel<?, ?, ?>, List<ListElementEdgeMaintainer>> listVariableToEdgeMaintainers;
+    final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
     boolean isGraphFixed;
 
     public VariableReferenceGraphBuilder(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
@@ -42,7 +42,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         fixedEdges = new HashMap<>();
         initialDynamicEdges = new HashMap<>();
         entityToEntityId = new IdentityHashMap<>();
-        listVariableToEdgeMaintainers = new HashMap<>();
+        listVariableReferenceToElementLocator = new HashMap<>();
         isGraphFixed = true;
     }
 
@@ -59,12 +59,11 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         initialDynamicEdges.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
     }
 
-    public void addListElementEdgeMaintainer(VariableMetaModel<?, ?, ?> listVariableId,
-            ListElementEdgeMaintainer listElementEdgeMaintainer) {
-        // Edges depend on the list variable's contents, so the graph cannot be fixed.
+    public void addListElementSourceLocator(VariableMetaModel<?, ?, ?> listVariableId,
+            ListElementSourceLocator listElementSourceLocator) {
         isGraphFixed = false;
-        listVariableToEdgeMaintainers.computeIfAbsent(listVariableId, k -> new ArrayList<>())
-                .add(listElementEdgeMaintainer);
+        listVariableReferenceToElementLocator.computeIfAbsent(listVariableId, k -> new ArrayList<>())
+                .add(listElementSourceLocator);
     }
 
     public <Entity_> void addVariableReferenceEntity(Entity_ entity, List<VariableUpdaterInfo<Solution_>> variableReferences) {

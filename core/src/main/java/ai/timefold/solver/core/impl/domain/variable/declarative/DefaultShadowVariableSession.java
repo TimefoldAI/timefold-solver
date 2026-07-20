@@ -35,27 +35,15 @@ public final class DefaultShadowVariableSession<Solution_> implements Supply {
                 entity);
     }
 
-    /**
-     * @return true if the graph listens to the given list variable, false if the event was a no-op.
-     */
-    public boolean beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
+    public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
             int fromIndex, int toIndex) {
-        var variableMetaModel = variableDescriptor.getVariableMetaModel();
-        if (!graph.requiresListVariableChangeEvents(variableMetaModel)) {
-            return false;
-        }
-        graph.beforeListVariableChanged(variableMetaModel, entity,
+        graph.beforeListVariableChanged(variableDescriptor.getVariableMetaModel(), entity,
                 variableDescriptor.getValue(entity), fromIndex, toIndex);
-        return true;
     }
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        var variableMetaModel = variableDescriptor.getVariableMetaModel();
-        if (!graph.requiresListVariableChangeEvents(variableMetaModel)) {
-            return;
-        }
-        graph.afterListVariableChanged(variableMetaModel, entity,
+        graph.afterListVariableChanged(variableDescriptor.getVariableMetaModel(), entity,
                 variableDescriptor.getValue(entity), fromIndex, toIndex);
     }
 

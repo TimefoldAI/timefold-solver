@@ -15,13 +15,12 @@ public class TestdataListElementConstraintProvider implements ConstraintProvider
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                constraintFactory.forEachUnfiltered(TestdataListElementValue.class)
+                constraintFactory.forEachIncludingUnassigned(TestdataListElementValue.class)
                         .filter(value -> value.getEntity() == null)
                         .penalize(SimpleScore.of(100))
                         .asConstraint("Assign all values"),
 
-                constraintFactory.forEachUnfiltered(TestdataListElementEntity.class)
-                        .filter(entity -> entity.getLastEndTime() != null)
+                constraintFactory.forEach(TestdataListElementEntity.class)
                         .penalize(SimpleScore.ONE, TestdataListElementEntity::getLastEndTime)
                         .asConstraint("Minimize last end time")
         };

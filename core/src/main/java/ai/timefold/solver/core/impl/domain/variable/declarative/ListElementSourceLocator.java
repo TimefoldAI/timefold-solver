@@ -9,10 +9,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Maintains the fan-in edges of a declarative shadow variable that is sourced
- * from the elements of a planning list variable, such as {@code "values[].endTime"}.
- * When the list variable changes, an edge {@code element.sourceVariable -> owner.targetVariable}
- * must be added or removed for every element that entered or left the changed range.
+ * Locates, for a declarative shadow variable sourced from the elements of a planning
+ * list variable (such as {@code "values[].endTime"}),
+ * the entity declaring the source variable for a given element.
  *
  * @param sourceVariableId the declarative shadow variable on the element (or on a fact of the element)
  * @param targetVariableId the declarative shadow variable on the list variable's entity
@@ -20,7 +19,7 @@ import org.jspecify.annotations.Nullable;
  *        declaring the source variable; typically empty
  */
 @NullMarked
-public record ListElementEdgeMaintainer(VariableMetaModel<?, ?, ?> sourceVariableId,
+public record ListElementSourceLocator(VariableMetaModel<?, ?, ?> sourceVariableId,
         VariableMetaModel<?, ?, ?> targetVariableId,
         List<MemberAccessor> chainFromElementToVariableEntity) {
 

@@ -25,7 +25,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
-    protected final Map<VariableMetaModel<?, ?, ?>, List<ListElementEdgeMaintainer>> listVariableToEdgeMaintainers;
+    protected final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
 
     // These structures are mutable.
     protected final DynamicLinearProbeNonNegativeIntCounter[] edgeCount;
@@ -47,7 +47,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         variableReferenceToContainingNodeMap = Map.copyOf(outerGraph.variableReferenceToContainingNodeMap);
         variableReferenceToBeforeProcessor = Map.copyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = Map.copyOf(outerGraph.variableReferenceToAfterProcessor);
-        listVariableToEdgeMaintainers = Map.copyOf(outerGraph.listVariableToEdgeMaintainers);
+        listVariableReferenceToElementLocator = Map.copyOf(outerGraph.listVariableReferenceToElementLocator);
         edgeCount = new DynamicLinearProbeNonNegativeIntCounter[instanceCount];
         for (var i = 0; i < instanceCount; i++) {
             edgeCount[i] = new DynamicLinearProbeNonNegativeIntCounter();
@@ -200,50 +200,45 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     }
 
     @Override
-    public final boolean requiresListVariableChangeEvents(VariableMetaModel<?, ?, ?> variableReference) {
-        return listVariableToEdgeMaintainers.containsKey(variableReference);
-    }
-
-    @Override
     public final void beforeListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elements, int fromIndex, int toIndex) {
+            List<Object> elementList, int fromIndex, int toIndex) {
         if (isUpdating) {
             // Declarative shadow variable updates never change a list variable, so this cannot happen,
             // but stay consistent with beforeVariableChanged(VariableMetaModel, Object).
             return;
         }
-        updateListElementEdges(variableReference, entity, elements, fromIndex, toIndex, false);
+        updateListElementEdges(variableReference, entity, elementList, fromIndex, toIndex, false);
     }
 
     @Override
     public final void afterListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elements, int fromIndex, int toIndex) {
+            List<Object> elementList, int fromIndex, int toIndex) {
         if (isUpdating) {
             return;
         }
-        updateListElementEdges(variableReference, entity, elements, fromIndex, toIndex, true);
+        updateListElementEdges(variableReference, entity, elementList, fromIndex, toIndex, true);
     }
 
     @SuppressWarnings("ForLoopReplaceableByForEach")
     private void updateListElementEdges(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elements, int fromIndex, int toIndex, boolean isAdd) {
-        var maintainerList = listVariableToEdgeMaintainers.get(variableReference);
-        if (maintainerList == null) {
+            List<Object> elementList, int fromIndex, int toIndex, boolean isAdd) {
+        var locatorList = listVariableReferenceToElementLocator.get(variableReference);
+        if (locatorList == null) {
             return;
         }
-        var maintainerCount = maintainerList.size();
-        for (var i = 0; i < maintainerCount; i++) {
-            var maintainer = maintainerList.get(i);
-            var to = lookupOrNull(maintainer.targetVariableId(), entity);
+        var locatorCount = locatorList.size();
+        for (var i = 0; i < locatorCount; i++) {
+            var locator = locatorList.get(i);
+            var to = lookupOrNull(locator.targetVariableId(), entity);
             if (to == null) {
                 continue;
             }
-            var sourceNodeMap = variableReferenceToContainingNodeMap.get(maintainer.sourceVariableId());
+            var sourceNodeMap = variableReferenceToContainingNodeMap.get(locator.sourceVariableId());
             if (sourceNodeMap != null) {
                 // Do not clamp the range; an out-of-bounds range is a caller bug
                 // that must fail fast instead of silently corrupting the edge counts.
                 for (var elementIndex = fromIndex; elementIndex < toIndex; elementIndex++) {
-                    var sourceEntity = maintainer.findSourceEntity(elements.get(elementIndex));
+                    var sourceEntity = locator.findSourceEntity(elementList.get(elementIndex));
                     if (sourceEntity == null) {
                         continue;
                     }

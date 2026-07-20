@@ -11,6 +11,8 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
+import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementEntity;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementSolution;
@@ -18,7 +20,6 @@ import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElemen
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementEntity;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementSolution;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementValue;
-import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 
@@ -75,7 +76,7 @@ class ListElementShadowVariableTest {
     }
 
     @Test
-    void updateShadowVariablesAfterChanges() {
+    void listMovesUpdateAggregates() {
         var value1 = new TestdataListElementValue("v1");
         var value2 = new TestdataListElementValue("v2");
         var value3 = new TestdataListElementValue("v3");
@@ -88,15 +89,18 @@ class ListElementShadowVariableTest {
         solution.setEntities(List.of(entityA, entityB));
         solution.setValues(List.of(value1, value2, value3));
 
-        SolutionManager.updateShadowVariables(solution);
+        var solutionMetaModel = TestdataListElementSolution.buildMetaModel();
+        var listVariableMetaModel = solutionMetaModel.genuineEntity(TestdataListElementEntity.class)
+                .listVariable("values", TestdataListElementValue.class);
+
+        var context = MoveTester.build(solutionMetaModel).using(solution);
         assertThat(entityA.getLastEndTime()).isEqualTo(3);
         assertThat(entityB.getLastEndTime()).isEqualTo(10);
 
         // Move value3 from A to B and reverse A's remaining values.
-        entityA.setValues(new ArrayList<>(List.of(value2, value1)));
-        entityB.setValues(new ArrayList<>(List.of(value3)));
-
-        SolutionManager.updateShadowVariables(solution);
+        context.execute(Moves.compose(
+                Moves.change(listVariableMetaModel, entityA, 2, entityB, 0),
+                Moves.swap(listVariableMetaModel, entityA, 0, entityA, 1)));
         assertThat(entityA.getLastEndTime()).isEqualTo(2);
         assertThat(entityB.getLastEndTime()).isEqualTo(11);
     }
@@ -114,17 +118,15 @@ class ListElementShadowVariableTest {
         solution.setEntities(List.of(entity));
         solution.setValues(List.of(value1, value2));
 
-        var scoreDirector =
-                PlannerTestUtils.mockScoreDirector(TestdataMixedListElementSolution.buildSolutionDescriptor());
-        scoreDirector.setWorkingSolution(solution);
-        scoreDirector.triggerVariableListeners();
+        var solutionMetaModel = TestdataMixedListElementSolution.buildSolutionDescriptor().getMetaModel();
+        var durationVariableMetaModel = solutionMetaModel.genuineEntity(TestdataMixedListElementValue.class)
+                .basicVariable("duration", Integer.class);
+
+        var context = MoveTester.build(solutionMetaModel).using(solution);
         assertThat(entity.getTotalDuration()).isEqualTo(3 + 4);
 
         // Change a genuine basic variable on a single element; no list variable event fires.
-        scoreDirector.beforeVariableChanged(value1, "duration");
-        value1.setDuration(5);
-        scoreDirector.afterVariableChanged(value1, "duration");
-        scoreDirector.triggerVariableListeners();
+        context.execute(Moves.change(durationVariableMetaModel, value1, 5));
 
         // The aggregate is retriggered through the element edge alone.
         assertThat(value1.getPaddedDuration()).isEqualTo(6);
