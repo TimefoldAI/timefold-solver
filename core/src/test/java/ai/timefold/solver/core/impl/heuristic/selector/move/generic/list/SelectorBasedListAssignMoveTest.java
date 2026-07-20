@@ -57,7 +57,7 @@ class SelectorBasedListAssignMoveTest {
                     verify(innerScoreDirector).beforeListVariableElementAssigned(variableDescriptor, v1);
                     verify(innerScoreDirector).afterListVariableElementAssigned(variableDescriptor, v1);
                     verify(innerScoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 1);
-                    verify(innerScoreDirector, atLeastOnce()).triggerVariableListeners();
+                    verify(innerScoreDirector, atLeastOnce()).updateShadowVariables();
                     return null;
                 });
 

@@ -70,7 +70,7 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
             genuineVariableDescriptor.setValue(ruinedEntity, null);
             scoreDirector.afterVariableChanged(genuineVariableDescriptor, ruinedEntity);
         }
-        scoreDirector.triggerVariableListeners();
+        scoreDirector.updateShadowVariables();
 
         var backingScoreDirector =
                 (scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_, ?> recordingScoreDirector)
@@ -90,7 +90,7 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
         constructionHeuristicPhase.solvingStarted(nestedSolverScope);
         constructionHeuristicPhase.solve(nestedSolverScope);
         constructionHeuristicPhase.solvingEnded(nestedSolverScope);
-        scoreDirector.triggerVariableListeners();
+        scoreDirector.updateShadowVariables();
 
         for (var i = 0; i < ruinedEntityList.size(); i++) {
             recordedNewValues[i] = genuineVariableDescriptor.getValue(ruinedEntityList.get(i));

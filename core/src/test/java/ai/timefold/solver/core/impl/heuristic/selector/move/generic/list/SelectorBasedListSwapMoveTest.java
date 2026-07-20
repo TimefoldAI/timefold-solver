@@ -93,7 +93,7 @@ class SelectorBasedListSwapMoveTest {
                     verify(innerScoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 1);
                     verify(innerScoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 1);
                     verify(innerScoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 1);
-                    verify(innerScoreDirector, atLeastOnce()).triggerVariableListeners();
+                    verify(innerScoreDirector, atLeastOnce()).updateShadowVariables();
                     return null;
                 });
 

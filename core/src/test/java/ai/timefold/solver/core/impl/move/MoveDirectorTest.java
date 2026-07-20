@@ -1715,11 +1715,16 @@ class MoveDirectorTest {
         moveDirector.changeVariable(secondVariableMetaModel, entityA, expectedValueA2);
         assertThat(entityA.getBasicValue()).isSameAs(expectedValueA1);
         assertThat(entityA.getSecondBasicValue()).isSameAs(expectedValueA2);
+        // "entityList" is the inverse relation of "basicValue" only, not "secondBasicValue".
+        assertThat(expectedValueA1.getEntityList()).containsExactly(entityA);
+        assertThat(expectedValueA2.getEntityList()).isEmpty();
 
         // Undo it.
         moveDirector.close();
         assertThat(entityA.getBasicValue()).isNull();
         assertThat(entityA.getSecondBasicValue()).isNull();
+        assertThat(expectedValueA1.getEntityList()).isEmpty();
+        assertThat(expectedValueA2.getEntityList()).isEmpty();
     }
 
 }

@@ -189,7 +189,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.constructionheuristic.placer to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.variable to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.variable.supply to ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.domain.variable.listener.support to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.heuristic to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.heuristic.selector.common to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.heuristic.selector.common.iterator to ai.timefold.solver.enterprise.core;

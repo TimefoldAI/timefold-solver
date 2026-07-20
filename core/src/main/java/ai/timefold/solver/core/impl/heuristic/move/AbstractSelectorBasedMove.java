@@ -55,7 +55,7 @@ public abstract class AbstractSelectorBasedMove<Solution_> implements Move<Solut
     public final void execute(MutableSolutionView<Solution_> solutionView) {
         var scoreDirector = ((MoveDirector<Solution_, ?>) solutionView).getScoreDirector();
         execute(scoreDirector);
-        scoreDirector.triggerVariableListeners();
+        scoreDirector.updateShadowVariables();
     }
 
     protected abstract void execute(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector);
