@@ -1,10 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -123,12 +126,26 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
-        // TODO: Add right tuple to support
+        counter.getTuple().getIndictmentSupportForNodeId(getId())
+                .add(Objects.requireNonNull(rightTuple.getA()));
         counter.countRight++;
     }
 
-    protected void decrementCounterRight(ExistsCounter<LeftTuple_> counter) {
+    protected void decrementCounterRightWithoutIndictment(ExistsCounter<LeftTuple_> counter) {
         counter.countRight--;
+        if (counter.countRight == 0) {
+            if (shouldExist) {
+                doRetractCounter(counter);
+            } else {
+                doInsertCounter(counter);
+            }
+        } // Else do not even propagate an update
+    }
+
+    protected void decrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        counter.countRight--;
+        counter.getTuple().getIndictmentSupportForNodeId(getId())
+                .remove(Objects.requireNonNull(rightTuple.getA()));
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doRetractCounter(counter);
@@ -218,11 +235,21 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     // Walk safety: removeFromLeft only touches left-side links, so rightNext is stable across the call.
     protected void clearRightTrackerList(UniTuple<Right_> rightTuple) {
         FilteringTracker<LeftTuple_> tracker = rightTuple.removeStore(inputStoreIndexRightTrackerList);
-        while (tracker != null) {
-            var next = tracker.rightNext;
-            decrementCounterRight(tracker.counter);
-            removeFromLeft(tracker);
-            tracker = next;
+
+        if (rightTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+            while (tracker != null) {
+                var next = tracker.rightNext;
+                decrementCounterRightUpdatingIndictment(tracker.counter, rightTuple);
+                removeFromLeft(tracker);
+                tracker = next;
+            }
+        } else {
+            while (tracker != null) {
+                var next = tracker.rightNext;
+                decrementCounterRightWithoutIndictment(tracker.counter);
+                removeFromLeft(tracker);
+                tracker = next;
+            }
         }
     }
 
