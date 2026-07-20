@@ -21,8 +21,12 @@ record RecordedUndoMove<Solution_>(List<ChangeAction<Solution_>> variableChangeA
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
         var scoreDirector = ((InnerMutableSolutionView<Solution_>) solutionView).getScoreDirector();
-        for (var changeAction : variableChangeActionList) {
-            changeAction.undo(scoreDirector);
+        // Undo actions must be replayed in reverse recording order,
+        // otherwise repeated changes to the same variable restore a stale value
+        // and multi-action list windows replay out of order.
+        var listIterator = variableChangeActionList.listIterator(variableChangeActionList.size());
+        while (listIterator.hasPrevious()) {
+            listIterator.previous().undo(scoreDirector);
         }
     }
 
