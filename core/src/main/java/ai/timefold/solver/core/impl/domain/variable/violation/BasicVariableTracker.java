@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.violation;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeHandler;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
@@ -13,8 +14,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Tracks shadow variable update events for a given genuine or shadow variable
- * (except {@link ai.timefold.solver.core.api.domain.variable.PlanningListVariable}).
+ * Tracks variable change events for a given genuine or shadow variable, except {@link PlanningListVariable}.
  */
 public class BasicVariableTracker<Solution_>
         implements BasicVariableChangeHandler<Solution_>, Supply {

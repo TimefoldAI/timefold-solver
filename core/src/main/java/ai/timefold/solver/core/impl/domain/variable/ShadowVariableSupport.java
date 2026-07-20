@@ -16,9 +16,11 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ShadowVariablesInconsistentVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
@@ -133,14 +135,30 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
                 demand(basicVariableStateDemand).externalize(inverseRelationShadowVariableDescriptor);
                 basicVariableStateDemandList.add(basicVariableStateDemand);
             }
-        } else if (listVariableStateSupply != null
-                && (descriptor instanceof IndexShadowVariableDescriptor<Solution_>
-                        || descriptor instanceof PreviousElementShadowVariableDescriptor<Solution_>
-                        || descriptor instanceof NextElementShadowVariableDescriptor<Solution_>)) {
-            // When multiple variable types are used,
-            // the shadow variable process needs to account for each variable
-            // and process them according to their types.
-            processShadowVariableDescriptorWithListVariable(descriptor, listVariableStateSupply);
+        } else if (listVariableStateSupply != null) {
+            switch (descriptor) {
+                // When multiple variable types are used,
+                // the shadow variable process needs to account for each variable
+                // and process them according to their types.
+                case IndexShadowVariableDescriptor<Solution_> d ->
+                    processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                case PreviousElementShadowVariableDescriptor<Solution_> d ->
+                    processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                case NextElementShadowVariableDescriptor<Solution_> d ->
+                    processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                case DeclarativeShadowVariableDescriptor<Solution_> ignored -> {
+                    // Needs no handling here.
+                }
+                case ShadowVariablesInconsistentVariableDescriptor<Solution_> ignored -> {
+                    // Needs no handling here.
+                }
+                case CascadingUpdateShadowVariableDescriptor<Solution_> ignored -> {
+                    // Needs no handling here.
+                }
+                // Fail-safe.
+                default -> throw new IllegalStateException("Impossible state: unknown shadow variable type (%s)."
+                        .formatted(descriptor));
+            }
         }
     }
 

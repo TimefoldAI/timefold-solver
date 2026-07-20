@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Tracks shadow variable update events for a given {@link PlanningListVariable}.
+ * Tracks variable change events for a given {@link PlanningListVariable}.
  */
 @NullMarked
 public class ListVariableTracker<Solution_>

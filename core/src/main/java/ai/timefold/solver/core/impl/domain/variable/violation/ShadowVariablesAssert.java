@@ -1,14 +1,14 @@
 package ai.timefold.solver.core.impl.domain.variable.violation;
 
-import static java.util.Comparator.comparing;
-
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
 /**
  * Serves for detecting shadow variables' corruption. When a snapshot is created, it records the state of all shadow variables
@@ -16,6 +16,15 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDes
  * compares their state with the recorded one and describes the difference in a violation message.
  */
 public final class ShadowVariablesAssert {
+
+    /**
+     * Deterministic ordering of variable descriptors.
+     */
+    private static final Comparator<ShadowVariableDescriptor<?>> SHADOW_VARIABLE_DESCRIPTOR_COMPARATOR =
+            Comparator
+                    .<ShadowVariableDescriptor<?>> comparingInt(
+                            variableDescriptor -> variableDescriptor.getEntityDescriptor().getOrdinal())
+                    .thenComparingInt(VariableDescriptor::getOrdinal);
 
     private final List<ShadowVariableSnapshot> shadowVariableSnapshots;
 
@@ -56,7 +65,7 @@ public final class ShadowVariablesAssert {
      * @return description of the violations or {@code null} if there are none
      */
     public String createShadowVariablesViolationMessage(long violationDisplayLimit) {
-        Map<ShadowVariableDescriptor<?>, List<String>> violationListMap = collectViolations();
+        var violationListMap = collectViolations();
         if (violationListMap.isEmpty()) {
             return null;
         }
@@ -64,9 +73,8 @@ public final class ShadowVariablesAssert {
     }
 
     private Map<ShadowVariableDescriptor<?>, List<String>> collectViolations() {
-        Map<ShadowVariableDescriptor<?>, List<String>> violationListMap = new TreeMap<>(
-                comparing(ShadowVariableDescriptor::getGlobalShadowOrder));
-        for (ShadowVariableSnapshot shadowVariableSnapshot : shadowVariableSnapshots) {
+        var violationListMap = new TreeMap<ShadowVariableDescriptor<?>, List<String>>(SHADOW_VARIABLE_DESCRIPTOR_COMPARATOR);
+        for (var shadowVariableSnapshot : shadowVariableSnapshots) {
             shadowVariableSnapshot.validate(violationMessage -> violationListMap
                     .computeIfAbsent(shadowVariableSnapshot.getShadowVariableDescriptor(), k -> new ArrayList<>())
                     .add(violationMessage.indent(4)));
@@ -75,7 +83,7 @@ public final class ShadowVariablesAssert {
     }
 
     private String format(Map<ShadowVariableDescriptor<?>, List<String>> violationListMap, long violationDisplayLimit) {
-        StringBuilder message = new StringBuilder();
+        var message = new StringBuilder();
         violationListMap.forEach((shadowVariableDescriptor, violationList) -> {
             violationList.stream().limit(violationDisplayLimit).forEach(message::append);
             if (violationList.size() >= violationDisplayLimit) {

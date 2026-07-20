@@ -15,8 +15,6 @@ import org.jspecify.annotations.Nullable;
  */
 public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescriptor<Solution_> {
 
-    private int globalShadowOrder = Integer.MAX_VALUE;
-
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
@@ -24,14 +22,6 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
     protected ShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor, true);
-    }
-
-    public int getGlobalShadowOrder() {
-        return globalShadowOrder;
-    }
-
-    public void setGlobalShadowOrder(int globalShadowOrder) {
-        this.globalShadowOrder = globalShadowOrder;
     }
 
     // ************************************************************************

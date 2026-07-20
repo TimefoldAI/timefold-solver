@@ -324,7 +324,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     @Deprecated(since = "2.5.0", forRemoval = true)
     default void forceTriggerVariableListeners() {
-        updateShadowVariables();
+        forceUpdateShadowVariables();
     }
 
     /**

@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,7 +60,6 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShado
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
@@ -520,7 +518,6 @@ public final class SolutionDescriptor<Solution_> {
         for (var entityDescriptor : entityDescriptorMap.values()) {
             entityDescriptor.linkVariableDescriptors(descriptorPolicy);
         }
-        determineGlobalShadowOrder();
         problemFactOrEntityClassSet = collectEntityAndProblemFactClasses();
         listVariableDescriptorList = findListVariableDescriptors();
         validateListVariableDescriptors();
@@ -539,36 +536,6 @@ public final class SolutionDescriptor<Solution_> {
             }
         }
         initSolutionCloner(descriptorPolicy);
-    }
-
-    private void determineGlobalShadowOrder() {
-        // Every shadow variable has at most 1 source, so this is a forest: walk each one up to its root and number
-        // post-order, instead of running a full topological sort.
-        var globalShadowOrder = new MutableInt();
-        var visitingSet = new HashSet<ShadowVariableDescriptor<Solution_>>();
-        for (var entityDescriptor : entityDescriptorMap.values()) {
-            for (var shadow : entityDescriptor.getDeclaredShadowVariableDescriptors()) {
-                determineShadowOrder(shadow, visitingSet, globalShadowOrder);
-            }
-        }
-    }
-
-    private static <Solution_> void determineShadowOrder(ShadowVariableDescriptor<Solution_> shadow,
-            Set<ShadowVariableDescriptor<Solution_>> visitingSet, MutableInt globalShadowOrder) {
-        if (shadow.getGlobalShadowOrder() != Integer.MAX_VALUE) {
-            return;
-        }
-        if (!visitingSet.add(shadow)) {
-            throw new IllegalStateException(
-                    "There is a cyclic shadow variable path that involves the shadowVariable (%s) because it must be later than its source (%s)."
-                            .formatted(shadow.getSimpleEntityAndVariableName(), shadow.getSourceVariableDescriptor()));
-        }
-        if (shadow.getSourceVariableDescriptor() instanceof ShadowVariableDescriptor<Solution_> sourceShadow) {
-            determineShadowOrder(sourceShadow, visitingSet, globalShadowOrder);
-        }
-        visitingSet.remove(shadow);
-        shadow.setGlobalShadowOrder(globalShadowOrder.intValue());
-        globalShadowOrder.increment();
     }
 
     private void validateListVariableDescriptors() {
