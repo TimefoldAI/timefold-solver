@@ -5,15 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class SolutionTracker<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final List<VariableTracker<Solution_>> normalVariableTrackers;
+    private final List<BasicVariableTracker<Solution_>> basicVariableTrackers;
     private final List<ListVariableTracker<Solution_>> listVariableTrackers;
     private List<String> missingEventsForward;
     private List<String> missingEventsBackward;
@@ -29,18 +27,18 @@ public final class SolutionTracker<Solution_> {
     public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor,
             SupplyManager supplyManager) {
         this.solutionDescriptor = solutionDescriptor;
-        normalVariableTrackers = new ArrayList<>();
+        basicVariableTrackers = new ArrayList<>();
         listVariableTrackers = new ArrayList<>();
-        for (EntityDescriptor<Solution_> entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
-            for (VariableDescriptor<Solution_> variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
+        for (var entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
+            for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
                 if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
                     listVariableTrackers.add(new ListVariableTracker<>(listVariableDescriptor));
                 } else {
-                    normalVariableTrackers.add(new VariableTracker<>(variableDescriptor));
+                    basicVariableTrackers.add(new BasicVariableTracker<>(variableDescriptor));
                 }
             }
         }
-        normalVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
+        basicVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
         listVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
     }
 
@@ -102,10 +100,10 @@ public final class SolutionTracker<Solution_> {
             VariableSnapshotTotal<Solution_> afterSolution) {
         List<String> out = new ArrayList<>();
         var changes = afterSolution.changedVariablesFrom(beforeSolution);
-        for (VariableTracker<Solution_> normalVariableTracker : normalVariableTrackers) {
-            out.addAll(normalVariableTracker.getEntitiesMissingBeforeAfterEvents(changes));
+        for (var basicVariableTracker : basicVariableTrackers) {
+            out.addAll(basicVariableTracker.getEntitiesMissingBeforeAfterEvents(changes));
         }
-        for (ListVariableTracker<Solution_> listVariableTracker : listVariableTrackers) {
+        for (var listVariableTracker : listVariableTrackers) {
             out.addAll(listVariableTracker.getEntitiesMissingBeforeAfterEvents(changes));
         }
         return out;
@@ -122,7 +120,7 @@ public final class SolutionTracker<Solution_> {
             return new SolutionCorruptionResult(false, "");
         }
 
-        StringBuilder out = new StringBuilder();
+        var out = new StringBuilder();
         var changedBetweenBeforeAndUndo = getVariableChangedViolations(beforeVariables,
                 undoVariables);
 
@@ -200,7 +198,7 @@ public final class SolutionTracker<Solution_> {
     }
 
     static String formatList(List<String> messages) {
-        final int LIMIT = 5;
+        final var LIMIT = 5;
         if (messages.isEmpty()) {
             return "";
         }

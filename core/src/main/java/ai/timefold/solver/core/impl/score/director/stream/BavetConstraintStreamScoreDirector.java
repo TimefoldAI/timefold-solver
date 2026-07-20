@@ -50,9 +50,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
      * The primary purpose of this method is
      * to enable the {@code ConstraintVerifier}
      * to ignore events related to shadow variables when testing constraints that do not rely on them.
-     *
-     * @see AbstractScoreDirector#clearPendingShadowVariableUpdates()
      */
+    @Override
     public void clearPendingShadowVariableUpdates() {
         super.clearPendingShadowVariableUpdates();
     }

@@ -128,11 +128,11 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodShadowVariables() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var variableTrackers = new ArrayList<VariableTracker<?>>();
+        var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
             var demand = invocation.getArgument(0, Demand.class);
             var supply = demand.createExternalizedSupply(supplyManager);
-            variableTrackers.add((VariableTracker<?>) supply);
+            variableTrackers.add((BasicVariableTracker<?>) supply);
             return supply;
         });
         var tracker = new SolutionTracker<>(solutionDescriptor, supplyManager);
@@ -195,11 +195,11 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodForwardShadowVariables() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var variableTrackers = new ArrayList<VariableTracker<?>>();
+        var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
             var demand = invocation.getArgument(0, Demand.class);
             var supply = demand.createExternalizedSupply(supplyManager);
-            variableTrackers.add((VariableTracker<?>) supply);
+            variableTrackers.add((BasicVariableTracker<?>) supply);
             return supply;
         });
         SolutionTracker<TestdataSolution> tracker = new SolutionTracker<>(solutionDescriptor,
@@ -255,11 +255,11 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodUndoShadowVariables() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var variableTrackers = new ArrayList<VariableTracker<?>>();
+        var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
             Demand<?> demand = invocation.getArgument(0, Demand.class);
             var supply = demand.createExternalizedSupply(supplyManager);
-            variableTrackers.add((VariableTracker<?>) supply);
+            variableTrackers.add((BasicVariableTracker<?>) supply);
             return supply;
         });
         var tracker = new SolutionTracker<>(solutionDescriptor,

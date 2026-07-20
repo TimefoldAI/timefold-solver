@@ -16,13 +16,13 @@ import org.jspecify.annotations.NonNull;
  * Tracks shadow variable update events for a given genuine or shadow variable
  * (except {@link ai.timefold.solver.core.api.domain.variable.PlanningListVariable}).
  */
-public class VariableTracker<Solution_>
+public class BasicVariableTracker<Solution_>
         implements BasicVariableChangeHandler<Solution_>, Supply {
     private final VariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
 
-    public VariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
+    public BasicVariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
         this.variableDescriptor = variableDescriptor;
         beforeVariableChangedEntityList = new ArrayList<>();
         afterVariableChangedEntityList = new ArrayList<>();
@@ -76,16 +76,16 @@ public class VariableTracker<Solution_>
     }
 
     /**
-     * In order for the {@link VariableTracker} to be registered for shadow variable update events,
+     * In order for the {@link BasicVariableTracker} to be registered for shadow variable update events,
      * it needs to be passed to the {@link InnerScoreDirector#getSupplyManager()}, which requires a {@link Demand}.
      * <p>
      * Unlike most other {@link Demand}s, there will only be one instance of
-     * {@link VariableTracker} in the {@link InnerScoreDirector} for each variable.
+     * {@link BasicVariableTracker} in the {@link InnerScoreDirector} for each variable.
      */
-    public class TrackerDemand implements Demand<VariableTracker<Solution_>> {
+    public class TrackerDemand implements Demand<BasicVariableTracker<Solution_>> {
         @Override
-        public VariableTracker<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
-            return VariableTracker.this;
+        public BasicVariableTracker<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
+            return BasicVariableTracker.this;
         }
     }
 }

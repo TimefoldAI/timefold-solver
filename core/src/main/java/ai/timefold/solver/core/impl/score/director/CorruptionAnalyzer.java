@@ -81,23 +81,20 @@ final class CorruptionAnalyzer<Solution_, Score_ extends Score<Score_>> {
         appendAnalysis(analysis, workingLabel, "are missing", missingSet);
         if (!missingSet.isEmpty() || !excessSet.isEmpty()) {
             analysis.append("""
-                      Maybe there is a bug in the score constraints of those ConstraintMatch(s).
-                      Maybe a score constraint doesn't select all the entities it depends on,
-                        but discovers some transitively through a reference from the selected entity.
-                        This corrupts incremental score calculation,
-                        because the constraint is not re-evaluated if the transitively discovered entity changes.
-                    """.stripTrailing());
+                    Maybe there is a bug in the score constraints of those ConstraintMatch(s).
+                    Maybe a score constraint doesn't select all the entities it depends on,
+                      but discovers some transitively through a reference from the selected entity.
+                      This corrupts incremental score calculation,
+                      because the constraint is not re-evaluated if the transitively discovered entity changes.""");
         } else {
             if (predicted) {
                 analysis.append(
                         """
-                                  If multi-threaded solving is active:
-                                    - the working scoreDirector is probably not the corrupted scoreDirector.
-                                    - maybe the rebase() method of the move is bugged.
-                                    - maybe a shadow variable update affected the moveThread's workingSolution after doing and undoing a move,
-                                      but this didn't happen here on the solverThread, so we can't detect it.
-                                """
-                                .stripTrailing());
+                                If multi-threaded solving is active:
+                                  - the working scoreDirector is probably not the corrupted scoreDirector.
+                                  - maybe the rebase() method of the move is bugged.
+                                  - maybe a shadow variable update affected the moveThread's workingSolution after doing and undoing a move,
+                                    but this didn't happen here on the solverThread, so we can't detect it.""");
             } else {
                 analysis.append("  Impossible state. Maybe this is a bug in the scoreDirector (%s).".formatted(getClass()));
             }

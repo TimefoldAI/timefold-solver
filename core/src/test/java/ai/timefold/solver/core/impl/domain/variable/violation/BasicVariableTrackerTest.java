@@ -12,12 +12,12 @@ import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup
 
 import org.junit.jupiter.api.Test;
 
-public class NormalVariableTrackerTest {
+public class BasicVariableTrackerTest {
     final static VariableDescriptor<TestdataSolution> VARIABLE_DESCRIPTOR = TestdataEntity.buildVariableDescriptorForValue();
 
     @Test
     void testMissingBeforeEvents() {
-        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new BasicVariableTracker<>(VARIABLE_DESCRIPTOR);
 
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
@@ -36,7 +36,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingAfterEvents() {
-        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new BasicVariableTracker<>(VARIABLE_DESCRIPTOR);
 
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
@@ -55,7 +55,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingBeforeAndAfterEvents() {
-        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new BasicVariableTracker<>(VARIABLE_DESCRIPTOR);
 
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
@@ -72,7 +72,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testNoMissingEvents() {
-        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new BasicVariableTracker<>(VARIABLE_DESCRIPTOR);
 
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
@@ -89,7 +89,7 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testEventsResetAfterCall() {
-        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new BasicVariableTracker<>(VARIABLE_DESCRIPTOR);
 
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
@@ -115,7 +115,7 @@ public class NormalVariableTrackerTest {
     @Test
     @SuppressWarnings({ "rawtypes", "unchecked" })
     void testDoesNotIncludeMissingEventsForOtherVariables() {
-        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new BasicVariableTracker<>(VARIABLE_DESCRIPTOR);
         var otherVariableDescriptor =
                 TestdataLavishEntity.buildVariableDescriptorForValue();
 
