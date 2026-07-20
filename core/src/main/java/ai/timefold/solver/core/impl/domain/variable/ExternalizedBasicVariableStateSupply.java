@@ -90,22 +90,21 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
 
     private void insert(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
         if (shadowVariableDescriptor == null) {
-            Object value = sourceVariableDescriptor.getValue(entity);
+            var value = sourceVariableDescriptor.getValue(entity);
             if (value == null) {
                 return;
             }
-            Set<Object> inverseEntitySet = inverseEntitySetMap.computeIfAbsent(value,
+            var inverseEntitySet = inverseEntitySetMap.computeIfAbsent(value,
                     k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-            boolean addSucceeded = inverseEntitySet.add(entity);
+            var addSucceeded = inverseEntitySet.add(entity);
             if (!addSucceeded) {
-                throw new IllegalStateException("The supply (" + this + ") is corrupted,"
-                        + " because the entity (" + entity
-                        + ") for sourceVariable (" + sourceVariableDescriptor.getVariableName()
-                        + ") cannot be inserted: it was already inserted.");
+                throw new IllegalStateException(
+                        "The supply (%s) is corrupted, because the entity (%s) for sourceVariable (%s) was already inserted."
+                                .formatted(this, entity, sourceVariableDescriptor.getVariableName()));
             }
             notifier.accept(value);
         } else {
-            Object shadowEntity = sourceVariableDescriptor.getValue(entity);
+            var shadowEntity = sourceVariableDescriptor.getValue(entity);
             if (shadowEntity != null) {
                 Collection<Object> shadowCollection = shadowVariableDescriptor.getValue(shadowEntity);
                 if (scoreDirector.expectShadowVariablesInCorrectState() && shadowCollection == null) {
@@ -119,7 +118,7 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
                                     Collection.class.getSimpleName()));
                 }
                 scoreDirector.beforeVariableChanged(shadowVariableDescriptor, shadowEntity);
-                boolean added = shadowCollection.add(entity);
+                var added = shadowCollection.add(entity);
                 if (scoreDirector.expectShadowVariablesInCorrectState() && !added) {
                     throw new IllegalStateException("""
                             The entity (%s) has a variable (%s) with value (%s) which has a sourceVariableName variable (%s) \
@@ -135,24 +134,23 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
 
     private void retract(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
         if (shadowVariableDescriptor == null) {
-            Object value = sourceVariableDescriptor.getValue(entity);
+            var value = sourceVariableDescriptor.getValue(entity);
             if (value == null) {
                 return;
             }
-            Set<Object> inverseEntitySet = inverseEntitySetMap.get(value);
-            boolean removeSucceeded = inverseEntitySet.remove(entity);
+            var inverseEntitySet = inverseEntitySetMap.get(value);
+            var removeSucceeded = inverseEntitySet.remove(entity);
             if (!removeSucceeded) {
-                throw new IllegalStateException("The supply (" + this + ") is corrupted,"
-                        + " because the entity (" + entity
-                        + ") for sourceVariable (" + sourceVariableDescriptor.getVariableName()
-                        + ") cannot be retracted: it was never inserted.");
+                throw new IllegalStateException(
+                        "The supply (%s) is corrupted, because the entity (%s) for sourceVariable (%s) was never inserted."
+                                .formatted(this, entity, sourceVariableDescriptor.getVariableName()));
             }
             if (inverseEntitySet.isEmpty()) {
                 inverseEntitySetMap.put(value, null);
             }
             notifier.accept(value);
         } else {
-            Object shadowEntity = sourceVariableDescriptor.getValue(entity);
+            var shadowEntity = sourceVariableDescriptor.getValue(entity);
             if (shadowEntity != null) {
                 Collection<Object> shadowCollection = shadowVariableDescriptor.getValue(shadowEntity);
                 if (scoreDirector.expectShadowVariablesInCorrectState() && shadowCollection == null) {
@@ -166,7 +164,7 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
                                     Collection.class.getSimpleName()));
                 }
                 scoreDirector.beforeVariableChanged(shadowVariableDescriptor, shadowEntity);
-                boolean removed = shadowCollection.remove(entity);
+                var removed = shadowCollection.remove(entity);
                 if (scoreDirector.expectShadowVariablesInCorrectState() && !removed) {
                     throw new IllegalStateException("""
                             The entity (%s) has a variable (%s) with value (%s) which has a sourceVariableName variable (%s) \
@@ -183,7 +181,7 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
     @Override
     public Collection<?> getInverseCollection(Object planningValue) {
         if (shadowVariableDescriptor == null) {
-            Set<Object> inverseEntitySet = inverseEntitySetMap.get(planningValue);
+            var inverseEntitySet = inverseEntitySetMap.get(planningValue);
             if (inverseEntitySet == null) {
                 return Collections.emptySet();
             }
@@ -195,7 +193,7 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" + sourceVariableDescriptor.getVariableName() + ")";
+        return "%s(%s)".formatted(getClass().getSimpleName(), sourceVariableDescriptor.getVariableName());
     }
 
 }
