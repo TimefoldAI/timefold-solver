@@ -80,7 +80,6 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
                             variableMemberAccessor.getName(), sourceVariableName, variableMemberAccessor.getType(),
                             sourceVariableDescriptor.getElementType(), sourceVariableDescriptor));
         }
-        sourceVariableDescriptor.registerSinkVariableDescriptor(this);
     }
 
     @Override

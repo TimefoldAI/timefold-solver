@@ -45,8 +45,6 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
     // ************************************************************************
 
     /**
-     * Inverse of {@link #getSinkVariableDescriptorList()}.
-     *
      * @return if null, there is no source variable
      */
     public @Nullable VariableDescriptor<Solution_> getSourceVariableDescriptor() {

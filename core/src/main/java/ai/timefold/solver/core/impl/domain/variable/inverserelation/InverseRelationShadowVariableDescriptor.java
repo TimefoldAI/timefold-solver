@@ -107,7 +107,6 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
                                 PlanningListVariable.class.getSimpleName()));
             }
         }
-        sourceVariableDescriptor.registerSinkVariableDescriptor(this);
     }
 
     @Override

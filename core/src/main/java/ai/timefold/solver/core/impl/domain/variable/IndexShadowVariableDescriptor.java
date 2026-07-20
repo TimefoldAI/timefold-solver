@@ -78,7 +78,6 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
                                     variableMemberAccessor, sourceVariableName, PlanningListVariable.class.getSimpleName()));
         }
         sourceVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-        sourceVariableDescriptor.registerSinkVariableDescriptor(this);
     }
 
     @Override
