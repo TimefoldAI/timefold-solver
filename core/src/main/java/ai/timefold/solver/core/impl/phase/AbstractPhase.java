@@ -44,6 +44,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final boolean assertExpectedStepScore;
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
 
+    private boolean loggingEnabled = true;
+
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
@@ -78,6 +80,18 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     }
 
     public abstract PhaseType getPhaseType();
+
+    public void disableLogging() {
+        loggingEnabled = false;
+    }
+
+    public void enableLogging() {
+        loggingEnabled = true;
+    }
+
+    public boolean isLoggingEnabled() {
+        return loggingEnabled;
+    }
 
     // ************************************************************************
     // Lifecycle methods

@@ -170,6 +170,8 @@ public final class PlannerTestUtils {
             }
             throw new IllegalStateException("No method mocked for parameter (" + externalObject + ").");
         });
+        when(scoreDirector.lookUpWorkingObject(any()))
+                .thenAnswer(invocation -> moveDirector.lookUpWorkingObject(invocation.getArguments()[0]));
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         when(scoreDirector.getMoveDirector()).thenReturn(moveDirector);
         return scoreDirector;

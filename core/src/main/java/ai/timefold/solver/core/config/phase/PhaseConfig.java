@@ -6,6 +6,7 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryAlgorithmPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
@@ -21,6 +22,7 @@ import org.jspecify.annotations.Nullable;
         CustomPhaseConfig.class,
         ExhaustiveSearchPhaseConfig.class,
         LocalSearchPhaseConfig.class,
+        EvolutionaryAlgorithmPhaseConfig.class,
         PartitionedSearchPhaseConfig.class
 })
 @XmlType(propOrder = {

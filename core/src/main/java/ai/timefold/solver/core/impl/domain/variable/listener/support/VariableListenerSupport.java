@@ -83,6 +83,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply = null;
     private final List<ShadowVariableType> supportedShadowVariableTypeList;
 
+    private boolean enableDemandRemoval = true;
+
     VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry,
             @NonNull IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
@@ -188,6 +190,16 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    @Override
+    public void enableDemandCancellation() {
+        this.enableDemandRemoval = true;
+    }
+
+    @Override
+    public void disableDemandCancellation() {
+        this.enableDemandRemoval = false;
+    }
+
     @SuppressWarnings("unchecked")
     private Supply createSupply(Demand<?> demand) {
         var supply = demand.createExternalizedSupply(this);
@@ -211,12 +223,21 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             return false;
         }
         if (supplyWithDemandCount.demandCount == 1L) {
-            supplyMap.remove(demand);
+            if (enableDemandRemoval) {
+                supplyMap.remove(demand);
+            }
         } else {
             supplyMap.put(demand,
                     new SupplyWithDemandCount(supplyWithDemandCount.supply, supplyWithDemandCount.demandCount - 1L));
         }
         return true;
+    }
+
+    @Override
+    public void cancelAll() {
+        if (enableDemandRemoval) {
+            supplyMap.clear();
+        }
     }
 
     @Override

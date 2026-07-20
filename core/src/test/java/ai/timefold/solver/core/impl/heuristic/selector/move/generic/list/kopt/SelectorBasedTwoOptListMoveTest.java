@@ -188,6 +188,120 @@ class SelectorBasedTwoOptListMoveTest {
     }
 
     @Test
+    void doTailSwapWithReversion() {
+        TestdataListValue v1 = new TestdataListValue("1");
+        TestdataListValue v2 = new TestdataListValue("2");
+        TestdataListValue v3 = new TestdataListValue("3");
+        TestdataListValue v4 = new TestdataListValue("4");
+        TestdataListValue v5 = new TestdataListValue("5");
+        TestdataListValue v6 = new TestdataListValue("6");
+        TestdataListValue v7 = new TestdataListValue("7");
+        TestdataListValue v8 = new TestdataListValue("8");
+        TestdataListValue v9 = new TestdataListValue("9");
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        TestdataListEntity e2 = new TestdataListEntity("e2", v5, v6, v7, v8, v9);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1, e2));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8, v9));
+        SolutionManager.updateShadowVariables(solution);
+        scoreDirector.setWorkingSolution(solution);
+
+        // 2-Opt((v2, v3), (v7, v8))
+        var move = new SelectorBasedTwoOptListMove<>(variableDescriptor, e1, e2, 1, 2, true);
+        move.execute(scoreDirector);
+        assertThat(e1.getValueList()).containsExactly(v1, v2, v7, v6, v5);
+        assertThat(e2.getValueList()).containsExactly(v4, v3, v8, v9);
+
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 4);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 2, 5);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 3);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 2);
+    }
+
+    @Test
+    void doTailSwapWithReversionOtherCutPoint() {
+        TestdataListValue v1 = new TestdataListValue("1");
+        TestdataListValue v2 = new TestdataListValue("2");
+        TestdataListValue v3 = new TestdataListValue("3");
+        TestdataListValue v4 = new TestdataListValue("4");
+        TestdataListValue v5 = new TestdataListValue("5");
+        TestdataListValue v6 = new TestdataListValue("6");
+        TestdataListValue v7 = new TestdataListValue("7");
+        TestdataListValue v8 = new TestdataListValue("8");
+        TestdataListValue v9 = new TestdataListValue("9");
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        TestdataListEntity e2 = new TestdataListEntity("e2", v5, v6, v7, v8, v9);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1, e2));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8, v9));
+        SolutionManager.updateShadowVariables(solution);
+        scoreDirector.setWorkingSolution(solution);
+
+        // 2-Opt((v7, v8), (v2, v3))
+        var move = new SelectorBasedTwoOptListMove<>(variableDescriptor, e2, e1, 2, 1, true);
+        move.execute(scoreDirector);
+        assertThat(e2.getValueList()).containsExactly(v5, v6, v7, v2, v1);
+        assertThat(e1.getValueList()).containsExactly(v9, v8, v3, v4);
+
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 3, 5);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 3, 5);
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 2);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 2);
+    }
+
+    @Test
+    void undoTailSwapWithReversion() {
+        TestdataListValue v1 = new TestdataListValue("1");
+        TestdataListValue v2 = new TestdataListValue("2");
+        TestdataListValue v3 = new TestdataListValue("3");
+        TestdataListValue v4 = new TestdataListValue("4");
+        TestdataListValue v5 = new TestdataListValue("5");
+        TestdataListValue v6 = new TestdataListValue("6");
+        TestdataListValue v7 = new TestdataListValue("7");
+        TestdataListValue v8 = new TestdataListValue("8");
+        TestdataListValue v9 = new TestdataListValue("9");
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        TestdataListEntity e2 = new TestdataListEntity("e2", v5, v6, v7, v8, v9);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1, e2));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8, v9));
+        SolutionManager.updateShadowVariables(solution);
+        scoreDirector.setWorkingSolution(solution);
+
+        // 2-Opt((v2, v3), (v7, v8))
+        var move = new SelectorBasedTwoOptListMove<>(variableDescriptor, e1, e2, 1, 2, true);
+        scoreDirector.executeTemporaryMove(move, false);
+        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4);
+        assertThat(e2.getValueList()).containsExactly(v5, v6, v7, v8, v9);
+    }
+
+    @Test
+    void undoTailSwapWithReversionOtherCutPoint() {
+        TestdataListValue v1 = new TestdataListValue("1");
+        TestdataListValue v2 = new TestdataListValue("2");
+        TestdataListValue v3 = new TestdataListValue("3");
+        TestdataListValue v4 = new TestdataListValue("4");
+        TestdataListValue v5 = new TestdataListValue("5");
+        TestdataListValue v6 = new TestdataListValue("6");
+        TestdataListValue v7 = new TestdataListValue("7");
+        TestdataListValue v8 = new TestdataListValue("8");
+        TestdataListValue v9 = new TestdataListValue("9");
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        TestdataListEntity e2 = new TestdataListEntity("e2", v5, v6, v7, v8, v9);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1, e2));
+        solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8, v9));
+        SolutionManager.updateShadowVariables(solution);
+        scoreDirector.setWorkingSolution(solution);
+
+        // 2-Opt((v7, v8), (v2, v3))
+        var move = new SelectorBasedTwoOptListMove<>(variableDescriptor, e2, e1, 2, 1, true);
+        scoreDirector.executeTemporaryMove(move, false);
+        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4);
+        assertThat(e2.getValueList()).containsExactly(v5, v6, v7, v8, v9);
+    }
+
+    @Test
     void doMoveSecondEndsBeforeFirst() {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");

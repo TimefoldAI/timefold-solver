@@ -14,7 +14,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext<Solution_> {
+public final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext<Solution_> {
 
     private final MoveDirector<Solution_, ?> moveDirector;
     private final BooleanSupplier isPhaseTerminated;

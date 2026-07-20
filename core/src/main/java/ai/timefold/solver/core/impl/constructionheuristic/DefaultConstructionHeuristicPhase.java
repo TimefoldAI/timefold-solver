@@ -89,7 +89,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             if (stepScope.getStep() == null) {
                 if (phaseTermination.isPhaseTerminated(phaseScope)) {
                     var logLevel = Level.TRACE;
-                    if (decider.isLoggingEnabled() && logger.isEnabledForLevel(logLevel)) {
+                    if (isLoggingEnabled() && logger.isEnabledForLevel(logLevel)) {
                         logger.atLevel(logLevel).log(
                                 "{}    Step index ({}), time spent ({}) terminated without picking a nextStep.",
                                 logIndentation, stepScope.getStepIndex(),
@@ -97,7 +97,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
                     }
                 } else if (stepScope.getSelectedMoveCount() == 0L) {
                     var logLevel = Level.WARN;
-                    if (decider.isLoggingEnabled() && logger.isEnabledForLevel(logLevel)) {
+                    if (isLoggingEnabled() && logger.isEnabledForLevel(logLevel)) {
                         logger.atLevel(logLevel).log(
                                 "{}    No doable selected move at step index ({}), time spent ({}). Terminating phase early.",
                                 logIndentation, stepScope.getStepIndex(),
@@ -170,7 +170,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         super.stepEnded(stepScope);
         moveRepository.stepEnded(stepScope);
         decider.stepEnded(stepScope);
-        if (decider.isLoggingEnabled() && logger.isDebugEnabled()) {
+        if (isLoggingEnabled() && logger.isDebugEnabled()) {
             var timeMillisSpent = stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow();
             logger.debug("{}    CH step ({}), time spent ({}), score ({}), selected move count ({}), picked move ({}).",
                     logIndentation,
@@ -188,7 +188,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         moveRepository.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
-        if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
+        if (isLoggingEnabled() && logger.isInfoEnabled()) {
             logger.info(
                     """
                             {}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), \
