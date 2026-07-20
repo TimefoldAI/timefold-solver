@@ -32,9 +32,20 @@ public class ConstraintStreamTestExtension implements TestTemplateInvocationCont
 
     @Override
     public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext context) {
-        return Stream
-                .of(ConstraintMatchPolicy.ENABLED, ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS,
+        if (ConstraintStreamPrecomputeTest.class.isAssignableFrom(context.getTestClass().get())) {
+            // Precompute test use
+            return Stream
+                    .of(ConstraintMatchPolicy.ENABLED_WITHOUT_INDICTMENTS,
+                        ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS,
                         ConstraintMatchPolicy.DISABLED)
+                    .map(ConstraintStreamTestExtension::invocationContext);
+        }
+        return Stream
+                .of(ConstraintMatchPolicy.ENABLED,
+                    ConstraintMatchPolicy.ENABLED_WITHOUT_INDICTMENTS,
+                    ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS,
+                    ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS,
+                    ConstraintMatchPolicy.DISABLED)
                 .map(ConstraintStreamTestExtension::invocationContext);
     }
 

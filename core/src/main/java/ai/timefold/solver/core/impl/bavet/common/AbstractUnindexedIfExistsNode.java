@@ -145,7 +145,13 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         rightEntry.remove();
         if (!isFiltering) {
-            counterList.forEach(this::decrementCounterRight);
+            // To prevent creating a dynamic lambda on the hot path,
+            // only call the 2-args version when indictments are enabled
+            if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                counterList.forEach(this::decrementCounterRightWithoutIndictment);
+            } else {
+                counterList.forEach(counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+            }
         } else {
             clearRightTrackerList(rightTuple);
         }

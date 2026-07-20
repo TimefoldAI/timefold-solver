@@ -250,7 +250,13 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 indexerRight.remove(oldCompositeKey, entry);
             }
             if (!isFiltering) {
-                forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRight);
+                // To prevent creating a dynamic lambda on the hot path,
+                // only call the 2-args version when indictments are enabled
+                if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                    forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRightWithoutIndictment);
+                } else {
+                    forEachLeftCounter(rightTuple, oldCompositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                }
             } else {
                 clearRightTrackerList(rightTuple);
             }
@@ -273,14 +279,26 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             bucket.removeRight(compositeKey, entry);
             fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
             if (!isFiltering) {
-                bucket.forEachLeft(compositeKey, this::decrementCounterRight);
+                // To prevent creating a dynamic lambda on the hot path,
+                // only call the 2-args version when indictments are enabled
+                if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                    bucket.forEachLeft(compositeKey, this::decrementCounterRightWithoutIndictment);
+                } else {
+                    bucket.forEachLeft(compositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                }
             } else {
                 clearRightTrackerList(rightTuple);
             }
         } else {
             indexerRight.remove(compositeKey, entry);
             if (!isFiltering) {
-                indexerLeft.forEach(compositeKey, this::decrementCounterRight);
+                // To prevent creating a dynamic lambda on the hot path,
+                // only call the 2-args version when indictments are enabled
+                if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                    indexerLeft.forEach(compositeKey, this::decrementCounterRightWithoutIndictment);
+                } else {
+                    indexerLeft.forEach(compositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                }
             } else {
                 clearRightTrackerList(rightTuple);
             }
