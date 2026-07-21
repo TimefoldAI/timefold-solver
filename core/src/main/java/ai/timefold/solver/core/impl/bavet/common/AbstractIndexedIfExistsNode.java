@@ -255,7 +255,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
                     forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRightWithoutIndictment);
                 } else {
-                    forEachLeftCounter(rightTuple, oldCompositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                    forEachLeftCounter(rightTuple, oldCompositeKey,
+                            counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
                 }
             } else {
                 clearRightTrackerList(rightTuple);
