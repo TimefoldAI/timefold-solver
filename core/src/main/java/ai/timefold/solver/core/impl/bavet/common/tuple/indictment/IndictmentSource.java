@@ -50,18 +50,18 @@ public sealed interface IndictmentSource {
         }
     }
 
-    static IndictmentSource sourceWithSupport(Tuple carry, Tuple support) {
+    static void addSupport(long nodeId, Tuple carry, Tuple support) {
         if (carry.getIndictmentSource() == DISABLED) {
-            return DISABLED;
+            return;
         }
-        if (carry.getIndictmentSource() instanceof IndictmentSourceWithSupport indictmentSourceWithSupport) {
-            indictmentSourceWithSupport.support.add(support.getIndictmentSource());
-            return indictmentSourceWithSupport;
-        } else {
-            throw new IllegalStateException("Carry tuple (%s) does not have a %s %s; its source is (%s) instead."
-                    .formatted(carry, IndictmentSourceWithSupport.class.getSimpleName(), IndictmentSource.class.getSimpleName(),
-                            support.getIndictmentSource()));
+        carry.getIndictmentSupportForNodeId(nodeId).add(support.getIndictmentSource());
+    }
+
+    static void removeSupport(long nodeId, Tuple carry, Tuple support) {
+        if (carry.getIndictmentSource() == DISABLED) {
+            return;
         }
+        carry.getIndictmentSupportForNodeId(nodeId).remove(support.getIndictmentSource());
     }
 
     record DisabledIndictmentSource() implements IndictmentSource {

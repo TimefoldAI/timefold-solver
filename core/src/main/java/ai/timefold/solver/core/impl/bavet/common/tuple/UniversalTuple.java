@@ -28,7 +28,7 @@ final class UniversalTuple<A, B, C, D>
     private @Nullable C c;
     private @Nullable D d;
     private IndictmentSource indictmentSource = IndictmentSource.DISABLED;
-    private @Nullable Map<Long, Set<Object>> nodeIdToIndictmentSupport;
+    private @Nullable Map<Long, Set<IndictmentSource>> nodeIdToIndictmentSupport;
     private TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
 
     UniversalTuple(int storeSize, int cardinality) {
@@ -123,7 +123,7 @@ final class UniversalTuple<A, B, C, D>
     }
 
     @Override
-    public Set<Object> getIndictmentSupportForNodeId(long nodeId) {
+    public Set<IndictmentSource> getIndictmentSupportForNodeId(long nodeId) {
         if (nodeIdToIndictmentSupport == null) {
             nodeIdToIndictmentSupport = new LinkedHashMap<>();
         }
