@@ -25,6 +25,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Allows creating {@link ConstraintMatch} instances lazily if and only if they are required by the end user.
@@ -42,9 +43,9 @@ import org.jspecify.annotations.NullMarked;
 public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         extends BiFunction<Constraint, Score_, ConstraintMatch<Score_>> {
 
-    static List<Object> collectIndictments(Constraint constraint, Tuple tuple) {
+    static @Nullable List<Object> collectIndictments(Constraint constraint, Tuple tuple) {
         if (tuple.getIndictmentSource() == IndictmentSource.DISABLED) {
-            return Collections.emptyList();
+            return null;
         }
         var out = new LinkedHashSet<>();
         var abstractConstraint = (AbstractConstraint<?, ?, ?>) constraint;
