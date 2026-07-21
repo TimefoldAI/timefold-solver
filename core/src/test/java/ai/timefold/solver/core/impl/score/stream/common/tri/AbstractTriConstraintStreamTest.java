@@ -129,7 +129,7 @@ public abstract class AbstractTriConstraintStreamTest
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatch(entity4, entity5, entity4));
+        assertScore(scoreDirector, assertMatch(entity4, entity5, entity4).withIndictedObjects(entity4, entity5));
 
         // Remove entity
         scoreDirector.beforeEntityRemoved(entity4);
@@ -328,24 +328,24 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, 1L, extra1),
-                assertMatch(1L, 1L, 1L, extra2));
+                assertMatch(1L, 1L, 1L, extra1).withIndictedObjects(entity1, entity2, extra1),
+                assertMatch(1L, 1L, 1L, extra2).withIndictedObjects(entity1, entity2, extra2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value2);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(2L, 2L, 2L, extra1),
-                assertMatch(2L, 2L, 2L, extra2));
+                assertMatch(2L, 2L, 2L, extra1).withIndictedObjects(entity1, entity2, extra1),
+                assertMatch(2L, 2L, 2L, extra2).withIndictedObjects(entity1, entity2, extra2));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity2);
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, 1L, extra1),
-                assertMatch(1L, 1L, 1L, extra2));
+                assertMatch(1L, 1L, 1L, extra1).withIndictedObjects(entity1, extra1),
+                assertMatch(1L, 1L, 1L, extra2).withIndictedObjects(entity1, extra2));
     }
 
     @Override
@@ -753,21 +753,21 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, 1L));
+                assertMatch(1L, 1L, 1L).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value2);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(2L, 2L, 2L));
+                assertMatch(2L, 2L, 2L).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity2);
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, 1L));
+                assertMatch(1L, 1L, 1L).withIndictedObjects(entity1));
     }
 
     @Override
@@ -783,18 +783,26 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE, count -> count)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entityGroup1 = solution.getFirstEntityGroup();
+        var entityGroup2 = solution.getEntityGroupList().get(1);
+        var value1 = solution.getFirstValue();
+        var value2 = solution.getValueList().get(1);
+
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-3, 3L));
+                assertMatchWithScore(-3, 3L).withIndictedObjects(entity, entity2, entity3, entityGroup1, entityGroup2, value1,
+                        value2));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, 2L));
+                assertMatchWithScore(-2, 2L).withIndictedObjects(entity2, entity3, entityGroup1, entityGroup2, value1, value2));
     }
 
     @Override
@@ -810,16 +818,18 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 3L, 2L));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 3L, 2L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 1L, 1L));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 1L, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -847,14 +857,14 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 3L, 0L, 1L));
+                assertMatchWithScore(-1, 3L, 0L, 1L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 1L, 1L, 1L));
+                assertMatchWithScore(-1, 1L, 1L, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -883,14 +893,14 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 3L, 0L, 1L, asSet(entity1, entity2)));
+                assertMatchWithScore(-1, 3L, 0L, 1L, asSet(entity1, entity2)).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 1L, 1L, 1L, asSet(entity2)));
+                assertMatchWithScore(-1, 1L, 1L, 1L, asSet(entity2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -906,13 +916,18 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entityGroup1 = solution.getFirstEntityGroup();
+        var entityGroup2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
         var value2 = solution.getValueList().get(1);
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value2),
-                assertMatchWithScore(-1, value1));
+                assertMatchWithScore(-1, value2).withIndictedObjects(entity2, entityGroup2, value2),
+                assertMatchWithScore(-1, value1).withIndictedObjects(entity1, entity3, entityGroup1, value1));
     }
 
     @Override
@@ -928,23 +943,27 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE, (group, count) -> count)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entityGroup1 = solution.getFirstEntityGroup();
+        var entityGroup2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
         var value2 = solution.getValueList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value2, 1L),
-                assertMatchWithScore(-2, value1, 2L));
+                assertMatchWithScore(-1, value2, 1L).withIndictedObjects(entity2, entityGroup2, value2),
+                assertMatchWithScore(-2, value1, 2L).withIndictedObjects(entity, entity3, entityGroup1, value1));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value2, 1L),
-                assertMatchWithScore(-1, value1, 1L));
+                assertMatchWithScore(-1, value2, 1L).withIndictedObjects(entity2, entityGroup2, value2),
+                assertMatchWithScore(-1, value1, 1L).withIndictedObjects(entity3, entityGroup1, value1));
     }
 
     @Override
@@ -963,12 +982,14 @@ public abstract class AbstractTriConstraintStreamTest
 
         var entity1 = solution.getFirstEntity();
         var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity1.toString(), 2L, singleton(entity1)),
-                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)));
+                assertMatchWithScore(-1, entity1.toString(), 2L, singleton(entity1)).withIndictedObjects(entity1, entity2,
+                        entity3),
+                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)).withIndictedObjects(entity2, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -976,7 +997,7 @@ public abstract class AbstractTriConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)));
+                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1000,14 +1021,15 @@ public abstract class AbstractTriConstraintStreamTest
         entity1.setLongProperty(Long.MAX_VALUE);
         var entity2 = solution.getEntityList().get(1);
         entity2.setLongProperty(Long.MIN_VALUE);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entity1.toString(), Long.MAX_VALUE, Long.MAX_VALUE,
-                        singleton(entity1)),
+                        singleton(entity1)).withIndictedObjects(entity1, entity2, entity3),
                 assertMatchWithScore(-1, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
-                        singleton(entity2)));
+                        singleton(entity2)).withIndictedObjects(entity2, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -1016,7 +1038,7 @@ public abstract class AbstractTriConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
-                        singleton(entity2)));
+                        singleton(entity2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1031,6 +1053,9 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -1039,17 +1064,16 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2),
-                assertMatchWithScore(-1, group1, value1));
+                assertMatchWithScore(-1, group2, value2).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-1, group1, value1).withIndictedObjects(entity, entity3, group1, value1));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2),
-                assertMatchWithScore(-1, group1, value1));
+                assertMatchWithScore(-1, group2, value2).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-1, group1, value1).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -1065,6 +1089,9 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE, (group, value, count) -> count)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -1073,17 +1100,16 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2, 1L),
-                assertMatchWithScore(-2, group1, value1, 2L));
+                assertMatchWithScore(-1, group2, value2, 1L).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-2, group1, value1, 2L).withIndictedObjects(entity, entity3, group1, value1));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2, 1L),
-                assertMatchWithScore(-1, group1, value1, 1L));
+                assertMatchWithScore(-1, group2, value2, 1L).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-1, group1, value1, 1L).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -1100,6 +1126,9 @@ public abstract class AbstractTriConstraintStreamTest
                                 (group, value, count, sameCount) -> count + sameCount)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -1108,17 +1137,16 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, group2, value2, 1L, 1L),
-                assertMatchWithScore(-4, group1, value1, 2L, 2L));
+                assertMatchWithScore(-2, group2, value2, 1L, 1L).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-4, group1, value1, 2L, 2L).withIndictedObjects(entity, entity3, group1, value1));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, group2, value2, 1L, 1L),
-                assertMatchWithScore(-2, group1, value1, 1L, 1L));
+                assertMatchWithScore(-2, group2, value2, 1L, 1L).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-2, group1, value1, 1L, 1L).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -1133,6 +1161,9 @@ public abstract class AbstractTriConstraintStreamTest
                 .penalize(SimpleScore.ONE)
                 .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1140,12 +1171,11 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group2, group3),
-                assertMatchWithScore(-1, group1, group3, group2),
-                assertMatchWithScore(-1, group2, group3, group1));
+                assertMatchWithScore(-1, group1, group2, group3).withIndictedObjects(entity, entity2, entity3),
+                assertMatchWithScore(-1, group1, group3, group2).withIndictedObjects(entity, entity2, entity3),
+                assertMatchWithScore(-1, group2, group3, group1).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
@@ -1165,6 +1195,9 @@ public abstract class AbstractTriConstraintStreamTest
                 .penalize(SimpleScore.ONE)
                 .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1172,12 +1205,11 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group2, group3, 1L),
-                assertMatchWithScore(-1, group1, group3, group2, 1L),
-                assertMatchWithScore(-1, group2, group3, group1, 1L));
+                assertMatchWithScore(-1, group1, group2, group3, 1L).withIndictedObjects(entity, entity2, entity3),
+                assertMatchWithScore(-1, group1, group3, group2, 1L).withIndictedObjects(entity, entity2, entity3),
+                assertMatchWithScore(-1, group2, group3, group1, 1L).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
@@ -1197,6 +1229,9 @@ public abstract class AbstractTriConstraintStreamTest
                 .penalize(SimpleScore.ONE)
                 .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1206,12 +1241,11 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group2, group3, value1),
-                assertMatchWithScore(-1, group1, group3, group2, value2),
-                assertMatchWithScore(-1, group2, group3, group1, value1));
+                assertMatchWithScore(-1, group1, group2, group3, value1).withIndictedObjects(entity, entity2, entity3),
+                assertMatchWithScore(-1, group1, group3, group2, value2).withIndictedObjects(entity, entity2, entity3),
+                assertMatchWithScore(-1, group2, group3, group1, value1).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
@@ -1252,17 +1286,18 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group2)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1282,6 +1317,9 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1289,11 +1327,9 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group3)),
-                assertMatch(asSet(group2, group3)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(asSet(group1, group3)).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(asSet(group2, group3)).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1314,15 +1350,16 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1343,6 +1380,9 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1350,11 +1390,9 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group3)),
-                assertMatch(asSet(group2, group3)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(asSet(group1, group3)).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(asSet(group2, group3)).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1375,6 +1413,9 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1382,11 +1423,9 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(group1, group2),
-                assertMatch(group1, group3),
-                assertMatch(group2, group3));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(group1, group2).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(group1, group3).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(group2, group3).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1408,6 +1447,9 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1415,11 +1457,9 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(group1, group2, group3),
-                assertMatch(group1, group3, group2),
-                assertMatch(group2, group3, group1));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(group1, group2, group3).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(group1, group3, group2).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(group2, group3, group1).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1442,6 +1482,9 @@ public abstract class AbstractTriConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
@@ -1452,11 +1495,9 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(group1, group2, group3, sum),
-                assertMatch(group1, group3, group2, sum),
-                assertMatch(group2, group3, group1, sum));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(group1, group2, group3, sum).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(group1, group3, group2, sum).withIndictedObjects(entity, entity2, entity3),
+                assertMatch(group2, group3, group1, sum).withIndictedObjects(entity, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -1486,16 +1527,14 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, sum),
-                assertMatch(entity1, entity3, entity2, sum),
-                assertMatch(entity2, entity3, entity1, sum));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(entity1, entity2, entity3, sum).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, sum).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, sum).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector);
     }
 
@@ -1519,15 +1558,15 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, group1),
-                assertMatch(entity1, entity2, entity3, group2),
-                assertMatch(entity1, entity2, entity3, group1),
-                assertMatch(entity1, entity3, entity2, group1),
-                assertMatch(entity1, entity3, entity2, group1),
-                assertMatch(entity1, entity3, entity2, group2),
-                assertMatch(entity2, entity3, entity1, group2),
-                assertMatch(entity2, entity3, entity1, group1),
-                assertMatch(entity2, entity3, entity1, group1));
+                assertMatch(entity1, entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, group1).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1556,15 +1595,15 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, group1),
-                assertMatch(entity1, entity2, group1),
-                assertMatch(entity1, entity2, group2),
-                assertMatch(entity1, entity3, group1),
-                assertMatch(entity1, entity3, group2),
-                assertMatch(entity1, entity3, group2),
-                assertMatch(entity2, entity3, group1),
-                assertMatch(entity2, entity3, group1),
-                assertMatch(entity2, entity3, group2));
+                assertMatch(entity1, entity2, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1593,12 +1632,12 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, group1),
-                assertMatch(entity1, entity2, group2),
-                assertMatch(entity1, entity3, group1),
-                assertMatch(entity1, entity3, group2),
-                assertMatch(entity2, entity3, group1),
-                assertMatch(entity2, entity3, group2));
+                assertMatch(entity1, entity2, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1628,12 +1667,12 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, group1),
-                assertMatch(entity1, entity2, group2),
-                assertMatch(entity1, entity3, group1),
-                assertMatch(entity1, entity3, group2),
-                assertMatch(entity2, entity3, group1),
-                assertMatch(entity2, entity3, group2));
+                assertMatch(entity1, entity2, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1663,12 +1702,12 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, group1),
-                assertMatch(entity1, entity2, group2),
-                assertMatch(entity1, entity3, group1),
-                assertMatch(entity1, entity3, group2),
-                assertMatch(entity2, entity3, group1),
-                assertMatch(entity2, entity3, group2));
+                assertMatch(entity1, entity2, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1709,8 +1748,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3),
-                assertMatch(entity2, null, null));
+                assertMatch(entity1, entity2, entity3).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, null, null).withIndictedObjects(entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1721,8 +1760,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2),
-                assertMatch(entity3, null, null));
+                assertMatch(entity1, entity3, entity2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity3, null, null).withIndictedObjects(entity3));
     }
 
     @Override
@@ -1758,8 +1797,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3),
-                assertMatch(entity2, null, null));
+                assertMatch(entity1, entity2, entity3).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, null, null).withIndictedObjects(entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1770,8 +1809,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2),
-                assertMatch(entity3, null, null));
+                assertMatch(entity1, entity3, entity2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity3, null, null).withIndictedObjects(entity3));
     }
 
     @Override
@@ -1808,8 +1847,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3),
-                assertMatch(entity2, entity3, null));
+                assertMatch(entity1, entity2, entity3).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, null).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1820,8 +1859,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2),
-                assertMatch(entity3, entity2, null));
+                assertMatch(entity1, entity3, entity2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity3, entity2, null).withIndictedObjects(entity3, entity2));
     }
 
     @Override
@@ -1859,8 +1898,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3),
-                assertMatch(entity2, entity3, null));
+                assertMatch(entity1, entity2, entity3).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, null).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1871,8 +1910,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2),
-                assertMatch(entity3, entity2, null));
+                assertMatch(entity1, entity3, entity2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity3, entity2, null).withIndictedObjects(entity3, entity2));
     }
 
     @Override
@@ -2121,8 +2160,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, null),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3, null).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, entity2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2133,8 +2172,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, null),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2, null).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity3, entity2, entity1, entity3).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -2176,8 +2215,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, null),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3, null).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, entity2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2188,8 +2227,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, null),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2, null).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity3, entity2, entity1, entity3).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -2233,8 +2272,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value1, value2, value3, 1L),
-                assertMatchWithScore(-1, value3, value2, value1, 1L));
+                assertMatchWithScore(-1, value1, value2, value3, 1L).withIndictedObjects(entity1, entity2, entity3),
+                assertMatchWithScore(-1, value3, value2, value1, 1L).withIndictedObjects(entity3, entity2, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2250,8 +2289,8 @@ public abstract class AbstractTriConstraintStreamTest
         entity3.setValue(value1);
         scoreDirector.afterVariableChanged(entity3, "value");
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value1, value2, value3, 1L),
-                assertMatchWithScore(-1, value3, value2, value1, 1L));
+                assertMatchWithScore(-1, value1, value2, value3, 1L).withIndictedObjects(entity1, entity2, entity3),
+                assertMatchWithScore(-1, value3, value2, value1, 1L).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -2285,18 +2324,18 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, 0, 1),
-                assertMatch(entity2, Integer.MAX_VALUE, -1),
-                assertMatch(entity3, Integer.MAX_VALUE, -1));
+                assertMatch(entity1, 0, 1).withIndictedObjects(entity1),
+                assertMatch(entity2, Integer.MAX_VALUE, -1).withIndictedObjects(entity2),
+                assertMatch(entity3, Integer.MAX_VALUE, -1).withIndictedObjects(entity3));
 
         // Incremental; all entities are still present, but the indexes are different.
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value1);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, 0, 1),
-                assertMatch(entity2, 0, 1),
-                assertMatch(entity3, Integer.MAX_VALUE, -1));
+                assertMatch(entity1, 0, 1).withIndictedObjects(entity1),
+                assertMatch(entity2, 0, 1).withIndictedObjects(entity2),
+                assertMatch(entity3, Integer.MAX_VALUE, -1).withIndictedObjects(entity3));
     }
 
     @Override
