@@ -478,13 +478,19 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.beforeProblemFactRemoved(entityGroup);
         solution.getEntityGroupList().remove(entityGroup);
         scoreDirector.afterProblemFactRemoved(entityGroup);
+
+        // Note: entityGroup is still indicted, despite being removed,
+        // since only the right tuple of the ifExists changed, so no
+        // change was propagated.
         assertScore(scoreDirector,
                 assertMatch(solution.getFirstValueGroup()).withIndictedObjects(
                         solution.getFirstValueGroup(),
-                        solution.getFirstEntityGroup()),
+                        solution.getFirstEntityGroup(),
+                        entityGroup),
                 assertMatch(valueGroup).withIndictedObjects(
                         valueGroup,
-                        solution.getFirstEntityGroup()));
+                        solution.getFirstEntityGroup(),
+                        entityGroup));
     }
 
     @Override
