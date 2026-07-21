@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.constraint;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -94,7 +93,7 @@ public final class ConstraintMatchTotal<Score_ extends Score<Score_>> implements
      * @return never null
      */
     public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification, Score_ score) {
-        var constraintMatch = new ConstraintMatch<>(constraintRef, justification, Collections.emptyList(), score);
+        var constraintMatch = new ConstraintMatch<>(constraintRef, justification, null, score);
         addConstraintMatch(constraintMatch);
         return constraintMatch;
     }
