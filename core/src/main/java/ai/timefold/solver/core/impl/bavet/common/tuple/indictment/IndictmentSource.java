@@ -1,7 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple.indictment;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
@@ -9,17 +15,40 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 public sealed interface IndictmentSource {
     IndictmentSource DISABLED = new DisabledIndictmentSource();
 
-    void visitSources(Consumer<Object> sourceConsumer);
+    void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer);
+
+    Map<Long, Set<IndictmentSource>> support();
+
+    default void visitSources(long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+        visitSources(new HashSet<>(), involvedNodeIds, sourceConsumer);
+    }
+
+    default Set<IndictmentSource> getSupportForNodeId(long nodeId) {
+        return support().computeIfAbsent(nodeId, ignored -> new LinkedHashSet<>());
+    }
+
+    static boolean checkIfAlreadyVisitedAndVisitSupport(IndictmentSource self, Set<IndictmentSource> visited,
+            long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+        if (!visited.add(self)) {
+            return true;
+        }
+        for (var nodeId : involvedNodeIds) {
+            for (var indictmentSource : self.support().getOrDefault(nodeId, Collections.emptySet())) {
+                indictmentSource.visitSources(visited, involvedNodeIds, sourceConsumer);
+            }
+        }
+        return false;
+    }
 
     static IndictmentSource of(Object source) {
-        return new RootIndictmentSource(source);
+        return new RootIndictmentSource(source, new LinkedHashMap<>());
     }
 
     static IndictmentSource joining(Tuple left, Tuple right) {
         if (left.getIndictmentSource() == DISABLED) {
             return DISABLED;
         }
-        return new JoinedIndictmentSource(left.getIndictmentSource(), right.getIndictmentSource());
+        return new JoinedIndictmentSource(left.getIndictmentSource(), right.getIndictmentSource(), new LinkedHashMap<>());
     }
 
     static IndictmentSource aggregating(Tuple elementTuple, Tuple groupTuple) {
@@ -32,7 +61,7 @@ public sealed interface IndictmentSource {
         } else {
             var collection = new ArrayList<IndictmentSource>();
             collection.add(elementTuple.getIndictmentSource());
-            return new AggregateIndictmentSource(collection);
+            return new AggregateIndictmentSource(collection, new LinkedHashMap<>());
         }
     }
 
@@ -46,7 +75,7 @@ public sealed interface IndictmentSource {
         } else {
             var collection = new ArrayList<IndictmentSource>();
             collection.add(elementTuple.getIndictmentSource());
-            return new AggregateIndictmentSource(collection);
+            return new AggregateIndictmentSource(collection, new LinkedHashMap<>());
         }
     }
 
@@ -54,54 +83,95 @@ public sealed interface IndictmentSource {
         if (carry.getIndictmentSource() == DISABLED) {
             return;
         }
-        carry.getIndictmentSupportForNodeId(nodeId).add(support.getIndictmentSource());
+        carry.getIndictmentSource().getSupportForNodeId(nodeId).add(support.getIndictmentSource());
     }
 
     static void removeSupport(long nodeId, Tuple carry, Tuple support) {
         if (carry.getIndictmentSource() == DISABLED) {
             return;
         }
-        carry.getIndictmentSupportForNodeId(nodeId).remove(support.getIndictmentSource());
+        carry.getIndictmentSource().getSupportForNodeId(nodeId).remove(support.getIndictmentSource());
     }
 
     record DisabledIndictmentSource() implements IndictmentSource {
         @Override
-        public void visitSources(Consumer<Object> sourceConsumer) {
+        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+            throw new UnsupportedOperationException("Impossible state: indictments are disabled.");
+        }
+
+        @Override
+        public Map<Long, Set<IndictmentSource>> support() {
             throw new UnsupportedOperationException("Impossible state: indictments are disabled.");
         }
     }
 
-    record RootIndictmentSource(Object source) implements IndictmentSource {
+    record RootIndictmentSource(Object source, Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
         @Override
-        public void visitSources(Consumer<Object> sourceConsumer) {
+        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+            if (checkIfAlreadyVisitedAndVisitSupport(this, visited, involvedNodeIds, sourceConsumer)) {
+                return;
+            }
             sourceConsumer.accept(source);
         }
-    }
 
-    record JoinedIndictmentSource(IndictmentSource left, IndictmentSource right) implements IndictmentSource {
         @Override
-        public void visitSources(Consumer<Object> sourceConsumer) {
-            left.visitSources(sourceConsumer);
-            right.visitSources(sourceConsumer);
+        public boolean equals(Object o) {
+            return this == o;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
         }
     }
 
-    record AggregateIndictmentSource(List<IndictmentSource> sourceList) implements IndictmentSource {
+    record JoinedIndictmentSource(IndictmentSource left, IndictmentSource right,
+            Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
         @Override
-        public void visitSources(Consumer<Object> sourceConsumer) {
+        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+            if (checkIfAlreadyVisitedAndVisitSupport(this, visited, involvedNodeIds, sourceConsumer)) {
+                return;
+            }
+            left.visitSources(visited, involvedNodeIds, sourceConsumer);
+            right.visitSources(visited, involvedNodeIds, sourceConsumer);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+    }
+
+    record AggregateIndictmentSource(List<IndictmentSource> sourceList,
+            Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
+        @Override
+        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+            if (checkIfAlreadyVisitedAndVisitSupport(this, visited, involvedNodeIds, sourceConsumer)) {
+                return;
+            }
             for (var source : sourceList) {
-                source.visitSources(sourceConsumer);
+                source.visitSources(involvedNodeIds, sourceConsumer);
             }
         }
-    }
 
-    record IndictmentSourceWithSupport(IndictmentSource source, List<IndictmentSource> support) implements IndictmentSource {
         @Override
-        public void visitSources(Consumer<Object> sourceConsumer) {
-            source.visitSources(sourceConsumer);
-            for (var support : support) {
-                support.visitSources(sourceConsumer);
-            }
+        public Set<IndictmentSource> getSupportForNodeId(long nodeId) {
+            return support.computeIfAbsent(nodeId, ignored -> new LinkedHashSet<>());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
         }
     }
 }

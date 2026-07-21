@@ -2449,7 +2449,8 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), group2, value2).withIndictedObjects(solution.getEntityList().getFirst()));
+                assertMatch(solution.getFirstEntity(), group2, value2)
+                        .withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override

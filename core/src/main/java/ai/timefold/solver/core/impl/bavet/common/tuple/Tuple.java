@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
-import java.util.Set;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
@@ -28,8 +27,6 @@ public sealed interface Tuple permits BiTuple, QuadTuple, TriTuple, UniTuple {
     IndictmentSource getIndictmentSource();
 
     void setIndictmentSource(IndictmentSource indictmentSource);
-
-    Set<IndictmentSource> getIndictmentSupportForNodeId(long nodeId);
 
     TupleState getState();
 
