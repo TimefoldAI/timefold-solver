@@ -36,6 +36,20 @@ public sealed interface IndictmentSource {
         }
     }
 
+    static IndictmentSource removeFromAggregate(Tuple elementTuple, Tuple groupTuple) {
+        if (elementTuple.getIndictmentSource() == DISABLED) {
+            return DISABLED;
+        }
+        if (groupTuple.getIndictmentSource() instanceof AggregateIndictmentSource aggregateIndictmentSource) {
+            aggregateIndictmentSource.sourceList.remove(elementTuple.getIndictmentSource());
+            return aggregateIndictmentSource;
+        } else {
+            var collection = new ArrayList<IndictmentSource>();
+            collection.add(elementTuple.getIndictmentSource());
+            return new AggregateIndictmentSource(collection);
+        }
+    }
+
     static IndictmentSource sourceWithSupport(Tuple carry, Tuple support) {
         if (carry.getIndictmentSource() == DISABLED) {
             return DISABLED;
