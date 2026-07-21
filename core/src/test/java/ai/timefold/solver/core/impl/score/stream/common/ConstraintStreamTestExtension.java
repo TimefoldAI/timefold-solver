@@ -36,16 +36,16 @@ public class ConstraintStreamTestExtension implements TestTemplateInvocationCont
             // Precompute test use
             return Stream
                     .of(ConstraintMatchPolicy.ENABLED_WITHOUT_INDICTMENTS,
-                        ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS,
-                        ConstraintMatchPolicy.DISABLED)
+                            ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS,
+                            ConstraintMatchPolicy.DISABLED)
                     .map(ConstraintStreamTestExtension::invocationContext);
         }
         return Stream
                 .of(ConstraintMatchPolicy.ENABLED,
-                    ConstraintMatchPolicy.ENABLED_WITHOUT_INDICTMENTS,
-                    ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS,
-                    ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS,
-                    ConstraintMatchPolicy.DISABLED)
+                        ConstraintMatchPolicy.ENABLED_WITHOUT_INDICTMENTS,
+                        ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS,
+                        ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS,
+                        ConstraintMatchPolicy.DISABLED)
                 .map(ConstraintStreamTestExtension::invocationContext);
     }
 
