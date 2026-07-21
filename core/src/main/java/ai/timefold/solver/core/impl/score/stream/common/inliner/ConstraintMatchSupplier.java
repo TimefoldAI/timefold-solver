@@ -73,7 +73,8 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification,
+                        collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA());
             }
@@ -97,7 +98,8 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), tuple.getB(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification,
+                        collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA(), tuple.getB());
             }
@@ -110,7 +112,8 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), tuple.getB(), tuple.getC(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification,
+                        collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA(), tuple.getB(), tuple.getC());
             }
@@ -123,7 +126,8 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         return (constraint, impact) -> {
             try {
                 var justification = justificationMapping.apply(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD(), impact);
-                return new ConstraintMatch<>(constraint.getConstraintRef(), justification, collectIndictments(constraint, tuple), impact);
+                return new ConstraintMatch<>(constraint.getConstraintRef(), justification,
+                        collectIndictments(constraint, tuple), impact);
             } catch (Exception e) {
                 throw createJustificationException(constraint, e, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
             }
