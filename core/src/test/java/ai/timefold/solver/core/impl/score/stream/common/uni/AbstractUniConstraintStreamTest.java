@@ -163,7 +163,7 @@ public abstract class AbstractUniConstraintStreamTest
     @TestTemplate
     public void filter_consecutive() {
         var solution = TestdataLavishSolution.generateSolution(4, 4);
-        var entity1 = solution.getEntityList().get(0);
+        var entity1 = solution.getEntityList().getFirst();
         var entity2 = solution.getEntityList().get(1);
         var entity3 = solution.getEntityList().get(2);
         var entity4 = solution.getEntityList().get(3);
@@ -430,8 +430,8 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatch(1L, extra1).withIndictedObjects(entity1, entity2, extra1),
-                assertMatch(1L, extra2).withIndictedObjects(entity1, entity2, extra2));
+                assertMatch(1L, extra1).withIndictedObjects(entity1, extra1),
+                assertMatch(1L, extra2).withIndictedObjects(entity1, extra2));
     }
 
     @Override
@@ -903,7 +903,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatch(1L).withIndictedObjects(entity1, entity2));
+                assertMatch(1L).withIndictedObjects(entity1));
     }
 
     @TestTemplate
@@ -1561,7 +1561,7 @@ public abstract class AbstractUniConstraintStreamTest
 
         // Incremental
         var originalFirstEntity = solution.getFirstEntity();
-        Stream.of(solution.getEntityList().get(0), solution.getEntityList().get(1))
+        Stream.of(solution.getEntityList().getFirst(), solution.getEntityList().get(1))
                 .forEach(entity -> {
                     scoreDirector.beforeEntityRemoved(entity);
                     solution.getEntityList().remove(entity);
@@ -1569,7 +1569,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, solution.getFirstEntityGroup(), 1L)
-                        .withIndictedObjects(originalFirstEntity, solution.getEntityList().get(0)));
+                        .withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -1602,7 +1602,7 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, solution.getFirstEntityGroup(), 1L, Collections.singleton(entity3))
-                        .withIndictedObjects(entity1, entity3),
+                        .withIndictedObjects(entity3),
                 assertMatchWithScore(-1, solution.getEntityGroupList().get(1), 1L, Collections.singleton(entity2))
                         .withIndictedObjects(entity2));
     }
@@ -1638,7 +1638,7 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, solution.getFirstEntityGroup(), 1L, 1, Collections.singleton(entity3))
-                        .withIndictedObjects(entity1, entity3),
+                        .withIndictedObjects(entity3),
                 assertMatchWithScore(-1, solution.getEntityGroupList().get(1), 1L, 1, Collections.singleton(entity2))
                         .withIndictedObjects(entity2));
     }
@@ -1687,7 +1687,7 @@ public abstract class AbstractUniConstraintStreamTest
                 solution.getEntityList().get(4),
                 solution.getEntityList().get(5),
                 solution.getEntityList().get(6),
-                entity1, entity2, entity3));
+                entity1, entity2));
     }
 
     @Override
@@ -1712,7 +1712,7 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 2L, 2).withIndictedObjects(entity1, solution.getEntityList().get(0),
+        assertScore(scoreDirector, assertMatchWithScore(-1, 2L, 2).withIndictedObjects(solution.getEntityList().getFirst(),
                 solution.getEntityList().get(1)));
     }
 
@@ -1746,7 +1746,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 2L, 1, 2).withIndictedObjects(entity1, solution.getEntityList().get(0),
+                assertMatchWithScore(-1, 2L, 1, 2).withIndictedObjects(solution.getEntityList().getFirst(),
                         solution.getEntityList().get(1)));
     }
 
@@ -1781,8 +1781,8 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 2L, 1, 2, asSet(entity2, entity3)).withIndictedObjects(entity1,
-                        solution.getEntityList().get(0),
+                assertMatchWithScore(-1, 2L, 1, 2, asSet(entity2, entity3)).withIndictedObjects(
+                        solution.getEntityList().getFirst(),
                         solution.getEntityList().get(1)));
     }
 
@@ -1865,7 +1865,7 @@ public abstract class AbstractUniConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entityGroup1, solution.getFirstValue()).withIndictedObjects(entity1, entity2),
                 assertMatchWithScore(-1, entityGroup1, secondValue).withIndictedObjects(entity3),
-                assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().get(0))
+                assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().getFirst())
                         .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(5)),
                 assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().get(1))
                         .withIndictedObjects(solution.getEntityList().get(1), solution.getEntityList().get(6)),
@@ -1882,7 +1882,7 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity3);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entityGroup1, solution.getFirstValue()).withIndictedObjects(entity1, entity2),
-                assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().get(0))
+                assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().getFirst())
                         .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(5)),
                 assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().get(1))
                         .withIndictedObjects(solution.getEntityList().get(1), solution.getEntityList().get(6)),
@@ -1898,8 +1898,8 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entityGroup1, solution.getFirstValue()).withIndictedObjects(entity1, entity2),
-                assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().get(0))
+                assertMatchWithScore(-1, entityGroup1, solution.getFirstValue()).withIndictedObjects(entity1),
+                assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().getFirst())
                         .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(5)),
                 assertMatchWithScore(-1, solution.getFirstEntityGroup(), solution.getValueList().get(1))
                         .withIndictedObjects(solution.getEntityList().get(1), solution.getEntityList().get(6)),
@@ -2198,7 +2198,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2227,7 +2227,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2255,7 +2255,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group).withIndictedObjects(entity, solution.getEntityList().get(0)));
+                assertMatch(group).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2285,7 +2285,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2317,7 +2317,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group2, value2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group2, value2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2352,7 +2352,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group2, value2, code2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group2, value2, code2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2390,7 +2390,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group2, value2, code2, property2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group2, value2, code2, property2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2419,7 +2419,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), group2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(solution.getFirstEntity(), group2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2451,7 +2451,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), group2, value2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(solution.getFirstEntity(), group2, value2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2487,7 +2487,7 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatch(solution.getFirstEntity(), group2, value2, code2)
-                        .withIndictedObjects(solution.getEntityList().get(0)));
+                        .withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2536,8 +2536,8 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group1).withIndictedObjects(solution.getEntityList().get(0)),
-                assertMatch(group2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group1).withIndictedObjects(solution.getEntityList().getFirst()),
+                assertMatch(group2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2566,7 +2566,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2629,8 +2629,8 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group1).withIndictedObjects(entity, solution.getEntityList().get(0)),
-                assertMatch(group2).withIndictedObjects(entity, solution.getEntityList().get(0)));
+                assertMatch(group1).withIndictedObjects(solution.getEntityList().getFirst()),
+                assertMatch(group2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -2660,7 +2660,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group2).withIndictedObjects(solution.getEntityList().get(0)));
+                assertMatch(group2).withIndictedObjects(solution.getEntityList().getFirst()));
     }
 
     @Override
@@ -3180,7 +3180,7 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.afterVariableChanged(entity3, "value");
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, value1, 1L).withIndictedObjects(entity3),
-                assertMatchWithScore(-1, value2, 1L).withIndictedObjects(entity2, entity3));
+                assertMatchWithScore(-1, value2, 1L).withIndictedObjects(entity2));
     }
 
     @Override
