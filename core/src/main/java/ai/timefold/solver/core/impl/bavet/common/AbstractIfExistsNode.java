@@ -113,8 +113,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
-        // NOTE: By not propagating here, the left tuple's indicted objects can be stale
-        //       if an element is removed.
+          // NOTE: By not propagating here, the left tuple's indicted objects can be stale
+          //       if an element is removed.
         counter.countRight++;
     }
 
@@ -126,8 +126,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
-        // NOTE: By not propagating here, the left tuple's indicted objects can be stale
-        //       if an element is removed.
+          // NOTE: By not propagating here, the left tuple's indicted objects can be stale
+          //       if an element is removed.
         IndictmentSource.addSupport(getId(), counter.leftTuple, rightTuple);
         counter.countRight++;
     }
