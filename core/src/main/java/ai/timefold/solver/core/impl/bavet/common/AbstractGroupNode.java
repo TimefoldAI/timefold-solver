@@ -192,6 +192,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         if (sameKey) {
             updateGroup(tuple, oldGroup);
         } else {
+            var oldOutTuple = oldGroup.getTuple();
+            oldOutTuple.setIndictmentSource(IndictmentSource.removeFromAggregate(tuple, oldOutTuple));
             if (hasCollector) {
                 groupRetract(tuple);
             }
@@ -276,6 +278,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
+        var oldOutTuple = group.getTuple();
+        oldOutTuple.setIndictmentSource(IndictmentSource.removeFromAggregate(tuple, oldOutTuple));
         if (hasCollector) {
             groupRetract(tuple);
         }
