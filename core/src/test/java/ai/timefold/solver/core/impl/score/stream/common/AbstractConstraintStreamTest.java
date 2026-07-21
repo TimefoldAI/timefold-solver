@@ -79,8 +79,8 @@ public abstract class AbstractConstraintStreamTest {
                     throw new IllegalStateException("Requested constraint matches for unknown constraint (" +
                             constraintId + ").");
                 }
-                if (constraintMatchTotal.getConstraintMatchSet().stream().noneMatch(obj ->
-                        assertableMatch.isEqualTo(obj, indictmentsEnabled))) {
+                if (constraintMatchTotal.getConstraintMatchSet().stream()
+                        .noneMatch(obj -> assertableMatch.isEqualTo(obj, indictmentsEnabled))) {
                     fail("The assertableMatch (" + assertableMatch + ") is lacking,"
                             + " it's not in the constraintMatchSet ("
                             + constraintMatchTotal.getConstraintMatchSet() + ").");
