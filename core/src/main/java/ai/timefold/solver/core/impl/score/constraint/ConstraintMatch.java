@@ -30,7 +30,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
 
     private final ConstraintRef constraintRef;
     private final @Nullable ConstraintJustification justification;
-    private final List<Object> indictedObjects;
+    private final @Nullable List<Object> indictedObjects;
     private final Score_ score;
 
     /**
@@ -39,7 +39,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @param score penalty or reward associated with the constraint match
      */
     public ConstraintMatch(ConstraintRef constraintRef, @Nullable ConstraintJustification justification,
-            List<Object> indictedObjects, Score_ score) {
+            @Nullable List<Object> indictedObjects, Score_ score) {
         this.constraintRef = requireNonNull(constraintRef);
         this.justification = justification;
         this.indictedObjects = indictedObjects;
@@ -67,7 +67,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
         return (Justification_) justification;
     }
 
-    public List<Object> getIndictedObjects() {
+    public @Nullable List<Object> getIndictedObjects() {
         return indictedObjects;
     }
 
