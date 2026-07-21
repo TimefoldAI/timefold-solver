@@ -29,7 +29,7 @@ public sealed interface Tuple permits BiTuple, QuadTuple, TriTuple, UniTuple {
 
     void setIndictmentSource(IndictmentSource indictmentSource);
 
-    Set<Object> getIndictmentSupportForNodeId(long nodeId);
+    Set<IndictmentSource> getIndictmentSupportForNodeId(long nodeId);
 
     TupleState getState();
 

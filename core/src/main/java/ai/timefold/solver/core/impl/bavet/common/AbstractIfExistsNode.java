@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import java.util.Objects;
-
 import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -126,15 +124,13 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
-        counter.getTuple().getIndictmentSupportForNodeId(getId())
-                .add(Objects.requireNonNull(rightTuple.getA()));
+        IndictmentSource.addSupport(getId(), counter.leftTuple, rightTuple);
         counter.countRight++;
     }
 
     protected void decrementCounterRight(ExistsCounter<LeftTuple_> counter) {
         counter.countRight--;
-        counter.getTuple().getIndictmentSupportForNodeId(getId())
-                .remove(Objects.requireNonNull(rightTuple.getA()));
+        IndictmentSource.removeSupport(getId(), counter.leftTuple, rightTuple);
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doRetractCounter(counter);
