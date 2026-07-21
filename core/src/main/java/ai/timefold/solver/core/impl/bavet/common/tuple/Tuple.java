@@ -30,7 +30,7 @@ public sealed interface Tuple
 
     void setIndictmentSource(IndictmentSource indictmentSource);
 
-    Set<Object> getIndictmentSupportForNodeId(long nodeId);
+    Set<IndictmentSource> getIndictmentSupportForNodeId(long nodeId);
 
     TupleState getState();
 
