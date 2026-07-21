@@ -1,10 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-
 import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.NullMarked;
@@ -28,7 +23,6 @@ final class UniversalTuple<A, B, C, D>
     private @Nullable C c;
     private @Nullable D d;
     private IndictmentSource indictmentSource = IndictmentSource.DISABLED;
-    private @Nullable Map<Long, Set<IndictmentSource>> nodeIdToIndictmentSupport;
     private TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
 
     UniversalTuple(int storeSize, int cardinality) {
@@ -120,14 +114,6 @@ final class UniversalTuple<A, B, C, D>
     @Override
     public void setIndictmentSource(IndictmentSource indictmentSource) {
         this.indictmentSource = indictmentSource;
-    }
-
-    @Override
-    public Set<IndictmentSource> getIndictmentSupportForNodeId(long nodeId) {
-        if (nodeIdToIndictmentSupport == null) {
-            nodeIdToIndictmentSupport = new LinkedHashMap<>();
-        }
-        return nodeIdToIndictmentSupport.computeIfAbsent(nodeId, ignored -> new LinkedHashSet<>());
     }
 
     @Override
