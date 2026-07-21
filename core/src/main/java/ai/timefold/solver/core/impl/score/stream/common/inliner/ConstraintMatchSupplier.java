@@ -42,7 +42,6 @@ import org.jspecify.annotations.NullMarked;
 public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         extends BiFunction<Constraint, Score_, ConstraintMatch<Score_>> {
 
-    @SuppressWarnings("unchecked")
     static List<Object> collectIndictments(Constraint constraint, Tuple tuple) {
         if (tuple.getIndictmentSource() == IndictmentSource.DISABLED) {
             return Collections.emptyList();
@@ -51,7 +50,9 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         tuple.getIndictmentSource().visitSources(out::add);
         var abstractConstraint = (AbstractConstraint<?, ?, ?>) constraint;
         for (var involvedNodeId : Objects.requireNonNull(abstractConstraint.getInvolvedNodeIds())) {
-            out.addAll(tuple.getIndictmentSupportForNodeId(involvedNodeId));
+            for (var indictmentSource : tuple.getIndictmentSupportForNodeId(involvedNodeId)) {
+                indictmentSource.visitSources(out::add);
+            }
         }
         return new ArrayList<>(out);
     }
