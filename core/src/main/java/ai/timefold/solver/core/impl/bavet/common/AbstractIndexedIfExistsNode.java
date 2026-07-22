@@ -100,6 +100,12 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterEntry);
         if (!isFiltering) {
             counter.countRight = rightSize(leftTuple, compositeKey);
+            if (leftTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+                IndictmentSource.clearSupport(getId(), leftTuple);
+                forEachRightFromLeft(leftTuple, compositeKey, rightTuple -> {
+                    IndictmentSource.addSupport(getId(), leftTuple, rightTuple);
+                });
+            }
         } else {
             // Trackers link themselves into the left tuple's inputStoreIndexLeftTrackerList slot.
             // No list object is needed; the slot starts null and the first tracker becomes the head.

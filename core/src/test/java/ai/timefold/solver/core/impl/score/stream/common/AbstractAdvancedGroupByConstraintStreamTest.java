@@ -547,17 +547,20 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L).withIndictedObjects(solution.getFirstEntity(),
-                        entity3),
-                assertMatchWithScore(-2, entityGroup1, 2L).withIndictedObjects(entity1, entity2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(),
+                                entity3),
+                assertMatchWithScore(-2, entityGroup1, 2L)
+                        .withIndictedObjects(entityGroup1, entity1, entity2));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L).withIndictedObjects(solution.getFirstEntity(),
-                        entity3));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(),
+                                entity3));
     }
 
     @TestTemplate
@@ -621,16 +624,19 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L).withIndictedObjects(solution.getFirstEntity(),
+                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L).withIndictedObjects(
+                        solution.getFirstEntityGroup(), solution.getFirstEntity(),
                         entity1, entity2, entity3),
-                assertMatchWithScore(-3, entityGroup1, 3L).withIndictedObjects(entity1, entity2, entity3));
+                assertMatchWithScore(-3, entityGroup1, 3L).withIndictedObjects(
+                        entityGroup1, entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L).withIndictedObjects(solution.getFirstEntity(),
+                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L).withIndictedObjects(
+                        solution.getFirstEntityGroup(), solution.getFirstEntity(),
                         entity1, entity2, entity3));
     }
 
