@@ -449,17 +449,22 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity2, entity1, solution.getFirstEntity()),
-                assertMatch(entity1, entity2, solution.getFirstEntity()),
-                assertMatch(solution.getFirstEntity(), entity1, entity2));
+                assertMatch(entity2, entity1, solution.getFirstEntity())
+                        .withIndictedObjects(solution.getFirstEntityGroup(), entity2, entity1, solution.getFirstEntity()),
+                assertMatch(entity1, entity2, solution.getFirstEntity())
+                        .withIndictedObjects(entityGroup, entity1, entity2, solution.getFirstEntity()),
+                assertMatch(solution.getFirstEntity(), entity1, entity2)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity1, entity2));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup);
         solution.getEntityGroupList().remove(entityGroup);
         scoreDirector.afterProblemFactRemoved(entityGroup);
         assertScore(scoreDirector,
-                assertMatch(entity2, entity1, solution.getFirstEntity()),
-                assertMatch(entity1, entity2, solution.getFirstEntity()));
+                assertMatch(entity2, entity1, solution.getFirstEntity())
+                        .withIndictedObjects(solution.getFirstEntityGroup(), entity2, entity1, solution.getFirstEntity()),
+                assertMatch(entity1, entity2, solution.getFirstEntity())
+                        .withIndictedObjects(solution.getFirstEntityGroup(), entity1, entity2, solution.getFirstEntity()));
     }
 
     @Override
