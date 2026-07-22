@@ -485,12 +485,10 @@ public abstract class AbstractUniConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatch(solution.getFirstValueGroup()).withIndictedObjects(
                         solution.getFirstValueGroup(),
-                        solution.getFirstEntityGroup(),
-                        entityGroup),
+                        solution.getFirstEntityGroup()),
                 assertMatch(valueGroup).withIndictedObjects(
                         valueGroup,
-                        solution.getFirstEntityGroup(),
-                        entityGroup));
+                        solution.getFirstEntityGroup()));
     }
 
     @Override
