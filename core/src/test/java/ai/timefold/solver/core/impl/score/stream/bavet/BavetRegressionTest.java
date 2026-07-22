@@ -52,8 +52,8 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity1),
-                assertMatch(entity2, entity2));
+                assertMatch(entity1, entity1).withIndictedObjects(entity1),
+                assertMatch(entity2, entity2).withIndictedObjects(entity2));
 
         // Switch entity1 and entity2 values; now entity2 has null and entity1 does not.
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -63,8 +63,8 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity1),
-                assertMatch(entity2, entity2));
+                assertMatch(entity1, entity1).withIndictedObjects(entity1),
+                assertMatch(entity2, entity2).withIndictedObjects(entity2));
 
         // Put both to null.
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -74,10 +74,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity1),
-                assertMatch(entity1, entity2),
-                assertMatch(entity2, entity1),
-                assertMatch(entity2, entity2));
+                assertMatch(entity1, entity1).withIndictedObjects(entity1),
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity1).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity2).withIndictedObjects(entity2));
     }
 
     @TestTemplate
@@ -491,7 +491,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity2, entity2)); // Only entity1 is left, because forEach/join ignore nulls.
+                assertMatch(entity2, entity2).withIndictedObjects(entity2)); // Only entity1 is left, because forEach/join ignore nulls.
 
         // Switch entity1 and entity2 values; now entity2 has null and entity1 does not.
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -501,7 +501,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity1));
+                assertMatch(entity1, entity1).withIndictedObjects(entity1));
 
         // Switch entity1 and entity2 values again to test the same from the other side.
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -511,7 +511,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(value);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity2, entity2));
+                assertMatch(entity2, entity2).withIndictedObjects(entity2));
     }
 
     /**
@@ -653,7 +653,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity2, entity2));
+                assertMatch(entity2, entity2).withIndictedObjects(entity2));
 
         // Switch entity1 and entity2 values; now entity2 has null and entity1 does not.
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -663,7 +663,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(null);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity1));
+                assertMatch(entity1, entity1).withIndictedObjects(entity1));
 
         // Switch entity1 and entity2 values again to test the same from the other side.
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -673,7 +673,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         entity2.setValue(value);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity2, entity2));
+                assertMatch(entity2, entity2).withIndictedObjects(entity2));
     }
 
     /**
