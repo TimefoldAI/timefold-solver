@@ -12,12 +12,20 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public sealed interface IndictmentSource {
     IndictmentSource DISABLED = new DisabledIndictmentSource();
 
-    void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer);
+    void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds, Consumer<Object> sourceConsumer);
 
     Map<Long, Set<IndictmentSource>> support();
+
+    default void visitAllSources(Consumer<Object> sourceConsumer) {
+        visitSources(new HashSet<>(), null, sourceConsumer);
+    }
 
     default void visitSources(long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
         visitSources(new HashSet<>(), involvedNodeIds, sourceConsumer);
@@ -28,13 +36,22 @@ public sealed interface IndictmentSource {
     }
 
     static boolean checkIfAlreadyVisitedAndVisitSupport(IndictmentSource self, Set<IndictmentSource> visited,
-            long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+            long @Nullable [] involvedNodeIds, Consumer<Object> sourceConsumer) {
         if (!visited.add(self)) {
             return true;
         }
-        for (var nodeId : involvedNodeIds) {
-            for (var indictmentSource : self.support().getOrDefault(nodeId, Collections.emptySet())) {
-                indictmentSource.visitSources(visited, involvedNodeIds, sourceConsumer);
+
+        if (involvedNodeIds == null) {
+            for (var indictmentSourceSet : self.support().values()) {
+                for (var indictmentSource : indictmentSourceSet) {
+                    indictmentSource.visitSources(visited, null, sourceConsumer);
+                }
+            }
+        } else {
+            for (var nodeId : involvedNodeIds) {
+                for (var indictmentSource : self.support().getOrDefault(nodeId, Collections.emptySet())) {
+                    indictmentSource.visitSources(visited, involvedNodeIds, sourceConsumer);
+                }
             }
         }
         return false;
@@ -102,7 +119,8 @@ public sealed interface IndictmentSource {
 
     record DisabledIndictmentSource() implements IndictmentSource {
         @Override
-        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+        public void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds,
+                Consumer<Object> sourceConsumer) {
             throw new UnsupportedOperationException("Impossible state: indictments are disabled.");
         }
 
@@ -114,7 +132,8 @@ public sealed interface IndictmentSource {
 
     record RootIndictmentSource(Object source, Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
         @Override
-        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+        public void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds,
+                Consumer<Object> sourceConsumer) {
             if (checkIfAlreadyVisitedAndVisitSupport(this, visited, involvedNodeIds, sourceConsumer)) {
                 return;
             }
@@ -135,7 +154,8 @@ public sealed interface IndictmentSource {
     record JoinedIndictmentSource(IndictmentSource left, IndictmentSource right,
             Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
         @Override
-        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+        public void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds,
+                Consumer<Object> sourceConsumer) {
             if (checkIfAlreadyVisitedAndVisitSupport(this, visited, involvedNodeIds, sourceConsumer)) {
                 return;
             }
@@ -157,7 +177,8 @@ public sealed interface IndictmentSource {
     record AggregateIndictmentSource(List<IndictmentSource> sourceList,
             Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
         @Override
-        public void visitSources(Set<IndictmentSource> visited, long[] involvedNodeIds, Consumer<Object> sourceConsumer) {
+        public void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds,
+                Consumer<Object> sourceConsumer) {
             if (checkIfAlreadyVisitedAndVisitSupport(this, visited, involvedNodeIds, sourceConsumer)) {
                 return;
             }

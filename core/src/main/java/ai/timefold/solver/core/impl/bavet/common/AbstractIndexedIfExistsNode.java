@@ -132,6 +132,12 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             // The indexers contain counters in the DEAD state, to track the rightCount.
             if (!isFiltering) {
                 updateUnchangedCounterLeft(counter);
+                if (leftTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+                    IndictmentSource.clearSupport(getId(), leftTuple);
+                    forEachRightFromLeft(leftTuple, newCompositeKey, rightTuple -> {
+                        IndictmentSource.addSupport(getId(), leftTuple, rightTuple);
+                    });
+                }
             } else {
                 // Eager own-side cleanup (reads only pairs already tracked, so it's eager-safe),
                 // then defer the re-walk of the opposite side to this node's own layer turn.
