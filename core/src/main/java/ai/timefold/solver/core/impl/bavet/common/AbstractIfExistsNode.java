@@ -125,6 +125,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             } else {
                 doRetractCounter(counter);
             }
+        } else {
+            // count != 0, so only propagate if we are in an `ifExists`
+            if (shouldExist) {
+                doUpdateCounter(counter);
+            }
         } // Else do not even propagate an update
           // NOTE: By not propagating here, the left tuple's indicted objects can be stale
           //       if an element is removed.
@@ -151,6 +156,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             } else {
                 doInsertCounter(counter);
+            }
+        } else {
+            // count != 0, so only propagate if we are in an `ifExists`
+            if (shouldExist) {
+                doUpdateCounter(counter);
             }
         } // Else do not even propagate an update
     }
@@ -307,6 +317,15 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             default ->
                 throw new IllegalStateException("Impossible state: The counter (%s) has an impossible retract state (%s)."
                         .formatted(counter, counter.state));
+        }
+    }
+
+    private void doUpdateCounter(ExistsCounter<LeftTuple_> counter) {
+        switch (counter.state) {
+            case DYING, OK, UPDATING, CREATING -> propagationQueue.update(counter);
+            case DEAD, ABORTING -> propagationQueue.insert(counter);
+            default -> throw new IllegalStateException("Impossible state: the counter (%s) has an impossible insert state (%s)."
+                    .formatted(counter, counter.state));
         }
     }
 

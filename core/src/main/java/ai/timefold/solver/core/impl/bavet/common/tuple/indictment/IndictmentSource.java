@@ -86,6 +86,13 @@ public sealed interface IndictmentSource {
         carry.getIndictmentSource().getSupportForNodeId(nodeId).add(support.getIndictmentSource());
     }
 
+    static void clearSupport(long nodeId, Tuple carry) {
+        if (carry.getIndictmentSource() == DISABLED) {
+            return;
+        }
+        carry.getIndictmentSource().getSupportForNodeId(nodeId).clear();
+    }
+
     static void removeSupport(long nodeId, Tuple carry, Tuple support) {
         if (carry.getIndictmentSource() == DISABLED) {
             return;
@@ -155,7 +162,7 @@ public sealed interface IndictmentSource {
                 return;
             }
             for (var source : sourceList) {
-                source.visitSources(involvedNodeIds, sourceConsumer);
+                source.visitSources(visited, involvedNodeIds, sourceConsumer);
             }
         }
 
