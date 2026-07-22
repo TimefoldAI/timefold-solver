@@ -949,17 +949,22 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity1),
-                assertMatch(solution.getFirstEntity(), entity2),
-                assertMatch(entity1, entity2));
+                assertMatch(solution.getFirstEntity(), entity1)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity1),
+                assertMatch(solution.getFirstEntity(), entity2)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity2),
+                assertMatch(entity1, entity2)
+                        .withIndictedObjects(entityGroup, entity1, entity2));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup);
         solution.getEntityGroupList().remove(entityGroup);
         scoreDirector.afterProblemFactRemoved(entityGroup);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity1),
-                assertMatch(solution.getFirstEntity(), entity2));
+                assertMatch(solution.getFirstEntity(), entity1)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity1),
+                assertMatch(solution.getFirstEntity(), entity2)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity2));
     }
 
     @Override
