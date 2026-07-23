@@ -82,6 +82,22 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
+    void removeLastTupleThenReuseKeys() {
+        var indexer = new IndexerFactory<>(multiJoiner).buildIndexer(true);
+        var annEntry = indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), UniTuple.of("Ann", 0));
+
+        indexer.remove(CompositeKey.ofMany(List.of("X", "Y"), "1"), annEntry);
+        assertSize(indexer, List.of("X"), "1").isEqualTo(0);
+        assertSize(indexer, List.of("Y"), "1").isEqualTo(0);
+        assertThat(indexer.isRemovable()).isTrue();
+
+        // The keys are usable again after their downstream indexers were dropped.
+        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), UniTuple.of("Beth", 0));
+        assertSize(indexer, List.of("X"), "1").isEqualTo(1);
+        assertSize(indexer, List.of("Y"), "1").isEqualTo(1);
+    }
+
+    @Test
     void forEach() {
         var indexer = new IndexerFactory<>(multiJoiner).buildIndexer(true);
 

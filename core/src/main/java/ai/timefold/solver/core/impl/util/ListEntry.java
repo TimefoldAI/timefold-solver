@@ -4,8 +4,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public sealed interface ListEntry<T extends @Nullable Object>
-        permits ElementAwareLinkedList.Entry, ElementAwareArrayList.Entry, CompositeListEntry {
+public interface ListEntry<T extends @Nullable Object> {
 
     T element();
 

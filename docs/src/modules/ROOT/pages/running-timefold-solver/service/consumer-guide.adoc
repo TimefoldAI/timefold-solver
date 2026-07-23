@@ -1,0 +1,508 @@
+= Service consumer guide
+:page-aliases: service/consumer-guide.adoc
+:description: How to use a service-built model as a consumer: submitting runs, polling for results, using demo data, and interpreting responses.
+:doctype: book
+:sectnums:
+:icons: font
+
+This guide is for developers who want to *consume* a service built with Timefold Solver using the `service` module.
+
+A Timefold Solver service exposes a REST API with a predictable structure.
+Every service follows the same lifecycle: submit a problem, wait for the result, and optionally terminate early or inspect the score.
+The exact endpoint paths and request/response shapes vary per model,
+but the patterns described here apply to any service built with the service module.
+
+[TIP]
+====
+If you are integrating with a service deployed on the Timefold Platform,
+see the https://docs.timefold.ai/timefold-platform/latest/api/receiving-model-api-results/receiving-model-api-results[platform documentation on receiving model API results]
+for platform-specific callback and webhook mechanisms.
+====
+
+[#discoverTheApi]
+== Discover the API
+
+Every Timefold Solver service publishes an OpenAPI specification when run with `mvn quarkus:dev`.
+Use it to discover the exact endpoint paths, request and response schemas, and available operations for the specific model you are integrating with.
+
+You can also explore the specification interactively through the Swagger UI at `/q/swagger-ui` when the service is running locally.
+
+[#usingDemoData]
+== Try it out with demo data
+
+If the service exposes demo data, you can use it to get a realistic request body without constructing one yourself.
+This is the fastest way to test connectivity with the service.
+
+=== List available demo datasets
+
+[source]
+----
+GET /v<version>/demo-data
+----
+
+Returns a list of available demo dataset identifiers and their descriptions.
+
+.Example response
+[source,json]
+----
+[
+  {
+    "id": "BASIC",
+    "shortDescription": "A small dataset suitable for quick tests.",
+    "longDescription": "10 lessons, 5 timeslots, 2 rooms.",
+    "tags": ["small"]
+  },
+  {
+    "id": "COMPLEX_SET",
+    "shortDescription": "A larger, more realistic dataset.",
+    "longDescription": "200 lessons across multiple rooms and days.",
+    "tags": ["large", "realistic"]
+  }
+]
+----
+
+=== Retrieve a demo dataset
+
+[source]
+----
+GET /v<version>/demo-data/{demoDataId}
+----
+
+Returns a fully formed solving request body, the same structure expected by `POST /<root>`.
+You can submit it directly or use it as a template to understand the expected input format.
+
+.Example
+[source,bash]
+----
+# Retrieve the demo dataset
+curl http://localhost:8080/v1/demo-data/BASIC
+
+# Pipe it directly into a solve request
+curl -X POST http://localhost:8080/v1/timetables \
+  -H "Content-Type: application/json" \
+  -d "$(curl -s http://localhost:8080/v1/demo-data/BASIC)"
+----
+
+[#submittingARun]
+== Submit a run
+
+[source]
+----
+POST /<root>
+----
+
+Submits a planning problem for optimization and (by default) requests solving immediately.
+The service returns a dataset ID right away and processes validation/output computation/solving asynchronously; pass `?operation=NONE` to store/validate/compute without solving.
+
+=== Request structure
+
+The request body is a JSON envelope with one required top-level field (`modelInput`) and one optional field (`config`).
+
+[source,json]
+----
+{
+  "config": {
+    "run": {
+      "name": "my-run",
+      "termination": {
+        "spentLimit": "PT5M",
+        "unimprovedSpentLimit": "PT30S"
+      },
+      "maxThreadCount": 1,
+      "tags": ["production", "monday"]
+    }
+  },
+  "modelInput": { <1>
+  }
+}
+----
+<1> The `modelInput` field contains your planning problem data.
+Its structure is specific to the model — consult the OpenAPI specification for the exact schema.
+
+The `run` configuration controls how long the solver runs:
+
+[cols="1,3", options="header"]
+|===
+| Field | Description
+
+| `name`
+| A human-readable name for the run. Auto-generated if omitted.
+
+| `maxThreadCount`
+| Number of solver threads. Defaults to 1.
+
+| `tags`
+| Optional labels for filtering or grouping runs.
+|===
+
+`Termination` settings can be specified per dataset to override the hardcoded termination settings.
+
+- `spentLimit` sets the maximum duration (in ISO 8601 duration format) for solving a dataset.
+
+- `unimprovedSpentLimit` sets the maximum duration (in ISO 8601 duration format) for solving a dataset since the dataset score improved.
+If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit must be empty.
+_Warning_: using this option will disable the default diminished returns termination which is recommended for most use cases
+
+- `stepCountLimit` sets the maximum solver step count for solving a dataset. The solver will stop solving after a pre-determined amount of steps. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use.
+If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.
+
+- `slidingWindowDuration` sets the sliding window (in ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).
+
+- `minimumImprovementRatio` sets the minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).
+
+=== Response
+
+The service responds with HTTP 202 (Accepted) and a `Metadata` object.
+The key field to capture is `id`, you will need it to poll for results.
+
+[source,json]
+----
+{
+    "id": "7f3a91bc-4e2d-4c1a-b8f6-1234567890ab", <1>
+    "name": "my-run",
+    "solverStatus": "DATASET_CREATED", <2>
+    "submitDateTime": "2025-06-01T09:00:00Z",
+    "tags": ["production", "monday"]
+}
+----
+<1> Store this `id` to poll for results.
+<2> The dataset was accepted and will be processed asynchronously (validation, output computation, and solving if requested).
+
+[#pollingForResults]
+== Poll for results
+
+[source]
+----
+GET /<root>/{id}
+----
+
+Returns the current state of a submitted run, including the best solution found so far.
+Unlike the submit response (which returns `Metadata` only), this endpoint returns the full response envelope (`metadata`, `modelOutput`, `inputMetrics`, `kpis`).
+
+=== Solver status lifecycle
+
+The `metadata.solverStatus` field follows the dataset lifecycle and may include `DATASET_CREATED`, `DATASET_VALIDATED`, `DATASET_COMPUTED`, or `DATASET_INVALID` before/around the solving statuses below:
+
+[cols="1,3", options="header"]
+|===
+| Status | Meaning
+
+| `SOLVING_SCHEDULED`
+| Solving was requested for an existing dataset (for example `POST /<root>/{id}`) and is waiting to start; submit requests typically transition from `DATASET_COMPUTED` directly to `SOLVING_STARTED`.
+
+| `SOLVING_STARTED`
+| The run is initializing: the model is being built and enriched (e.g. loading external data).
+Solving has not started yet.
+
+| `SOLVING_ACTIVE`
+| The solver is actively optimizing. The `score` field and `modelOutput` reflect the best solution found so far.
+Poll repeatedly to show progress.
+
+| `SOLVING_COMPLETED`
+| Solving finished normally (termination condition was met). The result is final.
+
+| `SOLVING_FAILED`
+| Solving terminated due to an error.
+
+| `SOLVING_INCOMPLETE`
+| Solving finished without producing a complete solution (for example, terminated before a first score was produced).
+|===
+
+The run is complete once `solverStatus` is `SOLVING_COMPLETED`, `SOLVING_FAILED`, `SOLVING_INCOMPLETE`, or `DATASET_INVALID`.
+
+[#pollingVsSse]
+=== Polling vs Server-Sent Events
+
+The service supports two ways to track a run in progress.
+Choose the one that fits your integration style:
+
+[cols="1,2,2", options="header"]
+|===
+| | Polling | Server-Sent Events (SSE)
+
+| *How it works*
+| You call `GET /<root>/{id}` repeatedly on a timer.
+| You open a long-lived `GET /<root>/{id}/events` connection; the service pushes updates to you.
+
+| *Response content*
+| `GET /<root>/{id}` returns the full envelope (`metadata`, `modelOutput`, `inputMetrics`, `kpis`).
+Use `GET /<root>/{id}/metadata` for a lightweight status check when intermediate results are not needed.
+| Metadata only. Fetch the full result with `GET /<root>/{id}` once the stream ends.
+
+| *Best for*
+| Simple integrations, batch backends, or when you only need the final result.
+| Live progress UIs, dashboards, or any case where you want immediate notification of status changes.
+
+| *Connection*
+| Stateless — each request is independent.
+| Stateful — holds an open HTTP connection until the run completes.
+
+| *Terminal state handling*
+| Detect by checking `solverStatus` on each response.
+| Stop reading after the terminal `solverStatus` event and close the connection client-side.
+|===
+
+=== Polling
+
+The service exposes two endpoints for polling:
+
+- `GET /<root>/{id}` — returns the full response envelope including `modelOutput`, `inputMetrics`, and `kpis`.
+Use this when you want to show intermediate results as solving progresses.
+- `GET /<root>/{id}/metadata` — returns only the `Metadata` object (status, score, timestamps).
+Use this when you only care about completion and want to avoid the cost of transferring the full solution on every poll.
+
+A 2–5 second interval is a reasonable default for displaying live progress.
+If you only need the final result, poll less frequently or wait until the `spentLimit` has elapsed before making your first request.
+
+.Example: poll metadata until complete, then fetch the full result
+[source,bash]
+----
+ID="7f3a91bc-4e2d-4c1a-b8f6-1234567890ab"
+
+while true; do
+  STATUS=$(curl -s http://localhost:8080/v1/timetables/$ID/metadata | jq -r '.solverStatus')
+
+  echo "Status: $STATUS"
+
+  case $STATUS in
+    SOLVING_COMPLETED|SOLVING_FAILED|SOLVING_INCOMPLETE|DATASET_INVALID)
+      echo "Done. Fetching full result..."
+      curl -s http://localhost:8080/v1/timetables/$ID | jq '.metadata.score'
+      break
+      ;;
+  esac
+
+  sleep 3
+done
+----
+
+[#usingSSE]
+=== Server-Sent Events
+
+[source]
+----
+GET /<root>/{id}/events
+----
+
+Opens an SSE stream for a submitted run.
+The service sends a `Metadata` JSON event whenever the run's metadata is updated (typically on status changes and when a new best solution is found).
+The service stops emitting events once the run reaches a terminal state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, `SOLVING_INCOMPLETE`, or `DATASET_INVALID`); close the connection client-side after receiving the terminal event.
+If the run is already in a terminal state when you connect, the service returns HTTP 410 Gone.
+In that case, retrieve the final result with a regular `GET /<root>/{id}` call.
+
+The endpoint accepts an optional, repeatable `status` query parameter (for example, `?status=SOLVING_COMPLETED&status=SOLVING_FAILED`) to receive events only for the specified statuses.
+Omit it to receive all transitions.
+
+.Example: stream status events until complete
+[source,bash]
+----
+curl -N -H "Accept: text/event-stream" \
+  "http://localhost:8080/v1/timetables/7f3a91bc-4e2d-4c1a-b8f6-1234567890ab/events"
+----
+
+.Example SSE event stream
+[source]
+----
+data: {"id":"7f3a91bc-4e2d-4c1a-b8f6-1234567890ab","solverStatus":"SOLVING_STARTED","score":null,...}
+
+data: {"id":"7f3a91bc-4e2d-4c1a-b8f6-1234567890ab","solverStatus":"SOLVING_ACTIVE","score":"-5hard/-20soft",...}
+
+data: {"id":"7f3a91bc-4e2d-4c1a-b8f6-1234567890ab","solverStatus":"SOLVING_COMPLETED","score":"0hard/-3soft",...}
+----
+
+After receiving the terminal event, fetch the full result (including `modelOutput` and metrics) with a single `GET /<root>/{id}` call.
+
+.Example: filter to receive only the completion event
+[source,bash]
+----
+curl -N -H "Accept: text/event-stream" \
+  "http://localhost:8080/v1/timetables/7f3a91bc-4e2d-4c1a-b8f6-1234567890ab/events?status=SOLVING_COMPLETED&status=SOLVING_FAILED"
+----
+
+[TIP]
+====
+If you are integrating with the Timefold Platform, use the
+https://docs.timefold.ai/timefold-platform/latest/api/receiving-model-api-results/receiving-model-api-results[webhook mechanism]
+to receive a callback when solving completes, instead of polling or SSE.
+====
+
+[#interpretingTheResponse]
+== Interpret the response
+
+The response envelope always contains `metadata` and `modelOutput`.
+Depending on the model, it may also contain `inputMetrics` and `kpis`.
+
+=== Metadata
+
+[source,json]
+----
+{
+  "metadata": {
+    "id": "7f3a91bc-4e2d-4c1a-b8f6-1234567890ab",
+    "name": "my-run",
+    "solverStatus": "SOLVING_COMPLETED",
+    "score": "0hard/-3soft",
+    "submitDateTime": "2025-06-01T09:00:00Z",
+    "startDateTime": "2025-06-01T09:00:01Z",
+    "activeDateTime": "2025-06-01T09:00:02Z",
+    "completeDateTime": "2025-06-01T09:05:00Z",
+    "shutdownDateTime": "2025-06-01T09:05:01Z",
+    "tags": ["production", "monday"],
+    "validationResult": {
+      "summary": "OK",
+      "errors": [],
+      "warnings": []
+    }
+  }
+}
+----
+
+The `score` field encodes solution quality.
+A score with `0hard` means all hard constraints are satisfied and the solution is feasible.
+Negative soft scores indicate soft constraint violations; closer to zero is better.
+
+See xref:constraints-and-score/overview.adoc#whatIsAScore[score documentation] for more details.
+
+The timestamps track each phase of the optimization lifecycle:
+
+[cols="1,3", options="header"]
+|===
+| Timestamp | Meaning
+
+| `submitDateTime`
+| When the dataset was received. Status: `SOLVING_SCHEDULED`.
+
+| `startDateTime`
+| When model initialization began (loading external data, enrichment). Status: `SOLVING_STARTED`.
+
+| `activeDateTime`
+| When the solver began optimizing. Status: `SOLVING_ACTIVE`.
+
+| `completeDateTime`
+| When solving finished. Status: `SOLVING_COMPLETED` or `SOLVING_FAILED`.
+
+| `shutdownDateTime`
+| When post-processing finished (e.g. score analysis, output enrichment). All work is done.
+|===
+
+=== Solution output
+
+The `modelOutput` field contains the solved planning problem in the model's output format.
+Its structure is model-specific — consult the OpenAPI specification.
+
+=== Metrics
+
+If the model exposes xref:./exposing-metrics.adoc[input and output metrics], they appear as top-level fields:
+
+[source,json]
+----
+{
+  "inputMetrics": {
+    "lessons": 200,
+    "timeslots": 50
+  },
+  "kpis": {
+    "unassignedLessons": 0,
+    "maxConsecutiveLessons": 3
+  }
+}
+----
+
+Use `inputMetrics` to confirm the solver received the expected problem size,
+and `kpis` to assess solution quality without parsing the full `modelOutput`.
+
+[#scoreAnalysis]
+== Inspect score analysis
+
+include::../../commercial-editions/_only-enterprise.adoc[]
+
+[source]
+----
+GET /<root>/{id}/score-analysis
+----
+
+Returns a breakdown of which constraints are satisfied or violated, and by how much.
+This is useful for debugging infeasible solutions or explaining results to end users.
+
+[source,json]
+----
+{
+  "score": "0hard/-3soft",
+  "constraints": [
+    {
+      "name": "Room conflict",
+      "score": "0hard",
+      "matchCount": 0
+    },
+    {
+      "name": "Teacher time preference",
+      "score": "-3soft",
+      "matchCount": 3
+    }
+  ]
+}
+----
+
+[#terminatingEarly]
+== Terminate a run early
+
+[source]
+----
+DELETE /<root>/{id}
+----
+
+After termination, the `solverStatus` is final (typically `SOLVING_COMPLETED`, or `SOLVING_INCOMPLETE` if no score was produced).
+
+Use this when the user no longer needs a result,
+or when a better input is available and you want to start a fresh run.
+
+[source,bash]
+----
+curl -X DELETE http://localhost:8080/v1/timetables/7f3a91bc-4e2d-4c1a-b8f6-1234567890ab
+----
+
+[#handlingValidationErrors]
+== Handle validation errors
+
+If the input fails validation, the response includes error details in `metadata.validationResult`.
+
+.Simple validation result (always present in the response)
+[source,json]
+----
+{
+  "metadata": {
+    "solverStatus": "DATASET_INVALID",
+    "validationResult": {
+      "summary": "ERRORS",
+      "errors": ["Duplicate teacher names found."],
+      "warnings": []
+    }
+  }
+}
+----
+
+For structured, machine-readable validation errors, use the dedicated endpoint:
+
+[source]
+----
+GET /<root>/{id}/validation-result
+----
+
+[source,json]
+----
+{
+  "status": "ERRORS",
+  "issues": [
+    {
+      "id": 1,
+      "code": "DUPLICATE_TEACHER",
+      "severity": "ERROR",
+      "detail": {
+        "teacherName": "Ann"
+      }
+    }
+  ]
+}
+----
+
+See xref:./rest-api.adoc#validatingRestInput[Validating REST input] for details on how services implement validation.

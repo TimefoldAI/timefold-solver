@@ -60,6 +60,7 @@ import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigPara
 import ai.timefold.solver.service.definition.internal.descriptor.OutputMetricDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ParameterKind;
 import ai.timefold.solver.service.definition.internal.descriptor.UISupport;
+import ai.timefold.solver.service.definition.internal.descriptor.VisualizationPageDescriptor;
 import ai.timefold.solver.service.jackson.impl.SdkBuildTimeObjectMapperFactory;
 import ai.timefold.solver.service.quarkus.deployment.builditem.AdditionalDescriptorFilesBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelArchiveBuildItem;
@@ -67,6 +68,7 @@ import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBu
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelInfoBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.RestComponentsBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.SingleOpenApiDocumentBuildItem;
+import ai.timefold.solver.service.quarkus.deployment.config.VisualizationPagesConfig;
 import ai.timefold.solver.service.quarkus.deployment.descriptor.DefaultConstraintGroupDescriptorFactory;
 import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaPostProcessor;
 import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaUtils;
@@ -163,7 +165,7 @@ class TimefoldModelDescriptorProcessor {
 
     private static final String APPLICATION_NAME_PROPERTY = "timefold.application.name";
     private static final String APPLICATION_DESCRIPTION_PROPERTY = "timefold.application.description";
-    private static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
+    static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
 
     private static final String MODEL_TRIAL_DURATION_PROPERTY = "timefold.model.trial.duration";
     private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "timefold.model.trial.max-extensions";
@@ -189,6 +191,8 @@ class TimefoldModelDescriptorProcessor {
     private static final String INSIGHTS_DATABASE_NAME = "tf_insights";
     private static final String INSIGHTS_ALLOWED_PATTERN = "^[a-zA-Z0-9_-]+$";
     private static final int INSIGHTS_MAX_NAMESPACE_LENGTH_BYTES = 255;
+
+    VisualizationPagesConfig visualizationPagesConfig;
 
     @BuildStep
     @Produce(ArtifactResultBuildItem.class)
@@ -511,6 +515,15 @@ class TimefoldModelDescriptorProcessor {
         }
     }
 
+    protected static void validateApplicationVersion(String version) {
+        if (version == null || version.trim().isEmpty()) {
+            throw new IllegalArgumentException("""
+                    The application version is missing.
+                    Set the '%s' property (e.g. in application.properties) so the build can proceed."""
+                    .formatted(APPLICATION_VERSION_PROPERTY));
+        }
+    }
+
     private void generateModelDescriptor(String modelId, String model, OpenAPI openAPI,
             Path outputDirectory,
             Optional<ClassInfo> restResource,
@@ -529,8 +542,9 @@ class TimefoldModelDescriptorProcessor {
         descriptor.setModel(model);
         descriptor.setName(
                 config.getOptionalValue(APPLICATION_NAME_PROPERTY, String.class).orElse(openAPI.getInfo().getTitle()));
-        descriptor.setVersion(
-                config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(openAPI.getInfo().getVersion()));
+        String applicationVersion = config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(null);
+        validateApplicationVersion(applicationVersion);
+        descriptor.setVersion(applicationVersion);
         descriptor.setResourceType(getResourceTypeFromRestResource(restResource));
         descriptor.setDescription(config.getOptionalValue(APPLICATION_DESCRIPTION_PROPERTY, String.class)
                 .orElse(openAPI.getInfo().getDescription()));
@@ -625,8 +639,9 @@ class TimefoldModelDescriptorProcessor {
         String resourceName = ModelDescriptor.RESOURCE_NAME;
 
         processModelImages(descriptor, outputDirectory);
-        processModelUI(descriptor, outputDirectory);
+        processLegacyModelUI(descriptor, outputDirectory);
         descriptor.setDocumentationDescriptor(processModelDocumentation());
+        descriptor.setVisualizationPages(processVisualizationPages());
 
         byte[] content = MAPPER.writeValueAsBytes(descriptor);
         if (outputDirectory != null) {
@@ -1175,7 +1190,7 @@ class TimefoldModelDescriptorProcessor {
         }
     }
 
-    private void processModelUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
+    private void processLegacyModelUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
         Optional<UISupport> uiSupportParam = ConfigProvider.getConfig()
                 .getOptionalValue(UI_SUPPORT_PROPERTY, UISupport.class);
 
@@ -1498,6 +1513,16 @@ class TimefoldModelDescriptorProcessor {
         }
 
         return DocumentationDescriptor.none();
+    }
+
+    private List<VisualizationPageDescriptor> processVisualizationPages() {
+        return toVisualizationPageDescriptors(visualizationPagesConfig);
+    }
+
+    static List<VisualizationPageDescriptor> toVisualizationPageDescriptors(VisualizationPagesConfig config) {
+        return config.pages().stream()
+                .map(page -> new VisualizationPageDescriptor(page.key(), page.icon(), page.label()))
+                .toList();
     }
 
 }

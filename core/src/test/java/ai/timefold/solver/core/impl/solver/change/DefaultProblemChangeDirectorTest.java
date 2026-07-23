@@ -114,7 +114,7 @@ class DefaultProblemChangeDirectorTest {
         problemChange.doChange(testdataSolution, defaultProblemChangeDirector);
 
         verify(scoreDirectorMock, times(0)).setWorkingSolution(any());
-        verify(scoreDirectorMock, times(1)).triggerVariableListeners();
+        verify(scoreDirectorMock, times(1)).updateShadowVariables();
     }
 
     @Test
@@ -137,7 +137,7 @@ class DefaultProblemChangeDirectorTest {
         addProblemChange.doChange(testdataSolution, defaultProblemChangeDirector);
 
         verify(scoreDirectorMock, times(1)).setWorkingSolution(any());
-        verify(scoreDirectorMock, times(0)).triggerVariableListeners();
+        verify(scoreDirectorMock, times(0)).updateShadowVariables();
 
         ProblemChange<TestdataLavishSolution> removeProblemChange = ((workingSolution, problemChangeDirector) -> {
             // Add an entity.
@@ -149,7 +149,7 @@ class DefaultProblemChangeDirectorTest {
         removeProblemChange.doChange(testdataSolution, defaultProblemChangeDirector);
 
         verify(scoreDirectorMock, times(2)).setWorkingSolution(any());
-        verify(scoreDirectorMock, times(0)).triggerVariableListeners();
+        verify(scoreDirectorMock, times(0)).updateShadowVariables();
     }
 
     @Test
@@ -200,6 +200,6 @@ class DefaultProblemChangeDirectorTest {
         problemChange.doChange(testdataSolution, defaultProblemChangeDirector);
 
         verify(scoreDirectorMock, times(1)).setWorkingSolution(any());
-        verify(scoreDirectorMock, times(1)).triggerVariableListeners();
+        verify(scoreDirectorMock, times(1)).updateShadowVariables();
     }
 }

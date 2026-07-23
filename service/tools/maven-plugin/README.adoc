@@ -119,6 +119,8 @@ Bind `timefold:configure` to the `initialize` phase via `<executions>` so it run
 </build>
 ----
 
+TIP: To find your tenant ID, log in to the Timefold Platform UI, select *Manage tenant* from the tenant drop-down in the top right, then copy the *Tenant ID* by clicking copy icon.
+
 With this binding in place, `mvn clean package timefold:deploy` runs `configure` during the `initialize` phase (before the container image is built later in `package`). Without it, `configure` never runs unless invoked explicitly, and the container image build won't have the platform's required registry/group configuration.
 
 Or call the plugin directly from CLI with system properties and environment var:

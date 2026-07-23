@@ -314,7 +314,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             var problemChange = problemChangeQueue.poll();
             while (problemChange != null) {
                 problemChange.doChange(solverScope.getWorkingSolution(), solverScope.getProblemChangeDirector());
-                solverScope.getScoreDirector().triggerVariableListeners();
+                solverScope.getScoreDirector().updateShadowVariables();
                 logger.debug("    Real-time problem change applied; step index ({}).", stepIndex);
                 stepIndex++;
                 problemChange = problemChangeQueue.poll();

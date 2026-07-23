@@ -2,16 +2,12 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     public ShadowVariablesInconsistentVariableDescriptor(int ordinal,
@@ -26,12 +22,7 @@ public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         return Collections.emptyList();
     }
 
@@ -41,17 +32,8 @@ public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
-        return Collections.emptyList();
-    }
-
-    @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         // no action needed
     }
 
-    @Override
-    public boolean isListVariableSource() {
-        return false;
-    }
 }

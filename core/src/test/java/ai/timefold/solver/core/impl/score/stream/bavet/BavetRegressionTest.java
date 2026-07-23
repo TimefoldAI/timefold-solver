@@ -536,7 +536,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataListMultipleShadowVariableSolution.generateSolution(2, 1);
         // We don't want to update shadows for this test!
         scoreDirector.setWorkingSolutionWithoutUpdatingShadows(solution);
-        scoreDirector.clearShadowVariablesListenerQueue();
+        scoreDirector.clearPendingShadowVariableUpdates();
         assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadeValue() == 2))
                 .isTrue(); // two if it is null
     }

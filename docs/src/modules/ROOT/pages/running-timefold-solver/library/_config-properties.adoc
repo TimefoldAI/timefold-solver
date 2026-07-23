@@ -50,13 +50,13 @@ and automatically enables Nearby Selection for the compatible move selectors.
 {property_prefix}timefold.solver.{solver_name_prefix}termination.spent-limit::
 How long the solver can run.
 For example: `30s` is 30 seconds. `5m` is 5 minutes. `2h` is 2 hours. `1d` is 1 day.
-The https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO8601 format]
+The https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO8601 format]
 is also supported, e.g., `PT30S` is 30 seconds. `PT5M` is 5 minutes. `PT2H` is 2 hours. `P1D` is 1 day.
 
 {property_prefix}timefold.solver.{solver_name_prefix}termination.unimproved-spent-limit::
 How long the solver can run without finding a new best solution after finding a new best solution.
 For example: `30s` is 30 seconds. `5m` is 5 minutes. `2h` is 2 hours. `1d` is 1 day.
-The https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO8601 format]
+The https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO8601 format]
 is also supported, e.g., `PT30S` is 30 seconds. `PT5M` is 5 minutes. `PT2H` is 2 hours. `P1D` is 1 day.
 
 {property_prefix}timefold.solver.{solver_name_prefix}termination.best-score-limit::
@@ -76,7 +76,7 @@ For `30s`, the current best score is compared against the best score from 30 sec
 `5m` is 5 minutes.
 `2h` is 2 hours.
 `1d` is 1 day.
-The https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO8601 format]
+The https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO8601 format]
 is also supported, e.g., `PT30S` is 30 seconds.
 `PT5M` is 5 minutes.
 `PT2H` is 2 hours.

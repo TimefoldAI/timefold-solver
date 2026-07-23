@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.impl.domain.variable.IndexShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
@@ -105,12 +104,14 @@ record DelegatingListVariableStateSupply<Solution_>(ListVariableStateSupply<Solu
     }
 
     @Override
-    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector, ListElementsChangeEvent<Object> event) {
-        delegate.beforeChange(scoreDirector, event);
+    public void beforeListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
+            int toIndex) {
+        delegate.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
     }
 
     @Override
-    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector, ListElementsChangeEvent<Object> event) {
-        delegate.afterChange(scoreDirector, event);
+    public void afterListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
+            int toIndex) {
+        delegate.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
     }
 }

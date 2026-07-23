@@ -59,7 +59,7 @@ To give consumers a better score analysis and configuration profile experience, 
 * `ConstraintInfo(id, name, description, constraintGroup)`: `id` is the stable identifier of the constraint, `name` is the human-readable name shown in the UI, `description` explains the constraint's goal, and `constraintGroup` optionally assigns the constraint to a `ConstraintGroupInfo`.
 * `ConstraintGroupInfo(id, name, description, icon, tags)`: groups related constraints under a shared category. `icon` accepts any icon name from https://tabler.io/icons[Tabler Icons], and `tags` are optional labels you can use to classify or filter groups.
 
-Extending the `TimetableConstraintProvider` from xref:running-timefold-solver/service/constraint-overrides.adoc[Adjusting constraint weights] with names, descriptions, and a group:
+Extending the `TimetableConstraintProvider` from xref:running-timefold-solver/service/model-config-overrides.adoc[Adjusting constraint weights] with names, descriptions, and a group:
 
 .The ConstraintProvider class, with ConstraintInfo attached.
 [tabs]
@@ -140,7 +140,7 @@ class TimetableConstraintProvider : ConstraintProvider {
 --
 ====
 
-The `id` you pass into `ConstraintInfo` is still the identifier used by `@ConstraintReference` in your `ModelConfigOverrides`, as described in xref:running-timefold-solver/service/constraint-overrides.adoc[Adjusting constraint weights].
+The `id` you pass into `ConstraintInfo` is still the identifier used by `@ConstraintReference` in your `ModelConfigOverrides`, as described in xref:running-timefold-solver/service/model-config-overrides.adoc[Adjusting constraint weights].
 The `name`, `description`, and `constraintGroup` are purely presentational: they are what the platform's score analysis view and configuration profile editor use to show your constraints to consumers, instead of falling back to the raw ID.
 
 The UI groups constraints that don't specify a `constraintGroup` under a default group.
@@ -187,7 +187,7 @@ This profile is what consumers get out of the box, before they add any profile o
 |===
 
 Once your model is deployed, tenant users can add additional configuration profiles on top of this default directly in the platform UI, without you making any code changes.
-A configuration profile is where per-request xref:running-timefold-solver/service/constraint-overrides.adoc[constraint weight overrides], thread count, memory, and termination limits are set for a specific use case.
+A configuration profile is where per-request xref:running-timefold-solver/service/model-config-overrides.adoc[constraint weight overrides], thread count, memory, and termination limits are set for a specific use case.
 See https://docs.timefold.ai/timefold-platform/latest/how-tos/configuration-parameters-and-profiles[Configuration parameters and profiles] for how tenant users manage profiles from the platform side.
 
 [#_visualization]
