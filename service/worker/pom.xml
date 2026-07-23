@@ -21,11 +21,11 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus</artifactId>
+      <artifactId>timefold-solver-quarkus-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus-jackson</artifactId>
+      <artifactId>timefold-solver-service-json</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
