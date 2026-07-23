@@ -69,6 +69,7 @@ public abstract class AbstractConstraintStreamTest {
                 .mapToInt(assertableMatch -> assertableMatch.score)
                 .sum();
         if (implSupport.constraintMatchPolicy().isJustificationEnabled()) {
+            var indictmentsEnabled = implSupport.constraintMatchPolicy().isIndictmentsEnabled();
             for (var assertableMatch : assertableMatches) {
                 var constraintMatchTotals =
                         scoreDirector.getConstraintMatchTotalMap();
@@ -78,7 +79,8 @@ public abstract class AbstractConstraintStreamTest {
                     throw new IllegalStateException("Requested constraint matches for unknown constraint (" +
                             constraintId + ").");
                 }
-                if (constraintMatchTotal.getConstraintMatchSet().stream().noneMatch(assertableMatch::isEqualTo)) {
+                if (constraintMatchTotal.getConstraintMatchSet().stream()
+                        .noneMatch(obj -> assertableMatch.isEqualTo(obj, indictmentsEnabled))) {
                     fail("The assertableMatch (" + assertableMatch + ") is lacking,"
                             + " it's not in the constraintMatchSet ("
                             + constraintMatchTotal.getConstraintMatchSet() + ").");
@@ -89,7 +91,7 @@ public abstract class AbstractConstraintStreamTest {
                 for (var constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                     if (Arrays.stream(assertableMatches)
                             .filter(assertableMatch -> assertableMatch.constraintRef.equals(constraintMatch.getConstraintRef()))
-                            .noneMatch(assertableMatch -> assertableMatch.isEqualTo(constraintMatch))) {
+                            .noneMatch(assertableMatch -> assertableMatch.isEqualTo(constraintMatch, indictmentsEnabled))) {
                         fail("The constraintMatch (" + constraintMatch + ") is in excess,"
                                 + " it's not in the assertableMatches (" + Arrays.toString(assertableMatches) + ").");
                     }
@@ -127,14 +129,21 @@ public abstract class AbstractConstraintStreamTest {
         private final int score;
         private final ConstraintRef constraintRef;
         private final List<Object> justificationList;
+        private List<Object> indictmentList;
 
         public AssertableMatch(int score, ConstraintRef constraintRef, Object... justifications) {
             this.justificationList = Arrays.asList(justifications);
             this.constraintRef = constraintRef;
             this.score = score;
+            this.indictmentList = justificationList;
         }
 
-        public boolean isEqualTo(ConstraintMatch<?> constraintMatch) {
+        public AssertableMatch withIndictedObjects(Object... indictedObjects) {
+            this.indictmentList = Arrays.asList(indictedObjects);
+            return this;
+        }
+
+        public boolean isEqualTo(ConstraintMatch<?> constraintMatch, boolean indictmentsEnabled) {
             if (score != ((SimpleScore) constraintMatch.getScore()).score()) {
                 return false;
             }
@@ -148,19 +157,32 @@ public abstract class AbstractConstraintStreamTest {
                     return false;
                 }
                 // Can't simply compare the lists, since the elements may be in different orders. The order is not relevant.
-                return justificationList.containsAll(actualJustificationList);
+                if (!justificationList.containsAll(actualJustificationList)) {
+                    return false;
+                }
             } else { // Support for custom justification mapping.
                 if (justificationList.size() != 1) {
                     Assertions.fail("Expected number of justifications (" + justificationList.size() +
                             ") does not match actual (1; " + justification + ").");
                 }
-                return justification == justificationList.getFirst();
+                if (justification != justificationList.getFirst()) {
+                    return false;
+                }
             }
+            if (!indictmentsEnabled) {
+                return true;
+            }
+            var indictedObjects = constraintMatch.getIndictedObjects();
+            if (indictedObjects.size() != indictmentList.size()) {
+                return false;
+            }
+            return indictmentList.containsAll(indictedObjects);
         }
 
         @Override
         public String toString() {
-            return constraintRef + " " + justificationList + "=" + score;
+            return "%s %s=%d (indicting %s)".formatted(constraintRef, justificationList, score,
+                    indictmentList);
         }
 
     }

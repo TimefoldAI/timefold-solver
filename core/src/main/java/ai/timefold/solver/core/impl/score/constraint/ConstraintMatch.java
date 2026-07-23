@@ -2,6 +2,8 @@ package ai.timefold.solver.core.impl.score.constraint;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
@@ -28,6 +30,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
 
     private final ConstraintRef constraintRef;
     private final @Nullable ConstraintJustification justification;
+    private final @Nullable List<Object> indictedObjects;
     private final Score_ score;
 
     /**
@@ -35,9 +38,11 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @param justification only null if justifications are disabled
      * @param score penalty or reward associated with the constraint match
      */
-    public ConstraintMatch(ConstraintRef constraintRef, @Nullable ConstraintJustification justification, Score_ score) {
+    public ConstraintMatch(ConstraintRef constraintRef, @Nullable ConstraintJustification justification,
+            @Nullable List<Object> indictedObjects, Score_ score) {
         this.constraintRef = requireNonNull(constraintRef);
         this.justification = justification;
+        this.indictedObjects = indictedObjects;
         this.score = requireNonNull(score);
     }
 
@@ -60,6 +65,10 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     @SuppressWarnings("unchecked")
     public <Justification_ extends ConstraintJustification> @Nullable Justification_ getJustification() {
         return (Justification_) justification;
+    }
+
+    public @Nullable List<Object> getIndictedObjects() {
+        return indictedObjects;
     }
 
     public Score_ getScore() {
@@ -89,7 +98,8 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
 
     @Override
     public String toString() {
-        return "%s/%s=%s".formatted(getConstraintRef().id(), justification, score);
+        return "%s/%s=%s (indicting %s)".formatted(getConstraintRef().id(), justification, score,
+                indictedObjects);
     }
 
 }

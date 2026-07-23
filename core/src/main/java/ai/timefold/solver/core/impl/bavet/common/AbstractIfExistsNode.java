@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -104,7 +105,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         }
     }
 
-    protected void incrementCounterRight(ExistsCounter<LeftTuple_> counter) {
+    protected void incrementCounterRightWithoutIndictment(ExistsCounter<LeftTuple_> counter) {
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doInsertCounter(counter);
@@ -112,16 +113,54 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
+          // NOTE: By not propagating here, the left tuple's indicted objects can be stale
+          //       if an element is removed.
         counter.countRight++;
     }
 
-    protected void decrementCounterRight(ExistsCounter<LeftTuple_> counter) {
+    protected void incrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        if (counter.countRight == 0) {
+            if (shouldExist) {
+                doInsertCounter(counter);
+            } else {
+                doRetractCounter(counter);
+            }
+        } else {
+            // count != 0, so only propagate if we are in an `ifExists`
+            if (shouldExist) {
+                doUpdateCounter(counter);
+            }
+        } // Else do not even propagate an update
+          // NOTE: By not propagating here, the left tuple's indicted objects can be stale
+          //       if an element is removed.
+        IndictmentSource.addSupport(getId(), counter.leftTuple, rightTuple);
+        counter.countRight++;
+    }
+
+    protected void decrementCounterRightWithoutIndictment(ExistsCounter<LeftTuple_> counter) {
         counter.countRight--;
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doRetractCounter(counter);
             } else {
                 doInsertCounter(counter);
+            }
+        } // Else do not even propagate an update
+    }
+
+    protected void decrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        counter.countRight--;
+        IndictmentSource.removeSupport(getId(), counter.leftTuple, rightTuple);
+        if (counter.countRight == 0) {
+            if (shouldExist) {
+                doRetractCounter(counter);
+            } else {
+                doInsertCounter(counter);
+            }
+        } else {
+            // count != 0, so only propagate if we are in an `ifExists`
+            if (shouldExist) {
+                doUpdateCounter(counter);
             }
         } // Else do not even propagate an update
     }
@@ -206,11 +245,21 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     // Walk safety: removeFromLeft only touches left-side links, so rightNext is stable across the call.
     protected void clearRightTrackerList(UniTuple<Right_> rightTuple) {
         FilteringTracker<LeftTuple_> tracker = rightTuple.removeStore(inputStoreIndexRightTrackerList);
-        while (tracker != null) {
-            var next = tracker.rightNext;
-            decrementCounterRight(tracker.counter);
-            removeFromLeft(tracker);
-            tracker = next;
+
+        if (rightTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+            while (tracker != null) {
+                var next = tracker.rightNext;
+                decrementCounterRightUpdatingIndictment(tracker.counter, rightTuple);
+                removeFromLeft(tracker);
+                tracker = next;
+            }
+        } else {
+            while (tracker != null) {
+                var next = tracker.rightNext;
+                decrementCounterRightWithoutIndictment(tracker.counter);
+                removeFromLeft(tracker);
+                tracker = next;
+            }
         }
     }
 
@@ -243,7 +292,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             return;
         }
         if (testFiltering(leftTuple, rightTuple)) {
-            incrementCounterRight(counter);
+            incrementCounterRightUpdatingIndictment(counter, rightTuple);
             var tracker = new FilteringTracker<>(counter, rightTuple);
             linkLeft(tracker);
             linkRight(tracker);
@@ -268,6 +317,15 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             default ->
                 throw new IllegalStateException("Impossible state: The counter (%s) has an impossible retract state (%s)."
                         .formatted(counter, counter.state));
+        }
+    }
+
+    private void doUpdateCounter(ExistsCounter<LeftTuple_> counter) {
+        switch (counter.state) {
+            case DYING, OK, UPDATING, CREATING -> propagationQueue.update(counter);
+            case DEAD, ABORTING -> propagationQueue.insert(counter);
+            default -> throw new IllegalStateException("Impossible state: the counter (%s) has an impossible insert state (%s)."
+                    .formatted(counter, counter.state));
         }
     }
 

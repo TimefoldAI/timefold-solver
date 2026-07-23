@@ -166,10 +166,10 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1, value1),
-                    assertMatch(entity, value1, value2),
-                    assertMatch(entity, value2, value1),
-                    assertMatch(entity, value2, value2));
+                    assertMatch(entity, value1, value1).withIndictedObjects(entity, value1),
+                    assertMatch(entity, value1, value2).withIndictedObjects(entity, value1, value2),
+                    assertMatch(entity, value2, value1).withIndictedObjects(entity, value1, value2),
+                    assertMatch(entity, value2, value2).withIndictedObjects(entity, value2));
 
             // Unassign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -181,7 +181,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value2, value2));
+                    assertMatch(entity, value2, value2).withIndictedObjects(entity, value2));
 
             // Reassign and check result.
             scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
@@ -191,10 +191,10 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1, value1),
-                    assertMatch(entity, value1, value2),
-                    assertMatch(entity, value2, value1),
-                    assertMatch(entity, value2, value2));
+                    assertMatch(entity, value1, value1).withIndictedObjects(entity, value1),
+                    assertMatch(entity, value1, value2).withIndictedObjects(entity, value1, value2),
+                    assertMatch(entity, value2, value1).withIndictedObjects(entity, value1, value2),
+                    assertMatch(entity, value2, value2).withIndictedObjects(entity, value2));
         }
 
     }
@@ -231,7 +231,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1, value1));
+                    assertMatch(entity, value1, value1).withIndictedObjects(entity, value1));
 
             // Unassign+assign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -245,7 +245,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value2);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value2, value2));
+                    assertMatch(entity, value2, value2).withIndictedObjects(entity, value2));
 
             // Reassign and check result.
             scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
@@ -257,7 +257,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1, value1));
+                    assertMatch(entity, value1, value1).withIndictedObjects(entity, value1));
         }
 
     }
@@ -710,24 +710,24 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, extra1),
-                assertMatch(1L, 1L, extra2));
+                assertMatch(1L, 1L, extra1).withIndictedObjects(entity1, entity2, extra1),
+                assertMatch(1L, 1L, extra2).withIndictedObjects(entity1, entity2, extra2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value2);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(2L, 2L, extra1),
-                assertMatch(2L, 2L, extra2));
+                assertMatch(2L, 2L, extra1).withIndictedObjects(entity1, entity2, extra1),
+                assertMatch(2L, 2L, extra2).withIndictedObjects(entity1, entity2, extra2));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity2);
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, extra1),
-                assertMatch(1L, 1L, extra2));
+                assertMatch(1L, 1L, extra1).withIndictedObjects(entity1, extra1),
+                assertMatch(1L, 1L, extra2).withIndictedObjects(entity1, extra2));
     }
 
     @Override
@@ -776,8 +776,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1),
-                    assertMatch(entity, value2));
+                    assertMatch(entity, value1).withIndictedObjects(entity, value1),
+                    assertMatch(entity, value2).withIndictedObjects(entity, value2));
 
             // Unassign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -789,7 +789,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value2));
+                    assertMatch(entity, value2).withIndictedObjects(entity, value2));
 
             // Reassign and check result.
             scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
@@ -799,8 +799,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1),
-                    assertMatch(entity, value2));
+                    assertMatch(entity, value1).withIndictedObjects(entity, value1),
+                    assertMatch(entity, value2).withIndictedObjects(entity, value1, value2));
         }
 
     }
@@ -949,17 +949,22 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity1),
-                assertMatch(solution.getFirstEntity(), entity2),
-                assertMatch(entity1, entity2));
+                assertMatch(solution.getFirstEntity(), entity1)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity1),
+                assertMatch(solution.getFirstEntity(), entity2)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity2),
+                assertMatch(entity1, entity2)
+                        .withIndictedObjects(entityGroup, entity1, entity2));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup);
         solution.getEntityGroupList().remove(entityGroup);
         scoreDirector.afterProblemFactRemoved(entityGroup);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity1),
-                assertMatch(solution.getFirstEntity(), entity2));
+                assertMatch(solution.getFirstEntity(), entity1)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity1),
+                assertMatch(solution.getFirstEntity(), entity2)
+                        .withIndictedObjects(solution.getFirstEntityGroup(), solution.getFirstEntity(), entity2));
     }
 
     @Override
@@ -1221,21 +1226,21 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L));
+                assertMatch(1L, 1L).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value2);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(2L, 2L));
+                assertMatch(2L, 2L).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity2);
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L));
+                assertMatch(1L, 1L).withIndictedObjects(entity1));
     }
 
     @Override
@@ -1258,11 +1263,16 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
-        // From scratch
+        // From scratch: groupBy accumulates indicted objects from all tuples in the group
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, solution.getFirstEntityGroup()),
-                assertMatchWithScore(-1, entityGroup1));
+                assertMatchWithScore(-1, solution.getFirstEntityGroup())
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1),
+                                solution.getEntityList().get(2),
+                                solution.getEntityList().get(3), solution.getEntityList().get(4),
+                                solution.getEntityList().get(5),
+                                solution.getEntityList().get(6), entity3),
+                assertMatchWithScore(-1, entityGroup1).withIndictedObjects(entity1, entity2));
 
         // Incremental
         Stream.of(entity1, entity2).forEach(entity -> {
@@ -1270,7 +1280,11 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             solution.getEntityList().remove(entity);
             scoreDirector.afterEntityRemoved(entity);
         });
-        assertScore(scoreDirector, assertMatchWithScore(-1, solution.getFirstEntityGroup()));
+        assertScore(scoreDirector, assertMatchWithScore(-1, solution.getFirstEntityGroup())
+                .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1),
+                        solution.getEntityList().get(2),
+                        solution.getEntityList().get(3), solution.getEntityList().get(4), solution.getEntityList().get(5),
+                        solution.getEntityList().get(6), entity3));
     }
 
     @Override
@@ -1285,11 +1299,20 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
-        // From scratch
+        // From scratch: groupBy accumulates indicted objects from all tuples in the group
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, solution.getFirstEntity().toString(), 6L),
-                assertMatchWithScore(-1, solution.getEntityList().get(1).toString(), 5L));
+                assertMatchWithScore(-1, solution.getFirstEntity().toString(), 6L)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1),
+                                solution.getEntityList().get(2),
+                                solution.getEntityList().get(3), solution.getEntityList().get(4),
+                                solution.getEntityList().get(5),
+                                solution.getEntityList().get(6)),
+                assertMatchWithScore(-1, solution.getEntityList().get(1).toString(), 5L)
+                        .withIndictedObjects(solution.getEntityList().get(1), solution.getEntityList().get(2),
+                                solution.getEntityList().get(3), solution.getEntityList().get(4),
+                                solution.getEntityList().get(5),
+                                solution.getEntityList().get(6)));
 
         // Incremental; we have a new first entity, and less entities in total.
         var entity = solution.getFirstEntity();
@@ -1297,7 +1320,10 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, solution.getFirstEntity().toString(), 5L));
+                assertMatchWithScore(-1, solution.getFirstEntity().toString(), 5L)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1),
+                                solution.getEntityList().get(2), solution.getEntityList().get(3),
+                                solution.getEntityList().get(4), solution.getEntityList().get(5)));
     }
 
     @Override
@@ -1316,11 +1342,13 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var entity1 = solution.getFirstEntity();
         var entity2 = solution.getEntityList().get(1);
 
-        // From scratch
+        // From scratch: groupBy accumulates indicted objects from all tuples in the group
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity1.toString(), 2L, singleton(entity1)),
-                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)));
+                assertMatchWithScore(-1, entity1.toString(), 2L, singleton(entity1))
+                        .withIndictedObjects(entity1, entity2, solution.getEntityList().get(2)),
+                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2))
+                        .withIndictedObjects(entity2, solution.getEntityList().get(2)));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -1328,7 +1356,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)));
+                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2))
+                        .withIndictedObjects(entity2, solution.getEntityList().get(1)));
     }
 
     @Override
@@ -1350,13 +1379,15 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var entity2 = solution.getEntityList().get(1);
         entity2.setLongProperty(Long.MIN_VALUE);
 
-        // From scratch
+        // From scratch: groupBy accumulates indicted objects from all tuples in the group
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entity1.toString(), Long.MAX_VALUE, Long.MAX_VALUE,
-                        singleton(entity1)),
+                        singleton(entity1))
+                        .withIndictedObjects(entity1, entity2, solution.getEntityList().get(2)),
                 assertMatchWithScore(-1, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
-                        singleton(entity2)));
+                        singleton(entity2))
+                        .withIndictedObjects(entity2, solution.getEntityList().get(2)));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -1365,7 +1396,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
-                        singleton(entity2)));
+                        singleton(entity2))
+                        .withIndictedObjects(entity2, solution.getEntityList().get(1)));
     }
 
     @Override
@@ -1379,16 +1411,19 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE, count -> count)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-3, 3L));
+        assertScore(scoreDirector, assertMatchWithScore(-3, 3L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 1L));
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
+        assertScore(scoreDirector, assertMatchWithScore(-1, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1403,16 +1438,18 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 3L, 2L));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 3L, 2L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 1L, 1L));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 1L, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1437,14 +1474,14 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 3L, 0L, 1L));
+                assertMatchWithScore(-1, 3L, 0L, 1L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 1L, 1L, 1L));
+                assertMatchWithScore(-1, 1L, 1L, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1470,14 +1507,14 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 3L, 0L, 1L, asSet(entity1, entity2)));
+                assertMatchWithScore(-1, 3L, 0L, 1L, asSet(entity1, entity2)).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 1L, 1L, 1L, asSet(entity2)));
+                assertMatchWithScore(-1, 1L, 1L, 1L, asSet(entity2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1493,21 +1530,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group2),
-                assertMatchWithScore(-1, group1, group3),
-                assertMatchWithScore(-1, group2, group3));
+                assertMatchWithScore(-1, group1, group2).withIndictedObjects(entity1, entity2),
+                assertMatchWithScore(-1, group1, group3).withIndictedObjects(entity1, entity3),
+                assertMatchWithScore(-1, group2, group3).withIndictedObjects(entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group3));
+                assertMatchWithScore(-1, group2, group3).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1523,24 +1562,27 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entity4 = solution.getEntityList().get(3);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group1, 1L),
-                assertMatchWithScore(-3, group1, group2, 3L),
-                assertMatchWithScore(-1, group2, group1, 1L),
-                assertMatchWithScore(-1, group2, group2, 1L));
+                assertMatchWithScore(-1, group1, group1, 1L).withIndictedObjects(entity1, entity3),
+                assertMatchWithScore(-3, group1, group2, 3L).withIndictedObjects(entity1, entity2, entity4, entity3),
+                assertMatchWithScore(-1, group2, group1, 1L).withIndictedObjects(entity2, entity3),
+                assertMatchWithScore(-1, group2, group2, 1L).withIndictedObjects(entity2, entity4));
 
-        // Incremental
-        var entity = solution.getFirstEntity();
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        // Incremental: groupBy indicted objects may be stale after incremental changes (acceptable per rules)
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group2, 1L),
-                assertMatchWithScore(-1, group1, group2, 1L),
-                assertMatchWithScore(-1, group2, group1, 1L));
+                assertMatchWithScore(-1, group2, group1, 1L).withIndictedObjects(entity2, entity3),
+                assertMatchWithScore(-1, group2, group2, 1L).withIndictedObjects(entity2, entity4),
+                assertMatchWithScore(-1, group1, group2, 1L).withIndictedObjects(entity4, entity3));
     }
 
     @Override
@@ -1557,24 +1599,27 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+        var entity4 = solution.getEntityList().get(3);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, group1, group1, 1L, 1L),
-                assertMatchWithScore(-6, group1, group2, 3L, 3L),
-                assertMatchWithScore(-2, group2, group1, 1L, 1L),
-                assertMatchWithScore(-2, group2, group2, 1L, 1L));
+                assertMatchWithScore(-2, group1, group1, 1L, 1L).withIndictedObjects(entity1, entity3),
+                assertMatchWithScore(-6, group1, group2, 3L, 3L).withIndictedObjects(entity1, entity2, entity4, entity3),
+                assertMatchWithScore(-2, group2, group1, 1L, 1L).withIndictedObjects(entity2, entity3),
+                assertMatchWithScore(-2, group2, group2, 1L, 1L).withIndictedObjects(entity2, entity4));
 
-        // Incremental
-        var entity = solution.getFirstEntity();
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        // Incremental: groupBy indicted objects may be stale after incremental changes (acceptable per rules)
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, group2, group2, 1L, 1L),
-                assertMatchWithScore(-2, group1, group2, 1L, 1L),
-                assertMatchWithScore(-2, group2, group1, 1L, 1L));
+                assertMatchWithScore(-2, group2, group1, 1L, 1L).withIndictedObjects(entity2, entity3),
+                assertMatchWithScore(-2, group2, group2, 1L, 1L).withIndictedObjects(entity2, entity4),
+                assertMatchWithScore(-2, group1, group2, 1L, 1L).withIndictedObjects(entity4, entity3));
     }
 
     @Override
@@ -1592,21 +1637,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var group3 = solution.getEntityGroupList().get(2);
         var value1 = solution.getValueList().get(0);
         var value2 = solution.getValueList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group2, value1),
-                assertMatchWithScore(-1, group1, group3, value1),
-                assertMatchWithScore(-1, group2, group3, value2));
+                assertMatchWithScore(-1, group1, group2, value1).withIndictedObjects(entity1, entity2),
+                assertMatchWithScore(-1, group1, group3, value1).withIndictedObjects(entity1, entity3),
+                assertMatchWithScore(-1, group2, group3, value2).withIndictedObjects(entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group3, value2));
+                assertMatchWithScore(-1, group2, group3, value2).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1625,21 +1672,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var group3 = solution.getEntityGroupList().get(2);
         var value1 = solution.getValueList().get(0);
         var value2 = solution.getValueList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group2, value1, 1L),
-                assertMatchWithScore(-1, group1, group3, value1, 1L),
-                assertMatchWithScore(-1, group2, group3, value2, 1L));
+                assertMatchWithScore(-1, group1, group2, value1, 1L).withIndictedObjects(entity1, entity2),
+                assertMatchWithScore(-1, group1, group3, value1, 1L).withIndictedObjects(entity1, entity3),
+                assertMatchWithScore(-1, group2, group3, value2, 1L).withIndictedObjects(entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group3, value2, 1L));
+                assertMatchWithScore(-1, group2, group3, value2, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1658,21 +1707,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var group3 = solution.getEntityGroupList().get(2);
         var value1 = solution.getValueList().get(0);
         var value2 = solution.getValueList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group1, group2, value1, value2),
-                assertMatchWithScore(-1, group1, group3, value1, value1),
-                assertMatchWithScore(-1, group2, group3, value2, value1));
+                assertMatchWithScore(-1, group1, group2, value1, value2).withIndictedObjects(entity1, entity2),
+                assertMatchWithScore(-1, group1, group3, value1, value1).withIndictedObjects(entity1, entity3),
+                assertMatchWithScore(-1, group2, group3, value2, value1).withIndictedObjects(entity2, entity3));
 
         // Incremental
-        var entity = solution.getFirstEntity();
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group3, value2, value1));
+                assertMatchWithScore(-1, group2, group3, value2, value1).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1709,22 +1760,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity1, entity2),
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity2, entity3),
+                assertMatch(asSet(group1)).withIndictedObjects(entity1, entity3));
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1740,22 +1792,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group3)),
-                assertMatch(asSet(group2, group3)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity1, entity2),
+                assertMatch(asSet(group1, group3)).withIndictedObjects(entity1, entity3),
+                assertMatch(asSet(group2, group3)).withIndictedObjects(entity2, entity3));
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(asSet(group2, group3)));
+                assertMatch(asSet(group2, group3)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1771,21 +1824,22 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
-        // From scratch
+        // From scratch: distinct accumulates indicted objects from all tuples with same key
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(asSet(group1)).withIndictedObjects(entity1, entity3));
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1802,22 +1856,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var group3 = solution.getEntityGroupList().get(2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group3)),
-                assertMatch(asSet(group2, group3)));
-
-        var entity = solution.getFirstEntity();
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity1, entity2),
+                assertMatch(asSet(group1, group3)).withIndictedObjects(entity1, entity3),
+                assertMatch(asSet(group2, group3)).withIndictedObjects(entity2, entity3));
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(asSet(group2, group3)));
+                assertMatch(asSet(group2, group3)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1837,18 +1892,21 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(group1, group2),
-                assertMatch(group2, group1),
-                assertMatch(group1, group1));
+                assertMatch(group1, group2).withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1)),
+                assertMatch(group2, group1).withIndictedObjects(solution.getEntityList().get(1),
+                        solution.getEntityList().get(2)),
+                assertMatch(group1, group1).withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(2)));
 
-        var entity = solution.getFirstEntity();
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(group2, group1));
+                assertMatch(group2, group1).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1872,18 +1930,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(group1, group2, sum01),
-                assertMatch(group2, group1, sum12),
-                assertMatch(group1, group1, sum02));
+                assertMatch(group1, group2, sum01).withIndictedObjects(solution.getFirstEntity(),
+                        solution.getEntityList().get(1)),
+                assertMatch(group2, group1, sum12).withIndictedObjects(solution.getEntityList().get(1),
+                        solution.getEntityList().get(2)),
+                assertMatch(group1, group1, sum02).withIndictedObjects(solution.getFirstEntity(),
+                        solution.getEntityList().get(2)));
 
-        var entity = solution.getFirstEntity();
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(group2, group1, sum12));
+                assertMatch(group2, group1, sum12).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1907,18 +1970,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(group1, group2, value1, value2),
-                assertMatch(group2, group1, value2, value1),
-                assertMatch(group1, group1, value1, value1));
+                assertMatch(group1, group2, value1, value2).withIndictedObjects(solution.getFirstEntity(),
+                        solution.getEntityList().get(1)),
+                assertMatch(group2, group1, value2, value1).withIndictedObjects(solution.getEntityList().get(1),
+                        solution.getEntityList().get(2)),
+                assertMatch(group1, group1, value1, value1).withIndictedObjects(solution.getFirstEntity(),
+                        solution.getEntityList().get(2)));
 
-        var entity = solution.getFirstEntity();
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // Incremental
-        scoreDirector.beforeEntityRemoved(entity);
-        solution.getEntityList().remove(entity);
-        scoreDirector.afterEntityRemoved(entity);
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(group2, group1, value2, value1));
+                assertMatch(group2, group1, value2, value1).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -1938,9 +2006,12 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum01),
-                assertMatch(solution.getEntityList().get(1), solution.getEntityList().get(2), sum12),
-                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(2), sum02));
+                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum01)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1)),
+                assertMatch(solution.getEntityList().get(1), solution.getEntityList().get(2), sum12)
+                        .withIndictedObjects(solution.getEntityList().get(1), solution.getEntityList().get(2)),
+                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(2), sum02)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(2)));
 
         var entity = solution.getFirstEntity();
 
@@ -1949,7 +2020,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum12));
+                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum12)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1)));
     }
 
     @Override
@@ -1975,9 +2047,12 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum01, concat01),
-                assertMatch(solution.getEntityList().get(1), solution.getEntityList().get(2), sum12, concat12),
-                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(2), sum02, concat02));
+                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum01, concat01)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1)),
+                assertMatch(solution.getEntityList().get(1), solution.getEntityList().get(2), sum12, concat12)
+                        .withIndictedObjects(solution.getEntityList().get(1), solution.getEntityList().get(2)),
+                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(2), sum02, concat02)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(2)));
 
         var entity = solution.getFirstEntity();
 
@@ -1986,7 +2061,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum12, concat12));
+                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1), sum12, concat12)
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1)));
     }
 
     @Override
@@ -2007,9 +2083,9 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, group1),
-                assertMatch(entity1, entity2, group1),
-                assertMatch(entity1, entity2, group2));
+                assertMatch(entity1, entity2, group1).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, entity2, group1).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, entity2, group2).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -2033,27 +2109,28 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
-        // From scratch
+        // From scratch: flattenLast produces multiple tuples per pair, indicted objects are from original pair
         scoreDirector.setWorkingSolution(solution);
+        var entity3 = solution.getEntityList().get(2);
         assertScore(scoreDirector,
-                assertMatch(entity1, group1),
-                assertMatch(entity1, group1),
-                assertMatch(entity1, group2),
-                assertMatch(entity2, group2),
-                assertMatch(entity2, group1),
-                assertMatch(entity2, group2),
-                assertMatch(entity1, group1),
-                assertMatch(entity1, group1),
-                assertMatch(entity1, group2));
+                assertMatch(entity1, group1).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, group1).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, group2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, group1).withIndictedObjects(entity1, entity3),
+                assertMatch(entity1, group1).withIndictedObjects(entity1, entity3),
+                assertMatch(entity1, group2).withIndictedObjects(entity1, entity3),
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3),
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3),
+                assertMatch(entity2, group2).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(entity2, group2),
-                assertMatch(entity2, group1),
-                assertMatch(entity2, group2));
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3),
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3),
+                assertMatch(entity2, group2).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -2071,19 +2148,20 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
-        // From scratch
+        // From scratch: flattenLast produces one tuple per pair, indicted objects are from original pair
         scoreDirector.setWorkingSolution(solution);
+        var entity3 = solution.getEntityList().get(2);
         assertScore(scoreDirector,
-                assertMatch(entity2, group1),
-                assertMatch(entity1, group2),
-                assertMatch(entity1, group1));
+                assertMatch(entity1, group2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, group1).withIndictedObjects(entity1, entity3),
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(entity2, group1));
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -2102,21 +2180,22 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
-        // From scratch
+        // From scratch: flattenLast + distinct produces unique tuples, indicted from original pairs
         scoreDirector.setWorkingSolution(solution);
+        var entity3 = solution.getEntityList().get(2);
         assertScore(scoreDirector,
-                assertMatch(entity1, group1),
-                assertMatch(entity1, group2),
-                assertMatch(entity2, group2),
-                assertMatch(entity2, group1));
+                assertMatch(entity1, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3),
+                assertMatch(entity2, group2).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(entity2, group1),
-                assertMatch(entity2, group2));
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3),
+                assertMatch(entity2, group2).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -2135,19 +2214,20 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
-        // From scratch
+        // From scratch: flattenLast + distinct produces unique tuples, indicted from original pairs
         scoreDirector.setWorkingSolution(solution);
+        var entity3 = solution.getEntityList().get(2);
         assertScore(scoreDirector,
-                assertMatch(entity2, group1),
-                assertMatch(entity1, group2),
-                assertMatch(entity1, group1));
+                assertMatch(entity1, group2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, group1).withIndictedObjects(entity1, entity3),
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatch(entity2, group1));
+                assertMatch(entity2, group1).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -2180,8 +2260,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2),
-                assertMatch(entity2, null));
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, null).withIndictedObjects(entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2192,8 +2272,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3),
-                assertMatch(entity3, null));
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, null).withIndictedObjects(entity3));
     }
 
     @Override
@@ -2227,8 +2307,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2),
-                assertMatch(entity2, null));
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, null).withIndictedObjects(entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2239,8 +2319,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3),
-                assertMatch(entity3, null));
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, null).withIndictedObjects(entity3));
     }
 
     @Override
@@ -2275,8 +2355,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2),
-                assertMatch(entity2, entity3));
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity3).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2287,8 +2367,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3),
-                assertMatch(entity3, entity2));
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, entity2).withIndictedObjects(entity3, entity2));
     }
 
     @Override
@@ -2323,8 +2403,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2),
-                assertMatch(entity1, entity2));
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2335,8 +2415,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3),
-                assertMatch(entity1, entity3));
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3),
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3));
     }
 
     @Override
@@ -2372,8 +2452,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2),
-                assertMatch(entity2, entity3));
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity3).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2384,8 +2464,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3),
-                assertMatch(entity3, entity2));
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, entity2).withIndictedObjects(entity3, entity2));
     }
 
     @Override
@@ -2421,7 +2501,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2));
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2432,7 +2512,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3));
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3));
     }
 
     @Override
@@ -2469,8 +2549,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, null),
-                assertMatch(entity2, entity3, entity1));
+                assertMatch(entity1, entity2, null).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity3, entity1).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2481,8 +2561,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, null),
-                assertMatch(entity3, entity2, entity1));
+                assertMatch(entity1, entity3, null).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, entity2, entity1).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -2520,8 +2600,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, null),
-                assertMatch(entity2, entity3, entity1));
+                assertMatch(entity1, entity2, null).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity3, entity1).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2532,8 +2612,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, null),
-                assertMatch(entity3, entity2, entity1));
+                assertMatch(entity1, entity3, null).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, entity2, entity1).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -2572,8 +2652,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, null, null),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, null, null).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity3, entity1, entity2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2584,8 +2664,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, null, null),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, null, null).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, entity2, entity1, entity3).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -2625,8 +2705,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, null, null),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, null, null).withIndictedObjects(entity1, entity2),
+                assertMatch(entity2, entity3, entity1, entity2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -2637,8 +2717,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, null, null),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, null, null).withIndictedObjects(entity1, entity3),
+                assertMatch(entity3, entity2, entity1, entity3).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -2677,15 +2757,15 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value1, value2, 1L),
-                assertMatchWithScore(-1, value2, value3, 1L));
+                assertMatchWithScore(-1, value1, value2, 1L).withIndictedObjects(entity1, entity2),
+                assertMatchWithScore(-1, value2, value3, 1L).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
         entity3.setValue(value2);
         scoreDirector.afterVariableChanged(entity3, "value");
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, value1, value2, 2L));
+                assertMatchWithScore(-2, value1, value2, 2L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental for which the first change matches a join that doesn't survive the second change
         scoreDirector.beforeVariableChanged(entity1, "value");
@@ -2695,8 +2775,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         entity3.setValue(value1);
         scoreDirector.afterVariableChanged(entity3, "value");
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value1, value2, 1L),
-                assertMatchWithScore(-1, value2, value3, 1L));
+                assertMatchWithScore(-1, value1, value2, 1L).withIndictedObjects(entity3, entity2),
+                assertMatchWithScore(-1, value2, value3, 1L).withIndictedObjects(entity2, entity1));
     }
 
     @Override
@@ -2729,18 +2809,18 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, 0),
-                assertMatch(entity2, Integer.MAX_VALUE),
-                assertMatch(entity3, Integer.MAX_VALUE));
+                assertMatch(entity1, 0).withIndictedObjects(entity1),
+                assertMatch(entity2, Integer.MAX_VALUE).withIndictedObjects(entity2),
+                assertMatch(entity3, Integer.MAX_VALUE).withIndictedObjects(entity3));
 
         // Incremental; all entities are still present, but the indexes are different.
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value1);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, 0),
-                assertMatch(entity2, 0),
-                assertMatch(entity3, Integer.MAX_VALUE));
+                assertMatch(entity1, 0).withIndictedObjects(entity1),
+                assertMatch(entity2, 0).withIndictedObjects(entity2),
+                assertMatch(entity3, Integer.MAX_VALUE).withIndictedObjects(entity3));
     }
 
     @Override
@@ -3222,15 +3302,15 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 // Each entity's BigDecimal property is joined to itself.
-                assertMatch(entity1, entity1),
-                assertMatch(entity2, entity2),
-                assertMatch(entity3, entity3),
+                assertMatch(entity1, entity1).withIndictedObjects(entity1),
+                assertMatch(entity2, entity2).withIndictedObjects(entity2),
+                assertMatch(entity3, entity3).withIndictedObjects(entity3),
                 // Each entity's BigDecimal property is joined to each other entity's.
-                assertMatch(entity1, entity2),
-                assertMatch(entity1, entity3),
-                assertMatch(entity2, entity1),
-                assertMatch(entity2, entity3),
-                assertMatch(entity3, entity1),
-                assertMatch(entity3, entity2));
+                assertMatch(entity1, entity2).withIndictedObjects(entity1, entity2),
+                assertMatch(entity1, entity3).withIndictedObjects(entity1, entity3),
+                assertMatch(entity2, entity1).withIndictedObjects(entity2, entity1),
+                assertMatch(entity2, entity3).withIndictedObjects(entity2, entity3),
+                assertMatch(entity3, entity1).withIndictedObjects(entity3, entity1),
+                assertMatch(entity3, entity2).withIndictedObjects(entity3, entity2));
     }
 }

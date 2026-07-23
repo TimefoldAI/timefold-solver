@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.Nullable;
@@ -99,6 +100,12 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterEntry);
         if (!isFiltering) {
             counter.countRight = rightSize(leftTuple, compositeKey);
+            if (leftTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+                IndictmentSource.clearSupport(getId(), leftTuple);
+                forEachRightFromLeft(leftTuple, compositeKey, rightTuple -> {
+                    IndictmentSource.addSupport(getId(), leftTuple, rightTuple);
+                });
+            }
         } else {
             // Trackers link themselves into the left tuple's inputStoreIndexLeftTrackerList slot.
             // No list object is needed; the slot starts null and the first tracker becomes the head.
@@ -133,6 +140,12 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             // The indexers contain counters in the DEAD state, to track the rightCount.
             if (!isFiltering) {
                 updateUnchangedCounterLeft(counter);
+                if (leftTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+                    IndictmentSource.clearSupport(getId(), leftTuple);
+                    forEachRightFromLeft(leftTuple, newCompositeKey, rightTuple -> {
+                        IndictmentSource.addSupport(getId(), leftTuple, rightTuple);
+                    });
+                }
             } else {
                 // Call filtering for the leftTuple and rightTuple combinations again
                 clearLeftTrackerList(leftTuple);
@@ -203,7 +216,14 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
 
     private void updateCounterLeft(UniTuple<Right_> rightTuple, Object compositeKey) {
         if (!isFiltering) {
-            forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRight);
+            // To prevent creating a dynamic lambda on the hot path,
+            // only call the 2-args version when indictments are enabled
+            if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRightWithoutIndictment);
+            } else {
+                forEachLeftCounter(rightTuple, compositeKey,
+                        counter -> incrementCounterRightUpdatingIndictment(counter, rightTuple));
+            }
         } else {
             // Trackers link themselves into the right tuple's inputStoreIndexRightTrackerList slot.
             // No list object is needed; the slot starts null and the first tracker becomes the head.
@@ -242,7 +262,14 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 indexerRight.remove(oldCompositeKey, entry);
             }
             if (!isFiltering) {
-                forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRight);
+                // To prevent creating a dynamic lambda on the hot path,
+                // only call the 2-args version when indictments are enabled
+                if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                    forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRightWithoutIndictment);
+                } else {
+                    forEachLeftCounter(rightTuple, oldCompositeKey,
+                            counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                }
             } else {
                 clearRightTrackerList(rightTuple);
             }
@@ -265,14 +292,26 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             bucket.removeRight(compositeKey, entry);
             fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
             if (!isFiltering) {
-                bucket.forEachLeft(compositeKey, this::decrementCounterRight);
+                // To prevent creating a dynamic lambda on the hot path,
+                // only call the 2-args version when indictments are enabled
+                if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                    bucket.forEachLeft(compositeKey, this::decrementCounterRightWithoutIndictment);
+                } else {
+                    bucket.forEachLeft(compositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                }
             } else {
                 clearRightTrackerList(rightTuple);
             }
         } else {
             indexerRight.remove(compositeKey, entry);
             if (!isFiltering) {
-                indexerLeft.forEach(compositeKey, this::decrementCounterRight);
+                // To prevent creating a dynamic lambda on the hot path,
+                // only call the 2-args version when indictments are enabled
+                if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                    indexerLeft.forEach(compositeKey, this::decrementCounterRightWithoutIndictment);
+                } else {
+                    indexerLeft.forEach(compositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                }
             } else {
                 clearRightTrackerList(rightTuple);
             }

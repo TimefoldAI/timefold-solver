@@ -73,6 +73,7 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
         var reuse = bag.reuseOrAdvance();
         if (reuse == null) {
             var created = createTuple(originalTuple, bag.value);
+            created.setIndictmentSource(originalTuple.getIndictmentSource());
             bag.append(created);
             propagationQueue.insert(created);
         } else {
