@@ -31,7 +31,7 @@ public class JsonPatch {
                     + "an object or array is required");
         }
 
-        if (patch.size() == 0) {
+        if (patch.isEmpty()) {
             return source;
         }
 
@@ -61,7 +61,7 @@ public class JsonPatch {
             throw new IllegalArgumentException("Invalid \"path\" property: " + pathNode);
         }
         String path = pathNode.asText();
-        if (path.length() != 0 && path.charAt(0) != '/') {
+        if (!path.isEmpty() && path.charAt(0) != '/') {
             throw new IllegalArgumentException("Invalid \"path\" property: " + path);
         }
 
@@ -166,7 +166,7 @@ public class JsonPatch {
      * @return the patched JSON document
      */
     protected static JsonNode remove(JsonNode doc, String path) {
-        if (path.equals("")) {
+        if (path.isEmpty()) {
             if (doc.isObject()) {
                 ObjectNode docObject = (ObjectNode) doc;
                 docObject.removeAll();

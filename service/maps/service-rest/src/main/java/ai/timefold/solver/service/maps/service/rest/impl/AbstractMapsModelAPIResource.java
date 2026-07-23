@@ -20,12 +20,8 @@ import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.validation.Issue;
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
+import ai.timefold.solver.service.definition.impl.solver.SolverWorkerFacade;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;
-import ai.timefold.solver.service.definition.internal.events.DatasetCreatedEvent;
-import ai.timefold.solver.service.definition.internal.events.DatasetValidateComputeCommand;
-import ai.timefold.solver.service.definition.internal.events.SolveStartCommand;
-import ai.timefold.solver.service.definition.internal.events.SolveTerminateCommand;
-import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 import ai.timefold.solver.service.rest.impl.AbstractModelAPIResource;
@@ -36,15 +32,10 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
-import io.smallrye.reactive.messaging.MutinyEmitter;
 
 @RegisterForReflection
-@SuppressWarnings({ "rawtypes", "unchecked" })
 public class AbstractMapsModelAPIResource<ModelInput_ extends ModelInput, ModelOutput_ extends ModelOutput, ModelConfigurationOverrides_ extends ModelConfigOverrides, Score_ extends Score<?>, InputMetrics_ extends ModelInputMetrics, OutputMetrics_ extends ModelOutputMetrics, Justification_ extends ModelConstraintJustification, ValidationIssue_ extends Issue>
         extends
         AbstractModelAPIResource<ModelInput_, ModelOutput_, ModelConfigurationOverrides_, Score_, InputMetrics_, OutputMetrics_, Justification_, ValidationIssue_> {
@@ -56,17 +47,10 @@ public class AbstractMapsModelAPIResource<ModelInput_ extends ModelInput, ModelO
     }
 
     public AbstractMapsModelAPIResource(ModelValidator<ModelInput_, ModelConfigurationOverrides_> modelValidator,
-            AbstractStorageService storageService,
-            Emitter<DatasetCreatedEvent> datasetPostedEventEmitter,
-            Emitter<DatasetValidateComputeCommand> datasetValidateComputeCommandEmitter,
-            Emitter<SolveStartCommand> scheduleStartEmitter,
-            MutinyEmitter<SolveTerminateCommand> scheduleTerminateEmitter,
-            ObjectMapper mapper,
+            SolverWorkerFacade solverWorkerFacade,
             ValidationIssueTypeCatalog validationIssueTypeCatalog,
             WaypointsService waypointsService) {
-        super(modelValidator, storageService, datasetPostedEventEmitter,
-                datasetValidateComputeCommandEmitter, scheduleStartEmitter, scheduleTerminateEmitter, mapper,
-                validationIssueTypeCatalog);
+        super(modelValidator, solverWorkerFacade, validationIssueTypeCatalog);
         this.waypointsService = waypointsService;
     }
 
