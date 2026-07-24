@@ -8,7 +8,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -101,6 +100,9 @@ public class SolverWorker {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverWorker.class);
     private static final long COMPLETION_TIMEOUT = 60_000;
     private static final long EMITTER_TIMEOUT = 5;
+    // run() only submits to the solver thread pool and returns - it never waits on solving - so resolving the
+    // job future should take microseconds; this bounds the wait defensively in case that assumption is ever wrong.
+    private static final long JOB_REGISTRATION_TIMEOUT_MS = 5_000;
 
     private Optional<String> modelName;
     private Optional<String> modelVersion;
@@ -431,25 +433,30 @@ public class SolverWorker {
 
             var jobFuture = new CompletableFuture<SolverJob<SolverModel>>();
             solverJobs.put(id, jobFuture);
-            try {
-                var job = solverManager.solveBuilder()
-                        .withProblemFinder(id_ -> notifyOnStart((String) id_, modelInput, previousModelOutput, modelConfig))
-                        .withConfigOverride(solverConfigOverride)
-                        .withProblemId(id)
-                        .withBestSolutionEventConsumer(
-                                decorateIfPossible(event -> notifyOnSave(id, event.solution(), event.producerId())))
-                        .withFinalBestSolutionEventConsumer(event -> notifyOnComplete(id, event.solution()))
-                        .withFirstInitializedSolutionEventConsumer(
-                                event -> notifyOnInit(id, event.solution(), event.isTerminatedEarly(), event.producerId()))
-                        .withExceptionHandler(this::notifyOnFailure)
-                        .run();
-                jobFuture.complete(job);
-            } catch (Throwable e) {
-                jobFuture.completeExceptionally(e);
-                throw e;
-            }
+            startJob(modelInput, previousModelOutput, modelConfig, solverConfigOverride, id, jobFuture);
         } catch (Throwable e) {
             notifyOnFailure(id, e);
+        }
+    }
+
+    private void startJob(ModelInput modelInput, ModelOutput previousModelOutput, ModelConfig modelConfig,
+            SolverConfigOverride solverConfigOverride, String id, CompletableFuture<SolverJob<SolverModel>> jobFuture) {
+        try {
+            var job = solverManager.solveBuilder()
+                    .withProblemFinder(id_ -> notifyOnStart((String) id_, modelInput, previousModelOutput, modelConfig))
+                    .withConfigOverride(solverConfigOverride)
+                    .withProblemId(id)
+                    .withBestSolutionEventConsumer(
+                            decorateIfPossible(event -> notifyOnSave(id, event.solution(), event.producerId())))
+                    .withFinalBestSolutionEventConsumer(event -> notifyOnComplete(id, event.solution()))
+                    .withFirstInitializedSolutionEventConsumer(
+                            event -> notifyOnInit(id, event.solution(), event.isTerminatedEarly(), event.producerId()))
+                    .withExceptionHandler(this::notifyOnFailure)
+                    .run();
+            jobFuture.complete(job);
+        } catch (Throwable e) {
+            jobFuture.completeExceptionally(e);
+            throw e;
         }
     }
 
@@ -847,13 +854,21 @@ public class SolverWorker {
         return consumer;
     }
 
-    private SolverJob<SolverModel> resolveJob(CompletableFuture<SolverJob<SolverModel>> jobFuture) {
+    private static SolverJob<SolverModel> resolveJob(CompletableFuture<SolverJob<SolverModel>> jobFuture) {
         if (jobFuture == null) {
             return null;
         }
         try {
-            return jobFuture.join();
-        } catch (CompletionException e) {
+            return jobFuture.get(JOB_REGISTRATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            LOGGER.warn("Solver job registration failed before a job could be created", e);
+            return null;
+        } catch (TimeoutException e) {
+            LOGGER.warn("Timed out after {} ms waiting for the solver job to be registered", JOB_REGISTRATION_TIMEOUT_MS, e);
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOGGER.warn("Interrupted while waiting for the solver job to be registered", e);
             return null;
         }
     }
