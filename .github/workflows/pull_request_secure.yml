@@ -130,6 +130,89 @@ jobs:
           show: "fail"
         if: always()
 
+  enterprise-native:
+    needs: approval_required
+    name: Enterprise Edition (Native Image)
+    concurrency:
+      group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.module }}-${{ matrix.java-version }}
+      cancel-in-progress: true
+    runs-on: ${{matrix.os}}
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, ubuntu-24.04-arm ] # Windows doesn't work, Mac is not a deploy OS.
+        module: [ "spring-boot", "quarkus" ]
+        java-version: [ 25 ] # We only test Quarkus with the latest native image.
+    timeout-minutes: 120
+    steps:
+      # Clone timefold-solver
+      # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v7
+        with:
+          path: ./timefold-solver
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+          # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
+          allow-unsafe-pr-checkout: true
+
+      # Clone timefold-solver-enterprise
+      # Need to check for stale repo, since GitHub is not aware of the build chain and therefore doesn't automate it.
+      - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
+        id: checkout-solver-enterprise
+        uses: actions/checkout@v7
+        continue-on-error: true
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
+        if: steps.checkout-solver-enterprise.outcome != 'success'
+        uses: actions/checkout@v7
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: main
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - uses: graalvm/setup-graalvm@0def53c0fd8534bc13416c9469f5be45265824fd # v1.6.3
+        with:
+          java-version: ${{matrix.java-version}}
+          distribution: 'graalvm-community'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'maven'
+
+      - name: Quickly build timefold-solver
+        working-directory: ./timefold-solver
+        run: ./mvnw -B -Dquickly clean install
+
+      - name: Quickly build timefold-solver-enterprise
+        working-directory: ./timefold-solver-enterprise
+        run: ./mvnw -B -Dquickly clean install
+
+      - name: Test timefold-solver-enterprise in Native mode
+        working-directory: ./timefold-solver-enterprise
+        env:
+          TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
+        run: |
+          if [ "${{matrix.module}}" = "quarkus" ]; then
+            cd quarkus-integration/quarkus
+            ../../mvnw -B -Dnative verify
+          else
+            cd ${{matrix.module}}
+            ../mvnw -B -Dnative verify
+          fi
+
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
+
   sonarcloud:
     needs: approval_required
     name: SonarCloud
