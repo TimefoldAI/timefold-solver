@@ -18,7 +18,6 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.MethodParameterInfo;
 
-import io.quarkus.gizmo.AnnotatedElement;
 import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.DescriptorUtils;
 import io.quarkus.gizmo.FieldCreator;
@@ -43,16 +42,9 @@ import io.quarkus.gizmo.Type;
  *
  *         public SolverModelName_EndpointName(ModelValidator<...> modelValidator,
  *                 ScoreAnalysisFacadeBase scoreAnalysisFacade,
- *                 AbstractStorageService<...> storageService,
- *                 &#64;Channel(SolverChannels.DATASET_POSTED)
- *                 &#64;Broadcast
- *                 Emitter<DatasetPostedEvent> datasetPostedEmitter,
- *                 &#64;Channel(SolverChannels.START)
- *                 Emitter<ItemStartCommand> scheduleStartEmitter,
- *                 &#64;Channel(SolverChannels.TERMINATE)
- *                 MutinyEmitter<ItemTerminateCommand> scheduleTerminateEmitter) {
- *             super(modelValidator, scoreAnalysisFacade, storageService, datasetPostedEmitter, scheduleStartEmitter,
- *                     scheduleTerminateEmitter);
+ *                 SolverWorkerFacade solverWorkerFacade,
+ *                 ValidationIssueTypeCatalog validationIssueTypeCatalog) {
+ *             super(scoreAnalysisFacade, modelValidator, solverWorkerFacade, mapper, validationIssueTypeCatalog);
  *         }
  *     }
  *     }
@@ -126,14 +118,6 @@ public final class ModelResourceBeanGenerator {
 
         constructorParams.addAnnotation(Inject.class);
         ResultHandle thisObj = constructorParams.getThis();
-
-        // add channel annotation to arguments that are used for sending events
-        resourceBeanTypeInfo.channelConstructorParameterIndices()
-                .forEach((channelName, parameterIndex) -> {
-                    AnnotatedElement parameter = constructorParams.getParameterAnnotations(parameterIndex);
-                    var parameterAnnotator = resourceBeanTypeInfo.channelConstructorParameterAnnotators().get(channelName);
-                    parameterAnnotator.accept(parameter);
-                });
 
         ResultHandle[] params = new ResultHandle[constructorParameterTypes.length];
         for (int i = 0; i < params.length; i++) {
