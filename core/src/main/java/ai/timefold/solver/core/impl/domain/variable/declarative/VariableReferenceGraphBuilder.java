@@ -26,8 +26,10 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final List<GraphNode<Solution_>> nodeList;
     final Map<Object, Integer> entityToEntityId;
     final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> fixedEdges;
+    final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> initialDynamicEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
     final Map<Integer, Map<Object, GraphNode<Solution_>>> variableGroupIdToContainingNodeMap;
+    final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
     boolean isGraphFixed;
 
     public VariableReferenceGraphBuilder(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
@@ -38,8 +40,30 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         variableReferenceToBeforeProcessor = new HashMap<>();
         variableReferenceToAfterProcessor = new HashMap<>();
         fixedEdges = new HashMap<>();
+        initialDynamicEdges = new HashMap<>();
         entityToEntityId = new IdentityHashMap<>();
+        listVariableReferenceToElementLocator = new HashMap<>();
         isGraphFixed = true;
+    }
+
+    /**
+     * Adds an edge that reflects the state of a planning list variable when the graph is built.
+     * Unlike a {@link #addFixedEdge(GraphNode, GraphNode) fixed edge}, it may be removed during solving
+     * when the list variable changes, so a dependency loop through it can be broken by the solver
+     * and must not fail fast.
+     */
+    public void addInitialDynamicEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
+        if (from.graphNodeId() == to.graphNodeId()) {
+            return;
+        }
+        initialDynamicEdges.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
+    }
+
+    public void addListElementSourceLocator(VariableMetaModel<?, ?, ?> listVariableId,
+            ListElementSourceLocator listElementSourceLocator) {
+        isGraphFixed = false;
+        listVariableReferenceToElementLocator.computeIfAbsent(listVariableId, k -> new ArrayList<>())
+                .add(listElementSourceLocator);
     }
 
     public <Entity_> void addVariableReferenceEntity(Entity_ entity, List<VariableUpdaterInfo<Solution_>> variableReferences) {

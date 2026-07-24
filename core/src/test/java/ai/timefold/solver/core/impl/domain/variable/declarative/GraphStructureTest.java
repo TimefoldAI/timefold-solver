@@ -17,6 +17,9 @@ import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExt
 import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedSubclassValue;
 import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerEntity;
 import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerSolution;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementEntity;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementSolution;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementValue;
 import ai.timefold.solver.core.testdomain.shadow.multi_directional_parent.TestdataMultiDirectionConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.multi_directional_parent.TestdataMultiDirectionConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_directional_parent.TestdataMultiDirectionConcurrentValue;
@@ -121,6 +124,15 @@ class GraphStructureTest {
                 TestdataMultiDirectionConcurrentSolution.buildSolutionDescriptor(), entity, value))
                 .hasFieldOrPropertyWithValue("structure", SINGLE_DIRECTIONAL_PARENT)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS);
+    }
+
+    @Test
+    void listElementStructure() {
+        var entity = new TestdataListElementEntity("e1");
+        var value = new TestdataListElementValue("v1");
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataListElementSolution.buildSolutionDescriptor(), entity, value))
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY);
     }
 
     @Test

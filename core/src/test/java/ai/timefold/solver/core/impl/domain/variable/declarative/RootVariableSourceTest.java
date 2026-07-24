@@ -562,23 +562,80 @@ class RootVariableSourceTest {
                         """
                                 The source path (values) starting from root class (TestdataInvalidDeclarativeEntity) \
                                 accesses a planning list variable (values), which is not allowed.""",
-                        "Maybe remove the source path (values) from the @ShadowSources?");
+                        "Maybe access a declarative shadow variable of its elements instead, e.g. (values[].shadowVariableName)?");
     }
 
     @Test
-    void invalidPathUsingGroupAfterVariable() {
-        assertThatCode(() -> RootVariableSource.from(
+    @SuppressWarnings("unchecked")
+    void pathUsingDeclarativeShadowAfterListVariable() {
+        var rootVariableSource = RootVariableSource.from(
                 planningSolutionMetaModel,
                 TestdataInvalidDeclarativeEntity.class,
                 "shadow",
                 "values[].shadow",
                 DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
+
+        assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeEntity.class);
+        assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.LIST_ELEMENT);
+        assertThat(rootVariableSource.listVariableMetaModel())
+                .isEqualTo(planningSolutionMetaModel.entity(TestdataInvalidDeclarativeEntity.class).variable("values"));
+        var source = rootVariableSource.variableSourceReferences().get(0);
+
+        assertEmptyChainToVariableEntity(source);
+        assertThat(source.variableMetaModel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(source.isTopLevel()).isTrue();
+        assertThat(source.onRootEntity()).isFalse();
+        assertThat(source.isDeclarative()).isTrue();
+        assertThat(source.targetVariableMetamodel())
+                .isEqualTo(planningSolutionMetaModel.entity(TestdataInvalidDeclarativeEntity.class).variable("shadow"));
+        assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+
+        var entity = new TestdataInvalidDeclarativeEntity("e1");
+        var v1 = new TestdataInvalidDeclarativeValue("v1");
+        var v2 = new TestdataInvalidDeclarativeValue("v2");
+        entity.setValues(List.of(v1, v2));
+
+        var rootVisitor = mock(Consumer.class);
+        rootVariableSource.valueEntityFunction().accept(entity, rootVisitor);
+        verify(rootVisitor).accept(v1);
+        verify(rootVisitor).accept(v2);
+        verifyNoMoreInteractions(rootVisitor);
+    }
+
+    @Test
+    void invalidPathUsingBuiltinShadowAfterListVariable() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeEntity.class,
+                "shadow",
+                "values[].previous",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
                 DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("""
-                        The source path (values[].shadow) starting from root class \
-                        (TestdataInvalidDeclarativeEntity) accesses a collection (values[]) \
-                        via a variable (values), which is not allowed.\
+                        The source path (values[].previous) starting from root class \
+                        (TestdataInvalidDeclarativeEntity) accesses a variable (previous) \
+                        that is not a declarative shadow variable via a planning list variable (values[]), \
+                        which is not allowed.\
+                        """);
+    }
+
+    @Test
+    void invalidPathUsingListVariableAfterFact() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeEntity.class,
+                "shadow",
+                "fact.values[].shadow",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("""
+                        The source path (fact.values[].shadow) starting from root class \
+                        (TestdataInvalidDeclarativeEntity) accesses a planning list variable (values[]) \
+                        via another member, which is not allowed.\
                         """);
     }
 
