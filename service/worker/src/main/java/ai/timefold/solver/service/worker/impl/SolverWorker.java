@@ -100,8 +100,6 @@ public class SolverWorker {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverWorker.class);
     private static final long COMPLETION_TIMEOUT = 60_000;
     private static final long EMITTER_TIMEOUT = 5;
-    // run() only submits to the solver thread pool and returns - it never waits on solving - so resolving the
-    // job future should take microseconds; this bounds the wait defensively in case that assumption is ever wrong.
     private static final long JOB_REGISTRATION_TIMEOUT_MS = 5_000;
 
     private Optional<String> modelName;
