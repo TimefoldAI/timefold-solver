@@ -119,7 +119,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
                     indexerLeft.remove(oldCompositeKey, entry);
                 }
             }
-            outTupleListLeft.clear(this::retractOutTupleByLeft);
+            outTupleListLeft.clear(this::retractOutTupleLeft);
             // outTupleListLeft is now empty
             // No need for leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
             indexAndPropagateLeft(leftTuple, newCompositeKey, reuseBucket);
@@ -153,12 +153,13 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // and requires adding null checks to the filter for something that should intuitively be impossible.
             // We avoid this situation as it is clear that it is pointless to insert this tuple.
             //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
+            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
+            // the right's inserts are delivered before the left's retracts are.
             return;
         }
-        forEachRightMatch(leftTuple, compositeKey, rightTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
+        // The right tuples come out of the index and can be retracting for the mirror-image reason,
+        // hence insertOutTupleFilteredFromRight(...) rather than the unguarded insert.
+        forEachRightMatch(leftTuple, compositeKey, rightTuple -> insertOutTupleFilteredRight(leftTuple, rightTuple));
     }
 
     @Override
@@ -177,7 +178,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         } else {
             indexerLeft.remove(compositeKey, entry);
         }
-        outTupleListLeft.clear(this::retractOutTupleByLeft);
+        outTupleListLeft.clear(this::retractOutTupleLeft);
     }
 
     @Override
@@ -222,7 +223,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
                     indexerRight.remove(oldCompositeKey, entry);
                 }
             }
-            outTupleListRight.clear(this::retractOutTupleByRight);
+            outTupleListRight.clear(this::retractOutTupleRight);
             // outTupleListRight is now empty
             // No need for rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
             indexAndPropagateRight(rightTuple, newCompositeKey, reuseBucket);
@@ -245,7 +246,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         } else {
             rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(compositeKey, rightTuple));
         }
-        forEachLeftMatch(rightTuple, compositeKey, leftTuple -> insertOutTupleFilteredFromLeft(leftTuple, rightTuple));
+        forEachLeftMatch(rightTuple, compositeKey, leftTuple -> insertOutTupleFilteredLeft(leftTuple, rightTuple));
     }
 
     @Override
@@ -265,7 +266,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             indexerRight.remove(compositeKey, entry);
         }
 
-        outTupleListRight.clear(this::retractOutTupleByRight);
+        outTupleListRight.clear(this::retractOutTupleRight);
     }
 
     /**

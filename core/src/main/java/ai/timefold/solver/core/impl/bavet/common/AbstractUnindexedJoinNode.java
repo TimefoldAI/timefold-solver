@@ -51,13 +51,14 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             // and requires adding null checks to the filter for something that should intuitively be impossible.
             // We avoid this situation as it is clear that it is pointless to insert this tuple.
             //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
+            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
+            // the right's inserts are delivered before the left's retracts are.
             return;
         }
+        // The right tuples come out of the list and can be retracting for the mirror-image reason,
+        // hence insertOutTupleFilteredFromRight(...) rather than the unguarded insert.
         for (var rightTuple = rightTupleList.first(); rightTuple != null; rightTuple = rightTupleList.next(rightTuple)) {
-            insertOutTupleFiltered(leftTuple, rightTuple);
+            insertOutTupleFilteredRight(leftTuple, rightTuple);
         }
     }
 
@@ -79,7 +80,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             return;
         }
         leftTupleList.remove(leftTuple);
-        outTupleListLeft.clear(this::retractOutTupleByLeft);
+        outTupleListLeft.clear(this::retractOutTupleLeft);
     }
 
     @Override
@@ -92,7 +93,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
         rightTupleList.add(rightTuple);
         rightTuple.setStore(inputStoreIndexRightOutTupleList, rightOutTupleListBuilder.get());
         for (var leftTuple = leftTupleList.first(); leftTuple != null; leftTuple = leftTupleList.next(leftTuple)) {
-            insertOutTupleFilteredFromLeft(leftTuple, rightTuple);
+            insertOutTupleFilteredLeft(leftTuple, rightTuple);
         }
     }
 
@@ -114,7 +115,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             return;
         }
         rightTupleList.remove(rightTuple);
-        outTupleListRight.clear(this::retractOutTupleByRight);
+        outTupleListRight.clear(this::retractOutTupleRight);
     }
 
 }

@@ -69,18 +69,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
 
-    protected final void insertOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        var outTuple = createOutTuple(leftTuple, rightTuple);
-        TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-        outTupleListLeft.add(outTuple);
-        outTuple.setStore(outputStoreIndexLeftOutTupleList, outTupleListLeft);
-        TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-        outTupleListRight.add(outTuple);
-        outTuple.setStore(outputStoreIndexRightOutTupleList, outTupleListRight);
-        propagationQueue.insert(outTuple);
-    }
-
-    protected final void insertOutTupleFilteredFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
+    protected final void insertOutTupleFilteredLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
@@ -92,18 +81,42 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
             // and requires adding null checks to the filter for something that should intuitively be impossible.
             // We avoid this situation as it is clear that it is pointless to insert this tuple.
             //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
+            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
+            // the right's inserts are delivered before the left's retracts are.
+            // The mirror case is possible too, see insertOutTupleFilteredRight(...).
             return;
         }
-        insertOutTupleFiltered(leftTuple, rightTuple);
+        insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
     }
 
-    protected final void insertOutTupleFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
+    /**
+     * The mirror image of {@link #insertOutTupleFilteredLeft}:
+     * the right tuple is the one read out of storage, and can therefore be the retracting one.
+     * Reachable when the right input's node sits in a higher layer than the left input's,
+     * which delivers the left's inserts before the right's retracts.
+     */
+    protected final void insertOutTupleFilteredRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
+        if (!rightTuple.getState().isActive()) {
+            return;
+        }
+        insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
+    }
+
+    private void insertOutTupleIfActiveFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         if (!isFiltering || testFiltering(leftTuple, rightTuple)) {
             insertOutTuple(leftTuple, rightTuple);
         }
+    }
+
+    private void insertOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
+        var outTuple = createOutTuple(leftTuple, rightTuple);
+        TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+        outTupleListLeft.add(outTuple);
+        outTuple.setStore(outputStoreIndexLeftOutTupleList, outTupleListLeft);
+        TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
+        outTupleListRight.add(outTuple);
+        outTuple.setStore(outputStoreIndexRightOutTupleList, outTupleListRight);
+        propagationQueue.insert(outTuple);
     }
 
     protected final void innerUpdateLeft(LeftTuple_ leftTuple, Consumer<Consumer<UniTuple<Right_>>> rightTupleConsumer) {
@@ -127,9 +140,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 // We avoid this situation as it is clear that the outTuple must be retracted anyway,
                 // and therefore any further updates to it are pointless.
                 //
-                // It is possible that the same problem would exist coming from the other side as well,
-                // and therefore the right tuple would have to be checked for active state as well.
-                // However, no such issue could have been reproduced; when in doubt, leave it out.
+                // The left tuple can be inactive here because its node sits in a higher layer than the right's:
+                // the right's updates are delivered before the left's retracts are.
+                // The mirror case is possible too, see processOutTupleUpdateRight(...).
                 return;
             }
             // Every out-tuple's partner is guaranteed to be swept below,
@@ -140,7 +153,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 TupleList<OutTuple_> outTupleListRight = outTuple.getStore(outputStoreIndexRightOutTupleList);
                 outTupleListRight.mark(outTuple, version);
             }
-            rightTupleConsumer.accept(rightTuple -> processOutTupleUpdateFromRight(leftTuple, rightTuple, version));
+            rightTupleConsumer.accept(rightTuple -> processOutTupleUpdateRight(leftTuple, rightTuple, version));
         }
     }
 
@@ -160,7 +173,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         propagationQueue.update(outTuple);
     }
 
-    private void processOutTupleUpdateFromRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
+    private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
+        if (!rightTuple.getState().isActive()) {
+            // The mirror image of processOutTupleUpdateLeft(...): here the right tuple is the retracting one.
+            // Leaving its mark set is harmless, as getMark() only ever returns a mark of the matching version.
+            return;
+        }
         TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
     }
@@ -199,6 +217,15 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         removeEntry(outTuple, outputStoreIndexRightOutTupleList);
     }
 
+    private void propagateRetract(OutTuple_ outTuple) {
+        var state = outTuple.getState();
+        if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
+            throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
+                    .formatted(outTuple, this, state));
+        }
+        propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+    }
+
     protected final void innerUpdateRight(UniTuple<Right_> rightTuple, Consumer<Consumer<LeftTuple_>> leftTupleConsumer) {
         // Prefer an update over retract-insert if possible
         TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
@@ -214,11 +241,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 TupleList<OutTuple_> outTupleListLeft = outTuple.getStore(outputStoreIndexLeftOutTupleList);
                 outTupleListLeft.mark(outTuple, version);
             }
-            leftTupleConsumer.accept(leftTuple -> processOutTupleUpdateFromLeft(leftTuple, rightTuple, version));
+            leftTupleConsumer.accept(leftTuple -> processOutTupleUpdateLeft(leftTuple, rightTuple, version));
         }
     }
 
-    private void processOutTupleUpdateFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
+    private void processOutTupleUpdateLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
         if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
@@ -231,9 +258,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
             // We avoid this situation as it is clear that the outTuple must be retracted anyway,
             // and therefore any further updates to it are pointless.
             //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
+            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
+            // the right's updates are delivered before the left's retracts are.
+            // The mirror case is possible too, see processOutTupleUpdateRight(...).
             return;
         }
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
@@ -259,22 +286,13 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         doUpdateOutTuple(outTuple);
     }
 
-    private void propagateRetract(OutTuple_ outTuple) {
-        var state = outTuple.getState();
-        if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
-            throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
-                    .formatted(outTuple, this, state));
-        }
-        propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
-    }
-
-    protected void retractOutTupleByLeft(OutTuple_ outTuple) {
+    protected void retractOutTupleLeft(OutTuple_ outTuple) {
         outTuple.setStore(outputStoreIndexLeftOutTupleList, null); // The caller will clear the entire list in one go.
         removeRightEntry(outTuple);
         propagateRetract(outTuple);
     }
 
-    protected void retractOutTupleByRight(OutTuple_ outTuple) {
+    protected void retractOutTupleRight(OutTuple_ outTuple) {
         removeLeftEntry(outTuple);
         outTuple.setStore(outputStoreIndexRightOutTupleList, null); // The caller will clear the entire list in one go.
         propagateRetract(outTuple);
