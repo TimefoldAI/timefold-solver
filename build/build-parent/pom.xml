@@ -31,7 +31,7 @@
       The 'revision' property value is conserved by the flatten-maven-plugin, so the model project does not override it.
     -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
-    <version.ch.qos.logback>1.5.38</version.ch.qos.logback>
+    <version.ch.qos.logback>1.6.0</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
     <version.io.quarkus>3.37.3</version.io.quarkus>
