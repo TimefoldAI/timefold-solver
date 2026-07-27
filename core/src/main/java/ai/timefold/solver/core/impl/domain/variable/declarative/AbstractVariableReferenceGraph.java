@@ -203,9 +203,8 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     public final void beforeListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
             List<Object> elementList, int fromIndex, int toIndex) {
         if (isUpdating) {
-            // Declarative shadow variable updates never change a list variable, so this cannot happen,
-            // but stay consistent with beforeVariableChanged(VariableMetaModel, Object).
-            return;
+            // Declarative shadow variable updates never change a list variable, so this cannot happen.
+            throw new IllegalStateException("Impossible state: list variable changed during shadow variable update.");
         }
         updateListElementEdges(variableReference, entity, elementList, fromIndex, toIndex, false);
     }
@@ -214,7 +213,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     public final void afterListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
             List<Object> elementList, int fromIndex, int toIndex) {
         if (isUpdating) {
-            return;
+            throw new IllegalStateException("Impossible state: list variable changed during shadow variable update.");
         }
         updateListElementEdges(variableReference, entity, elementList, fromIndex, toIndex, true);
     }
