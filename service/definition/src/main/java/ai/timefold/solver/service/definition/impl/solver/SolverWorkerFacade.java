@@ -38,7 +38,8 @@ public interface SolverWorkerFacade {
      * 
      * @param id the identifier of the source (parent)dataset.
      * @param select whether to derive from the unsolved input or the solved output of the parent
-     * @param runName a human-readable name for the new run * @param tags the set of tags to attach to the new dataset
+     * @param runName a human-readable name for the new run
+     * @param tags the set of tags to attach to the new dataset
      * @param configuration the configuration to apply; if {@code null}, the parent's configuration is reused
      * @return the {@link Metadata} of the newly created dataset
      */
@@ -125,7 +126,8 @@ public interface SolverWorkerFacade {
     /**
      * Terminates the ongoing solve for the given dataset (if any) and returns the current model response
      * 
-     * @param id the dataset identifier * @return the {@link ModelResponse} for the dataset after termination
+     * @param id the dataset identifier
+     * @return the {@link ModelResponse} for the dataset after termination
      */
     <Score_, ModelOutput_ extends ModelOutput, InputMetrics_ extends ModelInputMetrics, OutputMetrics_ extends ModelOutputMetrics>
             ModelResponse<Score_, ModelOutput_, InputMetrics_, OutputMetrics_> terminate(String id);
@@ -158,8 +160,9 @@ public interface SolverWorkerFacade {
             getUnprocessedConfiguration(String id);
 
     /**
-     * * Returns the {@link ModelInput} originally submitted for the given dataset. * * @param id the dataset identifier
-     * * @return the model input, or {@code null} if not found
+     * Returns the {@link ModelInput} originally submitted for the given dataset.
+     * @param id the dataset identifier
+     * @return the model input, or {@code null} if not found
      */
     ModelInput getModelInput(String id);
 

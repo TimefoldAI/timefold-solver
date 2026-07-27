@@ -44,7 +44,7 @@ import io.quarkus.gizmo.Type;
  *                 ScoreAnalysisFacadeBase scoreAnalysisFacade,
  *                 SolverWorkerFacade solverWorkerFacade,
  *                 ValidationIssueTypeCatalog validationIssueTypeCatalog) {
- *             super(scoreAnalysisFacade, modelValidator, solverWorkerFacade, mapper, validationIssueTypeCatalog);
+ *             super(scoreAnalysisFacade, modelValidator, solverWorkerFacade, validationIssueTypeCatalog);
  *         }
  *     }
  *     }
