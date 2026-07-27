@@ -53,6 +53,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             BestSolutionRecaller<Solution_> bestSolutionRecaller, BasicPlumbingTermination<Solution_> basicPlumbingTermination,
             UniversalTermination<Solution_> termination, List<Phase<Solution_>> phaseList,
             SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
+        // A random comment to trigger workflow
         super(bestSolutionRecaller, termination, phaseList);
         this.environmentMode = environmentMode;
         this.randomFactory = randomFactory;
