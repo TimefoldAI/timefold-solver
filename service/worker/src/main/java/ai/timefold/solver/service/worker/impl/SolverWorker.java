@@ -7,6 +7,7 @@ import static ai.timefold.solver.service.definition.internal.platform.Environmen
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -99,6 +100,7 @@ public class SolverWorker {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverWorker.class);
     private static final long COMPLETION_TIMEOUT = 60_000;
     private static final long EMITTER_TIMEOUT = 5;
+    private static final long JOB_REGISTRATION_TIMEOUT_MS = 5_000;
 
     private Optional<String> modelName;
     private Optional<String> modelVersion;
@@ -151,7 +153,7 @@ public class SolverWorker {
 
     private final CompletionStatus completionStatus;
 
-    private final ConcurrentMap<Object, SolverJob<SolverModel>> solverJobs = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Object, CompletableFuture<SolverJob<SolverModel>>> solverJobs = new ConcurrentHashMap<>();
 
     private final String planName;
 
@@ -426,6 +428,18 @@ public class SolverWorker {
             var modelConfig = Configuration.getSafeModelConfig(configuration);
 
             var previousModelOutput = loadModelOutput(id);
+
+            var jobFuture = new CompletableFuture<SolverJob<SolverModel>>();
+            solverJobs.put(id, jobFuture);
+            startJob(modelInput, previousModelOutput, modelConfig, solverConfigOverride, id, jobFuture);
+        } catch (Throwable e) {
+            notifyOnFailure(id, e);
+        }
+    }
+
+    private void startJob(ModelInput modelInput, ModelOutput previousModelOutput, ModelConfig modelConfig,
+            SolverConfigOverride solverConfigOverride, String id, CompletableFuture<SolverJob<SolverModel>> jobFuture) {
+        try {
             var job = solverManager.solveBuilder()
                     .withProblemFinder(id_ -> notifyOnStart((String) id_, modelInput, previousModelOutput, modelConfig))
                     .withConfigOverride(solverConfigOverride)
@@ -437,9 +451,10 @@ public class SolverWorker {
                             event -> notifyOnInit(id, event.solution(), event.isTerminatedEarly(), event.producerId()))
                     .withExceptionHandler(this::notifyOnFailure)
                     .run();
-            solverJobs.put(job.getProblemId(), job);
+            jobFuture.complete(job);
         } catch (Throwable e) {
-            notifyOnFailure(id, e);
+            jobFuture.completeExceptionally(e);
+            throw e;
         }
     }
 
@@ -635,7 +650,7 @@ public class SolverWorker {
         }
 
         var metadata = storageService.getMetadata(id);
-        var solverJob = solverJobs.get(id);
+        var solverJob = resolveJob(solverJobs.get(id));
         if (metadata != null && SolvingStatus.SOLVING_ACTIVE == metadata.getSolverStatus() && solverJob != null) {
             var modelOutput = convertToModelOutput(id, solverModel);
 
@@ -651,7 +666,7 @@ public class SolverWorker {
     protected void notifyOnSave(String id, SolverModel solverModel, EventProducerId eventProducerId) {
         LOGGER.debug("Notify run save for id {}", id);
         var metadata = storageService.getMetadata(id);
-        var solverJob = solverJobs.get(id);
+        var solverJob = resolveJob(solverJobs.get(id));
         if (metadata != null && SolvingStatus.SOLVING_ACTIVE == metadata.getSolverStatus() && solverJob != null) {
             processor.onNext(metadata);
             var modelOutput = convertToModelOutput(id, solverModel);
@@ -676,7 +691,7 @@ public class SolverWorker {
         LOGGER.debug("Notify run complete for id {}", id);
         try {
             // remove it as the first thing so in case any best solution events will arrive while this method is executed they will be discarded
-            var solverJob = solverJobs.remove(id);
+            var solverJob = resolveJob(solverJobs.remove(id));
 
             if (solverJob == null) {
                 return;
@@ -751,7 +766,7 @@ public class SolverWorker {
         Metadata metadata = null;
         try {
             // remove it as the first thing so in case any best solution events will arrive while this method is executed they will be discarded
-            var solverJob = solverJobs.remove(id);
+            var solverJob = resolveJob(solverJobs.remove(id));
 
             // update run status only as failed
             metadata = storageService.getMetadata(problemId);
@@ -835,6 +850,25 @@ public class SolverWorker {
         }
 
         return consumer;
+    }
+
+    private static SolverJob<SolverModel> resolveJob(CompletableFuture<SolverJob<SolverModel>> jobFuture) {
+        if (jobFuture == null) {
+            return null;
+        }
+        try {
+            return jobFuture.get(JOB_REGISTRATION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            LOGGER.warn("Solver job registration failed before a job could be created", e);
+            return null;
+        } catch (TimeoutException e) {
+            LOGGER.warn("Timed out after {} ms waiting for the solver job to be registered", JOB_REGISTRATION_TIMEOUT_MS, e);
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOGGER.warn("Interrupted while waiting for the solver job to be registered", e);
+            return null;
+        }
     }
 
 }
