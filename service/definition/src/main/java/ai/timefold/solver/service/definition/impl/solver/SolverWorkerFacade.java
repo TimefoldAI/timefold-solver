@@ -33,11 +33,12 @@ public interface SolverWorkerFacade {
     <Score_> Metadata<Score_> solveDataset(String id);
 
     /**
-     * Creates a new dataset derived from an existing one (identified by {@code id}), * without starting the solving process.
-     * The resulting dataset is validated and * computed asynchronously.
-     * 
-     * @param id the identifier of the source (parent)dataset.
-     * @param select whether to derive from the unsolved input or the solved output of the parent
+     /**
+      * Creates a new dataset derived from an existing one (identified by {@code id}) without starting the solving process.
+      * The resulting dataset is validated and computed asynchronously.
+      * 
+      * @param id the identifier of the source (parent) dataset.
+      * @param select whether to derive from the unsolved input or the solved output of the parent
      * @param runName a human-readable name for the new run
      * @param tags the set of tags to attach to the new dataset
      * @param configuration the configuration to apply; if {@code null}, the parent's configuration is reused
@@ -170,9 +171,13 @@ public interface SolverWorkerFacade {
      * Returns the {@link ModelInput} representing the solved state of the given dataset (i.e. planning entities updated
      * with the best solution).
      * 
-     * @param id the dataset identifier
-     * @return the solved model input, or {@code null} if notavailable
-     */
+     /**
+      * Returns the {@link ModelInput} representing the solved state of the given dataset (i.e. planning entities updated
+      * with the best solution).
+      * 
+      * @param id the dataset identifier
+      * @return the solved model input, or {@code null} if not available
+      */
     ModelInput getSolvedModelInput(String id);
 
     /**
