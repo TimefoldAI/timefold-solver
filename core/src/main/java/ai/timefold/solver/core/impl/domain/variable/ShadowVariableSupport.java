@@ -366,6 +366,10 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
         for (var handler : listVariableChangeHandlerList) {
             handler.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
         }
+        if (shadowVariableSession != null) {
+            shadowVariableSession.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+            dirty = true;
+        }
     }
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
@@ -380,6 +384,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
         if (shadowVariableSession != null) {
             // See afterElementUnassigned().
             dirty = true;
+            shadowVariableSession.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }
     }
 

@@ -334,6 +334,11 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             }
             for (var shadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
                 for (var rootSource : shadowVariableDescriptor.getSources()) {
+                    if (rootSource.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
+                        // Unlike a fact collection, a list variable's contents change during solving,
+                        // so the decision must not depend on its current contents.
+                        return groupedUpdaters;
+                    }
                     if (rootSource.parentVariableType() == ParentVariableType.GROUP) {
                         var visitedCount = new MutableInt();
                         rootSource.valueEntityFunction().accept(entity, ignored -> visitedCount.increment());
@@ -359,10 +364,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var groupVariables = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
         groupIndexToVariables.put(0, groupVariables);
         for (var declarativeShadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
-            // If a @ShadowSources has a group source (i.e. "visitGroup[].arrivalTimes"),
+            // If a @ShadowSources has a group source (i.e. "visitGroup[].arrivalTimes")
+            // or a list element source (i.e. "values[].endTime"),
             // create a new group since it must wait until all members of that group are processed
             var hasGroupSources = Arrays.stream(declarativeShadowVariableDescriptor.getSources())
-                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP);
+                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP
+                            || rootVariableSource.parentVariableType() == ParentVariableType.LIST_ELEMENT);
 
             // If a @ShadowSources has an alignment key,
             // create a new group since multiple entities must be updated for this node
@@ -531,6 +538,10 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
         for (var source : declarativeShadowVariable.getSources()) {
+            if (source.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
+                createListElementSourceProcessors(graphDescriptor, source, fromVariableId);
+                continue;
+            }
             var parentVariableList = new ArrayList<VariableSourceReference>();
             var parentInverseFunctionList = new ArrayList<Function<Object, Collection<Object>>>();
             var parentIsOnRootEntity = false;
@@ -610,6 +621,32 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         }
     }
 
+    private static <Solution_> void createListElementSourceProcessors(
+            GraphDescriptor<Solution_> graphDescriptor,
+            RootVariableSource<?, ?> source,
+            VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var listVariableId = Objects.requireNonNull(source.listVariableMetaModel());
+        // Mark the target variable changed whenever its list variable changes,
+        // since its dependency set (and possibly its value) changes with the list's contents.
+        // This is also triggered for each entity when the graph is constructed,
+        // guaranteeing an initial computation even for entities with an empty list.
+        graphDescriptor.variableReferenceGraphBuilder()
+                .addAfterProcessor(GraphChangeType.NO_CHANGE, listVariableId,
+                        (graph, entity) -> {
+                            var changed = graph.lookupOrNull(fromVariableId, entity);
+                            if (changed != null) {
+                                graph.markChanged(changed);
+                            }
+                        });
+        // Maintain the fan-in edges (element.sourceVariable -> entity.targetVariable)
+        // when the list variable changes.
+        var elementSource = source.variableSourceReferences().get(0);
+        graphDescriptor.variableReferenceGraphBuilder()
+                .addListElementSourceLocator(listVariableId,
+                        new ListElementSourceLocator(elementSource.variableMetaModel(), fromVariableId,
+                                elementSource.chainFromRootEntityToVariableEntity()));
+    }
+
     private static <Solution_> void createAliasToVariableChangeProcessors(
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Set<VariableSourceReference> aliasSet,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
@@ -677,10 +714,18 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     for (var source : sourceRoot.variableSourceReferences()) {
                         if (source.isTopLevel() && source.isDeclarative()) {
                             var fromVariableId = source.variableMetaModel();
+                            // Edges sourced from a list variable's elements reflect its contents when
+                            // the graph is built and are removed/added as it changes during solving,
+                            // so they must not be treated as fixed by the fixed-loop fail-fast.
+                            var isListElementSource = sourceRoot.parentVariableType() == ParentVariableType.LIST_ELEMENT;
                             sourceRoot.valueEntityFunction()
                                     .accept(entity, fromEntity -> {
                                         var from = variableReferenceGraphBuilder.lookupOrError(fromVariableId, fromEntity);
-                                        variableReferenceGraphBuilder.addFixedEdge(from, to);
+                                        if (isListElementSource) {
+                                            variableReferenceGraphBuilder.addInitialDynamicEdge(from, to);
+                                        } else {
+                                            variableReferenceGraphBuilder.addFixedEdge(from, to);
+                                        }
                                     });
                             break;
                         }
