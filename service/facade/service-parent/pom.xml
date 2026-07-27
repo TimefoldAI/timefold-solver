@@ -421,6 +421,54 @@
 
   <profiles>
     <profile>
+      <!-- Creates the first openapi spec if it doesn't exist yet. -->
+      <id>initiate-openapi-old-spec</id>
+      <activation>
+        <file>
+          <missing>${project.basedir}/src/build/openapi.json</missing>
+        </file>
+        <property>
+          <name>ai.timefold.sdk.model.processing.disabled</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <properties>
+        <openapi-diff.skip>true</openapi-diff.skip>
+        <ant.skip>false</ant.skip>
+      </properties>
+      <build>
+        <plugins>
+          <!-- Enforce the Quarkus maven plugin runs the package phase first. -->
+          <plugin>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <configuration>
+              <skip>${ant.skip}</skip>
+              <target>
+                <!-- Initiate the old openapi schema from the new one. -->
+                <mkdir dir="${project.basedir}/src/build"/>
+                <copy file="${project.basedir}/target/openapi-schema/openapi.json"
+                      tofile="${project.basedir}/src/build/openapi.json"/>
+              </target>
+            </configuration>
+            <executions>
+              <execution>
+                <id>initiate-openapi-old-spec</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
       <!-- Opt-in to use Timefold Solver Enterprise. -->
       <id>enterprise</id>
       <!-- This profile must NOT be activated during the Solver build, otherwise the build fails. -->
