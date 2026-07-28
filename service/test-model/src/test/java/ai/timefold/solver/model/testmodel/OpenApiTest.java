@@ -27,12 +27,12 @@ import io.smallrye.openapi.api.SmallRyeOpenAPI;
 @QuarkusTest
 public class OpenApiTest {
 
-    @ConfigProperty(name = "model.api.version")
-    String modelApiVersion;
+    @ConfigProperty(name = "timefold.application.version")
+    String applicationVersion;
 
     @Test
     public void testOperationHasPriorityQueryParam() throws IOException {
-        Path openApiFilePath = Paths.get("target/timefold/timefold-test-model_" + modelApiVersion + "/openapi/service.json");
+        Path openApiFilePath = Paths.get("target/timefold/timefold-test-model_" + applicationVersion + "/openapi/service.json");
 
         if (!Files.exists(openApiFilePath)) {
             fail("OpenAPI file not found at: " + openApiFilePath.toAbsolutePath());
@@ -48,7 +48,7 @@ public class OpenApiTest {
         operationsId.forEach(operationId -> assertOperation(openAPI, operationId));
 
         // verify that paths start with api version configured
-        openAPI.getPaths().getPathItems().forEach((k, v) -> assertThat(k).startsWith("/" + modelApiVersion));
+        openAPI.getPaths().getPathItems().forEach((k, v) -> assertThat(k).startsWith("/" + applicationVersion));
     }
 
     private void assertOperation(OpenAPI openAPI, String operationId) {
