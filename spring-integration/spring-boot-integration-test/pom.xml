@@ -100,8 +100,6 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <!-- The version inherited by Spring (1.1.6) has a dependency issue causing a failure at runtime -->
-            <version>1.1.5</version>
             <extensions>true</extensions>
             <executions>
               <execution>
