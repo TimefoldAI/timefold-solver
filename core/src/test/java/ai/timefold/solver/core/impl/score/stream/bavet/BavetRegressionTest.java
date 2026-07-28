@@ -397,7 +397,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1));
+                    assertMatch(value1, value1).withIndictedObjects(value1));
 
             // Unassign+assign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -411,7 +411,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value2);
 
             assertScore(scoreDirector,
-                    assertMatch(value2, value2));
+                    assertMatch(value2, value2).withIndictedObjects(value2));
 
             // Reassign and check result.
             scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
@@ -423,7 +423,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1));
+                    assertMatch(value1, value1).withIndictedObjects(value1));
         }
 
     }
@@ -458,7 +458,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1));
+                    assertMatch(value1, value1).withIndictedObjects(value1));
 
             // Unassign+assign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -472,7 +472,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value2);
 
             assertScore(scoreDirector,
-                    assertMatch(value2, value2));
+                    assertMatch(value2, value2).withIndictedObjects(value2));
 
             // Reassign and check result.
             scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
@@ -484,7 +484,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1));
+                    assertMatch(value1, value1).withIndictedObjects(value1));
         }
 
     }
@@ -521,7 +521,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1));
+                    assertMatch(value1, value1).withIndictedObjects(value1));
 
             // Unassign+assign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -535,7 +535,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value2);
 
             assertScore(scoreDirector,
-                    assertMatch(value2, value2));
+                    assertMatch(value2, value2).withIndictedObjects(value2));
 
             // Reassign and check result.
             scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
@@ -547,7 +547,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1));
+                    assertMatch(value1, value1).withIndictedObjects(value1));
         }
 
     }
@@ -586,10 +586,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1),
-                    assertMatch(value1, value2),
-                    assertMatch(value2, value1),
-                    assertMatch(value2, value2));
+                    assertMatch(value1, value1).withIndictedObjects(value1),
+                    assertMatch(value1, value2).withIndictedObjects(value1, value2),
+                    assertMatch(value2, value1).withIndictedObjects(value1, value2),
+                    assertMatch(value2, value2).withIndictedObjects(value2));
 
             // Unassign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -601,7 +601,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value2, value2));
+                    assertMatch(value2, value2).withIndictedObjects(value2));
 
             // Reassign and check result.
             scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
@@ -611,10 +611,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1),
-                    assertMatch(value1, value2),
-                    assertMatch(value2, value1),
-                    assertMatch(value2, value2));
+                    assertMatch(value1, value1).withIndictedObjects(value1),
+                    assertMatch(value1, value2).withIndictedObjects(value1, value2),
+                    assertMatch(value2, value1).withIndictedObjects(value1, value2),
+                    assertMatch(value2, value2).withIndictedObjects(value2));
         }
 
     }
