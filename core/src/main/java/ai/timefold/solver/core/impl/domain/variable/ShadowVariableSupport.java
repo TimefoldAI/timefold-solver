@@ -50,7 +50,9 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public static <Solution_> ShadowVariableSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
         return new ShadowVariableSupport<>(scoreDirector,
-                TimefoldSolverEnterpriseService.loadOrDefault(service -> service::buildTopologyGraph,
+                TimefoldSolverEnterpriseService.loadOrDefault(
+                        service -> size -> service.buildTopologyGraph(size,
+                                scoreDirector.ignoreInconsistentSolutions()),
                         () -> DefaultTopologicalOrderGraph::new));
     }
 
@@ -303,7 +305,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
                     scoreDirector,
                     shadowVariableGraphCreator);
             shadowVariableSession =
-                    shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.getWorkingSolution());
+                    shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.ignoreInconsistentSolutions(),
+                            scoreDirector.getWorkingSolution());
         }
     }
 
@@ -412,11 +415,12 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
         if (shadowVariableSession != null) {
             if (!shadowVariableSession.updateVariables()) {
                 updateSuccessful = false;
-                notificationQueuesAreEmpty = true;
                 return false;
             }
         }
         dirty = false;
+        updateSuccessful = true;
+        return true;
     }
 
     public List<Object> getInconsistentEntities() {

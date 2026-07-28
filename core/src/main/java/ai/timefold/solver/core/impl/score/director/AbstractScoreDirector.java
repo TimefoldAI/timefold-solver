@@ -364,14 +364,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     public void unassignInconsistentEntities() {
-        var inconsistentEntities = variableListenerSupport.getInconsistentEntities();
+        var inconsistentEntities = shadowVariableSupport.getInconsistentEntities();
         if (listVariableStateSupply != null) {
             var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
             var listElementClass = listVariableStateSupply.getSourceVariableDescriptor().getElementType();
             for (var inconsistentEntity : inconsistentEntities) {
                 if (listElementClass.isInstance(inconsistentEntity)) {
                     var inverse = Objects.requireNonNull(listVariableStateSupply.getInverseSingleton(inconsistentEntity));
-                    int index = Objects.requireNonNull(listVariableStateSupply.getIndex(inconsistentEntity));
+                    int index = listVariableStateSupply.getIndexOrFail(inconsistentEntity);
 
                     if (listVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), inverse, index)) {
                         throw new IllegalStateException("""
@@ -384,7 +384,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     listVariableDescriptor.removeElement(inverse, index);
                     afterListVariableChanged(listVariableDescriptor, inverse, index, index);
                     afterListVariableElementUnassigned(listVariableDescriptor, inconsistentEntity);
-                    triggerVariableListeners();
+                    updateShadowVariables();
                 }
                 // Unassign any normal @PlanningVariable on the entity too
                 unassignPlainEntity(inconsistentEntity);
@@ -413,7 +413,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             genuineVariableDescriptor.setValue(inconsistentEntity, null);
             afterVariableChanged(genuineVariableDescriptor, inconsistentEntity);
         }
-        triggerVariableListeners();
+        updateShadowVariables();
     }
 
     @Override
