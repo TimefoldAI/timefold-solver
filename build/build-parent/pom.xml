@@ -60,6 +60,7 @@
     <version.asciidoctor.plugin>3.2.0</version.asciidoctor.plugin>
     <version.asciidoctor.plugin.pdf>2.3.23</version.asciidoctor.plugin.pdf>
     <version.assembly.plugin>3.8.0</version.assembly.plugin>
+    <version.clean.plugin>3.2.0</version.clean.plugin>
     <version.compiler.plugin>3.15.0</version.compiler.plugin>
     <version.dependency.plugin>3.11.0</version.dependency.plugin>
     <version.deploy.plugin>3.1.4</version.deploy.plugin>
@@ -73,9 +74,11 @@
     <version.jaxb2.plugin>4.1.0</version.jaxb2.plugin>
     <version.maven-plugin.plugin>3.15.2</version.maven-plugin.plugin>
     <version.maven-plugin.plugin-testing>3.5.1</version.maven-plugin.plugin-testing>
+    <version.native.plugin>1.1.5</version.native.plugin>
     <version.properties.plugin>1.3.0</version.properties.plugin>
     <version.resources.plugin>3.5.0</version.resources.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
+    <version.site.plugin>3.12.1</version.site.plugin> <!-- We don't use site, but maven automatically configure it -->
     <version.sonar.plugin>5.7.0.6970</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
     <version.spotless.plugin>3.8.0</version.spotless.plugin>
@@ -281,12 +284,20 @@
           <extensions>true</extensions>
         </plugin>
         <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${version.clean.plugin}</version>
+        </plugin>
+        <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>${version.dependency.plugin}</version>
         </plugin>
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>${version.deploy.plugin}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${version.site.plugin}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -326,6 +337,7 @@
                     <checkProfiles>true</checkProfiles>
                   </requireManagedDeps>
                   <banDuplicatePomDependencyVersions/>
+                  <requirePluginVersions />
                 </rules>
                 <fail>true</fail>
               </configuration>
@@ -370,6 +382,11 @@
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>${version.install.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>io.quarkus.platform</groupId>
+          <artifactId>quarkus-maven-plugin</artifactId>
+          <version>${version.io.quarkus}</version>
         </plugin>
         <plugin>
           <groupId>io.smallrye</groupId>
@@ -624,6 +641,16 @@
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
           <version>${version.sonar.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${version.org.springframework.boot}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.graalvm.buildtools</groupId>
+          <artifactId>native-maven-plugin</artifactId>
+          <version>${version.native.plugin}</version>
         </plugin>
       </plugins>
     </pluginManagement>
