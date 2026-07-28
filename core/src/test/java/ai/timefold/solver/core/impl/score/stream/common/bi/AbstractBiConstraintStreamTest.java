@@ -776,8 +776,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1).withIndictedObjects(entity, value1),
-                    assertMatch(entity, value2).withIndictedObjects(entity, value2));
+                    assertMatch(entity, value1).withIndictedObjects(entity, value1, value2),
+                    assertMatch(entity, value2).withIndictedObjects(entity, value1, value2));
 
             // Unassign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -799,7 +799,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1).withIndictedObjects(entity, value1),
+                    assertMatch(entity, value1).withIndictedObjects(entity, value1, value2),
                     assertMatch(entity, value2).withIndictedObjects(entity, value1, value2));
         }
 
@@ -917,7 +917,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity2));
+                assertMatch(solution.getFirstEntity(), entity2)
+                        .withIndictedObjects(solution.getFirstEntity(), entity2, solution.getFirstEntityGroup()));
 
         // Incremental
         var toRemove = solution.getFirstEntityGroup();
@@ -991,7 +992,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2));
+                assertMatch(entity1, entity2)
+                        .withIndictedObjects(entity1, entity2, entityGroup));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup);

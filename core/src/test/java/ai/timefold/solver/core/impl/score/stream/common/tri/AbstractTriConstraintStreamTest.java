@@ -414,7 +414,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, solution.getFirstEntity()));
+                assertMatch(entity1, entity2, solution.getFirstEntity())
+                        .withIndictedObjects(entity1, entity2, solution.getFirstEntity(), solution.getFirstEntityGroup()));
 
         // Incremental
         var toRemove = solution.getFirstEntityGroup();
@@ -494,7 +495,8 @@ public abstract class AbstractTriConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity2, entity1));
+                assertMatch(solution.getFirstEntity(), entity2, entity1)
+                        .withIndictedObjects(solution.getFirstEntity(), entity2, entity1, entityGroup));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup);
