@@ -104,10 +104,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         rightTuple.setStore(inputStoreIndexRightEntry, rightTupleList.add(rightTuple));
         if (!isFiltering) {
-            // To prevent creating a dynamic lambda on the hot path,
-            // only call the 2-args version when indictments are enabled
             if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
-                counterList.forEach(this::incrementCounterRightWithoutIndictment);
+                counterList.forEach(this::incrementCounterRight);
             } else {
                 counterList.forEach(counter -> incrementCounterRightUpdatingIndictment(counter, rightTuple));
             }
@@ -145,10 +143,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         rightEntry.remove();
         if (!isFiltering) {
-            // To prevent creating a dynamic lambda on the hot path,
-            // only call the 2-args version when indictments are enabled
             if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
-                counterList.forEach(this::decrementCounterRightWithoutIndictment);
+                counterList.forEach(this::decrementCounterRight);
             } else {
                 counterList.forEach(counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
             }

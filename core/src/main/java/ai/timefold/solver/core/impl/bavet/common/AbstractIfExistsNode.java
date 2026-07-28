@@ -105,7 +105,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         }
     }
 
-    protected void incrementCounterRightWithoutIndictment(ExistsCounter<LeftTuple_> counter) {
+    protected void incrementCounterRight(ExistsCounter<LeftTuple_> counter) {
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doInsertCounter(counter);
@@ -113,45 +113,46 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
-          // NOTE: By not propagating here, the left tuple's indicted objects can be stale
-          //       if an element is removed.
         counter.countRight++;
     }
 
     protected void incrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        IndictmentSource.addSupport(getId(), counter.getTuple(), rightTuple);
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doInsertCounter(counter);
             } else {
                 doRetractCounter(counter);
             }
-        } else {
-            // count != 0, so only propagate if we are in an `ifExists`
-            if (shouldExist) {
-                doUpdateCounter(counter);
-            }
-        } // Else do not even propagate an update
-          // NOTE: By not propagating here, the left tuple's indicted objects can be stale
-          //       if an element is removed.
-        IndictmentSource.addSupport(getId(), counter.leftTuple, rightTuple);
+        } else if (shouldExist) {
+            doUpdateCounter(counter);
+        }
         counter.countRight++;
     }
 
     protected void decrementCounterRight(ExistsCounter<LeftTuple_> counter) {
         counter.countRight--;
-        IndictmentSource.removeSupport(getId(), counter.leftTuple, rightTuple);
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doRetractCounter(counter);
             } else {
                 doInsertCounter(counter);
             }
-        } else {
-            // count != 0, so only propagate if we are in an `ifExists`
-            if (shouldExist) {
-                doUpdateCounter(counter);
-            }
         } // Else do not even propagate an update
+    }
+
+    protected void decrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
+        counter.countRight--;
+        if (counter.countRight == 0) {
+            if (shouldExist) {
+                doRetractCounter(counter);
+            } else {
+                doInsertCounter(counter);
+            }
+        } else if (shouldExist) {
+            doUpdateCounter(counter);
+        }
     }
 
     // Clears the left tracker list rooted at leftTuple's inputStoreIndexLeftTrackerList slot,
@@ -192,18 +193,18 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     // Walk safety: removeFromLeft only touches left-side links, so rightNext is stable across the call.
     protected void clearRightTrackerList(UniTuple<Right_> rightTuple) {
         FilteringTracker<LeftTuple_> tracker = rightTuple.removeStore(inputStoreIndexRightTrackerList);
-        if (rightTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+        if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
             while (tracker != null) {
                 var next = tracker.rightNext;
-                decrementCounterRightUpdatingIndictment(tracker.counter, rightTuple);
-                removeFromLeft(tracker);
+                decrementCounterRight(tracker.counter);
+                removeLeft(tracker);
                 tracker = next;
             }
         } else {
             while (tracker != null) {
                 var next = tracker.rightNext;
-                decrementCounterRightWithoutIndictment(tracker.counter);
-                removeFromLeft(tracker);
+                decrementCounterRightUpdatingIndictment(tracker.counter, rightTuple);
+                removeLeft(tracker);
                 tracker = next;
             }
         }
@@ -233,13 +234,17 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             // which happens when the right input's node sits in a higher layer than the left input's,
             // so the left's inserts and updates are delivered before the right's retracts are.
             // Skipping is safe, as the pending retract will not have a tracker to clear for this pair.
+            IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
             return;
         }
         if (testFiltering(counter.leftTuple, rightTuple)) {
             counter.countRight++;
+            IndictmentSource.addSupport(getId(), counter.getTuple(), rightTuple);
             var tracker = new FilteringTracker<>(counter, rightTuple);
             linkLeft(tracker);
             linkRight(tracker);
+        } else {
+            IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
         }
     }
 
@@ -284,13 +289,17 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             // The left tuple can be inactive here because its node sits in a higher layer than the right's:
             // the right's inserts and updates are delivered before the left's retracts are.
             // The mirror case is possible too, see updateCounterLeft(...).
+            IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
             return;
         }
         if (testFiltering(leftTuple, rightTuple)) {
-            incrementCounterRightUpdatingIndictment(counter, rightTuple);
+            incrementCounterRight(counter);
+            IndictmentSource.addSupport(getId(), counter.getTuple(), rightTuple);
             var tracker = new FilteringTracker<>(counter, rightTuple);
             linkLeft(tracker);
             linkRight(tracker);
+        } else {
+            IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
         }
     }
 
@@ -303,6 +312,21 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         }
     }
 
+    private void doUpdateCounter(ExistsCounter<LeftTuple_> counter) {
+        switch (counter.state) {
+            case CREATING, UPDATING -> {
+                // Do nothing
+            }
+            case OK -> {
+                propagationQueue.update(counter);
+            }
+            case DYING, DEAD, ABORTING -> {
+                throw new IllegalStateException("Impossible state: The counter (%s) has an impossible retract state (%s)."
+                        .formatted(counter, counter.state));
+            }
+        }
+    }
+
     private void doRetractCounter(ExistsCounter<LeftTuple_> counter) {
         switch (counter.state) {
             case CREATING -> // Kill it before it propagates.
@@ -312,15 +336,6 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             default ->
                 throw new IllegalStateException("Impossible state: The counter (%s) has an impossible retract state (%s)."
                         .formatted(counter, counter.state));
-        }
-    }
-
-    private void doUpdateCounter(ExistsCounter<LeftTuple_> counter) {
-        switch (counter.state) {
-            case DYING, OK, UPDATING, CREATING -> propagationQueue.update(counter);
-            case DEAD, ABORTING -> propagationQueue.insert(counter);
-            default -> throw new IllegalStateException("Impossible state: the counter (%s) has an impossible insert state (%s)."
-                    .formatted(counter, counter.state));
         }
     }
 

@@ -210,9 +210,15 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity2, entity1, entityGroup, solution.getFirstValue()),
-                assertMatch(entity2, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue()),
-                assertMatch(entity1, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue()));
+                assertMatch(entity2, entity1, entityGroup, solution.getFirstValue())
+                        .withIndictedObjects(entity2, entity1, entityGroup, solution.getFirstValue(),
+                                solution.getFirstValue().getValueGroup()),
+                assertMatch(entity2, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue())
+                        .withIndictedObjects(entity2, solution.getFirstEntity(), solution.getFirstEntityGroup(),
+                                solution.getFirstValue(), solution.getFirstValue().getValueGroup()),
+                assertMatch(entity1, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue())
+                        .withIndictedObjects(entity1, solution.getFirstEntity(), solution.getFirstEntityGroup(),
+                                solution.getFirstValue(), solution.getFirstValue().getValueGroup()));
 
         // Incremental
         var toRemove = solution.getFirstValueGroup();
