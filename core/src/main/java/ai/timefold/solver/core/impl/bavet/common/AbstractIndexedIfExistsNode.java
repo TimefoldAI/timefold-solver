@@ -103,7 +103,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             // Trackers link themselves into the left tuple's inputStoreIndexLeftTrackerList slot.
             // No list object is needed; the slot starts null and the first tracker becomes the head.
             forEachRightFromLeft(leftTuple, compositeKey,
-                    rightTuple -> updateCounterFromLeft(counter, rightTuple));
+                    rightTuple -> updateCounterLeft(counter, rightTuple));
         }
     }
 
@@ -138,7 +138,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 clearLeftTrackerList(leftTuple);
                 counter.countRight = 0;
                 forEachRightFromLeft(leftTuple, oldCompositeKey,
-                        rightTuple -> updateCounterFromLeft(counter, rightTuple));
+                        rightTuple -> updateCounterLeft(counter, rightTuple));
                 updateCounterLeft(counter);
             }
         } else {
@@ -208,7 +208,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             // Trackers link themselves into the right tuple's inputStoreIndexRightTrackerList slot.
             // No list object is needed; the slot starts null and the first tracker becomes the head.
             forEachLeftCounter(rightTuple, compositeKey,
-                    counter -> updateCounterFromRight(counter, rightTuple));
+                    counter -> updateCounterRight(counter, rightTuple));
         }
     }
 
@@ -226,7 +226,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             if (isFiltering) {
                 clearRightTrackerList(rightTuple);
                 forEachLeftCounter(rightTuple, oldCompositeKey,
-                        counter -> updateCounterFromRight(counter, rightTuple));
+                        counter -> updateCounterRight(counter, rightTuple));
             }
         } else {
             // sameBucket: equal prefix unchanged ⇒ keep & reuse the cached bucket (no top lookup, no drop/recreate).

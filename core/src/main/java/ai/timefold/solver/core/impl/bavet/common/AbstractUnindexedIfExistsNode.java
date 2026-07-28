@@ -50,7 +50,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             // Trackers link themselves into the left tuple's inputStoreIndexLeftTrackerList slot.
             // No list object is needed; the slot starts null and the first tracker becomes the head.
             for (var rightTuple : rightTupleList) {
-                updateCounterFromLeft(counter, rightTuple);
+                updateCounterLeft(counter, rightTuple);
             }
         }
         initCounterLeft(counter);
@@ -74,7 +74,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             clearLeftTrackerList(leftTuple);
             counter.countRight = 0;
             for (var rightTuple : rightTupleList) {
-                updateCounterFromLeft(counter, rightTuple);
+                updateCounterLeft(counter, rightTuple);
             }
             updateCounterLeft(counter);
         }
@@ -108,7 +108,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             // Trackers link themselves into the right tuple's inputStoreIndexRightTrackerList slot.
             // No list object is needed; the slot starts null and the first tracker becomes the head.
             for (var counter : counterList) {
-                updateCounterFromRight(counter, rightTuple);
+                updateCounterRight(counter, rightTuple);
             }
         }
     }
@@ -124,7 +124,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         if (isFiltering) {
             clearRightTrackerList(rightTuple);
             for (var counter : counterList) {
-                updateCounterFromRight(counter, rightTuple);
+                updateCounterRight(counter, rightTuple);
             }
         }
     }

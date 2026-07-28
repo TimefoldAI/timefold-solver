@@ -126,6 +126,86 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         } // Else do not even propagate an update
     }
 
+    // Clears the left tracker list rooted at leftTuple's inputStoreIndexLeftTrackerList slot,
+    // cross-removing each tracker from its right tuple's hidden list. No-op when !isFiltering.
+    // Walk safety: removeFromRight only touches right-side links, so leftNext is stable across the call.
+    protected void clearLeftTrackerList(LeftTuple_ leftTuple) {
+        if (!isFiltering) {
+            return;
+        }
+        FilteringTracker<LeftTuple_> tracker = leftTuple.removeStore(inputStoreIndexLeftTrackerList);
+        while (tracker != null) {
+            var next = tracker.leftNext;
+            removeRight(tracker);
+            tracker = next;
+        }
+    }
+
+    // Splices tracker out of its right tuple's hidden list (used when clearing from the left side).
+    // Nulls the tracker's right links; if tracker is the head, updates the right tuple's slot.
+    private void removeRight(FilteringTracker<LeftTuple_> tracker) {
+        var prev = tracker.rightPrev;
+        var next = tracker.rightNext;
+        if (prev != null) {
+            prev.rightNext = next;
+        } else {
+            // tracker is the head of the right list; update the slot
+            tracker.rightTuple.setStore(inputStoreIndexRightTrackerList, next);
+        }
+        if (next != null) {
+            next.rightPrev = prev;
+        }
+        tracker.rightPrev = null;
+        tracker.rightNext = null;
+    }
+
+    // Clears the right tracker list rooted at rightTuple's inputStoreIndexRightTrackerList slot,
+    // decrementing each counter and cross-removing each tracker from its left tuple's hidden list.
+    // Walk safety: removeFromLeft only touches left-side links, so rightNext is stable across the call.
+    protected void clearRightTrackerList(UniTuple<Right_> rightTuple) {
+        FilteringTracker<LeftTuple_> tracker = rightTuple.removeStore(inputStoreIndexRightTrackerList);
+        while (tracker != null) {
+            var next = tracker.rightNext;
+            decrementCounterRight(tracker.counter);
+            removeLeft(tracker);
+            tracker = next;
+        }
+    }
+
+    // Splices tracker out of its left tuple's hidden list (used when clearing from the right side).
+    // Nulls the tracker's left links; if tracker is the head, updates the left tuple's slot.
+    private void removeLeft(FilteringTracker<LeftTuple_> tracker) {
+        var prev = tracker.leftPrev;
+        var next = tracker.leftNext;
+        if (prev != null) {
+            prev.leftNext = next;
+        } else {
+            // tracker is the head of the left list; update the slot
+            tracker.counter.leftTuple.setStore(inputStoreIndexLeftTrackerList, next);
+        }
+        if (next != null) {
+            next.leftPrev = prev;
+        }
+        tracker.leftPrev = null;
+        tracker.leftNext = null;
+    }
+
+    protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        if (!rightTuple.getState().isActive()) {
+            // The mirror image of updateCounterRight(...): here the right tuple is the retracting one,
+            // which happens when the right input's node sits in a higher layer than the left input's,
+            // so the left's inserts and updates are delivered before the right's retracts are.
+            // Skipping is safe, as the pending retract will not have a tracker to clear for this pair.
+            return;
+        }
+        if (testFiltering(counter.leftTuple, rightTuple)) {
+            counter.countRight++;
+            var tracker = new FilteringTracker<>(counter, rightTuple);
+            linkLeft(tracker);
+            linkRight(tracker);
+        }
+    }
+
     // Prepends tracker into the left tuple's hidden intrusive tracker list.
     // The left tuple's store at inputStoreIndexLeftTrackerList holds the list head (null = empty).
     private void linkLeft(FilteringTracker<LeftTuple_> tracker) {
@@ -150,80 +230,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         rightTuple.setStore(inputStoreIndexRightTrackerList, tracker);
     }
 
-    // Splices tracker out of its right tuple's hidden list (used when clearing from the left side).
-    // Nulls the tracker's right links; if tracker is the head, updates the right tuple's slot.
-    private void removeFromRight(FilteringTracker<LeftTuple_> tracker) {
-        var prev = tracker.rightPrev;
-        var next = tracker.rightNext;
-        if (prev != null) {
-            prev.rightNext = next;
-        } else {
-            // tracker is the head of the right list; update the slot
-            tracker.rightTuple.setStore(inputStoreIndexRightTrackerList, next);
-        }
-        if (next != null) {
-            next.rightPrev = prev;
-        }
-        tracker.rightPrev = null;
-        tracker.rightNext = null;
-    }
-
-    // Splices tracker out of its left tuple's hidden list (used when clearing from the right side).
-    // Nulls the tracker's left links; if tracker is the head, updates the left tuple's slot.
-    private void removeFromLeft(FilteringTracker<LeftTuple_> tracker) {
-        var prev = tracker.leftPrev;
-        var next = tracker.leftNext;
-        if (prev != null) {
-            prev.leftNext = next;
-        } else {
-            // tracker is the head of the left list; update the slot
-            tracker.counter.leftTuple.setStore(inputStoreIndexLeftTrackerList, next);
-        }
-        if (next != null) {
-            next.leftPrev = prev;
-        }
-        tracker.leftPrev = null;
-        tracker.leftNext = null;
-    }
-
-    // Clears the left tracker list rooted at leftTuple's inputStoreIndexLeftTrackerList slot,
-    // cross-removing each tracker from its right tuple's hidden list. No-op when !isFiltering.
-    // Walk safety: removeFromRight only touches right-side links, so leftNext is stable across the call.
-    protected void clearLeftTrackerList(LeftTuple_ leftTuple) {
-        if (!isFiltering) {
-            return;
-        }
-        FilteringTracker<LeftTuple_> tracker = leftTuple.removeStore(inputStoreIndexLeftTrackerList);
-        while (tracker != null) {
-            var next = tracker.leftNext;
-            removeFromRight(tracker);
-            tracker = next;
-        }
-    }
-
-    // Clears the right tracker list rooted at rightTuple's inputStoreIndexRightTrackerList slot,
-    // decrementing each counter and cross-removing each tracker from its left tuple's hidden list.
-    // Walk safety: removeFromLeft only touches left-side links, so rightNext is stable across the call.
-    protected void clearRightTrackerList(UniTuple<Right_> rightTuple) {
-        FilteringTracker<LeftTuple_> tracker = rightTuple.removeStore(inputStoreIndexRightTrackerList);
-        while (tracker != null) {
-            var next = tracker.rightNext;
-            decrementCounterRight(tracker.counter);
-            removeFromLeft(tracker);
-            tracker = next;
-        }
-    }
-
-    protected void updateCounterFromLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
-        if (testFiltering(counter.leftTuple, rightTuple)) {
-            counter.countRight++;
-            var tracker = new FilteringTracker<>(counter, rightTuple);
-            linkLeft(tracker);
-            linkRight(tracker);
-        }
-    }
-
-    protected void updateCounterFromRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+    protected void updateCounterRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
         var leftTuple = counter.leftTuple;
         if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
@@ -237,9 +244,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             // We avoid this situation as it is clear that the outTuple must be retracted anyway,
             // and therefore any further updates to it are pointless.
             //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
+            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
+            // the right's inserts and updates are delivered before the left's retracts are.
+            // The mirror case is possible too, see updateCounterLeft(...).
             return;
         }
         if (testFiltering(leftTuple, rightTuple)) {
