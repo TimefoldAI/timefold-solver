@@ -217,7 +217,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             // To prevent creating a dynamic lambda on the hot path,
             // only call the 2-args version when indictments are enabled
             if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
-                forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRightWithoutIndictment);
+                forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRight);
             } else {
                 forEachLeftCounter(rightTuple, compositeKey,
                         counter -> incrementCounterRightUpdatingIndictment(counter, rightTuple));
@@ -261,14 +261,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 indexerRight.remove(oldCompositeKey, entry);
             }
             if (!isFiltering) {
-                // To prevent creating a dynamic lambda on the hot path,
-                // only call the 2-args version when indictments are enabled
-                if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
-                    forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRightWithoutIndictment);
-                } else {
-                    forEachLeftCounter(rightTuple, oldCompositeKey,
-                            counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
-                }
+                forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRight);
             } else {
                 clearRightTrackerList(rightTuple);
             }
@@ -295,9 +288,10 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 // To prevent creating a dynamic lambda on the hot path,
                 // only call the 2-args version when indictments are enabled
                 if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
-                    bucket.forEachLeft(compositeKey, this::decrementCounterRightWithoutIndictment);
+                    bucket.forEachLeft(compositeKey, this::decrementCounterRight);
                 } else {
-                    bucket.forEachLeft(compositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+                    bucket.forEachLeft(compositeKey,
+                            leftTuple -> decrementCounterRightUpdatingIndictment(leftTuple, rightTuple));
                 }
             } else {
                 clearRightTrackerList(rightTuple);
