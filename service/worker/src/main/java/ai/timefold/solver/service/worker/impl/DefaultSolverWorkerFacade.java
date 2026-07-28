@@ -243,12 +243,18 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
             throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, id);
         }
 
-        Configuration initialConfiguration = null;
-        if (configuration != null && configuration.run() != null) {
-            initialConfiguration = configuration;
-        } else if (configuration == null) {
+        Configuration initialConfiguration = configuration;
+        if (configuration == null) {
             configuration = getConfiguration(id);
             initialConfiguration = getUnprocessedConfiguration(id);
+        }
+
+        if (configuration == null) {
+            configuration = Configuration.empty();
+        }
+
+        if (initialConfiguration == null) {
+            initialConfiguration = Configuration.empty();
         }
 
         var metadata = new Metadata<>(runName);

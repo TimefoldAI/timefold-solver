@@ -33,7 +33,6 @@ public interface SolverWorkerFacade {
     <Score_> Metadata<Score_> solveDataset(String id);
 
     /**
-     * /**
      * Creates a new dataset derived from an existing one (identified by {@code id}) without starting the solving process.
      * The resulting dataset is validated and computed asynchronously.
      * 
@@ -169,10 +168,6 @@ public interface SolverWorkerFacade {
     ModelInput getModelInput(String id);
 
     /**
-     * Returns the {@link ModelInput} representing the solved state of the given dataset (i.e. planning entities updated
-     * with the best solution).
-     * 
-     * /**
      * Returns the {@link ModelInput} representing the solved state of the given dataset (i.e. planning entities updated
      * with the best solution).
      * 
