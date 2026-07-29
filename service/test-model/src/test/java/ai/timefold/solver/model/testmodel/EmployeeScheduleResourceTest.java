@@ -33,6 +33,7 @@ import ai.timefold.solver.service.definition.api.SolvingStatus;
 import ai.timefold.solver.service.definition.api.domain.Metadata;
 import ai.timefold.solver.service.definition.api.domain.ModelRequest;
 import ai.timefold.solver.service.definition.api.domain.ModelResponse;
+import ai.timefold.solver.service.definition.api.rest.OperationOnPost;
 import ai.timefold.solver.service.definition.api.validation.IssueCode;
 import ai.timefold.solver.service.definition.api.validation.IssueSeverity;
 import ai.timefold.solver.service.definition.api.validation.IssueType;
@@ -44,7 +45,6 @@ import ai.timefold.solver.service.definition.internal.events.FinalBestSolutionEv
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.rest.OperationOnPost;
 import ai.timefold.solver.service.testmodel.domain.Employee;
 import ai.timefold.solver.service.testmodel.domain.EmployeeSchedule;
 import ai.timefold.solver.service.testmodel.domain.Shift;
