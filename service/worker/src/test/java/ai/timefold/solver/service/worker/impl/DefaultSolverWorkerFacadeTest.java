@@ -40,7 +40,7 @@ class DefaultSolverWorkerFacadeTest {
 
     @BeforeEach
     void setUp() {
-        ObjectMapper mapper = new ObjectMapper();
+        var mapper = new ObjectMapper();
         storageService = new TestdataStorageService(new TestdataStorage(mapper));
 
         datasetCreatedEmitter = new RecordingEmitter<>();
@@ -59,8 +59,8 @@ class DefaultSolverWorkerFacadeTest {
 
     @Test
     void createDataset_persistsAndEmitsValidateComputeWithoutSolve() {
-        TestdataModelInput input = new TestdataModelInput("hello");
-        String runName = uniqueRunName();
+        var input = new TestdataModelInput("hello");
+        var runName = uniqueRunName();
 
         Metadata<?> metadata = facade.createDataset(runName, Set.of("test-tag"), input, Configuration.empty());
 
@@ -70,7 +70,7 @@ class DefaultSolverWorkerFacadeTest {
         assertThat(datasetCreatedEmitter.getLastMessage().getId()).isEqualTo(metadata.getId());
         // validate-compute with solve=false
         assertThat(validateComputeEmitter.size()).isEqualTo(1);
-        DatasetValidateComputeCommand cmd = validateComputeEmitter.getLastMessage();
+        var cmd = validateComputeEmitter.getLastMessage();
         assertThat(cmd.getId()).isEqualTo(metadata.getId());
         assertThat(cmd.solve()).isFalse();
 
@@ -87,13 +87,13 @@ class DefaultSolverWorkerFacadeTest {
 
     @Test
     void createAndSolveDataset_emitsValidateComputeWithSolveTrue() {
-        String runName = uniqueRunName();
-        Metadata<?> metadata =
+        var runName = uniqueRunName();
+        var metadata =
                 facade.createAndSolveDataset(runName, Set.of("test-tag"), new TestdataModelInput("x"),
                         Configuration.empty());
 
         assertThat(validateComputeEmitter.size()).isEqualTo(1);
-        DatasetValidateComputeCommand cmd = validateComputeEmitter.getLastMessage();
+        var cmd = validateComputeEmitter.getLastMessage();
         assertThat(cmd.solve()).isTrue();
         assertThat(cmd.getId()).isEqualTo(metadata.getId());
 
@@ -140,7 +140,7 @@ class DefaultSolverWorkerFacadeTest {
                 uniqueRunName(), Set.of(), new TestdataModelInput("orig"), Configuration.empty());
         datasetCreatedEmitter.clear();
         validateComputeEmitter.clear();
-        String childRunName = uniqueRunName();
+        var childRunName = uniqueRunName();
 
         Metadata<?> child = facade.createDataset(parent.getId(), DatasetSelector.UNSOLVED, childRunName, Set.of("t2"),
                 Configuration.empty());
@@ -197,10 +197,10 @@ class DefaultSolverWorkerFacadeTest {
 
     @Test
     void patchDataset_emitsValidateComputeWithoutSolve() {
-        Metadata<?> parent = facade.createDataset(
+        var parent = facade.createDataset(
                 uniqueRunName(), Set.of(), new TestdataModelInput("orig"), Configuration.empty());
         validateComputeEmitter.clear();
-        String childRunName = uniqueRunName();
+        var childRunName = uniqueRunName();
 
         ModelInputPatchRequest<?> patch = new ModelInputPatchRequest<>(null, List.of());
         Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, childRunName, patch);

@@ -3,9 +3,11 @@ package ai.timefold.solver.service.worker.impl.testutil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.eclipse.microprofile.reactive.messaging.Message;
 
 /**
  * Test utility emitter that records payloads sent through {@link #send(Object)}.
@@ -17,7 +19,7 @@ public final class RecordingEmitter<T> implements Emitter<T> {
     @Override
     public CompletionStage<Void> send(T msg) {
         messages.add(msg);
-        return java.util.concurrent.CompletableFuture.completedFuture(null);
+        return CompletableFuture.completedFuture(null);
     }
 
     public List<T> getMessages() {
@@ -37,7 +39,7 @@ public final class RecordingEmitter<T> implements Emitter<T> {
     }
 
     @Override
-    public <M extends org.eclipse.microprofile.reactive.messaging.Message<? extends T>> void send(M msg) {
+    public <M extends Message<? extends T>> void send(M msg) {
         throw new UnsupportedOperationException();
     }
 
