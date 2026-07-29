@@ -92,8 +92,8 @@ public class EmployeeScheduleResourceTest {
     InMemorySink<FinalBestSolutionEvent> finalBestSolutionSink;
     InMemorySink<DatasetComputedEvent> datasetComputedSink;
 
-    @ConfigProperty(name = "model.api.version")
-    String modelApiVersion;
+    @ConfigProperty(name = "timefold.application.version")
+    String applicationVersion;
 
     @TestHTTPResource
     URI baseUri;
@@ -108,7 +108,7 @@ public class EmployeeScheduleResourceTest {
 
     @BeforeEach
     void before() {
-        RestAssured.basePath = "/" + modelApiVersion;
+        RestAssured.basePath = "/" + applicationVersion;
         datasetComputedSink = connector.sink(SolverChannels.DATASET_COMPUTED);
         datasetComputedSink.clear();
         initSolutionSink = connector.sink(SolverChannels.INIT_SOLUTION);
@@ -229,7 +229,7 @@ public class EmployeeScheduleResourceTest {
         List<Metadata<HardMediumSoftScore>> receivedResults = new ArrayList<>();
 
         CountDownLatch waitOnRequestSubscribtion = new CountDownLatch(1);
-        Multi<SseEvent<Metadata<HardMediumSoftScore>>> eventStream = client.getEvents(modelApiVersion, metadata.getId());
+        Multi<SseEvent<Metadata<HardMediumSoftScore>>> eventStream = client.getEvents(applicationVersion, metadata.getId());
 
         Cancellable subscription = eventStream.subscribe().with(
                 event -> {

@@ -347,7 +347,6 @@ class TimefoldModelDescriptorProcessor {
 
         String solverVersion =
                 SolverVersionUtils.bareVersion(SolverVersionUtils.CORE_GIT_PROPERTIES, SolverFactory.class);
-        String sdkVersion = SolverVersionUtils.bareVersion(ModelDescriptor.class);
         String version = buildInfo != null ? (String) buildInfo.getValue().get("version") : null;
         String buildTime = buildInfo != null ? (String) buildInfo.getValue().get("time") : null;
         if (buildTime != null) {
@@ -359,7 +358,7 @@ class TimefoldModelDescriptorProcessor {
                 gitInfo != null ? (String) ((Map<String, Object>) gitInfo.getValue().getOrDefault("commit", Map.of())).get("id")
                         : null;
 
-        ModelBuildInfo modelBuildInfo = new ModelBuildInfo(solverVersion, sdkVersion, version, buildTime, branch, commit);
+        ModelBuildInfo modelBuildInfo = new ModelBuildInfo(solverVersion, version, buildTime, branch, commit);
 
         byte[] buildInfoContent = MAPPER.writeValueAsBytes(modelBuildInfo);
         Path buildInfoFile = Paths.get(out.getOutputDirectory().toString(), "timefold", "build-info.json");
