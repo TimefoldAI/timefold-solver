@@ -37,7 +37,7 @@ public class ModelRequestSerializationCallback implements QuarkusTestBeforeClass
     public static final Logger LOGGER = LoggerFactory.getLogger(ModelRequestSerializationCallback.class);
 
     public static final String DISABLE_SERIALIZATION_CALLBACK_PROPERTY_NAME =
-            "ai.timefold.model.test.serialization.callback.disable";
+            "timefold.model.test.serialization.callback.disable";
 
     private static final ObjectMapper mapper = SdkBuildTimeObjectMapperFactory.create();
 

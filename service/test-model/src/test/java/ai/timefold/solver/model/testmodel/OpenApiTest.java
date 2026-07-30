@@ -27,7 +27,7 @@ import io.smallrye.openapi.api.SmallRyeOpenAPI;
 @QuarkusTest
 public class OpenApiTest {
 
-    @ConfigProperty(name = "ai.timefold.model.api-version")
+    @ConfigProperty(name = "timefold.model.api-version")
     String applicationVersion;
 
     @Test

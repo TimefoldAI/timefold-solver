@@ -247,7 +247,7 @@ Create the `src/main/resources/application.properties` file:
 ----
 # The solver runs for 30 seconds by default.
 # Increase this for larger datasets to find a better solution.
-ai.timefold.platform.termination.spent-limit=PT30S
+timefold.model.termination.spent-limit=PT30S
 
 # Application metadata — included in the generated OpenAPI specification
 timefold.application.name=my-model
@@ -256,7 +256,7 @@ timefold.application.contact.name=Your Name
 timefold.application.contact.url=https://example.com
 ----
 
-`ai.timefold.platform.termination.spent-limit` sets the default maximum time the solver will run.
+`timefold.model.termination.spent-limit` sets the default maximum time the solver will run.
 The value uses the https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format]: `PT30S` means 30 seconds.
 For production use, consider at least five minutes (`PT5M`) to allow the solver more time to find a better solution.
 

@@ -148,41 +148,41 @@ The UI groups constraints that don't specify a `constraintGroup` under a default
 [#_configuration_profiles]
 == Configuration profiles
 
-Every model ships with a default configuration profile, defined through `ai.timefold.model.default-config.*` properties in `application.properties`.
+Every model ships with a default configuration profile, defined through `timefold.model.default-config.*` properties in `application.properties`.
 This profile is what consumers get out of the box, before they add any profile of their own.
 
 [cols="2,3", options="header"]
 |===
 | Property | Purpose
 
-| `ai.timefold.model.default-config.name`
+| `timefold.model.default-config.name`
 | Name of the default configuration profile.
 
-| `ai.timefold.model.default-config.description`
+| `timefold.model.default-config.description`
 | Description of the default configuration profile.
 
-| `ai.timefold.model.default-config.max-thread-count`
+| `timefold.model.default-config.max-thread-count`
 | Default number of threads used for solving.
 
-| `ai.timefold.model.default-config.map.provider`
+| `timefold.model.default-config.map.provider`
 | Default map provider, for models that require map data.
 
-| `ai.timefold.model.default-config.map.location`
+| `timefold.model.default-config.map.location`
 | Default map location, for models that require map data.
 
-| `ai.timefold.model.default-config.map.max-distance-from-road`
+| `timefold.model.default-config.map.max-distance-from-road`
 | Default maximum distance from a road, for models that require map data.
 
-| `ai.timefold.model.default-config.map.transport-type`
+| `timefold.model.default-config.map.transport-type`
 | Default transport type used when computing distances, for models that require map data.
 
-| `ai.timefold.model.default-config.map.use-traffic`
+| `timefold.model.default-config.map.use-traffic`
 | Whether the default profile takes live traffic into account. Defaults to `false`.
 
-| `ai.timefold.model.default-config.termination.spent-limit`
+| `timefold.model.default-config.termination.spent-limit`
 | The default maximum solving time, in the https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format]. This property is *required*.
 
-| `ai.timefold.model.default-config.termination.unimproved-spent-limit`
+| `timefold.model.default-config.termination.unimproved-spent-limit`
 | The default unimproved time limit. If not set, https://docs.timefold.ai/timefold-solver/latest/optimization-algorithms/overview#diminishedReturnsTermination[Diminished Returns termination] is used instead.
 |===
 
