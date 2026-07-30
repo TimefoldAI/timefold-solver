@@ -166,8 +166,8 @@ public class SolverWorker {
     private BroadcastProcessor<Metadata<?>> processor = BroadcastProcessor.create();
 
     @Inject
-    public SolverWorker(@ConfigProperty(name = "ai.timefold.model.name") Optional<String> modelName,
-            @ConfigProperty(name = "ai.timefold.model.api-version") Optional<String> modelVersion,
+    public SolverWorker(@ConfigProperty(name = "timefold.model.name") Optional<String> modelName,
+            @ConfigProperty(name = "timefold.model.api-version") Optional<String> modelVersion,
             @ConfigProperty(name = "quarkus.application.version") Optional<String> applicationVersion,
             AbstractStorageService<?, ?, ?, ?, ?, ?, ?> storageService,
             ModelValidator<?, ?> modelValidator,

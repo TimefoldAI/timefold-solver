@@ -60,7 +60,7 @@ public class ValidatingReaderInterceptorContext implements ReaderInterceptor {
 
     @Inject
     public ValidatingReaderInterceptorContext(@All List<Validator<ObjectNode>> validators, ObjectMapper mapper,
-            @ConfigProperty(name = "ai.timefold.model.schema.validation.enable", defaultValue = "true") boolean enabled) {
+            @ConfigProperty(name = "timefold.model.schema.validation.enable", defaultValue = "true") boolean enabled) {
         this.validators = validators;
         this.mapper = mapper;
 
