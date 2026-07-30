@@ -32,11 +32,10 @@ public class MapServiceOptionsSupplier {
     public MapServiceOptionsSupplier(
             @ConfigProperty(name = "ai.timefold.platform.map-service.provider") Optional<String> provider,
             @ConfigProperty(name = "ai.timefold.platform.map-service.location") Optional<String> location,
-            @ConfigProperty(
-                    name = "ai.timefold.platform.map-service.max-distance-from-road") Optional<Double> maxDistanceFromRoad,
-            @ConfigProperty(name = "ai.timefold.platform.model") Optional<String> model,
-            @ConfigProperty(name = "ai.timefold.platform.model-version") Optional<String> modelVersion,
-            @ConfigProperty(name = "ai.timefold.platform.model-resource") Optional<String> modelResource,
+            @ConfigProperty(name = "ai.timefold.platform.map-service.max-distance-from-road") Optional<Double> maxDistanceFromRoad,
+            @ConfigProperty(name = "ai.timefold.model.id") Optional<String> model,
+            @ConfigProperty(name = "ai.timefold.model.api-version") Optional<String> modelVersion,
+            @ConfigProperty(name = "ai.timefold.model.rest-resource") Optional<String> modelResource,
             @ConfigProperty(name = "ai.timefold.platform.tenant-id") Optional<String> tenantId,
             @ConfigProperty(name = "ai.timefold.platform.map-service.transport-type") Optional<String> transportType) {
         this.provider = provider;

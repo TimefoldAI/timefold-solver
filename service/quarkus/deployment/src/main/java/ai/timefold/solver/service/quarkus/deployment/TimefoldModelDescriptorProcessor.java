@@ -151,35 +151,35 @@ class TimefoldModelDescriptorProcessor {
     private static final String RESPONSE_CODE_TOO_MANY_REQUESTS = "429";
 
     private static final List<String> CONFIG_PROPERTIES = List.of(
-            "ai.timefold.platform.termination.spent-limit",
-            "ai.timefold.platform.termination.maximum-spent-limit",
-            "ai.timefold.platform.termination.unimproved-spent-limit",
-            "ai.timefold.platform.termination.maximum-unimproved-spent-limit",
+            "ai.timefold.model.termination.spent-limit",
+            "ai.timefold.model.termination.maximum-spent-limit",
+            "ai.timefold.model.termination.unimproved-spent-limit",
+            "ai.timefold.model.termination.maximum-unimproved-spent-limit",
             "ai.timefold.platform.map-service.max-distance-from-road");
 
-    private static final String MODEL_MATURITY_LEVEL_PROPERTY = "timefold.model.maturity-level";
+    private static final String MODEL_MATURITY_LEVEL_PROPERTY = "ai.timefold.model.maturity-level";
 
-    private static final String MODEL_FEATURES_PROPERTY = "timefold.model.features";
+    private static final String MODEL_FEATURES_PROPERTY = "ai.timefold.model.features";
 
     private static final String MODEL_MAX_THREAD_COUNT_PROPERTY = "ai.timefold.model.max-thread-count";
 
-    private static final String APPLICATION_NAME_PROPERTY = "timefold.application.name";
-    private static final String APPLICATION_DESCRIPTION_PROPERTY = "timefold.application.description";
-    static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
+    private static final String APPLICATION_NAME_PROPERTY = "ai.timefold.model.name";
+    private static final String APPLICATION_DESCRIPTION_PROPERTY = "ai.timefold.model.description";
+    static final String APPLICATION_VERSION_PROPERTY = "ai.timefold.model.api-version";
 
-    private static final String MODEL_TRIAL_DURATION_PROPERTY = "timefold.model.trial.duration";
-    private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "timefold.model.trial.max-extensions";
-    private static final String MODEL_TRIAL_EXTENSION_DURATION_PROPERTY = "timefold.model.trial.extension-duration";
+    private static final String MODEL_TRIAL_DURATION_PROPERTY = "ai.timefold.model.trial.duration";
+    private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "ai.timefold.model.trial.max-extensions";
+    private static final String MODEL_TRIAL_EXTENSION_DURATION_PROPERTY = "ai.timefold.model.trial.extension-duration";
 
-    private static final String MEMORY_REQUEST_PROPERTY = "timefold.model.resources.memory.request";
-    private static final String MEMORY_LIMIT_PROPERTY = "timefold.model.resources.memory.limit";
-    private static final String CPU_REQUEST_PROPERTY = "timefold.model.resources.cpu.request";
-    private static final String CPU_LIMIT_PROPERTY = "timefold.model.resources.cpu.limit";
+    private static final String MEMORY_REQUEST_PROPERTY = "ai.timefold.model.resources.memory.request";
+    private static final String MEMORY_LIMIT_PROPERTY = "ai.timefold.model.resources.memory.limit";
+    private static final String CPU_REQUEST_PROPERTY = "ai.timefold.model.resources.cpu.request";
+    private static final String CPU_LIMIT_PROPERTY = "ai.timefold.model.resources.cpu.limit";
 
-    private static final String DOCUMENTATION_SUPPORT_PROPERTY = "timefold.model.documentation.support";
-    private static final String DOCUMENTATION_SOURCE_PROPERTY = "timefold.model.documentation.source";
+    private static final String DOCUMENTATION_SUPPORT_PROPERTY = "ai.timefold.model.documentation.support";
+    private static final String DOCUMENTATION_SOURCE_PROPERTY = "ai.timefold.model.documentation.source";
 
-    private static final String UI_SUPPORT_PROPERTY = "timefold.model.ui-support";
+    private static final String UI_SUPPORT_PROPERTY = "ai.timefold.model.ui-support";
     private static final Path APP_JS_SOURCE_PATH = Path.of("src", "main", "resources", "META-INF", "resources");
 
     // To avoid depending on the whole OpenAPI, we use the fully qualified class name.

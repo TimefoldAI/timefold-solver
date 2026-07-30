@@ -34,12 +34,12 @@ class VisualizationPagesConfigTest {
     @Test
     void multiplePagesInOrder() {
         VisualizationPagesConfig config = buildConfig(Map.of(
-                "timefold.model.visualization.pages[0].key", "data",
-                "timefold.model.visualization.pages[0].icon", "TbDatabase",
-                "timefold.model.visualization.pages[0].label", "Data",
-                "timefold.model.visualization.pages[1].key", "visualization",
-                "timefold.model.visualization.pages[1].icon", "TbEye",
-                "timefold.model.visualization.pages[1].label", "Visualization"));
+                "ai.timefold.model.visualization.pages[0].key", "data",
+                "ai.timefold.model.visualization.pages[0].icon", "TbDatabase",
+                "ai.timefold.model.visualization.pages[0].label", "Data",
+                "ai.timefold.model.visualization.pages[1].key", "visualization",
+                "ai.timefold.model.visualization.pages[1].icon", "TbEye",
+                "ai.timefold.model.visualization.pages[1].label", "Visualization"));
 
         assertThat(TimefoldModelDescriptorProcessor.toVisualizationPageDescriptors(config))
                 .containsExactly(
@@ -50,10 +50,10 @@ class VisualizationPagesConfigTest {
     @Test
     void missingFieldFailsToBind() {
         Map<String, String> properties = Map.of(
-                "timefold.model.visualization.pages[0].key", "visualization",
-                "timefold.model.visualization.pages[0].label", "Visualization");
+                "ai.timefold.model.visualization.pages[0].key", "visualization",
+                "ai.timefold.model.visualization.pages[0].label", "Visualization");
 
         assertThatThrownBy(() -> buildConfig(properties))
-                .hasMessageContaining("timefold.model.visualization.pages[0].icon");
+                .hasMessageContaining("ai.timefold.model.visualization.pages[0].icon");
     }
 }
