@@ -434,7 +434,7 @@
           <missing>${project.basedir}/src/build/openapi.json</missing>
         </file>
         <property>
-          <name>ai.timefold.sdk.model.processing.disabled</name>
+          <name>ai.timefold.model.processing.disabled</name>
           <value>!true</value>
         </property>
       </activation>
@@ -584,7 +584,7 @@
       <id>timefold-model</id>
       <activation>
         <property>
-          <name>ai.timefold.sdk.model.processing.disabled</name>
+          <name>ai.timefold.model.processing.disabled</name>
           <value>!true</value>
         </property>
         <!-- Switch to the activation below after our CI moves to Maven 3.9
