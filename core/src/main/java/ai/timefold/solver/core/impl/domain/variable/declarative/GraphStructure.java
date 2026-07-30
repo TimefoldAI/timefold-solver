@@ -205,10 +205,15 @@ public enum GraphStructure {
     private static <Solution_> @Nullable ListElementCascadeAndDirection determineListElementCascade(
             SolutionDescriptor<Solution_> solutionDescriptor,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
-        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        if (listVariableDescriptor == null) {
+        var listVariableDescriptorList = solutionDescriptor.getListVariableDescriptorList();
+        if (listVariableDescriptorList.size() != 1) {
+            // The detection does not match list element sources against a specific list variable,
+            // and the wrapper routes every list change event to the cascade;
+            // both rely on the elements' list being the model's only list variable,
+            // which SolutionDescriptor currently guarantees. Re-audit both before lifting this.
             return null;
         }
+        var listVariableDescriptor = listVariableDescriptorList.getFirst();
         // The element class is the entity class of the single previous or next directional parent.
         VariableMetaModel<?, ?, ?> parentMetaModel = null;
         ParentVariableType direction = null;
