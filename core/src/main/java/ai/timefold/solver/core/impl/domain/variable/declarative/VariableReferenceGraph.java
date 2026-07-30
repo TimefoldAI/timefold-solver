@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.Collection;
 import java.util.List;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -70,5 +71,5 @@ public sealed interface VariableReferenceGraph
         // Most graphs do not have edges that depend on a list variable's contents.
     }
 
-    List<Object> getInconsistentEntities();
+    Collection<Object> getInconsistentEntities();
 }

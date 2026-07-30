@@ -96,8 +96,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                     DefaultShadowVariableSessionFactory.buildGraph(
                             new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
                                     ChangedVariableNotifier.empty(), entities)
-                                    .assertingNoReferencedMissingEntities(),
-                            ignoreInconsistentSolutions));
+                                    .assertingNoReferencedMissingEntities()));
         }
 
         /**

@@ -2,11 +2,11 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.IntFunction;
-
-import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
 
 import org.jspecify.annotations.NonNull;
 
@@ -75,8 +75,8 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    public List<Object> getInconsistentEntities() {
-        var out = new LinkedIdentityHashSet<>();
+    public Collection<Object> getInconsistentEntities() {
+        var out = new LinkedHashSet<>();
         var graphTrackingInconsistentEntities = new DefaultTopologicalOrderGraph(this.nodeTopologicalOrders.length);
         graph.forEachEdge(graphTrackingInconsistentEntities::addEdge);
         graphTrackingInconsistentEntities.commitChanges(new BitSet());
@@ -87,6 +87,6 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
                 out.add(node.entity());
             }
         }
-        return new ArrayList<>(out);
+        return out;
     }
 }

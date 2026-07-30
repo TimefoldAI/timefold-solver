@@ -136,7 +136,7 @@ final class AffectedEntitiesUpdater<Solution_>
         // Do not need to update anyChanged here; the graph already marked
         // all nodes whose looped status changed for us
 
-        if (!ignoreInconsistentSolutions || !consistencyProcessed) {
+        if (!(ignoreInconsistentSolutions && consistencyProcessed)) {
             var groupEntities = shadowVariableReferences.get(0).groupEntities();
             var groupEntityIds = entityVariable.groupEntityIds();
 

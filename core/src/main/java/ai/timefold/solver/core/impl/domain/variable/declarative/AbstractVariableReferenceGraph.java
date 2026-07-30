@@ -85,6 +85,8 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
      *           so {@link #beforeVariableChanged(VariableMetaModel, Object)}
      *           and {@link #afterVariableChanged(VariableMetaModel, Object)}
      *           can short circuit.
+     *
+     * @return true if the update successful; false otherwise
      */
     abstract boolean innerUpdateChanged();
 
