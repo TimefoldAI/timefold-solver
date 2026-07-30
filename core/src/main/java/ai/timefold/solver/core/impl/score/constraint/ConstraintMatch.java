@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.constraint;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.List;
+import java.util.SequencedSet;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -30,7 +30,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
 
     private final ConstraintRef constraintRef;
     private final @Nullable ConstraintJustification justification;
-    private final @Nullable List<Object> indictedObjects;
+    private final @Nullable SequencedSet<Object> indictedObjects;
     private final Score_ score;
 
     /**
@@ -39,7 +39,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * @param score penalty or reward associated with the constraint match
      */
     public ConstraintMatch(ConstraintRef constraintRef, @Nullable ConstraintJustification justification,
-            @Nullable List<Object> indictedObjects, Score_ score) {
+            @Nullable SequencedSet<Object> indictedObjects, Score_ score) {
         this.constraintRef = requireNonNull(constraintRef);
         this.justification = justification;
         this.indictedObjects = indictedObjects;
@@ -67,7 +67,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
         return (Justification_) justification;
     }
 
-    public @Nullable List<Object> getIndictedObjects() {
+    public @Nullable SequencedSet<Object> getIndictedObjects() {
         return indictedObjects;
     }
 
