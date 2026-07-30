@@ -1,11 +1,10 @@
 package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
+import java.util.SequencedSet;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -43,7 +42,7 @@ import org.jspecify.annotations.Nullable;
 public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         extends BiFunction<Constraint, Score_, ConstraintMatch<Score_>> {
 
-    static @Nullable List<Object> collectIndictments(Constraint constraint, Tuple tuple) {
+    static @Nullable SequencedSet<Object> collectIndictments(Constraint constraint, Tuple tuple) {
         if (tuple.getIndictmentSource() == IndictmentSource.DISABLED) {
             return null;
         }
@@ -51,7 +50,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         var abstractConstraint = (AbstractConstraint<?, ?, ?>) constraint;
         var involvedNodeIds = Objects.requireNonNull(abstractConstraint.getInvolvedNodeIds());
         tuple.getIndictmentSource().visitSources(involvedNodeIds, out::add);
-        return new ArrayList<>(out);
+        return out;
     }
 
     /**
@@ -62,7 +61,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
      */
     static <Score_ extends Score<Score_>> ConstraintMatchSupplier<Score_> empty() {
         return (constraint, impact) -> new ConstraintMatch<>(constraint.getConstraintRef(), null,
-                Collections.emptyList(), impact);
+                Collections.emptySortedSet(), impact);
     }
 
     static <A, Score_ extends Score<Score_>> ConstraintMatchSupplier<Score_> of(

@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.SequencedSet;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -68,7 +69,8 @@ public final class ConstraintMatchTotal<Score_ extends Score<Score_>> implements
      * @return never null
      */
     public ConstraintMatch<Score_> addConstraintMatch(List<Object> justifications, Score_ score) {
-        return addConstraintMatch(DefaultConstraintJustification.of(score, justifications), justifications, score);
+        return addConstraintMatch(DefaultConstraintJustification.of(score, justifications),
+                new LinkedHashSet<>(justifications), score);
     }
 
     /**
@@ -78,7 +80,8 @@ public final class ConstraintMatchTotal<Score_ extends Score<Score_>> implements
      * @param score never null
      * @return never null
      */
-    public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification, List<Object> indictedObjects,
+    public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification,
+            SequencedSet<Object> indictedObjects,
             Score_ score) {
         var constraintMatch = new ConstraintMatch<>(constraintRef, justification, indictedObjects, score);
         addConstraintMatch(constraintMatch);

@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -129,17 +131,17 @@ public abstract class AbstractConstraintStreamTest {
         private final int score;
         private final ConstraintRef constraintRef;
         private final List<Object> justificationList;
-        private List<Object> indictmentList;
+        private SequencedSet<Object> indictmentSet;
 
         public AssertableMatch(int score, ConstraintRef constraintRef, Object... justifications) {
             this.justificationList = Arrays.asList(justifications);
             this.constraintRef = constraintRef;
             this.score = score;
-            this.indictmentList = justificationList;
+            this.indictmentSet = new LinkedHashSet<>(justificationList);
         }
 
         public AssertableMatch withIndictedObjects(Object... indictedObjects) {
-            this.indictmentList = Arrays.asList(indictedObjects);
+            this.indictmentSet = new LinkedHashSet<>(Arrays.asList(indictedObjects));
             return this;
         }
 
@@ -173,16 +175,16 @@ public abstract class AbstractConstraintStreamTest {
                 return true;
             }
             var indictedObjects = constraintMatch.getIndictedObjects();
-            if (indictedObjects.size() != indictmentList.size()) {
+            if (indictedObjects.size() != indictmentSet.size()) {
                 return false;
             }
-            return indictmentList.containsAll(indictedObjects);
+            return indictmentSet.containsAll(indictedObjects);
         }
 
         @Override
         public String toString() {
             return "%s %s=%d (indicting %s)".formatted(constraintRef, justificationList, score,
-                    indictmentList);
+                    indictmentSet);
         }
 
     }

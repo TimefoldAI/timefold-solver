@@ -68,6 +68,15 @@ public sealed interface IndictmentSource {
         return new JoinedIndictmentSource(left.getIndictmentSource(), right.getIndictmentSource(), new LinkedHashMap<>());
     }
 
+    static AggregateIndictmentSource getPrecomputeAggregation(Tuple outTuple) {
+        if (outTuple.getIndictmentSource() != DISABLED) {
+            return (AggregateIndictmentSource) outTuple.getIndictmentSource();
+        }
+        var out = new AggregateIndictmentSource(new ArrayList<>(), new LinkedHashMap<>());
+        outTuple.setIndictmentSource(out);
+        return out;
+    }
+
     static IndictmentSource aggregating(Tuple elementTuple, Tuple groupTuple) {
         if (elementTuple.getIndictmentSource() == DISABLED) {
             return DISABLED;
