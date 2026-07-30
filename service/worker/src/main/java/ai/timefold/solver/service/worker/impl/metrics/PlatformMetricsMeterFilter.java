@@ -26,7 +26,7 @@ public class PlatformMetricsMeterFilter {
     @Singleton
     @MeterFilterConstraint(applyTo = PrometheusMeterRegistry.class)
     public MeterFilter timefoldCommonMetrics(
-            @ConfigProperty(name = "ai.timefold.platform.model") Optional<String> model,
+            @ConfigProperty(name = "ai.timefold.model.id") Optional<String> model,
             @ConfigProperty(name = "ai.timefold.platform.tenant-id") Optional<String> tenantId) {
 
         List<Tag> tags = new ArrayList<>();

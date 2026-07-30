@@ -12,7 +12,7 @@ public class ApiVersion2ConfigProfile implements QuarkusTestProfile {
 
     @Override
     public Map<String, String> getConfigOverrides() {
-        return Map.of("timefold.application.version", "v2-beta");
+        return Map.of("ai.timefold.model.api-version", "v2-beta");
     }
 
 }

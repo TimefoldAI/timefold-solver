@@ -45,17 +45,17 @@
     <skipUTs>${skipTests}</skipUTs>
 
     <!--suppress UnresolvedMavenProperty -->
-    <ai.timefold.platform.model.test.api-key>${env.TF_PLATFORM_TEST_API_KEY}</ai.timefold.platform.model.test.api-key>
+    <ai.timefold.model.test.api-key>${env.TF_PLATFORM_TEST_API_KEY}</ai.timefold.model.test.api-key>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- the application version defines the API version of the model -->
-    <timefold.application.version>v1</timefold.application.version>
+    <ai.timefold.model.api-version>v1</ai.timefold.model.api-version>
     <!-- default configuration, can be overridden by a model if needed -->
     <ai.timefold.model.descriptor.repository>${project.artifactId}</ai.timefold.model.descriptor.repository>
     <ai.timefold.model.native.image.path>${project.build.directory}/${project.build.finalName}-runner</ai.timefold.model.native.image.path>
     <ai.timefold.model.descriptor.groupId>${project.groupId}</ai.timefold.model.descriptor.groupId>
     <ai.timefold.model.descriptor.artifactId>${project.artifactId}-descriptor</ai.timefold.model.descriptor.artifactId>
-    <ai.timefold.model.descriptor.classifier>${timefold.application.version}</ai.timefold.model.descriptor.classifier>
+    <ai.timefold.model.descriptor.classifier>${ai.timefold.model.api-version}</ai.timefold.model.descriptor.classifier>
     <ai.timefold.model.descriptor.version>${project.version}</ai.timefold.model.descriptor.version>
     <ai.timefold.model.descriptor.file>${project.build.directory}/model-descriptor.zip</ai.timefold.model.descriptor.file>
     <ai.timefold.model.descriptor.repository.id>github</ai.timefold.model.descriptor.repository.id>
@@ -602,7 +602,7 @@
             <extensions>true</extensions>
             <configuration>
               <properties>
-                <timefold.application.version>${timefold.application.version}</timefold.application.version>
+                <ai.timefold.model.api-version>${ai.timefold.model.api-version}</ai.timefold.model.api-version>
               </properties>
             </configuration>
             <executions>
@@ -957,8 +957,8 @@
                     <!--suppress UnresolvedMavenProperty -->
                     <maven.home>${maven.home}</maven.home>
 
-                    <ai.timefold.platform.model.test.api-key>${ai.timefold.platform.model.test.api-key}
-                    </ai.timefold.platform.model.test.api-key>
+                    <ai.timefold.model.test.api-key>${ai.timefold.model.test.api-key}
+                    </ai.timefold.model.test.api-key>
                     <quarkus.http.test-host>sandbox.timefold.dev</quarkus.http.test-host>
                     <quarkus.http.test-ssl-port>443</quarkus.http.test-ssl-port>
                     <quarkus.http.test-ssl-enabled>true</quarkus.http.test-ssl-enabled>

@@ -26,10 +26,10 @@ import io.restassured.config.RestAssuredConfig;
  * <li>Prevents adjusting the time zone offset values to the context time zone when serializing/deserializing.</li>
  * </ul>
  * <p>
- * A concrete model can opt-out of this behaviour by setting the system property
+ * A concrete model can opt-out of this behavior by setting the system property
  * {@value DISABLE_SERIALIZATION_CALLBACK_PROPERTY_NAME} to <code>true</code>.
  * </p>
- * Note: A plain jUnit extension does not work due to classloading issues because Quarkus has to run tests in a custom
+ * Note: A plain JUnit extension does not work due to classloading issues because Quarkus has to run tests in a custom
  * classloader which JUnit is not aware of.
  */
 public class ModelRequestSerializationCallback implements QuarkusTestBeforeClassCallback {
@@ -37,7 +37,7 @@ public class ModelRequestSerializationCallback implements QuarkusTestBeforeClass
     public static final Logger LOGGER = LoggerFactory.getLogger(ModelRequestSerializationCallback.class);
 
     public static final String DISABLE_SERIALIZATION_CALLBACK_PROPERTY_NAME =
-            "ai.timefold.platform.model.test.serialization.callback.disable";
+            "ai.timefold.model.test.serialization.callback.disable";
 
     private static final ObjectMapper mapper = SdkBuildTimeObjectMapperFactory.create();
 

@@ -92,7 +92,7 @@ public class EmployeeScheduleResourceTest {
     InMemorySink<FinalBestSolutionEvent> finalBestSolutionSink;
     InMemorySink<DatasetComputedEvent> datasetComputedSink;
 
-    @ConfigProperty(name = "timefold.application.version")
+    @ConfigProperty(name = "ai.timefold.model.api-version")
     String applicationVersion;
 
     @TestHTTPResource
