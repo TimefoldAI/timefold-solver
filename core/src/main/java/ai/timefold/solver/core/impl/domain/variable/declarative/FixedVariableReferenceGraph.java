@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Spliterators;
 import java.util.function.IntFunction;
@@ -110,7 +110,7 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
-    public List<Object> getInconsistentEntities() {
+    public Collection<Object> getInconsistentEntities() {
         return Collections.emptyList();
     }
 }
