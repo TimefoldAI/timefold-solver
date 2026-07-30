@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.constraint;
 import static ai.timefold.solver.core.api.score.SimpleScore.ONE;
 import static ai.timefold.solver.core.api.score.SimpleScore.ZERO;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -28,7 +29,7 @@ class ConstraintMatchTest {
             Object... facts) {
         return new ConstraintMatch<>(ConstraintRef.of(constraintName),
                 DefaultConstraintJustification.of(score, facts),
-                List.of(facts),
+                new LinkedHashSet<>(List.of(facts)),
                 score);
     }
 
