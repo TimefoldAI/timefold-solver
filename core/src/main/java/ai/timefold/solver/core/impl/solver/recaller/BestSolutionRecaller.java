@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapter<Solution_> {
 
-    private static final Logger log = LoggerFactory.getLogger(BestSolutionRecaller.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BestSolutionRecaller.class);
     protected boolean assertInitialScoreFromScratch = false;
     protected boolean assertShadowVariablesAreNotStale = false;
     protected boolean assertBestScoreIsUnmodified = false;
@@ -51,12 +51,13 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         @SuppressWarnings("rawtypes")
         InnerScore innerScore = scoreDirector.calculateScore();
         if (innerScore.isInvalid()) {
-            log.warn("The initial solution passed to the solver is inconsistent. Unassigning involved entities.");
+            LOGGER.warn("The initial solution passed to the solver is inconsistent. Unassigning involved entities.");
             scoreDirector.unassignInconsistentEntities();
             innerScore = scoreDirector.calculateScore();
             if (innerScore.isInvalid()) {
+                // If there were a fixed dependency loop, the shadow variable session would fail fast before here
                 throw new IllegalStateException(
-                        "The initial solution passed to the solver is inconsistent even after unassigning involved entities.");
+                        "Impossible state: The initial solution passed to the solver is inconsistent even after unassigning involved entities.");
             }
         }
         var score = innerScore.raw();
