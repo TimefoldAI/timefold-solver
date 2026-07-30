@@ -106,6 +106,8 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
             tuplesByAge.put(age, tuple);
         }
 
+        churnKey(indexer, -1); // Growth alone no longer treeifies; force it via churn.
+
         // A few more puts on the tree path, to confirm it keeps working post-treeify.
         for (var age = threshold + 1; age <= threshold + 3; age++) {
             var tuple = newTuple("age" + age);
@@ -130,12 +132,20 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
     void treeifyIsOneWayNoDemotionOnRemove() {
         // Once treeified, removing back below ARRAY_THRESHOLD must still behave correctly.
         // (The one-way-ness of the underlying switch is verified directly in ScalingNavigableMapTest.)
-        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(lessThanAge).buildIndexer(true);
+        // Constructed directly (rather than via IndexerFactory) to reach comparisonMap.arrayBased below:
+        // filling 0..threshold then removing keys 1..threshold only arms the churn counter once
+        // (only the first removal leaves size >= threshold; every later one is already below it),
+        // so real interleaved churn is needed here to actually force and verify tree mode.
+        ComparisonIndexer<UniTuple<String>, Integer> indexer =
+                new ComparisonIndexer<>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(), RandomAccessLeafIndexer::new);
         var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
         var entriesByAge = new LinkedHashMap<Integer, ListEntry<UniTuple<String>>>();
         for (var age = 0; age <= threshold; age++) { // threshold + 1 puts: crosses the threshold on the last one.
             entriesByAge.put(age, indexer.put(age, newTuple("age" + age)));
         }
+
+        churnKey(indexer, -1); // Growth alone no longer treeifies; force it via churn.
+        assertThat(isArrayBased(indexer)).isFalse();
 
         // Remove all but one entry, well below the array threshold.
         entriesByAge.entrySet().stream()
@@ -143,6 +153,55 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
                 .forEach(e -> indexer.remove(e.getKey(), e.getValue()));
 
         assertThat(indexer.size(threshold + 10)).isEqualTo(1);
+        assertThat(isArrayBased(indexer)).isFalse();
+    }
+
+    @Test
+    void monotonicGrowthStaysArrayBased() {
+        // Regression test: growth alone must not treeify (only churn at/above ARRAY_THRESHOLD does).
+        var ageCount = ScalingNavigableMap.ARRAY_THRESHOLD * 4;
+        ComparisonIndexer<UniTuple<String>, Integer> lessThanIndexer =
+                new ComparisonIndexer<>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(), RandomAccessLeafIndexer::new);
+        ComparisonIndexer<UniTuple<String>, Integer> greaterThanIndexer =
+                new ComparisonIndexer<>(JoinerType.GREATER_THAN, KeyUnpacker.<Integer> single(), RandomAccessLeafIndexer::new);
+        var tuplesByAge = new LinkedHashMap<Integer, UniTuple<String>>();
+        for (var age = 0; age < ageCount; age++) {
+            var tuple = newTuple("age" + age);
+            lessThanIndexer.put(age, tuple);
+            greaterThanIndexer.put(age, tuple);
+            tuplesByAge.put(age, tuple);
+        }
+        assertThat(isArrayBased(lessThanIndexer)).isTrue();
+        assertThat(isArrayBased(greaterThanIndexer)).isTrue();
+
+        var midAge = ageCount / 2;
+        var expectedBelowMid = tuplesByAge.entrySet().stream()
+                .filter(e -> e.getKey() < midAge)
+                .map(Map.Entry::getValue)
+                .toList();
+        var expectedAboveMid = tuplesByAge.entrySet().stream()
+                .filter(e -> e.getKey() > midAge)
+                .map(Map.Entry::getValue)
+                .toList();
+        assertThat(forEachToTuples(lessThanIndexer, midAge)).containsExactlyInAnyOrderElementsOf(expectedBelowMid);
+        assertThat(forEachToTuples(greaterThanIndexer, midAge)).containsExactlyInAnyOrderElementsOf(expectedAboveMid);
+    }
+
+    /**
+     * Forces a distinct comparisonMap key through CHURN_TOLERANCE put+remove cycles at {@code age},
+     * so it gets counted as churn at scale (the fill loop preceding this call must already have
+     * brought the indexer to size >= ARRAY_THRESHOLD). {@code age} must not otherwise be used by the
+     * calling test: this leaves nothing behind, since every cycle ends with a remove.
+     */
+    private static void churnKey(Indexer<UniTuple<String>> indexer, int age) {
+        for (var i = 0; i < ScalingNavigableMap.CHURN_TOLERANCE; i++) {
+            var entry = indexer.put(age, newTuple("churn" + age));
+            indexer.remove(age, entry);
+        }
+    }
+
+    private static boolean isArrayBased(ComparisonIndexer<?, ?> indexer) {
+        return indexer.comparisonMap.arrayBased;
     }
 
     @Test

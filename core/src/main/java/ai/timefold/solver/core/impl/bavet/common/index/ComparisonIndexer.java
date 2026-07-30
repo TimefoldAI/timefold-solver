@@ -47,7 +47,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final boolean reverseOrder;
     private final boolean hasOrEquals;
-    private final ScalingNavigableMap<Key_, Indexer<T>> comparisonMap;
+    // Package-private: tests in this package read arrayBased via this field, same as ScalingNavigableMap's own.
+    final ScalingNavigableMap<Key_, Indexer<T>> comparisonMap;
 
     /**
      * @param comparisonJoinerType the type of comparison to use
