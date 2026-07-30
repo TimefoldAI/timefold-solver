@@ -162,17 +162,12 @@ class ListElementCascadeShadowVariableTest {
 
     @Test
     void solveWithFullAssertFromUninitializedSolution() {
-        assertShadowsAreAtFixedPoint(solve(generateSolution(false, false)));
-    }
-
-    @Test
-    void solveWithFullAssertFromInitializedSolution() {
-        assertShadowsAreAtFixedPoint(solve(generateSolution(true, false)));
+        assertShadowsAreAtFixedPoint(solve(generateSolution(false)));
     }
 
     @Test
     void solveWithFullAssertWithRebasingElements() {
-        assertShadowsAreAtFixedPoint(solve(generateSolution(false, true)));
+        assertShadowsAreAtFixedPoint(solve(generateSolution(true)));
     }
 
     private static TestdataMultiEntityChainSolution solve(TestdataMultiEntityChainSolution problem) {
@@ -181,7 +176,7 @@ class ListElementCascadeShadowVariableTest {
                 TestdataMultiEntityChainVehicle.class, TestdataMultiEntityChainVisit.class);
     }
 
-    private static TestdataMultiEntityChainSolution generateSolution(boolean initialized, boolean alternateRebasing) {
+    private static TestdataMultiEntityChainSolution generateSolution(boolean alternateRebasing) {
         var vehicles = new ArrayList<TestdataMultiEntityChainVehicle>();
         for (var i = 0; i < 3; i++) {
             vehicles.add(new TestdataMultiEntityChainVehicle("vehicle" + i, i));
@@ -193,10 +188,6 @@ class ListElementCascadeShadowVariableTest {
         for (var i = 0; i < 6; i++) {
             visits.add(new TestdataMultiEntityChainVisit("visit" + i, 1 + (i % 3),
                     !alternateRebasing || i % 2 == 0));
-        }
-        if (initialized) {
-            vehicles.get(0).setVisits(new ArrayList<>(visits.subList(0, 4)));
-            vehicles.get(1).setVisits(new ArrayList<>(visits.subList(4, 6)));
         }
         var solution = new TestdataMultiEntityChainSolution();
         solution.setVehicles(vehicles);

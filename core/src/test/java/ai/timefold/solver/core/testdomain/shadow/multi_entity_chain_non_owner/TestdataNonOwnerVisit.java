@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_non_owner;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -8,24 +8,23 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataElementFactVisit extends TestdataObject {
+public class TestdataNonOwnerVisit extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "visits")
-    TestdataElementFactVehicle vehicle;
+    TestdataNonOwnerVehicle vehicle;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")
-    TestdataElementFactVisit previousVisit;
+    TestdataNonOwnerVisit previousVisit;
 
-    TestdataElementFactVisit buddy;
     int duration = 1;
 
     @ShadowVariable(supplierName = "endServiceTimeSupplier")
     Integer endServiceTime;
 
-    public TestdataElementFactVisit() {
+    public TestdataNonOwnerVisit() {
     }
 
-    public TestdataElementFactVisit(String code, int duration) {
+    public TestdataNonOwnerVisit(String code, int duration) {
         super(code);
         this.duration = duration;
     }
@@ -42,14 +41,6 @@ public class TestdataElementFactVisit extends TestdataObject {
         return base + duration;
     }
 
-    public TestdataElementFactVisit getBuddy() {
-        return buddy;
-    }
-
-    public void setBuddy(TestdataElementFactVisit buddy) {
-        this.buddy = buddy;
-    }
-
     public int getDuration() {
         return duration;
     }
@@ -58,19 +49,19 @@ public class TestdataElementFactVisit extends TestdataObject {
         this.duration = duration;
     }
 
-    public TestdataElementFactVehicle getVehicle() {
+    public TestdataNonOwnerVehicle getVehicle() {
         return vehicle;
     }
 
-    public void setVehicle(TestdataElementFactVehicle vehicle) {
+    public void setVehicle(TestdataNonOwnerVehicle vehicle) {
         this.vehicle = vehicle;
     }
 
-    public TestdataElementFactVisit getPreviousVisit() {
+    public TestdataNonOwnerVisit getPreviousVisit() {
         return previousVisit;
     }
 
-    public void setPreviousVisit(TestdataElementFactVisit previousVisit) {
+    public void setPreviousVisit(TestdataNonOwnerVisit previousVisit) {
         this.previousVisit = previousVisit;
     }
 

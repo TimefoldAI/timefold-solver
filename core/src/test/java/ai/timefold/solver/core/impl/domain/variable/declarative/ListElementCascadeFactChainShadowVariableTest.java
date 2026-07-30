@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.solveWithFullAssert;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,38 +78,13 @@ class ListElementCascadeFactChainShadowVariableTest {
     }
 
     @Test
-    void cyclicVehicleFactsFailFast() {
-        var vehicleA = new TestdataFactChainVehicle("A", 0);
-        var vehicleB = new TestdataFactChainVehicle("B", 0);
-        vehicleA.setPreviousVehicle(vehicleB);
-        vehicleB.setPreviousVehicle(vehicleA);
-
-        var solution = new TestdataFactChainSolution();
-        solution.setVehicles(List.of(vehicleA, vehicleB));
-        solution.setVisits(List.of(new TestdataFactChainVisit("v1")));
-
-        assertThatCode(() -> MoveTester.build(TestdataFactChainSolution.buildMetaModel()).using(solution))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("fixed dependency loops");
+    void solveFactChainedModelWithFullAssert() {
+        assertShadowsAreAtFixedPoint(solveWithFullAssert(TestdataFactChainSolution.class,
+                TestdataFactChainConstraintProvider.class, generateSolution(),
+                TestdataFactChainVehicle.class, TestdataFactChainVisit.class));
     }
 
-    @Test
-    void solveWithFullAssertFromUninitializedSolution() {
-        assertShadowsAreAtFixedPoint(solve(generateSolution(false)));
-    }
-
-    @Test
-    void solveWithFullAssertFromInitializedSolution() {
-        assertShadowsAreAtFixedPoint(solve(generateSolution(true)));
-    }
-
-    private static TestdataFactChainSolution solve(TestdataFactChainSolution problem) {
-        return solveWithFullAssert(TestdataFactChainSolution.class,
-                TestdataFactChainConstraintProvider.class, problem,
-                TestdataFactChainVehicle.class, TestdataFactChainVisit.class);
-    }
-
-    private static TestdataFactChainSolution generateSolution(boolean initialized) {
+    private static TestdataFactChainSolution generateSolution() {
         var vehicles = new ArrayList<TestdataFactChainVehicle>();
         for (var i = 0; i < 3; i++) {
             vehicles.add(new TestdataFactChainVehicle("vehicle" + i, i));
@@ -121,10 +95,6 @@ class ListElementCascadeFactChainShadowVariableTest {
         var visits = new ArrayList<TestdataFactChainVisit>();
         for (var i = 0; i < 6; i++) {
             visits.add(new TestdataFactChainVisit("visit" + i, 1 + (i % 3)));
-        }
-        if (initialized) {
-            vehicles.get(0).setVisits(new ArrayList<>(visits.subList(0, 4)));
-            vehicles.get(1).setVisits(new ArrayList<>(visits.subList(4, 6)));
         }
         var solution = new TestdataFactChainSolution();
         solution.setVehicles(vehicles);

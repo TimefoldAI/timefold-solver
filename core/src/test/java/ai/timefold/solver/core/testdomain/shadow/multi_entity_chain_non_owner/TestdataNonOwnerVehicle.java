@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_non_owner;
 
 import java.util.ArrayList;
 import java.util.List;

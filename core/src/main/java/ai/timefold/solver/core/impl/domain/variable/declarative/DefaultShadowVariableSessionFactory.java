@@ -261,8 +261,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         },
                         changedVariableNotifier.innerScoreDirector());
 
-        // The inner graph covers everything but the elements, built by the normal machinery;
-        // its structure was determined on the non-element descriptors.
         var innerGraphDescriptor = new GraphDescriptor<>(graphDescriptor.consistencyTracker(), solutionDescriptor,
                 new VariableReferenceGraphBuilder<>(flaggingNotifier), graphDescriptor.entities(),
                 graphDescriptor.graphCreator());
