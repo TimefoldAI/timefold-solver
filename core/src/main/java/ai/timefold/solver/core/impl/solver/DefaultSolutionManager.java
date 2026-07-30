@@ -53,7 +53,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     public Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
         if (solutionUpdatePolicy == SolutionUpdatePolicy.NO_UPDATE) {
             throw new IllegalArgumentException(
-                    "Can not call %s.update() with this solutionUpdatePolicy (%s)."
+                    "Cannot call %s.update() with this solutionUpdatePolicy (%s), since it would do nothing."
                             .formatted(this.getClass().getSimpleName(), solutionUpdatePolicy));
         }
         return callScoreDirector("Solution update", solution, solutionUpdatePolicy,
@@ -86,11 +86,11 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
                 var score = scoreDirector.calculateScore();
                 if (score.isInvalid()) {
-                    var inconsistentEntities = scoreDirector.getInconsistentEntities();
+                    var inconsistentEntities = scoreDirector.computeInconsistentEntities();
                     throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
                 }
-            } else if (!scoreDirector.isLastVariableUpdateWasSuccessful()) {
-                var inconsistentEntities = scoreDirector.getInconsistentEntities();
+            } else if (!scoreDirector.isLastVariableUpdateSuccessful()) {
+                var inconsistentEntities = scoreDirector.computeInconsistentEntities();
                 throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
             }
             return function.apply(scoreDirector);
@@ -121,7 +121,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         var enterpriseService =
                 TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.SCORE_ANALYSIS);
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
-        var analysis = callScoreDirector("Solution analysis", solution, solutionUpdatePolicy,
+        var analysis = callScoreDirector("Score analysis", solution, solutionUpdatePolicy,
                 scoreDirector -> enterpriseService.analyze(scoreDirector.calculateScore(),
                         scoreDirector.getConstraintMatchTotalMap(), fetchPolicy),
                 ConstraintMatchPolicy.match(fetchPolicy), false);
