@@ -30,14 +30,6 @@ final class UniversalTuple<A, B, C, D>
         this.store = storeSize > 0 ? new Object[storeSize] : EMPTY_STORE;
     }
 
-    int cardinality() {
-        return cardinality;
-    }
-
-    int storeSize() {
-        return store.length;
-    }
-
     @Override
     public void setA(@Nullable A a) {
         this.a = a;
