@@ -63,8 +63,7 @@ public record ConsistencyTracker<Solution_>(
                         new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
                                 ChangedVariableNotifier.empty(), entities)
                                 .withConsistencyTracker(this)
-                                .assertingNoReferencedMissingEntities(),
-                        ignoreInconsistentSolutions);
+                                .assertingNoReferencedMissingEntities());
 
         // Graph will either be DefaultVariableReferenceGraph or EmptyVariableReferenceGraph
         // If it is empty, we don't need to do anything.

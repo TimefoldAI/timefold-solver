@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.List;
+import java.util.Collection;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -53,7 +53,7 @@ public final class DefaultShadowVariableSession<Solution_> implements Supply {
         return graph.updateChanged();
     }
 
-    public List<Object> getInconsistentEntities() {
+    public Collection<Object> getInconsistentEntities() {
         return graph.getInconsistentEntities();
     }
 }
