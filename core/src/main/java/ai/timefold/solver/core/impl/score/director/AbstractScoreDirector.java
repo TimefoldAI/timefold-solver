@@ -95,7 +95,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private long calculationCount = 0L;
     protected @Nullable Solution_ workingSolution;
     private int workingInitScore = 0;
-    private boolean lastVariableUpdateWasSuccessful = true;
+    private boolean lastVariableUpdateSuccessful = true;
 
     private final boolean isStepAssertOrMore;
 
@@ -246,7 +246,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public final InnerScore<Score_> calculateScore() {
-        if (lastVariableUpdateWasSuccessful) {
+        if (lastVariableUpdateSuccessful) {
             return innerCalculateScore();
         } else {
             var invalidScore = InnerScore.invalid(getScoreDefinition().getZeroScore());
@@ -343,12 +343,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Do nothing
     }
 
-    public List<Object> getInconsistentEntities() {
+    public List<Object> computeInconsistentEntities() {
         return shadowVariableSupport.getInconsistentEntities();
     }
 
     public void unassignInconsistentEntities() {
-        var inconsistentEntities = getInconsistentEntities();
+        var inconsistentEntities = computeInconsistentEntities();
         if (listVariableStateSupply != null) {
             var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
             var listElementClass = listVariableStateSupply.getSourceVariableDescriptor().getElementType();
@@ -490,11 +490,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void updateShadowVariables() {
-        lastVariableUpdateWasSuccessful = shadowVariableSupport.updateShadowVariables();
+        lastVariableUpdateSuccessful = shadowVariableSupport.updateShadowVariables();
     }
 
-    public boolean isLastVariableUpdateWasSuccessful() {
-        return lastVariableUpdateWasSuccessful;
+    public boolean isLastVariableUpdateSuccessful() {
+        return lastVariableUpdateSuccessful;
     }
 
     /**
@@ -509,7 +509,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void forceUpdateShadowVariables() {
-        lastVariableUpdateWasSuccessful = shadowVariableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
+        lastVariableUpdateSuccessful = shadowVariableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
     }
 
     protected void setCalculatedScore(Score_ score) {
