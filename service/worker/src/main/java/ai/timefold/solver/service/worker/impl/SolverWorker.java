@@ -770,16 +770,11 @@ public class SolverWorker {
 
             // update run status only as failed
             metadata = storageService.getMetadata(problemId);
-            if (metadata == null) {
-                LOGGER.error("Unable to notify the failure of {}, its metadata could not be read", problemId, throwable);
-            } else {
-                metadata.updateStatusOnFailure(throwable.getMessage());
-                storageService.storeMetadata(problemId, metadata);
+            metadata.updateStatusOnFailure(throwable.getMessage());
+            storageService.storeMetadata(problemId, metadata);
 
-                processor.onNext(metadata);
-                sendEvent(failedSolutionEmitter,
-                        new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
-            }
+            processor.onNext(metadata);
+            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
         } finally {
 
             for (var processor : modelPostProcessors) {
@@ -801,9 +796,7 @@ public class SolverWorker {
             }
 
             try {
-                if (metadata != null) {
-                    sendEvent(scheduleFailedEmitter, new ItemFailed(metadata, throwable, planName, tenantName));
-                }
+                sendEvent(scheduleFailedEmitter, new ItemFailed(metadata, throwable, planName, tenantName));
             } finally {
                 completionStatus.completed(problemId);
                 // shutdown has to be executed last to ensure everything executed before pod shuts down
