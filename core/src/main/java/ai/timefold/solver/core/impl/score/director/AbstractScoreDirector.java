@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -343,7 +344,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Do nothing
     }
 
-    public List<Object> computeInconsistentEntities() {
+    public Collection<Object> computeInconsistentEntities() {
         return shadowVariableSupport.getInconsistentEntities();
     }
 
