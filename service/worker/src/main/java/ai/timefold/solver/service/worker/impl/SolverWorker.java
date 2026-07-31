@@ -773,10 +773,8 @@ public class SolverWorker {
             metadata.updateStatusOnFailure(throwable.getMessage());
             storageService.storeMetadata(problemId, metadata);
 
-            if (solverJob != null) {
-                processor.onNext(metadata);
-                sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
-            }
+            processor.onNext(metadata);
+            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
         } finally {
 
             for (var processor : modelPostProcessors) {
