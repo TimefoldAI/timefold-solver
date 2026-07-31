@@ -814,4 +814,7 @@ public class EntityDescriptor<Solution_> {
         return "%s(%s)".formatted(getClass().getSimpleName(), entityClass.getCanonicalName());
     }
 
+    public int getMaxVariableOrdinal() {
+        return effectiveVariableDescriptorMap.size();
+    }
 }
