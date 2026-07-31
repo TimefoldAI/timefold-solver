@@ -96,6 +96,26 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
         Objects.requireNonNull(key, "Registration key is mandatory");
     }
 
+    /**
+     * Resolves the configured platform URL, stripping any trailing slashes so it can be
+     * safely concatenated with a path that starts with a slash (e.g. "/api/platform/v1/...").
+     */
+    protected String getPlatformUrl() {
+        String url = getPropertyOrParameter(PROP_PLATFORM_URL, this.platformUrl);
+        if (url != null) {
+            url = url.trim();
+            int end = url.length();
+            while (end > 0 && url.charAt(end - 1) == '/') {
+                end--;
+            }
+            url = url.substring(0, end);
+        }
+        if (url == null || url.isEmpty()) {
+            throw new IllegalStateException("Platform Url is mandatory");
+        }
+        return url;
+    }
+
     protected ObjectNode readModelDescriptor(Path modelDescriptorArchivePath) throws IOException {
         Path modelDescriptorPath = Paths.get(buildDirectory, "timefold", DESCRIPTOR_FILE_NAME);
 

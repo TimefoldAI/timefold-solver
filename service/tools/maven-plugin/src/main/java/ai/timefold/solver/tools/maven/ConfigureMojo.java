@@ -152,7 +152,7 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
         requestBuilder.header("Accept", "application/json");
 
         requestBuilder.header("Authorization", "Bearer " + platformPAT);
-        String platformUrl = getPropertyOrParameter(PROP_PLATFORM_URL, this.platformUrl);
+        String platformUrl = getPlatformUrl();
         requestBuilder.uri(URI.create(platformUrl + "/api/platform/v1/aboutme?includeConfig=true"));
 
         HttpRequest httpRequest = requestBuilder.build();
