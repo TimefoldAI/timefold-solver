@@ -138,6 +138,39 @@ public class ConfigureMojoTest {
     }
 
     @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureSuccessfullyWithTrailingSlashInPlatformUrl(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl() + "/";
+        mojo.execute();
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Configured Timefold Platform integration", Level.INFO);
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureFailsWithBlankPlatformUrl(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = "///";
+
+        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(IllegalStateException.class)
+                .hasMessage("Platform Url is mandatory");
+
+        wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    @Test
     @MojoParameter(name = "nativeSupported", value = "true")
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
     public void testConfigureSuccessfullyNativeSupported(ConfigureMojo mojo) throws Exception {

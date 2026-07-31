@@ -88,7 +88,7 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
         }
 
         try {
-            String platformUrl = getPropertyOrParameter(PROP_PLATFORM_URL, this.platformUrl);
+            String platformUrl = getPlatformUrl();
             String modelType = getPropertyOrParameter(PRIVATE_MODEL_TYPE, type);
             List<String> tenants = getTenants();
             if (modelType == null) {

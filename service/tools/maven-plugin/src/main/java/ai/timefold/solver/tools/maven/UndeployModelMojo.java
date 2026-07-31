@@ -43,7 +43,7 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
         }
 
         try {
-            String platformUrl = getPropertyOrParameter(PROP_PLATFORM_URL, this.platformUrl);
+            String platformUrl = getPlatformUrl();
             String key = getPropertyOrParameter(PROP_MODEL_KEY, this.key);
             Path modelDescriptorArchivePath = Paths.get(buildDirectory, "model-descriptor.zip");
 
