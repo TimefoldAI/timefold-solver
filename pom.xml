@@ -171,12 +171,35 @@
           <plugin> <!-- Make sure the build fails-fast on Javadoc issues. -->
             <artifactId>maven-javadoc-plugin</artifactId>
             <executions>
-              <execution>
+              <execution> <!-- Lints Javadoc of all classes, including implementation classes. -->
+                <id>lint-javadoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>javadoc-no-fork</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/javadoc-lint</outputDirectory>
+                  <!-- module-info.java has no documentable declarations of its own; without this,
+                       modules whose only source file is module-info.java fail with
+                       "No public or protected classes found to document" instead of skipping. -->
+                  <sourceFileExcludes>
+                    <sourceFileExclude>module-info.java</sourceFileExclude>
+                  </sourceFileExcludes>
+                </configuration>
+              </execution>
+              <execution> <!-- Only publishes the backwards-compatible surface: api and config packages. -->
                 <id>build-javadoc-jar</id>
                 <phase>package</phase>
                 <goals>
                   <goal>jar</goal>
                 </goals>
+                <configuration>
+                  <sourceFileIncludes>
+                    <sourceFileInclude>**/api/**/*.java</sourceFileInclude>
+                    <sourceFileInclude>ai/timefold/solver/core/config/**/*.java</sourceFileInclude>
+                    <sourceFileInclude>ai/timefold/solver/benchmark/config/**/*.java</sourceFileInclude>
+                  </sourceFileIncludes>
+                </configuration>
               </execution>
             </executions>
           </plugin>
