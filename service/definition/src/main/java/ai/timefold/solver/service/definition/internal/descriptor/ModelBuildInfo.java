@@ -16,7 +16,7 @@ import io.quarkus.runtime.annotations.RecordableConstructor;
 public record ModelBuildInfo(String solverVersion, @Deprecated(forRemoval = true) String sdkVersion, String version,
         String buildTime, String branch, String buildCommit) {
 
-    private static final ModelBuildInfo EMPTY = new ModelBuildInfo(null,null, null, null, null);
+    private static final ModelBuildInfo EMPTY = new ModelBuildInfo(null, null, null, null, null);
 
     @RecordableConstructor
     public ModelBuildInfo {
