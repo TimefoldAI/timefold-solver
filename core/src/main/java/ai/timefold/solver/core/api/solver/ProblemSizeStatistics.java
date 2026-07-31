@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.solver;
 
 import java.util.Locale;
+import java.util.SequencedMap;
 
 import ai.timefold.solver.core.impl.util.MathUtils;
 
@@ -17,8 +18,10 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public record ProblemSizeStatistics(long entityCount,
+        SequencedMap<Class<?>, Long> genuineEntityClassToEntityCount,
         long variableCount,
         long approximateValueCount,
+        SequencedMap<Class<?>, SequencedMap<String, Long>> genuineEntityClassToVariableToValueCount,
         double approximateProblemSizeLog) {
 
     /**
