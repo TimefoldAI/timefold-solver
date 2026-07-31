@@ -7,6 +7,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
@@ -142,7 +143,7 @@ public class SolutionManagerTest {
                 .hasMessageContainingAll("The solution (",
                         "is inconsistent", "Solution update", "requires a consistent solution")
                 .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
-                .hasFieldOrPropertyWithValue("involvedEntityList", List.of(valueA1, valueA2));
+                .hasFieldOrPropertyWithValue("involvedEntityCollection", Set.of(valueA1, valueA2));
     }
 
     private void assertShadowedListValueAllNull(SoftAssertions softly, TestdataListValueWithShadowHistory current) {
@@ -204,7 +205,7 @@ public class SolutionManagerTest {
                 .hasMessageContainingAll("The solution (",
                         "is inconsistent", "Solution update", "requires a consistent solution")
                 .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
-                .hasFieldOrPropertyWithValue("involvedEntityList", List.of(valueA1, valueA2));
+                .hasFieldOrPropertyWithValue("involvedEntityCollection", Set.of(valueA1, valueA2));
     }
 
     @ParameterizedTest
