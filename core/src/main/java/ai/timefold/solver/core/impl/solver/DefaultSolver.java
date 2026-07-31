@@ -227,7 +227,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                     logger.debug("    Entity ({}) count: {}",
                             geninueEntityClass.getCanonicalName(),
                             genuineEntityCountEntry.getValue());
-                    for (var geninueVariableEntry :  problemSizeStatistics
+                    for (var geninueVariableEntry : problemSizeStatistics
                             .genuineEntityClassToVariableToValueCount()
                             .get(geninueEntityClass).entrySet()) {
                         var genuineVariable = geninueVariableEntry.getKey();
