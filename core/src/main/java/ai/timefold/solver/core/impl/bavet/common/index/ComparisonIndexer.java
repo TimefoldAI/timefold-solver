@@ -30,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Every query operation ({@link #size}, {@link #forEach}, {@link #iterator}, {@link #randomIterator})
  * has separate array-mode and tree-mode implementations,
- * dispatched on {@link ScalingNavigableMap#arrayBased}.
+ * dispatched on {@link ScalingNavigableMap#isArrayBased()}.
  * <p>
  * This class was heavily benchmarked;
  * it is recommended to assume that most decisions made here
@@ -80,7 +80,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     @Override
     public void remove(Object compositeKey, ListEntry<T> entry) {
         var indexKey = keyUnpacker.apply(compositeKey);
-        if (comparisonMap.arrayBased) {
+        if (comparisonMap.isArrayBased()) {
             removeArray(compositeKey, indexKey, entry);
         } else {
             removeTree(compositeKey, indexKey, entry);
@@ -132,7 +132,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private int sizeSingleIndexer(Object compositeKey) {
-        return comparisonMap.arrayBased ? sizeSingleIndexerArray(compositeKey) : sizeSingleIndexerTree(compositeKey);
+        return comparisonMap.isArrayBased() ? sizeSingleIndexerArray(compositeKey) : sizeSingleIndexerTree(compositeKey);
     }
 
     private int sizeSingleIndexerArray(Object compositeKey) {
@@ -172,7 +172,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private int sizeManyIndexers(Object compositeKey) {
-        return comparisonMap.arrayBased ? sizeManyIndexersArray(compositeKey) : sizeManyIndexersTree(compositeKey);
+        return comparisonMap.isArrayBased() ? sizeManyIndexersArray(compositeKey) : sizeManyIndexersTree(compositeKey);
     }
 
     private int sizeManyIndexersArray(Object compositeKey) {
@@ -219,7 +219,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private void forEachSingleIndexer(Object compositeKey, Consumer<T> tupleConsumer) {
-        if (comparisonMap.arrayBased) {
+        if (comparisonMap.isArrayBased()) {
             forEachSingleIndexerArray(compositeKey, tupleConsumer);
         } else {
             forEachSingleIndexerTree(compositeKey, tupleConsumer);
@@ -246,7 +246,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private void forEachManyIndexers(Object compositeKey, Consumer<T> tupleConsumer) {
-        if (comparisonMap.arrayBased) {
+        if (comparisonMap.isArrayBased()) {
             forEachManyIndexersArray(compositeKey, tupleConsumer);
         } else {
             forEachManyIndexersTree(compositeKey, tupleConsumer);
@@ -291,7 +291,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private Iterator<T> iteratorSingleIndexer(Object compositeKey) {
-        return comparisonMap.arrayBased ? iteratorSingleIndexerArray(compositeKey) : iteratorSingleIndexerTree(compositeKey);
+        return comparisonMap.isArrayBased() ? iteratorSingleIndexerArray(compositeKey)
+                : iteratorSingleIndexerTree(compositeKey);
     }
 
     private Iterator<T> iteratorSingleIndexerArray(Object compositeKey) {
@@ -325,7 +326,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         return switch (comparisonMap.size()) {
             case 0 -> Collections.emptyIterator();
             case 1 ->
-                comparisonMap.arrayBased ? randomIteratorSingleIndexerArray(queryCompositeKey, workingRandom, filter)
+                comparisonMap.isArrayBased() ? randomIteratorSingleIndexerArray(queryCompositeKey, workingRandom, filter)
                         : randomIteratorSingleIndexerTree(queryCompositeKey, workingRandom, filter);
             default -> {
                 if (filter == null) {
@@ -402,7 +403,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         protected DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexKey = keyUnpacker.apply(queryCompositeKey);
             this.downstreamIteratorFunction = downstreamIteratorFunction;
-            if (comparisonMap.arrayBased) {
+            if (comparisonMap.isArrayBased()) {
                 this.indexerIterator = null;
                 this.arrayCursor = reverseOrder ? comparisonMap.size() - 1 : 0;
                 this.arrayStep = reverseOrder ? -1 : 1;

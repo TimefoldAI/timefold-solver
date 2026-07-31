@@ -47,7 +47,7 @@ class ScalingNavigableMapTest {
         map.getOrCreate(3, () -> "three");
         map.getOrCreate(1, () -> "one");
         map.getOrCreate(2, () -> "two");
-        assertThat(map.arrayBased).isTrue();
+        assertThat(map.isArrayBased()).isTrue();
         assertThat(ascendingKeys(map)).containsExactly(1, 2, 3);
         assertThat(descendingKeys(map)).containsExactly(1, 2, 3);
     }
@@ -55,15 +55,15 @@ class ScalingNavigableMapTest {
     @Test
     void iteratorHonorsReversedInTreeMode() {
         var map = treeifiedMap();
-        assertThat(map.arrayBased).isFalse();
+        assertThat(map.isArrayBased()).isFalse();
         assertThat(ascendingKeys(map)).isSorted();
-        assertThat(descendingKeys(map)).isSortedAccordingTo((a, b) -> b - a);
+        assertThat(descendingKeys(map)).isSortedAccordingTo((a, b) -> Integer.compare(b, a));
     }
 
     @Test
     void treeifiesOnChurnAtThresholdAndStaysTreeified() {
         var map = treeifiedMap();
-        assertThat(map.arrayBased).isFalse();
+        assertThat(map.isArrayBased()).isFalse();
         // treeifiedMap() fills 0..ARRAY_THRESHOLD (65 keys), then churns key 0 back in.
         assertThat(map.size()).isEqualTo(ScalingNavigableMap.ARRAY_THRESHOLD + 1);
         assertThat(ascendingKeys(map)).hasSize(ScalingNavigableMap.ARRAY_THRESHOLD + 1).isSorted();
@@ -72,7 +72,7 @@ class ScalingNavigableMapTest {
         for (var key = 1; key <= ScalingNavigableMap.ARRAY_THRESHOLD; key++) {
             map.remove(key);
         }
-        assertThat(map.arrayBased).isFalse();
+        assertThat(map.isArrayBased()).isFalse();
         assertThat(map.size()).isEqualTo(1);
         assertThat(map.get(0)).isEqualTo("value0");
     }
@@ -84,11 +84,11 @@ class ScalingNavigableMapTest {
             var value = "value" + key;
             map.getOrCreate(key, () -> value);
         }
-        assertThat(map.arrayBased).isTrue();
+        assertThat(map.isArrayBased()).isTrue();
         assertThat(map.size()).isEqualTo(ScalingNavigableMap.MAXIMUM_ARRAY_SIZE);
         assertThat(ascendingKeys(map)).isSorted();
         assertThat(map.get(ScalingNavigableMap.MAXIMUM_ARRAY_SIZE / 2))
-                .isEqualTo("value" + ScalingNavigableMap.MAXIMUM_ARRAY_SIZE / 2);
+                .isEqualTo("value%d".formatted(ScalingNavigableMap.MAXIMUM_ARRAY_SIZE / 2));
     }
 
     @Test
@@ -103,9 +103,8 @@ class ScalingNavigableMapTest {
         for (var i = 0; i < ScalingNavigableMap.CHURN_TOLERANCE * 4; i++) {
             map.remove(churnKey);
             map.getOrCreate(churnKey, () -> "churned");
-            assertThat(map.arrayBased).isTrue();
+            assertThat(map.isArrayBased()).isTrue();
         }
-        assertThat(map.arrayBased).isTrue();
         assertThat(map.size()).isEqualTo(upperBound);
     }
 
@@ -117,18 +116,18 @@ class ScalingNavigableMapTest {
             var value = "value" + key;
             map.getOrCreate(key, () -> value);
         }
-        assertThat(map.arrayBased).isTrue();
+        assertThat(map.isArrayBased()).isTrue();
 
         var churnKey = 0;
         for (var i = 0; i < ScalingNavigableMap.CHURN_TOLERANCE - 1; i++) {
             map.remove(churnKey);
             map.getOrCreate(churnKey, () -> "rebuilt" + churnKey);
         }
-        assertThat(map.arrayBased).isTrue();
+        assertThat(map.isArrayBased()).isTrue();
 
         map.remove(churnKey);
         map.getOrCreate(churnKey, () -> "rebuilt" + churnKey);
-        assertThat(map.arrayBased).isFalse();
+        assertThat(map.isArrayBased()).isFalse();
 
         assertThat(map.size()).isEqualTo(keyCount);
         assertThat(map.get(churnKey)).isEqualTo("rebuilt" + churnKey);
@@ -147,7 +146,7 @@ class ScalingNavigableMapTest {
             var value = "value" + key;
             map.getOrCreate(key, () -> value);
         }
-        assertThat(map.arrayBased).isFalse();
+        assertThat(map.isArrayBased()).isFalse();
         assertThat(map.size()).isEqualTo(keyCount);
         assertThat(ascendingKeys(map)).isSorted();
         assertThat(descendingKeys(map)).isSortedAccordingTo((a, b) -> b - a);
@@ -199,7 +198,7 @@ class ScalingNavigableMapTest {
             map.remove(0);
             map.getOrCreate(0, () -> "value0");
         }
-        assertThat(map.arrayBased).isFalse();
+        assertThat(map.isArrayBased()).isFalse();
         return map;
     }
 
@@ -209,7 +208,7 @@ class ScalingNavigableMapTest {
 
     private static List<Integer> keys(ScalingNavigableMap<Integer, String> map, boolean reversed) {
         var keys = new ArrayList<Integer>();
-        if (map.arrayBased) {
+        if (map.isArrayBased()) {
             for (var i = 0; i < map.size(); i++) {
                 keys.add(map.keyAt(i));
             }

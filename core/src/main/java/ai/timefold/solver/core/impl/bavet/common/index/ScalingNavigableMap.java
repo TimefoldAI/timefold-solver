@@ -66,32 +66,42 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
-    // Package-private: tests in this package read arrayBased and the constants below.
-    // The size above which a *churning* bucket is better off as a tree.
-    // Not a promotion trigger on its own; see CHURN_TOLERANCE.
-    // Established experimentally: get/scan/churn all favor 64 over 32,
-    // while pushing to 96 or 128 improved scan only marginally and made get and churn worse.
+    /**
+     * The size above which a *churning* bucket is better off as a tree.
+     * Not a promotion trigger on its own; see CHURN_TOLERANCE.
+     * Established experimentally: get/scan/churn all favor 64 over 32,
+     * while pushing to 96 or 128 improved scan only marginally and made get and churn worse.
+     * Package-private: tests in this package read {@link #isArrayBased()} and the constants below.
+     */
     static final int ARRAY_THRESHOLD = 64;
-    // Hard cap on array mode, independent of churn, because building the array is O(n) per insert:
-    // ~n²/2 element copies for n distinct keys. At 1024 that is ~5*10^5 copies (once, negligible)
-    // for 10 binary-search probes per get; at 16384 it would be ~1.3*10^8, and every extra probe is
-    // a dependent load into a Comparable, i.e. a likely cache miss on the much hotter get path.
-    // Absolute rather than a multiple of ARRAY_THRESHOLD: the two answer unrelated questions,
-    // and retuning one does not imply retuning the other.
-    // A power of two also lands exactly on a doubling step from MINIMUM_ARRAY_CAPACITY,
-    // so a maxed-out bucket wastes no array capacity.
+    /**
+     * Hard cap on array mode, independent of churn, because building the array is O(n) per insert:
+     * ~n²/2 element copies for n distinct keys.
+     * At 1024 that is ~5*10^5 copies (once, negligible) for 10 binary-search probes per get;
+     * at 16384 it would be ~1.3*10^8, and every extra probe is a dependent load into a Comparable,
+     * i.e. a likely cache miss on the much hotter get path.
+     * Absolute rather than a multiple of {@link #ARRAY_THRESHOLD}:
+     * the two answer unrelated questions,
+     * and retuning one does not imply retuning the other.
+     * A power of two also lands exactly on a doubling step from {@link #MINIMUM_ARRAY_CAPACITY},
+     * so a maxed-out bucket wastes no array capacity.
+     */
     static final int MAXIMUM_ARRAY_SIZE = 1024;
-    // How many at-scale removals count as proof of churn. Deliberately not 1:
-    // an isolated removal can come from a problem change, a pinning change,
-    // or a move that happens to empty a single downstream indexer,
-    // and permanently treeifying an otherwise read-only bucket over one such event
-    // costs far more than tolerating it - 32 false events at size 1024 is ~3*10^4 reference copies,
-    // once, for the lifetime of the bucket. A genuinely churning bucket performs structural
-    // mutations millions of times per second and trips this within microseconds.
+    /**
+     * How many at-scale removals count as proof of churn.
+     * Deliberately not 1:
+     * an isolated removal can come from a problem change, a pinning change,
+     * or a move that happens to empty a single downstream indexer,
+     * and permanently treeifying an otherwise read-only bucket over one such event
+     * costs far more than tolerating it -
+     * 32 false events at size 1024 is ~3*10^4 reference copies,
+     * once, for the lifetime of the bucket.
+     * A genuinely churning bucket performs structural mutations millions of times per second
+     * and trips this within microseconds.
+     */
     static final int CHURN_TOLERANCE = 32;
     private static final int MINIMUM_ARRAY_CAPACITY = 4;
 
-    boolean arrayBased = true;
     // keys[0, size) sorted ascending by natural order
     private @Nullable Object[] keys = EMPTY_ARRAY;
     // values[0, size) parallel to keys[]
@@ -107,9 +117,13 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
         // No out-of-package instances.
     }
 
+    boolean isArrayBased() {
+        return treeMap == null;
+    }
+
     @Nullable
     public V get(K key) {
-        if (arrayBased) {
+        if (treeMap == null) {
             var index = indexOf(key);
             return index >= 0 ? valueAt(index) : null;
         } else {
@@ -118,11 +132,11 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
     }
 
     public V getOrCreate(K key, Supplier<V> valueSupplier) {
-        return arrayBased ? getOrCreateArray(key, valueSupplier) : getOrCreateTree(key, valueSupplier);
+        return isArrayBased() ? getOrCreateArray(key, valueSupplier) : getOrCreateTree(key, valueSupplier);
     }
 
     private V getOrCreateTree(K key, Supplier<V> valueSupplier) {
-        // Avoids computeIfAbsent in order to not create lambdas on the hot path.
+        // Avoids computeIfAbsent to not create lambdas on the hot path.
         var value = treeMap.get(key);
         if (value == null) {
             value = valueSupplier.get();
@@ -167,7 +181,6 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
             newTreeMap.put(keyAt(i), valueAt(i));
         }
         treeMap = newTreeMap;
-        arrayBased = false;
         Arrays.fill(keys, 0, size, null);
         Arrays.fill(values, 0, size, null);
         size = -1;
@@ -179,7 +192,7 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
      * if the position is already known.
      */
     public void remove(K key) {
-        if (arrayBased) {
+        if (treeMap == null) {
             var index = indexOf(key);
             if (index >= 0) {
                 removeAt(index);
@@ -190,14 +203,16 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
     }
 
     /**
-     * Array-mode only. {@code index} must be a valid, currently-occupied position, as returned by
-     * a non-negative {@link #indexOf(Comparable)}.
+     * Array-mode only.
+     * {@code index} must be a valid, currently occupied position,
+     * as returned by a non-negative {@link #indexOf(Comparable)}.
      * Exposed (alongside {@link #indexOf(Comparable)}) so a caller that already located an entry via {@link #indexOf} -
      * typically to inspect its value first, like {@link ComparisonIndexer#remove} does -
      * can remove it without a second, redundant binary search for the same key.
-     * May {@link #treeify()} as its last step, so callers must not read array-mode state
-     * ({@link #arrayBased}, {@link #size()}, {@link #keyAt}, {@link #valueAt}, {@link #indexOf})
-     * afterwards. Every current caller already treats this as its last operation on the map.
+     * May {@link #treeify()} as its last step,
+     * so callers must not read array-mode state afterward
+     * ({@link #size()}, {@link #keyAt}, {@link #valueAt}, {@link #indexOf}).
+     * Every current caller already treats this as its last operation on the map.
      */
     void removeAt(int index) {
         var shiftCount = size - index - 1;
@@ -210,17 +225,18 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
         values[size - 1] = null;
         size--;
         // Tested after the decrement: the bucket is still large, and still shrinking.
-        if (size >= ARRAY_THRESHOLD && ++churnAtScaleCount >= CHURN_TOLERANCE) {
+        churnAtScaleCount++;
+        if (size >= ARRAY_THRESHOLD && churnAtScaleCount >= CHURN_TOLERANCE) {
             treeify();
         }
     }
 
     public int size() {
-        return arrayBased ? size : treeMap.size();
+        return isArrayBased() ? size : treeMap.size();
     }
 
     public boolean isEmpty() {
-        return arrayBased ? size == 0 : treeMap.isEmpty();
+        return isArrayBased() ? size == 0 : treeMap.isEmpty();
     }
 
     /**

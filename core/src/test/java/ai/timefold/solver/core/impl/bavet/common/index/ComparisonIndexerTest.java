@@ -136,8 +136,8 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         // filling 0..threshold then removing keys 1..threshold only arms the churn counter once
         // (only the first removal leaves size >= threshold; every later one is already below it),
         // so real interleaved churn is needed here to actually force and verify tree mode.
-        ComparisonIndexer<UniTuple<String>, Integer> indexer =
-                new ComparisonIndexer<>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(), RandomAccessLeafIndexer::new);
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                RandomAccessLeafIndexer::new);
         var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
         var entriesByAge = new LinkedHashMap<Integer, ListEntry<UniTuple<String>>>();
         for (var age = 0; age <= threshold; age++) { // threshold + 1 puts: crosses the threshold on the last one.
@@ -145,7 +145,7 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         }
 
         churnKey(indexer, -1); // Growth alone no longer treeifies; force it via churn.
-        assertThat(isArrayBased(indexer)).isFalse();
+        assertThat(indexer.comparisonMap.isArrayBased()).isFalse();
 
         // Remove all but one entry, well below the array threshold.
         entriesByAge.entrySet().stream()
@@ -153,17 +153,19 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
                 .forEach(e -> indexer.remove(e.getKey(), e.getValue()));
 
         assertThat(indexer.size(threshold + 10)).isEqualTo(1);
-        assertThat(isArrayBased(indexer)).isFalse();
+        assertThat(indexer.comparisonMap.isArrayBased()).isFalse();
     }
 
     @Test
     void monotonicGrowthStaysArrayBased() {
         // Regression test: growth alone must not treeify (only churn at/above ARRAY_THRESHOLD does).
         var ageCount = ScalingNavigableMap.ARRAY_THRESHOLD * 4;
-        ComparisonIndexer<UniTuple<String>, Integer> lessThanIndexer =
-                new ComparisonIndexer<>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(), RandomAccessLeafIndexer::new);
-        ComparisonIndexer<UniTuple<String>, Integer> greaterThanIndexer =
-                new ComparisonIndexer<>(JoinerType.GREATER_THAN, KeyUnpacker.<Integer> single(), RandomAccessLeafIndexer::new);
+        var lessThanIndexer =
+                new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                        RandomAccessLeafIndexer::new);
+        var greaterThanIndexer =
+                new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.GREATER_THAN, KeyUnpacker.<Integer> single(),
+                        RandomAccessLeafIndexer::new);
         var tuplesByAge = new LinkedHashMap<Integer, UniTuple<String>>();
         for (var age = 0; age < ageCount; age++) {
             var tuple = newTuple("age" + age);
@@ -171,8 +173,8 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
             greaterThanIndexer.put(age, tuple);
             tuplesByAge.put(age, tuple);
         }
-        assertThat(isArrayBased(lessThanIndexer)).isTrue();
-        assertThat(isArrayBased(greaterThanIndexer)).isTrue();
+        assertThat(lessThanIndexer.comparisonMap.isArrayBased()).isTrue();
+        assertThat(greaterThanIndexer.comparisonMap.isArrayBased()).isTrue();
 
         var midAge = ageCount / 2;
         var expectedBelowMid = tuplesByAge.entrySet().stream()
@@ -198,10 +200,6 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
             var entry = indexer.put(age, newTuple("churn" + age));
             indexer.remove(age, entry);
         }
-    }
-
-    private static boolean isArrayBased(ComparisonIndexer<?, ?> indexer) {
-        return indexer.comparisonMap.arrayBased;
     }
 
     @Test
