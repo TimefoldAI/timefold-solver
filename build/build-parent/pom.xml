@@ -31,7 +31,7 @@
       The 'revision' property value is conserved by the flatten-maven-plugin, so the model project does not override it.
     -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
-    <version.ch.qos.logback>1.6.0</version.ch.qos.logback>
+    <version.ch.qos.logback>1.6.1</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
     <version.io.quarkus>3.37.3</version.io.quarkus>
@@ -41,7 +41,7 @@
     <version.org.awaitility>4.3.0</version.org.awaitility>
     <version.org.eclipse.microprofile.config>3.1.1</version.org.eclipse.microprofile.config>
     <version.org.freemarker>2.3.34</version.org.freemarker>
-    <version.org.jspecify>1.0.0</version.org.jspecify>
+    <version.org.jspecify>1.0.1</version.org.jspecify>
     <version.org.junit.jupiter>6.1.2</version.org.junit.jupiter>
     <version.org.mapstruct>1.6.3</version.org.mapstruct>
     <version.org.openrewrite.recipe>3.35.0</version.org.openrewrite.recipe>
@@ -73,7 +73,7 @@
     <version.jaxb2.plugin>4.1.0</version.jaxb2.plugin>
     <version.maven-plugin.plugin>3.15.2</version.maven-plugin.plugin>
     <version.maven-plugin.plugin-testing>3.5.1</version.maven-plugin.plugin-testing>
-    <version.native.plugin>1.1.5</version.native.plugin>
+    <version.native.plugin>1.1.6</version.native.plugin>
     <version.properties.plugin>1.3.0</version.properties.plugin>
     <version.resources.plugin>3.5.0</version.resources.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
