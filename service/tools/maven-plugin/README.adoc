@@ -17,7 +17,7 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 === Configure goal (timefold:configure)
 
 - Fetches platform identity/config by calling GET /api/platform/v1/aboutme?includeConfig=true
-- Requires a platform personal access token available via environment variable `TIMEFOLD_PAT` (see "Authentication" below)
+- Requires a platform personal access token, either via environment variable `TIMEFOLD_PAT` or a local credentials file (see "Authentication" below)
 - If a single accountId is returned by the platform and `timefold.accountId` wasn't provided, the plugin will use it
 - Writes a properties file at `target/generated-resources/timefold-build.properties` with entries such as:
 ** `quarkus.container-image.registry` — value taken from platform config.containerRegistry
@@ -66,17 +66,22 @@ These are the most important configuration properties for the plugin. They are s
 
 - `tfp.model.undeploy.skip` (boolean, default=false) — skip undeploy goal. Note: the property used by the plugin for undeploy skip is `tfp.model.undeploy.skip` (not `timefold.model.undeploy.skip`).
 
-=== Authentication (environment)
+=== Authentication
 
-- `TIMEFOLD_PAT` — personal access token for Timefold Platform. The plugin reads this environment variable and sets the `Authorization: Bearer <token>` header on requests.
-  The token must have the `registered-model:create` and `registered-model:update` scopes; requests will fail with an authorization error if either scope is missing.
-  See link:https://docs.timefold.ai/timefold-platform/latest/api/platform-api#_authentication_with_personal_access_tokens[Authentication with Personal Access Tokens] for how to create a token.
+The plugin resolves the personal access token in this order:
+
+- `TIMEFOLD_PAT` — environment variable. Checked first.
+- `~/.timefold/credentials` — a local properties file containing `pat=<your-token>`. Used as a fallback when `TIMEFOLD_PAT` isn't set, so you don't need to export it in every shell session.
+
+Either way, the resolved token is used to set the `Authorization: Bearer <token>` header on requests.
+The token must have the `registered-model:create` and `registered-model:update` scopes; requests will fail with an authorization error if either scope is missing.
+See link:https://docs.timefold.ai/timefold-platform/latest/api/platform-api#_authentication_with_personal_access_tokens[Authentication with Personal Access Tokens] for how to create a token.
 
 == Headers & HTTP details
 
 Requests include the following headers:
 
-- `Authorization: Bearer <token>` (from TIMEFOLD_PAT)
+- `Authorization: Bearer <token>` (from TIMEFOLD_PAT or ~/.timefold/credentials)
 - `Content-Type: application/octet-stream` for model upload requests
 - `Accept: application/json`
 - `X-TF-TENANT-ID` — set to the first tenant if `timefold.model.tenants` is provided
@@ -148,4 +153,4 @@ Goals are implemented as Mojos in `src/main/java/ai/timefold/solver/tools/maven`
 - `UndeployModelMojo` — handles deletion
 - `AbstractPlatformModelMojo` — common behavior, HTTP client, descriptor reading
 
-The plugin relies on the environment variable `TIMEFOLD_PAT` for authentication; tests provide a test helper to mock token retrieval.
+The plugin relies on `AccessTokenProvider` for authentication, which checks the `TIMEFOLD_PAT` environment variable first, then falls back to `~/.timefold/credentials`; tests provide a test helper to mock token retrieval.
