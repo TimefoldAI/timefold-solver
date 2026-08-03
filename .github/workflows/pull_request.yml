@@ -46,7 +46,7 @@ jobs:
 
       - name: Build and test timefold-solver
         run: |
-          ./mvnw -B verify
+          ./mvnw -B install
           ./mvnw -B verify --file service/test-model/pom.xml
 
       - name: Test Summary
