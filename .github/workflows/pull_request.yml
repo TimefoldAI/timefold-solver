@@ -45,7 +45,9 @@ jobs:
           cache: 'maven'
 
       - name: Build and test timefold-solver
-        run: ./mvnw -B verify
+        run: |
+          ./mvnw -B verify
+          ./mvnw -B verify --file service/test-model/pom.xml
 
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
