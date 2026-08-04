@@ -605,9 +605,6 @@
               <properties>
                 <timefold.model.api-version>${timefold.model.api-version}</timefold.model.api-version>
               </properties>
-              <systemProperties>
-                <timefold.model.api-version>${timefold.model.api-version}</timefold.model.api-version>
-              </systemProperties>
             </configuration>
             <executions>
               <execution>
@@ -623,7 +620,6 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <systemPropertyVariables>
-                <timefold.model.api-version>${timefold.model.api-version}</timefold.model.api-version>
                 <timefold.solver.enterprise>${timefold.solver.enterprise}</timefold.solver.enterprise>
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                 <!--suppress UnresolvedMavenProperty -->
@@ -642,7 +638,6 @@
                 </goals>
                 <configuration>
                   <systemPropertyVariables>
-                    <timefold.model.api-version>${timefold.model.api-version}</timefold.model.api-version>
                     <timefold.solver.enterprise>${timefold.solver.enterprise}</timefold.solver.enterprise>
                     <native.image.path>${timefold.model.native.image.path}</native.image.path>
                     <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
