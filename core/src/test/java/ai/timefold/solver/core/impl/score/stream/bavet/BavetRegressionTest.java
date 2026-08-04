@@ -334,6 +334,88 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     }
 
+    /**
+     * Like {@link #filteringJoinNullConflictRightUnassignOne()}, but the null-checking filter sits behind
+     * a 3-hop self-join instead of a single bi-join. A bi-join's left input is always the root tuple
+     * (whose retraction is applied eagerly), so the existing single-hop guard is enough there. Two hops
+     * deeper, the left input is itself a join product whose own retraction is deferred to a later
+     * network layer — exposing a stale, "still active" tuple to the filtering predicate.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictRightQuadJoinUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b, c) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b, c, d) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    Objects.requireNonNull(c.getEntity());
+                                                    Objects.requireNonNull(d.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1, value1, value1),
+                    assertMatch(value1, value1, value1, value2),
+                    assertMatch(value1, value1, value2, value1),
+                    assertMatch(value1, value1, value2, value2),
+                    assertMatch(value1, value2, value1, value1),
+                    assertMatch(value1, value2, value1, value2),
+                    assertMatch(value1, value2, value2, value1),
+                    assertMatch(value1, value2, value2, value2),
+                    assertMatch(value2, value1, value1, value1),
+                    assertMatch(value2, value1, value1, value2),
+                    assertMatch(value2, value1, value2, value1),
+                    assertMatch(value2, value1, value2, value2),
+                    assertMatch(value2, value2, value1, value1),
+                    assertMatch(value2, value2, value1, value2),
+                    assertMatch(value2, value2, value2, value1),
+                    assertMatch(value2, value2, value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2, value2, value2));
+        }
+    }
+
     @TestTemplate
     public void filteringIfExistsNullConflictRight() {
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
@@ -456,6 +538,90 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                     assertMatch(value1));
         }
 
+    }
+
+    /**
+     * Like {@link #filteringIfExistsNullConflictRight()}, but the left input to ifExists is a
+     * 3-hop self-join product instead of the root tuple directly — the ifExists counterpart to
+     * {@link #filteringJoinNullConflictRightQuadJoinUnassignOne()}.
+     */
+    @TestTemplate
+    public void filteringIfExistsNullConflictDeepLeftUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b, c) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .ifExists(TestdataAllowsUnassignedValuesListValue.class,
+                                                equal((a, b, c, d) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b, c, d, e) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    Objects.requireNonNull(c.getEntity());
+                                                    Objects.requireNonNull(d.getEntity());
+                                                    Objects.requireNonNull(e.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1, value1, value1),
+                    assertMatch(value1, value1, value1, value2),
+                    assertMatch(value1, value1, value2, value1),
+                    assertMatch(value1, value1, value2, value2),
+                    assertMatch(value1, value2, value1, value1),
+                    assertMatch(value1, value2, value1, value2),
+                    assertMatch(value1, value2, value2, value1),
+                    assertMatch(value1, value2, value2, value2),
+                    assertMatch(value2, value1, value1, value1),
+                    assertMatch(value2, value1, value1, value2),
+                    assertMatch(value2, value1, value2, value1),
+                    assertMatch(value2, value1, value2, value2),
+                    assertMatch(value2, value2, value1, value1),
+                    assertMatch(value2, value2, value1, value2),
+                    assertMatch(value2, value2, value2, value1),
+                    assertMatch(value2, value2, value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2, value2, value2));
+        }
     }
 
     /**
@@ -923,6 +1089,332 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         scoreDirector.clearPendingShadowVariableUpdates();
         assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadeValue() == 2))
                 .isTrue(); // two if it is null
+    }
+
+    /**
+     * Like {@link #filteringJoinNullConflictRightUnassignOne()}, but the left input to the filtering join
+     * is derived via a {@code .map()} from an earlier join's output, instead of being that earlier join's
+     * product directly. A map node's own retraction of its output is deferred to its parent join's flush
+     * the same way an intermediate join's own output is — same race, one more node type in the chain.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictThroughMapUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(Function.identity(), Function.identity()))
+                                        .map((TestdataAllowsUnassignedValuesListValue a,
+                                                TestdataAllowsUnassignedValuesListValue b) -> a)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1),
+                    assertMatch(value1, value2),
+                    assertMatch(value2, value1),
+                    assertMatch(value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2));
+        }
+    }
+
+    /**
+     * Like {@link #filteringJoinNullConflictThroughMapUnassignOne()}, but with {@code .flatten()} instead
+     * of {@code .map()} in the middle of the chain. {@link ai.timefold.solver.core.impl.bavet.common.AbstractFlattenNode}
+     * has the identical eager-state/deferred-notification pattern as map, so it should reproduce the same way.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictThroughFlattenUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(Function.identity(), Function.identity()))
+                                        .flatten((TestdataAllowsUnassignedValuesListValue a,
+                                                TestdataAllowsUnassignedValuesListValue b) -> List.of(a))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((x, y, z) -> z.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((x, y, z, w) -> {
+                                                    Objects.requireNonNull(x.getEntity());
+                                                    Objects.requireNonNull(y.getEntity());
+                                                    Objects.requireNonNull(z.getEntity());
+                                                    Objects.requireNonNull(w.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1, value1, value1),
+                    assertMatch(value1, value1, value1, value2),
+                    assertMatch(value2, value2, value2, value1),
+                    assertMatch(value2, value2, value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2, value2, value2));
+        }
+    }
+
+    /**
+     * Like {@link #filteringJoinNullConflictThroughMapUnassignOne()}, but with {@code .groupBy()} instead
+     * of {@code .map()} in the middle of the chain. groupBy's out-tuple has no single input tuple whose
+     * activity implies its own (it's an N:1 aggregate), so it uses {@code Group}'s
+     * {@code TupleActivitySource} instead of the {@code activityParent1}/{@code activityParent2} chain.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictThroughGroupByUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(Function.identity(), Function.identity()))
+                                        .groupBy((TestdataAllowsUnassignedValuesListValue a,
+                                                TestdataAllowsUnassignedValuesListValue b) -> a)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1),
+                    assertMatch(value1, value2),
+                    assertMatch(value2, value1),
+                    assertMatch(value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2));
+        }
+    }
+
+    /**
+     * Like {@link #filteringJoinNullConflictThroughGroupByUnassignOne()}, but with many contributors
+     * mapped into a single group instead of one. Confirms {@code Group}'s {@code TupleList}-backed
+     * contributor tracking correctly identifies that the group survives when only one of many
+     * contributors dies, with the dying contributor's value excluded downstream.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictThroughLargeGroupUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(10, 1);
+        var entity = solution.getEntityList().getFirst();
+        var values = solution.getValueList();
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(Function.identity(), Function.identity()))
+                                        .groupBy((TestdataAllowsUnassignedValuesListValue a,
+                                                TestdataAllowsUnassignedValuesListValue b) -> a.getEntity())
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(Function.identity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((groupEntity, value) -> {
+                                                    Objects.requireNonNull(groupEntity);
+                                                    Objects.requireNonNull(value.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            for (var value : values) {
+                scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value);
+            }
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(values);
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, values.size());
+            for (var i = values.size() - 1; i >= 0; i--) {
+                scoreDirector.afterListVariableElementAssigned(entity, "valueList", values.get(i));
+            }
+
+            assertScore(scoreDirector,
+                    values.stream().map(value -> assertMatch(entity, value)).toArray(AssertableMatch[]::new));
+
+            // Unassign one of the ten contributors; the group (keyed by the shared entity) still has nine
+            // and survives.
+            var valueToUnassign = values.getFirst();
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, valueToUnassign);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, values.size());
+            entity.getValueList().remove(valueToUnassign);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, values.size() - 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, valueToUnassign);
+
+            assertScore(scoreDirector,
+                    values.stream()
+                            .filter(value -> value != valueToUnassign)
+                            .map(value -> assertMatch(entity, value))
+                            .toArray(AssertableMatch[]::new));
+        }
+    }
+
+    /**
+     * Like {@link #filteringJoinNullConflictThroughLargeGroupUnassignOne()}, but unassigning every
+     * contributor in the same transaction. Confirms the group itself is correctly, fully retracted
+     * downstream once its {@code TupleList} of contributors becomes empty — exercises
+     * {@code Group#isEmpty()}/{@code AbstractGroupNode#killOutTuple} for a many-contributor group, not
+     * just the single-contributor case the disabled-then-fixed test above already covers.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictThroughLargeGroupUnassignAll() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(10, 1);
+        var entity = solution.getEntityList().getFirst();
+        var values = solution.getValueList();
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(Function.identity(), Function.identity()))
+                                        .groupBy((TestdataAllowsUnassignedValuesListValue a,
+                                                TestdataAllowsUnassignedValuesListValue b) -> a.getEntity())
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(Function.identity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((groupEntity, value) -> {
+                                                    Objects.requireNonNull(groupEntity);
+                                                    Objects.requireNonNull(value.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            for (var value : values) {
+                scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value);
+            }
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(values);
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, values.size());
+            for (var i = values.size() - 1; i >= 0; i--) {
+                scoreDirector.afterListVariableElementAssigned(entity, "valueList", values.get(i));
+            }
+
+            assertScore(scoreDirector,
+                    values.stream().map(value -> assertMatch(entity, value)).toArray(AssertableMatch[]::new));
+
+            // Unassign every contributor at once; the group must fully retract, with nothing left downstream.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            for (var value : values) {
+                scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value);
+            }
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, values.size());
+            entity.getValueList().clear();
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 0);
+            for (var i = values.size() - 1; i >= 0; i--) {
+                scoreDirector.afterListVariableElementUnassigned(variableDescriptor, values.get(i));
+            }
+
+            assertScore(scoreDirector);
+        }
     }
 
 }

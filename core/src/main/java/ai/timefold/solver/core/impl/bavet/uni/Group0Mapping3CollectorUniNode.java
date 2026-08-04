@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.uni;
 
+import java.util.function.IntSupplier;
+
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -12,12 +14,12 @@ public final class Group0Mapping3CollectorUniNode<OldA, A, B, C, ResultContainer
 
     private final int outputStoreSize;
 
-    public Group0Mapping3CollectorUniNode(int groupStoreIndex, int undoStoreIndex,
+    public Group0Mapping3CollectorUniNode(IntSupplier storeIndexReserver,
             UniConstraintCollector<OldA, ResultContainerA_, A> collectorA,
             UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
             UniConstraintCollector<OldA, ResultContainerC_, C> collectorC,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex,
+        super(storeIndexReserver,
                 null, mergeCollectors(collectorA, collectorB, collectorC),
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;

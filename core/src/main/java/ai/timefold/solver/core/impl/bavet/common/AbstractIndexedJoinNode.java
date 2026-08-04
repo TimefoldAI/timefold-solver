@@ -142,19 +142,8 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         } else {
             leftTuple.setStore(inputStoreIndexLeftEntry, indexerLeft.put(compositeKey, leftTuple));
         }
-        if (!leftTuple.getState().isActive()) {
-            // Assume the following scenario:
-            // - The join is of two entities of the same type, both filtering out unassigned.
-            // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity became assigned, and is therefore getting inserted.
-            //
-            // This means the filter would be called with (unassignedEntity, assignedEntity),
-            // which breaks the expectation that the filter is only called on two assigned entities
-            // and requires adding null checks to the filter for something that should intuitively be impossible.
-            // We avoid this situation as it is clear that it is pointless to insert this tuple.
-            //
-            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
-            // the right's inserts are delivered before the left's retracts are.
+        if (!leftTuple.isActiveTransitively()) {
+            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
             return;
         }
         // The right tuples come out of the index and can be retracting for the mirror-image reason,
