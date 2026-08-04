@@ -99,7 +99,8 @@ These are *not* nested under `<root>`: the path is `/{timefold.application.versi
 For example, with `timefold.application.version=v1` this is `/v1/demo-data`.
 
 - `GET /v<version>/demo-data`: Retrieve all available demo dataset ids.
-- `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
+- `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier, as the full Solving Request (`config` and `modelInput`, see <<requestResponseStructure>>). This response is ready to `POST` directly to `<root>`.
+- `GET /v<version>/demo-data/\{demoDataId\}/input`: Retrieve the demo dataset's `modelInput` only, without the `config` envelope.
 
 See the xref:running-timefold-solver/service/consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
 
