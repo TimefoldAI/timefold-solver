@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import static ai.timefold.solver.core.impl.bavet.uni.Group1Mapping0CollectorUniNode.createGroupKey;
 
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -16,13 +17,13 @@ public final class Group1Mapping3CollectorUniNode<OldA, A, B, C, D, ResultContai
     private final int outputStoreSize;
 
     public Group1Mapping3CollectorUniNode(Function<OldA, A> groupKeyMapping,
-            int groupStoreIndex, int undoStoreIndex,
+            IntSupplier storeIndexReserver,
             UniConstraintCollector<OldA, ResultContainerB_, B> collectorB,
             UniConstraintCollector<OldA, ResultContainerC_, C> collectorC,
             UniConstraintCollector<OldA, ResultContainerD_, D> collectorD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex,
+        super(storeIndexReserver,
                 tuple -> createGroupKey(groupKeyMapping, tuple),
                 Group0Mapping3CollectorUniNode.mergeCollectors(collectorB, collectorC, collectorD), nextNodesTupleLifecycle,
                 environmentMode);

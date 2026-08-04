@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.quad;
 
+import java.util.function.IntSupplier;
+
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -15,12 +17,12 @@ public final class Group2Mapping2CollectorQuadNode<OldA, OldB, OldC, OldD, A, B,
 
     public Group2Mapping2CollectorQuadNode(QuadFunction<OldA, OldB, OldC, OldD, A> groupKeyMappingA,
             QuadFunction<OldA, OldB, OldC, OldD, B> groupKeyMappingB,
-            int groupStoreIndex, int undoStoreIndex,
+            IntSupplier storeIndexReserver,
             QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerC_, C> collectorC,
             QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainerD_, D> collectorD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, int outputStoreSize,
             EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex,
+        super(storeIndexReserver,
                 tuple -> Group2Mapping0CollectorQuadNode.createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple),
                 Group0Mapping2CollectorQuadNode.mergeCollectors(collectorC, collectorD), nextNodesTupleLifecycle,
                 environmentMode);

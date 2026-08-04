@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.List;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
@@ -19,10 +20,10 @@ final class GroupNodeConstructorWithoutAccumulate<Tuple_ extends Tuple> extends 
     @Override
     public <Stream_ extends BavetStream> void build(AbstractNodeBuildHelper<Stream_> buildHelper, Stream_ parentTupleSource,
             Stream_ aftStream, List<Stream_> aftStreamChildList, Stream_ bridgeStream, EnvironmentMode environmentMode) {
-        var groupStoreIndex = buildHelper.reserveTupleStoreIndex(parentTupleSource);
+        IntSupplier storeIndexReserver = () -> buildHelper.reserveTupleStoreIndex(parentTupleSource);
         TupleLifecycle<Tuple_> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(aftStreamChildList);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
-        var node = nodeConstructorFunction.apply(groupStoreIndex, tupleLifecycle, outputStoreSize, environmentMode);
+        var node = nodeConstructorFunction.apply(storeIndexReserver, tupleLifecycle, outputStoreSize, environmentMode);
         buildHelper.addNode(node, bridgeStream);
     }
 
