@@ -54,9 +54,10 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
         var tupleLifecycle = buildHelper.<UniTuple<A>> getAggregatedTupleLifecycle(childStreamList);
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         var filter = filterFunction != null ? filterFunction.apply(buildHelper) : null;
-        var node = filter == null ? new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle, outputStoreSize)
+        var node = filter == null ? new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle,
+                buildHelper.isIndictmentEnabled(), outputStoreSize)
                 : new ForEachFilteredUniNode<>(forEachClass, filter, tupleLifecycle,
-                        outputStoreSize);
+                        buildHelper.isIndictmentEnabled(), outputStoreSize);
         buildHelper.addNode(node, this, null);
     }
 

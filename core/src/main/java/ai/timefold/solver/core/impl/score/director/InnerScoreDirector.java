@@ -82,7 +82,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} can be called.
-     *         {@link ConstraintMatchPolicy#ENABLED_WITHOUT_JUSTIFICATIONS} if only the former can be called.
+     *         {@link ConstraintMatchPolicy#ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS} if only the former can be called.
      *         {@link ConstraintMatchPolicy#DISABLED} if neither can be called.
      */
     ConstraintMatchPolicy getConstraintMatchPolicy();
