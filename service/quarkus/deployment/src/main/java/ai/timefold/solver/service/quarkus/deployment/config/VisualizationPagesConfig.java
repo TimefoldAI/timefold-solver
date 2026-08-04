@@ -6,7 +6,7 @@ import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 
-@ConfigMapping(prefix = "ai.timefold.model.visualization")
+@ConfigMapping(prefix = "timefold.model.visualization")
 @ConfigRoot(phase = ConfigPhase.BUILD_TIME)
 public interface VisualizationPagesConfig {
 
