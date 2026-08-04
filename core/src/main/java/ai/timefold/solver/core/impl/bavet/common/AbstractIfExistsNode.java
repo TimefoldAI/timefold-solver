@@ -191,10 +191,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
-        if (!rightTuple.getState().isActive()) {
-            // The mirror image of updateCounterRight(...): here the right tuple is the retracting one,
-            // which happens when the right input's node sits in a higher layer than the left input's,
-            // so the left's inserts and updates are delivered before the right's retracts are.
+        if (!rightTuple.isActiveTransitively()) {
+            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
             // Skipping is safe, as the pending retract will not have a tracker to clear for this pair.
             return;
         }
@@ -232,21 +230,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
 
     protected void updateCounterRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
         var leftTuple = counter.leftTuple;
-        if (!leftTuple.getState().isActive()) {
-            // Assume the following scenario:
-            // - The operation is of two entities of the same type, both filtering out unassigned.
-            // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The entity whose existence is being asserted is still assigned and is being updated.
-            //
-            // This means the filter would be called with (unassignedEntity, assignedEntity),
-            // which breaks the expectation that the filter is only called on two assigned entities
-            // and requires adding null checks to the filter for something that should intuitively be impossible.
-            // We avoid this situation as it is clear that the outTuple must be retracted anyway,
-            // and therefore any further updates to it are pointless.
-            //
-            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
-            // the right's inserts and updates are delivered before the left's retracts are.
-            // The mirror case is possible too, see updateCounterLeft(...).
+        if (!leftTuple.isActiveTransitively()) {
+            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
             return;
         }
         if (testFiltering(leftTuple, rightTuple)) {
