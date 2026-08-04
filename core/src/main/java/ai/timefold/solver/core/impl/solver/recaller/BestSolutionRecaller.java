@@ -55,11 +55,11 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         var scoreDirector = solverScope.getScoreDirector();
         @SuppressWarnings("rawtypes")
         InnerScore innerScore = scoreDirector.calculateScore();
-        if (innerScore.isInvalid()) {
+        if (innerScore == null) {
             LOGGER.warn("The initial solution passed to the solver is inconsistent. Unassigning involved entities.");
             scoreDirector.unassignInconsistentEntities();
             innerScore = scoreDirector.calculateScore();
-            if (innerScore.isInvalid()) {
+            if (innerScore == null) {
                 // If there were a fixed dependency loop, the shadow variable session would fail fast before here
                 throw new IllegalStateException(
                         "Impossible state: The initial solution passed to the solver is inconsistent even after unassigning involved entities.");

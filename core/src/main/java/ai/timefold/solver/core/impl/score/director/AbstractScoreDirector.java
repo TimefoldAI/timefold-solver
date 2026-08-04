@@ -246,13 +246,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public abstract InnerScore<Score_> innerCalculateScore();
 
     @Override
+    @Nullable
     public final InnerScore<Score_> calculateScore() {
         if (lastVariableUpdateSuccessful) {
             return innerCalculateScore();
         } else {
-            var invalidScore = InnerScore.invalid(getScoreDefinition().getZeroScore());
-            getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
-            return invalidScore;
+            return null;
         }
     }
 
@@ -432,12 +431,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    @Nullable
     public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Consumer<SolutionView<Solution_>> consumer,
             boolean assertMoveScoreFromScratch) {
         if (solutionTracker != null) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        var result = moveDirector.executeTemporary(move, (score, undoMove) -> {
+        return moveDirector.executeTemporary(move, (score, undoMove) -> {
             if (solutionTracker != null) {
                 solutionTracker.setAfterMoveSolution(workingSolution);
             }
@@ -449,7 +449,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             }
             return score;
         });
-        return Objects.requireNonNull(result);
     }
 
     @Override
@@ -809,7 +808,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
-            if (!innerScore.equals(uncorruptedInnerScore)) {
+            if (!Objects.equals(innerScore, uncorruptedInnerScore)) {
                 var corruptionAnalyzer = new CorruptionAnalyzer<>(this);
                 var scoreCorruptionAnalysis = corruptionAnalyzer.analyzeScore(uncorruptedScoreDirector, predicted);
                 var shadowVariableAnalysis = corruptionAnalyzer.analyzeShadowVariables(predicted);

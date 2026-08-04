@@ -417,7 +417,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         }
     }
 
-    public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
+    public @Nullable final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move);
         var score = backingScoreDirector.calculateScore();
@@ -426,7 +426,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
-            TemporaryMovePostprocessor<Solution_, Score_, @Nullable Result_> postprocessor) {
+            TemporaryMovePostprocessor<Solution_, @Nullable Score_, @Nullable Result_> postprocessor) {
         try (var ephemeralMoveDirector = ephemeral()) {
             ephemeralMoveDirector.execute(move);
             var score = backingScoreDirector.calculateScore();

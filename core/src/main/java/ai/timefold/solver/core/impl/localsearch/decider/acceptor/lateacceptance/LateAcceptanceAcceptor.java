@@ -47,11 +47,8 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isConsistentSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = (InnerScore) moveScope.getScore();
-        if (moveScore.isInvalid()) {
-            return false;
-        }
         var lateScore = scoreBuffer.getCurrent();
         if (moveScore.compareTo(lateScore) >= 0) {
             return true;
