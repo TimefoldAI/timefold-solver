@@ -70,20 +70,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
 
     protected final void insertOutTupleFilteredLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        if (!leftTuple.getState().isActive()) {
-            // Assume the following scenario:
-            // - The join is of two entities of the same type, both filtering out unassigned.
-            // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity became assigned, and is therefore getting inserted.
-            //
-            // This means the filter would be called with (unassignedEntity, assignedEntity),
-            // which breaks the expectation that the filter is only called on two assigned entities
-            // and requires adding null checks to the filter for something that should intuitively be impossible.
-            // We avoid this situation as it is clear that it is pointless to insert this tuple.
-            //
-            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
-            // the right's inserts are delivered before the left's retracts are.
-            // The mirror case is possible too, see insertOutTupleFilteredRight(...).
+        if (!leftTuple.isActiveTransitively()) {
+            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
             return;
         }
         insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
@@ -92,11 +80,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     /**
      * The mirror image of {@link #insertOutTupleFilteredLeft}:
      * the right tuple is the one read out of storage, and can therefore be the retracting one.
-     * Reachable when the right input's node sits in a higher layer than the left input's,
-     * which delivers the left's inserts before the right's retracts.
+     * See {@link Tuple#isActiveTransitively} for why the immediate state alone isn't enough here.
      */
     protected final void insertOutTupleFilteredRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        if (!rightTuple.getState().isActive()) {
+        if (!rightTuple.isActiveTransitively()) {
             return;
         }
         insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
@@ -110,6 +97,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     private void insertOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         var outTuple = createOutTuple(leftTuple, rightTuple);
+        outTuple.setActivityParents(leftTuple, rightTuple);
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         outTupleListLeft.add(outTuple);
         outTuple.setStore(outputStoreIndexLeftOutTupleList, outTupleListLeft);
@@ -128,21 +116,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
-            if (!leftTuple.getState().isActive()) {
-                // Assume the following scenario:
-                // - The join is of two entities of the same type, both filtering out unassigned.
-                // - One entity became unassigned, so the outTuple is getting retracted.
-                // - The other entity is still assigned and is being updated.
-                //
-                // This means the filter would be called with (unassignedEntity, assignedEntity),
-                // which breaks the expectation that the filter is only called on two assigned entities
-                // and requires adding null checks to the filter for something that should intuitively be impossible.
-                // We avoid this situation as it is clear that the outTuple must be retracted anyway,
-                // and therefore any further updates to it are pointless.
-                //
-                // The left tuple can be inactive here because its node sits in a higher layer than the right's:
-                // the right's updates are delivered before the left's retracts are.
-                // The mirror case is possible too, see processOutTupleUpdateRight(...).
+            if (!leftTuple.isActiveTransitively()) {
+                // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
                 return;
             }
             // Every out-tuple's partner is guaranteed to be swept below,
@@ -174,7 +149,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        if (!rightTuple.getState().isActive()) {
+        if (!rightTuple.isActiveTransitively()) {
             // The mirror image of processOutTupleUpdateLeft(...): here the right tuple is the retracting one.
             // Leaving its mark set is harmless, as getMark() only ever returns a mark of the matching version.
             return;
@@ -246,21 +221,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        if (!leftTuple.getState().isActive()) {
-            // Assume the following scenario:
-            // - The join is of two entities of the same type, both filtering out unassigned.
-            // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity is still assigned and is being updated.
-            //
-            // This means the filter would be called with (unassignedEntity, assignedEntity),
-            // which breaks the expectation that the filter is only called on two assigned entities
-            // and requires adding null checks to the filter for something that should intuitively be impossible.
-            // We avoid this situation as it is clear that the outTuple must be retracted anyway,
-            // and therefore any further updates to it are pointless.
-            //
-            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
-            // the right's updates are delivered before the left's retracts are.
-            // The mirror case is possible too, see processOutTupleUpdateRight(...).
+        if (!leftTuple.isActiveTransitively()) {
+            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
             return;
         }
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
