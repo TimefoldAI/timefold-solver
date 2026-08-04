@@ -85,7 +85,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             }
             if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
                 var score = scoreDirector.calculateScore();
-                if (score.isInvalid()) {
+                if (score == null) {
                     var inconsistentEntities = scoreDirector.computeInconsistentEntities();
                     throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
                 }

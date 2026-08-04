@@ -76,8 +76,10 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     /**
      * Calculates the {@link Score} and updates the {@link PlanningSolution working solution} accordingly.
      *
-     * @return never null, the {@link Score} of the {@link PlanningSolution working solution}
+     * @return the {@link Score} of the {@link PlanningSolution working solution}, null if the working solution is
+     *         inconsistent
      */
+    @Nullable
     InnerScore<Score_> calculateScore();
 
     /**
@@ -125,12 +127,14 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param assertMoveScoreFromScratch true will hurt performance
      * @return never null
      */
+    @Nullable
     InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Consumer<SolutionView<Solution_>> consumer,
             boolean assertMoveScoreFromScratch);
 
     /**
      * As defined by {@link #executeTemporaryMove(Move, Consumer, boolean)}, but with no consumer.
      */
+    @Nullable
     default InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
         return executeTemporaryMove(move, null, assertMoveScoreFromScratch);
     }

@@ -42,12 +42,9 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isConsistentSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         InnerScore lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
         InnerScore moveScore = moveScope.getScore();
-        if (moveScore.isInvalid()) {
-            return false;
-        }
         if (moveScore.compareTo(lastStepScore) >= 0) {
             return true;
         }

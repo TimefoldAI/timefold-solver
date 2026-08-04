@@ -49,13 +49,10 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isConsistentSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:
         // Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar
         var moveScore = moveScope.getScore();
-        if (moveScore.isInvalid()) {
-            return false;
-        }
         var current = (InnerScore) moveScope.getStepScope().getPhaseScope()
                 .getLastCompletedStepScope().getScore();
         var previous = current;

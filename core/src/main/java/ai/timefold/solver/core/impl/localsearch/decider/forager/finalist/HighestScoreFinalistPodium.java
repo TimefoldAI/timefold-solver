@@ -23,7 +23,7 @@ public final class HighestScoreFinalistPodium<Solution_> extends AbstractFinalis
     @Override
     public void addMove(LocalSearchMoveScope<Solution_> moveScope) {
         var accepted = moveScope.getAccepted() != null && moveScope.getAccepted();
-        if (finalistIsAccepted && !accepted) {
+        if ((finalistIsAccepted && !accepted) || moveScope.getScore() == null) {
             return;
         }
         if (accepted && !finalistIsAccepted) {
