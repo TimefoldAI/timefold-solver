@@ -5,14 +5,18 @@ import static io.smallrye.config.ConfigValue.CONFIG_SOURCE_COMPARATOR;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Priority;
+
 import io.smallrye.config.ConfigSourceInterceptorContext;
 import io.smallrye.config.ConfigValue;
 import io.smallrye.config.FallbackConfigSourceInterceptor;
+import io.smallrye.config.Priorities;
 
 /**
  * Falls back to the property names used before the "unify configuration properties" rename, so that models built
  * against the old names keep working without changes.
  */
+@Priority(Priorities.LIBRARY + 290)
 public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfigSourceInterceptor {
 
     // Renames that don't follow any of the prefix patterns below.
@@ -31,6 +35,7 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
             Map.entry("timefold.model.default-config.", "ai.timefold.model.default-config."),
             Map.entry("timefold.model.termination.", "ai.timefold.platform.termination."),
             Map.entry("timefold.model.contact.", "timefold.application.contact."),
+            Map.entry("timefold.model.rest.", "timefold.rest."),
             Map.entry("timefold.storage.", "ai.timefold.storage."),
             Map.entry("timefold.platform.", "ai.timefold.platform."));
 
