@@ -41,7 +41,8 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
 
     // Properties that each replace two distinct legacy properties, so we check both legacy names.
     private static final Map<String, List<String>> RENAMED_PROPERTIES_WITH_MULTIPLE_LEGACY_NAMES = Map.of(
-            "timefold.model.id", List.of("timefold.application.id", "ai.timefold.platform.model"));
+            "timefold.model.id", List.of("timefold.application.id", "ai.timefold.platform.model"),
+            "timefold.model.api-version", List.of("timefold.application.version", "ai.timefold.platform.model-version"));
 
     public TimefoldRenamedPropertiesFallbackInterceptor() {
         super(TimefoldRenamedPropertiesFallbackInterceptor::toLegacyName);
