@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.uni;
 
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
@@ -21,19 +22,19 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
     private final int groupAccumulatorIndex;
     private final @Nullable UniConstraintCollectorAccumulator<ResultContainer_, OldA> incrementalAccumulator;
 
-    protected AbstractGroupUniNode(int groupStoreIndex, int groupAccumulatorIndex,
+    protected AbstractGroupUniNode(IntSupplier storeIndexReserver,
             Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,
             @NonNull UniConstraintCollector<OldA, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
+        super(storeIndexReserver, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
-        this.groupAccumulatorIndex = groupAccumulatorIndex;
+        this.groupAccumulatorIndex = storeIndexReserver.getAsInt();
         this.incrementalAccumulator = UniCollectorUtils.toIncremental(collector.accumulator());
     }
 
-    protected AbstractGroupUniNode(int groupStoreIndex, Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,
+    protected AbstractGroupUniNode(IntSupplier storeIndexReserver, Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        super(storeIndexReserver, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
         this.groupAccumulatorIndex = -1;
         this.incrementalAccumulator = null;
     }

@@ -21,7 +21,9 @@ import org.jspecify.annotations.Nullable;
  * However, only the origin node of a tuple (the node where the tuple is the out tuple) may modify it.
  */
 @NullMarked
-public sealed interface Tuple permits BiTuple, QuadTuple, TriTuple, UniTuple {
+public sealed interface Tuple
+        extends TupleActivitySource
+        permits BiTuple, QuadTuple, TriTuple, UniTuple {
 
     TupleState getState();
 
@@ -54,6 +56,15 @@ public sealed interface Tuple permits BiTuple, QuadTuple, TriTuple, UniTuple {
     void setActivityParents(Tuple leftParent, Tuple rightParent);
 
     /**
+     * Overrides this tuple's default {@link #isActiveTransitively()} answer (the
+     * {@link #setActivityParent(Tuple)}/{@link #setActivityParents(Tuple, Tuple)} chain) with a custom
+     * {@link TupleActivitySource}. Only groupBy's {@code Group} calls this: a group tuple's validity is
+     * "at least one of however many contributors currently exist is still active," which isn't
+     * expressible as a chain of 1 or 2 fixed tuples.
+     */
+    void setActivitySource(TupleActivitySource activitySource);
+
+    /**
      * Whether {@code tuple}, and everything it was derived from, is still live — closes a race that
      * plain {@code tuple.getState().isActive()} cannot see on its own.
      * <p>
@@ -77,11 +88,12 @@ public sealed interface Tuple permits BiTuple, QuadTuple, TriTuple, UniTuple {
      * makes it stale — not just the left one; both are checked (the right one recursively, since it can
      * itself be a deeper map/flatten chain).
      * <p>
-     * Ceiling: {@code groupBy}/{@code distinct} never call {@link #setActivityParent(Tuple)} on their
-     * output, because a group tuple has no single input tuple whose activity implies the group's own — it's
-     * an N:1 aggregate that can outlive any one contributor's retraction, or die because a <i>different</i>
-     * contributor left. The walk correctly stops there; it just can't see past it.
+     * {@code groupBy}/{@code distinct} can't use this chain at all: a group tuple has no single input
+     * tuple whose activity implies the group's own — it's an N:1 aggregate that can outlive any one
+     * contributor's retraction, or die because a <i>different</i> contributor left. They instead call
+     * {@link #setActivitySource(TupleActivitySource)} to override this method's answer entirely.
      */
+    @Override
     boolean isActiveTransitively();
 
 }

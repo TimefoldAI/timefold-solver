@@ -23,6 +23,7 @@ final class UniversalTuple<A, B, C, D>
     private TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
     private @Nullable Tuple activityParent1;
     private @Nullable Tuple activityParent2;
+    private @Nullable TupleActivitySource activitySource;
 
     UniversalTuple(int storeSize, int cardinality) {
         this.cardinality = cardinality;
@@ -109,7 +110,15 @@ final class UniversalTuple<A, B, C, D>
     }
 
     @Override
+    public void setActivitySource(TupleActivitySource activitySource) {
+        this.activitySource = activitySource;
+    }
+
+    @Override
     public boolean isActiveTransitively() {
+        if (activitySource != null) {
+            return state.isActive() && activitySource.isActiveTransitively();
+        }
         var self = this;
         while (true) {
             if (!self.state.isActive()) {
