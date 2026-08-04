@@ -25,6 +25,7 @@ A finished version of this service is available in the https://github.com/Timefo
 See xref:#_generate_a_personal_access_token[Generate a Personal Access Token] below.
 * Push access to Timefold's container registry, since the `configure` goal builds and pushes your model's container image there.
 This access needs to be requested; mailto:info@timefold.ai[get in touch with the Timefold team] before you try to deploy.
+* A container runtime (like Docker) installed and running locally. During deployment, a container image is built, which requires one even if you don't interact with it directly.
 
 NOTE: Timefold Platform requires your model to be built with the Enterprise Edition of Timefold Solver, but building doesn't require a license, only running it does, and the platform provides that license when your model runs there. See xref:#_enterprise_edition[Build with the Enterprise Edition] below.
 
