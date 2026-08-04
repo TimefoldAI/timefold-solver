@@ -232,7 +232,7 @@ public class ConfigureMojoTest {
 
         assertThatThrownBy(() -> mojo.execute()).isInstanceOf(RuntimeException.class)
                 .hasMessage(
-                        "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
+                        "Personal Access Token for Timefold Platform is required. Set this via the TIMEFOLD_PAT environment variable, or store it as 'pat=<token>' in ~/.timefold/credentials");
 
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
