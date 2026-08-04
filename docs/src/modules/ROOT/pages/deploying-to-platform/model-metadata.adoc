@@ -193,6 +193,4 @@ See https://docs.timefold.ai/timefold-platform/latest/how-tos/configuration-para
 [#_visualization]
 == Visualization
 
-There is currently no dedicated mechanism for adding a custom visualization UI for your model's solution on the platform.
-Consumers see the raw solution data and the generic score analysis view.
-This is an open area of the platform, so expect it to evolve in future releases.
+See xref:deploying-to-platform/visualization.adoc[] for how to add a custom visualization UI for your model's solution on the platform, instead of consumers only seeing the raw solution data and the generic score analysis view.
