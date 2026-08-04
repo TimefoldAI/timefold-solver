@@ -123,9 +123,12 @@ public class LocalSearchDecider<Solution_> {
                     moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
         }
-        logger.trace("{}        Move index ({}), score ({}), accepted ({}), move ({}).",
-                logIndentation, moveScope.getMoveIndex(), moveScope.getScore().raw(), moveScope.getAccepted(),
-                moveScope.getMove());
+        if (logger.isTraceEnabled()) {
+            logger.trace("{}        Move index ({}), score ({}), accepted ({}), move ({}).",
+                    logIndentation, moveScope.getMoveIndex(),
+                    (moveScope.getScore() != null) ? moveScope.getScore().raw() : "invalid",
+                    moveScope.getAccepted(), moveScope.getMove());
+        }
     }
 
     protected void pickMove(LocalSearchStepScope<Solution_> stepScope) {
