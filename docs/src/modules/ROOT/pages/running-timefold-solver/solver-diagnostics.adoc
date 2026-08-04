@@ -188,7 +188,9 @@ and it gives you the benefit of quickly checking for score corruptions.
 If you can guarantee that your code is and will remain bug-free,
 you can switch to the `NO_ASSERT` mode for a marginal performance gain.
 
-In practice, this mode disables certain concurrency optimizations, such as work stealing.
+In practice, this mode disables certain concurrency optimizations, such as work stealing,
+and it can make solving drastically slower than the non-assert modes,
+because it recalculates the score after every step to detect corruption.
 
 
 [#environmentModeNoAssert]
@@ -218,7 +220,7 @@ There are several best practices to follow throughout the lifecycle of your appl
 
 **In production**:: Use the `PHASE_ASSERT` mode if you need <<environmentModeReproducibility,reproducibility>>, otherwise use `NON_REPRODUCIBLE`.
 **In development**::
- - Use the `PHASE_ASSERT` mode to catch bugs early.
+ - Use the `PHASE_ASSERT` mode to catch bugs early, but be aware that it makes solving drastically slower than the non-assert modes.
  - Write a test case that does a short run of your planning problem in `STEP_ASSERT` mode.
  - Have nightly builds that run for several minutes in `FULL_ASSERT` and `NON_INTRUSIVE_FULL_ASSERT` modes.
 
