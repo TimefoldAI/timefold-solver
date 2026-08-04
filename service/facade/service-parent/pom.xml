@@ -97,6 +97,7 @@
     <!-- Plugins -->
     <!-- ************************************************************************ -->
     <version.antrun.plugin>3.2.0</version.antrun.plugin>
+    <version.clean.plugin>3.5.0</version.clean.plugin>
     <version.compiler.plugin>3.15.0</version.compiler.plugin>
     <version.dependency.plugin>3.11.0</version.dependency.plugin>
     <version.deploy.plugin>3.1.4</version.deploy.plugin>
@@ -209,6 +210,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
           <version>${version.antrun.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${version.clean.plugin}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
