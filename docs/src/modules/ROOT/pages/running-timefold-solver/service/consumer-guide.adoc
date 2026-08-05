@@ -140,15 +140,22 @@ The `run` configuration controls how long the solver runs:
 - `spentLimit` sets the maximum duration (in ISO 8601 duration format) for solving a dataset.
 
 - `unimprovedSpentLimit` sets the maximum duration (in ISO 8601 duration format) for solving a dataset since the dataset score improved.
-If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit must be empty.
+If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit and moveCountLimit must be empty.
 _Warning_: using this option will disable the default diminished returns termination which is recommended for most use cases
 
 - `stepCountLimit` sets the maximum solver step count for solving a dataset. The solver will stop solving after a pre-determined amount of steps. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use.
 If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.
 
-- `slidingWindowDuration` sets the sliding window (in ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).
+- `moveCountLimit` sets the maximum number of moves evaluated by the solver for solving a dataset.
+The solver will stop solving after a pre-determined amount of moves have been evaluated.
+Use when you require results independently of the hardware resources performance.
+Use this termination if you want to benchmark your models, not recommended for production use.
+If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.
+Can be combined with `stepCountLimit`: the solver stops as soon as either limit is reached.
 
-- `minimumImprovementRatio` sets the minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).
+- `slidingWindowDuration` sets the sliding window (in ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit, stepCountLimit and moveCountLimit are all empty).
+
+- `minimumImprovementRatio` sets the minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit, stepCountLimit and moveCountLimit are all empty).
 
 === Response
 
