@@ -23,11 +23,12 @@ import org.jspecify.annotations.Nullable;
  * @param <Right_>
  */
 public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTuple_ extends Tuple>
-        extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
+        extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>>
+        implements DeferredSettleAware {
 
     protected final int inputStoreIndexLeftOutTupleList;
     protected final int inputStoreIndexRightOutTupleList;
-    private final boolean isFiltering;
+    protected final boolean isFiltering;
     private final int outputStoreIndexLeftOutTupleList;
     private final int outputStoreIndexRightOutTupleList;
     protected final OutTupleStorePositionTracker outputStoreSizeTracker;
@@ -36,6 +37,32 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     protected final Supplier<TupleList<OutTuple_>> leftOutTupleListBuilder;
     protected final Supplier<TupleList<OutTuple_>> rightOutTupleListBuilder;
+
+    /**
+     * Filtering joins defer their cross-match computation (the opposite-side walk) from "whenever a
+     * parent propagates in" to this node's own layer turn (see {@link #prepareForSettle()}), closing
+     * the stale-activity race at its root instead of guarding against it per read. Non-filtering joins
+     * never dereference a fact through a user predicate, so a stale-but-"active" read can't corrupt
+     * anything there (confirmed by dedicated regression tests) — these fields stay {@code null}/{@code -1}
+     * and cost nothing for them.
+     * <p>
+     * {@code pendingLeft}/{@code pendingRight} hold tuples whose cross-match is due; the marker slots
+     * exist purely to make enqueueing idempotent (a tuple already awaiting its turn isn't re-added).
+     * Both lists are drained, left before right, in {@link #prepareForSettle()}, calling
+     * {@link #reconcilePendingLeft(Tuple)}/{@link #reconcilePendingRight(UniTuple)} — the exact same
+     * mark-then-walk-then-reconcile logic an eager filtering update already used
+     * ({@link #innerUpdateLeft}/{@link #innerUpdateRight}), just time-shifted. That logic already
+     * treats "no existing out-tuple for this pair" as "insert if the predicate passes", so it doubles
+     * as the insert path too: whichever side's tuple is reconciled *second* always sees the *first*
+     * side's just-created out-tuple (since {@link #insertOutTuple} links it into both sides' out-tuple
+     * lists immediately), and correctly treats it as an existing match instead of creating a duplicate.
+     * The two sides are therefore never both examined at once; consistently draining left before right
+     * merely fixes which side's view is "first" without affecting anything's correctness.
+     */
+    private final int pendingLeftMarkerIndex;
+    private final int pendingRightMarkerIndex;
+    protected final @Nullable TupleList<LeftTuple_> pendingLeft;
+    protected final @Nullable TupleList<UniTuple<Right_>> pendingRight;
 
     protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             InOutTupleStorePositionTracker tupleStorePositionTracker) {
@@ -54,7 +81,98 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         var outputStoreIndexRightOutNext = tupleStorePositionTracker.reserveNextOut();
         this.leftOutTupleListBuilder = () -> new TupleList<>(outputStoreIndexLeftOutPrev, outputStoreIndexLeftOutNext);
         this.rightOutTupleListBuilder = () -> new TupleList<>(outputStoreIndexRightOutPrev, outputStoreIndexRightOutNext);
+
+        if (isFiltering) {
+            this.pendingLeftMarkerIndex = tupleStorePositionTracker.reserveNextLeft();
+            var pendingLeftPrev = tupleStorePositionTracker.reserveNextLeft();
+            var pendingLeftNext = tupleStorePositionTracker.reserveNextLeft();
+            this.pendingLeft = new TupleList<>(pendingLeftPrev, pendingLeftNext);
+            this.pendingRightMarkerIndex = tupleStorePositionTracker.reserveNextRight();
+            var pendingRightPrev = tupleStorePositionTracker.reserveNextRight();
+            var pendingRightNext = tupleStorePositionTracker.reserveNextRight();
+            this.pendingRight = new TupleList<>(pendingRightPrev, pendingRightNext);
+        } else {
+            this.pendingLeftMarkerIndex = -1;
+            this.pendingLeft = null;
+            this.pendingRightMarkerIndex = -1;
+            this.pendingRight = null;
+        }
     }
+
+    /**
+     * Enqueues {@code leftTuple} for cross-match reconciliation at this node's own layer turn, unless
+     * it is already awaiting one. Only called from filtering code paths.
+     */
+    protected final void enqueuePendingLeft(LeftTuple_ leftTuple) {
+        if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
+            leftTuple.setStore(pendingLeftMarkerIndex, Boolean.TRUE);
+            pendingLeft.add(leftTuple);
+        }
+    }
+
+    /**
+     * The mirror image of {@link #enqueuePendingLeft}.
+     */
+    protected final void enqueuePendingRight(UniTuple<Right_> rightTuple) {
+        if (rightTuple.getStore(pendingRightMarkerIndex) == null) {
+            rightTuple.setStore(pendingRightMarkerIndex, Boolean.TRUE);
+            pendingRight.add(rightTuple);
+        }
+    }
+
+    /**
+     * Removes {@code leftTuple} from the pending queue, if it is on it: a tuple can be retracted in the
+     * same round it was enqueued, before its turn to reconcile ever comes. Must run before the tuple's
+     * own store entries (composite key, out-tuple list, ...) are cleared, since a still-pending entry
+     * left dangling would be read by {@link #prepareForSettle()} after those are gone.
+     */
+    protected final void clearPendingLeft(LeftTuple_ leftTuple) {
+        if (pendingLeft != null && leftTuple.getStore(pendingLeftMarkerIndex) != null) {
+            leftTuple.setStore(pendingLeftMarkerIndex, null);
+            pendingLeft.remove(leftTuple);
+        }
+    }
+
+    /**
+     * The mirror image of {@link #clearPendingLeft}.
+     */
+    protected final void clearPendingRight(UniTuple<Right_> rightTuple) {
+        if (pendingRight != null && rightTuple.getStore(pendingRightMarkerIndex) != null) {
+            rightTuple.setStore(pendingRightMarkerIndex, null);
+            pendingRight.remove(rightTuple);
+        }
+    }
+
+    @Override
+    public final void prepareForSettle() {
+        if (pendingLeft == null) { // Non-filtering: nothing was ever enqueued.
+            return;
+        }
+        pendingLeft.clear(leftTuple -> {
+            leftTuple.setStore(pendingLeftMarkerIndex, null);
+            reconcilePendingLeft(leftTuple);
+        });
+        pendingRight.clear(rightTuple -> {
+            rightTuple.setStore(pendingRightMarkerIndex, null);
+            reconcilePendingRight(rightTuple);
+        });
+    }
+
+    /**
+     * Re-runs this left tuple's cross-match against the current (now fully settled, for this round)
+     * opposite side, exactly as an eager filtering update already would have
+     * ({@link #innerUpdateLeft}) — reusing that method is what makes this correct for a tuple that was
+     * actually a fresh insert too: with no pre-existing out-tuples to mark, every match it finds is
+     * necessarily new, so {@code innerUpdateLeft}'s own "no existing out-tuple ⇒ insert" branch handles
+     * it. Implemented by each subclass because only it knows how to walk the opposite side (indexed:
+     * the shared index/bucket; unindexed: the plain tuple list).
+     */
+    protected abstract void reconcilePendingLeft(LeftTuple_ leftTuple);
+
+    /**
+     * The mirror image of {@link #reconcilePendingLeft}.
+     */
+    protected abstract void reconcilePendingRight(UniTuple<Right_> rightTuple);
 
     @Override
     public StreamKind getStreamKind() {
