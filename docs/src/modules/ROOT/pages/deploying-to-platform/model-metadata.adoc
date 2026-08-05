@@ -17,13 +17,13 @@ include::_preview-note.adoc[]
 == Model identity properties
 
 The following `application.properties` describe your model's identity on the platform.
-`timefold.application.name`, `timefold.application.version`, and the `timefold.application.contact.*` properties are covered in xref:quickstart/service/getting-started.adoc[Getting started: building a service], since they are required for every model, service or not.
+`timefold.model.name`, `timefold.model.version`, and the `timefold.model.contact.*` properties are covered in xref:quickstart/service/getting-started.adoc[Getting started: building a service], since they are required for every model, service or not.
 
 [cols="2,3", options="header"]
 |===
 | Property | Purpose
 
-| `timefold.application.description`
+| `timefold.model.description`
 | Description of the model, included in the generated OpenAPI specification and shown on the platform.
 
 | `timefold.model.maturity-level`
