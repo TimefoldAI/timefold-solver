@@ -7,6 +7,8 @@ import ai.timefold.solver.service.definition.api.domain.ModelConfig;
 import ai.timefold.solver.service.definition.api.domain.ModelRequest;
 import ai.timefold.solver.service.definition.api.domain.ModelResponse;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * The convertor of:
  * <ul>
@@ -15,6 +17,9 @@ import ai.timefold.solver.service.definition.api.domain.ModelResponse;
  * <li>The <code>SolverModel</code> representing a planning solution into the <code>ModelOutput</code> (usually forming a part
  * of the {@link ModelResponse}).</li>
  * </ul>
+ * <p>
+ * All method parameters and return values are non-null unless explicitly marked otherwise.
+ * Absence of a previous model output is expressed with an empty {@link Optional}, not a null reference.
  *
  * @param <Score_> The solver model concrete {@link ai.timefold.solver.core.api.domain.solution.PlanningScore} type.
  * @param <ModelInput_> The type of the model input part of the {@link ModelRequest}.
@@ -24,6 +29,7 @@ import ai.timefold.solver.service.definition.api.domain.ModelResponse;
  *        by Timefold solver.
  * @param <ModelOutput_> The type of the model output part of the {@link ModelResponse}.
  */
+@NullMarked
 public non-sealed interface ModelConvertor<Score_ extends Score<Score_>, ModelInput_ extends ModelInput, ModelConfigurationOverrides_ extends ModelConfigOverrides, SolverModel_ extends SolverModel<Score_>, ModelOutput_ extends ModelOutput>
         extends ModelConvertorBase {
 
@@ -35,15 +41,21 @@ public non-sealed interface ModelConvertor<Score_ extends Score<Score_>, ModelIn
      * the solving process. In such cases, {@code lastModelOutput} represents the last stored output before the failure,
      * allowing the method to restore or reuse relevant state as needed.
      *
-     * @param modelInput the model input part of the request, containing the data to be converted
-     * @param modelConfig the model configuration, including any overrides to be applied
+     * @param modelInput the model input part of the request, containing the data to be converted; never null
+     * @param modelConfig the model configuration, including any overrides to be applied; never null
      * @param lastModelOutput an {@link Optional} containing the last stored model output before a failure, or empty if not
-     *        recovering
-     * @return the solver model instance to be used by the Timefold solver
+     *        recovering; never null
+     * @return the solver model instance to be used by the Timefold solver; never null
      */
     SolverModel_ toSolverModel(ModelInput_ modelInput, ModelConfig<ModelConfigurationOverrides_> modelConfig,
             Optional<ModelOutput_> lastModelOutput);
 
+    /**
+     * Converts the given {@link SolverModel_} into a {@link ModelOutput_}.
+     *
+     * @param solverModel the planning solution produced by the solver; never null
+     * @return the model output; never null
+     */
     ModelOutput_ toModelOutput(SolverModel_ solverModel);
 
     /**
@@ -54,9 +66,9 @@ public non-sealed interface ModelConvertor<Score_ extends Score<Score_>, ModelIn
      * <p>
      * The updated {@link ModelInput_} can be used as a basis for new datasets by applying external changes.
      *
-     * @param modelInput The model input to be updated.
-     * @param modelOutput The model output containing changes to be applied to the model input.
-     * @return Reference to the updated {@link ModelInput_}.
+     * @param modelInput The model input to be updated; never null
+     * @param modelOutput The model output containing changes to be applied to the model input; never null
+     * @return Reference to the updated {@link ModelInput_}; never null
      */
     ModelInput_ applyOutputToInput(ModelInput_ modelInput, ModelOutput_ modelOutput);
 }
