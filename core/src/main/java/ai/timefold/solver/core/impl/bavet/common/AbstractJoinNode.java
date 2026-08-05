@@ -205,7 +205,6 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     private void insertOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         var outTuple = createOutTuple(leftTuple, rightTuple);
-        outTuple.setActivityParents(leftTuple, rightTuple);
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         outTupleListLeft.add(outTuple);
         outTuple.setStore(outputStoreIndexLeftOutTupleList, outTupleListLeft);

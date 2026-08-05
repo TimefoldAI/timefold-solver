@@ -159,7 +159,6 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         var contributors = contributorListBuilder.get();
         var group = hasCollector ? Group.create(groupMapKey, supplier.get(), outTuple, contributors)
                 : Group.<InTuple_, OutTuple_, ResultContainer_> createWithoutAccumulate(groupMapKey, outTuple, contributors);
-        outTuple.setActivitySource(group);
         propagationQueue.insert(group);
         return group;
     }
@@ -173,7 +172,6 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         }
         var contributors = contributorListBuilder.get();
         var group = Group.createWithoutGroupKey(supplier.get(), outTuple, contributors);
-        outTuple.setActivitySource(group);
         propagationQueue.insert(group);
         return group;
     }

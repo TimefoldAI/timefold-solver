@@ -21,9 +21,6 @@ final class UniversalTuple<A, B, C, D>
     private @Nullable C c;
     private @Nullable D d;
     private TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
-    private @Nullable Tuple activityParent1;
-    private @Nullable Tuple activityParent2;
-    private @Nullable TupleActivitySource activitySource;
 
     UniversalTuple(int storeSize, int cardinality) {
         this.cardinality = cardinality;
@@ -96,44 +93,6 @@ final class UniversalTuple<A, B, C, D>
         Value_ value = getStore(index);
         setStore(index, null);
         return value;
-    }
-
-    @Override
-    public void setActivityParent(Tuple activityParent) {
-        this.activityParent1 = activityParent;
-    }
-
-    @Override
-    public void setActivityParents(Tuple leftParent, Tuple rightParent) {
-        this.activityParent1 = leftParent;
-        this.activityParent2 = rightParent;
-    }
-
-    @Override
-    public void setActivitySource(TupleActivitySource activitySource) {
-        this.activitySource = activitySource;
-    }
-
-    @Override
-    public boolean isActiveTransitively() {
-        if (activitySource != null) {
-            return state.isActive() && activitySource.isActiveTransitively();
-        }
-        var self = this;
-        while (true) {
-            if (!self.state.isActive()) {
-                return false;
-            }
-            var otherParent = self.activityParent2;
-            if (otherParent != null && !otherParent.isActiveTransitively()) {
-                return false;
-            }
-            var parent = self.activityParent1;
-            if (parent == null) {
-                return true;
-            }
-            self = (UniversalTuple<A, B, C, D>) parent;
-        }
     }
 
     @Override
