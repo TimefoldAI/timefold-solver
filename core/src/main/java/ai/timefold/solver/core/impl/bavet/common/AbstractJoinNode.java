@@ -192,32 +192,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
 
-    protected final void insertOutTupleFilteredLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        if (isFiltering && !leftTuple.isActiveTransitively()) {
-            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
-            // Non-filtering joins never dereference a fact through a user predicate, so a stale-but-
-            // "active" read here cannot corrupt anything: it merely produces an out-tuple that the true
-            // retraction (arriving later, deeper in the same layer chain) cleans up via the retracted
-            // tuple's own out-tuple list. The guard is therefore scoped to filtering joins only, where
-            // testFiltering(...) below would otherwise run against stale data.
-            return;
-        }
-        insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
-    }
-
     /**
-     * The mirror image of {@link #insertOutTupleFilteredLeft}:
-     * the right tuple is the one read out of storage, and can therefore be the retracting one.
-     * See {@link Tuple#isActiveTransitively} for why the immediate state alone isn't enough here.
+     * Only ever called from the non-filtering path (filtering joins enqueue and defer to
+     * {@link #reconcilePendingLeft}/{@link #reconcilePendingRight} instead), where
+     * {@code testFiltering(...)} is never even consulted -- see {@link #testFiltering}'s callers.
      */
-    protected final void insertOutTupleFilteredRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        if (isFiltering && !rightTuple.isActiveTransitively()) {
-            return;
-        }
-        insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
-    }
-
-    private void insertOutTupleIfActiveFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
+    protected final void insertOutTupleIfActiveFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         if (!isFiltering || testFiltering(leftTuple, rightTuple)) {
             insertOutTuple(leftTuple, rightTuple);
         }
@@ -244,10 +224,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
-            if (!leftTuple.isActiveTransitively()) {
-                // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
-                return;
-            }
+            // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingLeft, at
+            // this node's own layer turn, after every ancestor on both sides has completed its
+            // retract/update/insert turn for this round -- leftTuple can no longer be stale here.
             // Every out-tuple's partner is guaranteed to be swept below,
             // because retracts and key-moves unlink out-tuples synchronously;
             // a stale mark can therefore only ever be version-mismatched.
@@ -277,11 +256,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        if (!rightTuple.isActiveTransitively()) {
-            // The mirror image of processOutTupleUpdateLeft(...): here the right tuple is the retracting one.
-            // Leaving its mark set is harmless, as getMark() only ever returns a mark of the matching version.
-            return;
-        }
+        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingLeft, at this
+        // node's own layer turn, after every ancestor on both sides has completed its retract/update/
+        // insert turn for this round -- rightTuple can no longer be stale here.
         TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
     }
@@ -349,10 +326,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        if (!leftTuple.isActiveTransitively()) {
-            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
-            return;
-        }
+        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingRight, at
+        // this node's own layer turn, after every ancestor on both sides has completed its retract/
+        // update/insert turn for this round -- leftTuple can no longer be stale here.
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         processOutTupleUpdateRight(leftTuple, rightTuple, outTupleListLeft.getMark(version));
     }

@@ -333,11 +333,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
-        if (!rightTuple.isActiveTransitively()) {
-            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
-            // Skipping is safe, as the pending retract will not have a tracker to clear for this pair.
-            return;
-        }
+        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingLeft, at this
+        // node's own layer turn, after every ancestor on both sides has completed its retract/update/
+        // insert turn for this round -- rightTuple can no longer be stale here.
         if (testFiltering(counter.leftTuple, rightTuple)) {
             counter.countRight++;
             var tracker = new FilteringTracker<>(counter, rightTuple);
@@ -380,10 +378,10 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             // is what makes this safe rather than merely an optimisation that happens to hold.
             return;
         }
-        if (!leftTuple.isActiveTransitively()) {
-            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
-            return;
-        }
+        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingRight, at this
+        // node's own layer turn, after every ancestor on both sides has completed its retract/update/
+        // insert turn for this round -- leftTuple can no longer be stale here (the pending-left skip
+        // above already handles the one case where leftTuple's own reconcile hasn't run yet this round).
         if (testFiltering(leftTuple, rightTuple)) {
             incrementCounterRight(counter);
             var tracker = new FilteringTracker<>(counter, rightTuple);

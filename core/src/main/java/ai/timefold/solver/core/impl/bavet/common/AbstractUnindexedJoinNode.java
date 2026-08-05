@@ -47,14 +47,11 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             enqueuePendingLeft(leftTuple);
             return;
         }
-        if (!leftTuple.isActiveTransitively()) {
-            // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
-            return;
-        }
-        // The right tuples come out of the list and can be retracting for the mirror-image reason,
-        // hence insertOutTupleFilteredFromRight(...) rather than the unguarded insert.
+        // Non-filtering: no isActiveTransitively() guard needed here (proven by dedicated regression
+        // tests -- see AbstractJoinNode's insertOutTupleIfActiveFiltered javadoc). A stale read merely
+        // produces a doomed out-tuple the true retraction cleans up later via its own out-tuple list.
         for (var rightTuple = rightTupleList.first(); rightTuple != null; rightTuple = rightTupleList.next(rightTuple)) {
-            insertOutTupleFilteredRight(leftTuple, rightTuple);
+            insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
         }
     }
 
@@ -99,7 +96,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             return;
         }
         for (var leftTuple = leftTupleList.first(); leftTuple != null; leftTuple = leftTupleList.next(leftTuple)) {
-            insertOutTupleFilteredLeft(leftTuple, rightTuple);
+            insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
         }
     }
 
