@@ -10,19 +10,12 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleList;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
 public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractSingleInputNode<InTuple_> {
 
     private final int groupStoreIndex;
-    /**
-     * Builds a fresh, empty contributor list for each new group; one per {@link Group}, backed by 2
-     * store indices reserved once, node-wide, from the same {@code storeIndexReserver} the constructor
-     * received.
-     */
-    private final Supplier<TupleList<InTuple_>> contributorListBuilder;
     /**
      * Unused when {@link #hasGroupKeyFunction} is false.
      */
@@ -65,9 +58,6 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         super(nextNodesTupleLifecycle);
         this.groupStoreIndex = storeIndexReserver.getAsInt();
-        var contributorPrevIndex = storeIndexReserver.getAsInt();
-        var contributorNextIndex = storeIndexReserver.getAsInt();
-        this.contributorListBuilder = () -> new TupleList<>(contributorPrevIndex, contributorNextIndex);
         this.groupKeyFunction = groupKeyFunction;
         this.supplier = supplier;
         this.finisher = finisher;
@@ -156,9 +146,9 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private Group<InTuple_, OutTuple_, ResultContainer_> createGroupWithGroupKey(Object groupMapKey) {
         var userSuppliedKey = extractUserSuppliedKey(groupMapKey);
         var outTuple = createOutTuple(userSuppliedKey);
-        var contributors = contributorListBuilder.get();
-        var group = hasCollector ? Group.create(groupMapKey, supplier.get(), outTuple, contributors)
-                : Group.<InTuple_, OutTuple_, ResultContainer_> createWithoutAccumulate(groupMapKey, outTuple, contributors);
+        var group = hasCollector
+                ? Group.<InTuple_, OutTuple_, ResultContainer_> create(groupMapKey, supplier.get(), outTuple)
+                : Group.<InTuple_, OutTuple_, ResultContainer_> createWithoutAccumulate(groupMapKey, outTuple);
         propagationQueue.insert(group);
         return group;
     }
@@ -170,8 +160,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
                     "Impossible state: The node (%s) has no collector, but it is still trying to create a group without a group key."
                             .formatted(this));
         }
-        var contributors = contributorListBuilder.get();
-        var group = Group.createWithoutGroupKey(supplier.get(), outTuple, contributors);
+        var group = Group.<InTuple_, OutTuple_, ResultContainer_> createWithoutGroupKey(supplier.get(), outTuple);
         propagationQueue.insert(group);
         return group;
     }
