@@ -220,6 +220,22 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                     problemSizeStatistics.entityCount(), problemSizeStatistics.variableCount(),
                     problemSizeStatistics.approximateValueCount(),
                     problemSizeStatistics.approximateProblemScaleAsFormattedString());
+            if (logger.isDebugEnabled()) {
+                var genuineEntityClassCountEntries = problemSizeStatistics.genuineEntityClassToEntityCount().entrySet();
+                for (var genuineEntityCountEntry : genuineEntityClassCountEntries) {
+                    var geninueEntityClass = genuineEntityCountEntry.getKey();
+                    logger.debug("    Entity ({}) count: {}",
+                            geninueEntityClass.getCanonicalName(),
+                            genuineEntityCountEntry.getValue());
+                    for (var geninueVariableEntry : problemSizeStatistics
+                            .genuineEntityClassToVariableToValueCount()
+                            .get(geninueEntityClass).entrySet()) {
+                        var genuineVariable = geninueVariableEntry.getKey();
+                        logger.debug("        Variable ({}) estimated value count: {}",
+                                genuineVariable, geninueVariableEntry.getValue());
+                    }
+                }
+            }
         }
     }
 
