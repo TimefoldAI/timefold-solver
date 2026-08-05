@@ -52,9 +52,11 @@ public abstract class AbstractBavetNodeNetwork {
     private Propagator @Nullable [][] layeredActivePropagators;
     /**
      * Aligned 1:1 with {@link #layeredActivePropagators} (same layer indices): for each layer, the
-     * subset of its active nodes that implement {@link DeferredSettleAware}. Almost always empty --
-     * only join nodes deferring filtering cross-match computation implement it -- so the common case
-     * pays nothing beyond an empty-array iteration in {@link #settleLayer}.
+     * subset of its active nodes that implement {@link DeferredSettleAware} and currently have deferred
+     * work to do ({@link DeferredSettleAware#hasDeferredWork()}) -- i.e. filtering join and
+     * ifExists/ifNotExists nodes. Usually small or empty -- non-filtering two-input nodes never enqueue
+     * anything and are excluded here at build time -- so the common case pays nothing beyond an
+     * empty-array iteration in {@link #settleLayer}.
      */
     private DeferredSettleAware @Nullable [][] layeredActiveDeferredNodes;
     /**
@@ -158,7 +160,7 @@ public abstract class AbstractBavetNodeNetwork {
     }
 
     private static void settleLayer(DeferredSettleAware[] deferredNodesInLayer, Propagator[] nodesInLayer) {
-        // Almost always empty; see the field javadoc on layeredActiveDeferredNodes.
+        // Usually small or empty; see the field javadoc on layeredActiveDeferredNodes.
         for (var node : deferredNodesInLayer) {
             node.prepareForSettle();
         }

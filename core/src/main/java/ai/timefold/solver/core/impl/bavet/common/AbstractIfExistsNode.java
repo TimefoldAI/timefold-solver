@@ -333,9 +333,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
-        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingLeft, at this
-        // node's own layer turn, after every ancestor on both sides has completed its retract/update/
-        // insert turn for this round -- rightTuple can no longer be stale here.
+        // This only ever runs from reconcilePendingLeft, at this node's own layer turn, after every
+        // ancestor on both sides has completed its retract/update/insert turn for this round --
+        // rightTuple can no longer be stale here, so no per-read staleness check is needed.
         if (testFiltering(counter.leftTuple, rightTuple)) {
             counter.countRight++;
             var tracker = new FilteringTracker<>(counter, rightTuple);
@@ -378,10 +378,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             // is what makes this safe rather than merely an optimisation that happens to hold.
             return;
         }
-        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingRight, at this
-        // node's own layer turn, after every ancestor on both sides has completed its retract/update/
-        // insert turn for this round -- leftTuple can no longer be stale here (the pending-left skip
-        // above already handles the one case where leftTuple's own reconcile hasn't run yet this round).
+        // This only ever runs from reconcilePendingRight, at this node's own layer turn, after every
+        // ancestor on both sides has completed its retract/update/insert turn for this round --
+        // leftTuple can no longer be stale here (the pending-left skip above already handles the one
+        // case where leftTuple's own reconcile hasn't run yet this round), so no per-read staleness
+        // check is needed.
         if (testFiltering(leftTuple, rightTuple)) {
             incrementCounterRight(counter);
             var tracker = new FilteringTracker<>(counter, rightTuple);

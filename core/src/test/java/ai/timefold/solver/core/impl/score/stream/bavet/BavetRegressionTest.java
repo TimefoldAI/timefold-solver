@@ -336,10 +336,14 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     /**
      * Like {@link #filteringJoinNullConflictRightUnassignOne()}, but the null-checking filter sits behind
-     * a 3-hop self-join instead of a single bi-join. A bi-join's left input is always the root tuple
-     * (whose retraction is applied eagerly), so the existing single-hop guard is enough there. Two hops
-     * deeper, the left input is itself a join product whose own retraction is deferred to a later
-     * network layer — exposing a stale, "still active" tuple to the filtering predicate.
+     * a 3-hop self-join instead of a single bi-join. A bi-join's left input is always the root tuple,
+     * which sits at layer 0 and is never itself mid-retraction when this join reads it, so a single hop
+     * can't expose the race this test targets. Two hops deeper, the left input is itself a join product
+     * living in a strictly later network layer -- reading it here is exactly the case
+     * {@code AbstractJoinNode#prepareForSettle()} exists to close: without deferring the cross-match to
+     * this node's own layer turn, the left tuple's retraction may not yet have propagated through its own
+     * layer by the time this join reads it, exposing a stale, "still active" tuple to the filtering
+     * predicate.
      */
     @TestTemplate
     public void filteringJoinNullConflictRightQuadJoinUnassignOne() {
@@ -418,13 +422,13 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     /**
      * Like {@link #filteringJoinNullConflictRightQuadJoinUnassignOne()}, but the last join carries no
-     * filtering predicate. Tests the hypothesis that {@code isActiveTransitively()} guarding
-     * {@code AbstractJoinNode#insertOutTupleFilteredLeft}/{@code insertOutTupleFilteredRight}
-     * unconditionally today is, for non-filtering joins, an optimization rather than a correctness
-     * requirement: a stale-but-"active" read here can only ever produce an out-tuple that the true
-     * retraction (arriving later, deeper in the same layer chain) cleans up via the retracted tuple's
-     * own out-tuple list -- no user predicate ever dereferences the stale fact, so the final score
-     * must converge correctly either way.
+     * filtering predicate. Non-filtering joins never dereference a fact through a user predicate --
+     * {@code AbstractJoinNode#insertOutTupleIfActiveFiltered} skips {@code testFiltering} entirely for
+     * them and inserts unconditionally -- so a stale-but-"active" read here can only ever produce an
+     * out-tuple that the true retraction (arriving later, deeper in the same layer chain) cleans up via
+     * the retracted tuple's own out-tuple list. The final score must converge correctly regardless of
+     * read timing, which is exactly why non-filtering joins skip the deferred cross-match machinery
+     * entirely (see {@code AbstractJoinNode#hasDeferredWork()}).
      */
     @TestTemplate
     public void joinNullConflictRightQuadJoinUnassignOneNonFiltering() {
@@ -497,12 +501,13 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     /**
      * Like {@link #filteringJoinNullConflictRightQuadJoinUnassignOne()}, but the trigger is an in-place
      * list reorder (an UPDATE on the index/previous/next shadow variables) instead of an unassign (a
-     * RETRACT). Both values stay assigned throughout, so this exercises
-     * {@code AbstractJoinNode#innerUpdateLeft}/{@code processOutTupleUpdateLeft}'s
-     * {@code isActiveTransitively()} guard specifically, rather than the insert-path guards the
-     * unassign-based tests above exercise. Neither the join key ({@code getEntity()}, untouched by a
-     * reorder) nor the filter's null-checks are affected by a reorder, so the match set must be
-     * identical before and after; a stale read on the update path would corrupt it or throw.
+     * RETRACT). Both values stay assigned throughout, so this exercises the deferred cross-match on the
+     * update path specifically -- {@code AbstractJoinNode#innerUpdateLeft}'s filtering branch enqueues the
+     * left tuple and lets {@code prepareForSettle()} re-run its cross-match once every layer has settled
+     * -- rather than the insert-path deferral the unassign-based tests above exercise. Neither the join
+     * key ({@code getEntity()}, untouched by a reorder) nor the filter's null-checks are affected by a
+     * reorder, so the match set must be identical before and after; a stale read on the update path
+     * would corrupt it or throw.
      */
     @TestTemplate
     public void filteringJoinNullConflictThroughQuadJoinReorder() {
@@ -1498,8 +1503,9 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     /**
      * Like {@link #filteringJoinNullConflictRightUnassignOne()}, but the left input to the filtering join
      * is derived via a {@code .map()} from an earlier join's output, instead of being that earlier join's
-     * product directly. A map node's own retraction of its output is deferred to its parent join's flush
-     * the same way an intermediate join's own output is — same race, one more node type in the chain.
+     * product directly. Map retracts its own out-tuple only once its input tuple retracts, at its own
+     * layer's turn -- the same layer-ordering shape as an intermediate join's own output, just with one
+     * more node type standing between the root and the filtering join that reads it.
      */
     @TestTemplate
     public void filteringJoinNullConflictThroughMapUnassignOne() {
@@ -1562,7 +1568,8 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     /**
      * Like {@link #filteringJoinNullConflictThroughMapUnassignOne()}, but with {@code .flatten()} instead
      * of {@code .map()} in the middle of the chain. {@link ai.timefold.solver.core.impl.bavet.common.AbstractFlattenNode}
-     * has the identical eager-state/deferred-notification pattern as map, so it should reproduce the same way.
+     * retracts its own out-tuples only once its input tuple retracts, at its own layer's turn -- the same
+     * layer-ordering shape as map, so it should reproduce the same way.
      */
     @TestTemplate
     public void filteringJoinNullConflictThroughFlattenUnassignOne() {
@@ -1626,9 +1633,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     /**
      * Like {@link #filteringJoinNullConflictThroughMapUnassignOne()}, but with {@code .groupBy()} instead
-     * of {@code .map()} in the middle of the chain. groupBy's out-tuple has no single input tuple whose
-     * activity implies its own (it's an N:1 aggregate), so it uses {@code Group}'s
-     * {@code TupleActivitySource} instead of the {@code activityParent1}/{@code activityParent2} chain.
+     * of {@code .map()} in the middle of the chain. A group's out-tuple aggregates over every contributor
+     * mapped into it (an N:1 relationship, unlike map/flatten's 1:1) and only retracts once the group
+     * becomes empty, at its own layer's turn -- the same layer-ordering shape as map and flatten, so it
+     * should reproduce the same way despite the different membership-tracking mechanism underneath.
      */
     @TestTemplate
     public void filteringJoinNullConflictThroughGroupByUnassignOne() {

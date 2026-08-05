@@ -27,11 +27,9 @@ final class Group<InTuple_ extends Tuple, OutTuple_ extends Tuple, ResultContain
     private final ResultContainer_ resultContainer;
     private final OutTuple_ outTuple;
     /**
-     * How many input tuples are currently mapped into this group. Backs membership tracking only
-     * ({@link #isEmpty()} is a group's sole liveness answer now that groupBy no longer needs to answer
-     * "is this group transitively still live" for a downstream join/ifExists) -- no need to walk or even
-     * retain the individual contributors, so a bare counter replaces what used to be an intrusive
-     * {@code TupleList} backed by 2 reserved store slots per input tuple.
+     * How many input tuples are currently mapped into this group. The only thing this backs is
+     * {@link #isEmpty()} -- a group's sole liveness answer -- so a plain counter is enough: nothing ever
+     * needs to walk or even retain the individual contributors.
      */
     private int contributorCount;
 

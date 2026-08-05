@@ -153,9 +153,10 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             enqueuePendingLeft(leftTuple);
             return;
         }
-        // Non-filtering: no isActiveTransitively() guard needed here (proven by dedicated regression
-        // tests -- see AbstractJoinNode's insertOutTupleIfActiveFiltered javadoc). A stale read merely
-        // produces a doomed out-tuple the true retraction cleans up later via its own out-tuple list.
+        // Non-filtering: reads the opposite side eagerly, with no per-read staleness check needed (proven
+        // safe by dedicated regression tests -- see AbstractJoinNode's insertOutTupleIfActiveFiltered
+        // javadoc). A stale read merely produces a doomed out-tuple the true retraction cleans up later
+        // via its own out-tuple list.
         forEachRightMatch(leftTuple, compositeKey, rightTuple -> insertOutTupleIfActiveFiltered(leftTuple, rightTuple));
     }
 

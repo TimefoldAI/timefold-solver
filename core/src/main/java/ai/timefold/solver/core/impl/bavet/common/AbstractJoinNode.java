@@ -223,9 +223,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
-            // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingLeft, at
-            // this node's own layer turn, after every ancestor on both sides has completed its
-            // retract/update/insert turn for this round -- leftTuple can no longer be stale here.
+            // This only ever runs from reconcilePendingLeft, at this node's own layer turn, after every
+            // ancestor on both sides has completed its retract/update/insert turn for this round --
+            // leftTuple can no longer be stale here, so no per-read staleness check is needed.
             // Every out-tuple's partner is guaranteed to be swept below,
             // because retracts and key-moves unlink out-tuples synchronously;
             // a stale mark can therefore only ever be version-mismatched.
@@ -255,9 +255,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingLeft, at this
-        // node's own layer turn, after every ancestor on both sides has completed its retract/update/
-        // insert turn for this round -- rightTuple can no longer be stale here.
+        // This only ever runs from reconcilePendingLeft, at this node's own layer turn, after every
+        // ancestor on both sides has completed its retract/update/insert turn for this round --
+        // rightTuple can no longer be stale here, so no per-read staleness check is needed.
         TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
     }
@@ -325,9 +325,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        // No isActiveTransitively() guard needed: this only ever runs from reconcilePendingRight, at
-        // this node's own layer turn, after every ancestor on both sides has completed its retract/
-        // update/insert turn for this round -- leftTuple can no longer be stale here.
+        // This only ever runs from reconcilePendingRight, at this node's own layer turn, after every
+        // ancestor on both sides has completed its retract/update/insert turn for this round --
+        // leftTuple can no longer be stale here, so no per-read staleness check is needed.
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         processOutTupleUpdateRight(leftTuple, rightTuple, outTupleListLeft.getMark(version));
     }
