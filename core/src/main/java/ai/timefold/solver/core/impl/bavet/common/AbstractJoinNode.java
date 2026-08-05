@@ -70,8 +70,13 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
 
     protected final void insertOutTupleFilteredLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        if (!leftTuple.isActiveTransitively()) {
+        if (isFiltering && !leftTuple.isActiveTransitively()) {
             // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
+            // Non-filtering joins never dereference a fact through a user predicate, so a stale-but-
+            // "active" read here cannot corrupt anything: it merely produces an out-tuple that the true
+            // retraction (arriving later, deeper in the same layer chain) cleans up via the retracted
+            // tuple's own out-tuple list. The guard is therefore scoped to filtering joins only, where
+            // testFiltering(...) below would otherwise run against stale data.
             return;
         }
         insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
@@ -83,7 +88,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
      * See {@link Tuple#isActiveTransitively} for why the immediate state alone isn't enough here.
      */
     protected final void insertOutTupleFilteredRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        if (!rightTuple.isActiveTransitively()) {
+        if (isFiltering && !rightTuple.isActiveTransitively()) {
             return;
         }
         insertOutTupleIfActiveFiltered(leftTuple, rightTuple);

@@ -416,6 +416,180 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         }
     }
 
+    /**
+     * Like {@link #filteringJoinNullConflictRightQuadJoinUnassignOne()}, but the last join carries no
+     * filtering predicate. Tests the hypothesis that {@code isActiveTransitively()} guarding
+     * {@code AbstractJoinNode#insertOutTupleFilteredLeft}/{@code insertOutTupleFilteredRight}
+     * unconditionally today is, for non-filtering joins, an optimization rather than a correctness
+     * requirement: a stale-but-"active" read here can only ever produce an out-tuple that the true
+     * retraction (arriving later, deeper in the same layer chain) cleans up via the retracted tuple's
+     * own out-tuple list -- no user predicate ever dereferences the stale fact, so the final score
+     * must converge correctly either way.
+     */
+    @TestTemplate
+    public void joinNullConflictRightQuadJoinUnassignOneNonFiltering() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b, c) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1, value1, value1),
+                    assertMatch(value1, value1, value1, value2),
+                    assertMatch(value1, value1, value2, value1),
+                    assertMatch(value1, value1, value2, value2),
+                    assertMatch(value1, value2, value1, value1),
+                    assertMatch(value1, value2, value1, value2),
+                    assertMatch(value1, value2, value2, value1),
+                    assertMatch(value1, value2, value2, value2),
+                    assertMatch(value2, value1, value1, value1),
+                    assertMatch(value2, value1, value1, value2),
+                    assertMatch(value2, value1, value2, value1),
+                    assertMatch(value2, value1, value2, value2),
+                    assertMatch(value2, value2, value1, value1),
+                    assertMatch(value2, value2, value1, value2),
+                    assertMatch(value2, value2, value2, value1),
+                    assertMatch(value2, value2, value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2, value2, value2));
+        }
+    }
+
+    /**
+     * Like {@link #filteringJoinNullConflictRightQuadJoinUnassignOne()}, but the trigger is an in-place
+     * list reorder (an UPDATE on the index/previous/next shadow variables) instead of an unassign (a
+     * RETRACT). Both values stay assigned throughout, so this exercises
+     * {@code AbstractJoinNode#innerUpdateLeft}/{@code processOutTupleUpdateLeft}'s
+     * {@code isActiveTransitively()} guard specifically, rather than the insert-path guards the
+     * unassign-based tests above exercise. Neither the join key ({@code getEntity()}, untouched by a
+     * reorder) nor the filter's null-checks are affected by a reorder, so the match set must be
+     * identical before and after; a stale read on the update path would corrupt it or throw.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictThroughQuadJoinReorder() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity))
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v),
+                                                equal((a, b, c) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b, c, d) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    Objects.requireNonNull(c.getEntity());
+                                                    Objects.requireNonNull(d.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1, value1, value1),
+                    assertMatch(value1, value1, value1, value2),
+                    assertMatch(value1, value1, value2, value1),
+                    assertMatch(value1, value1, value2, value2),
+                    assertMatch(value1, value2, value1, value1),
+                    assertMatch(value1, value2, value1, value2),
+                    assertMatch(value1, value2, value2, value1),
+                    assertMatch(value1, value2, value2, value2),
+                    assertMatch(value2, value1, value1, value1),
+                    assertMatch(value2, value1, value1, value2),
+                    assertMatch(value2, value1, value2, value1),
+                    assertMatch(value2, value1, value2, value2),
+                    assertMatch(value2, value2, value1, value1),
+                    assertMatch(value2, value2, value1, value2),
+                    assertMatch(value2, value2, value2, value1),
+                    assertMatch(value2, value2, value2, value2));
+
+            // Swap value1 and value2's positions in place.
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 2);
+            entity.setValueList(List.of(value2, value1));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1, value1, value1),
+                    assertMatch(value1, value1, value1, value2),
+                    assertMatch(value1, value1, value2, value1),
+                    assertMatch(value1, value1, value2, value2),
+                    assertMatch(value1, value2, value1, value1),
+                    assertMatch(value1, value2, value1, value2),
+                    assertMatch(value1, value2, value2, value1),
+                    assertMatch(value1, value2, value2, value2),
+                    assertMatch(value2, value1, value1, value1),
+                    assertMatch(value2, value1, value1, value2),
+                    assertMatch(value2, value1, value2, value1),
+                    assertMatch(value2, value1, value2, value2),
+                    assertMatch(value2, value2, value1, value1),
+                    assertMatch(value2, value2, value1, value2),
+                    assertMatch(value2, value2, value2, value1),
+                    assertMatch(value2, value2, value2, value2));
+        }
+    }
+
     @TestTemplate
     public void filteringIfExistsNullConflictRight() {
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
