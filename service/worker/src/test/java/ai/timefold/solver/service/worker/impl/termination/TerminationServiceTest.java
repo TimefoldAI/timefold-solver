@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class TerminationServiceTest {
 
     private static TerminationService service() {
-        return new TerminationService("PT10S", Optional.empty(), Optional.empty(), Optional.empty());
+        return new TerminationService("PT10S", Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     @Test
@@ -25,6 +25,7 @@ class TerminationServiceTest {
         assertThat(resolved.getSpentLimit()).isEqualTo(Duration.ofSeconds(10));
         assertThat(resolved.getUnimprovedSpentLimit()).isNull();
         assertThat(resolved.getStepCountLimit()).isNull();
+        assertThat(resolved.getMoveCountLimit()).isNull();
         assertThat(resolved.getDiminishedReturnsConfig()).isNotNull();
         // No platform-level tuning anymore: solver-core defaults apply (both null on the config).
         assertThat(resolved.getDiminishedReturnsConfig().getSlidingWindowDuration()).isNull();
@@ -34,13 +35,14 @@ class TerminationServiceTest {
     @Test
     void perRequestDiminishedReturnsTuningIsForwarded() {
         SolverTerminationConfig input = new SolverTerminationConfig(
-                Duration.ofMinutes(1), null, null, Duration.ofMinutes(5), 0.01);
+                Duration.ofMinutes(1), null, null, null, Duration.ofMinutes(5), 0.01);
 
         TerminationConfig resolved = service().resolveTerminationConfig(input);
 
         assertThat(resolved.getSpentLimit()).isEqualTo(Duration.ofMinutes(1));
         assertThat(resolved.getUnimprovedSpentLimit()).isNull();
         assertThat(resolved.getStepCountLimit()).isNull();
+        assertThat(resolved.getMoveCountLimit()).isNull();
         assertThat(resolved.getDiminishedReturnsConfig()).isNotNull();
         assertThat(resolved.getDiminishedReturnsConfig().getSlidingWindowDuration())
                 .isEqualTo(Duration.ofMinutes(5));
@@ -50,12 +52,13 @@ class TerminationServiceTest {
     @Test
     void unimprovedSpentLimitDisablesDiminishedReturns() {
         SolverTerminationConfig input = new SolverTerminationConfig(
-                Duration.ofMinutes(1), Duration.ofSeconds(30), null, Duration.ofMinutes(5), 0.01);
+                Duration.ofMinutes(1), Duration.ofSeconds(30), null, null, Duration.ofMinutes(5), 0.01);
 
         TerminationConfig resolved = service().resolveTerminationConfig(input);
 
         assertThat(resolved.getUnimprovedSpentLimit()).isEqualTo(Duration.ofSeconds(30));
         assertThat(resolved.getStepCountLimit()).isNull();
+        assertThat(resolved.getMoveCountLimit()).isNull();
         // diminished-returns tuning on the request is ignored when unimprovedSpentLimit is set.
         assertThat(resolved.getDiminishedReturnsConfig()).isNull();
     }
@@ -63,18 +66,47 @@ class TerminationServiceTest {
     @Test
     void stepCountLimitDisablesDiminishedReturns() {
         SolverTerminationConfig input = new SolverTerminationConfig(
-                Duration.ofMinutes(1), null, 1000, Duration.ofMinutes(5), 0.01);
+                Duration.ofMinutes(1), null, 1000, null, Duration.ofMinutes(5), 0.01);
 
         TerminationConfig resolved = service().resolveTerminationConfig(input);
 
         assertThat(resolved.getStepCountLimit()).isEqualTo(1000);
+        assertThat(resolved.getMoveCountLimit()).isNull();
+        assertThat(resolved.getUnimprovedSpentLimit()).isNull();
+        assertThat(resolved.getDiminishedReturnsConfig()).isNull();
+    }
+
+    @Test
+    void moveCountLimitDisablesDiminishedReturns() {
+        SolverTerminationConfig input = new SolverTerminationConfig(
+                Duration.ofMinutes(1), null, null, 100_000L, Duration.ofMinutes(5), 0.01);
+
+        TerminationConfig resolved = service().resolveTerminationConfig(input);
+
+        assertThat(resolved.getMoveCountLimit()).isEqualTo(100_000L);
+        assertThat(resolved.getStepCountLimit()).isNull();
+        assertThat(resolved.getUnimprovedSpentLimit()).isNull();
+        // diminished-returns tuning on the request is ignored when moveCountLimit is set.
+        assertThat(resolved.getDiminishedReturnsConfig()).isNull();
+    }
+
+    @Test
+    void stepCountLimitAndMoveCountLimitCombine() {
+        SolverTerminationConfig input = new SolverTerminationConfig(
+                Duration.ofMinutes(1), null, 1000, 100_000L, null, null);
+
+        TerminationConfig resolved = service().resolveTerminationConfig(input);
+
+        // Both hard limits are OR-composed: whichever is reached first terminates the solver.
+        assertThat(resolved.getStepCountLimit()).isEqualTo(1000);
+        assertThat(resolved.getMoveCountLimit()).isEqualTo(100_000L);
         assertThat(resolved.getUnimprovedSpentLimit()).isNull();
         assertThat(resolved.getDiminishedReturnsConfig()).isNull();
     }
 
     @Test
     void nullSpentLimitOnRequestFallsBackToPlatformSpentLimit() {
-        SolverTerminationConfig input = new SolverTerminationConfig(null, null, null, null, null);
+        SolverTerminationConfig input = new SolverTerminationConfig(null, null, null, null, null, null);
 
         TerminationConfig resolved = service().resolveTerminationConfig(input);
 
@@ -84,7 +116,8 @@ class TerminationServiceTest {
 
     @Test
     void platformUnimprovedSpentLimitDisablesDiminishedReturnsWhenNoRequest() {
-        TerminationService service = new TerminationService("PT10S", Optional.of("PT5S"), Optional.empty(), Optional.empty());
+        TerminationService service =
+                new TerminationService("PT10S", Optional.of("PT5S"), Optional.empty(), Optional.empty(), Optional.empty());
 
         TerminationConfig resolved = service.resolveTerminationConfig(null);
 
@@ -94,11 +127,34 @@ class TerminationServiceTest {
 
     @Test
     void platformStepCountLimitDisablesDiminishedReturnsWhenNoRequest() {
-        TerminationService service = new TerminationService("PT10S", Optional.empty(), Optional.empty(), Optional.of(50));
+        TerminationService service =
+                new TerminationService("PT10S", Optional.empty(), Optional.empty(), Optional.of(50), Optional.empty());
 
         TerminationConfig resolved = service.resolveTerminationConfig(null);
 
         assertThat(resolved.getStepCountLimit()).isEqualTo(50);
         assertThat(resolved.getDiminishedReturnsConfig()).isNull();
+    }
+
+    @Test
+    void platformMoveCountLimitDisablesDiminishedReturnsWhenNoRequest() {
+        TerminationService service =
+                new TerminationService("PT10S", Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(500_000L));
+
+        TerminationConfig resolved = service.resolveTerminationConfig(null);
+
+        assertThat(resolved.getMoveCountLimit()).isEqualTo(500_000L);
+        assertThat(resolved.getDiminishedReturnsConfig()).isNull();
+    }
+
+    @Test
+    void perRequestMoveCountLimitOverridesPlatformDefault() {
+        TerminationService service =
+                new TerminationService("PT10S", Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(500_000L));
+        SolverTerminationConfig input = new SolverTerminationConfig(null, null, null, 100_000L);
+
+        TerminationConfig resolved = service.resolveTerminationConfig(input);
+
+        assertThat(resolved.getMoveCountLimit()).isEqualTo(100_000L);
     }
 }

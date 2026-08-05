@@ -31,6 +31,7 @@ public class TerminationService {
     private final Duration unimprovedSpentLimit;
     private final String bestScoreLimit; // exposed for testing
     private final Integer stepCountLimit;
+    private final Long moveCountLimit;
 
     @Inject
     TerminationService(
@@ -38,17 +39,19 @@ public class TerminationService {
             @ConfigProperty(
                     name = TerminationConfigParams.TERMINATION_UNIMPROVED_SPENT_LIMIT) Optional<String> unimprovedSpentLimit,
             @ConfigProperty(name = TerminationConfigParams.TERMINATION_BEST_SCORE_LIMIT) Optional<String> bestScoreLimit,
-            @ConfigProperty(name = TerminationConfigParams.TERMINATION_STEP_COUNT_LIMIT) Optional<Integer> stepCountLimit) {
+            @ConfigProperty(name = TerminationConfigParams.TERMINATION_STEP_COUNT_LIMIT) Optional<Integer> stepCountLimit,
+            @ConfigProperty(name = TerminationConfigParams.TERMINATION_MOVE_COUNT_LIMIT) Optional<Long> moveCountLimit) {
         this.spentLimit = parseDurationFromConfig(TerminationConfigParams.TERMINATION_SPENT_LIMIT, spentLimit);
         this.unimprovedSpentLimit = unimprovedSpentLimit
                 .map(s -> parseDurationFromConfig(TerminationConfigParams.TERMINATION_UNIMPROVED_SPENT_LIMIT, s)).orElse(null);
         this.bestScoreLimit = bestScoreLimit.orElse(null);
         this.stepCountLimit = stepCountLimit.orElse(null);
+        this.moveCountLimit = moveCountLimit.orElse(null);
     }
 
     public TerminationConfig resolveTerminationConfig(SolverTerminationConfig terminationConfig) {
         if (terminationConfig == null) {
-            return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, null, null);
+            return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, moveCountLimit, null, null);
         }
         var spentLimit = requireNonNullElse(terminationConfig.spentLimit(), this.spentLimit);
         // unimprovedSpentLimit may be null
@@ -57,13 +60,15 @@ public class TerminationService {
                         : this.unimprovedSpentLimit;
         var stepCountLimit =
                 terminationConfig.stepCountLimit() != null ? terminationConfig.stepCountLimit() : this.stepCountLimit;
+        var moveCountLimit =
+                terminationConfig.moveCountLimit() != null ? terminationConfig.moveCountLimit() : this.moveCountLimit;
 
-        return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit,
+        return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, moveCountLimit,
                 terminationConfig.slidingWindowDuration(), terminationConfig.minimumImprovementRatio());
     }
 
     private TerminationConfig solverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit,
-            Integer stepCountLimit, Duration diminishedReturnsSlidingWindowDuration,
+            Integer stepCountLimit, Long moveCountLimit, Duration diminishedReturnsSlidingWindowDuration,
             Double diminishedReturnsMinimumImprovementRatio) {
         var terminationConfig = new TerminationConfig()
                 .withTerminationCompositionStyle(TerminationCompositionStyle.OR)
@@ -73,9 +78,19 @@ public class TerminationService {
         if (unimprovedSpentLimit != null) {
             terminationConfig.withUnimprovedSpentLimit(unimprovedSpentLimit);
             LOGGER.info("Using time spent ({}) with unimproved time spent ({}) termination.", spentLimit, unimprovedSpentLimit);
-        } else if (stepCountLimit != null) {
-            terminationConfig.withStepCountLimit(stepCountLimit);
-            LOGGER.info("Using time spent ({}) with step count limit ({}) termination.", spentLimit, stepCountLimit);
+        } else if (stepCountLimit != null || moveCountLimit != null) {
+            // stepCountLimit and moveCountLimit are both hard, deterministic caps used for benchmarking;
+            // they are OR-composed and may be combined so whichever is reached first terminates the solver.
+            List<String> limits = new ArrayList<>(2);
+            if (stepCountLimit != null) {
+                terminationConfig.withStepCountLimit(stepCountLimit);
+                limits.add("step count limit (%d)".formatted(stepCountLimit));
+            }
+            if (moveCountLimit != null) {
+                terminationConfig.withMoveCountLimit(moveCountLimit);
+                limits.add("move count limit (%d)".formatted(moveCountLimit));
+            }
+            LOGGER.info("Using time spent ({}) with {} termination.", spentLimit, String.join(" or ", limits));
         } else {
             var diminishedReturnsConfig = new DiminishedReturnsTerminationConfig();
             List<String> tuning = new ArrayList<>(2);
