@@ -2234,7 +2234,7 @@
             "example" : "PT1H"
           },
           "unimprovedSpentLimit" : {
-            "description" : "Maximum unimproved score duration (ISO 8601 duration format). If the score has not improved during this period (e.g. PT5M), terminate the solver. If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+            "description" : "Maximum unimproved score duration (ISO 8601 duration format). If the score has not improved during this period (e.g. PT5M), terminate the solver. If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit and moveCountLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
             "type" : "string",
             "allOf" : [ {
               "$ref" : "#/components/schemas/Duration"
@@ -2244,11 +2244,19 @@
           "stepCountLimit" : {
             "format" : "int32",
             "description" : "Maximum solver step count. The solver will stop solving after a pre-determined amount of steps. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use. If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+            "minimum" : 0,
             "type" : "integer",
             "example" : 1000
           },
+          "moveCountLimit" : {
+            "format" : "int64",
+            "description" : "Maximum number of moves evaluated by the solver. The solver will stop solving after a pre-determined amount of moves have been evaluated. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use. If set, unimprovedSpentLimit must be empty. Can be combined with stepCountLimit: the solver stops as soon as either limit is reached. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+            "minimum" : 0,
+            "type" : "integer",
+            "example" : 100000
+          },
           "slidingWindowDuration" : {
-            "description" : "Sliding window (ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).",
+            "description" : "Sliding window (ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit, stepCountLimit and moveCountLimit are all empty).",
             "type" : "string",
             "allOf" : [ {
               "$ref" : "#/components/schemas/Duration"
@@ -2257,7 +2265,7 @@
           },
           "minimumImprovementRatio" : {
             "format" : "double",
-            "description" : "Minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).",
+            "description" : "Minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit, stepCountLimit and moveCountLimit are all empty).",
             "type" : "number",
             "example" : 0.0001
           }
