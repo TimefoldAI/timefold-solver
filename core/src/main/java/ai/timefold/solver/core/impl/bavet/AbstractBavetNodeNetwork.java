@@ -123,7 +123,8 @@ public abstract class AbstractBavetNodeNetwork {
                     .toArray(Propagator[][]::new);
             layeredActiveDeferredNodes = Arrays.stream(layeredActiveNodes)
                     .map(layer -> Arrays.stream(layer)
-                            .filter(DeferredSettleAware.class::isInstance)
+                            .filter(s -> s instanceof DeferredSettleAware deferredSettleAware
+                                    && deferredSettleAware.hasDeferredWork())
                             .map(DeferredSettleAware.class::cast)
                             .toArray(DeferredSettleAware[]::new))
                     .toArray(DeferredSettleAware[][]::new);

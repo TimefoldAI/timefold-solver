@@ -13,9 +13,11 @@ package ai.timefold.solver.core.impl.bavet.common;
  * {@link AbstractBavetNodeNetwork}, which already knows every node's layer and activity, avoids that
  * trap entirely, and costs nothing for the (overwhelming majority of) nodes that don't implement it.
  * <p>
- * Currently implemented only by join nodes that defer their filtering cross-match computation to
- * their own layer, instead of computing it eagerly whenever a parent propagates into them (see
- * {@code AbstractJoinNode}).
+ * Implemented by two-input nodes that defer their filtering cross-match computation (the
+ * opposite-side read) to their own layer, instead of computing it eagerly whenever a parent
+ * propagates into them: {@code AbstractJoinNode} and {@code AbstractIfExistsNode}. Both implement it
+ * unconditionally (filtering or not), so {@link #hasDeferredWork()} is what actually distinguishes
+ * an instance with pending work from one that never enqueues anything.
  */
 public interface DeferredSettleAware {
 
@@ -27,5 +29,14 @@ public interface DeferredSettleAware {
      * greater than any of its ancestors'.
      */
     void prepareForSettle();
+
+    /**
+     * Whether this instance can ever have pending work for {@link #prepareForSettle()} to drain --
+     * {@code true} for a filtering node, {@code false} for a non-filtering one, which never enqueues
+     * anything and would otherwise pay a wasted virtual call every layer, every settle round.
+     * {@link AbstractBavetNodeNetwork} uses this to keep non-filtering instances out of the deferred
+     * array entirely, at build time, so the cost of checking is paid once rather than every round.
+     */
+    boolean hasDeferredWork();
 
 }

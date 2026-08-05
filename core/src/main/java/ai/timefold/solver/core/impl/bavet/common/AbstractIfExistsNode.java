@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.common;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleList;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -19,7 +20,8 @@ import org.jspecify.annotations.Nullable;
  * @param <Right_>
  */
 public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
-        extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
+        extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>>
+        implements DeferredSettleAware {
 
     protected final boolean shouldExist;
 
@@ -32,6 +34,39 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     protected final boolean isFiltering;
     private final DynamicPropagationQueue<LeftTuple_, ExistsCounter<LeftTuple_>> propagationQueue;
 
+    /**
+     * Filtering ifExists/ifNotExists nodes defer their cross-match computation (the opposite-side
+     * read) from "whenever a parent propagates in" to this node's own layer turn (see
+     * {@link #prepareForSettle()}), closing the stale-activity race at its root instead of guarding
+     * against it per read -- the same mechanism {@code AbstractJoinNode} uses for filtering joins.
+     * Non-filtering ifExists/ifNotExists never dereferences a fact through a user predicate (it only
+     * counts index members), so a stale-but-"active" read there can't corrupt anything -- these fields
+     * stay {@code null}/{@code -1} and cost nothing for them.
+     * <p>
+     * {@code pendingLeft}/{@code pendingRight} hold tuples whose cross-match is due; the marker slots
+     * exist purely to make enqueueing idempotent. Both lists are drained in {@link #prepareForSettle()},
+     * calling {@link #reconcilePendingLeft(Tuple)}/{@link #reconcilePendingRight(UniTuple)} -- the exact
+     * same clear-tracker-list-then-re-walk-then-reconcile logic an eager filtering update already used,
+     * just time-shifted; a brand-new counter has an empty tracker list and {@code countRight == 0}, so
+     * it doubles as the insert path too.
+     * <p>
+     * Unlike the join sibling, which drains left before right, this node drains <b>right before
+     * left</b>: the left reconcile is a full recompute for that left tuple (clear its whole tracker
+     * list, reset {@code countRight} to zero, re-walk the entire right side, fire one aggregate
+     * propagation decision), so running it last makes it authoritative over whatever the right pass
+     * did for the same left tuple in between. That in turn is what makes
+     * {@link #updateCounterRight(ExistsCounter, UniTuple)}'s pending-left skip safe: skipping a left
+     * tuple's counter during the right pass only ever discards work the left tuple's own reconcile
+     * would have superseded anyway. The skip is self-protecting either way -- {@link #prepareForSettle()}
+     * clears each side's marker as it drains, so swapping the two drains would just make the skip
+     * check see no pending markers left to skip, degrading to correct-but-redundant work rather than an
+     * incorrect answer. Only the optimisation depends on the order, never correctness.
+     */
+    private final int pendingLeftMarkerIndex;
+    private final int pendingRightMarkerIndex;
+    protected final @Nullable TupleList<LeftTuple_> pendingLeft;
+    protected final @Nullable TupleList<UniTuple<Right_>> pendingRight;
+
     protected AbstractIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             InTupleStorePositionTracker tupleStorePositionTracker) {
         super(nextNodesTupleLifecycle);
@@ -40,7 +75,114 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         this.inputStoreIndexRightTrackerList = isFiltering ? tupleStorePositionTracker.reserveNextRight() : -1;
         this.isFiltering = isFiltering;
         this.propagationQueue = new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
+        if (isFiltering) {
+            this.pendingLeftMarkerIndex = tupleStorePositionTracker.reserveNextLeft();
+            var pendingLeftPrev = tupleStorePositionTracker.reserveNextLeft();
+            var pendingLeftNext = tupleStorePositionTracker.reserveNextLeft();
+            this.pendingLeft = new TupleList<>(pendingLeftPrev, pendingLeftNext);
+            this.pendingRightMarkerIndex = tupleStorePositionTracker.reserveNextRight();
+            var pendingRightPrev = tupleStorePositionTracker.reserveNextRight();
+            var pendingRightNext = tupleStorePositionTracker.reserveNextRight();
+            this.pendingRight = new TupleList<>(pendingRightPrev, pendingRightNext);
+        } else {
+            this.pendingLeftMarkerIndex = -1;
+            this.pendingLeft = null;
+            this.pendingRightMarkerIndex = -1;
+            this.pendingRight = null;
+        }
     }
+
+    /**
+     * Enqueues {@code leftTuple} for cross-match reconciliation at this node's own layer turn, unless
+     * it is already awaiting one. Only called from filtering code paths.
+     */
+    protected final void enqueuePendingLeft(LeftTuple_ leftTuple) {
+        if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
+            leftTuple.setStore(pendingLeftMarkerIndex, Boolean.TRUE);
+            pendingLeft.add(leftTuple);
+        }
+    }
+
+    /**
+     * The mirror image of {@link #enqueuePendingLeft}.
+     */
+    protected final void enqueuePendingRight(UniTuple<Right_> rightTuple) {
+        if (rightTuple.getStore(pendingRightMarkerIndex) == null) {
+            rightTuple.setStore(pendingRightMarkerIndex, Boolean.TRUE);
+            pendingRight.add(rightTuple);
+        }
+    }
+
+    /**
+     * Removes {@code leftTuple} from the pending queue, if it is on it: a tuple can be retracted in the
+     * same round it was enqueued, before its turn to reconcile ever comes. Must run before the tuple's
+     * own store entries (composite key, counter entry, ...) are cleared, since a still-pending entry
+     * left dangling would be read by {@link #prepareForSettle()} after those are gone.
+     */
+    protected final void clearPendingLeft(LeftTuple_ leftTuple) {
+        if (pendingLeft != null && leftTuple.getStore(pendingLeftMarkerIndex) != null) {
+            leftTuple.setStore(pendingLeftMarkerIndex, null);
+            pendingLeft.remove(leftTuple);
+        }
+    }
+
+    /**
+     * The mirror image of {@link #clearPendingLeft}.
+     */
+    protected final void clearPendingRight(UniTuple<Right_> rightTuple) {
+        if (pendingRight != null && rightTuple.getStore(pendingRightMarkerIndex) != null) {
+            rightTuple.setStore(pendingRightMarkerIndex, null);
+            pendingRight.remove(rightTuple);
+        }
+    }
+
+    /**
+     * Whether {@code leftTuple} is currently awaiting its own {@link #reconcilePendingLeft(Tuple)} in
+     * this same {@link #prepareForSettle()} run. Used by {@link #updateCounterRight(ExistsCounter,
+     * UniTuple)} to skip a left counter whose own reconcile, running later in the same drain, will
+     * recompute it from scratch against the now-settled right side anyway -- see this class's own
+     * pending-fields javadoc for why draining right before left is what makes the skip safe.
+     */
+    protected final boolean isPendingLeft(LeftTuple_ leftTuple) {
+        return pendingLeft != null && leftTuple.getStore(pendingLeftMarkerIndex) != null;
+    }
+
+    @Override
+    public final boolean hasDeferredWork() {
+        return isFiltering;
+    }
+
+    @Override
+    public final void prepareForSettle() {
+        if (pendingLeft == null) { // Non-filtering: nothing was ever enqueued.
+            return;
+        }
+        pendingRight.clear(rightTuple -> {
+            rightTuple.setStore(pendingRightMarkerIndex, null);
+            reconcilePendingRight(rightTuple);
+        });
+        pendingLeft.clear(leftTuple -> {
+            leftTuple.setStore(pendingLeftMarkerIndex, null);
+            reconcilePendingLeft(leftTuple);
+        });
+    }
+
+    /**
+     * Re-runs this left tuple's cross-match against the current (now fully settled, for this round)
+     * opposite side, exactly as an eager filtering update already would have -- clear its tracker list,
+     * reset {@code countRight} to zero, re-walk the whole right side, then fire one aggregate
+     * {@link #updateCounterLeft(ExistsCounter)}. Reusing that logic is what makes this correct for a
+     * tuple that was actually a fresh insert too: a brand-new counter has an empty tracker list, so
+     * every match found is necessarily new. Implemented by each subclass because only it knows how to
+     * walk the opposite side (indexed: the shared index/bucket; unindexed: the plain tuple list).
+     */
+    protected abstract void reconcilePendingLeft(LeftTuple_ leftTuple);
+
+    /**
+     * The mirror image of {@link #reconcilePendingLeft}: clear this right tuple's tracker list, then
+     * re-walk the left counters that share its composite key via {@link #updateCounterRight}.
+     */
+    protected abstract void reconcilePendingRight(UniTuple<Right_> rightTuple);
 
     @Override
     public StreamKind getStreamKind() {
@@ -230,6 +372,14 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
 
     protected void updateCounterRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
         var leftTuple = counter.leftTuple;
+        if (isPendingLeft(leftTuple)) {
+            // This left tuple's own reconcile, later in this same prepareForSettle drain, recomputes
+            // its entire tracker set against the settled right side -- including this right tuple.
+            // Skipping here is what makes that recompute the only work done for the pair, instead of
+            // the second. See this class's pending-fields javadoc for why draining right before left
+            // is what makes this safe rather than merely an optimisation that happens to hold.
+            return;
+        }
         if (!leftTuple.isActiveTransitively()) {
             // See Tuple#isActiveTransitively for why the immediate state alone isn't enough here.
             return;

@@ -46,14 +46,13 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
 
         if (!isFiltering) {
             counter.countRight = rightTupleList.size();
+            initCounterLeft(counter);
         } else {
-            // Trackers link themselves into the left tuple's inputStoreIndexLeftTrackerList slot.
-            // No list object is needed; the slot starts null and the first tracker becomes the head.
-            for (var rightTuple : rightTupleList) {
-                updateCounterLeft(counter, rightTuple);
-            }
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of
+            // computing it now, at whatever layer the parent that produced leftTuple happens to be in.
+            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            enqueuePendingLeft(leftTuple);
         }
-        initCounterLeft(counter);
     }
 
     @Override
@@ -70,18 +69,17 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         if (!isFiltering) {
             updateUnchangedCounterLeft(counter);
         } else {
-            // Call filtering for the leftTuple and rightTuple combinations again
+            // Eager own-side cleanup, then defer the re-walk of the opposite side. See
+            // AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             clearLeftTrackerList(leftTuple);
             counter.countRight = 0;
-            for (var rightTuple : rightTupleList) {
-                updateCounterLeft(counter, rightTuple);
-            }
-            updateCounterLeft(counter);
+            enqueuePendingLeft(leftTuple);
         }
     }
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
+        clearPendingLeft(leftTuple); // A tuple can be retracted before its turn to reconcile ever comes.
         ElementAwareLinkedList.Entry<ExistsCounter<LeftTuple_>> counterEntry =
                 leftTuple.removeStore(inputStoreIndexLeftCounterEntry);
         if (counterEntry == null) {
@@ -105,11 +103,10 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         if (!isFiltering) {
             counterList.forEach(this::incrementCounterRight);
         } else {
-            // Trackers link themselves into the right tuple's inputStoreIndexRightTrackerList slot.
-            // No list object is needed; the slot starts null and the first tracker becomes the head.
-            for (var counter : counterList) {
-                updateCounterRight(counter, rightTuple);
-            }
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of
+            // computing it now, at whatever layer the parent that produced rightTuple happens to be in.
+            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            enqueuePendingRight(rightTuple);
         }
     }
 
@@ -122,15 +119,16 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             return;
         }
         if (isFiltering) {
+            // Eager own-side cleanup, then defer the re-walk of the opposite side. See
+            // AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             clearRightTrackerList(rightTuple);
-            for (var counter : counterList) {
-                updateCounterRight(counter, rightTuple);
-            }
+            enqueuePendingRight(rightTuple);
         }
     }
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
+        clearPendingRight(rightTuple); // A tuple can be retracted before its turn to reconcile ever comes.
         ElementAwareLinkedList.Entry<UniTuple<Right_>> rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
         if (rightEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -141,6 +139,27 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             counterList.forEach(this::decrementCounterRight);
         } else {
             clearRightTrackerList(rightTuple);
+        }
+    }
+
+    @Override
+    protected void reconcilePendingLeft(LeftTuple_ leftTuple) {
+        ElementAwareLinkedList.Entry<ExistsCounter<LeftTuple_>> counterEntry =
+                leftTuple.getStore(inputStoreIndexLeftCounterEntry);
+        var counter = counterEntry.element();
+        clearLeftTrackerList(leftTuple);
+        counter.countRight = 0;
+        for (var rightTuple : rightTupleList) {
+            updateCounterLeft(counter, rightTuple);
+        }
+        updateCounterLeft(counter);
+    }
+
+    @Override
+    protected void reconcilePendingRight(UniTuple<Right_> rightTuple) {
+        clearRightTrackerList(rightTuple);
+        for (var counter : counterList) {
+            updateCounterRight(counter, rightTuple);
         }
     }
 

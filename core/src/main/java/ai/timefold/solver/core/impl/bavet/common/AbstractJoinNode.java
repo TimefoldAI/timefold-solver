@@ -144,6 +144,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     @Override
+    public final boolean hasDeferredWork() {
+        return isFiltering;
+    }
+
+    @Override
     public final void prepareForSettle() {
         if (pendingLeft == null) { // Non-filtering: nothing was ever enqueued.
             return;
