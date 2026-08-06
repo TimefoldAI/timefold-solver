@@ -8,7 +8,7 @@
       "url" : "",
       "email" : ""
     },
-    "version" : "v2-beta"
+    "version" : "v1"
   },
   "servers" : [ {
     "url" : "http://localhost:8080",
@@ -19,7 +19,7 @@
   } ],
   "tags" : [ ],
   "paths" : {
-    "/v2-beta/schedules" : {
+    "/v1/schedules" : {
       "post" : {
         "summary" : "Posts a dataset and optionally requests its solving. Unique identifier is returned that can be used for further operations on the dataset.",
         "operationId" : "schedule",
@@ -236,7 +236,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/validation-issue-types" : {
+    "/v1/schedules/validation-issue-types" : {
       "get" : {
         "summary" : "Get validation issue types supported by the model",
         "operationId" : "getValidationIssueTypes",
@@ -265,7 +265,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/validation-issue-types/{code}" : {
+    "/v1/schedules/validation-issue-types/{code}" : {
       "get" : {
         "summary" : "Get validation issue type by the code",
         "operationId" : "getValidationIssueTypeByCode",
@@ -313,7 +313,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}" : {
+    "/v1/schedules/{id}" : {
       "delete" : {
         "summary" : "Terminate and return schedule with given identifier",
         "operationId" : "terminateSchedule",
@@ -527,7 +527,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/config" : {
+    "/v1/schedules/{id}/config" : {
       "get" : {
         "summary" : "Get the configuration used for the schedule",
         "operationId" : "getScheduleConfig",
@@ -575,7 +575,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/events" : {
+    "/v1/schedules/{id}/events" : {
       "get" : {
         "summary" : "Subscribes to events of given dataset (of type metadata) as long as it has not yet reached final state (completed, failed, incomplete or invalid)",
         "operationId" : "getMetadataEvents",
@@ -641,7 +641,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/from-input" : {
+    "/v1/schedules/{id}/from-input" : {
       "post" : {
         "summary" : "Request a problem to be solved, based on a previously solved dataset. A unique identifier is returned that can be used to get the schedule once solved",
         "operationId" : "fromInput",
@@ -816,7 +816,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/from-patch" : {
+    "/v1/schedules/{id}/from-patch" : {
       "post" : {
         "summary" : "Preview: Request a problem to be solved, based on a previous dataset that is patched with given operations. A unique identifier is returned that can be used to get the dataset",
         "description" : "Request a problem to be solved, based on a previous dataset that is patched with given operations. This operation is in preview and might be a subject to change. This operation is not be available for everyone (feature-flagged).",
@@ -992,7 +992,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/input" : {
+    "/v1/schedules/{id}/input" : {
       "get" : {
         "summary" : "Get input dataset",
         "operationId" : "getScheduleInput",
@@ -1040,7 +1040,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/logs" : {
+    "/v1/schedules/{id}/logs" : {
       "get" : {
         "summary" : "Get logs with given identifier",
         "operationId" : "getScheduleLogs",
@@ -1088,7 +1088,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/metadata" : {
+    "/v1/schedules/{id}/metadata" : {
       "get" : {
         "summary" : "Get schedule status with given identifier",
         "operationId" : "getMetadata",
@@ -1136,7 +1136,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/model-request" : {
+    "/v1/schedules/{id}/model-request" : {
       "get" : {
         "summary" : "Get complete input request for given schedule with given identifier",
         "operationId" : "getModelRequest",
@@ -1184,7 +1184,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/new-run" : {
+    "/v1/schedules/{id}/new-run" : {
       "post" : {
         "summary" : "(Deprecated endpoint, please use /{id}/from-input instead) Request a problem to be solved, based on a previously solved dataset. A unique identifier is returned that can be used to get the schedule once solved",
         "operationId" : "reschedule",
@@ -1331,7 +1331,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/run" : {
+    "/v1/schedules/{id}/run" : {
       "get" : {
         "summary" : "(Deprecated endpoint, please use /{id}/metadata instead) Get schedule status with given identifier",
         "operationId" : "getScheduleStatus",
@@ -1380,7 +1380,7 @@
         "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
       }
     },
-    "/v2-beta/schedules/{id}/validation-result" : {
+    "/v1/schedules/{id}/validation-result" : {
       "get" : {
         "summary" : "Get validation result of a dataset with the given identifier",
         "operationId" : "getValidationResult",
@@ -1691,6 +1691,9 @@
           },
           "transportType" : {
             "type" : "string"
+          },
+          "useTraffic" : {
+            "type" : "boolean"
           }
         }
       },
@@ -2231,7 +2234,7 @@
             "example" : "PT1H"
           },
           "unimprovedSpentLimit" : {
-            "description" : "Maximum unimproved score duration (ISO 8601 duration format). If the score has not improved during this period (e.g. PT5M), terminate the solver. If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+            "description" : "Maximum unimproved score duration (ISO 8601 duration format). If the score has not improved during this period (e.g. PT5M), terminate the solver. If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit and moveCountLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
             "type" : "string",
             "allOf" : [ {
               "$ref" : "#/components/schemas/Duration"
@@ -2243,6 +2246,26 @@
             "description" : "Maximum solver step count. The solver will stop solving after a pre-determined amount of steps. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use. If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
             "type" : "integer",
             "example" : 1000
+          },
+          "moveCountLimit" : {
+            "format" : "int64",
+            "description" : "Maximum number of moves evaluated by the solver. The solver will stop solving after a pre-determined amount of moves have been evaluated. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use. If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+            "type" : "integer",
+            "example" : 100000
+          },
+          "slidingWindowDuration" : {
+            "description" : "Sliding window (ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit, stepCountLimit and moveCountLimit are all empty).",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Duration"
+            } ],
+            "example" : "PT30S"
+          },
+          "minimumImprovementRatio" : {
+            "format" : "double",
+            "description" : "Minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit, stepCountLimit and moveCountLimit are all empty).",
+            "type" : "number",
+            "example" : 0.0001
           }
         },
         "additionalProperties" : false

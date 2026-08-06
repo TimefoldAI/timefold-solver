@@ -17,7 +17,7 @@ public record SolverTerminationConfig(
                 description = "Maximum unimproved score duration (ISO 8601 duration format). " +
                         "If the score has not improved during this period (e.g. PT5M), terminate the solver. " +
                         "If no value is provided, the default diminished returns termination will apply. " +
-                        "If set, stepCountLimit must be empty. " +
+                        "If set, stepCountLimit and moveCountLimit must be empty. " +
                         "Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
                 examples = { "PT5M", "PT30S" }) @JsonInclude(JsonInclude.Include.NON_NULL) Duration unimprovedSpentLimit,
         @Schema(description = "Maximum solver step count. " +
@@ -27,17 +27,24 @@ public record SolverTerminationConfig(
                 "If set, unimprovedSpentLimit must be empty. " +
                 "Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
                 examples = { "1000", "10000" }) @JsonInclude(JsonInclude.Include.NON_NULL) Integer stepCountLimit,
+        @Schema(description = "Maximum number of moves evaluated by the solver. " +
+                "The solver will stop solving after a pre-determined amount of moves have been evaluated. " +
+                "Use when you require results independently of the hardware resources performance. " +
+                "Use this termination if you want to benchmark your models, not recommended for production use. " +
+                "If set, unimprovedSpentLimit must be empty. " +
+                "Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+                examples = { "100000", "1000000" }) @JsonInclude(JsonInclude.Include.NON_NULL) Long moveCountLimit,
         @JsonFormat(shape = JsonFormat.Shape.STRING) @JsonInclude(JsonInclude.Include.NON_NULL) @Schema(
                 description = "Sliding window (ISO 8601 duration format) over which score improvement is " +
                         "measured by the diminished returns termination. Defaults to PT30S when omitted. " +
-                        "Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit and " +
-                        "stepCountLimit are both empty).",
+                        "Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit, " +
+                        "stepCountLimit and moveCountLimit are all empty).",
                 examples = { "PT30S", "PT5M" }) Duration slidingWindowDuration,
         @JsonInclude(JsonInclude.Include.NON_NULL) @Schema(
                 description = "Minimum ratio between current and initial improvement before the diminished " +
                         "returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. " +
-                        "Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit and " +
-                        "stepCountLimit are both empty).",
+                        "Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit, " +
+                        "stepCountLimit and moveCountLimit are all empty).",
                 examples = { "0.0001", "0.01" }) Double minimumImprovementRatio) {
 
     public SolverTerminationConfig {
@@ -47,18 +54,29 @@ public record SolverTerminationConfig(
         }
     }
 
+    public SolverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit, Integer stepCountLimit,
+            Duration slidingWindowDuration, Double minimumImprovementRatio) {
+        this(spentLimit, unimprovedSpentLimit, stepCountLimit, null, slidingWindowDuration, minimumImprovementRatio);
+    }
+
+    public SolverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit, Integer stepCountLimit,
+            Long moveCountLimit) {
+        this(spentLimit, unimprovedSpentLimit, stepCountLimit, moveCountLimit, null, null);
+    }
+
     public SolverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit, Integer stepCountLimit) {
-        this(spentLimit, unimprovedSpentLimit, stepCountLimit, null, null);
+        this(spentLimit, unimprovedSpentLimit, stepCountLimit, null, null, null);
     }
 
     public SolverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit) {
-        this(spentLimit, unimprovedSpentLimit, null, null, null);
+        this(spentLimit, unimprovedSpentLimit, null, null, null, null);
     }
 
     public SolverTerminationConfig override(SolverTerminationConfig configuration) {
         Duration spentLimit = this.spentLimit;
         Duration unimprovedSpentLimit = this.unimprovedSpentLimit;
         Integer stepCountLimit = this.stepCountLimit;
+        Long moveCountLimit = this.moveCountLimit;
         Duration slidingWindowDuration = this.slidingWindowDuration;
         Double minimumImprovementRatio = this.minimumImprovementRatio;
 
@@ -79,6 +97,10 @@ public record SolverTerminationConfig(
             stepCountLimit = configuration.stepCountLimit();
         }
 
+        if (moveCountLimit == null) {
+            moveCountLimit = configuration.moveCountLimit();
+        }
+
         if (slidingWindowDuration == null) {
             slidingWindowDuration = configuration.slidingWindowDuration();
         }
@@ -87,12 +109,13 @@ public record SolverTerminationConfig(
             minimumImprovementRatio = configuration.minimumImprovementRatio();
         }
 
-        if (stepCountLimit != null && unimprovedSpentLimit != null) {
-            throw new IllegalArgumentException("stepCountLimit and unimprovedSpentLimit cannot be set at the same time.");
+        if (unimprovedSpentLimit != null && (stepCountLimit != null || moveCountLimit != null)) {
+            throw new IllegalArgumentException(
+                    "unimprovedSpentLimit cannot be set at the same time as stepCountLimit or moveCountLimit.");
         }
 
-        return new SolverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, slidingWindowDuration,
-                minimumImprovementRatio);
+        return new SolverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, moveCountLimit,
+                slidingWindowDuration, minimumImprovementRatio);
     }
 
 }
