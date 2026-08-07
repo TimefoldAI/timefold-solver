@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
@@ -71,8 +72,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return randomFactory.get();
     }
 
-    public ScoreDirectorFactory<Solution_, ?> getScoreDirectorFactory() {
-        return solverScope.getScoreDirector().getScoreDirectorFactory();
+    public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
+        return solverScope.<Score_> getScoreDirector().getScoreDirectorFactory();
     }
 
     public SolverScope<Solution_> getSolverScope() {
@@ -313,7 +314,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
-        LOGGER.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
+        logger.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
                 solverScope.getBestScore().raw(),
@@ -340,7 +341,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             while (problemChange != null) {
                 problemChange.doChange(solverScope.getWorkingSolution(), solverScope.getProblemChangeDirector());
                 solverScope.getScoreDirector().updateShadowVariables();
-                LOGGER.debug("    Real-time problem change applied; step index ({}).", stepIndex);
+                logger.debug("    Real-time problem change applied; step index ({}).", stepIndex);
                 stepIndex++;
                 problemChange = problemChangeQueue.poll();
             }
@@ -352,7 +353,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             basicPlumbingTermination.endProblemChangesProcessing();
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
                     EventProducerId.problemChange());
-            LOGGER.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
+            logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);
             return true;
         }

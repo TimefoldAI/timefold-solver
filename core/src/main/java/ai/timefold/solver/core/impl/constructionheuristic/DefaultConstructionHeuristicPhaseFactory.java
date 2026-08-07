@@ -17,6 +17,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.Cartesia
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder;
@@ -69,10 +70,11 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             HeuristicConfigPolicy<Solution_> phaseConfigPolicy, SolverTermination<Solution_> solverTermination, int phaseIndex,
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
+        var environmentMode = resolveEnvironmentMode(phaseConfigPolicy);
+        return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase, environmentMode,
                 phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
-                buildDecider(phaseConfigPolicy, phaseTermination))
-                .enableAssertions(phaseConfigPolicy.getEnvironmentMode());
+                buildDecider(phaseConfigPolicy, environmentMode, phaseTermination))
+                .enableAssertions();
     }
 
     @Override
@@ -158,14 +160,14 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     protected ConstructionHeuristicDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination) {
+            EnvironmentMode environmentMode, PhaseTermination<Solution_> termination) {
         var forager = buildForager(configPolicy);
         var moveThreadCount = configPolicy.getMoveThreadCount();
         var decider = (moveThreadCount == null)
                 ? new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager)
                 : TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                         .buildConstructionHeuristic(termination, forager, configPolicy);
-        decider.enableAssertions(configPolicy.getEnvironmentMode());
+        decider.enableAssertions(environmentMode);
         return decider;
     }
 

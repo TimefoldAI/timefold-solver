@@ -55,7 +55,8 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
             RuinRecreateConstructionHeuristicPhaseFactory<Solution_> constructionHeuristicPhaseFactory,
             PhaseTermination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
             ConstructionHeuristicDecider<Solution_> decider) {
-        super(0, false, "", phaseTermination, entityPlacer, decider);
+        // The R&R uses the root solver environment mode by default
+        super(0, false, configPolicy.getEnvironmentMode(), "", phaseTermination, entityPlacer, decider);
         this.configPolicy = configPolicy;
         this.constructionHeuristicPhaseFactory = constructionHeuristicPhaseFactory;
         this.phaseTermination = phaseTermination;
@@ -73,7 +74,9 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
         if (multithreaded && scoreDirector.isDerived()) {
             return new RuinRecreateConstructionHeuristicPhaseBuilder<>(configPolicy, constructionHeuristicPhaseFactory,
                     phaseTermination, super.getEntityPlacer().copy(),
-                    constructionHeuristicPhaseFactory.buildDecider(configPolicy, phaseTermination));
+                    // The R&R decider uses the root solver environment mode by default
+                    constructionHeuristicPhaseFactory.buildDecider(configPolicy, configPolicy.getEnvironmentMode(),
+                            phaseTermination));
         }
         return this;
     }

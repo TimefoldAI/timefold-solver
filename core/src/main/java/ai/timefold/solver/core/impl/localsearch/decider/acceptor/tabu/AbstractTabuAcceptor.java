@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.TabuSizeStrategy;
@@ -54,8 +56,8 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
         this.aspirationEnabled = aspirationEnabled;
     }
 
-    public void setAssertTabuHashCodeCorrectness(boolean assertTabuHashCodeCorrectness) {
-        this.assertTabuHashCodeCorrectness = assertTabuHashCodeCorrectness;
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        assertTabuHashCodeCorrectness = environmentMode.isFullyAsserted();
     }
 
     // ************************************************************************
@@ -100,7 +102,7 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
             var oldTabuStepIndexInteger = tabuToStepIndexMap.get(oldTabu);
             if (oldTabuStepIndexInteger == null) {
                 // oldTabu not null here, as null is a valid key and therefore has a valid corresponding value.
-                throw createHashcodeStabilityViolationException(oldTabu);
+                throw createHashcodeStabilityViolationException(Objects.requireNonNull(oldTabu));
             }
             var oldTabuStepCount = tabuStepIndex - oldTabuStepIndexInteger; // at least 1
             if (oldTabuStepCount < totalTabuListSize) {

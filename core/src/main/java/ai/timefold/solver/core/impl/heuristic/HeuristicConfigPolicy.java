@@ -130,15 +130,15 @@ public class HeuristicConfigPolicy<Solution_> {
         return new Builder<Solution_>()
                 .withPreviewFeatureSet(previewFeatureSet)
                 .withEnvironmentMode(environmentMode)
+                .withLogIndentation(logIndentation)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(moveThreadBufferSize)
                 .withThreadFactoryClass(threadFactoryClass)
-                .withNearbyDistanceMeterClass(nearbyDistanceMeterClass)
-                .withRandom(random)
                 .withInitializingScoreTrend(initializingScoreTrend)
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(classInstanceCache)
-                .withLogIndentation(logIndentation);
+                .withNearbyDistanceMeterClass(nearbyDistanceMeterClass)
+                .withRandom(random);
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
@@ -150,7 +150,7 @@ public class HeuristicConfigPolicy<Solution_> {
                 .build();
     }
 
-    public HeuristicConfigPolicy<Solution_> createPhaseConfigPolicy() {
+    public HeuristicConfigPolicy<Solution_> copyPhaseConfigPolicy() {
         return cloneBuilder().build();
     }
 
@@ -160,7 +160,7 @@ public class HeuristicConfigPolicy<Solution_> {
                 .build();
     }
 
-    public HeuristicConfigPolicy<Solution_> createChildThreadConfigPolicy(ChildThreadType childThreadType) {
+    public HeuristicConfigPolicy<Solution_> copyChildThreadConfigPolicy() {
         return cloneBuilder()
                 .withLogIndentation(logIndentation + "        ")
                 .build();

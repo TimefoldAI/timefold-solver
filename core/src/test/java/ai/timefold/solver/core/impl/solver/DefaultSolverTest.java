@@ -68,6 +68,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
+import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
@@ -2352,6 +2353,48 @@ class DefaultSolverTest {
                 .hasMessageContaining("workingScore")
                 .hasMessageContaining("uncorruptedScore")
                 .hasMessageContaining("Score corruption analysis:");
+    }
+
+    @Test
+    void assertDefaultEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsOnly(EnvironmentMode.PHASE_ASSERT);
+    }
+
+    @Test
+    void assertUpdatedDefaultEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsOnly(EnvironmentMode.FULL_ASSERT);
+    }
+
+    @Test
+    void assertPhaseEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // LS with NO_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsExactly(EnvironmentMode.FULL_ASSERT, EnvironmentMode.TRACKED_FULL_ASSERT);
+    }
+
+    @Test
+    void assertDefaultPhaseEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS with FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsExactly(EnvironmentMode.PHASE_ASSERT, EnvironmentMode.FULL_ASSERT);
     }
 
     @NullMarked

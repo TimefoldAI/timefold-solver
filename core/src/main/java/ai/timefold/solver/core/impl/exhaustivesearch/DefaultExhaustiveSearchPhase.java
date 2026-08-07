@@ -101,11 +101,12 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
         logger.info("""
-                {}Exhaustive Search phase ({}) ended: time spent ({}), best score ({}),\
+                {}Exhaustive Search phase ({}) ended: time spent ({}), environment mode ({}), best score ({}),\
                 move evaluation speed ({}/sec), step total ({}).""",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                environmentMode.name(),
                 phaseScope.getBestScore().raw(),
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
@@ -141,17 +142,17 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         private boolean assertWorkingSolutionScoreFromScratch = false;
         private boolean assertExpectedWorkingSolutionScore = false;
 
-        public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
-                Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator,
+        public Builder(int phaseIndex, EnvironmentMode environmentMode, String logIndentation,
+                PhaseTermination<Solution_> phaseTermination, Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator,
                 AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider) {
-            super(phaseIndex, logIndentation, phaseTermination);
+            super(phaseIndex, environmentMode, logIndentation, phaseTermination);
             this.nodeComparator = nodeComparator;
             this.decider = decider;
         }
 
         @Override
-        public Builder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
-            super.enableAssertions(environmentMode);
+        public Builder<Solution_> enableAssertions() {
+            super.enableAssertions();
             assertWorkingSolutionScoreFromScratch = environmentMode.isFullyAsserted();
             assertExpectedWorkingSolutionScore = environmentMode.isIntrusivelyAsserted();
             return this;

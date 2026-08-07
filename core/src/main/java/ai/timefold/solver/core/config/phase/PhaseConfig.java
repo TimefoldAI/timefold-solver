@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConf
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
@@ -24,6 +25,7 @@ import org.jspecify.annotations.Nullable;
         PartitionedSearchPhaseConfig.class
 })
 @XmlType(propOrder = {
+        "environmentMode",
         "terminationConfig"
 })
 public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends AbstractConfig<Config_> {
@@ -31,12 +33,23 @@ public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends 
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
 
+    // Per phase environment
+    protected EnvironmentMode environmentMode = null;
+
     @XmlElement(name = "termination")
     protected TerminationConfig terminationConfig = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
+
+    public EnvironmentMode getEnvironmentMode() {
+        return environmentMode;
+    }
+
+    public void setEnvironmentMode(EnvironmentMode environmentMode) {
+        this.environmentMode = environmentMode;
+    }
 
     public @Nullable TerminationConfig getTerminationConfig() {
         return terminationConfig;
@@ -50,6 +63,11 @@ public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends 
     // With methods
     // ************************************************************************
 
+    public @NonNull Config_ withEnvironmentMode(@NonNull EnvironmentMode environmentMode) {
+        this.setEnvironmentMode(environmentMode);
+        return (Config_) this;
+    }
+
     public @NonNull Config_ withTerminationConfig(@NonNull TerminationConfig terminationConfig) {
         this.setTerminationConfig(terminationConfig);
         return (Config_) this;
@@ -57,6 +75,7 @@ public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends 
 
     @Override
     public @NonNull Config_ inherit(@NonNull Config_ inheritedConfig) {
+        environmentMode = ConfigUtils.inheritOverwritableProperty(environmentMode, inheritedConfig.getEnvironmentMode());
         terminationConfig = ConfigUtils.inheritConfig(terminationConfig, inheritedConfig.getTerminationConfig());
         return (Config_) this;
     }

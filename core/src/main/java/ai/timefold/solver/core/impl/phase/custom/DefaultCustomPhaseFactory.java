@@ -21,9 +21,10 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
     public CustomPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
-        var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
+        var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy();
         var customPhaseCommandClassList = phaseConfig.getCustomPhaseCommandClassList();
         var customPhaseCommandList = phaseConfig.getCustomPhaseCommandList();
+        var environmentMode = resolveEnvironmentMode(phaseConfigPolicy);
         if (ConfigUtils.isEmptyCollection(customPhaseCommandClassList)
                 && ConfigUtils.isEmptyCollection(customPhaseCommandList)) {
             throw new IllegalArgumentException(
@@ -45,10 +46,10 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         if (customPhaseCommandList != null) {
             customPhaseCommandList_.addAll((Collection) customPhaseCommandList);
         }
-        return new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase,
+        return new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase, environmentMode,
                 solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination),
                 customPhaseCommandList_)
-                .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
+                .enableAssertions()
                 .build();
     }
 

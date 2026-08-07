@@ -34,6 +34,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final int phaseIndex;
+    protected final EnvironmentMode environmentMode;
     protected final String logIndentation;
 
     // Called "phaseTermination" to clearly distinguish from "solverTermination" inside AbstractSolver.
@@ -49,6 +50,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     protected AbstractPhase(AbstractPhaseBuilder<Solution_> builder) {
         phaseIndex = builder.phaseIndex;
+        environmentMode = builder.environmentMode;
         logIndentation = builder.logIndentation;
         phaseTermination = builder.phaseTermination;
         assertPhaseScoreFromScratch = builder.assertPhaseScoreFromScratch;
@@ -82,6 +84,11 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
+
+    @Override
+    public EnvironmentMode getEnvironmentMode() {
+        return environmentMode;
+    }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
@@ -256,6 +263,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     public abstract static class AbstractPhaseBuilder<Solution_> {
 
         private final int phaseIndex;
+        protected final EnvironmentMode environmentMode;
         private final String logIndentation;
         private final PhaseTermination<Solution_> phaseTermination;
 
@@ -264,13 +272,15 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
 
-        protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination) {
+        protected AbstractPhaseBuilder(int phaseIndex, EnvironmentMode environmentMode, String logIndentation,
+                PhaseTermination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
+            this.environmentMode = environmentMode;
             this.logIndentation = logIndentation;
             this.phaseTermination = phaseTermination;
         }
 
-        public AbstractPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
+        public AbstractPhaseBuilder<Solution_> enableAssertions() {
             assertPhaseScoreFromScratch = environmentMode.isAsserted();
             assertStepScoreFromScratch = environmentMode.isFullyAsserted();
             assertExpectedStepScore = environmentMode.isIntrusivelyAsserted();

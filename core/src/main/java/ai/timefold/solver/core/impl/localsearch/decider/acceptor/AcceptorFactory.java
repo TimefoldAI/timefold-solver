@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge.GreatDelugeAcceptor;
@@ -39,13 +40,13 @@ public class AcceptorFactory<Solution_> {
         this.acceptorConfig = acceptorConfig;
     }
 
-    public Acceptor<Solution_> buildAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+    public Acceptor<Solution_> buildAcceptor(HeuristicConfigPolicy<Solution_> configPolicy, EnvironmentMode environmentMode) {
         List<Acceptor<Solution_>> acceptorList = Stream.of(
                 buildHillClimbingAcceptor(),
                 buildStepCountingHillClimbingAcceptor(),
-                buildEntityTabuAcceptor(configPolicy),
-                buildValueTabuAcceptor(configPolicy),
-                buildMoveTabuAcceptor(configPolicy),
+                buildEntityTabuAcceptor(environmentMode, configPolicy.getLogIndentation()),
+                buildValueTabuAcceptor(environmentMode, configPolicy.getLogIndentation()),
+                buildMoveTabuAcceptor(environmentMode, configPolicy.getLogIndentation()),
                 buildSimulatedAnnealingAcceptor(configPolicy),
                 buildLateAcceptanceAcceptor(),
                 buildDiversifiedLateAcceptanceAcceptor(configPolicy),
@@ -93,7 +94,8 @@ public class AcceptorFactory<Solution_> {
         return Optional.empty();
     }
 
-    private Optional<EntityTabuAcceptor<Solution_>> buildEntityTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+    private Optional<EntityTabuAcceptor<Solution_>> buildEntityTabuAcceptor(EnvironmentMode environmentMode,
+            String logIndentation) {
         var entityTabuSize = acceptorConfig.getEntityTabuSize();
         var entityTabuRatio = acceptorConfig.getEntityTabuRatio();
         var fadingEntityTabuSize = acceptorConfig.getFadingEntityTabuSize();
@@ -101,7 +103,7 @@ public class AcceptorFactory<Solution_> {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.ENTITY_TABU)
                 || entityTabuSize != null || entityTabuRatio != null
                 || fadingEntityTabuSize != null || fadingEntityTabuRatio != null) {
-            var acceptor = new EntityTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
+            var acceptor = new EntityTabuAcceptor<Solution_>(logIndentation);
             if (entityTabuSize != null) {
                 if (entityTabuRatio != null) {
                     throw new IllegalArgumentException(
@@ -124,15 +126,14 @@ public class AcceptorFactory<Solution_> {
             } else if (fadingEntityTabuRatio != null) {
                 acceptor.setFadingTabuSizeStrategy(new EntityRatioTabuSizeStrategy<>(fadingEntityTabuRatio));
             }
-            if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
-                acceptor.setAssertTabuHashCodeCorrectness(true);
-            }
+            acceptor.enableAssertions(environmentMode);
             return Optional.of(acceptor);
         }
         return Optional.empty();
     }
 
-    private Optional<ValueTabuAcceptor<Solution_>> buildValueTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+    private Optional<ValueTabuAcceptor<Solution_>> buildValueTabuAcceptor(EnvironmentMode environmentMode,
+            String logIndentation) {
         var valueTabuSize = acceptorConfig.getValueTabuSize();
         var fadingValueTabuSize = acceptorConfig.getFadingValueTabuSize();
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.VALUE_TABU)
@@ -142,27 +143,26 @@ public class AcceptorFactory<Solution_> {
                         "The acceptorType (%s) requires either valueTabuSize or fadingValueTabuSize to be configured."
                                 .formatted(AcceptorType.VALUE_TABU));
             }
-            var acceptor = new ValueTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
-            configureFixedSizeTabuAcceptor(acceptor, configPolicy, valueTabuSize, fadingValueTabuSize);
+            var acceptor = new ValueTabuAcceptor<Solution_>(logIndentation);
+            configureFixedSizeTabuAcceptor(acceptor, environmentMode, valueTabuSize, fadingValueTabuSize);
             return Optional.of(acceptor);
         }
         return Optional.empty();
     }
 
     private static <Solution_> void configureFixedSizeTabuAcceptor(AbstractTabuAcceptor<Solution_> acceptor,
-            HeuristicConfigPolicy<Solution_> configPolicy, Integer tabuSize, Integer fadingTabuSize) {
+            EnvironmentMode environmentMode, Integer tabuSize, Integer fadingTabuSize) {
         if (tabuSize != null) {
             acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(tabuSize));
         }
         if (fadingTabuSize != null) {
             acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(fadingTabuSize));
         }
-        if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
-            acceptor.setAssertTabuHashCodeCorrectness(true);
-        }
+        acceptor.enableAssertions(environmentMode);
     }
 
-    private Optional<MoveTabuAcceptor<Solution_>> buildMoveTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+    private Optional<MoveTabuAcceptor<Solution_>> buildMoveTabuAcceptor(EnvironmentMode environmentMode,
+            String logIndentation) {
         var moveTabuSize = acceptorConfig.getMoveTabuSize();
         var fadingMoveTabuSize = acceptorConfig.getFadingMoveTabuSize();
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.MOVE_TABU)
@@ -172,8 +172,8 @@ public class AcceptorFactory<Solution_> {
                         "The acceptorType (%s) requires either moveTabuSize or fadingMoveTabuSize to be configured."
                                 .formatted(AcceptorType.MOVE_TABU));
             }
-            var acceptor = new MoveTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
-            configureFixedSizeTabuAcceptor(acceptor, configPolicy, moveTabuSize, fadingMoveTabuSize);
+            var acceptor = new MoveTabuAcceptor<Solution_>(logIndentation);
+            configureFixedSizeTabuAcceptor(acceptor, environmentMode, moveTabuSize, fadingMoveTabuSize);
             return Optional.of(acceptor);
         }
         return Optional.empty();

@@ -4,6 +4,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -24,20 +25,14 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     protected SolverEventSupport<Solution_> solverEventSupport;
 
-    public void setAssertInitialScoreFromScratch(boolean assertInitialScoreFromScratch) {
-        this.assertInitialScoreFromScratch = assertInitialScoreFromScratch;
-    }
-
-    public void setAssertShadowVariablesAreNotStale(boolean assertShadowVariablesAreNotStale) {
-        this.assertShadowVariablesAreNotStale = assertShadowVariablesAreNotStale;
-    }
-
-    public void setAssertBestScoreIsUnmodified(boolean assertBestScoreIsUnmodified) {
-        this.assertBestScoreIsUnmodified = assertBestScoreIsUnmodified;
-    }
-
     public void setSolverEventSupport(SolverEventSupport<Solution_> solverEventSupport) {
         this.solverEventSupport = solverEventSupport;
+    }
+
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        assertInitialScoreFromScratch = environmentMode.isFullyAsserted();
+        assertShadowVariablesAreNotStale = environmentMode.isFullyAsserted();
+        assertBestScoreIsUnmodified = environmentMode.isFullyAsserted();
     }
 
     // ************************************************************************

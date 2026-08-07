@@ -21,6 +21,7 @@ import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
@@ -61,16 +62,17 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
-        var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
+        var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var decider = buildDecider(phaseConfigPolicy, phaseTermination);
-        return new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
-                decider).enableAssertions(phaseConfigPolicy.getEnvironmentMode()).build();
+        var environmentMode = resolveEnvironmentMode(phaseConfigPolicy);
+        var decider = buildDecider(phaseConfigPolicy, environmentMode, phaseTermination);
+        return new DefaultLocalSearchPhase.Builder<>(phaseIndex, environmentMode, solverConfigPolicy.getLogIndentation(),
+                phaseTermination, decider).enableAssertions().build();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
-            PhaseTermination<Solution_> phaseTermination) {
+            EnvironmentMode environmentMode, PhaseTermination<Solution_> phaseTermination) {
         var neighborhoodsEnabled = phaseConfigPolicy.isPreviewFeatureEnabled(PreviewFeature.NEIGHBORHOODS);
         var neighborhoodProviderClass = phaseConfig.<Solution_> getNeighborhoodProviderClass();
         if (neighborhoodsEnabled) {
@@ -96,33 +98,34 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
         if (moveSelectorConfig != null) {
             if (neighborhoodsEnabled) {
-                return buildMixedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass);
+                return buildMixedDecider(phaseConfigPolicy, environmentMode, phaseTermination, neighborhoodProviderClass);
             } else {
-                return buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
+                return buildMoveSelectorBasedDecider(phaseConfigPolicy, environmentMode, phaseTermination);
             }
         } else if (neighborhoodsEnabled) {
-            return buildNeighborhoodsBasedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass);
+            return buildNeighborhoodsBasedDecider(phaseConfigPolicy, environmentMode, phaseTermination,
+                    neighborhoodProviderClass);
         } else { // The default branch; for now, it is move selectors.
-            return buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
+            return buildMoveSelectorBasedDecider(phaseConfigPolicy, environmentMode, phaseTermination);
         }
     }
 
     private LocalSearchDecider<Solution_> buildMoveSelectorBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination) {
+            EnvironmentMode environmentMode, PhaseTermination<Solution_> termination) {
         var moveRepository = new MoveSelectorBasedMoveRepository<>(buildMoveSelector(configPolicy, false));
-        return buildDecider(moveRepository, configPolicy, termination);
+        return buildDecider(moveRepository, configPolicy, environmentMode, termination);
     }
 
     private LocalSearchDecider<Solution_> buildNeighborhoodsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination,
+            EnvironmentMode environmentMode, PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
-        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass), configPolicy,
-                termination);
+        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, environmentMode, neighborhoodProviderClass),
+                configPolicy, environmentMode, termination);
     }
 
     @SuppressWarnings("unchecked")
     private NeighborhoodsBasedMoveRepository<Solution_> buildNeighborhoodsBasedMoveRepository(
-            HeuristicConfigPolicy<Solution_> configPolicy,
+            HeuristicConfigPolicy<Solution_> configPolicy, EnvironmentMode environmentMode,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
         if (phaseConfig.getLocalSearchType() == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
             throw new IllegalArgumentException(
@@ -139,30 +142,33 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 "neighborhoodProviderClass", neighborhoodProviderClass);
         var solutionDescriptor = configPolicy.getSolutionDescriptor();
         var neighborhoodBuilder = new DefaultNeighborhoodBuilder<>(solutionDescriptor.getMetaModel());
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, environmentMode);
         return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
                 ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
                         .getMoveProviderList());
     }
 
     private LocalSearchDecider<Solution_> buildMixedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination,
+            EnvironmentMode environmentMode, PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
         var legacyMoveSelector = buildMoveSelector(configPolicy, neighborhoodProviderClass != null);
         if (legacyMoveSelector == null) { // There were no move selectors configured.
-            return buildNeighborhoodsBasedDecider(configPolicy, termination, neighborhoodProviderClass);
+            return buildNeighborhoodsBasedDecider(configPolicy, environmentMode, termination, neighborhoodProviderClass);
         }
         var neighborhoodsMoveSelector =
-                new NeighborhoodsMoveSelector<>(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
+                new NeighborhoodsMoveSelector<>(
+                        buildNeighborhoodsBasedMoveRepository(configPolicy, environmentMode, neighborhoodProviderClass));
         var moveSelector = new MixedMoveSelector<>(legacyMoveSelector, neighborhoodsMoveSelector);
         var moveRepository = new MoveSelectorBasedMoveRepository<>(moveSelector);
-        return buildDecider(moveRepository, configPolicy, termination);
+        return buildDecider(moveRepository, configPolicy, environmentMode, termination);
     }
 
     private LocalSearchDecider<Solution_> buildDecider(MoveRepository<Solution_> moveRepository,
-            HeuristicConfigPolicy<Solution_> configPolicy, PhaseTermination<Solution_> termination) {
-        var acceptor = buildAcceptor(configPolicy, moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_>);
-        var forager = buildForager(configPolicy);
+            HeuristicConfigPolicy<Solution_> configPolicy, EnvironmentMode environmentMode,
+            PhaseTermination<Solution_> termination) {
+        var acceptor = buildAcceptor(configPolicy, environmentMode,
+                moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_>);
+        var forager = buildForager();
         if (moveRepository.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("""
                     The move repository (%s) is neverEnding (%s), but the forager (%s) does not support it.
@@ -170,7 +176,6 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     moveRepository.isNeverEnding(), forager));
         }
         var moveThreadCount = configPolicy.getMoveThreadCount();
-        var environmentMode = configPolicy.getEnvironmentMode();
         var decider = moveThreadCount == null
                 ? new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveRepository, acceptor, forager)
                 : TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
@@ -180,7 +185,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         return decider;
     }
 
-    protected Acceptor<Solution_> buildAcceptor(HeuristicConfigPolicy<Solution_> configPolicy, boolean neighborhoodsEnabled) {
+    protected Acceptor<Solution_> buildAcceptor(HeuristicConfigPolicy<Solution_> configPolicy, EnvironmentMode environmentMode,
+            boolean neighborhoodsEnabled) {
         var acceptorConfig = phaseConfig.getAcceptorConfig();
         var localSearchType = phaseConfig.getLocalSearchType();
         if (acceptorConfig != null) {
@@ -189,7 +195,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                         "The localSearchType (%s) must not be configured if the acceptorConfig (%s) is explicitly configured."
                                 .formatted(localSearchType, acceptorConfig));
             }
-            return buildAcceptor(acceptorConfig, configPolicy);
+            return buildAcceptor(acceptorConfig, configPolicy, environmentMode);
         } else {
             var localSearchType_ = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
             var acceptorConfig_ = new LocalSearchAcceptorConfig();
@@ -220,11 +226,11 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     private Acceptor<Solution_> buildAcceptor(LocalSearchAcceptorConfig acceptorConfig,
-            HeuristicConfigPolicy<Solution_> configPolicy) {
-        return AcceptorFactory.<Solution_> create(acceptorConfig).buildAcceptor(configPolicy);
+            HeuristicConfigPolicy<Solution_> configPolicy, EnvironmentMode environmentMode) {
+        return AcceptorFactory.<Solution_> create(acceptorConfig).buildAcceptor(configPolicy, environmentMode);
     }
 
-    protected LocalSearchForager<Solution_> buildForager(HeuristicConfigPolicy<Solution_> configPolicy) {
+    protected LocalSearchForager<Solution_> buildForager() {
         LocalSearchForagerConfig foragerConfig_;
         if (phaseConfig.getForagerConfig() != null) {
             if (phaseConfig.getLocalSearchType() != null) {
@@ -245,10 +251,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     // Slow stepping algorithm
                     foragerConfig_.setAcceptedCountLimit(1000);
                     break;
-                case SIMULATED_ANNEALING:
-                case LATE_ACCEPTANCE:
-                case DIVERSIFIED_LATE_ACCEPTANCE:
-                case GREAT_DELUGE:
+                case SIMULATED_ANNEALING, LATE_ACCEPTANCE, DIVERSIFIED_LATE_ACCEPTANCE, GREAT_DELUGE:
                     // Fast stepping algorithm
                     foragerConfig_.setAcceptedCountLimit(1);
                     break;

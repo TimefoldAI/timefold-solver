@@ -196,8 +196,8 @@ public interface TimefoldSolverEnterpriseService {
             EnvironmentMode environmentMode, HeuristicConfigPolicy<Solution_> configPolicy);
 
     <Solution_> PartitionedSearchPhase<Solution_> buildPartitionedSearch(int phaseIndex,
-            PartitionedSearchPhaseConfig phaseConfig, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            SolverTermination<Solution_> solverTermination,
+            PartitionedSearchPhaseConfig phaseConfig, EnvironmentMode environmentMode,
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, SolverTermination<Solution_> solverTermination,
             BiFunction<HeuristicConfigPolicy<Solution_>, SolverTermination<Solution_>, PhaseTermination<Solution_>> phaseTerminationFunction);
 
     <Solution_> EntitySelector<Solution_> applyNearbySelection(EntitySelectorConfig entitySelectorConfig,
