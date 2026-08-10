@@ -10,37 +10,38 @@ import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 import ai.timefold.solver.core.impl.util.Triple;
 
+/**
+ * Each Group...Node with at least one collector have a constructor with the following signature:
+ * {@code
+ * Group...Node(<keyMappings>, IntSupplier storeIndexReserver, <collectors>,
+ * TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int outputStoreSize,
+ * Environment environmentMode)}
+ * <p>
+ * The Group...Nodes with no collectors have a constructor with the following signature:
+ * {@code Group...Node(<keyMappings>, IntSupplier storeIndexReserver, TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
+ * int outputStoreSize, Environment environmentMode)}
+ * <p>
+ * storeIndexReserver allows the node to reserve everything it needs itself,
+ * from a shared, order-independent, monotonic per-stream counter (see AbstractNodeBuildHelper#reserveTupleStoreIndex),
+ * the same way {@link AbstractJoinNode} reserves its own store indices from the tracker it receives.
+ * <p>
+ * The interfaces in this file correspond to each of the possible signatures of the Group...Node constructor.
+ * These interfaces are thus covariant with a particular GroupXMappingYCollector...Node signature,
+ * allowing a method reference to be used.
+ * To reduce the number of interfaces,
+ * we use Collector..._ and Key..._ generics
+ * instead of the classes UniConstraintCollector/Function, BiConstraintCollector/BiFunction, ....
+ *
+ * @param <Tuple_> Although unused here,
+ *        it is used in its two implementations:
+ *        {@link GroupNodeConstructorWithAccumulate} and {@link GroupNodeConstructorWithoutAccumulate}.
+ *        Serves here as a type hint for the compiler,
+ *        allowing it to correctly infer the types to use in the lambda
+ *        being passed to their constructors.
+ */
 public sealed interface GroupNodeConstructor<Tuple_ extends Tuple>
         permits AbstractGroupNodeConstructor {
-    // Although Tuple_ is unused in GroupNodeConstructor,
-    // it is used in its two implementations: GroupNodeConstructorWithAccumulate
-    // and GroupNodeConstructorWithoutAccumulate. The Tuple_ here serves as a type hint
-    // for the compiler, allowing it to correctly infer the types to use in the lambda
-    // being passed to GroupNodeConstructorWithAccumulate's and
-    // GroupNodeConstructorWithoutAccumulate's constructor.
 
-    // Each Group...Node with at least one collector have a constructor with the following signature:
-    // Group...Node(<keyMappings>, IntSupplier storeIndexReserver, <collectors>,
-    // TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int outputStoreSize,
-    // Environment environmentMode)
-    //
-    // The Group...Nodes with no collectors have a constructor with the following signature:
-    // Group...Node(<keyMappings>, IntSupplier storeIndexReserver, TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
-    // int outputStoreSize, Environment environmentMode)
-    //
-    // storeIndexReserver replaces what used to be pre-resolved groupStoreIndex/undoStoreIndex ints:
-    // the node reserves everything it needs itself, from a shared, order-independent, monotonic
-    // per-stream counter (see AbstractNodeBuildHelper#reserveTupleStoreIndex), the same way
-    // AbstractJoinNode reserves its own store indices from the tracker it receives.
-    //
-    // TupleLifecycle<Tuple_> in the constructor is the reason why having Tuple_ in the
-    // generic signature of this interface is useful.
-    //
-    // The interfaces in this file correspond to each of the possible signatures of the
-    // Group...Node constructor. These interfaces are thus covariant with a particular
-    // GroupXMappingYCollector...Node signature, allowing a method reference to be used.
-    // To reduce the number of interfaces, we use Collector..._ and Key..._ generics
-    // (instead of the classes UniConstraintCollector/Function, BiConstraintCollector/BiFunction, ...).
     static <CollectorA_, Tuple_ extends Tuple> GroupNodeConstructor<Tuple_>
             zeroKeysGroupBy(CollectorA_ collector, GroupBy0Mapping1CollectorNodeBuilder<CollectorA_, Tuple_> builder) {
         return new GroupNodeConstructorWithAccumulate<>(collector,

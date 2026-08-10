@@ -41,16 +41,17 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
         leftTupleList.add(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, leftOutTupleListBuilder.get());
         if (isFiltering) {
-            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of
-            // computing it now, at whatever layer the parent that produced leftTuple happens to be in.
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn
+            // instead of computing it now,
+            // at whatever layer the parent that produced leftTuple happens to be in.
             // See AbstractJoinNode's pendingLeft/pendingRight javadoc.
             enqueuePendingLeft(leftTuple);
             return;
         }
-        // Non-filtering: reads the opposite side eagerly, with no per-read staleness check needed (proven
-        // safe by dedicated regression tests -- see AbstractJoinNode's insertOutTupleIfActiveFiltered
-        // javadoc). A stale read merely produces a doomed out-tuple the true retraction cleans up later
-        // via its own out-tuple list.
+        // Non-filtering: reads the opposite side eagerly, with no per-read staleness check needed
+        // (proven safe by dedicated regression tests; see AbstractJoinNode's insertOutTupleIfActiveFiltered javadoc).
+        // A stale read merely produces a doomed out-tuple
+        // the true retraction cleans up later via its own out-tuple list.
         for (var rightTuple = rightTupleList.first(); rightTuple != null; rightTuple = rightTupleList.next(rightTuple)) {
             insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
         }

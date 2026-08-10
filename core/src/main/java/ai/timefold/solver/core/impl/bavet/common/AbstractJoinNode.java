@@ -39,25 +39,25 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     protected final Supplier<TupleList<OutTuple_>> rightOutTupleListBuilder;
 
     /**
-     * Filtering joins defer their cross-match computation (the opposite-side walk) from "whenever a
-     * parent propagates in" to this node's own layer turn (see {@link #prepareForSettle()}), closing
-     * the stale-activity race at its root instead of guarding against it per read. Non-filtering joins
-     * never dereference a fact through a user predicate, so a stale-but-"active" read can't corrupt
-     * anything there (confirmed by dedicated regression tests) — these fields stay {@code null}/{@code -1}
-     * and cost nothing for them.
+     * Filtering joins defer their cross-match computation (the opposite-side walk)
+     * from "whenever a parent propagates in" to this node's own layer turn (see {@link #prepareForSettle()}),
+     * closing the stale-activity race at its root instead of guarding against it per read.
+     * Non-filtering joins never dereference a fact through a user predicate,
+     * so a stale-but-"active" read can't corrupt anything there (confirmed by dedicated regression tests);
+     * these fields stay {@code null}/{@code -1} and cost nothing for them.
      * <p>
-     * {@code pendingLeft}/{@code pendingRight} hold tuples whose cross-match is due; the marker slots
-     * exist purely to make enqueueing idempotent (a tuple already awaiting its turn isn't re-added).
-     * Both lists are drained, left before right, in {@link #prepareForSettle()}, calling
-     * {@link #reconcilePendingLeft(Tuple)}/{@link #reconcilePendingRight(UniTuple)} — the exact same
-     * mark-then-walk-then-reconcile logic an eager filtering update already used
-     * ({@link #innerUpdateLeft}/{@link #innerUpdateRight}), just time-shifted. That logic already
-     * treats "no existing out-tuple for this pair" as "insert if the predicate passes", so it doubles
-     * as the insert path too: whichever side's tuple is reconciled *second* always sees the *first*
-     * side's just-created out-tuple (since {@link #insertOutTuple} links it into both sides' out-tuple
-     * lists immediately), and correctly treats it as an existing match instead of creating a duplicate.
-     * The two sides are therefore never both examined at once; consistently draining left before right
-     * merely fixes which side's view is "first" without affecting anything's correctness.
+     * {@code pendingLeft}/{@code pendingRight} hold tuples whose cross-match is due;
+     * the marker slots exist purely to make enqueueing idempotent (a tuple already awaiting its turn isn't re-added).
+     * Both lists are drained, left before right, in {@link #prepareForSettle()},
+     * calling {@link #reconcilePendingLeft(Tuple)}/{@link #reconcilePendingRight(UniTuple)}.
+     * That logic already treats "no existing out-tuple for this pair" as "insert if the predicate passes",
+     * so it doubles as the insert path too:
+     * whichever side's tuple is reconciled *second* always sees the *first* side's just-created out-tuple
+     * (since {@link #insertOutTuple} links it into both sides' out-tuple lists immediately),
+     * and correctly treats it as an existing match instead of creating a duplicate.
+     * The two sides are therefore never both examined at once;
+     * consistently draining left before right merely fixes
+     * which side's view is "first" without affecting anything's correctness.
      */
     private final int pendingLeftMarkerIndex;
     private final int pendingRightMarkerIndex;
@@ -100,8 +100,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     /**
-     * Enqueues {@code leftTuple} for cross-match reconciliation at this node's own layer turn, unless
-     * it is already awaiting one. Only called from filtering code paths.
+     * Enqueues {@code leftTuple} for cross-match reconciliation at this node's own layer turn,
+     * unless it is already awaiting one.
+     * Only called from filtering code paths.
      */
     protected final void enqueuePendingLeft(LeftTuple_ leftTuple) {
         if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
@@ -121,10 +122,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     /**
-     * Removes {@code leftTuple} from the pending queue, if it is on it: a tuple can be retracted in the
-     * same round it was enqueued, before its turn to reconcile ever comes. Must run before the tuple's
-     * own store entries (composite key, out-tuple list, ...) are cleared, since a still-pending entry
-     * left dangling would be read by {@link #prepareForSettle()} after those are gone.
+     * Removes {@code leftTuple} from the pending queue, if it is on it:
+     * a tuple can be retracted in the same round it was enqueued, before its turn to reconcile ever comes.
+     * Must run before the tuple's own store entries (composite key, out-tuple list, ...) are cleared,
+     * since a still-pending entry left dangling would be read by {@link #prepareForSettle()} after those are gone.
      */
     protected final void clearPendingLeft(LeftTuple_ leftTuple) {
         if (pendingLeft != null && leftTuple.getStore(pendingLeftMarkerIndex) != null) {
@@ -144,7 +145,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     @Override
-    public final boolean hasDeferredWork() {
+    public final boolean canDeferWork() {
         return isFiltering;
     }
 
@@ -164,13 +165,15 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     /**
-     * Re-runs this left tuple's cross-match against the current (now fully settled, for this round)
-     * opposite side, exactly as an eager filtering update already would have
-     * ({@link #innerUpdateLeft}) — reusing that method is what makes this correct for a tuple that was
-     * actually a fresh insert too: with no pre-existing out-tuples to mark, every match it finds is
-     * necessarily new, so {@code innerUpdateLeft}'s own "no existing out-tuple ⇒ insert" branch handles
-     * it. Implemented by each subclass because only it knows how to walk the opposite side (indexed:
-     * the shared index/bucket; unindexed: the plain tuple list).
+     * Re-runs this left tuple's cross-match against the current
+     * (now fully settled, for this round)
+     * opposite side, exactly as an eager filtering update already would have ({@link #innerUpdateLeft});
+     * reusing that method is what makes this correct for a tuple that was actually a fresh insert too:
+     * with no pre-existing out-tuples to mark, every match it finds is necessarily new,
+     * so {@code innerUpdateLeft}'s own "no existing out-tuple ⇒
+     * insert" branch handles it.
+     * Implemented by each subclass because only it knows how to walk the opposite side
+     * (indexed: the shared index/bucket; unindexed: the plain tuple list).
      */
     protected abstract void reconcilePendingLeft(LeftTuple_ leftTuple);
 
@@ -193,9 +196,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
 
     /**
-     * Only ever called from the non-filtering path (filtering joins enqueue and defer to
-     * {@link #reconcilePendingLeft}/{@link #reconcilePendingRight} instead), where
-     * {@code testFiltering(...)} is never even consulted -- see {@link #testFiltering}'s callers.
+     * Only ever called from the non-filtering path
+     * (filtering joins enqueue and defer to {@link #reconcilePendingLeft}/{@link #reconcilePendingRight} instead),
+     * where {@code testFiltering(...)} is never even consulted;
+     * see {@link #testFiltering}'s callers.
      */
     protected final void insertOutTupleIfActiveFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         if (!isFiltering || testFiltering(leftTuple, rightTuple)) {
@@ -223,8 +227,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
-            // This only ever runs from reconcilePendingLeft, at this node's own layer turn, after every
-            // ancestor on both sides has completed its retract/update/insert turn for this round --
+            // This only ever runs from reconcilePendingLeft, at this node's own layer turn,
+            // after every ancestor on both sides has completed its retract/update/insert turn for this round;
             // leftTuple can no longer be stale here, so no per-read staleness check is needed.
             // Every out-tuple's partner is guaranteed to be swept below,
             // because retracts and key-moves unlink out-tuples synchronously;
@@ -255,8 +259,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        // This only ever runs from reconcilePendingLeft, at this node's own layer turn, after every
-        // ancestor on both sides has completed its retract/update/insert turn for this round --
+        // This only ever runs from reconcilePendingLeft, at this node's own layer turn,
+        // after every ancestor on both sides has completed its retract/update/insert turn for this round;
         // rightTuple can no longer be stale here, so no per-read staleness check is needed.
         TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
@@ -325,8 +329,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        // This only ever runs from reconcilePendingRight, at this node's own layer turn, after every
-        // ancestor on both sides has completed its retract/update/insert turn for this round --
+        // This only ever runs from reconcilePendingRight, at this node's own layer turn,
+        // after every ancestor on both sides has completed its retract/update/insert turn for this round;
         // leftTuple can no longer be stale here, so no per-read staleness check is needed.
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         processOutTupleUpdateRight(leftTuple, rightTuple, outTupleListLeft.getMark(version));

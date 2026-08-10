@@ -48,8 +48,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             counter.countRight = rightTupleList.size();
             initCounterLeft(counter);
         } else {
-            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of
-            // computing it now, at whatever layer the parent that produced leftTuple happens to be in.
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
+            // at whatever layer the parent that produced leftTuple happens to be in.
             // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             enqueuePendingLeft(leftTuple);
         }
@@ -69,8 +69,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         if (!isFiltering) {
             updateUnchangedCounterLeft(counter);
         } else {
-            // Eager own-side cleanup, then defer the re-walk of the opposite side. See
-            // AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // Eager own-side cleanup, then defer the re-walk of the opposite side.
+            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             clearLeftTrackerList(leftTuple);
             counter.countRight = 0;
             enqueuePendingLeft(leftTuple);
@@ -103,8 +103,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         if (!isFiltering) {
             counterList.forEach(this::incrementCounterRight);
         } else {
-            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of
-            // computing it now, at whatever layer the parent that produced rightTuple happens to be in.
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
+            // at whatever layer the parent that produced rightTuple happens to be in.
             // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             enqueuePendingRight(rightTuple);
         }
@@ -119,8 +119,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             return;
         }
         if (isFiltering) {
-            // Eager own-side cleanup, then defer the re-walk of the opposite side. See
-            // AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // Eager own-side cleanup, then defer the re-walk of the opposite side.
+            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             clearRightTrackerList(rightTuple);
             enqueuePendingRight(rightTuple);
         }

@@ -51,16 +51,19 @@ public abstract class AbstractBavetNodeNetwork {
      */
     private Propagator @Nullable [][] layeredActivePropagators;
     /**
-     * Aligned 1:1 with {@link #layeredActivePropagators} (same layer indices): for each layer, the
-     * subset of its active nodes that implement {@link DeferredSettleAware} and currently have deferred
-     * work to do ({@link DeferredSettleAware#hasDeferredWork()}) -- i.e. filtering join and
-     * ifExists/ifNotExists nodes. Usually small or empty -- non-filtering two-input nodes never enqueue
-     * anything and are excluded here at build time -- so the common case pays nothing beyond an
-     * empty-array iteration in {@link #settleLayer}.
+     * Aligned 1:1 with {@link #layeredActivePropagators} (same layer indices):
+     * for each layer, the subset of its active nodes that implement {@link DeferredSettleAware}
+     * and currently have deferred work to do ({@link DeferredSettleAware#canDeferWork()});
+     * i.e. filtering join and ifExists/ifNotExists nodes.
+     * Usually small or empty
+     * (non-filtering two-input nodes never enqueue anything and are excluded here at build time)
+     * so the common case pays nothing beyond an empty-array iteration in {@link #settleLayer}.
      */
     private DeferredSettleAware @Nullable [][] layeredActiveDeferredNodes;
     /**
-     * For testing only: the set of nodes that remained active after {@link #settle()}; null before settle.
+     * For testing only:
+     * the set of nodes that remained active after {@link #settle()};
+     * null before settle.
      */
     private @Nullable Set<AbstractNode> activeNodeSet;
 
@@ -96,6 +99,10 @@ public abstract class AbstractBavetNodeNetwork {
                 .filter(node -> !isActivationCheckComplete() || activeNodeSet.contains(node));
     }
 
+    public boolean isActivationCheckComplete() {
+        return layeredActivePropagators != null;
+    }
+
     public void settle() {
         if (layeredActivePropagators == null) {
             // Remove inactive nodes and settle the layers in one go.
@@ -126,23 +133,34 @@ public abstract class AbstractBavetNodeNetwork {
             layeredActiveDeferredNodes = Arrays.stream(layeredActiveNodes)
                     .map(layer -> Arrays.stream(layer)
                             .filter(s -> s instanceof DeferredSettleAware deferredSettleAware
-                                    && deferredSettleAware.hasDeferredWork())
+                                    && deferredSettleAware.canDeferWork())
                             .map(DeferredSettleAware.class::cast)
                             .toArray(DeferredSettleAware[]::new))
                     .toArray(DeferredSettleAware[][]::new);
-            for (var i = 0; i < layeredActivePropagators.length; i++) {
-                settleLayer(layeredActiveDeferredNodes[i], layeredActivePropagators[i]);
-            }
-            return;
         }
-        // Simplified loop when the layers were already trimmed.
         for (var i = 0; i < layeredActivePropagators.length; i++) {
-            settleLayer(layeredActiveDeferredNodes[i], layeredActivePropagators[i]);
+            settleLayer(i);
         }
     }
 
-    public boolean isActivationCheckComplete() {
-        return layeredActivePropagators != null;
+    private void settleLayer(int layerId) {
+        for (var node : layeredActiveDeferredNodes[layerId]) {
+            node.prepareForSettle();
+        }
+        var nodesInLayer = layeredActivePropagators[layerId];
+        if (nodesInLayer.length == 1) { // Avoid iteration.
+            nodesInLayer[0].propagateEverything();
+        } else {
+            for (var node : nodesInLayer) {
+                node.propagateRetracts();
+            }
+            for (var node : nodesInLayer) {
+                node.propagateUpdates();
+            }
+            for (var node : nodesInLayer) {
+                node.propagateInserts();
+            }
+        }
     }
 
     Set<AbstractNode> getActiveNodes() {
@@ -157,26 +175,6 @@ public abstract class AbstractBavetNodeNetwork {
      */
     List<AbstractNode> getNodes() {
         return Arrays.stream(layeredNodes).flatMap(Arrays::stream).toList();
-    }
-
-    private static void settleLayer(DeferredSettleAware[] deferredNodesInLayer, Propagator[] nodesInLayer) {
-        // Usually small or empty; see the field javadoc on layeredActiveDeferredNodes.
-        for (var node : deferredNodesInLayer) {
-            node.prepareForSettle();
-        }
-        if (nodesInLayer.length == 1) { // Avoid iteration.
-            nodesInLayer[0].propagateEverything();
-        } else {
-            for (var node : nodesInLayer) {
-                node.propagateRetracts();
-            }
-            for (var node : nodesInLayer) {
-                node.propagateUpdates();
-            }
-            for (var node : nodesInLayer) {
-                node.propagateInserts();
-            }
-        }
     }
 
     @Override

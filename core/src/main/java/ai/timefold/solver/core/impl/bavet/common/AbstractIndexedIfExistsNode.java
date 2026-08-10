@@ -19,14 +19,16 @@ import ai.timefold.solver.core.impl.util.ListEntry;
 import org.jspecify.annotations.Nullable;
 
 /**
- * There is a strong likelihood that any change to this class, which is not related to indexing,
+ * There is a strong likelihood that any change to this class,
+ * which is not related to indexing,
  * should also be made to {@link AbstractUnindexedIfExistsNode}.
  * <p>
  * Indexing takes one of two forms, chosen once at construction (see {@link IndexerFactory#isFusedEqualIndexEligible()}).
- * The non-unified path keeps two parallel {@link Indexer}s; the unified path (equal-bearing) keeps one
- * {@link FusedEqualIndex} whose buckets co-locate the left counters and the right tuples sharing an equal key, with the
- * resolved bucket cached on the tuple so same-key updates and retracts need no lookup. The counter / filtering-tracker
- * logic in {@link AbstractIfExistsNode} is identical for both.
+ * The non-unified path keeps two parallel {@link Indexer}s;
+ * the unified path (equal-bearing) keeps one {@link FusedEqualIndex}
+ * whose buckets co-locate the left counters and the right tuples sharing an equal key,
+ * with the resolved bucket cached on the tuple so same-key updates and retracts need no lookup.
+ * The counter / filtering-tracker logic in {@link AbstractIfExistsNode} is identical for both.
  *
  * @param <LeftTuple_>
  * @param <Right_>
@@ -96,8 +98,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             counter.countRight = rightSize(leftTuple, compositeKey);
             initCounterLeft(counter);
         } else {
-            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of
-            // computing it now, at whatever layer the parent that produced leftTuple happens to be in.
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
+            // at whatever layer the parent that produced leftTuple happens to be in.
             // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             enqueuePendingLeft(leftTuple);
         }
@@ -130,9 +132,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             if (!isFiltering) {
                 updateUnchangedCounterLeft(counter);
             } else {
-                // Eager own-side cleanup (reads only pairs already tracked, so it's eager-safe), then
-                // defer the re-walk of the opposite side to this node's own layer turn. See
-                // AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+                // Eager own-side cleanup (reads only pairs already tracked, so it's eager-safe),
+                // then defer the re-walk of the opposite side to this node's own layer turn.
+                // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
                 clearLeftTrackerList(leftTuple);
                 counter.countRight = 0;
                 enqueuePendingLeft(leftTuple);
@@ -207,8 +209,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         if (!isFiltering) {
             forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRight);
         } else {
-            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of
-            // computing it now, at whatever layer the parent that produced rightTuple happens to be in.
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
+            // at whatever layer the parent that produced rightTuple happens to be in.
             // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
             enqueuePendingRight(rightTuple);
         }
@@ -226,8 +228,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
             if (isFiltering) {
-                // Eager own-side cleanup, then defer the re-walk of the opposite side. See
-                // AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+                // Eager own-side cleanup, then defer the re-walk of the opposite side.
+                // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
                 clearRightTrackerList(rightTuple);
                 enqueuePendingRight(rightTuple);
             }
@@ -289,8 +291,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
     private ListEntry<ExistsCounter<LeftTuple_>> putLeftCounter(LeftTuple_ leftTuple, Object compositeKey,
             ExistsCounter<LeftTuple_> counter, boolean reuseCachedBucket) {
         if (useFusedEqualIndex) {
-            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
-            // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
+            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct;
+            // no top-level lookup and no re-cache;
+            // otherwise resolve the bucket (the single top-level lookup) and cache it.
             Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket;
             if (reuseCachedBucket) {
                 bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
@@ -310,8 +313,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
     private ListEntry<UniTuple<Right_>> putRightTuple(UniTuple<Right_> rightTuple, Object compositeKey,
             boolean reuseCachedBucket) {
         if (useFusedEqualIndex) {
-            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
-            // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
+            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct;
+            // no top-level lookup and no re-cache;
+            // otherwise resolve the bucket (the single top-level lookup) and cache it.
             Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket;
             if (reuseCachedBucket) {
                 bucket = rightTuple.getStore(inputStoreIndexRightBucket);
@@ -325,7 +329,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
     }
 
-    /** Iterates the right tuples matching a left counter's composite key (its cached bucket, or {@code indexerRight}). */
+    /**
+     * Iterates the right tuples matching a left counter's composite key (its cached bucket, or {@code indexerRight}).
+     */
     private void forEachRightFromLeft(LeftTuple_ leftTuple, Object compositeKey, Consumer<UniTuple<Right_>> consumer) {
         if (useFusedEqualIndex) {
             Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
@@ -335,7 +341,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
     }
 
-    /** Iterates the left counters matching a right tuple's composite key (its cached bucket, or {@code indexerLeft}). */
+    /**
+     * Iterates the left counters matching a right tuple's composite key (its cached bucket, or {@code indexerLeft}).
+     */
     private void forEachLeftCounter(UniTuple<Right_> rightTuple, Object compositeKey,
             Consumer<ExistsCounter<LeftTuple_>> consumer) {
         if (useFusedEqualIndex) {
@@ -348,7 +356,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
 
     @Override
     protected void reconcilePendingLeft(LeftTuple_ leftTuple) {
-        Object compositeKey = leftTuple.getStore(inputStoreIndexLefCompositeKey);
+        var compositeKey = leftTuple.getStore(inputStoreIndexLefCompositeKey);
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         var counter = counterEntry.element();
         clearLeftTrackerList(leftTuple);
@@ -359,7 +367,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
 
     @Override
     protected void reconcilePendingRight(UniTuple<Right_> rightTuple) {
-        Object compositeKey = rightTuple.getStore(inputStoreIndexRightCompositeKey);
+        var compositeKey = rightTuple.getStore(inputStoreIndexRightCompositeKey);
         clearRightTrackerList(rightTuple);
         forEachLeftCounter(rightTuple, compositeKey, counter -> updateCounterRight(counter, rightTuple));
     }
