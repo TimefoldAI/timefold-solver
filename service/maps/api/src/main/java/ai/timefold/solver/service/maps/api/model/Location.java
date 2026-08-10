@@ -53,10 +53,7 @@ public class Location {
     private ToIntFunction<OffsetDateTime> timeframeIndexResolver;
 
     // Non-default transport types only. The default mode ({@link TransportType#CAR}) continues to use the scalar/
-    // timeframe fields above so its lookups keep the IndexableDistanceMatrix index-cache fast path; additional modes
-    // are looked up through each matrix's own index map (same path the per-timeframe matrices already use).
-    // The timeframeIndexResolver above is shared across modes: traffic bucketing depends on the departure time, not
-    // on the routing profile.
+    // timeframe fields above so its lookups keep the IndexableDistanceMatrix index-cache fast path.
     @JsonIgnore
     private Map<TransportType, DistanceMatrix> travelTimeMatrixByMode;
 
