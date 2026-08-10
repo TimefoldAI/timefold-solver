@@ -21,7 +21,8 @@ import org.jspecify.annotations.Nullable;
  * However, only the origin node of a tuple (the node where the tuple is the out tuple) may modify it.
  */
 @NullMarked
-public sealed interface Tuple permits BiTuple, QuadTuple, TriTuple, UniTuple {
+public sealed interface Tuple
+        permits BiTuple, QuadTuple, TriTuple, UniTuple {
 
     TupleState getState();
 
