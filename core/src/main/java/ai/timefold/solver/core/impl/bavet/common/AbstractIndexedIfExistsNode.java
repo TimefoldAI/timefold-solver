@@ -98,6 +98,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         if (!isFiltering) {
             counter.countRight = rightSize(leftTuple, compositeKey);
             initCounterLeft(counter);
+            if (leftTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+                forEachRightFromLeft(leftTuple, compositeKey, rightTuple -> {
+                    IndictmentSource.addSupport(getId(), leftTuple, rightTuple);
+                });
+            }
         } else {
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced leftTuple happens to be in.
@@ -144,6 +149,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
                 clearLeftTrackerList(leftTuple);
                 counter.countRight = 0;
+                IndictmentSource.clearSupport(getId(), leftTuple);
                 enqueuePendingLeft(leftTuple);
             }
         } else {
@@ -151,6 +157,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             var sameBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
             updateIndexerLeft(oldCompositeKey, counterEntry, leftTuple, sameBucket); // Also clears the tracker list.
             counter.countRight = 0;
+            IndictmentSource.clearSupport(getId(), leftTuple);
             leftTuple.setStore(inputStoreIndexLefCompositeKey, newCompositeKey);
             leftTuple.setStore(inputStoreIndexLeftCounterEntry,
                     putLeftCounter(leftTuple, newCompositeKey, counter, sameBucket));
@@ -159,6 +166,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             } else {
                 counter.countRight = rightSize(leftTuple, newCompositeKey);
                 updateCounterLeft(counter);
+                if (leftTuple.getIndictmentSource() != IndictmentSource.DISABLED) {
+                    forEachRightFromLeft(leftTuple, newCompositeKey, rightTuple -> {
+                        IndictmentSource.addSupport(getId(), leftTuple, rightTuple);
+                    });
+                }
             }
         }
     }
@@ -302,7 +314,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 // To prevent creating a dynamic lambda on the hot path,
                 // only call the 2-args version when indictments are enabled
                 if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
-                    indexerLeft.forEach(compositeKey, this::decrementCounterRightWithoutIndictment);
+                    indexerLeft.forEach(compositeKey, this::decrementCounterRight);
                 } else {
                     indexerLeft.forEach(compositeKey, counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
                 }
@@ -387,6 +399,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         var counter = counterEntry.element();
         clearLeftTrackerList(leftTuple);
+        IndictmentSource.clearSupport(getId(), leftTuple);
         counter.countRight = 0;
         forEachRightFromLeft(leftTuple, compositeKey, rightTuple -> updateCounterLeft(counter, rightTuple));
         updateCounterLeft(counter);
