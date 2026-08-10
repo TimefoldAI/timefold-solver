@@ -13,6 +13,7 @@ import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
+import ai.timefold.solver.service.maps.api.model.TransportType;
 import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
@@ -55,19 +56,30 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     })
     @Override
     public LocationsAwareSolverModel<?> enrich(LocationsAwareSolverModel<?> solverModel) {
-        if (useTraffic) {
-            return enrichAllTimeframes(solverModel);
+        // One map-service round-trip per transport type; each mode resolves to its own OSRM instance. The first
+        // mode is treated as primary and is the one whose map metadata (locations-not-in-map, resolved location) is
+        // propagated to the solver model.
+        List<TransportType> transportTypes = optionsSupplier.getTransportTypes();
+        for (int i = 0; i < transportTypes.size(); i++) {
+            TransportType transportType = transportTypes.get(i);
+            boolean primary = i == 0;
+            if (useTraffic) {
+                enrichAllTimeframes(solverModel, transportType, primary);
+            } else {
+                enrichSingleMatrix(solverModel, transportType, primary);
+            }
         }
-        return enrichSingleMatrix(solverModel);
+        return solverModel;
     }
 
-    private LocationsAwareSolverModel<?> enrichSingleMatrix(LocationsAwareSolverModel<?> solverModel) {
+    private void enrichSingleMatrix(LocationsAwareSolverModel<?> solverModel, TransportType transportType,
+            boolean primary) {
         List<Location> locations = solverModel.getLocations(); // Get all the locations from the model only once.
         TravelTimeAndDistanceWithMetadata travelTimeAndDistance;
         try {
             travelTimeAndDistance =
                     mapService.getTravelTimeAndDistance(locations,
-                            optionsSupplier.getOptions(solverModel.getLocationSetName()));
+                            optionsSupplier.getOptions(solverModel.getLocationSetName(), transportType));
         } catch (TimefoldRuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -76,19 +88,22 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
                     "Error getting travel time and distances from map service", e, false);
         }
         locations.forEach(location -> {
-            location.setTravelTimeMatrix(travelTimeAndDistance.travelTimeAndDistance().travelTime());
-            location.setDistanceMatrix(travelTimeAndDistance.travelTimeAndDistance().distance());
+            location.setTravelTimeMatrix(transportType, travelTimeAndDistance.travelTimeAndDistance().travelTime());
+            location.setDistanceMatrix(transportType, travelTimeAndDistance.travelTimeAndDistance().distance());
         });
-        solverModel.setLocationsNotInMap(convertIdxToLocations(travelTimeAndDistance.locationsNotInMapIdx(), locations));
-        mapEnrichmentContext.setResolvedMapLocation(travelTimeAndDistance.resolvedMapLocation());
-        return solverModel;
+        if (primary) {
+            solverModel
+                    .setLocationsNotInMap(convertIdxToLocations(travelTimeAndDistance.locationsNotInMapIdx(), locations));
+            mapEnrichmentContext.setResolvedMapLocation(travelTimeAndDistance.resolvedMapLocation());
+        }
     }
 
-    private LocationsAwareSolverModel<?> enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel) {
+    private void enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel, TransportType transportType,
+            boolean primary) {
         List<Location> locations = solverModel.getLocations();
         TravelTimesByTimeframeWithMetadata result;
         try {
-            result = mapService.getTravelTimeAndDistanceByTimeframe(locations, optionsSupplier.getOptions());
+            result = mapService.getTravelTimeAndDistanceByTimeframe(locations, optionsSupplier.getOptions(transportType));
         } catch (TimefoldRuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -103,17 +118,18 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
             // IndexableDistanceMatrix index-cache fast path. The time-aware overloads keep working because Location
             // falls back to the single matrix when no per-timeframe matrices are set.
             for (Location location : locations) {
-                location.setTravelTimeMatrix(travelTimes[0]);
-                location.setDistanceMatrix(distances[0]);
+                location.setTravelTimeMatrix(transportType, travelTimes[0]);
+                location.setDistanceMatrix(transportType, distances[0]);
             }
         } else {
             for (Location location : locations) {
-                location.setTravelTimeMatrices(travelTimes, result.timeframeIndexResolver());
-                location.setDistanceMatrices(distances, result.timeframeIndexResolver());
+                location.setTravelTimeMatrices(transportType, travelTimes, result.timeframeIndexResolver());
+                location.setDistanceMatrices(transportType, distances, result.timeframeIndexResolver());
             }
         }
-        solverModel.setLocationsNotInMap(result.locationsNotInMap());
-        return solverModel;
+        if (primary) {
+            solverModel.setLocationsNotInMap(result.locationsNotInMap());
+        }
     }
 
     @Override
