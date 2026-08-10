@@ -152,7 +152,6 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
 
     protected void decrementCounterRight(ExistsCounter<LeftTuple_> counter) {
         counter.countRight--;
-        IndictmentSource.removeSupport(getId(), counter.leftTuple, rightTuple);
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doRetractCounter(counter);
@@ -233,14 +232,14 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             while (tracker != null) {
                 var next = tracker.rightNext;
                 decrementCounterRight(tracker.counter);
-                removeFromLeft(tracker);
+                removeLeft(tracker);
                 tracker = next;
             }
         } else {
             while (tracker != null) {
                 var next = tracker.rightNext;
                 decrementCounterRightUpdatingIndictment(tracker.counter, rightTuple);
-                removeFromLeft(tracker);
+                removeLeft(tracker);
                 tracker = next;
             }
         }
@@ -349,6 +348,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             var tracker = new FilteringTracker<>(counter, rightTuple);
             linkLeft(tracker);
             linkRight(tracker);
+        } else {
+            IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
         }
     }
 
