@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 @NullMarked
 public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
-    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
+    protected final transient Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final SolverEventSupport<Solution_> solverEventSupport = new SolverEventSupport<>(this);
     private final PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
@@ -79,7 +79,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
     protected void runPhases(SolverScope<Solution_> solverScope) {
         if (!solverScope.getSolutionDescriptor().hasMovableEntities(solverScope.getScoreDirector())) {
-            logger.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
+            LOGGER.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
                     phaseList.size(), solverScope.getWorkingEntityCount());
             return;
         }

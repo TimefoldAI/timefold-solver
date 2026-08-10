@@ -113,9 +113,8 @@ final class ValueRangeStatistics<Solution_> {
         solutionDescriptor.visitAllEntities(solution, entity -> {
             var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
+                // This count include immovable entities; problem scale ignores immovable entities
                 genuineEntityCount.increment();
-                // Should we include immovable entities for the count?
-                // Problem scale ignores them.
                 cachedEntityCountByEntityOrdinal[entityDescriptor.getOrdinal()]++;
                 var uninitializedVariableCountForEntity = entityDescriptor.countUninitializedVariables(entity);
                 if (uninitializedVariableCountForEntity > 0) {

@@ -14,6 +14,7 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
@@ -111,7 +112,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     public boolean terminateEarly() {
         var terminationEarlySuccessful = basicPlumbingTermination.terminateEarly();
         if (terminationEarlySuccessful) {
-            logger.info("Terminating solver early.");
+            LOGGER.info("Terminating solver early.");
         }
         return terminationEarlySuccessful;
     }
@@ -205,7 +206,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
                 EventProducerId.solvingStarted());
 
-        logger.info("Solving {}: time spent ({}), best score ({}), "
+        LOGGER.info("Solving {}: time spent ({}), best score ({}), "
                 + "environment mode ({}), move thread count ({}), random ({}).",
                 (startingSolverCount == 1 ? "started" : "restarted"),
                 solverScope.calculateTimeMillisSpentUpToNow(),
@@ -213,26 +214,34 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 environmentMode.name(),
                 moveThreadCountDescription,
                 randomFactory);
-        if (logger.isInfoEnabled()) { // Formatting is expensive here.
+        if (LOGGER.isInfoEnabled()) { // Formatting is expensive here.
             var problemSizeStatistics = solverScope.getProblemSizeStatistics();
-            logger.info(
-                    "Problem scale: entity count ({}), variable count ({}), approximate value count ({}), approximate problem scale ({}).",
+            LOGGER.info(
+                    "Problem scale: genuine entity count ({}), genuine variable count ({}), approximate value count ({}), approximate problem scale ({}).",
                     problemSizeStatistics.entityCount(), problemSizeStatistics.variableCount(),
                     problemSizeStatistics.approximateValueCount(),
                     problemSizeStatistics.approximateProblemScaleAsFormattedString());
-            if (logger.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 var genuineEntityClassCountEntries = problemSizeStatistics.genuineEntityClassToEntityCount().entrySet();
+                var solutionDescriptor = solverScope.getSolutionDescriptor();
                 for (var genuineEntityCountEntry : genuineEntityClassCountEntries) {
                     var geninueEntityClass = genuineEntityCountEntry.getKey();
-                    logger.debug("    Entity ({}) count: {}",
+                    var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(geninueEntityClass);
+                    LOGGER.debug("    Entity ({}) count: {}",
                             geninueEntityClass.getCanonicalName(),
                             genuineEntityCountEntry.getValue());
                     for (var geninueVariableEntry : problemSizeStatistics
                             .genuineEntityClassToVariableToValueCount()
                             .get(geninueEntityClass).entrySet()) {
                         var genuineVariable = geninueVariableEntry.getKey();
-                        logger.debug("        Variable ({}) estimated value count: {}",
-                                genuineVariable, geninueVariableEntry.getValue());
+                        var variableDescriptor = entityDescriptor.getGenuineVariableDescriptor(genuineVariable);
+                        LOGGER.debug("        {} ({}) estimated value ({}) count: {}",
+                                (variableDescriptor instanceof ListVariableDescriptor) ? "List variable" : "Variable",
+                                genuineVariable,
+                                (variableDescriptor instanceof ListVariableDescriptor<?> listVariableDescriptor)
+                                        ? listVariableDescriptor.getElementType().getCanonicalName()
+                                        : variableDescriptor.getVariablePropertyType().getCanonicalName(),
+                                geninueVariableEntry.getValue());
                     }
                 }
             }
@@ -304,7 +313,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
-        logger.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
+        LOGGER.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
                 solverScope.getBestScore().raw(),
@@ -331,7 +340,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             while (problemChange != null) {
                 problemChange.doChange(solverScope.getWorkingSolution(), solverScope.getProblemChangeDirector());
                 solverScope.getScoreDirector().updateShadowVariables();
-                logger.debug("    Real-time problem change applied; step index ({}).", stepIndex);
+                LOGGER.debug("    Real-time problem change applied; step index ({}).", stepIndex);
                 stepIndex++;
                 problemChange = problemChangeQueue.poll();
             }
@@ -343,7 +352,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             basicPlumbingTermination.endProblemChangesProcessing();
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
                     EventProducerId.problemChange());
-            logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
+            LOGGER.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);
             return true;
         }
