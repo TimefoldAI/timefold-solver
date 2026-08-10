@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,8 +18,10 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -40,40 +43,44 @@ import io.micrometer.core.instrument.Tags;
 @NullMarked
 public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
-    protected final EnvironmentMode environmentMode;
-    protected final Supplier<RandomSource> randomFactory;
-    protected final BasicPlumbingTermination<Solution_> basicPlumbingTermination;
-    protected final AtomicBoolean solving = new AtomicBoolean(false);
-    protected final SolverScope<Solution_> solverScope;
+    private final DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory;
+    private final Supplier<RandomSource> randomFactory;
+    private final BasicPlumbingTermination<Solution_> basicPlumbingTermination;
+    private final AtomicBoolean solving = new AtomicBoolean(false);
+    private final SolverScope<Solution_> solverScope;
     private final String moveThreadCountDescription;
+    private final SolverContext<Solution_, ?> defaultSolverContext;
+    private SolverContext<Solution_, ?> currentContext;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public DefaultSolver(EnvironmentMode environmentMode, Supplier<RandomSource> randomFactory,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, BasicPlumbingTermination<Solution_> basicPlumbingTermination,
-            UniversalTermination<Solution_> termination, List<Phase<Solution_>> phaseList,
-            SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
+    public DefaultSolver(EnvironmentMode environmentMode,
+            DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory,
+            Supplier<RandomSource> randomFactory, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            BasicPlumbingTermination<Solution_> basicPlumbingTermination, UniversalTermination<Solution_> termination,
+            List<Phase<Solution_>> phaseList, SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
         super(bestSolutionRecaller, termination, phaseList);
-        this.environmentMode = environmentMode;
+        this.delegateScoreDirectorFactory = delegateScoreDirectorFactory;
         this.randomFactory = randomFactory;
         this.basicPlumbingTermination = basicPlumbingTermination;
         this.solverScope = solverScope;
         solverScope.setSolver(this);
         this.moveThreadCountDescription = moveThreadCountDescription;
-    }
-
-    public EnvironmentMode getEnvironmentMode() {
-        return environmentMode;
+        this.defaultSolverContext = SolverContext.of(environmentMode, solverScope);
+        this.currentContext = defaultSolverContext;
     }
 
     public RandomSource getRandomSource() {
         return randomFactory.get();
     }
 
+    @SuppressWarnings({ "unchecked", "resource" })
     public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
-        return solverScope.<Score_> getScoreDirector().getScoreDirectorFactory();
+        InnerScoreDirector<Solution_, Score_> scoreDirector =
+                (InnerScoreDirector<Solution_, Score_>) defaultSolverContext.scoreDirector();
+        return scoreDirector.getScoreDirectorFactory();
     }
 
     public SolverScope<Solution_> getSolverScope() {
@@ -186,6 +193,57 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return solverScope.getBestSolution();
     }
 
+    protected void runPhases(SolverScope<Solution_> solverScope) {
+        if (!solverScope.getSolutionDescriptor().hasMovableEntities(solverScope.getScoreDirector())) {
+            logger.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
+                    phaseList.size(), solverScope.getWorkingEntityCount());
+            return;
+        }
+        Iterator<Phase<Solution_>> it = phaseList.iterator();
+        while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
+            Phase<Solution_> phase = it.next();
+            preparePhase(phase);
+            phase.solve(solverScope);
+            // If there is a next phase, it starts from the best solution, which might differ from the working solution.
+            // If there isn't, no need to planning clone the best solution to the working solution.
+            if (it.hasNext()) {
+                solverScope.setWorkingSolutionFromBestSolution();
+            }
+        }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void preparePhase(Phase<Solution_> phase) {
+        // The environment modes match, and there is no need for any changes.
+        if (phase.getEnvironmentMode() == currentContext.environmentMode()) {
+            return;
+        }
+        // The phase environment mode matches default, so we will restore it.
+        if (phase.getEnvironmentMode() == defaultSolverContext.environmentMode()) {
+            // Release the current context
+            currentContext.release();
+            // Update and load the default context
+            currentContext = defaultSolverContext;
+            currentContext.load(solverScope);
+            return;
+        }
+        // Since the current logic does not cache any solver context other than the default,
+        // we need to create a new solver context
+        // because the required environment mode differs from both the current and the default modes.
+        ScoreDirectorFactory newScoreDirectorFactory = delegateScoreDirectorFactory
+                .buildScoreDirectorFactory(phase.getEnvironmentMode(), solverScope.getSolutionDescriptor());
+        var newScoreDirector = delegateScoreDirectorFactory.createScoreDirector(newScoreDirectorFactory);
+        var newSolverContext = new SolverContext<>(phase.getEnvironmentMode(), newScoreDirector,
+                new DefaultProblemChangeDirector<>(newScoreDirector), currentContext.bestSolutionRecaller);
+        // Release the current context
+        if (currentContext != defaultSolverContext) {
+            currentContext.release();
+        }
+        // Update and load the new context
+        currentContext = newSolverContext;
+        currentContext.load(solverScope);
+    }
+
     public void outerSolvingStarted(SolverScope<Solution_> solverScope) {
         solving.set(true);
         basicPlumbingTermination.resetTerminateEarly();
@@ -212,7 +270,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 (startingSolverCount == 1 ? "started" : "restarted"),
                 solverScope.calculateTimeMillisSpentUpToNow(),
                 solverScope.getBestScore().raw(),
-                environmentMode.name(),
+                defaultSolverContext.environmentMode().name(),
                 moveThreadCountDescription,
                 randomFactory);
         if (LOGGER.isInfoEnabled()) { // Formatting is expensive here.
@@ -320,7 +378,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 solverScope.getBestScore().raw(),
                 solverScope.getMoveEvaluationSpeed(),
                 phaseList.size(),
-                environmentMode.name(),
+                defaultSolverContext.environmentMode().name(),
                 moveThreadCountDescription);
         // Must be kept open for doProblemFactChange
         solverScope.getScoreDirector().close();
@@ -356,6 +414,28 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);
             return true;
+        }
+    }
+
+    private record SolverContext<Solution_, Score_ extends Score<Score_>>(EnvironmentMode environmentMode,
+            InnerScoreDirector<Solution_, Score_> scoreDirector, DefaultProblemChangeDirector<Solution_> problemChangeDirector,
+            BestSolutionRecaller<Solution_> bestSolutionRecaller) {
+
+        static <Solution_, Score_ extends Score<Score_>> SolverContext<Solution_, Score_>
+                of(EnvironmentMode environmentMode, SolverScope<Solution_> solverScope) {
+            return new SolverContext<>(environmentMode, solverScope.<Score_> getScoreDirector(),
+                    solverScope.getProblemChangeDirector(), solverScope.getSolver().getBestSolutionRecaller());
+        }
+
+        void load(SolverScope<Solution_> solverScope) {
+            solverScope.setScoreDirector(scoreDirector);
+            solverScope.setProblemChangeDirector(problemChangeDirector);
+            solverScope.setWorkingSolutionFromBestSolution();
+            bestSolutionRecaller.enableAssertions(environmentMode);
+        }
+
+        void release() {
+            scoreDirector.close();
         }
     }
 }

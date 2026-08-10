@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.score.calculator.ConstraintMatchRegistry;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
@@ -61,6 +62,7 @@ class IncrementalScoreDirectorTest {
         when(factory.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         SolutionDescriptor<Object> solutionDescriptor = mock(SolutionDescriptor.class);
         when(factory.getSolutionDescriptor()).thenReturn(solutionDescriptor);
+        when(factory.getEnvironmentMode()).thenReturn(EnvironmentMode.PHASE_ASSERT);
         return factory;
     }
 
@@ -124,10 +126,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -168,10 +172,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -213,10 +219,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -264,10 +272,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -311,10 +321,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -358,10 +370,12 @@ class IncrementalScoreDirectorTest {
 
             @Override
             public void beforeVariableChanged(Object entity, String variableName) {
+                // No action needed
             }
 
             @Override
             public void afterVariableChanged(Object entity, String variableName) {
+                // No action needed
             }
 
             @Override

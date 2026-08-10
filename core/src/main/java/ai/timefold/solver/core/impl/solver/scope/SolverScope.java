@@ -193,7 +193,7 @@ public class SolverScope<Solution_> {
     }
 
     public void assertScoreFromScratch(Solution_ solution) {
-        scoreDirector.getScoreDirectorFactory().assertScoreFromScratch(solution);
+        scoreDirector.assertScoreFromScratch(solution);
     }
 
     @SuppressWarnings("unchecked")

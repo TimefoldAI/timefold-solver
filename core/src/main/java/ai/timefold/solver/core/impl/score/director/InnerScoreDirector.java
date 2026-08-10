@@ -226,6 +226,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
 
     /**
+     * Asserts that if the {@link Score} is calculated for the parameter solution,
+     * it would be equal to the score of that parameter.
+     *
+     * @param solution never null
+     * @see InnerScoreDirector#assertWorkingScoreFromScratch(InnerScore, Object)
+     */
+    void assertScoreFromScratch(Solution_ solution);
+
+    /**
      * Do not waste performance by propagating changes to step (or higher) mechanisms.
      *
      * @param allChangesWillBeUndoneBeforeStepEnds true if all changes will be undone;

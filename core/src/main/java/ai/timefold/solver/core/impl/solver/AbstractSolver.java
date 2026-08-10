@@ -77,24 +77,6 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         }
     }
 
-    protected void runPhases(SolverScope<Solution_> solverScope) {
-        if (!solverScope.getSolutionDescriptor().hasMovableEntities(solverScope.getScoreDirector())) {
-            LOGGER.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
-                    phaseList.size(), solverScope.getWorkingEntityCount());
-            return;
-        }
-        Iterator<Phase<Solution_>> it = phaseList.iterator();
-        while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
-            Phase<Solution_> phase = it.next();
-            phase.solve(solverScope);
-            // If there is a next phase, it starts from the best solution, which might differ from the working solution.
-            // If there isn't, no need to planning clone the best solution to the working solution.
-            if (it.hasNext()) {
-                solverScope.setWorkingSolutionFromBestSolution();
-            }
-        }
-    }
-
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         for (Phase<Solution_> phase : phaseList) {
             phase.solvingEnded(solverScope);

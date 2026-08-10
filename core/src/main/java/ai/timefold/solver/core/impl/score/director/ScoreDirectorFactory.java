@@ -2,8 +2,10 @@ package ai.timefold.solver.core.impl.score.director;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector.AbstractScoreDirectorBuilder;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
 /**
@@ -22,24 +24,24 @@ public interface ScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
      */
     ScoreDefinition<Score_> getScoreDefinition();
 
-    AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder();
+    <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
+            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
+            createScoreDirectorBuilder();
 
-    default AbstractScoreDirector<Solution_, Score_, ?> buildScoreDirector() {
-        return createScoreDirectorBuilder().build();
+    default <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
+            AbstractScoreDirector<Solution_, Score_, Factory_> buildScoreDirector() {
+        AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder = createScoreDirectorBuilder();
+        return builder.build();
     }
 
     /**
      * @return never null
      */
-    InitializingScoreTrend getInitializingScoreTrend();
+    EnvironmentMode getEnvironmentMode();
 
     /**
-     * Asserts that if the {@link Score} is calculated for the parameter solution,
-     * it would be equal to the score of that parameter.
-     *
-     * @param solution never null
-     * @see InnerScoreDirector#assertWorkingScoreFromScratch(InnerScore, Object)
+     * @return never null
      */
-    void assertScoreFromScratch(Solution_ solution);
+    InitializingScoreTrend getInitializingScoreTrend();
 
 }

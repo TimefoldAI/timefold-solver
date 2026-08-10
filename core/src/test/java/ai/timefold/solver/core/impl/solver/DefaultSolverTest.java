@@ -2397,6 +2397,16 @@ class DefaultSolverTest {
                 .containsExactly(EnvironmentMode.PHASE_ASSERT, EnvironmentMode.FULL_ASSERT);
     }
 
+    @Test
+    void solveWithPhaseEnvironmentModeOverride() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS phase overridden to FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var problem = TestdataSolution.generateSolution(2, 2);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(bestSolution).isNotNull();
+    }
+
     @NullMarked
     public static class CorruptedIncrementalScoreCalculator
             implements AnalyzableIncrementalScoreCalculator<TestdataSolution, SimpleScore> {

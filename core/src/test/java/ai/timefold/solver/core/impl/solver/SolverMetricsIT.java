@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.solver;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +55,6 @@ import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -136,12 +135,7 @@ class SolverMetricsIT extends AbstractMeterTest {
             latch.countDown();
         });
         solver.solve(solution);
-
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
+        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
@@ -231,11 +225,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solver.solve(solution);
 
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
+        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
@@ -298,11 +288,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solution = solver.solve(solution);
 
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
+        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
@@ -451,11 +437,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solution = solver.solve(solution);
 
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            fail("Failed waiting for the event to happen.", e);
-        }
+        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
         assertThat(step.get()).isEqualTo(2);
         meterRegistry.publish();
         assertThat(solution).isNotNull();

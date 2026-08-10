@@ -18,6 +18,7 @@ import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.invalid.noentity.TestdataNoEntitySolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -163,6 +164,58 @@ class DefaultSolverFactoryTest {
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
                 .hasMessageContainingAll("Constraint profiling",
                         "remove constraintStreamProfilingEnabled from the solver configuration");
+    }
+
+    @Test
+    void assertEnvironmentModeWithoutPhases() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void assertEnvironmentModeWithValidPhases() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // The default environment mode must be used by at least one phase,
+        // and every phase must be at least as strict as the default.
+        solverConfig.getPhaseConfigList().getFirst().setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void assertEnvironmentWithNonReproducibleAndMismatchingPhase() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NO_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
+                .hasMessageContaining("must also be non-reproducible");
+    }
+
+    @Test
+    void assertEnvironmentModeWithDefaultNotUsedByAnyPhase() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
+                .hasMessageContaining("is not used in any of the defined phases environment modes");
+    }
+
+    @Test
+    void assertEnvironmentModeWithPhaseLessStrictThanDefault() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NO_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
+                .hasMessageContaining(
+                        "must have an assertion level higher than or equal to the default environment level");
     }
 
 }

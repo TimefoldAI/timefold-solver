@@ -13,15 +13,17 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.testconstraint.DummyConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
-class ScoreDirectorFactoryFactoryTest {
+class DelegateScoreDirectorFactoryTest {
 
     @Test
     void multipleScoreCalculations_throwsException() {
@@ -35,13 +37,24 @@ class ScoreDirectorFactoryFactoryTest {
 
     private ScoreDirectorFactory<TestdataSolution, SimpleScore>
             buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config, EnvironmentMode environmentMode) {
-        return new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(config)
+        return new DelegateScoreDirectorFactory<TestdataSolution, SimpleScore>(config)
                 .buildScoreDirectorFactory(environmentMode, TestdataSolution.buildSolutionDescriptor());
     }
 
     private ScoreDirectorFactory<TestdataSolution, SimpleScore>
             buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config) {
         return buildTestdataScoreDirectoryFactory(config, EnvironmentMode.PHASE_ASSERT);
+    }
+
+    @Test
+    void constraintMatchEnabledPerPhaseEnvironmentMode() {
+        var config = new ScoreDirectorFactoryConfig().withConstraintProviderClass(DummyConstraintProvider.class);
+        var delegateScoreDirectorFactory = new DelegateScoreDirectorFactory<TestdataSolution, SimpleScore>(config, false);
+        var phaseScoreDirectorFactory = delegateScoreDirectorFactory.buildScoreDirectorFactory(EnvironmentMode.FULL_ASSERT,
+                TestdataSolution.buildSolutionDescriptor());
+        try (var scoreDirector = delegateScoreDirectorFactory.createScoreDirector(phaseScoreDirectorFactory)) {
+            assertThat(scoreDirector.getConstraintMatchPolicy()).isEqualTo(ConstraintMatchPolicy.ENABLED);
+        }
     }
 
     @Test
@@ -167,15 +180,17 @@ class ScoreDirectorFactoryFactoryTest {
 
         @Override
         public void resetWorkingSolution(TestdataSolution workingSolution) {
-
+            // No actions
         }
 
         @Override
         public void beforeVariableChanged(Object entity, String variableName) {
+            // No actions
         }
 
         @Override
         public void afterVariableChanged(Object entity, String variableName) {
+            // No actions
         }
 
         @Override
