@@ -53,7 +53,7 @@ public abstract class AbstractBavetNodeNetwork {
     /**
      * Aligned 1:1 with {@link #layeredActivePropagators} (same layer indices):
      * for each layer, the subset of its active nodes that implement {@link DeferredSettleAware}
-     * and currently have deferred work to do ({@link DeferredSettleAware#canDeferWork()});
+     * and {@link DeferredSettleAware#canDeferWork()} returns {@code true};
      * i.e. filtering join and ifExists/ifNotExists nodes.
      * Usually small or empty
      * (non-filtering two-input nodes never enqueue anything and are excluded here at build time)

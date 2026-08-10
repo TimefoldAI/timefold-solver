@@ -1697,10 +1697,11 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     /**
-     * Like {@link #filteringJoinNullConflictThroughGroupByUnassignOne()}, but with many contributors
-     * mapped into a single group instead of one. Confirms {@code Group}'s {@code TupleList}-backed
-     * contributor tracking correctly identifies that the group survives when only one of many
-     * contributors dies, with the dying contributor's value excluded downstream.
+     * Like {@link #filteringJoinNullConflictThroughGroupByUnassignOne()},
+     * but with many contributors mapped into a single group instead of one.
+     * Confirms {@code Group}'s contributor tracking correctly identifies that the group survives
+     * when only one of many contributors dies,
+     * with the dying contributor's value excluded downstream.
      */
     @TestTemplate
     public void filteringJoinNullConflictThroughLargeGroupUnassignOne() {

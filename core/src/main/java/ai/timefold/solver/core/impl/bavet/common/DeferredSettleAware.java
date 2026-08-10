@@ -38,13 +38,10 @@ public interface DeferredSettleAware {
     void prepareForSettle();
 
     /**
-     * Whether this instance can ever have pending work for {@link #prepareForSettle()} to drain;
+     * Whether the node can ever have pending work for {@link #prepareForSettle()} to drain;
      * {@code true} for a filtering node, {@code false} for a non-filtering one,
      * which never enqueues anything and would otherwise pay a wasted virtual call every layer,
      * every settle round.
-     * {@link AbstractBavetNodeNetwork} uses this to keep non-filtering instances
-     * out of the deferred array entirely, at build time,
-     * so the cost of checking is paid once rather than every round.
      */
     boolean canDeferWork();
 
