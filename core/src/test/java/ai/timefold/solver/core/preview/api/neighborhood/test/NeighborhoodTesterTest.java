@@ -1,14 +1,13 @@
 package ai.timefold.solver.core.preview.api.neighborhood.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import ai.timefold.solver.core.preview.api.move.builtin.ChangeMove;
 import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
-import ai.timefold.solver.core.testdomain.TestdataValue;
 
-import org.assertj.core.error.AssertionErrorCreator;
 import org.junit.jupiter.api.Test;
 
 // Much of the test coverage for NeighborhoodTester is in tests for the specific MoveProviders.
@@ -29,49 +28,26 @@ class NeighborhoodTesterTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var evaluatedNeighborhood = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution);
-        var moveList = evaluatedNeighborhood
-                .getMovesAsList(move -> (ChangeMove<TestdataSolution, TestdataEntity, TestdataValue>) move);
+        var firstMove = Moves.change(variableMetaModel, firstEntity, firstValue);
+        context.producesAllOf(
+                firstMove,
+                Moves.change(variableMetaModel, firstEntity, secondValue),
+                Moves.change(variableMetaModel, secondEntity, firstValue),
+                Moves.change(variableMetaModel, secondEntity, secondValue));
 
-        assertThat(moveList).hasSize(4);
-
-        // Look for the move in the list, instead of expecting them at any particular position.
-        var firstMove = moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(firstEntity)
-                        && move.getPlanningValues().contains(firstValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
-        evaluatedNeighborhood.getMoveTestContext()
+        context.getMoveTestContext()
                 .executeTemporarily(firstMove, solutionView -> assertThat(firstEntity.getValue())
                         .isEqualTo(firstValue));
         assertThat(firstEntity.getValue()).isNull();
 
-        // There should be 3 more moves in the iterator, each different from the first.
-        // - Set the firstEntity value to secondValue,
-        // - set the secondEntity value to firstValue,
-        // - set the secondEntity value to secondValue.
-        moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(firstEntity)
-                        && move.getPlanningValues().contains(secondValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
-
-        moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(secondEntity)
-                        && move.getPlanningValues().contains(firstValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
-
-        moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(secondEntity)
-                        && move.getPlanningValues().contains(secondValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
+        // After a temporary execution and its automatic revert, the same 4 moves are still producible.
+        context.producesAllOf(
+                firstMove,
+                Moves.change(variableMetaModel, firstEntity, secondValue),
+                Moves.change(variableMetaModel, secondEntity, firstValue),
+                Moves.change(variableMetaModel, secondEntity, secondValue));
     }
 
     @Test
@@ -88,49 +64,78 @@ class NeighborhoodTesterTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var evaluatedNeighborhood = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution);
-        var moveList =
-                evaluatedNeighborhood
-                        .getMovesAsList(move -> (ChangeMove<TestdataSolution, TestdataEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(4);
+        var firstMove = Moves.change(variableMetaModel, firstEntity, firstValue);
+        context.producesAllOf(
+                firstMove,
+                Moves.change(variableMetaModel, firstEntity, secondValue),
+                Moves.change(variableMetaModel, secondEntity, firstValue),
+                Moves.change(variableMetaModel, secondEntity, secondValue));
 
-        // Look for the move in the list, instead of expecting them at any particular position.
-        var firstMove = moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(firstEntity)
-                        && move.getPlanningValues().contains(firstValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
-        evaluatedNeighborhood.getMoveTestContext()
-                .execute(firstMove);
+        context.getMoveTestContext().execute(firstMove);
         assertThat(firstEntity.getValue()).isEqualTo(firstValue);
 
-        // New move list, now that the move has been executed, changing firstEntity's value to firstValue.
-        // There should be 3 more moves in the iterator, each different from the first.
-        // - Set the firstEntity value to secondValue,
-        // - set the secondEntity value to firstValue,
-        // - set the secondEntity value to secondValue.
-        moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(firstEntity)
-                        && move.getPlanningValues().contains(secondValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
+        // New moves, now that firstEntity has been permanently changed to firstValue.
+        context.producesAllOf(
+                Moves.change(variableMetaModel, firstEntity, secondValue),
+                Moves.change(variableMetaModel, secondEntity, firstValue),
+                Moves.change(variableMetaModel, secondEntity, secondValue));
+        context.producesNoneOf(firstMove); // No-op: firstEntity is already firstValue.
+    }
 
-        moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(secondEntity)
-                        && move.getPlanningValues().contains(firstValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
+    @Test
+    void withinOverridesTheIterationLimitWithoutMutatingTheOriginalContext() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable();
 
-        moveList.stream()
-                .filter(move -> move.getPlanningEntities().contains(secondEntity)
-                        && move.getPlanningValues().contains(secondValue))
-                .findFirst()
-                .orElseThrow(() -> new AssertionErrorCreator()
-                        .assertionError("Move not found in move list."));
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var firstEntity = solution.getEntityList().getFirst();
+        firstEntity.setValue(null);
+        var firstValue = solution.getValueList().getFirst();
+
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        var narrowedContext = context.within(5);
+        narrowedContext.producesAllOf(Moves.change(variableMetaModel, firstEntity, firstValue));
+        // The original context is unaffected and still uses its own (larger) default limit.
+        context.producesAllOf(Moves.change(variableMetaModel, firstEntity, firstValue));
+    }
+
+    @Test
+    void producesAllOfFailsWhenTheMoveIsNeverProduced() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable();
+
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var firstEntity = solution.getEntityList().getFirst();
+        var currentValue = firstEntity.getValue();
+
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        // Changing an entity to its own current value is a no-op; ChangeMoveProvider never produces it.
+        assertThatThrownBy(() -> context.within(50)
+                .producesAllOf(Moves.change(variableMetaModel, firstEntity, currentValue)))
+                .isInstanceOf(AssertionError.class);
+    }
+
+    @Test
+    void producesNoneOfFailsWhenTheMoveIsProduced() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable();
+
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var firstEntity = solution.getEntityList().getFirst();
+        firstEntity.setValue(null);
+        var firstValue = solution.getValueList().getFirst();
+
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        assertThatThrownBy(() -> context.producesNoneOf(Moves.change(variableMetaModel, firstEntity, firstValue)))
+                .isInstanceOf(AssertionError.class);
     }
 
 }

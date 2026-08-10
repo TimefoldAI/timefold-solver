@@ -16,16 +16,9 @@ import org.jspecify.annotations.NullMarked;
  * and provides {@link Move} iterators based on that dataset.
  * The iterators provide {@link Move moves} constructed by a {@link UniMoveConstructor move constructor},
  * which accepts instances of type A.
- *
  * <p>
- * There are two types of iterators:
- *
- * <ul>
- * <li>{@link UniOriginalMoveIterator Original order iterators},
- * which iterate through all instances of A in the original order.</li>
- * <li>{@link UniRandomMoveIterator Random order iterators},
- * which pick A randomly.</li>
- * </ul>
+ * Moves are produced by a {@link UniRandomMoveIterator}, which picks A randomly.
+ * Move order is never part of the API's contract.
  *
  * @param <Solution_>
  * @param <A>
@@ -55,11 +48,6 @@ public final class UniMoveStream<Solution_, A> implements InnerMoveStream<Soluti
 
         private UniMoveIterable(UniMoveStreamContext<Solution_, A> context) {
             this.context = Objects.requireNonNull(context);
-        }
-
-        @Override
-        public Iterator<Move<Solution_>> iterator() {
-            return new UniOriginalMoveIterator<>(context);
         }
 
         @Override

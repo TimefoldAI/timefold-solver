@@ -24,23 +24,21 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
 
     private final DefaultMoveStreamFactory<Solution_> moveStreamFactory;
     private final List<InnerMoveStream<Solution_>> moveStreamList;
-    private final boolean random;
 
     private @Nullable DefaultNeighborhoodSession<Solution_> neighborhoodSession;
     private @Nullable List<MoveIterable<Solution_>> moveIterableList;
     private @Nullable RandomGenerator workingRandom;
 
     public NeighborhoodsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            List<MoveProvider<Solution_>> neighborhood, boolean random) {
+            List<MoveProvider<Solution_>> neighborhood) {
         this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
         this.moveStreamList = Objects.requireNonNull(neighborhood).stream()
                 .map(d -> (InnerMoveStream<Solution_>) d.build(moveStreamFactory)).toList();
-        this.random = random;
     }
 
     @Override
     public boolean isNeverEnding() {
-        return random;
+        return true;
     }
 
     @Override
@@ -102,11 +100,11 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        if (random) {
-            return new RandomOrderNeighborhoodIterator<>(moveIterableList, Objects.requireNonNull(workingRandom));
-        } else {
-            return new OriginalOrderNeighborhoodIterator<>(moveIterableList);
-        }
+        return iterator(Objects.requireNonNull(workingRandom));
+    }
+
+    public Iterator<Move<Solution_>> iterator(RandomGenerator random) {
+        return new RandomOrderNeighborhoodIterator<>(Objects.requireNonNull(moveIterableList), random);
     }
 
 }

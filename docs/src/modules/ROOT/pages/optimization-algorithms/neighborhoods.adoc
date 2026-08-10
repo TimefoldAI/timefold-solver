@@ -628,6 +628,70 @@ see the <<neighborhoodsMove,section on moves>> for more details.
 However, we expect that most move providers will eventually be able to use built-in moves,
 which will be expanded over time to cover more use cases.
 
+[#neighborhoodsIteratorBased]
+=== Building moves from a custom iterator
+
+Some neighborhoods need combining logic that isn't a join at all -
+picking a single best match by a custom scoring rule, windowed/greedy pairing,
+or combining three or more datasets by hand.
+For those cases, `MoveStreamFactory` offers a parallel, lower-level API:
+register datasets into opaque handles, then supply your own `Iterator<Move>` that combines them however you need.
+
+[source,java,options="nowrap"]
+----
+public class BestShiftMoveProvider implements MoveProvider<Roster> {
+
+    private final PlanningVariableMetaModel<Roster, Shift, Employee> variableMetaModel;
+
+    @Override
+    public MoveStream<Roster> build(MoveStreamFactory<Roster> factory) {
+        var employees = factory.register(factory.forEach(Employee.class, false));
+        var shifts = factory.register(factory.forEach(Shift.class, false));
+
+        return factory.buildMoveStream((session, random) -> {
+            var employeeInstance = session.getInstance(employees);
+            var shiftInstance = session.getInstance(shifts);
+            var solutionView = session.getSolutionView();
+            return new Iterator<Move<Roster>>() {
+                private final Iterator<Employee> employeeIterator = employeeInstance.randomIterator(random);
+
+                @Override
+                public boolean hasNext() {
+                    return employeeIterator.hasNext();
+                }
+
+                @Override
+                public Move<Roster> next() {
+                    var employee = employeeIterator.next();
+                    var bestShift = pickBestShift(employee, shiftInstance, solutionView); // Your own logic.
+                    return Moves.change(variableMetaModel, bestShift, employee);
+                }
+            };
+        });
+    }
+
+}
+----
+
+`factory.register(...)` turns a `UniEnumeratingStream` or `BiEnumeratingStream` into a `UniDataset`/`BiDataset` handle,
+mirroring `pick()` but without committing to the declarative approach.
+Call `UniDataset#join(...)` to correlate two registered datasets using the same joiners as `pick()`;
+unlike a joined dataset created via `pick()`, this join is not materialized upfront -
+it is computed just in time, inside the resulting `BiDataset`.
+
+Inside `buildMoveStream(...)`, the `MoveIteratorSession` resolves each dataset handle
+to a `UniDatasetInstance` or `BiDatasetInstance`,
+which exposes `size()`, `iterator()` and `randomIterator(RandomGenerator)` -
+the same random-walk-without-replacement sampling used throughout Move Streams.
+A `BiDatasetInstance` additionally exposes the same three operations keyed by a left-side value,
+for datasets produced by a join.
+
+IMPORTANT: The order in which the iterator yields moves is never part of the API's contract,
+and you must never rely on it;
+the solver will not make any effort towards keeping the iteration order stable.
+This is why `MoveIteratorProvider` only ever produces a single, random-order iterator -
+there is no original/deterministic-order variant.
+
 [#neighborhoodsMoveStreamsTesting]
 === Testing move generation with `NeighborhoodTester`
 
@@ -652,12 +716,8 @@ The `NeighborhoodTester` API follows a fluent builder pattern:
 var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
 var evaluator = NeighborhoodTester.build(new SwapMoveProvider(), solutionMetaModel);
 var context = evaluator.using(solution);
-var moves = context.getMovesAsList(); // These are all moves the provider can generate for the given solution.
-
-var move1 = moves.get(0);
-assertThat(move1.getPlanningEntities())
-    .containsExactly(...); // Assertions from a test framework of choice.
-...
+context.producesAllOf(Moves.swap(entityMetaModel, lessonA, lessonB)); // Assert a specific move exists.
+context.producesNoneOf(Moves.swap(entityMetaModel, lessonA, lessonA)); // Assert a move never exists.
 ----
 
 The API requires:
@@ -667,17 +727,25 @@ The API requires:
 3. **Entity classes**: One or more classes annotated with `@PlanningEntity`
 4. **Solution instance**: The working solution to execute the move on
 
-The API returns all moves that the move provider can generate for the given solution,
-allowing you to write assertions to verify that the generated moves are correct.
+Because the order in which a move provider generates moves is never part of the Move Streams contract,
+`NeighborhoodTester` never exposes an exact move sequence to assert against.
+Instead, `producesAllOf(Move...)` and `producesNoneOf(Move...)` repeatedly draw moves
+(up to an iteration limit) and compare them to the given moves via `equals()`:
+`producesAllOf` fails if the limit is reached before all given moves were seen;
+`producesNoneOf` fails as soon as any given move is seen.
+A custom `Move` implementation used with these assertions must implement `equals()`/`hashCode()`.
 
-The moves are retrieved in the order in which they are generated.
-The exact ordering is unspecified, but it is deterministic
-and consistent across multiple invocations with the same input.
+Use `.within(iterationLimit)` to override the default iteration limit for a single assertion;
+it returns a new, independently configured context and never mutates the one it was called on:
 
-If you expect your move provider to generate a large number of moves,
-consider using the `getMovesAsStream()` or `getMovesAsIterator()` methods instead of `getMovesAsList()`,
-to avoid loading all moves into memory at once,
-or to filter them on-the-fly.
+[source,java,options="nowrap"]
+----
+context.within(10_000).producesAllOf(Moves.swap(entityMetaModel, lessonA, lessonB));
+----
+
+If you need to inspect a move's fields directly rather than compare it via `equals()`,
+`getMovesAsStream()`/`getMovesAsIterator()` return a bounded, non-exhaustive handful of moves instead -
+never use them for completeness assertions, that is what `producesAllOf`/`producesNoneOf` are for.
 
 [#neighborhoodsMoveStreamsTestingRunningMoves]
 ==== Running the generated moves
@@ -694,7 +762,7 @@ var moveTestContext = testerContext.getMoveTestContext();
 ----
 
 Temporary execution with automatic undo is particularly useful for testing move correctness,
-and can be combined with using `getMovesAsIterator()` to avoid loading all moves into memory at once:
+and can be combined with using `getMovesAsIterator()` to grab a move without loading them all into memory:
 
 [source,java,options="nowrap"]
 ----
@@ -787,6 +855,8 @@ which only includes change and swap moves.
 As the Neighborhoods API is still in an early stage of development,
 it has some limitations which we will address in future releases:
 
+- The Neighborhoods API is not compatible with `LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT`;
+configuring both together throws an exception at solver build time.
 - The Neighborhoods API does not yet support move probability weighting.
 All move providers included in the neighborhood have the same probability of being selected to generate a move.
 - The Neighborhoods API also has the same probability of selection as the move-selector based neighborhood.

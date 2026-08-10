@@ -10,6 +10,11 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
@@ -123,5 +128,26 @@ public interface MoveStreamFactory<Solution_> {
             forEachDestinationIncludingUnassigned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
     <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream);
+
+    /**
+     * Registers a dataset for use with a custom {@link MoveIteratorProvider},
+     * for neighborhoods not expressible as a two-dataset join (custom scoring, 3+ datasets, greedy pairing).
+     * Resolve the returned handle against a {@link MoveIteratorSession}
+     * inside {@link #buildMoveStream(MoveIteratorProvider)}.
+     */
+    <A> UniDataset<Solution_, A> register(UniEnumeratingStream<Solution_, A> stream);
+
+    /**
+     * As defined by {@link #register(UniEnumeratingStream)},
+     * but for a {@link BiEnumeratingStream}.
+     */
+    <A, B> BiDataset<Solution_, A, B> register(BiEnumeratingStream<Solution_, A, B> stream);
+
+    /**
+     * Terminal operation for datasets {@link #register(UniEnumeratingStream) registered} on this factory,
+     * parallel to {@link UniSamplingStream#asMove}.
+     * The move order of the given provider's iterator is never part of the API contract.
+     */
+    MoveStream<Solution_> buildMoveStream(MoveIteratorProvider<Solution_> iteratorProvider);
 
 }

@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.AbstractBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.sampling.DefaultUniSamplingStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
@@ -19,7 +20,12 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
@@ -167,6 +173,21 @@ public final class DefaultMoveStreamFactory<Solution_>
     public <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream) {
         return new DefaultUniSamplingStream<>(
                 ((AbstractUniEnumeratingStream<Solution_, A>) enumeratingStream).createLeftDataset());
+    }
+
+    @Override
+    public <A> UniDataset<Solution_, A> register(UniEnumeratingStream<Solution_, A> stream) {
+        return ((AbstractUniEnumeratingStream<Solution_, A>) stream).createLeftDataset();
+    }
+
+    @Override
+    public <A, B> BiDataset<Solution_, A, B> register(BiEnumeratingStream<Solution_, A, B> stream) {
+        return ((AbstractBiEnumeratingStream<Solution_, A, B>) stream).createLeftDataset();
+    }
+
+    @Override
+    public MoveStream<Solution_> buildMoveStream(MoveIteratorProvider<Solution_> iteratorProvider) {
+        return new IteratorMoveStream<>(iteratorProvider);
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
+package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi;
 
 import java.util.Objects;
 
@@ -9,16 +9,16 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Termi
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class LeftTerminalUniEnumeratingStream<Solution_, A>
-        extends AbstractUniEnumeratingStream<Solution_, A>
-        implements TerminalEnumeratingStream<Solution_, UniLeftDataset<Solution_, A>> {
+final class LeftTerminalBiEnumeratingStream<Solution_, A, B>
+        extends AbstractBiEnumeratingStream<Solution_, A, B>
+        implements TerminalEnumeratingStream<Solution_, BiLeftDataset<Solution_, A, B>> {
 
-    private final UniLeftDataset<Solution_, A> dataset;
+    private final BiLeftDataset<Solution_, A, B> dataset;
 
-    public LeftTerminalUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
-            AbstractUniEnumeratingStream<Solution_, A> parent) {
+    public LeftTerminalBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
+            AbstractBiEnumeratingStream<Solution_, A, B> parent) {
         super(enumeratingStreamFactory, parent);
-        this.dataset = new UniLeftDataset<>(this);
+        this.dataset = new BiLeftDataset<>(this);
     }
 
     @Override
@@ -29,19 +29,19 @@ final class LeftTerminalUniEnumeratingStream<Solution_, A>
     }
 
     @Override
-    public UniLeftDataset<Solution_, A> getDataset() {
+    public BiLeftDataset<Solution_, A, B> getDataset() {
         return dataset;
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof LeftTerminalUniEnumeratingStream<?, ?> other
+        return o instanceof LeftTerminalBiEnumeratingStream<?, ?, ?> other
                 && parent == other.parent;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(LeftTerminalUniEnumeratingStream.class, parent);
+        return Objects.hash(LeftTerminalBiEnumeratingStream.class, parent);
     }
 
     @Override

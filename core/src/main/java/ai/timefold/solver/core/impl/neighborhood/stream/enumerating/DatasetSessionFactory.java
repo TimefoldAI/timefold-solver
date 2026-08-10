@@ -31,7 +31,8 @@ public final class DatasetSessionFactory<Solution_> {
             dataset.collectActiveEnumeratingStreams(activeEnumeratingStreamSet);
         }
         var buildHelper = new DataNodeBuildHelper<>(context, activeEnumeratingStreamSet);
-        var session = new DatasetSession<Solution_>(buildNodeNetwork(activeEnumeratingStreamSet, buildHelper));
+        var session = new DatasetSession<Solution_>(buildNodeNetwork(activeEnumeratingStreamSet, buildHelper),
+                context.solutionView());
         for (var datasetInstance : buildHelper.getDatasetInstanceList()) {
             session.registerDatasetInstance(datasetInstance.getParent(), datasetInstance);
         }

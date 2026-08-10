@@ -123,8 +123,13 @@ public final class IndexerFactory<Right_> {
         return joiner.getJoinerCount() > 0;
     }
 
+    public <A> Function<A, Object> buildUniLeftFactKeysExtractor() {
+        return buildUniFactKeysExtractor(getMappingExtractor());
+    }
+
     public <A> UniKeysExtractor<A> buildUniLeftKeysExtractor() {
-        return buildUniKeysExtractor(getMappingExtractor());
+        var factExtractor = this.<A> buildUniLeftFactKeysExtractor();
+        return tuple -> factExtractor.apply(tuple.getA());
     }
 
     private <A> IntFunction<Function<A, Object>> getMappingExtractor() {
@@ -139,12 +144,13 @@ public final class IndexerFactory<Right_> {
     }
 
     @SuppressWarnings("unchecked")
-    private <A> UniKeysExtractor<A> buildUniKeysExtractor(IntFunction<Function<A, Object>> mappingExtractor) {
+    private <A> Function<A, Object> buildUniFactKeysExtractor(IntFunction<Function<A, Object>> mappingExtractor) {
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount == 0) {
-            return tuple -> CompositeKey.none();
+            return a -> CompositeKey.none();
         } else if (joinerCount == 1) {
-            return toKeysExtractor(mappingExtractor.apply(0));
+            var keyFunction = mappingExtractor.apply(0);
+            return a -> CompositeKey.of(keyFunction.apply(a));
         }
         var startIndexInclusive = 0;
         var keyFunctionList = new ArrayList<Function<A, Object>>();
@@ -183,7 +189,7 @@ public final class IndexerFactory<Right_> {
             keyFunctionList.add(keyFunction);
             startIndexInclusive = endIndexExclusive;
         }
-        return toKeysExtractor(keyFunctionList);
+        return combineFactKeysExtractor(keyFunctionList);
     }
 
     @SafeVarargs
@@ -198,24 +204,19 @@ public final class IndexerFactory<Right_> {
         };
     }
 
-    private static <A> UniKeysExtractor<A> toKeysExtractor(Function<A, Object> keyFunction) {
-        return tuple -> CompositeKey.of(keyFunction.apply(tuple.getA()));
-    }
-
-    private static <A> UniKeysExtractor<A> toKeysExtractor(List<Function<A, Object>> keyFunctionList) {
+    private static <A> Function<A, Object> combineFactKeysExtractor(List<Function<A, Object>> keyFunctionList) {
         var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionCount) {
-            case 1 -> toKeysExtractor(keyFunctionList.get(0));
+            case 1 -> {
+                var keyFunction = keyFunctionList.get(0);
+                yield a -> CompositeKey.of(keyFunction.apply(a));
+            }
             case 2 -> {
                 var keyFunction1 = keyFunctionList.get(0);
                 var keyFunction2 = keyFunctionList.get(1);
-                yield tuple -> {
-                    var a = tuple.getA();
-                    return CompositeKey.of(keyFunction1.apply(a), keyFunction2.apply(a));
-                };
+                yield a -> CompositeKey.of(keyFunction1.apply(a), keyFunction2.apply(a));
             }
-            default -> tuple -> {
-                var a = tuple.getA();
+            default -> a -> {
                 var arr = new Object[keyFunctionCount];
                 for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a);
@@ -478,8 +479,13 @@ public final class IndexerFactory<Right_> {
         return tuple -> CompositeKey.of(keyFunction.apply(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD()));
     }
 
+    public Function<Right_, Object> buildRightFactKeysExtractor() {
+        return buildUniFactKeysExtractor(joiner::getRightMapping);
+    }
+
     public UniKeysExtractor<Right_> buildRightKeysExtractor() {
-        return buildUniKeysExtractor(joiner::getRightMapping);
+        var factExtractor = buildRightFactKeysExtractor();
+        return tuple -> factExtractor.apply(tuple.getA());
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {

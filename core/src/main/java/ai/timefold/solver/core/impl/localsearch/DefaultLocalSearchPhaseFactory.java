@@ -122,6 +122,13 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private NeighborhoodsBasedMoveRepository<Solution_> buildNeighborhoodsBasedMoveRepository(
             HeuristicConfigPolicy<Solution_> configPolicy,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
+        if (phaseConfig.getLocalSearchType() == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
+            throw new IllegalArgumentException(
+                    """
+                            The localSearchType (%s) does not support the Neighborhoods API.
+                            Maybe use a different localSearchType."""
+                            .formatted(phaseConfig.getLocalSearchType()));
+        }
         if (!NeighborhoodProvider.class.isAssignableFrom(neighborhoodProviderClass)) {
             throw new IllegalArgumentException("The neighborhoodProviderClass (%s) does not implement %s."
                     .formatted(neighborhoodProviderClass, NeighborhoodProvider.class.getSimpleName()));
@@ -133,8 +140,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
         return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
                 ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
-                        .getMoveProviderList(),
-                pickSelectionOrder() == SelectionOrder.RANDOM);
+                        .getMoveProviderList());
     }
 
     private LocalSearchDecider<Solution_> buildMixedDecider(HeuristicConfigPolicy<Solution_> configPolicy,

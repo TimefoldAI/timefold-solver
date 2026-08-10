@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
@@ -42,7 +43,8 @@ class BiEnumeratingStreamTest {
 
     private static <A> UniLeftDatasetInstance<TestdataSolution, A> getInstance(DatasetSession<TestdataSolution> session,
             UniLeftDataset<TestdataSolution, A> dataset) {
-        return (UniLeftDatasetInstance<TestdataSolution, A>) session.getInstance(dataset);
+        return (UniLeftDatasetInstance<TestdataSolution, A>) session
+                .getInstance((AbstractLeftDataset<TestdataSolution, UniTuple<A>>) dataset);
     }
 
     private static DatasetSession<TestdataSolution> createSession(

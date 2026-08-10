@@ -69,6 +69,10 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
         indexer.remove(compositeKey, tuple.removeStore(entryStoreIndex));
     }
 
+    public int size(Object compositeKey) {
+        return indexer.size(compositeKey);
+    }
+
     public Iterator<UniTuple<Right_>> iterator(Object compositeKey) {
         return indexer.iterator(compositeKey);
     }
