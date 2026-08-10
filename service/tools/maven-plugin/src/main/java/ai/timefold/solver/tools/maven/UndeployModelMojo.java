@@ -75,9 +75,10 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
                 } else {
-                    getLog().debug(response.body());
+                    printErrorInfo(response.body());
                     throw new IllegalStateException(
-                            "Model undeploy failed with " + response.statusCode() + " status code");
+                            "Model undeploy failed with " + response.statusCode() + " status code: "
+                                    + readErrorMessage(response.body()));
                 }
             }
         } catch (IllegalStateException e) {
