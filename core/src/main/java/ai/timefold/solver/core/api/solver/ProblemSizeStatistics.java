@@ -30,7 +30,7 @@ public record ProblemSizeStatistics(long entityCount,
     /**
      * @deprecated this type isn't meant to be constructed by a user.
      */
-    @Deprecated(since = "2.4.0", forRemoval = true)
+    @Deprecated(since = "2.6.0", forRemoval = true)
     public ProblemSizeStatistics(long entityCount,
             long variableCount,
             long approximateValueCount,

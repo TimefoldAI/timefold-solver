@@ -67,12 +67,7 @@ final class ValueRangeStatistics<Solution_> {
 
         cachedEntityCountByEntityOrdinal = new long[solutionDescriptor.getEntityDescriptors().size()];
         cachedValueCountByEntityAndVariableOrdinal = new long[cachedEntityCountByEntityOrdinal.length][];
-        for (var entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
-            // TimefoldTestResourceTest in Quarkus has an entity class with a basic variable
-            // that was not considered a genuine entity.
-            // (i.e. solutionDescriptor.getGenuineEntityDescriptors() did not have it).
-            // Are subclass entities that do not add new basic/list variable not considered
-            // genuine entities?
+        for (var entityDescriptor : solutionDescriptor.getGenuineEntityDescriptors()) {
             cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()] =
                     new long[entityDescriptor.getMaxVariableOrdinal()];
         }
@@ -142,7 +137,7 @@ final class ValueRangeStatistics<Solution_> {
             if (!entityDescriptor.hasAnyListVariables()) {
                 return;
             }
-            var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
+            var listVariableEntityDescriptor = Objects.requireNonNull(listVariableDescriptor).getEntityDescriptor();
             var countOnEntity = listVariableDescriptor.getListSize(entity);
             notInAnyListValueCount.subtract(countOnEntity);
             if (!listVariableDescriptor.allowsUnassignedValues() && listVariableEntityDescriptor.matchesEntity(entity)) {
@@ -179,33 +174,47 @@ final class ValueRangeStatistics<Solution_> {
             computeInitializationStatistics(null, false);
         }
         if (cachedProblemSizeStatistics == null) {
-            var entityClassToEntityCount = new LinkedHashMap<Class<?>, Long>();
-            var entityClassToVariableToValueCount = new LinkedHashMap<Class<?>, SequencedMap<String, Long>>();
-            for (var entityDescriptor : solutionDescriptor.getGenuineEntityDescriptors()) {
-                entityClassToEntityCount.put(entityDescriptor.getEntityClass(),
-                        cachedEntityCountByEntityOrdinal[entityDescriptor.getOrdinal()]);
-                var variableToValueCount = new LinkedHashMap<String, Long>();
-                for (var variableDescriptor : entityDescriptor.getBasicVariableDescriptorList()) {
-                    variableToValueCount.put(variableDescriptor.getVariableName(),
-                            cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][variableDescriptor
-                                    .getOrdinal()]);
-                }
-                if (entityDescriptor.hasAnyListVariables()) {
-                    variableToValueCount.put(entityDescriptor.getListVariableDescriptor().getVariableName(),
-                            cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][entityDescriptor
-                                    .getListVariableDescriptor().getOrdinal()]);
-                }
-                entityClassToVariableToValueCount.put(entityDescriptor.getEntityClass(), variableToValueCount);
-            }
+            var result = getEntityAndValueCounts();
             cachedProblemSizeStatistics = new ProblemSizeStatistics(
                     solutionDescriptor.getGenuineEntityCount(solution),
-                    entityClassToEntityCount,
+                    result.entityClassToEntityCount(),
                     solutionDescriptor.getGenuineVariableCount(solution),
                     cachedApproximateValueCount,
-                    entityClassToVariableToValueCount,
+                    result.entityClassToVariableToValueCount(),
                     cachedProblemScale);
         }
         return cachedProblemSizeStatistics;
+    }
+
+    private record EntityAndValueCounts(LinkedHashMap<Class<?>, Long> entityClassToEntityCount,
+            LinkedHashMap<Class<?>, SequencedMap<String, Long>> entityClassToVariableToValueCount) {
+    }
+
+    private EntityAndValueCounts getEntityAndValueCounts() {
+        var entityClassToEntityCount = new LinkedHashMap<Class<?>, Long>();
+        var entityClassToVariableToValueCount = new LinkedHashMap<Class<?>, SequencedMap<String, Long>>();
+        for (var entityDescriptor : solutionDescriptor.getGenuineEntityDescriptors()) {
+            entityClassToEntityCount.put(entityDescriptor.getEntityClass(),
+                    cachedEntityCountByEntityOrdinal[entityDescriptor.getOrdinal()]);
+            entityClassToVariableToValueCount.put(entityDescriptor.getEntityClass(),
+                    getVariableToValueCount(entityDescriptor));
+        }
+        return new EntityAndValueCounts(entityClassToEntityCount, entityClassToVariableToValueCount);
+    }
+
+    private LinkedHashMap<String, Long> getVariableToValueCount(EntityDescriptor<Solution_> entityDescriptor) {
+        var variableToValueCount = new LinkedHashMap<String, Long>();
+        for (var variableDescriptor : entityDescriptor.getBasicVariableDescriptorList()) {
+            variableToValueCount.put(variableDescriptor.getVariableName(),
+                    cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][variableDescriptor
+                            .getOrdinal()]);
+        }
+        if (entityDescriptor.hasAnyListVariables()) {
+            variableToValueCount.put(entityDescriptor.getListVariableDescriptor().getVariableName(),
+                    cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][entityDescriptor
+                            .getListVariableDescriptor().getOrdinal()]);
+        }
+        return variableToValueCount;
     }
 
     long getApproximateValueCount() {
