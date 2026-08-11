@@ -1,7 +1,5 @@
 package ai.timefold.solver.tools.maven;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -29,6 +27,18 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
 
     private static final String PRIVATE_MODEL_TYPE = "Private";
     private static final String SHARED_MODEL_TYPE = "Shared";
+
+    /**
+     * Error codes the platform reports on a conflict (HTTP 409). Only a conflict on the registration key itself or on
+     * the version registered under it can be resolved by updating that registration, any other conflict, including one
+     * the platform does not identify, fails the deployment as updating this registration key does not resolve it.
+     */
+    private static final String ERROR_CODE_REGISTRATION_KEY_ALREADY_EXISTS = "TFP-14001";
+    private static final String ERROR_CODE_MODEL_VERSION_ALREADY_EXISTS = "TFP-14005";
+    private static final String ERROR_CODE_UNKNOWN = "TFP-99999";
+
+    private static final List<String> OVERWRITABLE_CONFLICT_ERROR_CODES =
+            List.of(ERROR_CODE_REGISTRATION_KEY_ALREADY_EXISTS, ERROR_CODE_MODEL_VERSION_ALREADY_EXISTS);
 
     protected static final String PROP_MODEL_TYPE = "timefold.model.type";
 
@@ -125,14 +135,24 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
 
                 configureHttpRequest(builder);
 
-                HttpResponse<InputStream> response = httpClient.send(builder.build(), BodyHandlers.ofInputStream());
+                HttpResponse<String> response = httpClient.send(builder.build(), BodyHandlers.ofString());
                 if (response.statusCode() >= 200 && response.statusCode() < 400) {
                     getLog().info(
                             String.format(
                                     "Model %s (%s) has been successfully deployed into platform %s with registration key %s",
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
-                } else if (response.statusCode() >= 409) {
+                } else if (response.statusCode() == 409) {
+                    String conflictBody = response.body();
+                    String errorCode = readErrorCode(conflictBody);
+                    if (!OVERWRITABLE_CONFLICT_ERROR_CODES.contains(errorCode)) {
+                        // e.g. the model id is already registered under a different registration key, updating the
+                        // registration key used here would only fail with 404 as it was never registered
+                        printErrorInfo(conflictBody);
+                        throw new IllegalStateException(String.format(
+                                "Model deployment of %s failed due to conflict (%s) that cannot be resolved by updating the registration with key %s: %s",
+                                modelDescriptor.get("id").asText(), errorCode, key, readErrorMessage(conflictBody)));
+                    }
                     if (getPropertyOrParameter(PROP_MODEL_OVERWRITE, overwrite)) {
 
                         requestURI =
@@ -140,24 +160,28 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                         builder = HttpRequest.newBuilder().uri(requestURI).method("PATCH",
                                 BodyPublishers.ofFile(modelDescriptorArchivePath));
                         configureHttpRequest(builder);
-                        response = httpClient.send(builder.build(), BodyHandlers.ofInputStream());
+                        response = httpClient.send(builder.build(), BodyHandlers.ofString());
                         if (response.statusCode() >= 200 && response.statusCode() < 400) {
                             getLog().info(String.format(
                                     "Model %s (%s) has been successfully updated on platform %s with registration key %s",
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
                         } else {
+                            printErrorInfo(response.body());
                             throw new IllegalStateException(
-                                    "Model deployment (override) failed with " + response.statusCode() + " status code");
+                                    "Model deployment (override) failed with " + response.statusCode() + " status code: "
+                                            + readErrorMessage(response.body()));
                         }
                     } else {
-                        throw new IllegalStateException(
-                                "Model deployment failed due to conflict, there is already model with that registration key "
-                                        + key + " use 'overwrite' parameter to update existing");
+                        printErrorInfo(conflictBody);
+                        throw new IllegalStateException(String.format(
+                                "Model deployment failed due to conflict (%s), there is already model with that registration key %s use 'overwrite' parameter to update existing: %s",
+                                errorCode, key, readErrorMessage(conflictBody)));
                     }
                 } else {
-                    printErrorInfo(response);
-                    throw new IllegalStateException("Model deployment failed with " + response.statusCode() + " status code");
+                    printErrorInfo(response.body());
+                    throw new IllegalStateException("Model deployment failed with " + response.statusCode() + " status code: "
+                            + readErrorMessage(response.body()));
                 }
             }
         } catch (Exception e) {
@@ -169,13 +193,13 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
 
     }
 
-    private void printErrorInfo(HttpResponse<InputStream> response) {
-        try (InputStream body = response.body()) {
-            String responseBody = new String(body.readAllBytes());
-            getLog().error(responseBody);
-        } catch (IOException e) {
-            getLog().error("Unable to read response body", e);
-        }
+    /**
+     * Reads the platform error code from an error response body, a response that does not report one is treated as an
+     * unknown error.
+     */
+    private String readErrorCode(String responseBody) {
+        String code = readErrorField(responseBody, "code");
+        return code == null ? ERROR_CODE_UNKNOWN : code;
     }
 
     protected void validate(String type) {

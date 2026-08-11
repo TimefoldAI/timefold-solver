@@ -114,6 +114,10 @@ The `timefold:deploy` goal uploads that archive and registers it against the pla
 If a model with the same `key` is already registered, the deploy fails with a conflict (HTTP 409) unless `overwrite` is enabled, in which case the existing registration is updated instead (`PATCH /api/platform/v1/models/<key>`).
 You can also set this from the command line with `-Dtimefold.model.overwrite=true`.
 
+The platform reports the kind of conflict as an error code in the response, and `overwrite` only applies to a conflict on the registration key itself (`TFP-14001`) or on the version already registered under that key (`TFP-14005`).
+Every other conflict fails the deploy regardless of `overwrite`, as there is no registration under your `key` to update.
+That is most commonly the same model already being registered under a _different_ registration key (`TFP-14002`, `TFP-14003` or `TFP-14004`); either unregister the existing registration, or deploy with the registration key it was registered under.
+
 Registering a model does not automatically subscribe your tenant to it; with `handleSubscription` set to `true`, the plugin also subscribes your tenant when it registers the model.
 Without it, your tenant won't see the model on the platform after you deploy it.
 

@@ -21,6 +21,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -94,6 +95,38 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
     protected void validate() {
         Objects.requireNonNull(platformUrl, "Platform Url is mandatory");
         Objects.requireNonNull(key, "Registration key is mandatory");
+    }
+
+    protected void printErrorInfo(String responseBody) {
+        if (responseBody != null && !responseBody.isBlank()) {
+            getLog().error(responseBody);
+        }
+    }
+
+    /**
+     * Reads the platform error message from an error response body, so that the reason for the failure is part of the
+     * reported error and not only of the build log. Falls back to the response body itself, as the platform does not
+     * report every error as an {@code ErrorInfo}.
+     */
+    protected String readErrorMessage(String responseBody) {
+        String message = readErrorField(responseBody, "message");
+        if (message != null && !message.isBlank()) {
+            return message;
+        }
+        return responseBody == null || responseBody.isBlank() ? "no error message reported by the platform" : responseBody;
+    }
+
+    protected String readErrorField(String responseBody, String fieldName) {
+        if (responseBody == null || responseBody.isBlank()) {
+            return null;
+        }
+        try {
+            JsonNode field = mapper.readTree(responseBody).get(fieldName);
+            return field == null || field.isNull() ? null : field.asText();
+        } catch (IOException e) {
+            getLog().debug("Unable to read error " + fieldName + " from response body " + responseBody, e);
+            return null;
+        }
     }
 
     /**

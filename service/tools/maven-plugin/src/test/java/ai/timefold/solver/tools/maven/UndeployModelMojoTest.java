@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
@@ -50,7 +51,13 @@ public class UndeployModelMojoTest {
                 .willReturn(aResponse()
                         .withStatus(404)
                         .withHeader("Content-Type", "application/json")
-                        .withBody("{}")));
+                        .withBody(
+                                "{\"id\":\"1\",\"code\":\"TFP-99999\",\"message\":\"Model with registration key 'notexisting' was not found\"}")));
+
+        wm1.stubFor(delete(urlPathEqualTo("/api/platform/v1/models/nodetails"))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withHeader("Content-Type", "application/json")));
 
         // copy sample model descriptor
         Path modelDescriptor = Paths.get("src", "test", "resources", "model-descriptor.zip");
@@ -89,15 +96,34 @@ public class UndeployModelMojoTest {
     @Test
     @MojoParameter(name = "key", value = "notexisting")
     @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testUndeployNotExisting(UndeployModelMojo mojo) throws Exception {
+    public void testUndeployNotExisting(UndeployModelMojo mojo) {
 
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(IllegalStateException.class)
-                .hasMessage("Model undeploy failed with 404 status code");
+        // the reason reported by the platform is part of the failure and not only of the build log
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+                .hasMessage(
+                        "Model undeploy failed with 404 status code: Model with registration key 'notexisting' was not found");
 
         // verify plugin performed expected HTTP call
         wm1.verify(1, deleteRequestedFor(urlPathEqualTo("/api/platform/v1/models/notexisting")));
 
+        log.assertContains(".*Model with registration key 'notexisting' was not found.*", Level.ERROR);
+    }
+
+    @Test
+    @MojoParameter(name = "key", value = "nodetails")
+    @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testUndeployFailureWithoutDetails(UndeployModelMojo mojo) {
+
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+                .hasMessage("Model undeploy failed with 500 status code: no error message reported by the platform");
+
+        wm1.verify(1, deleteRequestedFor(urlPathEqualTo("/api/platform/v1/models/nodetails")));
+
+        // there is nothing to report from an empty body
+        assertThat(log.getEvents()).noneMatch(event -> event.level == Level.ERROR);
     }
 }
