@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -38,11 +38,19 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     }
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        // The phase may operate in a different environment mode, which uses a new score director.
+        // We must ensure that the list variable state supply remains up to date.
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
-        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
         this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        listVariableStateSupply = null;
     }
 
     public static <Solution_> IterableValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
@@ -66,12 +74,6 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     return !listVariableDescriptor.isElementPinned(scoreDirector.getWorkingSolution(), entity,
                             elementDestination.index());
                 });
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        listVariableStateSupply = null;
     }
 
     @Override

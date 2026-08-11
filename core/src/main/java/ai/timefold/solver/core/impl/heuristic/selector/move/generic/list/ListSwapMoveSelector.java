@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
@@ -38,16 +38,18 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     }
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        // The phase may operate in a different environment mode, which uses a new score director.
+        // We must ensure that the list variable state supply remains up to date.
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
-        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
+        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
         listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
     }
 
     @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
         listVariableStateSupply = null;
     }
 

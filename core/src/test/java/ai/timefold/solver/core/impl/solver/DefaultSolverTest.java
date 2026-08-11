@@ -2400,9 +2400,22 @@ class DefaultSolverTest {
     @Test
     void solveWithPhaseEnvironmentModeOverride() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        // LS phase overridden to FULL_ASSERT
-        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // LS phase overridden to TRACKED_FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
         var problem = TestdataSolution.generateSolution(2, 2);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(bestSolution).isNotNull();
+    }
+
+    @Test
+    void solveListVariableWithPhaseEnvironmentModeOverride() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
+        // LS phase overridden to TRACKED_FULL_ASSERT
+        var localSearchPhaseConfig = solverConfig.getPhaseConfigList().get(1);
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        localSearchPhaseConfig.setTerminationConfig(new TerminationConfig().withStepCountLimit(50));
+        var problem = TestdataListSolution.generateUninitializedSolution(20, 5);
         var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(bestSolution).isNotNull();
     }

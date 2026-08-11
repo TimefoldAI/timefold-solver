@@ -64,24 +64,21 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     }
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        this.solverScope = solverScope;
-        this.listVariableStateSupply = solverScope.getScoreDirector()
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        this.solverScope = phaseScope.getSolverScope();
+        // The phase may operate in a different environment mode, which uses a new score director.
+        // We must ensure that the list variable state supply remains up to date.
+        this.listVariableStateSupply = phaseScope.getScoreDirector()
                 .getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand());
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        this.listVariableStateSupply = null;
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         this.solverScope = null;
+        this.listVariableStateSupply = null;
     }
 
     @Override

@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_> implements SubListSelector<Solution_> {
 
@@ -53,16 +53,19 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     }
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
-        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        this.triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
+        // The phase may run under a different environment mode, which swaps in a new score director
+        // (and thus a new SupplyManager); re-demand so the supply doesn't go stale.
+        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
+        this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
     }
 
     @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        triangleElementFactory = null;
         listVariableStateSupply = null;
     }
 

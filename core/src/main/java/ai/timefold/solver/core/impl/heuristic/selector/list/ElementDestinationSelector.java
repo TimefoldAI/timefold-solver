@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.Concatena
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.util.MappingIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -93,15 +93,17 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        // The phase may operate in a different environment mode, which uses a new score director.
+        // We must ensure that the list variable state supply remains up to date.
+        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
         listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
     }
 
     @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
         listVariableStateSupply = null;
     }
 

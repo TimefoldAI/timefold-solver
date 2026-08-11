@@ -6,13 +6,19 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
@@ -39,6 +45,8 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
     protected final transient Logger LOGGER = LoggerFactory.getLogger(getClass());
 
+    protected final SolverContext<Solution_, ?> defaultSolverContext;
+    private final DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory;
     private final SolverEventSupport<Solution_> solverEventSupport = new SolverEventSupport<>(this);
     private final PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
@@ -49,17 +57,78 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     protected final List<Phase<Solution_>> phaseList;
 
     private RandomGenerator.@Nullable SplittableGenerator savedRandom;
+    private SolverContext<Solution_, ?> currentContext;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    protected AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            UniversalTermination<Solution_> globalTermination, List<Phase<Solution_>> phaseList) {
+    protected AbstractSolver(SolverContext<Solution_, ?> defaultSolverContext,
+            DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory,
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, UniversalTermination<Solution_> globalTermination,
+            List<Phase<Solution_>> phaseList) {
+        this.delegateScoreDirectorFactory = delegateScoreDirectorFactory;
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.globalTermination = globalTermination;
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = List.copyOf(phaseList);
+        this.defaultSolverContext = defaultSolverContext;
+        this.currentContext = defaultSolverContext;
+    }
+
+    protected void runPhases(SolverScope<Solution_> solverScope) {
+        if (!solverScope.getSolutionDescriptor().hasMovableEntities(solverScope.getScoreDirector())) {
+            logger.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
+                    phaseList.size(), solverScope.getWorkingEntityCount());
+            return;
+        }
+        Iterator<Phase<Solution_>> it = phaseList.iterator();
+        while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
+            Phase<Solution_> phase = it.next();
+            preparePhase(solverScope, phase);
+            phase.solve(solverScope);
+            // If there is a next phase, it starts from the best solution, which might differ from the working solution.
+            // If there isn't, no need to planning clone the best solution to the working solution.
+            if (it.hasNext()) {
+                solverScope.setWorkingSolutionFromBestSolution();
+            }
+        }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void preparePhase(SolverScope solverScope, Phase<Solution_> phase) {
+        // The environment modes match, and there is no need for any changes.
+        if (phase.getEnvironmentMode() == currentContext.environmentMode()) {
+            return;
+        }
+        // The phase environment mode matches default, so we will restore it.
+        if (phase.getEnvironmentMode() == defaultSolverContext.environmentMode()) {
+            // Update and load the default context
+            loadContext(currentContext, defaultSolverContext, solverScope);
+            return;
+        }
+        // Since the current logic does not cache any solver context other than the default,
+        // we need to create a new solver context
+        // because the required environment mode differs from both the current and the default modes.
+        ScoreDirectorFactory newScoreDirectorFactory = delegateScoreDirectorFactory
+                .buildScoreDirectorFactory(phase.getEnvironmentMode(), solverScope.getSolutionDescriptor());
+        var newScoreDirector = delegateScoreDirectorFactory.createScoreDirector(newScoreDirectorFactory);
+        var newSolverContext = new SolverContext<>(phase.getEnvironmentMode(), newScoreDirector,
+                new DefaultProblemChangeDirector<>(newScoreDirector), currentContext.bestSolutionRecaller);
+        loadContext(currentContext, newSolverContext, solverScope);
+    }
+
+    private void loadContext(SolverContext<Solution_, ?> oldSolverContext, SolverContext<Solution_, ?> newSolverContext,
+            SolverScope<Solution_> solverScope) {
+        solverScope.setScoreDirector(newSolverContext.scoreDirector());
+        solverScope.setProblemChangeDirector(newSolverContext.problemChangeDirector());
+        // We will use the same working solution set from the previous phase, as it has already been cloned
+        newSolverContext.scoreDirector().setWorkingSolution(oldSolverContext.scoreDirector().getWorkingSolution());
+        bestSolutionRecaller.enableAssertions(newSolverContext.environmentMode());
+        if (oldSolverContext != defaultSolverContext) {
+            oldSolverContext.release();
+        }
+        currentContext = newSolverContext;
     }
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
@@ -84,6 +153,10 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         bestSolutionRecaller.solvingEnded(solverScope);
         globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
+        if (currentContext != defaultSolverContext) {
+            // Release the last context if it is not the default one
+            currentContext.release();
+        }
     }
 
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {
@@ -165,8 +238,28 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         return bestSolutionRecaller;
     }
 
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> DelegateScoreDirectorFactory<Solution_, Score_> getDelegateScoreDirectorFactory() {
+        return (DelegateScoreDirectorFactory<Solution_, Score_>) delegateScoreDirectorFactory;
+    }
+
     public List<Phase<Solution_>> getPhaseList() {
         return phaseList;
     }
 
+    public record SolverContext<Solution_, Score_ extends Score<Score_>>(EnvironmentMode environmentMode,
+            InnerScoreDirector<Solution_, Score_> scoreDirector, DefaultProblemChangeDirector<Solution_> problemChangeDirector,
+            BestSolutionRecaller<Solution_> bestSolutionRecaller) {
+
+        public static <Solution_, Score_ extends Score<Score_>> SolverContext<Solution_, Score_> of(
+                EnvironmentMode environmentMode,
+                SolverScope<Solution_> solverScope, BestSolutionRecaller<Solution_> bestSolutionRecaller) {
+            return new SolverContext<>(environmentMode, solverScope.<Score_> getScoreDirector(),
+                    solverScope.getProblemChangeDirector(), bestSolutionRecaller);
+        }
+
+        void release() {
+            scoreDirector.close();
+        }
+    }
 }
