@@ -56,6 +56,9 @@ Build with `-Denterprise=true` to activate the `enterprise` Maven profile define
 mvn clean package -Denterprise=true
 ----
 
+If you forget, the `timefold:configure` goal fails the build during the `initialize` phase, before the container image is built and pushed.
+It checks that an `ai.timefold.solver.enterprise` artifact is actually on the classpath, and that your model inherits from `timefold-solver-service-parent`.
+
 Building with the Enterprise Edition does not itself require a license; a license is only checked when the model actually runs.
 However, if your build runs tests that exercise Enterprise Edition features, those tests run the solver, so the build fails without a valid license.
 See xref:commercial-editions/license-management.adoc[License management] to register for a free trial license.
