@@ -16,7 +16,7 @@ public final class UniRightDatasetInstance<Solution_, A, B>
         extends AbstractRightDatasetInstance<Solution_, B> {
 
     private final IndexerFactory.KeysExtractor<UniTuple<A>> leftCompositeKeyExtractor;
-    private final Function<A, Object> leftFactCompositeKeyExtractor;
+    private final Function<@Nullable A, Object> leftFactCompositeKeyExtractor;
     private final @Nullable BiNeighborhoodsPredicate<Solution_, A, B> filter;
 
     public UniRightDatasetInstance(AbstractDataset<Solution_> parent, IndexerFactory<B> indexerFactory,
@@ -33,7 +33,7 @@ public final class UniRightDatasetInstance<Solution_, A, B>
         return leftCompositeKeyExtractor.apply(leftTuple);
     }
 
-    public Object produceCompositeKey(A a) {
+    public Object produceCompositeKey(@Nullable A a) {
         return leftFactCompositeKeyExtractor.apply(a);
     }
 

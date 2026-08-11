@@ -5,7 +5,6 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDataset;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractRightDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDataset;
@@ -33,13 +32,11 @@ public final class DefaultNeighborhoodSession<Solution_>
     }
 
     public <A> UniLeftDatasetInstance<Solution_, A> getLeftDatasetInstance(UniLeftDataset<Solution_, A> dataset) {
-        return (UniLeftDatasetInstance<Solution_, A>) datasetSession
-                .getInstance((AbstractLeftDataset<Solution_, UniTuple<A>>) dataset);
+        return datasetSession.getInstance((AbstractLeftDataset<Solution_, UniTuple<A>>) dataset);
     }
 
     public <A, B> UniRightDatasetInstance<Solution_, A, B> getRightDatasetInstance(UniRightDataset<Solution_, A, B> dataset) {
-        return (UniRightDatasetInstance<Solution_, A, B>) datasetSession
-                .getInstance((AbstractRightDataset<Solution_, B>) dataset);
+        return datasetSession.getInstance(dataset);
     }
 
     public void insert(Object fact) {
