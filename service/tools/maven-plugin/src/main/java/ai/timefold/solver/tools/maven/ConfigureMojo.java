@@ -227,6 +227,7 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
         requestBuilder.uri(URI.create(platformUrl + "/api/platform/v1/aboutme?includeConfig=true"));
 
         HttpRequest httpRequest = requestBuilder.build();
+        getLog().info("Fetching configuration from the Timefold Platform at " + platformUrl);
         try {
             HttpResponse<String> authResponse = httpClient.send(httpRequest, BodyHandlers.ofString());
             if (authResponse.statusCode() == 200) {

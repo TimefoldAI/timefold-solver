@@ -34,6 +34,7 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 - If the platform responds with 409 (conflict) and `timefold.model.overwrite=true`, the plugin will PATCH `/api/platform/v1/models/{registrationKey}` to update the existing model
 - The plugin reads the model descriptor to obtain name/id by extracting `timefold-model-descriptor.json` from the archive (or reading `target/timefold/timefold-model-descriptor.json` when present)
 - The platform validates the model version (`timefold.application.version`) on registration. It must be a release version `vN` (e.g. `v1`), a git commit hash (1–40 lowercase hex characters), or the literal `SNAPSHOT`; any other value is rejected with HTTP 400.
+- While the request is in flight the plugin reports progress. Archives of at least 1 MiB are announced up front, then at most one throttled line every 5 seconds reports the percentage uploaded, then a heartbeat reports that the upload is done and the platform is still processing, and finally a single line reports the total transferred and elapsed time. A normal deploy of an archive of a few tens of kilobytes completes before the first heartbeat and produces none of these lines. Note that `mvn -q` suppresses `[INFO]`, so it hides all progress output.
 
 === Undeploy goal (timefold:undeploy)
 
@@ -148,6 +149,12 @@ Goals are implemented as Mojos in `src/main/java/ai/timefold/solver/tools/maven`
 - `ConfigureMojo` — writes build properties
 - `DeployModelMojo` — handles upload/register/patch flow
 - `UndeployModelMojo` — handles deletion
-- `AbstractPlatformModelMojo` — common behavior, HTTP client, descriptor reading
+- `AbstractPlatformModelMojo` — common behavior, HTTP client, descriptor reading, and `sendWithProgress`
+
+Upload progress reporting lives in `src/main/java/ai/timefold/solver/tools/maven/http`:
+
+- `CountingBodyPublisher` — a `BodyPublisher` wrapper that counts bytes handed to the client. Its `contentLength()` must stay delegated: returning `-1` switches the request to chunked transfer encoding and drops the `Content-Length` header.
+- `UploadProgressReporter` — turns those byte counts into throttled log lines. Deliberately not thread safe, because it is only ever called from the mojo thread; see `Progress feedback and timeouts` above.
+- `UploadProgressSettings` — the throttling parameters, with tighter values injected by tests via `DeployModelMojo.setProgressSettings`.
 
 The plugin relies on the environment variable `TIMEFOLD_PAT` for authentication; tests provide a test helper to mock token retrieval.

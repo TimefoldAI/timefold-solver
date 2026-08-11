@@ -121,6 +121,9 @@ That is most commonly the same model already being registered under a _different
 Registering a model does not automatically subscribe your tenant to it; with `handleSubscription` set to `true`, the plugin also subscribes your tenant when it registers the model.
 Without it, your tenant won't see the model on the platform after you deploy it.
 
+The archive is normally only a few tens of kilobytes, so the upload itself is quick.
+If the archive is large or the connection is slow, the plugin logs a progress line every few seconds while the upload is in flight, and once the upload finishes it reports that it is waiting for the platform to process the model rather than going silent.
+
 [#_verify_on_the_platform]
 == Verify on the platform
 

@@ -1,5 +1,6 @@
 package ai.timefold.solver.tools.maven;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -11,6 +12,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+
+import ai.timefold.solver.tools.maven.http.CountingBodyPublisher;
+import ai.timefold.solver.tools.maven.http.UploadProgressReporter;
+import ai.timefold.solver.tools.maven.http.UploadProgressSettings;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -78,6 +83,15 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
     @Parameter(property = PROP_DRY_RUN, required = false, defaultValue = "false")
     private boolean dryRun;
 
+    private UploadProgressSettings progressSettings = UploadProgressSettings.defaults();
+
+    /**
+     * Visible for testing, so that progress reporting can be exercised without a slow upload.
+     */
+    protected void setProgressSettings(UploadProgressSettings progressSettings) {
+        this.progressSettings = Objects.requireNonNull(progressSettings, "progressSettings");
+    }
+
     public void execute() throws MojoExecutionException {
         if (getPropertyOrParameter(PROP_MODEL_SKIP_DEPLOY, skip)) {
             getLog().info("Model deployment skipped by configuration");
@@ -130,12 +144,8 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                 getLog().info("DRY_RUN: Would perform POST on " + requestURI);
             } else {
 
-                Builder builder =
-                        HttpRequest.newBuilder().uri(requestURI).POST(BodyPublishers.ofFile(modelDescriptorArchivePath));
-
-                configureHttpRequest(builder);
-
-                HttpResponse<String> response = httpClient.send(builder.build(), BodyHandlers.ofString());
+                HttpResponse<String> response =
+                        uploadModelDescriptor("POST", requestURI, modelDescriptorArchivePath);
                 if (response.statusCode() >= 200 && response.statusCode() < 400) {
                     getLog().info(
                             String.format(
@@ -157,10 +167,7 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
 
                         requestURI =
                                 URI.create(platformUrl + "/api/platform/v1/models/" + key + "?" + queryString.toString());
-                        builder = HttpRequest.newBuilder().uri(requestURI).method("PATCH",
-                                BodyPublishers.ofFile(modelDescriptorArchivePath));
-                        configureHttpRequest(builder);
-                        response = httpClient.send(builder.build(), BodyHandlers.ofString());
+                        response = uploadModelDescriptor("PATCH", requestURI, modelDescriptorArchivePath);
                         if (response.statusCode() >= 200 && response.statusCode() < 400) {
                             getLog().info(String.format(
                                     "Model %s (%s) has been successfully updated on platform %s with registration key %s",
@@ -200,6 +207,29 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
     private String readErrorCode(String responseBody) {
         String code = readErrorField(responseBody, "code");
         return code == null ? ERROR_CODE_UNKNOWN : code;
+    }
+
+    /**
+     * Uploads the model descriptor archive, reporting progress while the request is in flight. A fresh
+     * {@link CountingBodyPublisher} per call is required: the overwrite PATCH is a genuinely new request, and sharing
+     * the counter across both verbs would report more than 100%.
+     */
+    private HttpResponse<String> uploadModelDescriptor(String method, URI requestURI, Path archivePath)
+            throws IOException, InterruptedException {
+        CountingBodyPublisher bodyPublisher = new CountingBodyPublisher(BodyPublishers.ofFile(archivePath));
+        Builder builder = HttpRequest.newBuilder().uri(requestURI).method(method, bodyPublisher);
+        configureHttpRequest(builder);
+
+        long contentLength = bodyPublisher.contentLength();
+        getLog().debug(String.format("%s %s (%s)", method, requestURI,
+                UploadProgressReporter.formatBytes(contentLength)));
+        if (contentLength >= progressSettings.minimumSizeToAnnounceBytes()) {
+            getLog().info(String.format("Uploading model descriptor archive (%s), this can take a while on a slow "
+                    + "connection", UploadProgressReporter.formatBytes(contentLength)));
+        }
+        UploadProgressReporter reporter = new UploadProgressReporter(getLog(), progressSettings, contentLength,
+                bodyPublisher::getTransferredBytes);
+        return sendWithProgress(builder.build(), BodyHandlers.ofString(), reporter);
     }
 
     protected void validate(String type) {

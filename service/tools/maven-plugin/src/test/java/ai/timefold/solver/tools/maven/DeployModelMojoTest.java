@@ -14,11 +14,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+import java.util.Enumeration;
+import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
+import ai.timefold.solver.tools.maven.http.UploadProgressSettings;
 import ai.timefold.solver.tools.maven.utils.InMemoryMojoLog;
 import ai.timefold.solver.tools.maven.utils.InMemoryMojoLog.Level;
 
@@ -33,6 +42,8 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 @MojoTest
 public class DeployModelMojoTest {
+
+    private static final long MIB = 1024L * 1024L;
 
     @RegisterExtension
     static WireMockExtension wm1 = WireMockExtension.newInstance()
@@ -366,5 +377,112 @@ public class DeployModelMojoTest {
                 .hasMessage(
                         "'package' goal was not requested, deploy of timefold model might not be complete, make sure to use 'clean package timefold:deploy' or set '-Dtimefold.model.deploy.descriptorOnly=true'");
 
+    }
+
+    @Test
+    @MojoParameter(name = "key", value = "slowplatform")
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testHeartbeatWhilePlatformIsProcessing(DeployModelMojo mojo) throws Exception {
+        // atPriority(1) because setUp already registers a catch-all POST stub at priority 15
+        wm1.stubFor(post(urlPathEqualTo("/api/platform/v1/models"))
+                .atPriority(1)
+                .withQueryParam("registrationKey", equalTo("slowplatform"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withFixedDelay(1_000)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{}")));
+
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        // a heartbeat and silence budget of 100 ms against a 1 s server delay leaves roughly ten chances to log
+        mojo.setProgressSettings(new UploadProgressSettings(Duration.ofMillis(100), Duration.ofMillis(100), 5, MIB));
+        mojo.execute();
+
+        wm1.verify(1, postRequestedFor(urlPathEqualTo("/api/platform/v1/models")));
+
+        // only presence is asserted, never elapsed times or line counts, so this cannot become time sensitive
+        log.assertContains("waiting for the Timefold Platform to process it", Level.INFO);
+        log.assertContains("transfer finished", Level.INFO);
+        log.assertContains("Model .* has been successfully deployed into platform.*", Level.INFO);
+    }
+
+    @Test
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testAnnouncesArchiveSizeForLargeArchives(DeployModelMojo mojo) throws Exception {
+        createLargeModelDescriptorArchive(2 * (int) MIB);
+
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        // a heartbeat longer than the test can possibly take, so only the up-front announcement can appear
+        mojo.setProgressSettings(new UploadProgressSettings(Duration.ofMinutes(5), Duration.ofMinutes(5), 5, MIB));
+        mojo.execute();
+
+        wm1.verify(1, postRequestedFor(urlPathEqualTo("/api/platform/v1/models")));
+        log.assertContains("Uploading model descriptor archive \\(2\\.\\d MiB", Level.INFO);
+    }
+
+    @Test
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testNoProgressOutputForTheTypicalSmallArchive(DeployModelMojo mojo) throws Exception {
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        // explicitly longer than the default, rather than relying on 5 s outrunning a loaded CI agent's loopback
+        mojo.setProgressSettings(new UploadProgressSettings(Duration.ofMinutes(5), Duration.ofMinutes(5), 5, MIB));
+        mojo.execute();
+
+        assertThat(log.contains("Uploading model descriptor archive", Level.INFO)).isFalse();
+        assertThat(log.contains("waiting for the Timefold Platform", Level.INFO)).isFalse();
+        assertThat(log.contains("transfer finished", Level.INFO)).isFalse();
+        log.assertContains("Model .* has been successfully deployed into platform.*", Level.INFO);
+    }
+
+    @Test
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testFailureCauseIsUnwrapped(DeployModelMojo mojo) {
+        mojo.setLog(log);
+        // nothing listens on port 1, so the connection is refused immediately; a request timeout would also exercise
+        // this branch but would make the test wait for it
+        mojo.platformUrl = "http://localhost:1";
+
+        // sendAsync reports failures as an ExecutionException; sendWithProgress unwraps it so that the cause stays
+        // exactly what the previously blocking send() would have thrown
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Unexpected error while deploying model")
+                .hasCauseInstanceOf(ConnectException.class);
+    }
+
+    /**
+     * Copies every entry of the test fixture, so that {@code readModelDescriptor} still finds
+     * {@code timefold-model-descriptor.json} in the archive, then appends incompressible filler to grow it past the
+     * announcement threshold. Only writes under {@code target/}, which {@code setUp} overwrites for every other test.
+     */
+    private static void createLargeModelDescriptorArchive(int fillerBytes) throws IOException {
+        byte[] filler = new byte[fillerBytes];
+        new Random(42).nextBytes(filler); // random data does not deflate, so the archive really is this big
+        Path source = Paths.get("src", "test", "resources", "model-descriptor.zip");
+        Path target = Paths.get("target", "model-descriptor.zip");
+        try (ZipFile sourceZip = new ZipFile(source.toFile());
+                ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(target))) {
+            Enumeration<? extends ZipEntry> entries = sourceZip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                out.putNextEntry(new ZipEntry(entry.getName()));
+                if (!entry.isDirectory()) {
+                    try (InputStream in = sourceZip.getInputStream(entry)) {
+                        in.transferTo(out);
+                    }
+                }
+                out.closeEntry();
+            }
+            out.putNextEntry(new ZipEntry("filler.bin"));
+            out.write(filler);
+            out.closeEntry();
+        }
     }
 }

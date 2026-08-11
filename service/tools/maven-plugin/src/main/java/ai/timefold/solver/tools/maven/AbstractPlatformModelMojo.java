@@ -5,7 +5,10 @@ import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,8 +17,14 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import ai.timefold.solver.tools.maven.http.UploadProgressReporter;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -89,6 +98,49 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
         if (tenants != null && !tenants.isEmpty()) {
             builder.header("X-TF-TENANT-ID", tenants.getFirst());
             getLog().debug("Tenant " + tenants.getFirst() + " is used as context of the request");
+        }
+    }
+
+    /**
+     * Sends the request and, while waiting for the response, lets the reporter log progress from this thread.
+     * <p>
+     * {@link HttpClient#sendAsync(HttpRequest, BodyHandler)} is used rather than
+     * {@link HttpClient#send(HttpRequest, BodyHandler)} so that this thread stays free to log while the request body is
+     * written by the client's own threads. The exception unwrapping below restores the exception types that the
+     * blocking send would have thrown, so callers and their error messages do not have to change.
+     */
+    protected <T> HttpResponse<T> sendWithProgress(HttpRequest request, BodyHandler<T> responseBodyHandler,
+            UploadProgressReporter reporter) throws IOException, InterruptedException {
+        CompletableFuture<HttpResponse<T>> future = httpClient.sendAsync(request, responseBodyHandler);
+        long heartbeatMillis = Math.max(1L, reporter.getHeartbeatInterval().toMillis());
+        try {
+            while (true) {
+                try {
+                    HttpResponse<T> response = future.get(heartbeatMillis, TimeUnit.MILLISECONDS);
+                    reporter.finished();
+                    return response;
+                } catch (TimeoutException timeoutException) {
+                    // not an error, the request is simply still in flight
+                    reporter.heartbeat();
+                }
+            }
+        } catch (ExecutionException executionException) {
+            reporter.finished();
+            Throwable cause = executionException.getCause();
+            // HttpTimeoutException, ConnectException, SSLException, ... are all IOException subtypes and are rethrown
+            // as is, exactly as httpClient.send() would have thrown them
+            if (cause instanceof IOException ioException) {
+                throw ioException;
+            } else if (cause instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            } else if (cause instanceof Error error) {
+                throw error;
+            }
+            throw new IOException(cause == null ? executionException.getMessage() : cause.getMessage(),
+                    cause == null ? executionException : cause);
+        } catch (InterruptedException interruptedException) {
+            future.cancel(true);
+            throw interruptedException;
         }
     }
 
