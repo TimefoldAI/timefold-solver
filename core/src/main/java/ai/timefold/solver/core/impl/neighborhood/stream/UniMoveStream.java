@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftD
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodSession;
 import ai.timefold.solver.core.preview.api.neighborhood.UniMoveConstructor;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
 
 import org.jspecify.annotations.NullMarked;
 

@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodSession;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
 
 import org.jspecify.annotations.NullMarked;
 

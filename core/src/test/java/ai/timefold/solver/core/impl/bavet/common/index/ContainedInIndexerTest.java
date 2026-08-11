@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
@@ -12,6 +14,7 @@ import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ContainedInIndexerTest extends AbstractIndexerTest {
@@ -136,6 +139,62 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
         var list2 = randomListForCollectionQuery(indexer, 2, "X");
         assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
         assertThat(list1).isNotEqualTo(list2);
+    }
+
+    @Test
+    void uniqueRandomIteratorDrainsEachMatchExactlyOnce() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        putContainedInIndexer(indexer, "X");
+        putContainedInIndexer(indexer, "Y");
+        putContainedInIndexer(indexer, "X");
+        putContainedInIndexer(indexer, "Z");
+
+        assertUniqueRandomDrainMatchesForEach(indexer, List.of("X", "Y", "Z"));
+    }
+
+    @Test
+    void uniqueRandomIteratorUnmatchedQueryKey() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+        putContainedInIndexer(indexer, "X");
+
+        // Already guarded (DefaultIterator.hasNext() skips a null downstreamIndexer); locking it in.
+        assertUniqueRandomDrainMatchesForEach(indexer, List.of("X", "Q"));
+
+        var noMatchIterator = indexer.uniqueRandomIterator(List.of("Q"), new Random(0));
+        assertThat(noMatchIterator.hasNext()).isFalse();
+    }
+
+    @Test
+    void randomIteratorNeverEnds() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        putContainedInIndexer(indexer, "X");
+        putContainedInIndexer(indexer, "Y");
+        putContainedInIndexer(indexer, "X");
+
+        assertRepeatingRandomNeverEnds(indexer, List.of("X", "Y"), 30);
+
+        var deadIterator = indexer.randomIterator(List.of("Q"), new Random(0));
+        assertThat(deadIterator.hasNext()).isFalse();
+    }
+
+    @Test
+    @Disabled("""
+            Known bias: RandomIterator walks buckets in encounter order and randomizes only within
+            the first non-empty bucket, so a single draw always lands in the first query key's bucket.
+            Uniqueness and completeness are unaffected. Fixed separately.""")
+    void uniqueRandomIteratorFirstDrawIsNotBiasedToFirstBucket() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+        var xTuple = putContainedInIndexer(indexer, "X");
+        var yTuple = putContainedInIndexer(indexer, "Y");
+
+        var firstDraws = new HashSet<Object>();
+        for (var seed = 0; seed < 20; seed++) {
+            var iterator = indexer.uniqueRandomIterator(List.of("X", "Y"), new Random(seed));
+            firstDraws.add(iterator.next());
+        }
+        assertThat(firstDraws).containsExactlyInAnyOrder(xTuple, yTuple);
     }
 
     record TestWorker(String name, List<String> skills, String department, String affinity) {

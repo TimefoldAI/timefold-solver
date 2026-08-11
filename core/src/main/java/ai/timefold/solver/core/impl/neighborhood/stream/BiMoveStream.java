@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRight
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.BiMoveConstructor;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodSession;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -19,7 +20,8 @@ import org.jspecify.annotations.NullMarked;
  * The merged iterators provide {@link Move moves} constructed by a {@link BiMoveConstructor move constructor},
  * which accepts instances of type A and B.
  * <p>
- * Moves are produced by a {@link BiRandomMoveIterator}, which picks A and B randomly.
+ * Moves are produced by a {@link BiRandomMoveIterator},
+ * which picks A and B randomly.
  * Move order is never part of the API's contract.
  *
  * @param <Solution_>

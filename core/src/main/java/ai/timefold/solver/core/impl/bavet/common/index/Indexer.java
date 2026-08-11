@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
@@ -21,9 +20,9 @@ import org.jspecify.annotations.NullMarked;
  * The fact X is wrapped in a Tuple, because the {@link TupleState} is needed by clients of
  * {@link #forEach(Object, Consumer)}.
  * <p>
- * Some indexer types (such as contain, containedIn, ...) have two different key types (modify key vs query key),
+ * Some indexer types (such as {@link ContainingIndexer}) have two different key types (modify key vs query key),
  * depending on the operation type (modify operation vs query operation).
- * For example, for a contain indexer the modify key is a collection, but the query key is not.
+ * For such an indexer the modify key is a collection, but the query key is not.
  *
  * @param <T> The element type. Often a tuple.
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
@@ -91,12 +90,32 @@ public sealed interface Indexer<T>
     boolean isRemovable();
 
     /**
-     * Iterator which picks elements randomly.
-     * If the iterator has elements, it is endless and may return the same value multiple times.
+     * Iterator which picks elements randomly, with replacement.
+     * If the iterator has elements,
+     * it never ends and may return the same value multiple times.
      * Selection probability is uniform over all elements for the given composite key.
-     * By calling {@link Iterator#remove()},
-     * the element is removed never to be returned again by this iterator.
-     * However, it is not removed from the index itself;
+     * {@link Iterator#remove()} is not supported.
+     * <p>
+     * This is the cheap default, and should be preferred
+     * unless the caller specifically needs every element exactly once;
+     * see {@link #uniqueRandomIterator(Object, RandomGenerator)} for that.
+     *
+     * @param queryCompositeKey composite key uniquely identifying the backend or a set of backends
+     * @param workingRandom used to pick random elements
+     * @return iterator for the given composite key, possibly empty
+     */
+    RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom);
+
+    /**
+     * Iterator which picks elements randomly, without replacement.
+     * Selection probability is uniform over all elements for the given composite key.
+     * Every element for the given composite key is eventually returned exactly once,
+     * and then the iterator ends without any cooperation from the caller.
+     * This is significantly more expensive to create and to maintain than {@link #randomIterator(Object, RandomGenerator)},
+     * since it must track which elements were already returned;
+     * use it only when the caller specifically needs that guarantee.
+     * <p>
+     * The element is not removed from the index itself;
      * the only way to remove from the index is to call {@link #remove(Object, ListEntry)},
      * which will make any existing iterators invalid.
      *
@@ -104,12 +123,6 @@ public sealed interface Indexer<T>
      * @param workingRandom used to pick random elements
      * @return iterator for the given composite key, possibly empty
      */
-    Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom);
-
-    /**
-     * As defined by {@link #randomIterator(Object, RandomGenerator)},
-     * but only returning elements matching the given filter.
-     */
-    Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter);
+    UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom);
 
 }

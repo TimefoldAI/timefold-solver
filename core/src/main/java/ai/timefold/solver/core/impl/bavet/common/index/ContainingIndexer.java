@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.SequencedCollection;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
@@ -128,32 +127,29 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        return createRandomIterator(queryCompositeKey, workingRandom, null);
-    }
-
-    private Iterator<T> createRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom,
-            @Nullable Predicate<T> filter) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-
-        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+    public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var downstreamIndexer = findDownstreamIndexer(queryCompositeKey);
         if (downstreamIndexer == null) {
-            return Collections.emptyIterator();
+            return RepeatingRandomIterator.empty();
         }
-
-        if (filter == null) {
-            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
-        } else {
-            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
-        }
+        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
-        return createRandomIterator(queryCompositeKey, workingRandom, filter);
+    public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var downstreamIndexer = findDownstreamIndexer(queryCompositeKey);
+        if (downstreamIndexer == null) {
+            return UniqueRandomIterator.empty();
+        }
+        return downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
+    }
+
+    private @Nullable Indexer<T> findDownstreamIndexer(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return null;
+        }
+        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
+        return downstreamIndexerMap.get(indexKey);
     }
 
     @Override

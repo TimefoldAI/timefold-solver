@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -14,7 +15,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * An iterator for the uni-move stream which returns elements in random order.
- * Implements sampling without replacement via {@link ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator}.
+ * Implements sampling with replacement:
+ * it never ends, and may return the same element more than once.
  */
 @NullMarked
 final class UniRandomMoveIterator<Solution_, A> implements Iterator<Move<Solution_>> {
@@ -59,6 +61,14 @@ final class UniRandomMoveIterator<Solution_, A> implements Iterator<Move<Solutio
         var result = Objects.requireNonNull(nextMove);
         nextMove = null;
         return result;
+    }
+
+    @Override
+    public void forEachRemaining(Consumer<? super Move<Solution_>> action) {
+        // Effectively never ends for any dataset with at least one row, since a row is never removed.
+        throw new UnsupportedOperationException("""
+                This iterator does not end, so forEachRemaining() cannot terminate.
+                Maybe use hasNext() and next() with your own stop condition instead.""");
     }
 
 }

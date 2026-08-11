@@ -28,33 +28,47 @@ import org.jspecify.annotations.Nullable;
 public interface BiDatasetInstance<A, B> {
 
     /**
-     * Returns a theoretical upper bound on the number of rows;
-     * {@code filtering()} joiners are not accounted for, so the iterator may yield fewer.
+     * As defined by {@link UniDatasetInstance#size()}.
      */
     int size();
 
+    /**
+     * As defined by {@link UniDatasetInstance#iterator()}.
+     */
     BiIterator<A, B> iterator();
 
     /**
-     * Returns an iterator performing sampling without replacement:
-     * a random walk over the dataset, never an indexed ({@code get(i)}) random access.
-     *
-     * @param random never null
-     * @return never null
+     * As defined by {@link UniDatasetInstance#randomIterator(RandomGenerator)}.
      */
     BiIterator<A, B> randomIterator(RandomGenerator random);
 
     /**
-     * Returns a theoretical upper bound on the number of rows paired with the given left value;
-     * {@code filtering()} joiners are not accounted for, so the iterator may yield fewer.
+     * As defined by {@link UniDatasetInstance#uniqueRandomIterator(RandomGenerator)}.
+     */
+    BiIterator<A, B> uniqueRandomIterator(RandomGenerator random);
+
+    /**
+     * As defined by {@link #size()},
+     * but restricted to rows paired with the given left value.
      */
     int size(@Nullable A a);
 
+    /**
+     * As defined by {@link #iterator()},
+     * but restricted to rows paired with the given left value.
+     */
     Iterator<@Nullable B> iterator(@Nullable A a);
 
     /**
-     * As defined by {@link #randomIterator(RandomGenerator)}, but restricted to rows paired with the given left value.
+     * As defined by {@link #randomIterator(RandomGenerator)},
+     * but restricted to rows paired with the given left value.
      */
     Iterator<@Nullable B> randomIterator(@Nullable A a, RandomGenerator random);
+
+    /**
+     * As defined by {@link #uniqueRandomIterator(RandomGenerator)},
+     * but restricted to rows paired with the given left value.
+     */
+    Iterator<@Nullable B> uniqueRandomIterator(@Nullable A a, RandomGenerator random);
 
 }

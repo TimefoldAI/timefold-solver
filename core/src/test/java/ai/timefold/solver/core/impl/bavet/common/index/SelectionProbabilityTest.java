@@ -2,16 +2,23 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.IntStream;
 
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.data.Percentage;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,7 +49,7 @@ final class SelectionProbabilityTest {
         for (var trial = 0; trial < TRIAL_COUNT; trial++) { // Independent trials; each gets its own random seed.
             Integer element = null;
             var splitRandom = new Random(random.nextLong());
-            var iterator = UniqueRandomIterator.of(sampleList, splitRandom); // This is the code that we test.
+            var iterator = RepeatingRandomIterator.of(sampleList, splitRandom); // This is the code that we test.
             for (var i = 0; i < n; i++) {
                 element = iterator.next();
             }
@@ -73,10 +80,80 @@ final class SelectionProbabilityTest {
 
     static <T> ElementAwareArrayList<T> toEntries(List<T> elements) {
         var list = new ElementAwareArrayList<T>();
-        for (var element : elements) {
-            list.add(element);
-        }
+        list.addAll(elements);
         return list;
+    }
+
+    /**
+     * Protects solver fairness for {@link ComparisonIndexer}'s plain flavor:
+     * it must pick across every matching bucket, weighted by bucket size,
+     * not just the first bucket it encounters while walking the boundary,
+     * which is all the exhausting {@link ComparisonIndexer.RandomIterator} needs to do,
+     * since it eventually drains every bucket regardless of visit order.
+     */
+    @Test
+    void comparisonIndexerRandomIteratorWeightsByBucketSize() {
+        var trialCount = 200_000;
+        var joiner = (DefaultBiNeighborhoodsJoiner<TestPerson, TestPerson>) NeighborhoodsJoiners
+                .lessThanOrEqual(TestPerson::age);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+
+        // Three buckets, all matching a query of age 50, with sizes 1, 3, and 6 (weight 0.1 / 0.3 / 0.6).
+        putBucket(indexer, 10, 1);
+        putBucket(indexer, 20, 3);
+        putBucket(indexer, 30, 6);
+
+        var random = new Random(0);
+        var counts = new EnumMap<Bucket, Integer>(Bucket.class);
+        for (var trial = 0; trial < trialCount; trial++) {
+            var iterator = indexer.randomIterator(CompositeKey.of(50), random);
+            var pick = iterator.next();
+            counts.merge(Bucket.of(pick), 1, Integer::sum);
+        }
+
+        // Every bucket must be reachable; a leftover boundary-walk bug would starve everything but the first.
+        Assertions.assertThat(counts.keySet()).containsExactlyInAnyOrder(Bucket.values());
+
+        for (var bucket : Bucket.values()) {
+            var expected = trialCount * bucket.weight;
+            var actual = counts.get(bucket);
+            Assertions.assertThat(actual)
+                    .as(() -> "Bucket %s picked %d times, expected close to %.0f (weight %.1f)."
+                            .formatted(bucket, actual, expected, bucket.weight))
+                    .isCloseTo((int) expected, Percentage.withPercentage(10));
+        }
+    }
+
+    private static void putBucket(Indexer<UniTuple<String>> indexer, int age, int size) {
+        for (var i = 0; i < size; i++) {
+            indexer.put(CompositeKey.of(age), UniTuple.of("age-" + age + "-" + i, 0));
+        }
+    }
+
+    private enum Bucket {
+
+        SMALL(10, 0.1),
+        MEDIUM(20, 0.3),
+        LARGE(30, 0.6);
+
+        private final int age;
+        private final double weight;
+
+        Bucket(int age, double weight) {
+            this.age = age;
+            this.weight = weight;
+        }
+
+        static Bucket of(UniTuple<String> tuple) {
+            var fact = Objects.requireNonNull(tuple.getA());
+            for (var bucket : values()) {
+                if (fact.startsWith("age-" + bucket.age + "-")) {
+                    return bucket;
+                }
+            }
+            throw new IllegalArgumentException("Unexpected tuple (%s).".formatted(tuple));
+        }
+
     }
 
 }

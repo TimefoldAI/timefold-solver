@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -56,10 +58,38 @@ class DatasetTest {
         instance.iterator().forEachRemaining(seen::add);
         assertThat(seen).containsExactlyInAnyOrderElementsOf(solution.getEntityList());
 
-        var randomlySeen = new HashSet<TestdataEntity>();
-        var randomIterator = instance.randomIterator(RandomSource.seeded(0L).moveIteratorUsage());
-        randomIterator.forEachRemaining(randomlySeen::add);
-        assertThat(randomlySeen).containsExactlyInAnyOrderElementsOf(solution.getEntityList());
+        var uniquelySeen = new HashSet<TestdataEntity>();
+        var uniqueRandomIterator = instance.uniqueRandomIterator(RandomSource.seeded(0L).moveIteratorUsage());
+        uniqueRandomIterator.forEachRemaining(uniquelySeen::add);
+        assertThat(uniquelySeen).containsExactlyInAnyOrderElementsOf(solution.getEntityList());
+    }
+
+    @Test
+    void registerUni_randomIteratorNeverEndsAndCanRepeat() {
+        var moveStreamFactory = factory();
+        var entityDataset = moveStreamFactory.register(moveStreamFactory.forEach(TestdataEntity.class, false));
+
+        var solution = TestdataSolution.generateSolution(2, 2); // 2 values, 2 entities.
+        var session = createSession(moveStreamFactory, solution);
+        var instance = session.getInstance(entityDataset);
+
+        var random = RandomSource.seeded(0L).moveIteratorUsage();
+        var randomIterator = instance.randomIterator(random);
+
+        // Draw far more times than there are elements; it must still never run dry.
+        var draws = new ArrayList<TestdataEntity>();
+        for (var i = 0; i < 100; i++) {
+            assertThat(randomIterator.hasNext()).isTrue();
+            draws.add(randomIterator.next());
+        }
+        assertThat(draws).containsAnyElementsOf(solution.getEntityList());
+        // With only 2 elements and 100 draws, at least one must have repeated.
+        assertThat(Set.of(draws)).hasSizeLessThan(draws.size());
+
+        assertThat(randomIterator.hasNext()).isTrue();
+        assertThatThrownBy(() -> randomIterator.forEachRemaining(e -> {
+        }))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test

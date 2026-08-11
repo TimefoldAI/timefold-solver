@@ -5,9 +5,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
+import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDatasetInstance;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -19,8 +23,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A {@link BiDatasetInstance} produced by {@code UniDataset.join}: the join is not materialized in bavet,
- * but computed just in time, inside this instance, out of a left and a right {@code UniDataset}.
+ * A {@link BiDatasetInstance} produced by {@code UniDataset.join}:
+ * the join is not materialized in Bavet but computed just in time inside this instance,
+ * out of a left and a right {@code UniDataset}.
  */
 @NullMarked
 public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDatasetInstance<A, B> {
@@ -38,7 +43,6 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
 
     @Override
     public int size() {
-        // ponytail: O(n) sum of indexer lookups; upper bound, filtering() joiners not accounted for.
         var total = 0;
         var leftTupleIterator = leftDatasetInstance.iterator();
         while (leftTupleIterator.hasNext()) {
@@ -54,7 +58,12 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
 
     @Override
     public BiIterator<A, B> randomIterator(RandomGenerator random) {
-        return new RandomBiIterator<>(leftDatasetInstance, rightDatasetInstance, solutionView, random);
+        return new RepeatingRandomBiIterator<>(leftDatasetInstance, rightDatasetInstance, solutionView, random);
+    }
+
+    @Override
+    public BiIterator<A, B> uniqueRandomIterator(RandomGenerator random) {
+        return new UniqueRandomBiIterator<>(leftDatasetInstance, rightDatasetInstance, solutionView, random);
     }
 
     @Override
@@ -65,62 +74,51 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     @Override
     public Iterator<@Nullable B> iterator(@Nullable A a) {
         var compositeKey = rightDatasetInstance.produceCompositeKey(a);
-        Iterator<UniTuple<B>> tupleIterator = rightDatasetInstance.iterator(compositeKey);
+        var tupleIterator = rightDatasetInstance.iterator(compositeKey);
         var filter = rightDatasetInstance.getFilter();
         if (filter != null) {
-            tupleIterator = filterByLeft(tupleIterator, filter, solutionView, a);
+            // The delegate is finite and deterministic, so there is nothing to bail out of.
+            tupleIterator =
+                    new FilteringIterator<>(tupleIterator, rightTuple -> filter.test(solutionView, a, rightTuple.getA()));
         }
-        return new FactIteratorAdapter<>(tupleIterator, false);
+        return new FactIteratorAdapter<>(tupleIterator);
     }
 
     @Override
     public Iterator<@Nullable B> randomIterator(@Nullable A a, RandomGenerator random) {
         var compositeKey = rightDatasetInstance.produceCompositeKey(a);
+        var tupleIterator = rightDatasetInstance.randomIterator(compositeKey, random);
         var filter = rightDatasetInstance.getFilter();
-        Iterator<UniTuple<B>> tupleIterator = filter == null
-                ? rightDatasetInstance.randomIterator(compositeKey, random)
-                : rightDatasetInstance.randomIterator(compositeKey, random,
-                        rightTuple -> filter.test(solutionView, a, rightTuple.getA()));
-        return new FactIteratorAdapter<>(tupleIterator, true);
-    }
-
-    private static <Solution_, A, B> Iterator<UniTuple<B>> filterByLeft(Iterator<UniTuple<B>> source,
-            BiNeighborhoodsPredicate<Solution_, A, B> filter, SolutionView<Solution_> solutionView, @Nullable A leftFact) {
-        return new Iterator<>() {
-            private @Nullable UniTuple<B> next;
-
-            @Override
-            public boolean hasNext() {
-                while (next == null && source.hasNext()) {
-                    var candidate = source.next();
-                    if (filter.test(solutionView, leftFact, candidate.getA())) {
-                        next = candidate;
-                    }
-                }
-                return next != null;
-            }
-
-            @Override
-            public UniTuple<B> next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-                var result = Objects.requireNonNull(next);
-                next = null;
-                return result;
-            }
-        };
-    }
-
-    private static final class FactIteratorAdapter<B> implements Iterator<@Nullable B> {
-
-        private final Iterator<UniTuple<B>> tupleIterator;
-        private final boolean removeAfterNext;
-
-        private FactIteratorAdapter(Iterator<UniTuple<B>> tupleIterator, boolean removeAfterNext) {
-            this.tupleIterator = tupleIterator;
-            this.removeAfterNext = removeAfterNext;
+        if (filter != null) {
+            // Draws with replacement can never prove that no matching right tuple exists;
+            // bail out after many consecutive rejections,
+            // same multiple as FilteringEntitySelector.
+            var bailOutSize = rightDatasetInstance.size(compositeKey) * 10L;
+            tupleIterator = new FilteringIterator<>(tupleIterator,
+                    rightTuple -> filter.test(solutionView, a, rightTuple.getA()), bailOutSize);
         }
+        return new FactIteratorAdapter<>(tupleIterator);
+    }
+
+    @Override
+    public Iterator<@Nullable B> uniqueRandomIterator(@Nullable A a, RandomGenerator random) {
+        var compositeKey = rightDatasetInstance.produceCompositeKey(a);
+        var filter = rightDatasetInstance.getFilter();
+        var tupleIterator = filter == null
+                ? rightDatasetInstance.uniqueRandomIterator(compositeKey, random)
+                : rightDatasetInstance.uniqueRandomIterator(compositeKey, random,
+                        rightTuple -> filter.test(solutionView, a, rightTuple.getA()));
+        return new FactIteratorAdapter<>(tupleIterator);
+    }
+
+    /**
+     * Maps a tuple iterator to its fact.
+     * Uniqueness or endlessness (and any bail-out) are entirely a property of the wrapped {@code tupleIterator};
+     * this class neither removes nor limits anything itself.
+     */
+    private record FactIteratorAdapter<B>(Iterator<UniTuple<B>> tupleIterator)
+            implements
+                Iterator<@Nullable B> {
 
         @Override
         public boolean hasNext() {
@@ -132,20 +130,23 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            var result = tupleIterator.next().getA();
-            if (removeAfterNext) {
-                tupleIterator.remove();
-            }
-            return result;
+            return tupleIterator.next().getA();
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super @Nullable B> action) {
+            tupleIterator.forEachRemaining(tuple -> action.accept(tuple.getA()));
         }
 
     }
 
     /**
-     * Ports {@code BiOriginalMoveIterator}'s left-then-right walk: fix a left tuple, walk all matching right
-     * tuples, then advance to the next left tuple.
+     * Ports {@code BiOriginalMoveIterator}'s left-then-right walk:
+     * fix a left tuple, walk all matching right tuples,
+     * then advance to the next left tuple.
      */
-    private static final class OriginalBiIterator<Solution_, A, B> implements BiIterator<A, B> {
+    private static final class OriginalBiIterator<Solution_, A, B>
+            implements BiIterator<A, B> {
 
         private final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
         private final SolutionView<Solution_> solutionView;
@@ -183,8 +184,11 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
                 }
                 leftTuple = leftTupleIterator.next();
                 var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
-                Iterator<UniTuple<B>> raw = rightDatasetInstance.iterator(compositeKey);
-                rightTupleIterator = filter == null ? raw : filterByLeft(raw, filter, solutionView, leftTuple.getA());
+                var raw = rightDatasetInstance.iterator(compositeKey);
+                // The delegate is finite and deterministic, so there is nothing to bail out of.
+                rightTupleIterator = filter == null ? raw
+                        : new FilteringIterator<>(raw,
+                                rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
             }
         }
 
@@ -212,71 +216,141 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     }
 
     /**
-     * Ports {@code BiRandomMoveIterator}'s sampling-without-replacement walk over (A, B) pairs.
+     * Ports {@code BiRandomMoveIterator}'s never-ending walk over (A, B) pairs:
+     * the right side is drawn with replacement,
+     * and a left tuple is only ever retired once its right side is confirmed empty.
      */
-    private static final class RandomBiIterator<Solution_, A, B> implements BiIterator<A, B> {
+    private static final class RepeatingRandomBiIterator<Solution_, A, B>
+            implements BiIterator<A, B>, RetiringBiWalk<UniTuple<A>, UniTuple<B>> {
 
         private final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
         private final SolutionView<Solution_> solutionView;
         private final RandomGenerator workingRandom;
-        private final Map<UniTuple<A>, Iterator<UniTuple<B>>> leftTupleToRightIteratorMap = new HashMap<>();
-        private final Iterator<UniTuple<A>> leftTupleIterator;
+        private final RetiringRandomIterator<UniTuple<A>> leftTupleIterator;
 
         private @Nullable UniTuple<A> pendingLeftTuple;
         private @Nullable UniTuple<B> pendingRightTuple;
         private @Nullable UniTuple<A> currentLeftTuple;
         private @Nullable UniTuple<B> currentRightTuple;
 
-        private RandomBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
+        private RepeatingRandomBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
                 UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance, SolutionView<Solution_> solutionView,
                 RandomGenerator workingRandom) {
             this.rightDatasetInstance = rightDatasetInstance;
             this.solutionView = solutionView;
             this.workingRandom = workingRandom;
-            this.leftTupleIterator = leftDatasetInstance.randomIterator(workingRandom);
+            this.leftTupleIterator = leftDatasetInstance.retiringRandomIterator(workingRandom);
         }
 
         @Override
         public boolean hasNext() {
-            if (pendingRightTuple != null) {
-                return true;
-            }
-            while (leftTupleIterator.hasNext()) {
-                var leftTuple = leftTupleIterator.next();
-                if (pickNext(leftTuple)) {
-                    return true;
-                }
-                leftTupleIterator.remove();
-                leftTupleToRightIteratorMap.remove(leftTuple);
-            }
-            return false;
+            return pendingRightTuple != null || RetiringBiWalk.advance(leftTupleIterator, this);
         }
 
-        private boolean pickNext(UniTuple<A> leftTuple) {
+        @Override
+        public Iterator<UniTuple<B>> createRightIterator(UniTuple<A> leftTuple) {
+            var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
+            var rightTupleIterator = rightDatasetInstance.randomIterator(compositeKey, workingRandom);
+            var filter = rightDatasetInstance.getFilter();
+            if (filter == null) {
+                return rightTupleIterator;
+            }
+            var bailOutSize = rightDatasetInstance.size(compositeKey) * 10L;
+            return new FilteringIterator<>(rightTupleIterator,
+                    rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()), bailOutSize);
+        }
+
+        @Override
+        public void accept(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
+            pendingLeftTuple = leftTuple;
+            pendingRightTuple = rightTuple;
+        }
+
+        @Override
+        public void next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            currentLeftTuple = pendingLeftTuple;
+            currentRightTuple = pendingRightTuple;
+            pendingLeftTuple = null;
+            pendingRightTuple = null;
+        }
+
+        @Override
+        public @Nullable A getA() {
+            return Objects.requireNonNull(currentLeftTuple).getA();
+        }
+
+        @Override
+        public @Nullable B getB() {
+            return Objects.requireNonNull(currentRightTuple).getA();
+        }
+
+    }
+
+    /**
+     * Ports {@code BiRandomMoveIterator}'s (now legacy) sampling-without-replacement walk over (A, B) pairs.
+     */
+    private static final class UniqueRandomBiIterator<Solution_, A, B>
+            implements BiIterator<A, B>, RetiringBiWalk<UniTuple<A>, UniTuple<B>> {
+
+        private final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
+        private final SolutionView<Solution_> solutionView;
+        private final RandomGenerator workingRandom;
+        private final Map<UniTuple<A>, Iterator<UniTuple<B>>> leftTupleToRightIteratorMap = new HashMap<>();
+        private final RetiringRandomIterator<UniTuple<A>> leftTupleIterator;
+
+        private @Nullable UniTuple<A> pendingLeftTuple;
+        private @Nullable UniTuple<B> pendingRightTuple;
+        private @Nullable UniTuple<A> currentLeftTuple;
+        private @Nullable UniTuple<B> currentRightTuple;
+
+        private UniqueRandomBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
+                UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance, SolutionView<Solution_> solutionView,
+                RandomGenerator workingRandom) {
+            this.rightDatasetInstance = rightDatasetInstance;
+            this.solutionView = solutionView;
+            this.workingRandom = workingRandom;
+            this.leftTupleIterator = leftDatasetInstance.retiringRandomIterator(workingRandom);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return pendingRightTuple != null || RetiringBiWalk.advance(leftTupleIterator, this);
+        }
+
+        @Override
+        public Iterator<UniTuple<B>> createRightIterator(UniTuple<A> leftTuple) {
             var rightTupleIterator = leftTupleToRightIteratorMap.get(leftTuple);
             if (rightTupleIterator == null) {
                 rightTupleIterator = createRightTupleIterator(leftTuple);
-                if (!rightTupleIterator.hasNext()) {
-                    return false;
-                }
                 leftTupleToRightIteratorMap.put(leftTuple, rightTupleIterator);
-            } else if (!rightTupleIterator.hasNext()) {
-                return false;
             }
-            pendingLeftTuple = leftTuple;
-            pendingRightTuple = rightTupleIterator.next();
-            rightTupleIterator.remove();
-            return true;
+            return rightTupleIterator;
         }
 
         private Iterator<UniTuple<B>> createRightTupleIterator(UniTuple<A> leftTuple) {
             var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
+            var rightTupleIterator = rightDatasetInstance.uniqueRandomIterator(compositeKey, workingRandom);
             var filter = rightDatasetInstance.getFilter();
             if (filter == null) {
-                return rightDatasetInstance.randomIterator(compositeKey, workingRandom);
+                return rightTupleIterator;
             }
-            return rightDatasetInstance.randomIterator(compositeKey, workingRandom,
+            // The delegate already guarantees uniqueness; nothing to bail out of.
+            return new FilteringIterator<>(rightTupleIterator,
                     rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
+        }
+
+        @Override
+        public void accept(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
+            pendingLeftTuple = leftTuple;
+            pendingRightTuple = rightTuple;
+        }
+
+        @Override
+        public void onExhausted(UniTuple<A> leftTuple) {
+            leftTupleToRightIteratorMap.remove(leftTuple);
         }
 
         @Override

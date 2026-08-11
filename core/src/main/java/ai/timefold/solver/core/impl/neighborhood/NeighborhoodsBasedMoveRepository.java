@@ -8,13 +8,13 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.InnerMoveStream;
-import ai.timefold.solver.core.impl.neighborhood.stream.MoveIterable;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

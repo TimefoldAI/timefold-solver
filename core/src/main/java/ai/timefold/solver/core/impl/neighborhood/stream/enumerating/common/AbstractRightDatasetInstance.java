@@ -7,7 +7,10 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.Indexer;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -69,21 +72,45 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
         indexer.remove(compositeKey, tuple.removeStore(entryStoreIndex));
     }
 
+    /**
+     * As defined by {@link UniDatasetInstance#size()},
+     * only accepts a key for joins.
+     */
     public int size(Object compositeKey) {
         return indexer.size(compositeKey);
     }
 
+    /**
+     * As defined by {@link UniDatasetInstance#iterator()},
+     * only accepts a key for joins.
+     */
     public Iterator<UniTuple<Right_>> iterator(Object compositeKey) {
         return indexer.iterator(compositeKey);
     }
 
+    /**
+     * As defined by {@link UniDatasetInstance#randomIterator(RandomGenerator)},
+     * only accepts a key for joins.
+     */
     public Iterator<UniTuple<Right_>> randomIterator(Object compositeKey, RandomGenerator workingRandom) {
         return indexer.randomIterator(compositeKey, workingRandom);
     }
 
-    public Iterator<UniTuple<Right_>> randomIterator(Object compositeKey, RandomGenerator workingRandom,
+    /**
+     * As defined by {@link UniDatasetInstance#uniqueRandomIterator(RandomGenerator)},
+     * only accepts a key for joins.
+     */
+    public UniqueRandomIterator<UniTuple<Right_>> uniqueRandomIterator(Object compositeKey, RandomGenerator workingRandom) {
+        return indexer.uniqueRandomIterator(compositeKey, workingRandom);
+    }
+
+    /**
+     * As defined by {@link #uniqueRandomIterator(Object, RandomGenerator)},
+     * but only returning elements matching the given predicate.
+     */
+    public Iterator<UniTuple<Right_>> uniqueRandomIterator(Object compositeKey, RandomGenerator workingRandom,
             Predicate<UniTuple<Right_>> predicate) {
-        return indexer.randomIterator(compositeKey, workingRandom, predicate);
+        return new FilteringIterator<>(indexer.uniqueRandomIterator(compositeKey, workingRandom), predicate);
     }
 
 }

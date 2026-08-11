@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
+import java.util.Random;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
@@ -150,6 +151,17 @@ class ContainingIndexerTest extends AbstractIndexerTest {
         var list2 = randomListForQuery(indexer, 2, "X");
         assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
         assertThat(list1).isNotEqualTo(list2);
+
+        assertUniqueRandomDrainMatchesForEach(indexer, "X");
+    }
+
+    @Test
+    void uniqueRandomIteratorUnmatchedQueryKey() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+        putContainingIndexer(indexer, List.of("X", "Y"));
+
+        var noMatchIterator = indexer.uniqueRandomIterator("Q", new Random(0));
+        assertThat(noMatchIterator.hasNext()).isFalse();
     }
 
     record TestWorker(String name, List<String> skills, String department, String affinity) {

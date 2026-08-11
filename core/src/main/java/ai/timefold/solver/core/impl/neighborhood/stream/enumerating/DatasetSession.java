@@ -15,7 +15,6 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.BiLeftDat
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.JustInTimeBiDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDatasetInstance;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractRightDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
@@ -57,22 +56,20 @@ public final class DatasetSession<Solution_>
 
     public <A> UniDatasetInstance<A> getInstance(UniDataset<Solution_, A> dataset) {
         var uniLeftDataset = (UniLeftDataset<Solution_, A>) dataset;
-        return new DefaultUniDatasetInstance<>(this.<AbstractLeftDatasetInstance<Solution_, UniTuple<A>>> getInstance(
-                (AbstractLeftDataset<Solution_, UniTuple<A>>) uniLeftDataset));
+        return new DefaultUniDatasetInstance<>(
+                this.<AbstractLeftDatasetInstance<Solution_, UniTuple<A>>> getInstance(uniLeftDataset));
     }
 
     public <A, B> BiDatasetInstance<A, B> getInstance(BiDataset<Solution_, A, B> dataset) {
         if (dataset instanceof JustInTimeBiDataset<Solution_, A, B>(var leftDataset, var rightDataset)) {
-            var leftInstance = this.<AbstractLeftDatasetInstance<Solution_, UniTuple<A>>> getInstance(
-                    (AbstractLeftDataset<Solution_, UniTuple<A>>) leftDataset);
-            var rightInstance =
-                    (UniRightDatasetInstance<Solution_, A, B>) this
-                            .<AbstractRightDatasetInstance<Solution_, B>> getInstance(rightDataset);
+            var leftInstance = this.<AbstractLeftDatasetInstance<Solution_, UniTuple<A>>> getInstance(leftDataset);
+            var rightInstance = (UniRightDatasetInstance<Solution_, A, B>) this
+                    .<AbstractRightDatasetInstance<Solution_, B>> getInstance(rightDataset);
             return new JustInTimeBiDatasetInstance<>(leftInstance, rightInstance, solutionView);
         }
         var biLeftDataset = (BiLeftDataset<Solution_, A, B>) dataset;
-        return new CachedBiDatasetInstance<>(this.<AbstractLeftDatasetInstance<Solution_, BiTuple<A, B>>> getInstance(
-                (AbstractLeftDataset<Solution_, BiTuple<A, B>>) biLeftDataset));
+        return new CachedBiDatasetInstance<>(
+                this.<AbstractLeftDatasetInstance<Solution_, BiTuple<A, B>>> getInstance(biLeftDataset));
     }
 
 }

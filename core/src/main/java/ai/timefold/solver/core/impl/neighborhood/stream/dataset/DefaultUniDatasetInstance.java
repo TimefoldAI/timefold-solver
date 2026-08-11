@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood.stream.dataset;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -28,23 +29,27 @@ public final class DefaultUniDatasetInstance<Solution_, A> implements UniDataset
 
     @Override
     public Iterator<@Nullable A> iterator() {
-        return new FactIterator<>(delegate.iterator(), false);
+        return new FactIterator<>(delegate.iterator());
     }
 
     @Override
     public Iterator<@Nullable A> randomIterator(RandomGenerator random) {
-        return new FactIterator<>(delegate.randomIterator(random), true);
+        return new FactIterator<>(delegate.randomIterator(random));
     }
 
-    private static final class FactIterator<A> implements Iterator<@Nullable A> {
+    @Override
+    public Iterator<@Nullable A> uniqueRandomIterator(RandomGenerator random) {
+        return new FactIterator<>(delegate.uniqueRandomIterator(random));
+    }
 
-        private final Iterator<UniTuple<A>> tupleIterator;
-        private final boolean removeAfterNext;
-
-        private FactIterator(Iterator<UniTuple<A>> tupleIterator, boolean removeAfterNext) {
-            this.tupleIterator = tupleIterator;
-            this.removeAfterNext = removeAfterNext;
-        }
+    /**
+     * Maps a tuple iterator to its fact.
+     * Uniqueness or endlessness are entirely a property of the wrapped {@code tupleIterator};
+     * this class neither removes nor limits anything itself.
+     */
+    private record FactIterator<A>(Iterator<UniTuple<A>> tupleIterator)
+            implements
+                Iterator<@Nullable A> {
 
         @Override
         public boolean hasNext() {
@@ -56,11 +61,12 @@ public final class DefaultUniDatasetInstance<Solution_, A> implements UniDataset
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            var result = tupleIterator.next().getA();
-            if (removeAfterNext) {
-                tupleIterator.remove();
-            }
-            return result;
+            return tupleIterator.next().getA();
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super @Nullable A> action) {
+            tupleIterator.forEachRemaining(tuple -> action.accept(tuple.getA()));
         }
 
     }

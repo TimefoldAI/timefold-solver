@@ -3,9 +3,12 @@ package ai.timefold.solver.core.impl.neighborhood.stream.dataset;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiIterator;
@@ -32,17 +35,21 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
 
     @Override
     public BiIterator<A, B> iterator() {
-        return new TupleBiIterator<>(delegate.iterator(), false);
+        return new TupleBiIterator<>(delegate.iterator());
     }
 
     @Override
     public BiIterator<A, B> randomIterator(RandomGenerator random) {
-        return new TupleBiIterator<>(delegate.randomIterator(random), true);
+        return new TupleBiIterator<>(delegate.randomIterator(random));
+    }
+
+    @Override
+    public BiIterator<A, B> uniqueRandomIterator(RandomGenerator random) {
+        return new TupleBiIterator<>(delegate.uniqueRandomIterator(random));
     }
 
     @Override
     public int size(@Nullable A a) {
-        // ponytail: O(n) scan over the whole dataset; index by A if profiling demands it.
         var count = 0;
         var tupleIterator = delegate.iterator();
         while (tupleIterator.hasNext()) {
@@ -55,23 +62,40 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
 
     @Override
     public Iterator<@Nullable B> iterator(@Nullable A a) {
-        return new FilteringFactIterator<>(delegate.iterator(), a, false);
+        // The delegate is finite and deterministic, so there is nothing to bail out of.
+        return new FactIterator<>(new FilteringIterator<>(delegate.iterator(), matchingA(a)));
     }
 
     @Override
     public Iterator<@Nullable B> randomIterator(@Nullable A a, RandomGenerator random) {
-        return new FilteringFactIterator<>(delegate.randomIterator(random), a, true);
+        // There is no index on A here (unlike a join's right side);
+        // this is a linear scan over every pair, drawn with replacement.
+        // Draws can never prove that no matching A exists,
+        // so bail out after many consecutive rejections,
+        // same multiple as FilteringEntitySelector.
+        var bailOutSize = size(a) * 10L;
+        return new FactIterator<>(new FilteringIterator<>(delegate.randomIterator(random), matchingA(a), bailOutSize));
+    }
+
+    @Override
+    public Iterator<@Nullable B> uniqueRandomIterator(@Nullable A a, RandomGenerator random) {
+        // The delegate already removes every element it returns, matching or not,
+        // so it is finite regardless of how selective the filter is;
+        // nothing to bail out of.
+        return new FactIterator<>(new FilteringIterator<>(delegate.uniqueRandomIterator(random), matchingA(a)));
+    }
+
+    private static <A, B> Predicate<BiTuple<A, B>> matchingA(@Nullable A a) {
+        return candidate -> Objects.equals(candidate.getA(), a);
     }
 
     private static final class TupleBiIterator<A, B> implements BiIterator<A, B> {
 
         private final Iterator<BiTuple<A, B>> tupleIterator;
-        private final boolean removeAfterNext;
         private @Nullable BiTuple<A, B> current;
 
-        private TupleBiIterator(Iterator<BiTuple<A, B>> tupleIterator, boolean removeAfterNext) {
+        private TupleBiIterator(Iterator<BiTuple<A, B>> tupleIterator) {
             this.tupleIterator = tupleIterator;
-            this.removeAfterNext = removeAfterNext;
         }
 
         @Override
@@ -82,9 +106,6 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
         @Override
         public void next() {
             current = tupleIterator.next();
-            if (removeAfterNext) {
-                tupleIterator.remove();
-            }
         }
 
         @Override
@@ -99,30 +120,13 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
 
     }
 
-    private static final class FilteringFactIterator<A, B> implements Iterator<@Nullable B> {
-
-        private final Iterator<BiTuple<A, B>> tupleIterator;
-        private final @Nullable A a;
-        private final boolean removeAfterNext;
-        private @Nullable BiTuple<A, B> nextTuple;
-
-        private FilteringFactIterator(Iterator<BiTuple<A, B>> tupleIterator, @Nullable A a, boolean removeAfterNext) {
-            this.tupleIterator = tupleIterator;
-            this.a = a;
-            this.removeAfterNext = removeAfterNext;
-        }
+    private record FactIterator<A, B>(Iterator<BiTuple<A, B>> tupleIterator)
+            implements
+                Iterator<@Nullable B> {
 
         @Override
         public boolean hasNext() {
-            while (nextTuple == null && tupleIterator.hasNext()) {
-                var candidate = tupleIterator.next();
-                if (Objects.equals(candidate.getA(), a)) {
-                    nextTuple = candidate;
-                } else if (removeAfterNext) {
-                    tupleIterator.remove();
-                }
-            }
-            return nextTuple != null;
+            return tupleIterator.hasNext();
         }
 
         @Override
@@ -130,12 +134,12 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            var result = Objects.requireNonNull(nextTuple).getB();
-            nextTuple = null;
-            if (removeAfterNext) {
-                tupleIterator.remove();
-            }
-            return result;
+            return tupleIterator.next().getB();
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super @Nullable B> action) {
+            tupleIterator.forEachRemaining(tuple -> action.accept(tuple.getB()));
         }
 
     }

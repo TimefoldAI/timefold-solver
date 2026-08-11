@@ -1,9 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Random;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
@@ -11,10 +15,12 @@ import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * Covers the NON-unified (two parallel indexer) path: joins whose indexing joiners contain no equal joiner,
+ * Covers the NON-unified (two parallel indexer) path:
+ * joins whose indexing joiners contain no equal joiner,
  * so {@link IndexerFactory#isFusedEqualIndexEligible()} is false and the node keeps two comparison indexers.
  * Comparison is otherwise only exercised alongside a leading equal (see {@link EqualsAndComparisonIndexerTest});
  * a pure-comparison join takes the {@code useJoinIndex == false} branch and must still join correctly.
@@ -216,6 +222,110 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         assertThat(indexer.size(high)).isZero();
         assertThat(forEachToTuples(indexer, low)).isEmpty();
         assertThat(indexer.size(low)).isZero();
+    }
+
+    @Test
+    void uniqueRandomIteratorDrainsEachMatchExactlyOnce() {
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                RandomAccessLeafIndexer::new);
+        indexer.put(10, newTuple("age10a"));
+        indexer.put(10, newTuple("age10b"));
+        indexer.put(20, newTuple("age20"));
+        indexer.put(30, newTuple("age30"));
+
+        assertUniqueRandomDrainMatchesForEach(indexer, 40);
+    }
+
+    @Test
+    void uniqueRandomIteratorIncludesBoundaryBucket() {
+        // LESS_THAN_OR_EQUAL, queried with a key equal to a bucket:
+        // forEach and the drain must agree on including that bucket,
+        // since both share the same boundaryReached() walk.
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN_OR_EQUAL,
+                KeyUnpacker.<Integer> single(), RandomAccessLeafIndexer::new);
+        indexer.put(10, newTuple("age10"));
+        indexer.put(20, newTuple("age20a"));
+        indexer.put(20, newTuple("age20b"));
+        indexer.put(30, newTuple("age30"));
+
+        assertUniqueRandomDrainMatchesForEach(indexer, 20);
+    }
+
+    @Test
+    void uniqueRandomIteratorTreeMode() {
+        // advanceFromTree() is a separate code path from advanceFromArray();
+        // force treeification first.
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                RandomAccessLeafIndexer::new);
+        var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
+        for (var age = 0; age <= threshold; age++) {
+            indexer.put(age, newTuple("age" + age));
+        }
+        churnKey(indexer, -1);
+        assertThat(indexer.comparisonMap.isArrayBased()).isFalse();
+
+        assertUniqueRandomDrainMatchesForEach(indexer, threshold + 10);
+    }
+
+    @Test
+    void uniqueRandomIteratorSingleBucketMap() {
+        // A comparisonMap of exactly one bucket bypasses RandomIterator entirely
+        // (singleIndexerUniqueIterator returns the downstream iterator directly).
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                RandomAccessLeafIndexer::new);
+        indexer.put(10, newTuple("age10a"));
+        indexer.put(10, newTuple("age10b"));
+
+        assertUniqueRandomDrainMatchesForEach(indexer, 20); // In range: the only bucket.
+
+        var excludedIterator = indexer.uniqueRandomIterator(5, new Random(0)); // Boundary excludes the only bucket.
+        assertThat(excludedIterator.hasNext()).isFalse();
+        assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(excludedIterator::next);
+    }
+
+    @Test
+    void uniqueRandomIteratorEmptyRange() {
+        // comparisonMap.size() > 1, but the boundary excludes every bucket.
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                RandomAccessLeafIndexer::new);
+        indexer.put(10, newTuple("age10"));
+        indexer.put(20, newTuple("age20"));
+
+        var iterator = indexer.uniqueRandomIterator(5, new Random(0));
+        assertThat(iterator.hasNext()).isFalse();
+        assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(iterator::next);
+    }
+
+    @Test
+    void randomIteratorEmptyRange() {
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                RandomAccessLeafIndexer::new);
+        indexer.put(10, newTuple("age10"));
+        indexer.put(20, newTuple("age20"));
+
+        var iterator = indexer.randomIterator(5, new Random(0));
+        assertThat(iterator.hasNext()).isFalse();
+    }
+
+    @Test
+    @Disabled("""
+            Known bias: RandomIterator walks buckets in ascending comparison order and randomizes only
+            within the first non-empty bucket, so a single draw always lands in the lowest-order bucket.
+            Uniqueness and completeness are unaffected. Fixed separately.""")
+    void uniqueRandomIteratorFirstDrawIsNotBiasedToFirstBucket() {
+        var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
+                RandomAccessLeafIndexer::new);
+        var age10 = newTuple("age10");
+        indexer.put(10, age10);
+        var age20 = newTuple("age20");
+        indexer.put(20, age20);
+
+        var firstDraws = new HashSet<UniTuple<String>>();
+        for (var seed = 0; seed < 20; seed++) {
+            var iterator = indexer.uniqueRandomIterator(30, new Random(seed));
+            firstDraws.add(iterator.next());
+        }
+        assertThat(firstDraws).containsExactlyInAnyOrder(age10, age20);
     }
 
     private static UniTuple<String> newTuple(String factA) {
