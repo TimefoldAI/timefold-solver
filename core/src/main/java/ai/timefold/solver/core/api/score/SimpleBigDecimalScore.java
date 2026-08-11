@@ -15,10 +15,15 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBigDecimalScore> {
+public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) implements Score<SimpleBigDecimalScore> {
 
+    public static final SimpleBigDecimalScore INVALID = new SimpleBigDecimalScore(-1L, BigDecimal.ZERO);
     public static final SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(BigDecimal.ZERO);
     public static final SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(BigDecimal.ONE);
+
+    public SimpleBigDecimalScore(BigDecimal score) {
+        this(0L, score);
+    }
 
     public static SimpleBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
@@ -87,7 +92,7 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public boolean isFeasible() {
-        return true;
+        return structuralScore >= 0;
     }
 
     @Override
@@ -97,19 +102,23 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof SimpleBigDecimalScore(var otherScore)) {
-            return score.stripTrailingZeros().equals(otherScore.stripTrailingZeros());
+        if (o instanceof SimpleBigDecimalScore(var otherStructuralScore, var otherScore)) {
+            return structuralScore == otherStructuralScore
+                    && score.stripTrailingZeros().equals(otherScore.stripTrailingZeros());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return score.stripTrailingZeros().hashCode();
+        return Long.hashCode(structuralScore) ^ score.stripTrailingZeros().hashCode();
     }
 
     @Override
     public int compareTo(SimpleBigDecimalScore other) {
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         return score.compareTo(other.score());
     }
 
@@ -120,7 +129,7 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public String toString() {
-        return score.toString();
+        return (structuralScore < 0) ? "invalid" : score.toString();
     }
 
 }

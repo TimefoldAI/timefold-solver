@@ -94,6 +94,9 @@ public final class ScoreUtil {
             String... levelLabels) {
         var shortString = new StringBuilder();
         var i = 0;
+        if (score.structuralScore() != 0L) {
+            shortString.append(score.structuralScore()).append("struct");
+        }
         for (var levelNumber : score.toLevelNumbers()) {
             if (notZero.test(levelNumber)) {
                 if (!shortString.isEmpty()) {

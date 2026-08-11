@@ -32,6 +32,11 @@ public class SimpleBigDecimalScoreDefinition extends AbstractScoreDefinition<Sim
     }
 
     @Override
+    public SimpleBigDecimalScore getInvalidStructureScore() {
+        return SimpleBigDecimalScore.INVALID;
+    }
+
+    @Override
     public SimpleBigDecimalScore getZeroScore() {
         return SimpleBigDecimalScore.ZERO;
     }

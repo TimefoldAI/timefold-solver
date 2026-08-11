@@ -19,6 +19,13 @@ public sealed interface Score<Score_ extends Score<Score_>>
         extends Comparable<Score_>
         permits HardMediumSoftBigDecimalScore, HardMediumSoftScore, HardSoftBigDecimalScore, HardSoftScore, IBendableScore,
         SimpleBigDecimalScore, SimpleScore {
+    /**
+     * The structural component of a Score. 0 if the solution is structurally sound
+     * (i.e. no inconsistent variables), -1 otherwise.
+     *
+     * @return 0 if the solution is structurally sound, -1 otherwise.
+     */
+    long structuralScore();
 
     /**
      * Returns a Score whose value is (this + addend).

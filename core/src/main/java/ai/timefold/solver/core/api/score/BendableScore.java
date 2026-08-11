@@ -20,7 +20,12 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record BendableScore(long[] hardScores, long[] softScores) implements IBendableScore<BendableScore> {
+public record BendableScore(long structuralScore, long[] hardScores,
+        long[] softScores) implements IBendableScore<BendableScore> {
+
+    public BendableScore(long[] hardScores, long[] softScores) {
+        this(0L, hardScores, softScores);
+    }
 
     public static BendableScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableScore.class, scoreString);
@@ -123,6 +128,9 @@ public record BendableScore(long[] hardScores, long[] softScores) implements IBe
 
     @Override
     public boolean isFeasible() {
+        if (structuralScore < 0) {
+            return false;
+        }
         for (var hardScore : hardScores) {
             if (hardScore < 0) {
                 return false;
@@ -253,6 +261,9 @@ public record BendableScore(long[] hardScores, long[] softScores) implements IBe
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;
             }
+            if (structuralScore != other.structuralScore) {
+                return false;
+            }
             for (var i = 0; i < hardScores.length; i++) {
                 if (hardScores[i] != other.hardScore(i)) {
                     return false;
@@ -270,12 +281,15 @@ public record BendableScore(long[] hardScores, long[] softScores) implements IBe
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(hardScores), Arrays.hashCode(softScores));
+        return Objects.hash(structuralScore, Arrays.hashCode(hardScores), Arrays.hashCode(softScores));
     }
 
     @Override
     public int compareTo(BendableScore other) {
         validateCompatible(other);
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         for (var i = 0; i < hardScores.length; i++) {
             if (hardScores[i] != other.hardScore(i)) {
                 return Long.compare(hardScores[i], other.hardScore(i));
@@ -296,6 +310,9 @@ public record BendableScore(long[] hardScores, long[] softScores) implements IBe
 
     @Override
     public String toString() {
+        if (structuralScore < 0) {
+            return "invalid";
+        }
         var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 7);
         s.append("[");
         var first = true;

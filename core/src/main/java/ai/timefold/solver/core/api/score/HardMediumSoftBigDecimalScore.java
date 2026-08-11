@@ -24,9 +24,11 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal mediumScore,
+public record HardMediumSoftBigDecimalScore(long structuralScore, BigDecimal hardScore, BigDecimal mediumScore,
         BigDecimal softScore) implements Score<HardMediumSoftBigDecimalScore> {
 
+    public static final HardMediumSoftBigDecimalScore INVALID = new HardMediumSoftBigDecimalScore(-1L, BigDecimal.ZERO,
+            BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardMediumSoftBigDecimalScore ZERO = new HardMediumSoftBigDecimalScore(BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardMediumSoftBigDecimalScore ONE_HARD = new HardMediumSoftBigDecimalScore(BigDecimal.ONE,
@@ -44,6 +46,11 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
             BigDecimal.ZERO, BigDecimal.ONE);
     private static final HardMediumSoftBigDecimalScore MINUS_ONE_SOFT =
             new HardMediumSoftBigDecimalScore(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE.negate());
+
+    public HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal mediumScore,
+            BigDecimal softScore) {
+        this(0L, hardScore, mediumScore, softScore);
+    }
 
     public static HardMediumSoftBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftBigDecimalScore.class, scoreString,
@@ -118,7 +125,7 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
      */
     @Override
     public boolean isFeasible() {
-        return hardScore.compareTo(BigDecimal.ZERO) >= 0;
+        return structuralScore >= 0 && hardScore.compareTo(BigDecimal.ZERO) >= 0;
     }
 
     @Override
@@ -183,8 +190,9 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof HardMediumSoftBigDecimalScore(var otherHardScore, var otherMediumScore, var otherSoftScore)) {
-            return hardScore.stripTrailingZeros().equals(otherHardScore.stripTrailingZeros())
+        if (o instanceof HardMediumSoftBigDecimalScore(var otherStructuralScore, var otherHardScore, var otherMediumScore, var otherSoftScore)) {
+            return structuralScore == otherStructuralScore
+                    && hardScore.stripTrailingZeros().equals(otherHardScore.stripTrailingZeros())
                     && mediumScore.stripTrailingZeros().equals(otherMediumScore.stripTrailingZeros())
                     && softScore.stripTrailingZeros().equals(otherSoftScore.stripTrailingZeros());
         }
@@ -193,11 +201,15 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
 
     @Override
     public int hashCode() {
-        return Objects.hash(hardScore.stripTrailingZeros(), mediumScore.stripTrailingZeros(), softScore.stripTrailingZeros());
+        return Objects.hash(structuralScore, hardScore.stripTrailingZeros(), mediumScore.stripTrailingZeros(),
+                softScore.stripTrailingZeros());
     }
 
     @Override
     public int compareTo(HardMediumSoftBigDecimalScore other) {
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         var hardScoreComparison = hardScore.compareTo(other.hardScore());
         if (hardScoreComparison != 0) {
             return hardScoreComparison;
@@ -218,7 +230,8 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
 
     @Override
     public String toString() {
-        return hardScore + HARD_LABEL + "/" + mediumScore + MEDIUM_LABEL + "/" + softScore + SOFT_LABEL;
+        return (structuralScore < 0) ? "invalid"
+                : hardScore + HARD_LABEL + "/" + mediumScore + MEDIUM_LABEL + "/" + softScore + SOFT_LABEL;
     }
 
 }

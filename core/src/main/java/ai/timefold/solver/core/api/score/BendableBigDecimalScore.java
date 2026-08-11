@@ -22,8 +22,13 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record BendableBigDecimalScore(BigDecimal[] hardScores,
+public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardScores,
         BigDecimal[] softScores) implements IBendableScore<BendableBigDecimalScore> {
+
+    public BendableBigDecimalScore(BigDecimal[] hardScores,
+            BigDecimal[] softScores) {
+        this(0L, hardScores, softScores);
+    }
 
     public static BendableBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableBigDecimalScore.class, scoreString);
@@ -134,6 +139,9 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
 
     @Override
     public boolean isFeasible() {
+        if (structuralScore < 0) {
+            return false;
+        }
         for (var hardScore : hardScores) {
             if (hardScore.compareTo(BigDecimal.ZERO) < 0) {
                 return false;
@@ -274,6 +282,9 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;
             }
+            if (structuralScore != other.structuralScore) {
+                return false;
+            }
             for (var i = 0; i < hardScores.length; i++) {
                 if (!hardScores[i].stripTrailingZeros().equals(other.hardScore(i).stripTrailingZeros())) {
                     return false;
@@ -295,12 +306,15 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
                 .map(BigDecimal::stripTrailingZeros)
                 .mapToInt(BigDecimal::hashCode)
                 .toArray();
-        return Arrays.hashCode(scoreHashCodes);
+        return Long.hashCode(structuralScore) ^ Arrays.hashCode(scoreHashCodes);
     }
 
     @Override
     public int compareTo(BendableBigDecimalScore other) {
         validateCompatible(other);
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         for (var i = 0; i < hardScores.length; i++) {
             var hardScoreComparison = hardScores[i].compareTo(other.hardScore(i));
             if (hardScoreComparison != 0) {
@@ -323,6 +337,9 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
 
     @Override
     public String toString() {
+        if (structuralScore < 0) {
+            return "invalid";
+        }
         var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 7);
         s.append("[");
         var first = true;

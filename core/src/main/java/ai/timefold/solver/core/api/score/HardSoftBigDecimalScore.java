@@ -21,14 +21,21 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record HardSoftBigDecimalScore(BigDecimal hardScore, BigDecimal softScore) implements Score<HardSoftBigDecimalScore> {
+public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore,
+        BigDecimal softScore) implements Score<HardSoftBigDecimalScore> {
 
+    public static final HardSoftBigDecimalScore INVALID =
+            new HardSoftBigDecimalScore(-1L, BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardSoftBigDecimalScore ZERO =
             new HardSoftBigDecimalScore(BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardSoftBigDecimalScore ONE_HARD =
             new HardSoftBigDecimalScore(BigDecimal.ONE, BigDecimal.ZERO);
     public static final HardSoftBigDecimalScore ONE_SOFT =
             new HardSoftBigDecimalScore(BigDecimal.ZERO, BigDecimal.ONE);
+
+    public HardSoftBigDecimalScore(BigDecimal hardScore, BigDecimal softScore) {
+        this(0L, hardScore, softScore);
+    }
 
     public static HardSoftBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardSoftBigDecimalScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
@@ -76,7 +83,7 @@ public record HardSoftBigDecimalScore(BigDecimal hardScore, BigDecimal softScore
 
     @Override
     public boolean isFeasible() {
-        return hardScore.signum() >= 0;
+        return structuralScore >= 0 && hardScore.signum() >= 0;
     }
 
     @Override
@@ -140,8 +147,9 @@ public record HardSoftBigDecimalScore(BigDecimal hardScore, BigDecimal softScore
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof HardSoftBigDecimalScore(var otherHardScore, var otherSoftScore)) {
-            return hardScore.stripTrailingZeros().equals(otherHardScore.stripTrailingZeros())
+        if (o instanceof HardSoftBigDecimalScore(var otherStructuralScore, var otherHardScore, var otherSoftScore)) {
+            return structuralScore == otherStructuralScore
+                    && hardScore.stripTrailingZeros().equals(otherHardScore.stripTrailingZeros())
                     && softScore.stripTrailingZeros().equals(otherSoftScore.stripTrailingZeros());
         }
         return false;
@@ -149,11 +157,14 @@ public record HardSoftBigDecimalScore(BigDecimal hardScore, BigDecimal softScore
 
     @Override
     public int hashCode() {
-        return Objects.hash(hardScore.stripTrailingZeros(), softScore.stripTrailingZeros());
+        return Objects.hash(structuralScore, hardScore.stripTrailingZeros(), softScore.stripTrailingZeros());
     }
 
     @Override
     public int compareTo(HardSoftBigDecimalScore other) {
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         var hardScoreComparison = hardScore.compareTo(other.hardScore());
         if (hardScoreComparison != 0) {
             return hardScoreComparison;
@@ -169,7 +180,7 @@ public record HardSoftBigDecimalScore(BigDecimal hardScore, BigDecimal softScore
 
     @Override
     public String toString() {
-        return hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
+        return (structuralScore < 0) ? "invalid" : hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
     }
 
 }

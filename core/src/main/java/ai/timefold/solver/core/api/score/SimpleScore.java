@@ -12,11 +12,16 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record SimpleScore(long score) implements Score<SimpleScore> {
+public record SimpleScore(long structuralScore, long score) implements Score<SimpleScore> {
 
+    public static final SimpleScore INVALID = new SimpleScore(-1L, 0L);
     public static final SimpleScore ZERO = new SimpleScore(0L);
     public static final SimpleScore ONE = new SimpleScore(1L);
     public static final SimpleScore MINUS_ONE = new SimpleScore(-1L);
+
+    public SimpleScore(long score) {
+        this(0L, score);
+    }
 
     public static SimpleScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(SimpleScore.class, scoreString, "");
@@ -73,7 +78,7 @@ public record SimpleScore(long score) implements Score<SimpleScore> {
 
     @Override
     public boolean isFeasible() {
-        return true;
+        return structuralScore >= 0;
     }
 
     @Override
@@ -83,19 +88,17 @@ public record SimpleScore(long score) implements Score<SimpleScore> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof SimpleScore(var otherScore)) {
-            return score == otherScore;
+        if (o instanceof SimpleScore(var otherStructuralScore, var otherScore)) {
+            return structuralScore == otherStructuralScore && score == otherScore;
         }
         return false;
     }
 
     @Override
-    public int hashCode() {
-        return Long.hashCode(score);
-    }
-
-    @Override
     public int compareTo(SimpleScore other) {
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         return Long.compare(score, other.score());
     }
 
@@ -106,7 +109,7 @@ public record SimpleScore(long score) implements Score<SimpleScore> {
 
     @Override
     public String toString() {
-        return Long.toString(score);
+        return (structuralScore < 0) ? "invalid" : Long.toString(score);
     }
 
 }

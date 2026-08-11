@@ -23,6 +23,12 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
     }
 
     @Override
+    public BendableBigDecimalScore getInvalidStructureScore() {
+        var zero = getZeroScore();
+        return new BendableBigDecimalScore(-1L, zero.hardScores(), zero.softScores());
+    }
+
+    @Override
     public BendableBigDecimalScore getZeroScore() {
         return BendableBigDecimalScore.zero(hardLevelsSize, softLevelsSize);
     }

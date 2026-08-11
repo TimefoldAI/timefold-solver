@@ -32,6 +32,11 @@ public class HardSoftScoreDefinition extends AbstractScoreDefinition<HardSoftSco
     }
 
     @Override
+    public HardSoftScore getInvalidStructureScore() {
+        return HardSoftScore.INVALID;
+    }
+
+    @Override
     public HardSoftScore getZeroScore() {
         return HardSoftScore.ZERO;
     }

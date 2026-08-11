@@ -17,13 +17,18 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record HardSoftScore(long hardScore, long softScore) implements Score<HardSoftScore> {
+public record HardSoftScore(long structuralScore, long hardScore, long softScore) implements Score<HardSoftScore> {
 
+    public static final HardSoftScore INVALID = new HardSoftScore(-1L, 0L, 0L);
     public static final HardSoftScore ZERO = new HardSoftScore(0L, 0L);
     public static final HardSoftScore ONE_HARD = new HardSoftScore(1L, 0L);
     public static final HardSoftScore ONE_SOFT = new HardSoftScore(0L, 1L);
     private static final HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0L, -1L);
     private static final HardSoftScore MINUS_ONE_HARD = new HardSoftScore(-1L, 0L);
+
+    public HardSoftScore(long hardScore, long softScore) {
+        this(0L, hardScore, softScore);
+    }
 
     public static HardSoftScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
@@ -81,7 +86,7 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public boolean isFeasible() {
-        return hardScore >= 0L;
+        return structuralScore >= 0 && hardScore >= 0L;
     }
 
     @Override
@@ -131,8 +136,9 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof HardSoftScore(var otherHardScore, var otherSoftScore)) {
-            return hardScore == otherHardScore
+        if (o instanceof HardSoftScore(var otherStructuralScore, var otherHardScore, var otherSoftScore)) {
+            return structuralScore == otherStructuralScore
+                    && hardScore == otherHardScore
                     && softScore == otherSoftScore;
         }
         return false;
@@ -140,7 +146,9 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public int compareTo(HardSoftScore other) {
-        if (hardScore != other.hardScore()) {
+        if (structuralScore != other.structuralScore()) {
+            return Long.compare(structuralScore, other.structuralScore());
+        } else if (hardScore != other.hardScore()) {
             return Long.compare(hardScore, other.hardScore());
         } else {
             return Long.compare(softScore, other.softScore());
@@ -154,7 +162,7 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public String toString() {
-        return hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
+        return (structuralScore < 0) ? "invalid" : hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
     }
 
 }

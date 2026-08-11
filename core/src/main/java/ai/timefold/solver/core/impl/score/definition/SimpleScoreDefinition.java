@@ -27,6 +27,11 @@ public class SimpleScoreDefinition extends AbstractScoreDefinition<SimpleScore> 
     }
 
     @Override
+    public SimpleScore getInvalidStructureScore() {
+        return SimpleScore.INVALID;
+    }
+
+    @Override
     public SimpleScore getZeroScore() {
         return SimpleScore.ZERO;
     }

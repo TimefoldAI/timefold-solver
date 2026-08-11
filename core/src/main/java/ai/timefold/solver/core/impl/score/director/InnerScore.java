@@ -34,10 +34,6 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
         return new InnerScore<>(score, unassignedCount);
     }
 
-    public static <Score_ extends Score<Score_>> InnerScore<Score_> invalid(Score_ zeroScore) {
-        return new InnerScore<>(zeroScore, Integer.MAX_VALUE);
-    }
-
     public InnerScore {
         Objects.requireNonNull(raw);
         if (unassignedCount < 0) {
@@ -51,11 +47,14 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
     }
 
     public boolean isInvalid() {
-        return unassignedCount == Integer.MAX_VALUE;
+        return raw.structuralScore() < 0;
     }
 
     @Override
     public int compareTo(InnerScore<Score_> other) {
+        if (raw.structuralScore() != other.raw.structuralScore()) {
+            return Long.compare(raw.structuralScore(), other.raw.structuralScore());
+        }
         var uninitializedCountComparison = Integer.compare(unassignedCount, other.unassignedCount);
         if (uninitializedCountComparison != 0) {
             return -uninitializedCountComparison;

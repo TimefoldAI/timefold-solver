@@ -32,6 +32,11 @@ public class HardMediumSoftScoreDefinition extends AbstractScoreDefinition<HardM
     }
 
     @Override
+    public HardMediumSoftScore getInvalidStructureScore() {
+        return HardMediumSoftScore.INVALID;
+    }
+
+    @Override
     public HardMediumSoftScore getZeroScore() {
         return HardMediumSoftScore.ZERO;
     }

@@ -250,7 +250,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lastVariableUpdateSuccessful) {
             return innerCalculateScore();
         } else {
-            var invalidScore = InnerScore.invalid(getScoreDefinition().getZeroScore());
+            // invalid scores are worse than any valid score, even those with unassigned values
+            var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getInvalidStructureScore());
             getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
             return invalidScore;
         }

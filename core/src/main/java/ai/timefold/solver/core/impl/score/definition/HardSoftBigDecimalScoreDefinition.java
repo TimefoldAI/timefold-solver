@@ -32,6 +32,11 @@ public class HardSoftBigDecimalScoreDefinition extends AbstractScoreDefinition<H
     }
 
     @Override
+    public HardSoftBigDecimalScore getInvalidStructureScore() {
+        return HardSoftBigDecimalScore.INVALID;
+    }
+
+    @Override
     public HardSoftBigDecimalScore getZeroScore() {
         return HardSoftBigDecimalScore.ZERO;
     }
