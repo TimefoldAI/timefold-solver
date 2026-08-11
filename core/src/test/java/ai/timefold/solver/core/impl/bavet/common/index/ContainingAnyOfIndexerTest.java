@@ -159,7 +159,7 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
                 .containsExactlyInAnyOrder(bethXZ1);
 
         var list1 = randomListForCollectionQuery(indexer, 0, "X");
-        var list2 = randomListForCollectionQuery(indexer, 1, "X");
+        var list2 = randomListForCollectionQuery(indexer, 2, "X");
         assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
         assertThat(list1).isNotEqualTo(list2);
     }
@@ -173,8 +173,6 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
         putContainingIndexer(indexer, List.of("Y"));
         putContainingIndexer(indexer, List.of());
 
-        // The only test that reaches removedSet/flushUnrecorded(): a query spanning several buckets
-        // where one tuple is a candidate in more than one of them.
         assertUniqueRandomDrainMatchesForEach(indexer, List.of("X", "Y", "Z"));
     }
 
@@ -199,7 +197,9 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
         putContainingIndexer(indexer, List.of("X", "Y"));
         putContainingIndexer(indexer, List.of("X", "Z"));
 
-        // Same bucket entered twice with doubled weight; every match still comes out exactly once.
+        // Same bucket entered twice via a duplicated query key;
+        // DefaultIterator's distinctingSet already drops the repeat while draining to the distinct list,
+        // so every match still comes out exactly once.
         assertUniqueRandomDrainMatchesForEach(indexer, List.of("X", "X"));
     }
 

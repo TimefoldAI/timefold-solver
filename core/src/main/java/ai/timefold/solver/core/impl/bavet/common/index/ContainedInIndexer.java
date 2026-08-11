@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.SequencedCollection;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
@@ -77,12 +79,31 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
         return downstreamIndexer;
     }
 
+    /**
+     * {@link #queryKeyUnpacker}'s output can contain a duplicated key;
+     * nothing upstream guarantees uniqueness.
+     * Buckets in this indexer are disjoint by construction
+     * (one key per tuple, see {@link #modifyKeyUnpacker}),
+     * so a duplicated query key would otherwise double-count in {@link #size(Object)}
+     * and double-visit its bucket in {@link DefaultIterator},
+     * returning the same tuples twice from a {@link #uniqueRandomIterator(Object, RandomGenerator)} drain
+     * and breaking its documented "never returned again" contract.
+     */
+    private SequencedCollection<Key_> unpackDistinctQueryKeys(Object queryCompositeKey) {
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.size() < 2 || indexKeyCollection instanceof Set<?>) {
+            return indexKeyCollection; // Nothing can be duplicated; skip the allocation.
+        }
+        // LinkedHashSet, not Set.copyOf(): DefaultIterator's bucket walk depends on encounter order.
+        return new LinkedHashSet<>(indexKeyCollection);
+    }
+
     @Override
     public int size(Object queryCompositeKey) {
         if (downstreamIndexerMap.isEmpty()) {
             return 0;
         }
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        var indexKeyCollection = unpackDistinctQueryKeys(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
             return 0;
         }
@@ -98,7 +119,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
 
     @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        var indexKeyCollection = unpackDistinctQueryKeys(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
             return Collections.emptyIterator();
         }
@@ -107,7 +128,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
 
     @Override
     public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        var indexKeyCollection = unpackDistinctQueryKeys(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
             return RepeatingRandomIterator.empty();
         }
@@ -116,7 +137,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
 
     @Override
     public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        var indexKeyCollection = unpackDistinctQueryKeys(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
             return UniqueRandomIterator.empty();
         }
@@ -141,12 +162,12 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
         protected @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection) {
+        public DefaultIterator(Object queryCompositeKey, SequencedCollection<Key_> indexKeyCollection) {
             this(indexKeyCollection,
                     downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
         }
 
-        protected DefaultIterator(KeyCollection_ indexKeyCollection,
+        protected DefaultIterator(SequencedCollection<Key_> indexKeyCollection,
                 Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexerIterator = indexKeyCollection.iterator();
             this.downstreamIteratorFunction = downstreamIteratorFunction;
@@ -191,7 +212,8 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
 
     final class RandomIterator extends DefaultIterator implements UniqueRandomIterator<T> {
 
-        public RandomIterator(KeyCollection_ indexKeyCollection, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+        public RandomIterator(SequencedCollection<Key_> indexKeyCollection,
+                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             super(indexKeyCollection, downstreamIteratorFunction);
         }
 
@@ -212,7 +234,8 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
         private final int distributionSum;
         private final RandomGenerator workingRandom;
 
-        RepeatingIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection, RandomGenerator workingRandom) {
+        RepeatingIterator(Object queryCompositeKey, SequencedCollection<Key_> indexKeyCollection,
+                RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
             this.downstreamIteratorList = new ArrayList<>(indexKeyCollection.size());
             this.distribution = new int[indexKeyCollection.size()];

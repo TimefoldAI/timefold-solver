@@ -1,8 +1,11 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -10,13 +13,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.IntStream;
 
+import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -58,7 +61,7 @@ final class SelectionProbabilityTest {
         }
 
         // Guarantee that all numbers have been selected.
-        Assertions.assertThat(counts).hasSize(SAMPLE_COUNT);
+        assertThat(counts).hasSize(SAMPLE_COUNT);
 
         // Guarantee that the distribution is roughly uniform.
         var statistics = new SummaryStatistics();
@@ -72,7 +75,7 @@ final class SelectionProbabilityTest {
         var threshold = BigDecimal.valueOf(TRIAL_COUNT / (double) SAMPLE_COUNT)
                 .multiply(BigDecimal.valueOf(0.02))
                 .round(context); // 2% tolerance
-        Assertions.assertThat(standardDeviation)
+        assertThat(standardDeviation)
                 .as(() -> "Standard deviation of selection counts (%s) on the %sth random sample is over %s threshold."
                         .formatted(standardDeviation, n, threshold))
                 .isLessThanOrEqualTo(threshold);
@@ -112,16 +115,58 @@ final class SelectionProbabilityTest {
         }
 
         // Every bucket must be reachable; a leftover boundary-walk bug would starve everything but the first.
-        Assertions.assertThat(counts.keySet()).containsExactlyInAnyOrder(Bucket.values());
+        assertThat(counts.keySet()).containsExactlyInAnyOrder(Bucket.values());
 
         for (var bucket : Bucket.values()) {
             var expected = trialCount * bucket.weight;
             var actual = counts.get(bucket);
-            Assertions.assertThat(actual)
+            assertThat(actual)
                     .as(() -> "Bucket %s picked %d times, expected close to %.0f (weight %.1f)."
                             .formatted(bucket, actual, expected, bucket.weight))
                     .isCloseTo((int) expected, Percentage.withPercentage(10));
         }
+    }
+
+    /**
+     * A tuple reachable under more than one query key must not be over-sampled
+     * relative to a tuple reachable under only one.
+     */
+    @Test
+    void containingAnyOfUniqueIteratorIsUniformOverOverlappingBuckets() {
+        var trialCount = 200_000;
+        var joiner = new DefaultBiNeighborhoodsJoiner<>(TestSkilledPerson::skills, JoinerType.CONTAINING_ANY_OF,
+                TestSkilledPerson::skills);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+
+        // Bucket X = {t1, t2}, bucket Y = {t2, t3}: t2 is reachable under both keys.
+        var t1 = UniTuple.of("t1", 0);
+        var t2 = UniTuple.of("t2", 0);
+        var t3 = UniTuple.of("t3", 0);
+        indexer.put(List.of("X"), t1);
+        indexer.put(List.of("X", "Y"), t2);
+        indexer.put(List.of("Y"), t3);
+
+        var random = new Random(0);
+        var counts = new HashMap<UniTuple<String>, Integer>();
+        for (var trial = 0; trial < trialCount; trial++) {
+            var iterator = indexer.uniqueRandomIterator(List.of("X", "Y"), random);
+            var pick = iterator.next();
+            counts.merge(pick, 1, Integer::sum);
+        }
+
+        assertThat(counts.keySet()).containsExactlyInAnyOrder(t1, t2, t3);
+
+        var expected = trialCount / 3.0;
+        for (var tuple : List.of(t1, t2, t3)) {
+            var actual = counts.get(tuple);
+            assertThat(actual)
+                    .as(() -> "Tuple %s picked %d times, expected close to %.0f (uniform over 3 distinct tuples)."
+                            .formatted(tuple, actual, expected))
+                    .isCloseTo((int) expected, Percentage.withPercentage(5));
+        }
+    }
+
+    private record TestSkilledPerson(List<String> skills) {
     }
 
     private static void putBucket(Indexer<UniTuple<String>> indexer, int age, int size) {

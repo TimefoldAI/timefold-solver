@@ -29,8 +29,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public sealed interface UniqueRandomIterator<T>
         extends Iterator<T>
-        permits DefaultUniqueRandomIterator, ComparisonIndexer.RandomIterator, ContainedInIndexer.RandomIterator,
-        ContainingAnyOfIndexer.RandomIterator {
+        permits DefaultUniqueRandomIterator, ComparisonIndexer.RandomIterator, ContainedInIndexer.RandomIterator {
 
     static <T> UniqueRandomIterator<T> of(ElementAwareArrayList<T> list, RandomGenerator random) {
         return new DefaultUniqueRandomIterator<>(RetiringRandomIterator.of(list, random));

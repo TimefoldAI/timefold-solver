@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -154,6 +155,23 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
+    void duplicateQueryKeyIsVisitedOnce() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        var annX = putContainedInIndexer(indexer, "X");
+        var bethX = putContainedInIndexer(indexer, "X");
+        var carlY = putContainedInIndexer(indexer, "Y");
+        var query = List.of("X", "X", "Y");
+
+        assertThat(indexer.size(query)).isEqualTo(3);
+        var drainedByForEach = new ArrayList<>();
+        indexer.forEach(query, drainedByForEach::add);
+        assertThat(drainedByForEach).containsExactlyInAnyOrder(annX, bethX, carlY);
+
+        assertUniqueRandomDrainMatchesForEach(indexer, query);
+    }
+
+    @Test
     void uniqueRandomIteratorUnmatchedQueryKey() {
         var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
         putContainedInIndexer(indexer, "X");
@@ -189,7 +207,7 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
         var xTuple = putContainedInIndexer(indexer, "X");
         var yTuple = putContainedInIndexer(indexer, "Y");
 
-        var firstDraws = new HashSet<Object>();
+        var firstDraws = new HashSet<>();
         for (var seed = 0; seed < 20; seed++) {
             var iterator = indexer.uniqueRandomIterator(List.of("X", "Y"), new Random(seed));
             firstDraws.add(iterator.next());
