@@ -16,6 +16,8 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 
 === Configure goal (timefold:configure)
 
+- Fails the build when the project does not inherit from `ai.timefold.solver:timefold-solver-service-parent`, which Timefold Platform requires
+- Fails the build when no `ai.timefold.solver.enterprise` artifact is on the resolved classpath, i.e. the model was built with the Community Edition, which Timefold Platform does not accept. Both checks only run when `timefold:deploy` is among the requested goals, run even when `timefold.model.configuration.skip` is set.
 - Fetches platform identity/config by calling GET /api/platform/v1/aboutme?includeConfig=true
 - Requires a platform personal access token available via environment variable `TIMEFOLD_PAT` (see "Authentication" below)
 - If a single accountId is returned by the platform and `timefold.accountId` wasn't provided, the plugin will use it
