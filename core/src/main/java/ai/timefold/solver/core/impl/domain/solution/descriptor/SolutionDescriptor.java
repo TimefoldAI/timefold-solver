@@ -750,6 +750,7 @@ public final class SolutionDescriptor<Solution_> {
         return genuineEntityDescriptorList;
     }
 
+    @Nullable
     public EntityDescriptor<Solution_> getEntityDescriptorStrict(Class<?> entityClass) {
         return entityDescriptorMap.get(entityClass);
     }
