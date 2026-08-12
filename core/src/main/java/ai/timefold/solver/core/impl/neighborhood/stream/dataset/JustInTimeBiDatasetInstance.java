@@ -44,9 +44,8 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     @Override
     public int size() {
         var total = 0;
-        var leftTupleIterator = leftDatasetInstance.iterator();
-        while (leftTupleIterator.hasNext()) {
-            total += size(leftTupleIterator.next().getA());
+        for (var aUniTuple : leftDatasetInstance) {
+            total += size(aUniTuple.getA());
         }
         return total;
     }
@@ -205,12 +204,12 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
 
         @Override
         public @Nullable A getA() {
-            return Objects.requireNonNull(currentLeftTuple).getA();
+            return currentLeftTuple.getA();
         }
 
         @Override
         public @Nullable B getB() {
-            return Objects.requireNonNull(currentRightTuple).getA();
+            return currentRightTuple.getA();
         }
 
     }
@@ -279,18 +278,18 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
 
         @Override
         public @Nullable A getA() {
-            return Objects.requireNonNull(currentLeftTuple).getA();
+            return currentLeftTuple.getA();
         }
 
         @Override
         public @Nullable B getB() {
-            return Objects.requireNonNull(currentRightTuple).getA();
+            return currentRightTuple.getA();
         }
 
     }
 
     /**
-     * Ports {@code BiRandomMoveIterator}'s (now legacy) sampling-without-replacement walk over (A, B) pairs.
+     * Ports {@code BiRandomMoveIterator}'s sampling-without-replacement walk over (A, B) pairs.
      */
     private static final class UniqueRandomBiIterator<Solution_, A, B>
             implements BiIterator<A, B>, RetiringBiWalk<UniTuple<A>, UniTuple<B>> {
@@ -366,12 +365,12 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
 
         @Override
         public @Nullable A getA() {
-            return Objects.requireNonNull(currentLeftTuple).getA();
+            return currentLeftTuple.getA();
         }
 
         @Override
         public @Nullable B getB() {
-            return Objects.requireNonNull(currentRightTuple).getA();
+            return currentRightTuple.getA();
         }
 
     }

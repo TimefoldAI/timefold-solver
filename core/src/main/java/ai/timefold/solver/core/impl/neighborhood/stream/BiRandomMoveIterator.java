@@ -10,6 +10,7 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -37,12 +38,38 @@ import org.jspecify.annotations.Nullable;
  * <li>Both left and right datasets are kept in the {@link ArrayList} in which they came.
  * This list will never be copied, nor will it be mutated.</li>
  * <li>The right side of a live left tuple is drawn from a never-ending, cheap random iterator;
- * only a dead left tuple is ever removed, via {@link RetiringRandomIterator#retire()} on the left side.</li>
+ * only a dead left tuple is ever removed,
+ * via {@link RetiringRandomIterator#retire()} on the left side.</li>
  * <li>Filtering of (A,B) pair only happens after both A and B have been randomly selected.
  * This guarantees that filtering is only applied when necessary,
  * as opposed to pre-filtering the entire dataset,
  * which could be prohibitively expensive.</li>
  * </ul>
+ * <p>
+ * {@link #acceptLeft} makes the resulting (A,B) pair uniform, not just the left draw:
+ * a left picked uniformly and then a right picked uniformly within that left's bucket would otherwise give a pair
+ * a probability of {@code 1/leftCount * 1/bucketSize(left)}, favoring lefts with few partners.
+ * Rejecting a drawn left with probability {@code 1 - weight/bound}
+ * (accepting with probability {@code weight/bound})
+ * cancels the {@code 1/bucketSize(left)} term,
+ * leaving {@code 1/(leftCount * bound)}, constant in {@code weight}:
+ * <ul>
+ * <li>Exactly uniform over pairs for an indexed join with no filter,
+ * where {@code weight} is the true partner count.</li>
+ * <li>Only a bounded improvement, not exactness, when a {@code filtering()} predicate is present:
+ * {@code weight} is then an upper bound on the true partner count,
+ * since the filter only runs after both sides are drawn.
+ * Deliberate, not an oversight.</li>
+ * <li>A structural no-op with no indexing joiner at all,
+ * where {@code weight == bound} for every left always.</li>
+ * <li>{@code containingAnyOf} keeps a small residual bias even after this fix,
+ * since its {@code size()} dedupes a tuple reachable under several keys and this weight does not;
+ * deliberately out of scope.</li>
+ * </ul>
+ * A rejected left is skipped, not retired
+ * ({@link RetiringBiWalk#acceptLeft} runs before {@link #createRightIterator}),
+ * and a {@code weight} of zero is always accepted,
+ * so the existing empty-right retirement path still runs for a genuinely dead left.
  */
 @NullMarked
 final class BiRandomMoveIterator<Solution_, A, B>
@@ -65,6 +92,21 @@ final class BiRandomMoveIterator<Solution_, A, B>
     @Override
     public boolean hasNext() {
         return nextMove != null || RetiringBiWalk.advance(leftTupleIterator, this);
+    }
+
+    @Override
+    public boolean acceptLeft(UniTuple<A> leftTuple) {
+        var rightDatasetInstance = context.getRightDatasetInstance();
+        var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
+        var weight = rightDatasetInstance.size(compositeKey);
+        if (weight == 0) {
+            return true; // Let the existing empty-right path in createRightIterator retire this dead left.
+        }
+        var bound = rightDatasetInstance.totalSize();
+        if (weight >= bound) {
+            return true; // Structural no-op: no indexing joiner narrows the right side at all.
+        }
+        return RandomUtils.nextDouble(workingRandom, bound) < weight;
     }
 
     @Override

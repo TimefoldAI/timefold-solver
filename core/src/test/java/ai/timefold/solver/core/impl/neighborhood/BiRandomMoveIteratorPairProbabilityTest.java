@@ -19,27 +19,29 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
+import org.assertj.core.data.Percentage;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 /**
- * Pins the accepted per-left pair bias of {@code BiRandomMoveIterator}
- * (left picked uniformly, then right picked uniformly inside that left's bucket, same as the classic swap move selector):
- * a left tuple with few partners keeps a higher probability per pair
- * than a left tuple with many partners.
+ * Protects {@code BiRandomMoveIterator}'s per-pair fairness fix: a left picked uniformly and then rejected
+ * with probability {@code 1 - weight/bound} makes the resulting pair probability uniform, not just the left
+ * draw, so a pair in a small bucket must not be drawn any more (or less) often, per pair, than a pair in a
+ * large bucket.
  * <p>
- * This is a deliberate, accepted trade-off, not a bug;
- * this test exists so that fixing it later (uniform probability over pairs instead of over lefts)
- * is a visible, deliberate change, not a silent side effect.
+ * The joiner here must be an indexing {@code equal}, not {@code filtering()}: a filtering()-only join has no
+ * composite key to restrict the right side by, so {@code weight == bound} for every left always, a structural
+ * no-op this fix deliberately leaves alone (see {@code BiRandomMoveIterator}'s javadoc). This test used to pin
+ * the opposite (biased) behavior, over a filtering()-only joiner, before the fix landed.
  */
 class BiRandomMoveIteratorPairProbabilityTest {
 
-    private static final int DRAW_COUNT = 40_000;
+    private static final int DRAW_COUNT = 1_000_000;
     private static final int SMALL_PARTNER_COUNT = 2;
     private static final int LARGE_PARTNER_COUNT = 20;
 
     @Test
-    void smallBucketPairsAreDrawnMoreOftenPerPairThanLargeBucketPairs() {
+    void perPairProbabilityIsUniformAcrossBucketSizes() {
         var smallEntity = new TestdataEntity("small");
         var largeEntity = new TestdataEntity("large");
         var smallValues = values("small-v", SMALL_PARTNER_COUNT);
@@ -77,12 +79,12 @@ class BiRandomMoveIteratorPairProbabilityTest {
 
         var smallPerPairProbability = smallCount / (double) SMALL_PARTNER_COUNT;
         var largePerPairProbability = largeCount / (double) LARGE_PARTNER_COUNT;
-        // Expected ratio is exactly LARGE_PARTNER_COUNT / SMALL_PARTNER_COUNT (=10); a wide margin keeps
-        // this from being a flaky test while still catching a future "uniform over pairs" change.
+        // Fixed, uniform-over-pairs probability is 1 / (leftCount * totalPartnerCount) for every pair,
+        // regardless of which bucket it is in; before the fix, the small bucket's rate was ~10x the large one's.
         assertThat(smallPerPairProbability)
-                .as("a pair in the %d-partner bucket should be drawn far more often, per pair, than one in the %d-partner bucket",
-                        SMALL_PARTNER_COUNT, LARGE_PARTNER_COUNT)
-                .isGreaterThan(largePerPairProbability * 3);
+                .as("a pair's per-pair rate must not depend on its bucket size (small: %s, large: %s)",
+                        smallPerPairProbability, largePerPairProbability)
+                .isCloseTo(largePerPairProbability, Percentage.withPercentage(5));
     }
 
     private static List<TestdataValue> values(String prefix, int count) {
@@ -104,9 +106,9 @@ class BiRandomMoveIteratorPairProbabilityTest {
     }
 
     /**
-     * Picks (entity, value) pairs where the value's code starts with the entity's code,
-     * so "small" only ever pairs with "small-v*" values,
-     * and "large" only ever pairs with "large-v*" values.
+     * Picks (entity, value) pairs whose codes share a prefix, so "small" only ever pairs with "small-v*"
+     * values, and "large" only ever pairs with "large-v*" values. An indexing {@code equal} join, not
+     * {@code filtering()}: the fix this test protects is a structural no-op without one.
      */
     @NullMarked
     private record PickMatchingPair(PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue> variable)
@@ -117,9 +119,8 @@ class BiRandomMoveIteratorPairProbabilityTest {
         public MoveStream<TestdataSolution> build(MoveStreamFactory<TestdataSolution> moveStreamFactory) {
             var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
             var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
-            var matchingPrefix = NeighborhoodsJoiners
-                    .<TestdataSolution, TestdataEntity, TestdataValue> filtering(
-                            (solutionView, entity, value) -> value.getCode().startsWith(entity.getCode()));
+            var matchingPrefix = NeighborhoodsJoiners.<TestdataEntity, TestdataValue, String> equal(
+                    TestdataEntity::getCode, value -> value.getCode().split("-")[0]);
             return moveStreamFactory.pick(entityStream)
                     .pick(valueStream, matchingPrefix)
                     .asMove((solutionView, entity, value) -> Moves.change(variable, entity, value));

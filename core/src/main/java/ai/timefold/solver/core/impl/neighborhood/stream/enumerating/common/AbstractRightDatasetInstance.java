@@ -22,6 +22,13 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     private final int compositeKeyStoreIndex;
     private final Indexer<UniTuple<Right_>> indexer;
 
+    /**
+     * The number of tuples currently live in this dataset, across every composite key.
+     * Maintained incrementally in {@link #insert}/{@link #retract} so {@link #totalSize()} is O(1);
+     * {@link Indexer} has no key-independent size query to recompute it from.
+     */
+    private int totalSize;
+
     protected AbstractRightDatasetInstance(AbstractDataset<Solution_> parent,
             IndexerFactory.KeysExtractor<UniTuple<Right_>> compositeKeyExtractor, int compositeKeyStoreIndex,
             int entryStoreIndex, Indexer<UniTuple<Right_>> indexer) {
@@ -42,6 +49,7 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
         var compositeKey = compositeKeyExtractor.apply(tuple);
         tuple.setStore(entryStoreIndex, indexer.put(compositeKey, tuple));
         tuple.setStore(compositeKeyStoreIndex, compositeKey);
+        totalSize++;
     }
 
     @Override
@@ -65,11 +73,13 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     public void retract(UniTuple<Right_> tuple) {
         var compositeKey = tuple.removeStore(compositeKeyStoreIndex);
         if (compositeKey == null) {
-            // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+            // No fail fast if null because we don't track which tuples made it through the filter predicate(s).
+            // Never inserted (filtered out), so totalSize must not be decremented either.
             return;
         }
 
         indexer.remove(compositeKey, tuple.removeStore(entryStoreIndex));
+        totalSize--;
     }
 
     /**
@@ -78,6 +88,15 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
      */
     public int size(Object compositeKey) {
         return indexer.size(compositeKey);
+    }
+
+    /**
+     * The number of tuples currently live in this dataset, across every composite key.
+     * Used as the denominator that makes {@code BiRandomMoveIterator}'s per-pair probability uniform:
+     * an indexed key's {@link #size(Object)} is always a subset of this total.
+     */
+    public int totalSize() {
+        return totalSize;
     }
 
     /**

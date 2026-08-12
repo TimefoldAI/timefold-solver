@@ -42,7 +42,20 @@ public interface RetiringBiWalk<L, R> {
     }
 
     /**
-     * Draws left values until one has a matching right value,
+     * Whether a left value just drawn by {@link #advance} should be used for this draw,
+     * or skipped and redrawn.
+     * True by default:
+     * every left is equally acceptable, unless the caller weights them
+     * (see {@code BiRandomMoveIterator}, which rejects a drawn left with probability {@code 1 - weight/bound}
+     * so that the resulting pair probability is uniform, rather than uniform-over-lefts-then-uniform-within-bucket).
+     * A rejected left is skipped, not retired: {@link #advance} simply draws again.
+     */
+    default boolean acceptLeft(L left) {
+        return true;
+    }
+
+    /**
+     * Draws left values until one is accepted (see {@link #acceptLeft}) and has a matching right value,
      * retiring every dead left value along the way,
      * or until every left value is exhausted.
      *
@@ -51,6 +64,9 @@ public interface RetiringBiWalk<L, R> {
     static <L, R> boolean advance(RetiringRandomIterator<L> leftIterator, RetiringBiWalk<L, R> walk) {
         while (leftIterator.hasNext()) {
             var left = leftIterator.next();
+            if (!walk.acceptLeft(left)) {
+                continue;
+            }
             var rightIterator = walk.createRightIterator(left);
             if (rightIterator.hasNext()) {
                 walk.accept(left, rightIterator.next());
