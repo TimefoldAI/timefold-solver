@@ -15,6 +15,8 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     @Test
     void parseScore() {
         assertThat(SimpleBigDecimalScore.parseScore("-147.2")).isEqualTo(SimpleBigDecimalScore.of(new BigDecimal("-147.2")));
+        assertThat(SimpleBigDecimalScore.parseScore("-1structural/-147.2"))
+                .isEqualTo(new SimpleBigDecimalScore(-1L, new BigDecimal("-147.2")));
     }
 
     @Test
@@ -36,6 +38,13 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     @Test
     void parseScoreIllegalArgument() {
         assertThatIllegalArgumentException().isThrownBy(() -> SimpleBigDecimalScore.parseScore("-147.2hard/-258.3soft"));
+    }
+
+    @Test
+    void feasible() {
+        assertScoreNotFeasible(new SimpleBigDecimalScore(-1L, BigDecimal.ZERO));
+        assertScoreFeasible(SimpleBigDecimalScore.of(BigDecimal.ZERO),
+                SimpleBigDecimalScore.of(new BigDecimal("-5")));
     }
 
     @Test

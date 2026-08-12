@@ -31,13 +31,20 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
 
     public static BendableBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableBigDecimalScore.class, scoreString);
-        var hardScores = new BigDecimal[scoreTokens[0].length];
-        for (var i = 0; i < hardScores.length; i++) {
-            hardScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[0][i]);
+        long structuralScore = 0L;
+        if (scoreTokens[0] != null && scoreTokens[0].length > 0) {
+            structuralScore = ScoreUtil.parseLevelAsLong(BendableBigDecimalScore.class, scoreString, scoreTokens[0][0]);
         }
-        var softScores = new BigDecimal[scoreTokens[1].length];
+        var hardScores = new BigDecimal[scoreTokens[1].length];
+        for (var i = 0; i < hardScores.length; i++) {
+            hardScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[1][i]);
+        }
+        var softScores = new BigDecimal[scoreTokens[2].length];
         for (var i = 0; i < softScores.length; i++) {
-            softScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[1][i]);
+            softScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[2][i]);
+        }
+        if (structuralScore != 0L) {
+            return new BendableBigDecimalScore(structuralScore, hardScores, softScores);
         }
         return of(hardScores, softScores);
     }

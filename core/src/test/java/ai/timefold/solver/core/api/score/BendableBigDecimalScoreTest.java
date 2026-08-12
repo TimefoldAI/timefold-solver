@@ -61,6 +61,10 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
     void parseScore() {
         assertThat(scoreDefinitionHSS.parseScore("[-147]hard/[-258/-369]soft")).isEqualTo(scoreDefinitionHSS.createScore(
                 BigDecimal.valueOf(-147), BigDecimal.valueOf(-258), BigDecimal.valueOf(-369)));
+        assertThat(scoreDefinitionHSS.parseScore("-1structural/[-147]hard/[-258/-369]soft")).isEqualTo(
+                new BendableBigDecimalScore(-1L,
+                        new BigDecimal[] { BigDecimal.valueOf(-147) },
+                        new BigDecimal[] { BigDecimal.valueOf(-258), BigDecimal.valueOf(-369) }));
     }
 
     @Test
@@ -109,7 +113,8 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
 
     @Test
     void feasibleHSS() {
-        assertScoreNotFeasible(scoreDefinitionHSS.createScore(MINUS_FIVE, MINUS_300, MINUS_4000));
+        assertScoreNotFeasible(scoreDefinitionHSS.createScore(MINUS_FIVE, MINUS_300, MINUS_4000),
+                new BendableBigDecimalScore(-1L, new BigDecimal[] { ZERO }, new BigDecimal[] { MINUS_300, MINUS_4000 }));
         assertScoreFeasible(scoreDefinitionHSS.createScore(ZERO, MINUS_300, MINUS_4000),
                 scoreDefinitionHSS.createScore(TWO, MINUS_300, MINUS_4000));
     }

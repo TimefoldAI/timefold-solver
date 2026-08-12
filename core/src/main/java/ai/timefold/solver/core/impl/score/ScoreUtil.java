@@ -21,6 +21,7 @@ public final class ScoreUtil {
             var newLevelSuffixes = Arrays.copyOf(levelSuffixes, levelSuffixes.length + 1);
             System.arraycopy(levelSuffixes, 0, newLevelSuffixes, 1, levelSuffixes.length);
             newLevelSuffixes[0] = "structural";
+            scoreTokens = new String[levelSuffixes.length + 1];
             levelSuffixes = newLevelSuffixes;
         }
         if (suffixedScoreTokens.length != levelSuffixes.length) {
@@ -120,8 +121,13 @@ public final class ScoreUtil {
     }
 
     public static String[][] parseBendableScoreTokens(Class<? extends IBendableScore<?>> scoreClass, String scoreString) {
-        var scoreTokens = new String[2][];
+        var scoreTokens = new String[3][];
         var startIndex = 0;
+        var structuralSlashIndex = scoreString.indexOf("structural/");
+        if (structuralSlashIndex >= 0) {
+            scoreTokens[0] = new String[] { scoreString.substring(0, structuralSlashIndex) };
+            startIndex = structuralSlashIndex + "structural/".length();
+        }
         for (var i = 0; i < LEVEL_SUFFIXES.length; i++) {
             var levelSuffix = LEVEL_SUFFIXES[i];
             var endIndex = scoreString.indexOf(levelSuffix, startIndex);
@@ -140,7 +146,7 @@ public final class ScoreUtil {
                         .formatted(scoreString, scoreClass.getSimpleName(), buildScorePattern(true, LEVEL_SUFFIXES),
                                 scoreString));
             }
-            scoreTokens[i] = scoreSubString.equals("[]") ? new String[0]
+            scoreTokens[i + 1] = scoreSubString.equals("[]") ? new String[0]
                     : scoreSubString.substring(1, scoreSubString.length() - 1).split("/");
             startIndex = endIndex + levelSuffix.length() + "/".length();
         }

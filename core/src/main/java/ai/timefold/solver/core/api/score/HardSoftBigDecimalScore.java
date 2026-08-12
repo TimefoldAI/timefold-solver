@@ -37,9 +37,16 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
 
     public static HardSoftBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardSoftBigDecimalScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
-        var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
-        var softScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
-        return of(hardScore, softScore);
+        if (scoreTokens.length == 2) {
+            var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var softScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
+            return of(hardScore, softScore);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(HardSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
+            var softScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
+            return new HardSoftBigDecimalScore(structuralScore, hardScore, softScore);
+        }
     }
 
     public static HardSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal softScore) {

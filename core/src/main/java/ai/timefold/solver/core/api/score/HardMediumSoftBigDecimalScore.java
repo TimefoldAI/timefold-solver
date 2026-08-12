@@ -53,10 +53,20 @@ public record HardMediumSoftBigDecimalScore(long structuralScore, BigDecimal har
     public static HardMediumSoftBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftBigDecimalScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
-        var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
-        var mediumScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
-        var softScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
-        return of(hardScore, mediumScore, softScore);
+        if (scoreTokens.length == 3) {
+            var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var mediumScore =
+                    ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
+            var softScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
+            return of(hardScore, mediumScore, softScore);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
+            var mediumScore =
+                    ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
+            var softScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[3]);
+            return new HardMediumSoftBigDecimalScore(structuralScore, hardScore, mediumScore, softScore);
+        }
     }
 
     public static HardMediumSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal mediumScore,

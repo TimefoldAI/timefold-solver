@@ -38,10 +38,18 @@ public record HardMediumSoftScore(long structuralScore, long hardScore, long med
     public static HardMediumSoftScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
-        var hardScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[0]);
-        var mediumScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[1]);
-        var softScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[2]);
-        return of(hardScore, mediumScore, softScore);
+        if (scoreTokens.length == 3) {
+            var hardScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[0]);
+            var mediumScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[1]);
+            var softScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[2]);
+            return of(hardScore, mediumScore, softScore);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[0]);
+            var hardScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[1]);
+            var mediumScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[2]);
+            var softScore = ScoreUtil.parseLevelAsLong(HardMediumSoftScore.class, scoreString, scoreTokens[3]);
+            return new HardMediumSoftScore(structuralScore, hardScore, mediumScore, softScore);
+        }
     }
 
     public static HardMediumSoftScore of(long hardScore, long mediumScore, long softScore) {

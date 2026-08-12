@@ -31,9 +31,16 @@ public record HardSoftScore(long structuralScore, long hardScore, long softScore
 
     public static HardSoftScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
-        var hardScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[0]);
-        var softScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[1]);
-        return of(hardScore, softScore);
+        if (scoreTokens.length == 2) {
+            var hardScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[0]);
+            var softScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[1]);
+            return of(hardScore, softScore);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[0]);
+            var hardScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[1]);
+            var softScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[2]);
+            return new HardSoftScore(structuralScore, hardScore, softScore);
+        }
     }
 
     public static HardSoftScore of(long hardScore, long softScore) {

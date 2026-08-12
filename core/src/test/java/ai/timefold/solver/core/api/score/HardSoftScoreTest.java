@@ -20,6 +20,8 @@ class HardSoftScoreTest extends AbstractScoreTest {
     void parseScore() {
         assertThat(HardSoftScore.parseScore("-147hard/-258soft")).isEqualTo(HardSoftScore.of(-147L, -258L));
         assertThat(HardSoftScore.parseScore("-147hard/*soft")).isEqualTo(HardSoftScore.of(-147L, Long.MIN_VALUE));
+        assertThat(HardSoftScore.parseScore("-1structural/0hard/-258soft"))
+                .isEqualTo(new HardSoftScore(-1L, 0L, -258L));
     }
 
     @Test
@@ -43,7 +45,8 @@ class HardSoftScoreTest extends AbstractScoreTest {
 
     @Test
     void feasible() {
-        assertScoreNotFeasible(HardSoftScore.of(-5L, -300L));
+        assertScoreNotFeasible(HardSoftScore.of(-5L, -300L),
+                new HardSoftScore(-1L, 0L, -300L));
         assertScoreFeasible(HardSoftScore.of(0L, -300L),
                 HardSoftScore.of(2L, -300L));
     }

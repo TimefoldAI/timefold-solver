@@ -26,8 +26,14 @@ public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) impl
 
     public static SimpleBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
-        var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
-        return of(score);
+        if (scoreTokens.length == 1) {
+            var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
+            return of(score);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[1]);
+            return new SimpleBigDecimalScore(structuralScore, score);
+        }
     }
 
     public static SimpleBigDecimalScore of(BigDecimal score) {

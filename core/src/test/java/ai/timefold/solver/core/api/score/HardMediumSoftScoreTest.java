@@ -25,6 +25,8 @@ class HardMediumSoftScoreTest extends AbstractScoreTest {
                 .isEqualTo(HardMediumSoftScore.of(-147L, -258L, Long.MIN_VALUE));
         assertThat(HardMediumSoftScore.parseScore("-147hard/*medium/-369soft"))
                 .isEqualTo(HardMediumSoftScore.of(-147L, Long.MIN_VALUE, -369L));
+        assertThat(HardMediumSoftScore.parseScore("-1structural/0hard/0medium/0soft"))
+                .isEqualTo(new HardMediumSoftScore(-1L, 0L, 0L, 0L));
     }
 
     @Test
@@ -49,7 +51,8 @@ class HardMediumSoftScoreTest extends AbstractScoreTest {
 
     @Test
     void feasible() {
-        assertScoreNotFeasible(HardMediumSoftScore.of(-5L, -300L, -4000L));
+        assertScoreNotFeasible(HardMediumSoftScore.of(-5L, -300L, -4000L),
+                new HardMediumSoftScore(-1L, 0L, 0L, 0L));
         assertScoreFeasible(HardMediumSoftScore.of(0L, -300L, -4000L),
                 HardMediumSoftScore.of(2L, -300L, -4000L));
     }

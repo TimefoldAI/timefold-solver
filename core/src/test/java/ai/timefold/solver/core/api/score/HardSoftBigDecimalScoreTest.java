@@ -24,6 +24,8 @@ class HardSoftBigDecimalScoreTest extends AbstractScoreTest {
     void parseScore() {
         assertThat(HardSoftBigDecimalScore.parseScore("-147.2hard/-258.3soft"))
                 .isEqualTo(HardSoftBigDecimalScore.of(new BigDecimal("-147.2"), new BigDecimal("-258.3")));
+        assertThat(HardSoftBigDecimalScore.parseScore("-1structural/0hard/-258.3soft"))
+                .isEqualTo(new HardSoftBigDecimalScore(-1L, BigDecimal.ZERO, new BigDecimal("-258.3")));
     }
 
     @Test
@@ -54,7 +56,8 @@ class HardSoftBigDecimalScoreTest extends AbstractScoreTest {
     void feasible() {
         assertScoreNotFeasible(HardSoftBigDecimalScore.of(new BigDecimal("-5"), new BigDecimal("-300")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-5"), new BigDecimal("4000")),
-                HardSoftBigDecimalScore.of(new BigDecimal("-0.007"), new BigDecimal("4000")));
+                HardSoftBigDecimalScore.of(new BigDecimal("-0.007"), new BigDecimal("4000")),
+                new HardSoftBigDecimalScore(-1L, BigDecimal.ZERO, new BigDecimal("-300")));
         assertScoreFeasible(HardSoftBigDecimalScore.of(new BigDecimal("0"), new BigDecimal("-300.007")),
                 HardSoftBigDecimalScore.of(new BigDecimal("0"), new BigDecimal("-300")),
                 HardSoftBigDecimalScore.of(new BigDecimal("2"), new BigDecimal("-300")));

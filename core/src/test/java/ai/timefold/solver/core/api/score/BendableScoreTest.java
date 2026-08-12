@@ -29,6 +29,8 @@ class BendableScoreTest extends AbstractScoreTest {
                 .isEqualTo(scoreDefinitionHSS.createScore(-5432109876L, -9876543210L, Long.MIN_VALUE));
         assertThat(scoreDefinitionHSS.parseScore("[-5432109876]hard/[*/-3456789012]soft"))
                 .isEqualTo(scoreDefinitionHSS.createScore(-5432109876L, Long.MIN_VALUE, -3456789012L));
+        assertThat(scoreDefinitionHSS.parseScore("-1structural/[-5432109876]hard/[-9876543210/-3456789012]soft"))
+                .isEqualTo(new BendableScore(-1L, new long[] { -5432109876L }, new long[] { -9876543210L, -3456789012L }));
     }
 
     @Test
@@ -67,7 +69,8 @@ class BendableScoreTest extends AbstractScoreTest {
 
     @Test
     void feasibleHSS() {
-        assertScoreNotFeasible(scoreDefinitionHSS.createScore(-5L, -300L, -9876543210L));
+        assertScoreNotFeasible(scoreDefinitionHSS.createScore(-5L, -300L, -9876543210L),
+                new BendableScore(-1L, new long[] { 0L }, new long[] { -300L, -9876543210L }));
         assertScoreFeasible(scoreDefinitionHSS.createScore(0L, -300L, -9876543210L),
                 scoreDefinitionHSS.createScore(2L, -300L, -9876543210L));
     }

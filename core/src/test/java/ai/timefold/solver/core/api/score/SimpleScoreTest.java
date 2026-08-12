@@ -14,6 +14,15 @@ class SimpleScoreTest extends AbstractScoreTest {
     void parseScore() {
         assertThat(SimpleScore.parseScore("-147")).isEqualTo(SimpleScore.of(-147L));
         assertThat(SimpleScore.parseScore("*")).isEqualTo(SimpleScore.of(Long.MIN_VALUE));
+        assertThat(SimpleScore.parseScore("-1structural/-147"))
+                .isEqualTo(new SimpleScore(-1L, -147L));
+    }
+
+    @Test
+    void feasible() {
+        assertScoreNotFeasible(new SimpleScore(-1L, 0L));
+        assertScoreFeasible(SimpleScore.of(0L),
+                SimpleScore.of(-5L));
     }
 
     @Test
