@@ -2,10 +2,14 @@ package ai.timefold.solver.tools.maven;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import ai.timefold.solver.tools.maven.client.PlatformIdentityInfo;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -79,6 +85,47 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
 
     protected HttpClient httpClient = HttpClient.newBuilder().version(Version.HTTP_2).followRedirects(Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(10)).build();
+
+    protected AccessTokenProvider getAccessTokenProvider() {
+        return accessTokenProvider;
+    }
+
+    protected void setAccessTokenProvider(AccessTokenProvider accessTokenProvider) {
+        this.accessTokenProvider = accessTokenProvider;
+    }
+
+    protected PlatformIdentityInfo fetchPlatformIdentityInfo(boolean includeConfig) {
+        String platformPAT = accessTokenProvider.getAccessToken();
+
+        if (platformPAT == null) {
+            throw new RuntimeException(
+                    "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
+        }
+
+        Builder requestBuilder = HttpRequest.newBuilder().GET();
+        requestBuilder.header("Accept", "application/json");
+        requestBuilder.header("Authorization", "Bearer " + platformPAT);
+        requestBuilder.uri(URI.create(getPlatformUrl() + "/api/platform/v1/aboutme?includeConfig=" + includeConfig));
+
+        HttpRequest httpRequest = requestBuilder.build();
+        try {
+            HttpResponse<String> authResponse = httpClient.send(httpRequest, BodyHandlers.ofString());
+            if (authResponse.statusCode() == 200) {
+                return mapper.readValue(authResponse.body(), PlatformIdentityInfo.class);
+            } else {
+                getLog().debug(authResponse.body());
+                throw new IllegalStateException(
+                        "Platform authentication failed with " + authResponse.statusCode() + " status code");
+            }
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new RuntimeException("Unexpected error while making platform info call", e);
+        }
+    }
 
     protected void configureHttpRequest(Builder builder) {
         builder.timeout(Duration.ofSeconds(30));
