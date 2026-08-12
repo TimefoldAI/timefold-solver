@@ -17,6 +17,12 @@ public final class ScoreUtil {
     public static String[] parseScoreTokens(Class<? extends Score<?>> scoreClass, String scoreString, String... levelSuffixes) {
         var scoreTokens = new String[levelSuffixes.length];
         var suffixedScoreTokens = scoreString.split("/");
+        if (suffixedScoreTokens.length == levelSuffixes.length + 1) {
+            var newLevelSuffixes = Arrays.copyOf(levelSuffixes, levelSuffixes.length + 1);
+            System.arraycopy(levelSuffixes, 0, newLevelSuffixes, 1, levelSuffixes.length);
+            newLevelSuffixes[0] = "structural";
+            levelSuffixes = newLevelSuffixes;
+        }
         if (suffixedScoreTokens.length != levelSuffixes.length) {
             throw new IllegalArgumentException("""
                     The scoreString (%s) for the scoreClass (%s) doesn't follow the correct pattern (%s): \

@@ -24,8 +24,14 @@ public record SimpleScore(long structuralScore, long score) implements Score<Sim
 
     public static SimpleScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(SimpleScore.class, scoreString, "");
-        var score = ScoreUtil.parseLevelAsLong(SimpleScore.class, scoreString, scoreTokens[0]);
-        return of(score);
+        if (scoreTokens.length == 1) {
+            var score = ScoreUtil.parseLevelAsLong(SimpleScore.class, scoreString, scoreTokens[0]);
+            return of(score);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(SimpleScore.class, scoreString, scoreTokens[0]);
+            var score = ScoreUtil.parseLevelAsLong(SimpleScore.class, scoreString, scoreTokens[1]);
+            return new SimpleScore(structuralScore, score);
+        }
     }
 
     public static SimpleScore of(long score) {
