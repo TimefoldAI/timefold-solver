@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, '*.x', '!1.*.*']
     paths-ignore:
       - 'LICENSE*'
       - '.gitignore'

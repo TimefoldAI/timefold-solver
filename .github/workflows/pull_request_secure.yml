@@ -15,7 +15,7 @@ on:
   # - The workflow will be executed automatically, without requiring a manual approval.
   # Therefore the workflow needs to be explicitly secured; see "known_user" and "approval_required" jobs below.
   pull_request_target:
-    branches: [ main ] # Benchmarks aren't branched, so they will only ever work against current main.
+    branches: [main, '*.x', '!1.*.*']
     types:
       - opened
       - reopened
