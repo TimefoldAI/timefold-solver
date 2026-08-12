@@ -180,7 +180,7 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
     public String toString() {
         return (structuralScore < 0)
                 ? "%dstructural/%s%s/%s%s".formatted(structuralScore, hardScore, HARD_LABEL, softScore, SOFT_LABEL)
-                : hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
+                : "%s%s/%s%s".formatted(hardScore, HARD_LABEL, softScore, SOFT_LABEL);
     }
 
 }
