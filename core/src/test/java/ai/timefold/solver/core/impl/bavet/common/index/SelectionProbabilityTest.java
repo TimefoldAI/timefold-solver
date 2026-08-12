@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.IntStream;
@@ -162,6 +164,92 @@ final class SelectionProbabilityTest {
             assertThat(actual)
                     .as(() -> "Tuple %s picked %d times, expected close to %.0f (uniform over 3 distinct tuples)."
                             .formatted(tuple, actual, expected))
+                    .isCloseTo((int) expected, Percentage.withPercentage(5));
+        }
+    }
+
+    /**
+     * Protects {@link DefaultRetiringRandomIterator} against the old "snap to nearest active index"
+     * correction: retiring an interior element used to oversample its surviving neighbors, since a draw
+     * that landed on the retired index moved to whichever survivor was closest instead of being redrawn
+     * from the live pool uniformly.
+     */
+    @Test
+    void retiringRandomIteratorStaysUniformAfterRetirement() {
+        var trialCount = 1_000_000;
+        var elementCount = 20;
+        var retiredElementSet = Set.of(5, 12); // Interior retirements; the old bug was unbiased at the edges.
+        var elementList = IntStream.range(0, elementCount).boxed().toList();
+
+        var random = new Random(0);
+        var counts = new HashMap<Integer, Integer>();
+        for (var trial = 0; trial < trialCount; trial++) { // Independent trials; each gets its own random seed.
+            var splitRandom = new Random(random.nextLong());
+            var iterator = new DefaultRetiringRandomIterator<>(toEntries(elementList), splitRandom);
+            for (var retiredElement : retiredElementSet) {
+                retireElement(iterator, retiredElement);
+            }
+            var pick = iterator.next();
+            counts.merge(pick, 1, Integer::sum);
+        }
+
+        var survivorCount = elementCount - retiredElementSet.size();
+        assertThat(counts.keySet()).hasSize(survivorCount);
+        assertThat(counts.keySet()).noneMatch(retiredElementSet::contains);
+
+        var expected = trialCount / (double) survivorCount;
+        for (var entry : counts.entrySet()) {
+            var actual = entry.getValue();
+            assertThat(actual)
+                    .as(() -> "Element %d picked %d times, expected close to %.0f (uniform over %d survivors)."
+                            .formatted(entry.getKey(), actual, expected, survivorCount))
+                    .isCloseTo((int) expected, Percentage.withPercentage(2));
+        }
+    }
+
+    /**
+     * Draws (with replacement) until {@code target} is picked, then retires it.
+     * Any non-matching draw along the way is left untouched, exactly as an ordinary caller
+     * that decides not to retire what it just drew would leave it.
+     */
+    private static void retireElement(RetiringRandomIterator<Integer> iterator, int target) {
+        while (!iterator.next().equals(target)) {
+            // Keep drawing until the target comes up.
+        }
+        iterator.retire();
+    }
+
+    /**
+     * Protects {@link DefaultRetiringRandomIterator} (which {@link UniqueRandomIterator#of} builds on)
+     * against the same "snap to nearest active index" bias, this time over a full drain:
+     * every one of the {@code n!} possible draw orders must be equally likely.
+     */
+    @Test
+    void uniqueRandomIteratorDrainsInUniformPermutationOrder() {
+        var trialCount = 1_000_000;
+        var elementList = List.of(0, 1, 2, 3, 4);
+        var permutationCount = 120; // 5!
+
+        var random = new Random(0);
+        var counts = new HashMap<List<Integer>, Integer>();
+        for (var trial = 0; trial < trialCount; trial++) { // Independent trials; each gets its own random seed.
+            var splitRandom = new Random(random.nextLong());
+            var iterator = UniqueRandomIterator.of(toEntries(elementList), splitRandom);
+            var drawOrder = new ArrayList<Integer>(elementList.size());
+            while (iterator.hasNext()) {
+                drawOrder.add(iterator.next());
+            }
+            counts.merge(drawOrder, 1, Integer::sum);
+        }
+
+        assertThat(counts).hasSize(permutationCount);
+
+        var expected = trialCount / (double) permutationCount;
+        for (var entry : counts.entrySet()) {
+            var actual = entry.getValue();
+            assertThat(actual)
+                    .as(() -> "Draw order %s occurred %d times, expected close to %.0f (uniform over %d permutations)."
+                            .formatted(entry.getKey(), actual, expected, permutationCount))
                     .isCloseTo((int) expected, Percentage.withPercentage(5));
         }
     }

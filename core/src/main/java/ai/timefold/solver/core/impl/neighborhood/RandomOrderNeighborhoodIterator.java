@@ -1,15 +1,16 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
+
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Draws a fresh, independent neighborhood for every move,

@@ -1,14 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
-import org.assertj.core.data.Offset;
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +10,16 @@ import java.util.Random;
 import java.util.Set;
 import java.util.random.RandomGenerator;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+
+import org.assertj.core.data.Offset;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 /**
  * {@code RandomOrderNeighborhoodIterator} must draw a fresh neighborhood for every move,

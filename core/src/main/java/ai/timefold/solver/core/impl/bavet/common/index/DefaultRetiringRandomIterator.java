@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
@@ -10,84 +11,70 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Keeps an exact track of which items were already retired,
- * so that no item is ever returned twice unless it is picked again before being retired.
- * It accepts a list of unique items on input, and does not copy or modify it.
+ * Implements a lazy Fisher-Yates shuffle over the live (not yet retired) slots,
+ * so that both a single draw and a full drain are exactly uniform,
+ * even after retirements.
+ * It accepts a list of unique items on input,
+ * and does not copy or modify it.
  *
  * @param <T>
  */
 @NullMarked
-final class DefaultRetiringRandomIterator<T> implements RetiringRandomIterator<T> {
+final class DefaultRetiringRandomIterator<T extends @Nullable Object>
+        implements RetiringRandomIterator<T> {
 
     private final ElementAwareArrayList<T> source;
-    private final int length;
     private final RandomGenerator workingRandom;
-    private final BitSet removed;
+    /**
+     * Maps a live slot to the logical index (into {@link #source}) it currently holds;
+     * a slot absent from the map holds the logical index equal to itself
+     * (the identity mapping every slot starts with).
+     * {@link #resolveSlot(int)} is therefore always a bijection from the live slots {@code [0, activeCount)}
+     * onto the live logical indexes,
+     * which is what makes every draw and every full drain exactly uniform:
+     * a draw picks a live slot uniformly,
+     * and {@link #retire()} swaps the retired slot with the last live slot
+     * (updating only that one map entry)
+     * instead of leaving a gap that would have to be walked around.
+     * A {@link HashMap} is used instead of an eager {@code int[]} permutation of every logical index,
+     * because one of these iterators is built per neighborhood per step,
+     * over datasets that can hold well over 100,000 tuples;
+     * a {@link HashMap} only grows with the number of retirements, not with the size of {@link #source}.
+     */
+    private final Map<Integer, Integer> slotMap = new HashMap<>();
 
-    private int removedCount;
-    private int leftmostIndex;
-    private int rightmostIndex;
+    private int activeCount;
 
-    private int nextIndex = -1;
+    private int nextSlot = -1;
     private @Nullable T next = null;
-    private int indexToOptionallyRemove = -1;
+    private int slotToOptionallyRetire = -1;
 
     DefaultRetiringRandomIterator(ElementAwareArrayList<T> source, RandomGenerator workingRandom) {
         this.source = source;
-        this.length = source.size();
-        this.removed = new BitSet(); // Do not size upfront, we may only remove a few elements.
         this.workingRandom = workingRandom;
-        this.removedCount = 0;
-        this.leftmostIndex = 0;
-        this.rightmostIndex = length - 1;
+        this.activeCount = source.size();
     }
 
     @Override
     public boolean hasNext() {
-        if (source.isEmpty() || removedCount >= length) {
+        if (activeCount <= 0) {
             return false;
         }
-        if (nextIndex != -1) {
+        if (nextSlot != -1) {
             return true;
         }
-        // Pick a random index from the underlying list.
-        // If the index has already been removed, find the next closest active one.
-        // If no such index is found, pick the previous closest active one.
-        // This algorithm ensures that we do not pick the same index twice.
-        var randomIndex = workingRandom.nextInt(leftmostIndex, rightmostIndex + 1);
-        nextIndex = pickIndex(workingRandom, randomIndex);
-        if (nextIndex == -1) {
-            return false;
-        }
-        next = source.get(nextIndex);
-        indexToOptionallyRemove = -1;
+        nextSlot = workingRandom.nextInt(activeCount);
+        next = source.get(resolveSlot(nextSlot));
+        slotToOptionallyRetire = -1;
         return true;
     }
 
-    private int pickIndex(RandomGenerator workingRandom, int index) {
-        if (removed.get(index)) {
-            // use the closest index to avoid skewing the probability
-            index = determineActiveIndex(workingRandom, index);
-            if (index < 0 || index >= length) {
-                return -1;
-            }
+    private int resolveSlot(int slot) {
+        var result = slotMap.get(slot);
+        if (result != null) {
+            return result;
         }
-        return index;
-    }
-
-    private int determineActiveIndex(RandomGenerator workingRandom, int randomIndex) {
-        var nextClearIndex = removed.nextClearBit(randomIndex);
-        var previousClearIndex = removed.previousClearBit(randomIndex);
-
-        var nextIndexDistance = nextClearIndex >= length ? Integer.MAX_VALUE : nextClearIndex - randomIndex;
-        var previousIndexDistance = previousClearIndex == -1 ? Integer.MAX_VALUE : randomIndex - previousClearIndex;
-
-        // if the distance is equal, randomly choose between them,
-        // otherwise return the one that is closer to the random index
-        if (nextIndexDistance == previousIndexDistance) {
-            return workingRandom.nextBoolean() ? nextClearIndex : previousClearIndex;
-        }
-        return nextIndexDistance < previousIndexDistance ? nextClearIndex : previousClearIndex;
+        return slot;
     }
 
     @Override
@@ -95,28 +82,26 @@ final class DefaultRetiringRandomIterator<T> implements RetiringRandomIterator<T
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        indexToOptionallyRemove = nextIndex;
+        slotToOptionallyRetire = nextSlot;
         var returnValue = next;
-        nextIndex = -1;
+        nextSlot = -1;
         next = null;
         return returnValue;
     }
 
     @Override
     public void retire() {
-        if (indexToOptionallyRemove == -1) {
+        if (slotToOptionallyRetire == -1) {
             throw new IllegalStateException(
                     "The next() method has not been called yet, or the retire() method was already called after the last next() call.");
         }
-        removedCount++;
-        removed.set(indexToOptionallyRemove);
-        // Update the leftmost and rightmost zero index to keep probability distribution even.
-        if (indexToOptionallyRemove == leftmostIndex) {
-            leftmostIndex = removed.nextClearBit(leftmostIndex);
+        var retiredSlot = slotToOptionallyRetire;
+        var lastSlot = activeCount - 1;
+        if (retiredSlot != lastSlot) {
+            slotMap.put(retiredSlot, resolveSlot(lastSlot));
         }
-        if (indexToOptionallyRemove == rightmostIndex) {
-            rightmostIndex = removed.previousClearBit(rightmostIndex);
-        }
-        indexToOptionallyRemove = -1;
+        slotMap.remove(lastSlot);
+        activeCount = lastSlot;
+        slotToOptionallyRetire = -1;
     }
 }

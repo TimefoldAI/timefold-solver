@@ -7,11 +7,11 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Exists to support random selection with replacement over a shrinking live pool.
  * It accepts a list of items on input, and does not copy or modify it.
- * Does not allow null values.
  * <p>
  * Unlike {@link UniqueRandomIterator},
  * this iterator never ends by itself (unless the underlying list is empty)
@@ -28,11 +28,11 @@ import org.jspecify.annotations.NullMarked;
  * @param <T>
  */
 @NullMarked
-public sealed interface RetiringRandomIterator<T>
+public sealed interface RetiringRandomIterator<T extends @Nullable Object>
         extends Iterator<T>
         permits DefaultRetiringRandomIterator {
 
-    static <T> RetiringRandomIterator<T> of(ElementAwareArrayList<T> list, RandomGenerator random) {
+    static <T extends @Nullable Object> RetiringRandomIterator<T> of(ElementAwareArrayList<T> list, RandomGenerator random) {
         return new DefaultRetiringRandomIterator<>(list, random);
     }
 
