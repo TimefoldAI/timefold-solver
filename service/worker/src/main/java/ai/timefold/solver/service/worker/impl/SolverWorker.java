@@ -711,8 +711,10 @@ public class SolverWorker {
                     extractOutputMetrics(solverModel));
 
             processor.onNext(metadata);
+            var configuration = getConfiguration(id);
             sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
-                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName));
+                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName,
+                    configuredCores(configuration), configuredMemoryMi(configuration)));
 
             postProcessCompleteOutput(id, modelOutput, solverModel);
 
@@ -774,7 +776,9 @@ public class SolverWorker {
             storageService.storeMetadata(problemId, metadata);
 
             processor.onNext(metadata);
-            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
+            var configuration = getConfiguration(problemId);
+            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName,
+                    configuredCores(configuration), configuredMemoryMi(configuration)));
         } finally {
 
             for (var processor : modelPostProcessors) {
@@ -825,6 +829,31 @@ public class SolverWorker {
             LOGGER.error("Unable to get model output for id (%s)".formatted(id), e);
             return null;
         }
+    }
+
+    private Configuration<?> getConfiguration(String id) {
+        try {
+            return storageService.getConfiguration(id);
+        } catch (Exception e) {
+            LOGGER.warn("Unable to load configuration for id {} to report configured resources: {}", id, e.getMessage());
+            return null;
+        }
+    }
+
+    private Integer configuredCores(Configuration<?> configuration) {
+        return (configuration != null && configuration.run() != null)
+                ? configuration.run().maxThreadCount()
+                : null;
+    }
+
+    private Long configuredMemoryMi(Configuration<?> configuration) {
+        if (configuration == null || configuration.resourcesConfiguration() == null
+                || configuration.resourcesConfiguration().memory() == null) {
+            return null;
+        }
+        Integer maxThreadCount = configuration.run() != null ? configuration.run().maxThreadCount() : null;
+        int threadFactor = (maxThreadCount == null || maxThreadCount < 1) ? 1 : maxThreadCount;
+        return Math.round(configuration.resourcesConfiguration().memory() * threadFactor);
     }
 
     private ModelInputMetrics extractInputMetrics(SolverModel solverModel) {

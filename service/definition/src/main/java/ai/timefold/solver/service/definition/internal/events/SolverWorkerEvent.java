@@ -20,14 +20,25 @@ public abstract sealed class SolverWorkerEvent extends AbstractDatasetEvent perm
 
     private final String eventProducerId;
 
+    private final Integer configuredCores;
+
+    private final Long configuredMemoryMi;
+
     protected SolverWorkerEvent(Metadata metadata, SolverModel model, SolverJob job, String planName, String tenantName,
             String eventProducerId) {
+        this(metadata, model, job, planName, tenantName, eventProducerId, null, null);
+    }
+
+    protected SolverWorkerEvent(Metadata metadata, SolverModel model, SolverJob job, String planName, String tenantName,
+            String eventProducerId, Integer configuredCores, Long configuredMemoryMi) {
         super(metadata);
         this.model = model;
         this.job = job;
         this.planName = planName;
         this.tenantName = tenantName;
         this.eventProducerId = eventProducerId;
+        this.configuredCores = configuredCores;
+        this.configuredMemoryMi = configuredMemoryMi;
     }
 
     public SolverModel getModel() {
@@ -48,6 +59,14 @@ public abstract sealed class SolverWorkerEvent extends AbstractDatasetEvent perm
 
     public String getEventProducerId() {
         return eventProducerId;
+    }
+
+    public Integer getConfiguredCores() {
+        return configuredCores;
+    }
+
+    public Long getConfiguredMemoryMi() {
+        return configuredMemoryMi;
     }
 
 }
