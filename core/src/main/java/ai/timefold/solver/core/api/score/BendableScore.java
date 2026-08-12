@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.api.score;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
@@ -281,7 +280,10 @@ public record BendableScore(long structuralScore, long[] hardScores,
 
     @Override
     public int hashCode() {
-        return Objects.hash(structuralScore, Arrays.hashCode(hardScores), Arrays.hashCode(softScores));
+        var hash = Long.hashCode(structuralScore);
+        hash = 31 * hash + Arrays.hashCode(hardScores);
+        hash = 31 * hash + Arrays.hashCode(softScores);
+        return hash;
     }
 
     @Override

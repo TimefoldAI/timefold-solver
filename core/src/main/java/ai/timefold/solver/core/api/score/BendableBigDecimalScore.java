@@ -3,7 +3,6 @@ package ai.timefold.solver.core.api.score;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
@@ -302,11 +301,14 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
 
     @Override
     public int hashCode() {
-        var scoreHashCodes = Stream.concat(Arrays.stream(hardScores), Arrays.stream(softScores))
-                .map(BigDecimal::stripTrailingZeros)
-                .mapToInt(BigDecimal::hashCode)
-                .toArray();
-        return Long.hashCode(structuralScore) ^ Arrays.hashCode(scoreHashCodes);
+        var hash = Long.hashCode(structuralScore);
+        for (var hardScore : hardScores) {
+            hash = 31 * hash + hardScore.stripTrailingZeros().hashCode();
+        }
+        for (var softScore : softScores) {
+            hash = 31 * hash + softScore.stripTrailingZeros().hashCode();
+        }
+        return hash;
     }
 
     @Override
