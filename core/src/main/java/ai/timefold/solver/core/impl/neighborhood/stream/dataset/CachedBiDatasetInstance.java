@@ -4,12 +4,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
-import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDatasetInstance;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.BiLeftDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiIterator;
 
@@ -22,9 +20,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDatasetInstance<A, B> {
 
-    private final AbstractLeftDatasetInstance<Solution_, BiTuple<A, B>> delegate;
+    private final BiLeftDatasetInstance<Solution_, A, B> delegate;
 
-    public CachedBiDatasetInstance(AbstractLeftDatasetInstance<Solution_, BiTuple<A, B>> delegate) {
+    public CachedBiDatasetInstance(BiLeftDatasetInstance<Solution_, A, B> delegate) {
         this.delegate = Objects.requireNonNull(delegate);
     }
 
@@ -50,43 +48,22 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
 
     @Override
     public int size(@Nullable A a) {
-        var count = 0;
-        var tupleIterator = delegate.iterator();
-        while (tupleIterator.hasNext()) {
-            if (Objects.equals(tupleIterator.next().getA(), a)) {
-                count++;
-            }
-        }
-        return count;
+        return delegate.size(a);
     }
 
     @Override
     public Iterator<@Nullable B> iterator(@Nullable A a) {
-        // The delegate is finite and deterministic, so there is nothing to bail out of.
-        return new FactIterator<>(new FilteringIterator<>(delegate.iterator(), matchingA(a)));
+        return new FactIterator<>(delegate.iterator(a));
     }
 
     @Override
     public Iterator<@Nullable B> randomIterator(@Nullable A a, RandomGenerator random) {
-        // There is no index on A here (unlike a join's right side);
-        // this is a linear scan over every pair, drawn with replacement.
-        // Draws can never prove that no matching A exists,
-        // so bail out after many consecutive rejections,
-        // same multiple as FilteringEntitySelector.
-        var bailOutSize = size(a) * 10L;
-        return new FactIterator<>(new FilteringIterator<>(delegate.randomIterator(random), matchingA(a), bailOutSize));
+        return new FactIterator<>(delegate.randomIterator(a, random));
     }
 
     @Override
     public Iterator<@Nullable B> uniqueRandomIterator(@Nullable A a, RandomGenerator random) {
-        // The delegate already removes every element it returns, matching or not,
-        // so it is finite regardless of how selective the filter is;
-        // nothing to bail out of.
-        return new FactIterator<>(new FilteringIterator<>(delegate.uniqueRandomIterator(random), matchingA(a)));
-    }
-
-    private static <A, B> Predicate<BiTuple<A, B>> matchingA(@Nullable A a) {
-        return candidate -> Objects.equals(candidate.getA(), a);
+        return new FactIterator<>(delegate.uniqueRandomIterator(a, random));
     }
 
     private static final class TupleBiIterator<A, B> implements BiIterator<A, B> {

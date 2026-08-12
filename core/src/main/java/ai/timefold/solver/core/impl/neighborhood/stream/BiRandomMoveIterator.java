@@ -19,8 +19,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * An iterator for the bi-move stream which returns (A,B) pairs in random order.
  * This iterator never ends and may return the same (A,B) pair more than once,
- * except for a left tuple whose right side has been confirmed empty
- * (no matching right tuple, or every filtered candidate was rejected up to the bail-out);
+ * except for a left tuple whose right side keeps coming back empty across
+ * {@link RetiringBiWalk#PROBE_ATTEMPT_COUNT} independent probes
+ * (no matching right tuple at all, or every filtered candidate was rejected up to the bail-out, every time);
  * such a dead left tuple is retired and never picked again.
  * <p>
  * This iterator's implementation is determined by the following considerations:
@@ -120,9 +121,10 @@ final class BiRandomMoveIterator<Solution_, A, B>
         }
         var solutionView = context.neighborhoodSession().getSolutionView();
         var leftFact = leftTuple.getA();
-        // Random draws with replacement can never prove that no right tuple matches;
-        // bail out after many consecutive rejections, same multiple as FilteringEntitySelector.
-        var bailOutSize = rightDatasetInstance.size(compositeKey) * 10L;
+        // Random draws with replacement can never prove that no right tuple matches; bail out after many
+        // consecutive rejections. RetiringBiWalk.advance() retries this call up to PROBE_ATTEMPT_COUNT times
+        // before retiring the left, since a single bail-out is a false negative, not proof of emptiness.
+        var bailOutSize = rightDatasetInstance.size(compositeKey) * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
         return new FilteringIterator<>(rightTupleIterator,
                 rightTuple -> filter.test(solutionView, leftFact, rightTuple.getA()), bailOutSize);
     }

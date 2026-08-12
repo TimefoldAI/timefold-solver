@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.AbstractSession;
-import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBavetNodeNetwork;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.CachedBiDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.JustInTimeBiDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.BiLeftDataset;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.BiLeftDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.JustInTimeBiDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDatasetInstance;
@@ -69,7 +69,7 @@ public final class DatasetSession<Solution_>
         }
         var biLeftDataset = (BiLeftDataset<Solution_, A, B>) dataset;
         return new CachedBiDatasetInstance<>(
-                this.<AbstractLeftDatasetInstance<Solution_, BiTuple<A, B>>> getInstance(biLeftDataset));
+                this.<BiLeftDatasetInstance<Solution_, A, B>> getInstance(biLeftDataset));
     }
 
 }

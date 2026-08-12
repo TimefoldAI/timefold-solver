@@ -8,7 +8,9 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Shared walk over (left, right) pairs, drawn with replacement,
- * where a left value is only ever retired once its right side is confirmed empty.
+ * where a left value is only retired once {@link #PROBE_ATTEMPT_COUNT}
+ * independent probes of its right side all come back empty, not just one;
+ * see {@link #PROBE_ATTEMPT_COUNT}'s javadoc for why one probe is not proof.
  * Implemented as a static method plus a callback interface rather than a base class,
  * so the caller's own fields hold the pending pair
  * and no allocation is needed per {@link #advance(RetiringRandomIterator, RetiringBiWalk)} call.
@@ -18,6 +20,17 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface RetiringBiWalk<L, R> {
+
+    /**
+     * How many independent, fresh right-iterator probes {@link #advance} gives a left before retiring it.
+     * A {@link FilteringIterator} bail-out (see its javadoc) is a per-{@code hasNext()}-call false negative,
+     * not proof of emptiness:
+     * {@code FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER} already bounds any single probe's false-negative rate
+     * at about {@code e^-BAIL_OUT_SAFETY_MULTIPLIER},
+     * so 3 independent probes compound that to about {@code e^-(3 * BAIL_OUT_SAFETY_MULTIPLIER)}.
+     * This does not eliminate false retirement entirely, but bounds it significantly.
+     */
+    int PROBE_ATTEMPT_COUNT = 3;
 
     /**
      * Builds the (possibly filtered, possibly bailing-out) iterator
@@ -45,9 +58,7 @@ public interface RetiringBiWalk<L, R> {
      * Whether a left value just drawn by {@link #advance} should be used for this draw,
      * or skipped and redrawn.
      * True by default:
-     * every left is equally acceptable, unless the caller weights them
-     * (see {@code BiRandomMoveIterator}, which rejects a drawn left with probability {@code 1 - weight/bound}
-     * so that the resulting pair probability is uniform, rather than uniform-over-lefts-then-uniform-within-bucket).
+     * every left is equally acceptable, unless the caller weights them.
      * A rejected left is skipped, not retired: {@link #advance} simply draws again.
      */
     default boolean acceptLeft(L left) {
@@ -58,6 +69,10 @@ public interface RetiringBiWalk<L, R> {
      * Draws left values until one is accepted (see {@link #acceptLeft}) and has a matching right value,
      * retiring every dead left value along the way,
      * or until every left value is exhausted.
+     * A left is only retired after {@link #PROBE_ATTEMPT_COUNT} independent, freshly built right iterators
+     * in a row report no next value, not after just one:
+     * {@link #createRightIterator} is called again from scratch on every attempt,
+     * so each gets its own fresh bail-out budget.
      *
      * @return true if a pair was found and passed to {@link #accept(Object, Object)}
      */
@@ -67,10 +82,12 @@ public interface RetiringBiWalk<L, R> {
             if (!walk.acceptLeft(left)) {
                 continue;
             }
-            var rightIterator = walk.createRightIterator(left);
-            if (rightIterator.hasNext()) {
-                walk.accept(left, rightIterator.next());
-                return true;
+            for (var attempt = 0; attempt < PROBE_ATTEMPT_COUNT; attempt++) {
+                var rightIterator = walk.createRightIterator(left);
+                if (rightIterator.hasNext()) {
+                    walk.accept(left, rightIterator.next());
+                    return true;
+                }
             }
             walk.onExhausted(left);
             leftIterator.retire();

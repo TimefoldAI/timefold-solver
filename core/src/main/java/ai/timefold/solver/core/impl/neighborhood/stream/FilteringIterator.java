@@ -22,9 +22,22 @@ import org.slf4j.LoggerFactory;
  * even though a matching element might still exist.
  * A negative {@code bailOutSize} disables the bail-out,
  * for use with a wrapped iterator which is already known to end by itself.
+ * <p>
+ * The bail-out counter ({@code attemptsBeforeBailOut}, below) is a local,
+ * reset to {@code bailOutSize} on every {@link #hasNext()} call
+ * (the cached-{@code hasNext} fast path aside).
+ * A bail-out is therefore a per-call false negative, not proof of emptiness:
+ * calling {@link #hasNext()} again gives the delegate a fresh, independent budget to find a match in.
+ * {@code RetiringBiWalk} depends on this property.
  */
 @NullMarked
 public final class FilteringIterator<T> implements Iterator<T> {
+
+    /**
+     * Multiplied by the candidate population's size to size a bail-out budget,
+     * wherever this iterator is built with one.
+     */
+    public static final long BAIL_OUT_SAFETY_MULTIPLIER = 10L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FilteringIterator.class);
 
@@ -50,7 +63,7 @@ public final class FilteringIterator<T> implements Iterator<T> {
         if (hasNext) {
             return true;
         }
-        var attemptsBeforeBailOut = bailOutSize;
+        var attemptsBeforeBailOut = bailOutSize; // Fresh, independent budget every call; see the class javadoc.
         while (delegate.hasNext()) {
             if (bailOutSize >= 0 && attemptsBeforeBailOut <= 0) {
                 LOGGER.trace("Bailing out of filtering iterator ({}) after ({}) attempts to avoid an infinite loop.", this,

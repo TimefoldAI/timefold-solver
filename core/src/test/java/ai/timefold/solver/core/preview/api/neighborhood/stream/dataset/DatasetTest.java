@@ -129,6 +129,53 @@ class DatasetTest {
         }
     }
 
+    @Test
+    void cachedJoin_perALookupOnSkewedBucketsAlwaysFindsItsMatch() {
+        var moveStreamFactory = factory();
+        var rareEntity = new TestdataEntity("rare");
+        var commonEntity = new TestdataEntity("common");
+        var valueList = new ArrayList<TestdataValue>();
+        valueList.add(new TestdataValue("rare"));
+        for (var i = 0; i < 99; i++) {
+            valueList.add(new TestdataValue("common"));
+        }
+
+        var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
+        var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
+        var joiner =
+                NeighborhoodsJoiners.equal(TestdataEntity::getCode, TestdataValue::getCode);
+        var cachedDataset = moveStreamFactory.register(entityStream.join(valueStream, joiner));
+
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(rareEntity, commonEntity));
+        solution.setValueList(valueList);
+        var session = createSession(moveStreamFactory, solution);
+        var instance = session.getInstance(cachedDataset);
+
+        var random = RandomSource.seeded(0L).moveIteratorUsage();
+        for (var draw = 0; draw < 200; draw++) {
+            var iterator = instance.randomIterator(rareEntity, random);
+            assertThat(iterator.hasNext())
+                    .as("draw %d: the rare entity's single partner must always be found once indexed", draw)
+                    .isTrue();
+            assertThat(iterator.next()).isNotNull();
+        }
+
+        var seenCommonValueSet = new HashSet<TestdataValue>();
+        for (var draw = 0; draw < 2_000; draw++) {
+            var iterator = instance.randomIterator(commonEntity, random);
+            assertThat(iterator.hasNext()).isTrue();
+            seenCommonValueSet.add(iterator.next());
+        }
+        assertThat(seenCommonValueSet).hasSize(99);
+
+        // A retract+settle must invalidate the per-A index, not leave it stale.
+        moveStreamFactory.getSolutionDescriptor().visitAll(solution, session::retract);
+        session.settle();
+        assertThat(instance.size(rareEntity)).isZero();
+        assertThat(instance.randomIterator(rareEntity, random).hasNext()).isFalse();
+    }
+
     private static Set<List<Object>> collectPairs(BiDatasetInstance<TestdataEntity, TestdataValue> instance) {
         Set<List<Object>> pairs = new HashSet<>();
         var iterator = instance.iterator();

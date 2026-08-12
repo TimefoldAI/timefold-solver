@@ -59,4 +59,31 @@ class FilteringIteratorTest {
         assertThat(iterator.next()).isIn(0, 1);
     }
 
+    /**
+     * The bail-out budget is a local, reset on every {@link FilteringIterator#hasNext()} call, not an
+     * instance-level counter: a bail-out is a per-call false negative, not proof that no match exists.
+     */
+    @Test
+    void bailOut_resetsOnEveryHasNextCall() {
+        var nextValue = new int[] { 0 };
+        var counting = new Iterator<Integer>() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public Integer next() {
+                return nextValue[0]++;
+            }
+        };
+        var iterator = new FilteringIterator<>(counting, i -> i >= 1_000, 1_000);
+
+        // The first call spends its whole budget on candidates 0..999 (all rejected) and bails out.
+        assertThat(iterator.hasNext()).isFalse();
+        // A later call gets a fresh budget and immediately finds the match the first call never reached.
+        assertThat(iterator).hasNext();
+        assertThat(iterator.next()).isEqualTo(1_000);
+    }
+
 }

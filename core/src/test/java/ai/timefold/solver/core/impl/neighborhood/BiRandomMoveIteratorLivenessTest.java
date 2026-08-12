@@ -22,7 +22,8 @@ import org.junit.jupiter.api.Test;
  * are all different ways for every left tuple to end up dead,
  * and none of them may hang.
  * A plain, synchronous assertion is enough,
- * since each case is bounded by construction (at most one bail-out per left tuple);
+ * since each case is bounded by construction
+ * (at most {@code RetiringBiWalk.PROBE_ATTEMPT_COUNT} bail-outs per left tuple, not just one);
  * a genuine regression would hang the whole build,
  * not just fail an assertion,
  * since the working random used here is checked for thread ownership and
