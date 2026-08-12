@@ -851,9 +851,7 @@ public class SolverWorker {
                 || configuration.resourcesConfiguration().memory() == null) {
             return null;
         }
-        Integer maxThreadCount = configuration.run() != null ? configuration.run().maxThreadCount() : null;
-        int threadFactor = (maxThreadCount == null || maxThreadCount < 1) ? 1 : maxThreadCount;
-        return Math.round(configuration.resourcesConfiguration().memory() * threadFactor);
+        return Math.round(configuration.resourcesConfiguration().memory());
     }
 
     private ModelInputMetrics extractInputMetrics(SolverModel solverModel) {
