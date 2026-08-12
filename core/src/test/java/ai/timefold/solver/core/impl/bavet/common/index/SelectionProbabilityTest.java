@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Execution(ExecutionMode.CONCURRENT)
@@ -90,11 +92,9 @@ final class SelectionProbabilityTest {
     }
 
     /**
-     * Protects solver fairness for {@link ComparisonIndexer}'s plain flavor:
+     * Protects solver fairness for {@link ComparisonIndexer}'s plain (repeating, with-replacement) flavor:
      * it must pick across every matching bucket, weighted by bucket size,
-     * not just the first bucket it encounters while walking the boundary,
-     * which is all the exhausting {@link ComparisonIndexer.RandomIterator} needs to do,
-     * since it eventually drains every bucket regardless of visit order.
+     * not just the first bucket it encounters while walking the boundary.
      */
     @Test
     void comparisonIndexerRandomIteratorWeightsByBucketSize() {
@@ -251,6 +251,133 @@ final class SelectionProbabilityTest {
                     .as(() -> "Draw order %s occurred %d times, expected close to %.0f (uniform over %d permutations)."
                             .formatted(entry.getKey(), actual, expected, permutationCount))
                     .isCloseTo((int) expected, Percentage.withPercentage(5));
+        }
+    }
+
+    /**
+     * Protects {@link MultiBucketUniqueRandomIterator} (built for a multi-key/multi-bucket unique query by both
+     * {@link ComparisonIndexer} and {@code ContainedInIndexer}) against the old bug where a boundary-ordered walk
+     * drained one bucket entirely before moving to the next, so every draw was biased towards whichever bucket
+     * came first in that walk. {@code drawIndex} 1 catches that first-draw bias directly; 2 and 10 additionally
+     * catch a would-be continuation bug (draining a bucket rather than re-sampling on every draw), since in a
+     * correctly uniform without-replacement drain, the bucket occupying ANY fixed draw position is weighted by
+     * bucket size exactly like the first, by the same symmetry a uniformly shuffled deck has: every position in
+     * the shuffle is equally likely to hold a card from any given suit, in proportion to that suit's size.
+     */
+    @MethodSource("multiBucketUniqueRandomIteratorArguments")
+    @ParameterizedTest
+    void multiBucketUniqueRandomIteratorWeightsByBucketSize(MultiBucketFlavour flavour, int drawIndex) {
+        var trialCount = 200_000;
+        // Three buckets, sizes 1, 3, and 6 (weight 0.1 / 0.3 / 0.6). Built once; a unique iterator's retire()
+        // never touches the underlying bucket, so replaying draws against the same indexer across trials is safe.
+        var indexer = flavour.buildIndexer();
+
+        var random = new Random(0);
+        var counts = new EnumMap<Bucket, Integer>(Bucket.class);
+        for (var trial = 0; trial < trialCount; trial++) {
+            var splitRandom = new Random(random.nextLong());
+            var iterator = flavour.uniqueRandomIterator(indexer, splitRandom);
+            UniTuple<String> pick = null;
+            for (var i = 0; i < drawIndex; i++) {
+                pick = iterator.next();
+            }
+            counts.merge(Bucket.of(pick), 1, Integer::sum);
+        }
+
+        // Every bucket must be reachable at drawIndex; a leftover boundary-walk bug would starve all but one.
+        assertThat(counts.keySet()).containsExactlyInAnyOrder(Bucket.values());
+
+        for (var bucket : Bucket.values()) {
+            var expected = trialCount * bucket.weight;
+            var actual = counts.get(bucket);
+            assertThat(actual)
+                    .as(() -> "%s draw #%d: bucket %s picked %d times, expected close to %.0f (weight %.1f)."
+                            .formatted(flavour, drawIndex, bucket, actual, expected, bucket.weight))
+                    .isCloseTo((int) expected, Percentage.withPercentage(10));
+        }
+    }
+
+    private static List<Arguments> multiBucketUniqueRandomIteratorArguments() {
+        var argumentsList = new ArrayList<Arguments>();
+        for (var flavour : MultiBucketFlavour.values()) {
+            for (var drawIndex : List.of(1, 2, 10)) {
+                argumentsList.add(Arguments.of(flavour, drawIndex));
+            }
+        }
+        return argumentsList;
+    }
+
+    /**
+     * The two indexers whose multi-bucket {@code uniqueRandomIterator} is backed by
+     * {@link MultiBucketUniqueRandomIterator}. {@code ContainingAnyOfIndexer} is deliberately excluded:
+     * its buckets can overlap, so no bucket weighting can make it uniform (see the impossibility proof on
+     * its own {@code uniqueRandomIteratorManyKeys} javadoc), and it drains to a list instead.
+     */
+    private enum MultiBucketFlavour {
+
+        COMPARISON {
+
+            @Override
+            Indexer<UniTuple<String>> buildIndexer() {
+                var joiner = (DefaultBiNeighborhoodsJoiner<TestPerson, TestPerson>) NeighborhoodsJoiners
+                        .lessThanOrEqual(TestPerson::age);
+                Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+                putBucket(indexer, 10, 1);
+                putBucket(indexer, 20, 3);
+                putBucket(indexer, 30, 6);
+                return indexer;
+            }
+
+            @Override
+            UniqueRandomIterator<UniTuple<String>> uniqueRandomIterator(Indexer<UniTuple<String>> indexer,
+                    RandomGenerator random) {
+                // Query age 50: every bucket (10, 20, 30) is <= 50, so all three match.
+                return indexer.uniqueRandomIterator(CompositeKey.of(50), random);
+            }
+
+        },
+        CONTAINED_IN {
+
+            @Override
+            Indexer<UniTuple<String>> buildIndexer() {
+                var joiner = new DefaultBiNeighborhoodsJoiner<TestWorker, TestJob>(TestWorker::skills,
+                        JoinerType.CONTAINED_IN, TestJob::skill);
+                Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+                putContainedInBucket(indexer, 10, 1);
+                putContainedInBucket(indexer, 20, 3);
+                putContainedInBucket(indexer, 30, 6);
+                return indexer;
+            }
+
+            @Override
+            UniqueRandomIterator<UniTuple<String>> uniqueRandomIterator(Indexer<UniTuple<String>> indexer,
+                    RandomGenerator random) {
+                return indexer.uniqueRandomIterator(List.of("10", "20", "30"), random);
+            }
+
+        };
+
+        abstract Indexer<UniTuple<String>> buildIndexer();
+
+        abstract UniqueRandomIterator<UniTuple<String>> uniqueRandomIterator(Indexer<UniTuple<String>> indexer,
+                RandomGenerator random);
+
+    }
+
+    /**
+     * Only used for their accessor method references, to build a {@link ContainedInIndexer} directly via
+     * {@code JoinerType.CONTAINED_IN}, the same way {@code ContainedInIndexerTest} does; no instance of either
+     * is ever constructed, since buckets here are populated directly by {@link #putContainedInBucket}.
+     */
+    private record TestWorker(List<String> skills) {
+    }
+
+    private record TestJob(String skill) {
+    }
+
+    private static void putContainedInBucket(Indexer<UniTuple<String>> indexer, int age, int size) {
+        for (var i = 0; i < size; i++) {
+            indexer.put(String.valueOf(age), UniTuple.of("age-" + age + "-" + i, 0));
         }
     }
 

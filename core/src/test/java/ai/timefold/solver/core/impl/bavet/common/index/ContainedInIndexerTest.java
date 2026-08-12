@@ -15,7 +15,6 @@ import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ContainedInIndexerTest extends AbstractIndexerTest {
@@ -198,18 +197,19 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    @Disabled("""
-            Known bias: RandomIterator walks buckets in encounter order and randomizes only within
-            the first non-empty bucket, so a single draw always lands in the first query key's bucket.
-            Uniqueness and completeness are unaffected. Fixed separately.""")
     void uniqueRandomIteratorFirstDrawIsNotBiasedToFirstBucket() {
         var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
         var xTuple = putContainedInIndexer(indexer, "X");
         var yTuple = putContainedInIndexer(indexer, "Y");
 
+        // Seeding every draw straight off an increasing int (new Random(0), new Random(1), ...) will not do:
+        // java.util.Random's first nextInt(2) call is constant across such small, close seeds (an LCG artifact),
+        // so it could never surface a first-bucket bias regardless of whether one exists. Derive each seed from
+        // one root random's nextLong() instead, exactly as SelectionProbabilityTest does.
+        var root = new Random(0);
         var firstDraws = new HashSet<>();
-        for (var seed = 0; seed < 20; seed++) {
-            var iterator = indexer.uniqueRandomIterator(List.of("X", "Y"), new Random(seed));
+        for (var trial = 0; trial < 20; trial++) {
+            var iterator = indexer.uniqueRandomIterator(List.of("X", "Y"), new Random(root.nextLong()));
             firstDraws.add(iterator.next());
         }
         assertThat(firstDraws).containsExactlyInAnyOrder(xTuple, yTuple);

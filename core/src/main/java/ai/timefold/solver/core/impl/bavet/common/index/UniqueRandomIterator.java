@@ -6,11 +6,11 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Exists to support random unique selection.
  * It accepts a list of unique items on input, and does not copy or modify it.
- * Does not allow null values.
  * <p>
  * Every element for the underlying list is eventually returned exactly once,
  * and then the iterator ends, without any cooperation from the caller:
@@ -27,9 +27,9 @@ import org.jspecify.annotations.NullMarked;
  * @param <T>
  */
 @NullMarked
-public sealed interface UniqueRandomIterator<T>
+public sealed interface UniqueRandomIterator<T extends @Nullable Object>
         extends Iterator<T>
-        permits DefaultUniqueRandomIterator, ComparisonIndexer.RandomIterator, ContainedInIndexer.RandomIterator {
+        permits DefaultUniqueRandomIterator, MultiBucketUniqueRandomIterator {
 
     static <T> UniqueRandomIterator<T> of(ElementAwareArrayList<T> list, RandomGenerator random) {
         return new DefaultUniqueRandomIterator<>(RetiringRandomIterator.of(list, random));

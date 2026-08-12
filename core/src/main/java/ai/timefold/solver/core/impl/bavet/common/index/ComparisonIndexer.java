@@ -151,8 +151,10 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     /**
-     * Whether {@code entryKey}, and every key past it in iteration order, fails to match {@code indexKey}
-     * and the range scan (in {@code size}/{@code forEach}/{@code iterator}/{@code randomIterator}) should stop.
+     * Whether {@code entryKey}, and every key past it in iteration order,
+     * fails to match {@code indexKey} and the range scan
+     * (in {@code size}/{@code forEach}/{@code iterator}/{@code randomIterator})
+     * should stop.
      * <p>
      * {@code comparisonMap} is always iterated ascending by natural order (see {@link ScalingNavigableMap});
      * {@link #reverseOrder} instead flips the sign of the comparison here,
@@ -350,9 +352,75 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         return switch (comparisonMap.size()) {
             case 0 -> UniqueRandomIterator.empty();
             case 1 -> singleIndexerUniqueIterator(queryCompositeKey, workingRandom);
-            default -> new RandomIterator(queryCompositeKey,
-                    indexer -> indexer.uniqueRandomIterator(queryCompositeKey, workingRandom));
+            default -> multiIndexerUniqueIterator(queryCompositeKey, workingRandom);
         };
+    }
+
+    /**
+     * Every matching bucket is disjoint from every other (each is a distinct map key),
+     * so {@link MultiBucketUniqueRandomIterator} applies directly:
+     * {@link #collectMatchingBuckets} walks every matching, non-empty bucket upfront to learn its size,
+     * and weighted uniform-without-replacement sampling takes care of the rest.
+     */
+    private UniqueRandomIterator<T> multiIndexerUniqueIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var bucketIteratorList = new ArrayList<UniqueRandomIterator<T>>();
+        var sizeList = new ArrayList<Integer>();
+        collectMatchingBuckets(queryCompositeKey, bucket -> {
+            var size = bucket.size(queryCompositeKey);
+            if (size > 0) {
+                sizeList.add(size);
+                bucketIteratorList.add(bucket.uniqueRandomIterator(queryCompositeKey, workingRandom));
+            }
+        });
+        if (bucketIteratorList.isEmpty()) {
+            return UniqueRandomIterator.empty();
+        }
+        var distribution = new int[sizeList.size()];
+        for (var i = 0; i < sizeList.size(); i++) {
+            distribution[i] = sizeList.get(i);
+        }
+        return new MultiBucketUniqueRandomIterator<>(bucketIteratorList, distribution, workingRandom);
+    }
+
+    /**
+     * Walks every bucket matching {@code queryCompositeKey}'s boundary (in {@link #comparisonMap}'s iteration order,
+     * respecting {@link #reverseOrder}), handing each one to {@code matchingBucketConsumer}, empty or not.
+     * Shared by {@link RepeatingIterator} and {@link #multiIndexerUniqueIterator},
+     * both of which need every matching bucket upfront:
+     * there is no boundary-ordered walk to fall back on for either,
+     * since a never-ending downstream would never let the walk advance past the first bucket.
+     */
+    private void collectMatchingBuckets(Object queryCompositeKey, Consumer<Indexer<T>> matchingBucketConsumer) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        if (comparisonMap.isArrayBased()) {
+            collectMatchingBucketsFromArray(indexKey, matchingBucketConsumer);
+        } else {
+            collectMatchingBucketsFromTree(indexKey, matchingBucketConsumer);
+        }
+    }
+
+    private void collectMatchingBucketsFromArray(Key_ indexKey, Consumer<Indexer<T>> matchingBucketConsumer) {
+        var arraySize = comparisonMap.size();
+        var i = reverseOrder ? arraySize - 1 : 0;
+        var step = reverseOrder ? -1 : 1;
+        while (i >= 0 && i < arraySize) {
+            if (boundaryReached(comparisonMap.keyAt(i), indexKey)) {
+                return;
+            }
+            matchingBucketConsumer.accept(comparisonMap.valueAt(i));
+            i += step;
+        }
+    }
+
+    private void collectMatchingBucketsFromTree(Key_ indexKey, Consumer<Indexer<T>> matchingBucketConsumer) {
+        var entryIterator = comparisonMap.iterator(reverseOrder);
+        while (entryIterator.hasNext()) {
+            var entry = entryIterator.next();
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return;
+            }
+            matchingBucketConsumer.accept(entry.getValue());
+        }
     }
 
     private UniqueRandomIterator<T> singleIndexerUniqueIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
@@ -474,23 +542,10 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         }
     }
 
-    final class RandomIterator extends DefaultIterator implements UniqueRandomIterator<T> {
-
-        public RandomIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
-            super(queryCompositeKey, downstreamIteratorFunction);
-        }
-
-        // No remove() override: the downstream is already a self-retiring UniqueRandomIterator,
-        // so there is nothing left to forward; UniqueRandomIterator's default already throws.
-
-    }
-
     /**
-     * Unlike {@link RandomIterator}, this class never ends:
-     * every {@link #next()} independently picks a matching bucket weighted by its size, with replacement,
-     * so it must know every matching bucket and its size upfront
-     * (there is no boundary-ordered walk to fall back on,
-     * since a never-ending downstream would never let the walk advance past the first bucket).
+     * Every {@link #next()} independently picks a matching bucket weighted by its size, with replacement,
+     * so this class never ends:
+     * there is no shrinking distribution and no removed set to maintain.
      */
     final class RepeatingIterator implements RepeatingRandomIterator<T> {
 
@@ -502,12 +557,13 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         RepeatingIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
             var sizeList = new ArrayList<Integer>();
-            var indexKey = keyUnpacker.apply(queryCompositeKey);
-            if (comparisonMap.isArrayBased()) {
-                collectMatchingBucketsFromArray(queryCompositeKey, workingRandom, indexKey, sizeList);
-            } else {
-                collectMatchingBucketsFromTree(queryCompositeKey, workingRandom, indexKey, sizeList);
-            }
+            collectMatchingBuckets(queryCompositeKey, bucket -> {
+                var size = bucket.size(queryCompositeKey);
+                if (size > 0) {
+                    sizeList.add(size);
+                    downstreamIteratorList.add(bucket.randomIterator(queryCompositeKey, workingRandom));
+                }
+            });
             this.distribution = new int[sizeList.size()];
             var sum = 0;
             for (var i = 0; i < sizeList.size(); i++) {
@@ -515,41 +571,6 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
                 sum += distribution[i];
             }
             this.distributionSum = sum;
-        }
-
-        private void collectMatchingBucketsFromArray(Object queryCompositeKey, RandomGenerator workingRandom, Key_ indexKey,
-                List<Integer> sizeList) {
-            var arraySize = comparisonMap.size();
-            var i = reverseOrder ? arraySize - 1 : 0;
-            var step = reverseOrder ? -1 : 1;
-            while (i >= 0 && i < arraySize) {
-                if (boundaryReached(comparisonMap.keyAt(i), indexKey)) {
-                    return;
-                }
-                addMatchingBucket(comparisonMap.valueAt(i), queryCompositeKey, workingRandom, sizeList);
-                i += step;
-            }
-        }
-
-        private void collectMatchingBucketsFromTree(Object queryCompositeKey, RandomGenerator workingRandom, Key_ indexKey,
-                List<Integer> sizeList) {
-            var entryIterator = comparisonMap.iterator(reverseOrder);
-            while (entryIterator.hasNext()) {
-                var entry = entryIterator.next();
-                if (boundaryReached(entry.getKey(), indexKey)) {
-                    return;
-                }
-                addMatchingBucket(entry.getValue(), queryCompositeKey, workingRandom, sizeList);
-            }
-        }
-
-        private void addMatchingBucket(Indexer<T> bucket, Object queryCompositeKey, RandomGenerator workingRandom,
-                List<Integer> sizeList) {
-            var size = bucket.size(queryCompositeKey);
-            if (size > 0) {
-                sizeList.add(size);
-                downstreamIteratorList.add(bucket.randomIterator(queryCompositeKey, workingRandom));
-            }
         }
 
         @Override

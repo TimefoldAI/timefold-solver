@@ -15,7 +15,6 @@ import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -308,10 +307,6 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    @Disabled("""
-            Known bias: RandomIterator walks buckets in ascending comparison order and randomizes only
-            within the first non-empty bucket, so a single draw always lands in the lowest-order bucket.
-            Uniqueness and completeness are unaffected. Fixed separately.""")
     void uniqueRandomIteratorFirstDrawIsNotBiasedToFirstBucket() {
         var indexer = new ComparisonIndexer<UniTuple<String>, Integer>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
                 RandomAccessLeafIndexer::new);
@@ -320,9 +315,14 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         var age20 = newTuple("age20");
         indexer.put(20, age20);
 
+        // Seeding every draw straight off an increasing int (new Random(0), new Random(1), ...) will not do:
+        // java.util.Random's first nextInt(2) call is constant across such small, close seeds (an LCG artifact),
+        // so it could never surface a first-bucket bias regardless of whether one exists. Derive each seed from
+        // one root random's nextLong() instead, exactly as SelectionProbabilityTest does.
+        var root = new Random(0);
         var firstDraws = new HashSet<UniTuple<String>>();
-        for (var seed = 0; seed < 20; seed++) {
-            var iterator = indexer.uniqueRandomIterator(30, new Random(seed));
+        for (var trial = 0; trial < 20; trial++) {
+            var iterator = indexer.uniqueRandomIterator(30, new Random(root.nextLong()));
             firstDraws.add(iterator.next());
         }
         assertThat(firstDraws).containsExactlyInAnyOrder(age10, age20);

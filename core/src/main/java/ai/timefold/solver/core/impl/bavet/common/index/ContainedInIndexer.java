@@ -138,11 +138,55 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
     @Override
     public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
         var indexKeyCollection = unpackDistinctQueryKeys(queryCompositeKey);
-        if (indexKeyCollection.isEmpty()) {
+        return switch (indexKeyCollection.size()) {
+            case 0 -> UniqueRandomIterator.empty();
+            // Single matching key: no bucket weighting needed,
+            // and this keeps random consumption byte-identical to before for the common single-key case.
+            case 1 -> uniqueRandomIteratorSingleKey(indexKeyCollection, queryCompositeKey, workingRandom);
+            default -> uniqueRandomIteratorManyKeys(indexKeyCollection, queryCompositeKey, workingRandom);
+        };
+    }
+
+    private UniqueRandomIterator<T> uniqueRandomIteratorSingleKey(SequencedCollection<Key_> indexKeyCollection,
+            Object queryCompositeKey, RandomGenerator workingRandom) {
+        var downstreamIndexer = downstreamIndexerMap.get(indexKeyCollection.iterator().next());
+        if (downstreamIndexer == null) {
             return UniqueRandomIterator.empty();
         }
-        return new RandomIterator(indexKeyCollection,
-                downstreamIndexer -> downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom));
+        return downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
+    }
+
+    /**
+     * Buckets here are disjoint by construction
+     * (one key per tuple, see {@link #modifyKeyUnpacker}),
+     * so {@link MultiBucketUniqueRandomIterator} applies directly:
+     * every matching, non-empty bucket is walked upfront to learn its size,
+     * and weighted, uniform-without-replacement sampling takes care of the rest.
+     */
+    private UniqueRandomIterator<T> uniqueRandomIteratorManyKeys(SequencedCollection<Key_> indexKeyCollection,
+            Object queryCompositeKey, RandomGenerator workingRandom) {
+        var bucketIteratorList = new ArrayList<UniqueRandomIterator<T>>(indexKeyCollection.size());
+        var sizeList = new ArrayList<Integer>(indexKeyCollection.size());
+        for (var indexKey : indexKeyCollection) {
+            var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            if (downstreamIndexer == null) {
+                continue;
+            }
+            var size = downstreamIndexer.size(queryCompositeKey);
+            if (size == 0) {
+                continue;
+            }
+            sizeList.add(size);
+            bucketIteratorList.add(downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom));
+        }
+        if (bucketIteratorList.isEmpty()) {
+            return UniqueRandomIterator.empty();
+        }
+        var distribution = new int[sizeList.size()];
+        for (var i = 0; i < sizeList.size(); i++) {
+            distribution[i] = sizeList.get(i);
+        }
+        return new MultiBucketUniqueRandomIterator<>(bucketIteratorList, distribution, workingRandom);
     }
 
     @Override
@@ -210,22 +254,10 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
 
     }
 
-    final class RandomIterator extends DefaultIterator implements UniqueRandomIterator<T> {
-
-        public RandomIterator(SequencedCollection<Key_> indexKeyCollection,
-                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
-            super(indexKeyCollection, downstreamIteratorFunction);
-        }
-
-        // No remove() override: the downstream is already a self-retiring UniqueRandomIterator,
-        // so there is nothing left to forward; UniqueRandomIterator's default already throws.
-
-    }
-
     /**
-     * Unlike {@link RandomIterator}, this class never ends:
-     * every {@link #next()} independently picks a key by its downstream size, with replacement,
-     * so there is no shrinking distribution and no removed set to maintain.
+     * Every {@link #next()} independently picks a key by its downstream size, with replacement,
+     * so this class never ends:
+     * there is no shrinking distribution and no removed set to maintain.
      */
     final class RepeatingIterator implements RepeatingRandomIterator<T> {
 
