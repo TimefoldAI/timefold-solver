@@ -14,7 +14,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public record SimpleScore(long structuralScore, long score) implements Score<SimpleScore> {
 
-    public static final SimpleScore INVALID = new SimpleScore(-1L, 0L);
     public static final SimpleScore ZERO = new SimpleScore(0L);
     public static final SimpleScore ONE = new SimpleScore(1L);
     public static final SimpleScore MINUS_ONE = new SimpleScore(-1L);
@@ -109,7 +108,7 @@ public record SimpleScore(long structuralScore, long score) implements Score<Sim
 
     @Override
     public String toString() {
-        return (structuralScore < 0) ? "invalid" : Long.toString(score);
+        return (structuralScore < 0) ? "%dstructural/%d".formatted(structuralScore, score) : Long.toString(score);
     }
 
 }

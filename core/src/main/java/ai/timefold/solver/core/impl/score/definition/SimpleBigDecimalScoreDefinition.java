@@ -8,6 +8,8 @@ import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
 public class SimpleBigDecimalScoreDefinition extends AbstractScoreDefinition<SimpleBigDecimalScore> {
 
+    private static final SimpleBigDecimalScore STRUCTURALLY_FLAWED_SCORE = new SimpleBigDecimalScore(-1L, BigDecimal.ZERO);
+
     public SimpleBigDecimalScoreDefinition() {
         super(new String[] { "score" });
     }
@@ -32,8 +34,8 @@ public class SimpleBigDecimalScoreDefinition extends AbstractScoreDefinition<Sim
     }
 
     @Override
-    public SimpleBigDecimalScore getInvalidStructureScore() {
-        return SimpleBigDecimalScore.INVALID;
+    public SimpleBigDecimalScore getStructurallyFlawedScore() {
+        return STRUCTURALLY_FLAWED_SCORE;
     }
 
     @Override

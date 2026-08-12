@@ -278,11 +278,11 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
     @Override
     public boolean equals(Object o) {
         if (o instanceof BendableBigDecimalScore other) {
-            if (hardLevelsSize() != other.hardLevelsSize()
-                    || softLevelsSize() != other.softLevelsSize()) {
+            if (structuralScore != other.structuralScore) {
                 return false;
             }
-            if (structuralScore != other.structuralScore) {
+            if (hardLevelsSize() != other.hardLevelsSize()
+                    || softLevelsSize() != other.softLevelsSize()) {
                 return false;
             }
             for (var i = 0; i < hardScores.length; i++) {
@@ -337,10 +337,10 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
 
     @Override
     public String toString() {
+        var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 15);
         if (structuralScore < 0) {
-            return "invalid";
+            s.append("%dstructural/".formatted(structuralScore));
         }
-        var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 7);
         s.append("[");
         var first = true;
         for (var hardScore : hardScores) {

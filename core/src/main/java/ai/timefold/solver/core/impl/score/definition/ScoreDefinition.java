@@ -51,11 +51,11 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
     Class<Score_> getScoreClass();
 
     /**
-     * The score that represents a solution that is structurally invalid.
+     * The score that represents a solution that is structurally flawed.
      *
      * @return never null
      */
-    Score_ getInvalidStructureScore();
+    Score_ getStructurallyFlawedScore();
 
     /**
      * The score that represents zero.

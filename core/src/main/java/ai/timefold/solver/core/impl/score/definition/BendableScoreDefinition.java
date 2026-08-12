@@ -23,7 +23,7 @@ public class BendableScoreDefinition extends AbstractBendableScoreDefinition<Ben
     }
 
     @Override
-    public BendableScore getInvalidStructureScore() {
+    public BendableScore getStructurallyFlawedScore() {
         var zero = getZeroScore();
         return new BendableScore(-1L, zero.hardScores(), zero.softScores());
     }

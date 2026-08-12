@@ -8,6 +8,9 @@ import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
 public class HardSoftBigDecimalScoreDefinition extends AbstractScoreDefinition<HardSoftBigDecimalScore> {
 
+    private static final HardSoftBigDecimalScore STRUCTURALLY_FLAWED_SCORE =
+            new HardSoftBigDecimalScore(-1L, BigDecimal.ZERO, BigDecimal.ZERO);
+
     public HardSoftBigDecimalScoreDefinition() {
         super(new String[] { "hard score", "soft score" });
     }
@@ -32,8 +35,8 @@ public class HardSoftBigDecimalScoreDefinition extends AbstractScoreDefinition<H
     }
 
     @Override
-    public HardSoftBigDecimalScore getInvalidStructureScore() {
-        return HardSoftBigDecimalScore.INVALID;
+    public HardSoftBigDecimalScore getStructurallyFlawedScore() {
+        return STRUCTURALLY_FLAWED_SCORE;
     }
 
     @Override

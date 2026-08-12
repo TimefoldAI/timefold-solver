@@ -24,8 +24,6 @@ import org.jspecify.annotations.NullMarked;
 public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore,
         BigDecimal softScore) implements Score<HardSoftBigDecimalScore> {
 
-    public static final HardSoftBigDecimalScore INVALID =
-            new HardSoftBigDecimalScore(-1L, BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardSoftBigDecimalScore ZERO =
             new HardSoftBigDecimalScore(BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardSoftBigDecimalScore ONE_HARD =
@@ -180,7 +178,9 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
 
     @Override
     public String toString() {
-        return (structuralScore < 0) ? "invalid" : hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
+        return (structuralScore < 0)
+                ? "%dstructural/%s%s/%s%s".formatted(structuralScore, hardScore, HARD_LABEL, softScore, SOFT_LABEL)
+                : hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
     }
 
 }

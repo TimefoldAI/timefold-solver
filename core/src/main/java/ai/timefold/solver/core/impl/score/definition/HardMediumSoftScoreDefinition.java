@@ -8,6 +8,8 @@ import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
 public class HardMediumSoftScoreDefinition extends AbstractScoreDefinition<HardMediumSoftScore> {
 
+    private static final HardMediumSoftScore STRUCTURALLY_FLAWED_SCORE = new HardMediumSoftScore(-1L, 0L, 0L, 0L);
+
     public HardMediumSoftScoreDefinition() {
         super(new String[] { "hard score", "medium score", "soft score" });
     }
@@ -32,8 +34,8 @@ public class HardMediumSoftScoreDefinition extends AbstractScoreDefinition<HardM
     }
 
     @Override
-    public HardMediumSoftScore getInvalidStructureScore() {
-        return HardMediumSoftScore.INVALID;
+    public HardMediumSoftScore getStructurallyFlawedScore() {
+        return STRUCTURALLY_FLAWED_SCORE;
     }
 
     @Override

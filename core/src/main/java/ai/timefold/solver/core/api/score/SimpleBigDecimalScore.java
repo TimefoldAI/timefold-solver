@@ -17,7 +17,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) implements Score<SimpleBigDecimalScore> {
 
-    public static final SimpleBigDecimalScore INVALID = new SimpleBigDecimalScore(-1L, BigDecimal.ZERO);
     public static final SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(BigDecimal.ZERO);
     public static final SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(BigDecimal.ONE);
 
@@ -129,7 +128,7 @@ public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) impl
 
     @Override
     public String toString() {
-        return (structuralScore < 0) ? "invalid" : score.toString();
+        return (structuralScore < 0) ? "%dstructural/%s".formatted(structuralScore, score) : score.toString();
     }
 
 }

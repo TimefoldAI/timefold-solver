@@ -19,7 +19,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public record HardSoftScore(long structuralScore, long hardScore, long softScore) implements Score<HardSoftScore> {
 
-    public static final HardSoftScore INVALID = new HardSoftScore(-1L, 0L, 0L);
     public static final HardSoftScore ZERO = new HardSoftScore(0L, 0L);
     public static final HardSoftScore ONE_HARD = new HardSoftScore(1L, 0L);
     public static final HardSoftScore ONE_SOFT = new HardSoftScore(0L, 1L);
@@ -162,7 +161,9 @@ public record HardSoftScore(long structuralScore, long hardScore, long softScore
 
     @Override
     public String toString() {
-        return (structuralScore < 0) ? "invalid" : hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
+        return (structuralScore < 0)
+                ? "%dstructural/%d%s/%d%s".formatted(structuralScore, hardScore, HARD_LABEL, softScore, SOFT_LABEL)
+                : "%d%s/%d%s".formatted(hardScore, HARD_LABEL, softScore, SOFT_LABEL);
     }
 
 }
