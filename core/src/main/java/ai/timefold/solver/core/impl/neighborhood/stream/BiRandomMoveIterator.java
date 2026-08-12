@@ -1,20 +1,19 @@
 package ai.timefold.solver.core.impl.neighborhood.stream;
 
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.preview.api.move.Move;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
-
-import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
-import ai.timefold.solver.core.preview.api.move.Move;
-
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * An iterator for the bi-move stream which returns (A,B) pairs in random order.
@@ -121,9 +120,10 @@ final class BiRandomMoveIterator<Solution_, A, B>
         }
         var solutionView = context.neighborhoodSession().getSolutionView();
         var leftFact = leftTuple.getA();
-        // Random draws with replacement can never prove that no right tuple matches; bail out after many
-        // consecutive rejections. RetiringBiWalk.advance() retries this call up to PROBE_ATTEMPT_COUNT times
-        // before retiring the left, since a single bail-out is a false negative, not proof of emptiness.
+        // Random draws with replacement can never prove that no right tuple matches;
+        // bail out after many consecutive rejections.
+        // RetiringBiWalk.advance() retries this call up to PROBE_ATTEMPT_COUNT times before retiring the left,
+        // since a single bail-out is a false negative, not proof of emptiness.
         var bailOutSize = rightDatasetInstance.size(compositeKey) * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
         return new FilteringIterator<>(rightTupleIterator,
                 rightTuple -> filter.test(solutionView, leftFact, rightTuple.getA()), bailOutSize);

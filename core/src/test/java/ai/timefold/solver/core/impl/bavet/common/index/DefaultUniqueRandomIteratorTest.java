@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import static ai.timefold.solver.core.impl.bavet.common.index.SelectionProbabilityTest.toEntries;
+import static ai.timefold.solver.core.impl.bavet.common.index.AbstractIndexerTest.toEntries;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 

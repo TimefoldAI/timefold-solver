@@ -2,12 +2,10 @@ package ai.timefold.solver.core.impl.neighborhood;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -15,7 +13,6 @@ import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
-import org.assertj.core.data.Offset;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -44,28 +41,6 @@ class RandomOrderNeighborhoodIteratorTest {
         }
 
         assertThat(seenNeighborhoodIndexSet).containsExactlyInAnyOrder(0, 1, 2);
-    }
-
-    @Test
-    void drawsAreRoughlyUniformOverNeighborhoods() {
-        var drawCount = 1_000_000;
-        var moveIterableList = List.<MoveIterable<TestdataSolution>> of(
-                new NeverEndingMoveIterable(0), new NeverEndingMoveIterable(1), new NeverEndingMoveIterable(2));
-        var iterator = new RandomOrderNeighborhoodIterator<>(moveIterableList, new Random(0));
-
-        var countByNeighborhoodIndex = new HashMap<Integer, Integer>();
-        for (var i = 0; i < drawCount; i++) {
-            var move = (LabeledMove) iterator.next();
-            countByNeighborhoodIndex.merge(move.neighborhoodIndex(), 1, Integer::sum);
-        }
-
-        var expectedCount = drawCount / 3.0;
-        var threshold = expectedCount * 0.02;
-        for (var neighborhoodIndex : Set.of(0, 1, 2)) {
-            assertThat(countByNeighborhoodIndex.get(neighborhoodIndex))
-                    .as("neighborhood %d's share should be close to uniform", neighborhoodIndex)
-                    .isCloseTo((int) expectedCount, Offset.offset((int) threshold));
-        }
     }
 
     /**

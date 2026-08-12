@@ -13,6 +13,7 @@ import java.util.random.RandomGenerator;
 import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
 import org.assertj.core.api.AbstractIntegerAssert;
 import org.assertj.core.api.ListAssert;
@@ -20,6 +21,12 @@ import org.assertj.core.api.ListAssert;
 abstract class AbstractIndexerTest {
 
     private static final AtomicLong tupleId = new AtomicLong();
+
+    static <T> ElementAwareArrayList<T> toEntries(List<T> elements) {
+        var list = new ElementAwareArrayList<T>();
+        list.addAll(elements);
+        return list;
+    }
 
     protected static UniTuple<String> putTuple(Indexer<Object> indexer, Object... keys) {
         var tuple = UniTuple.of("Tuple " + tupleId.getAndIncrement(), 0);

@@ -318,7 +318,7 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         // Seeding every draw straight off an increasing int (new Random(0), new Random(1), ...) will not do:
         // java.util.Random's first nextInt(2) call is constant across such small, close seeds (an LCG artifact),
         // so it could never surface a first-bucket bias regardless of whether one exists. Derive each seed from
-        // one root random's nextLong() instead, exactly as SelectionProbabilityTest does.
+        // one root random's nextLong() instead, exactly as AbstractBiasIT.splitFrom does.
         var root = new Random(0);
         var firstDraws = new HashSet<UniTuple<String>>();
         for (var trial = 0; trial < 20; trial++) {
