@@ -1,5 +1,9 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
+import org.jspecify.annotations.NullMarked;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -7,27 +11,19 @@ import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
-
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 /**
- * Removes a move iterator from {@link #unexhaustedMoveIteratorList} only once it reports no next move,
- * which happens for an empty dataset,
- * or for a join where no left tuple has a live right side,
- * or for an exhausted {@link UniqueRandomIterator}.
- * Otherwise, this iterator is effectively endless.
+ * Draws a fresh, independent neighborhood for every move,
+ * uniform over {@link #unexhaustedMoveIteratorList} itself,
+ * not weighted by how many moves each neighborhood can still produce.
+ * <p>
+ * {@link #hasNext()} prunes every exhausted neighborhood from {@link #unexhaustedMoveIteratorList} before answering,
+ * rather than lazily discovering exhaustion only when {@link #next()} draws one.
  */
 @NullMarked
 final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<Solution_>> {
 
     private final List<Iterator<Move<Solution_>>> unexhaustedMoveIteratorList;
     private final RandomGenerator workingRandom;
-
-    private @Nullable Iterator<Move<Solution_>> currentMoveIterator;
 
     public RandomOrderNeighborhoodIterator(List<MoveIterable<Solution_>> moveIterableList, RandomGenerator workingRandom) {
         this.unexhaustedMoveIteratorList = moveIterableList.stream()
@@ -38,20 +34,8 @@ final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<
 
     @Override
     public boolean hasNext() {
-        if (currentMoveIterator != null && currentMoveIterator.hasNext()) {
-            return true;
-        }
-        while (!unexhaustedMoveIteratorList.isEmpty()) {
-            var randomIndex = workingRandom.nextInt(unexhaustedMoveIteratorList.size());
-            currentMoveIterator = unexhaustedMoveIteratorList.get(randomIndex);
-            if (currentMoveIterator.hasNext()) {
-                return true;
-            } else {
-                unexhaustedMoveIteratorList.remove(randomIndex);
-            }
-        }
-        currentMoveIterator = null;
-        return false;
+        unexhaustedMoveIteratorList.removeIf(moveIterator -> !moveIterator.hasNext());
+        return !unexhaustedMoveIteratorList.isEmpty();
     }
 
     @Override
@@ -59,7 +43,8 @@ final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        return currentMoveIterator.next(); // Guaranteed to iterate in random order.
+        var randomIndex = workingRandom.nextInt(unexhaustedMoveIteratorList.size());
+        return unexhaustedMoveIteratorList.get(randomIndex).next();
     }
 
     @Override
