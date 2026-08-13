@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.Score;
 
 public final class ScoreUtil {
 
+    public static final String STRUCTURAL_LABEL = "structural";
     public static final String HARD_LABEL = "hard";
     public static final String MEDIUM_LABEL = "medium";
     public static final String SOFT_LABEL = "soft";
@@ -20,7 +21,7 @@ public final class ScoreUtil {
         if (suffixedScoreTokens.length == levelSuffixes.length + 1) {
             var newLevelSuffixes = Arrays.copyOf(levelSuffixes, levelSuffixes.length + 1);
             System.arraycopy(levelSuffixes, 0, newLevelSuffixes, 1, levelSuffixes.length);
-            newLevelSuffixes[0] = "structural";
+            newLevelSuffixes[0] = STRUCTURAL_LABEL;
             scoreTokens = new String[levelSuffixes.length + 1];
             levelSuffixes = newLevelSuffixes;
         }
@@ -102,7 +103,7 @@ public final class ScoreUtil {
         var shortString = new StringBuilder();
         var i = 0;
         if (score.structuralScore() != 0L) {
-            shortString.append(score.structuralScore()).append("structural");
+            shortString.append(score.structuralScore()).append(STRUCTURAL_LABEL);
         }
         for (var levelNumber : score.toLevelNumbers()) {
             if (notZero.test(levelNumber)) {
@@ -123,10 +124,10 @@ public final class ScoreUtil {
     public static String[][] parseBendableScoreTokens(Class<? extends IBendableScore<?>> scoreClass, String scoreString) {
         var scoreTokens = new String[3][];
         var startIndex = 0;
-        var structuralSlashIndex = scoreString.indexOf("structural/");
+        var structuralSlashIndex = scoreString.indexOf(STRUCTURAL_LABEL + "/");
         if (structuralSlashIndex >= 0) {
             scoreTokens[0] = new String[] { scoreString.substring(0, structuralSlashIndex) };
-            startIndex = structuralSlashIndex + "structural/".length();
+            startIndex = structuralSlashIndex + STRUCTURAL_LABEL.length() + 1;
         }
         for (var i = 0; i < LEVEL_SUFFIXES.length; i++) {
             var levelSuffix = LEVEL_SUFFIXES[i];

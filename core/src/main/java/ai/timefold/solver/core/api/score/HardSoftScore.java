@@ -2,6 +2,7 @@ package ai.timefold.solver.core.api.score;
 
 import static ai.timefold.solver.core.impl.score.ScoreUtil.HARD_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.SOFT_LABEL;
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
@@ -169,7 +170,7 @@ public record HardSoftScore(long structuralScore, long hardScore, long softScore
     @Override
     public String toString() {
         return (structuralScore < 0)
-                ? "%dstructural/%d%s/%d%s".formatted(structuralScore, hardScore, HARD_LABEL, softScore, SOFT_LABEL)
+                ? "%d%s/%d%s/%d%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, softScore, SOFT_LABEL)
                 : "%d%s/%d%s".formatted(hardScore, HARD_LABEL, softScore, SOFT_LABEL);
     }
 

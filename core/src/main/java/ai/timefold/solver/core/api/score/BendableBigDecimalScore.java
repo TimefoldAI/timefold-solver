@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score;
 
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -348,7 +350,7 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
     public String toString() {
         var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 15);
         if (structuralScore < 0) {
-            s.append("%dstructural/".formatted(structuralScore));
+            s.append("%d%s/".formatted(structuralScore, STRUCTURAL_LABEL));
         }
         s.append("[");
         var first = true;

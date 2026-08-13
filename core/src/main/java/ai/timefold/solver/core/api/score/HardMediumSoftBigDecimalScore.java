@@ -3,6 +3,7 @@ package ai.timefold.solver.core.api.score;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.HARD_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.MEDIUM_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.SOFT_LABEL;
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -239,7 +240,7 @@ public record HardMediumSoftBigDecimalScore(long structuralScore, BigDecimal har
     @Override
     public String toString() {
         return (structuralScore < 0)
-                ? "%dstructural/%s%s/%s%s/%s%s".formatted(structuralScore, hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL,
+                ? "%d%s/%s%s/%s%s/%s%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL,
                         softScore, SOFT_LABEL)
                 : "%s%s/%s%s/%s%s".formatted(hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL, softScore, SOFT_LABEL);
     }

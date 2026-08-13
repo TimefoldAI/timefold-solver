@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score;
 
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -134,7 +136,7 @@ public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) impl
 
     @Override
     public String toString() {
-        return (structuralScore < 0) ? "%dstructural/%s".formatted(structuralScore, score) : score.toString();
+        return (structuralScore < 0) ? "%d%s/%s".formatted(structuralScore, STRUCTURAL_LABEL, score) : score.toString();
     }
 
 }

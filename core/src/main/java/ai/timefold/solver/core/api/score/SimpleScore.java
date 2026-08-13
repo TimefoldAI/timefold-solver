@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score;
 
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
+
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
 import org.jspecify.annotations.NullMarked;
@@ -114,7 +116,7 @@ public record SimpleScore(long structuralScore, long score) implements Score<Sim
 
     @Override
     public String toString() {
-        return (structuralScore < 0) ? "%dstructural/%d".formatted(structuralScore, score) : Long.toString(score);
+        return (structuralScore < 0) ? "%d%s/%d".formatted(structuralScore, STRUCTURAL_LABEL, score) : Long.toString(score);
     }
 
 }
