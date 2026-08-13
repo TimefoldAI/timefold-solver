@@ -21,6 +21,10 @@ class BendableBigDecimalScoreConverterTest extends AbstractScoreJpaTest {
                 BendableBigDecimalScore.of(
                         new BigDecimal[] { new BigDecimal("10000.00001"), new BigDecimal("2000.00020"),
                                 new BigDecimal("300.00300") },
+                        new BigDecimal[] { new BigDecimal("40.04000"), new BigDecimal("5.50000") }),
+                new BendableBigDecimalScore(-1L,
+                        new BigDecimal[] { new BigDecimal("10000.00001"), new BigDecimal("2000.00020"),
+                                new BigDecimal("300.00300") },
                         new BigDecimal[] { new BigDecimal("40.04000"), new BigDecimal("5.50000") }));
     }
 
