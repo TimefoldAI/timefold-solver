@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.Iterator;
-import java.util.Objects;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupplyHolder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
@@ -18,31 +17,25 @@ import ai.timefold.solver.core.preview.api.move.Move;
 final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> valueSelector;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final CountSupplier minimumSelectedCountSupplier;
     private final CountSupplier maximumSelectedCountSupplier;
 
     private SolverScope<Solution_> solverScope;
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableStateSupplyHolder<Solution_> listVariableStateSupplyHolder;
 
     public ListRuinRecreateMoveSelector(IterableValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             CountSupplier minimumSelectedCountSupplier, CountSupplier maximumSelectedCountSupplier) {
         super();
-        this.valueSelector = FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableStateSupply);
-        this.listVariableDescriptor = listVariableDescriptor;
+        this.listVariableStateSupplyHolder = new ListVariableStateSupplyHolder<>(listVariableDescriptor);
+        this.valueSelector = FilteringValueSelector.ofAssigned(valueSelector, listVariableStateSupplyHolder::get);
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.minimumSelectedCountSupplier = minimumSelectedCountSupplier;
         this.maximumSelectedCountSupplier = maximumSelectedCountSupplier;
 
         phaseLifecycleSupport.addEventListener(this.valueSelector);
-    }
-
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     @Override
@@ -69,24 +62,21 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
         this.solverScope = phaseScope.getSolverScope();
         // The phase may operate in a different environment mode, which uses a new score director.
         // We must ensure that the list variable state supply remains up to date.
-        this.listVariableStateSupply = phaseScope.getScoreDirector()
-                .getSupplyManager()
-                .demand(listVariableDescriptor.getStateDemand());
+        listVariableStateSupplyHolder.phaseStarted(phaseScope);
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
+        listVariableStateSupplyHolder.phaseEnded(phaseScope);
         this.solverScope = null;
-        this.listVariableStateSupply = null;
     }
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
         var valueSelectorSize = valueSelector.getSize();
         return new ListRuinRecreateMoveIterator<>(valueSelector, constructionHeuristicPhaseBuilder,
-                solverScope, listVariableStateSupply,
+                solverScope, listVariableStateSupplyHolder.get(),
                 minimumSelectedCountSupplier.applyAsInt(valueSelectorSize),
                 maximumSelectedCountSupplier.applyAsInt(valueSelectorSize),
                 workingRandom);

@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupplyHolder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
@@ -20,21 +20,18 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
 
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableStateSupplyHolder<Solution_> listVariableStateSupplyHolder;
 
     public ListChangeMoveSelector(IterableValueSelector<Solution_> sourceValueSelector,
             DestinationSelector<Solution_> destinationSelector, boolean randomSelection) {
+        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
+        this.listVariableStateSupplyHolder = new ListVariableStateSupplyHolder<>(listVariableDescriptor);
         this.sourceValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, this::getListVariableStateSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, listVariableStateSupplyHolder::get);
         this.destinationSelector = destinationSelector;
         this.randomSelection = randomSelection;
         phaseLifecycleSupport.addEventListener(this.sourceValueSelector);
         phaseLifecycleSupport.addEventListener(this.destinationSelector);
-    }
-
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     @Override
@@ -42,17 +39,13 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         super.phaseStarted(phaseScope);
         // The phase may operate in a different environment mode, which uses a new score director.
         // We must ensure that the list variable state supply remains up to date.
-        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
-        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
-        this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        listVariableStateSupplyHolder.phaseStarted(phaseScope);
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
-        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
-        listVariableStateSupply = null;
+        listVariableStateSupplyHolder.phaseEnded(phaseScope);
     }
 
     public static <Solution_> IterableValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
@@ -87,12 +80,12 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
             return new RandomListChangeIterator<>(
-                    listVariableStateSupply,
+                    listVariableStateSupplyHolder.get(),
                     sourceValueSelector,
                     destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
-                    listVariableStateSupply,
+                    listVariableStateSupplyHolder.get(),
                     sourceValueSelector,
                     destinationSelector);
         }

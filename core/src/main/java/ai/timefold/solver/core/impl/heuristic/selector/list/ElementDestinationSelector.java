@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupplyHolder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.ConcatenatingIterator;
@@ -44,7 +44,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     private final boolean randomSelection;
     private final boolean isExhaustiveSearch;
 
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableStateSupplyHolder<Solution_> listVariableStateSupplyHolder;
 
     public ElementDestinationSelector(EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
             boolean randomSelection) {
@@ -55,19 +55,15 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             IterableValueSelector<Solution_> replayingValueSelector, IterableValueSelector<Solution_> valueSelector,
             boolean randomSelection, boolean isExhaustiveSearch) {
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
+        this.listVariableStateSupplyHolder = new ListVariableStateSupplyHolder<>(listVariableDescriptor);
         this.entitySelector = entitySelector;
-        var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
+        var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableStateSupplyHolder::get);
         this.replayingValueSelector = replayingValueSelector;
         this.valueSelector = listVariableDescriptor.allowsUnassignedValues() ? filterUnassignedValues(selector) : selector;
         this.randomSelection = randomSelection;
         this.isExhaustiveSearch = isExhaustiveSearch;
         phaseLifecycleSupport.addEventListener(this.entitySelector);
         phaseLifecycleSupport.addEventListener(this.valueSelector);
-    }
-
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     private IterableValueSelector<Solution_> filterUnassignedValues(
@@ -89,7 +85,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
          * and always add one option to unassign at the end,
          * we can keep the correct probabilities throughout.
          */
-        return FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableStateSupply);
+        return FilteringValueSelector.ofAssigned(valueSelector, listVariableStateSupplyHolder::get);
     }
 
     @Override
@@ -97,15 +93,13 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         super.phaseStarted(phaseScope);
         // The phase may operate in a different environment mode, which uses a new score director.
         // We must ensure that the list variable state supply remains up to date.
-        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
-        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        listVariableStateSupplyHolder.phaseStarted(phaseScope);
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
-        listVariableStateSupply = null;
+        listVariableStateSupplyHolder.phaseEnded(phaseScope);
     }
 
     @Override
@@ -127,9 +121,9 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
             var totalValueSize = valueSelector.getSize()
-                    - (allowsUnassignedValues ? listVariableStateSupply.getUnassignedCount() : 0);
+                    - (allowsUnassignedValues ? listVariableStateSupplyHolder.get().getUnassignedCount() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
-            return new ElementPositionRandomIterator<>(listVariableStateSupply, entitySelector,
+            return new ElementPositionRandomIterator<>(listVariableStateSupplyHolder.get(), entitySelector,
                     replayingValueSelector != null ? replayingValueSelector.iterator() : null, valueSelector, workingRandom,
                     totalSize, allowsUnassignedValues, allowsUnassignedValues && totalValueSize > 0);
         } else {
@@ -149,7 +143,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 // Value selector guarantees only unpinned values.
                 var valueIterator = new MappingIterator<>(valueSelector.iterator(),
                         v -> {
-                            var pos = listVariableStateSupply.getElementPosition(v).ensureAssigned();
+                            var pos = listVariableStateSupplyHolder.get().getElementPosition(v).ensureAssigned();
                             return ElementPosition.of(pos.entity(), pos.index() + 1);
                         });
                 if (listVariableDescriptor.allowsUnassignedValues()) {

@@ -3,9 +3,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
 
 import java.util.Iterator;
-import java.util.Objects;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupplyHolder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -22,15 +21,16 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     private final int maximumSubListSize;
 
     private TriangleElementFactory triangleElementFactory;
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableStateSupplyHolder<Solution_> listVariableStateSupplyHolder;
 
     public RandomSubListSelector(
             EntitySelector<Solution_> entitySelector,
             IterableValueSelector<Solution_> valueSelector,
             int minimumSubListSize, int maximumSubListSize) {
         this.entitySelector = entitySelector;
-        this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
+        this.listVariableStateSupplyHolder = new ListVariableStateSupplyHolder<>(listVariableDescriptor);
+        this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableStateSupplyHolder::get);
         if (minimumSubListSize < 1) {
             throw new IllegalArgumentException("The minimumSubListSize (%d) must be greater than 0."
                     .formatted(minimumSubListSize));
@@ -47,27 +47,20 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         phaseLifecycleSupport.addEventListener(this.valueSelector);
     }
 
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
-    }
-
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         this.triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
         // The phase may run under a different environment mode, which swaps in a new score director
         // (and thus a new SupplyManager); re-demand so the supply doesn't go stale.
-        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
-        this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        listVariableStateSupplyHolder.phaseStarted(phaseScope);
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
+        listVariableStateSupplyHolder.phaseEnded(phaseScope);
         triangleElementFactory = null;
-        listVariableStateSupply = null;
     }
 
     @Override
@@ -147,7 +140,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
                 // Using valueSelector instead of entitySelector is fairer
                 // because entities with bigger list variables will be selected more often.
                 var value = valueIterator.next();
-                sourceEntity = listVariableStateSupply.getInverseSingleton(value);
+                sourceEntity = listVariableStateSupplyHolder.get().getInverseSingleton(value);
                 if (sourceEntity == null) { // Ignore values which are unassigned.
                     continue;
                 }

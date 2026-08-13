@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupplyHolder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
@@ -26,14 +26,15 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     private final int[] pickedKDistribution;
 
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableStateSupplyHolder<Solution_> listVariableStateSupplyHolder;
 
     public KOptListMoveSelector(ListVariableDescriptor<Solution_> listVariableDescriptor,
             IterableValueSelector<Solution_> originSelector, IterableValueSelector<Solution_> valueSelector,
             int minK, int maxK, int[] pickedKDistribution) {
         this.listVariableDescriptor = listVariableDescriptor;
-        this.originSelector = createEffectiveValueSelector(originSelector, this::getListVariableStateSupply);
-        this.valueSelector = createEffectiveValueSelector(valueSelector, this::getListVariableStateSupply);
+        this.listVariableStateSupplyHolder = new ListVariableStateSupplyHolder<>(listVariableDescriptor);
+        this.originSelector = createEffectiveValueSelector(originSelector, listVariableStateSupplyHolder::get);
+        this.valueSelector = createEffectiveValueSelector(valueSelector, listVariableStateSupplyHolder::get);
         this.minK = minK;
         this.maxK = maxK;
         this.pickedKDistribution = pickedKDistribution;
@@ -50,25 +51,18 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
         return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupplier);
     }
 
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
-    }
-
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         // The phase may operate in a different environment mode, which uses a new score director.
         // We must ensure that the list variable state supply remains up to date.
-        var supplyManager = phaseScope.getScoreDirector().getSupplyManager();
-        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        listVariableStateSupplyHolder.phaseStarted(phaseScope);
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
-        listVariableStateSupply = null;
+        listVariableStateSupplyHolder.phaseEnded(phaseScope);
     }
 
     @Override
@@ -95,7 +89,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableStateSupply,
+        return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableStateSupplyHolder.get(),
                 originSelector, valueSelector, minK, maxK, pickedKDistribution);
     }
 
