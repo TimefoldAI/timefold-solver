@@ -29,7 +29,7 @@ class DatasetBucketBiasIT extends AbstractBiasIT {
                 new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
-        BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner = NeighborhoodsJoiners.lessThanOrEqual(
+        BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner = NeighborhoodsJoiners.greaterThanOrEqual(
                 entity -> Integer.parseInt(entity.getCode()), value -> Integer.parseInt(value.getCode()));
         // Just-in-time: the join is computed inside the BiDatasetInstance, via register(a).join(b).
         var entityDataset = moveStreamFactory.register(entityStream);
@@ -43,7 +43,7 @@ class DatasetBucketBiasIT extends AbstractBiasIT {
                 valueList.add(new TestdataValue(String.valueOf(bucket.key)));
             }
         }
-        probe.setValue(valueList.get(0));
+        probe.setValue(valueList.getFirst());
         var solution = new TestdataSolution("solution");
         solution.setEntityList(List.of(probe));
         solution.setValueList(valueList);

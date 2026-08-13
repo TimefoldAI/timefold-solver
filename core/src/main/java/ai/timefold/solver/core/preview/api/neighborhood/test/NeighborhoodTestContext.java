@@ -14,10 +14,11 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides methods for enumerating moves for a given {@link MoveProvider}
- * using a bound planning solution instance, and membership-based assertions over them.
+ * using a bound planning solution instance,
+ * and membership-based assertions over them.
  * <p>
- * Created via {@link NeighborhoodTester#using(Object)}, this context binds a specific solution
- * instance to the evaluator and exposes extraction methods.
+ * Created via {@link NeighborhoodTester#using(Object)},
+ * this context binds a specific solution instance to the evaluator and exposes extraction methods.
  * Once any particular move was retrieved using methods such as {@link #getMovesAsStream()},
  * it can optionally be executed using the {@link MoveTestContext} obtained via {@link #getMoveTestContext()}.
  * It is recommended to only {@link MoveTestContext#executeTemporarily(Move, Consumer) execute moves temporarily},
@@ -36,11 +37,13 @@ import org.jspecify.annotations.NullMarked;
 public interface NeighborhoodTestContext<Solution_> extends NeighborhoodMoveAsserter<Solution_> {
 
     /**
-     * Returns an iterator over a bounded, non-exhaustive handful of moves provided by the given
-     * {@link MoveProvider} for the bound solution instance, e.g. to hand to
-     * {@link #getMoveTestContext()}. Move order is never part of the API's contract and must not
-     * be relied upon. Use {@link #producesAllOf}/{@link #producesNoneOf} for completeness
-     * assertions instead.
+     * Returns a (likely never-ending) iterator over moves provided by the given {@link MoveProvider}
+     * for the bound solution instance,
+     * e.g. to hand to {@link #getMoveTestContext()}.
+     * Move order is not part of the API's contract and must not be relied upon;
+     * it is reasonable to assume that the moves are returned in a random order,
+     * and that the order will change between invocations.
+     * Use {@link #producesAllOf}/{@link #producesNoneOf} for completeness assertions instead.
      *
      * @return an iterator over some moves
      */
@@ -51,7 +54,7 @@ public interface NeighborhoodTestContext<Solution_> extends NeighborhoodMoveAsse
     /**
      * As defined by {@link #getMovesAsIterator()},
      * but returns a {@link Stream} of the moves in the iterator.
-     * Parallel streams are not supported and the behavior of such stream is undefined.
+     * Parallel streams are not supported, and the behavior of such streams is undefined.
      *
      * @return a stream of some moves
      */

@@ -176,7 +176,44 @@ class DatasetTest {
         assertThat(instance.randomIterator(rareEntity, random).hasNext()).isFalse();
     }
 
-    private static Set<List<Object>> collectPairs(BiDatasetInstance<TestdataEntity, TestdataValue> instance) {
+    @Test
+    void cachedJoin_lessThanProducesPairsOrderedLeftBeforeRight() {
+        var moveStreamFactory = factory();
+        var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
+        var joiner = NeighborhoodsJoiners.lessThan(TestdataValue::getCode);
+        var cachedDataset = moveStreamFactory.register(valueStream.join(valueStream, joiner));
+
+        var solution = TestdataSolution.generateSolution(3, 0); // 3 values, 0 entities: only the values matter here.
+        var session = createSession(moveStreamFactory, solution);
+        var instance = session.getInstance(cachedDataset);
+        var v0 = solution.getValueList().get(0);
+        var v1 = solution.getValueList().get(1);
+        var v2 = solution.getValueList().get(2);
+
+        assertThat(collectPairs(instance)).containsExactlyInAnyOrder(
+                List.of(v0, v1), List.of(v0, v2), List.of(v1, v2));
+    }
+
+    @Test
+    void justInTimeJoin_lessThanProducesPairsOrderedLeftBeforeRight() {
+        var moveStreamFactory = factory();
+        var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
+        var joiner = NeighborhoodsJoiners.lessThan(TestdataValue::getCode);
+        var valueDataset = moveStreamFactory.register(valueStream);
+        var justInTimeDataset = valueDataset.join(valueStream, joiner);
+
+        var solution = TestdataSolution.generateSolution(3, 0);
+        var session = createSession(moveStreamFactory, solution);
+        var instance = session.getInstance(justInTimeDataset);
+        var v0 = solution.getValueList().get(0);
+        var v1 = solution.getValueList().get(1);
+        var v2 = solution.getValueList().get(2);
+
+        assertThat(collectPairs(instance)).containsExactlyInAnyOrder(
+                List.of(v0, v1), List.of(v0, v2), List.of(v1, v2));
+    }
+
+    private static <A, B> Set<List<Object>> collectPairs(BiDatasetInstance<A, B> instance) {
         Set<List<Object>> pairs = new HashSet<>();
         var iterator = instance.iterator();
         while (iterator.hasNext()) {

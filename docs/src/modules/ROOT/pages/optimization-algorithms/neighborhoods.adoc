@@ -681,9 +681,9 @@ it is computed just in time, inside the resulting `BiDataset`.
 
 Inside `buildMoveStream(...)`, the `MoveIteratorSession` resolves each dataset handle
 to a `UniDatasetInstance` or `BiDatasetInstance`,
-which exposes `size()`, `iterator()` and `randomIterator(RandomGenerator)` -
-the same random-walk-without-replacement sampling used throughout Move Streams.
-A `BiDatasetInstance` additionally exposes the same three operations keyed by a left-side value,
+which exposes `size()`, `iterator()`, `randomIterator(RandomGenerator)` and `uniqueRandomIterator(RandomGenerator)` -
+ the same random-walk sampling used throughout Move Streams.
+ A `BiDatasetInstance` additionally exposes the same four operations keyed by a left-side value,
 for datasets produced by a join.
 
 IMPORTANT: The order in which the iterator yields moves is never part of the API's contract,
