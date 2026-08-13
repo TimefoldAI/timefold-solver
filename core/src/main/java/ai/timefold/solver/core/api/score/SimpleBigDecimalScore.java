@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score;
 
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -15,15 +17,25 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBigDecimalScore> {
+public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) implements Score<SimpleBigDecimalScore> {
 
     public static final SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(BigDecimal.ZERO);
     public static final SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(BigDecimal.ONE);
 
+    public SimpleBigDecimalScore(BigDecimal score) {
+        this(0L, score);
+    }
+
     public static SimpleBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
-        var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
-        return of(score);
+        if (scoreTokens.length == 1) {
+            var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
+            return of(score);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[1]);
+            return new SimpleBigDecimalScore(structuralScore, score);
+        }
     }
 
     public static SimpleBigDecimalScore of(BigDecimal score) {
@@ -87,7 +99,7 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public boolean isFeasible() {
-        return true;
+        return structuralScore >= 0;
     }
 
     @Override
@@ -97,19 +109,23 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof SimpleBigDecimalScore(var otherScore)) {
-            return score.stripTrailingZeros().equals(otherScore.stripTrailingZeros());
+        if (o instanceof SimpleBigDecimalScore(var otherStructuralScore, var otherScore)) {
+            return structuralScore == otherStructuralScore
+                    && score.stripTrailingZeros().equals(otherScore.stripTrailingZeros());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return score.stripTrailingZeros().hashCode();
+        return Long.hashCode(structuralScore) ^ score.stripTrailingZeros().hashCode();
     }
 
     @Override
     public int compareTo(SimpleBigDecimalScore other) {
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         return score.compareTo(other.score());
     }
 
@@ -120,7 +136,7 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public String toString() {
-        return score.toString();
+        return (structuralScore < 0) ? "%d%s/%s".formatted(structuralScore, STRUCTURAL_LABEL, score) : score.toString();
     }
 
 }

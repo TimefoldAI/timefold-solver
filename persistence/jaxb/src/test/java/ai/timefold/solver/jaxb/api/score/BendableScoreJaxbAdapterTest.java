@@ -17,6 +17,12 @@ class BendableScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTest {
         assertSerializeAndDeserialize(score, new TestBendableLongScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new BendableScore(-1L, new long[] { 1000L, 200L }, new long[] { 34L });
+        assertSerializeAndDeserialize(score, new TestBendableLongScoreWrapper(score));
+    }
+
     @XmlRootElement
     public static class TestBendableLongScoreWrapper extends TestScoreWrapper<BendableScore> {
 
