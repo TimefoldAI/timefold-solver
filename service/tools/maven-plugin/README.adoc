@@ -21,6 +21,7 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 - Fetches platform identity/config by calling GET /api/platform/v1/aboutme?includeConfig=true
 - Requires a platform personal access token available via environment variable `TIMEFOLD_PAT` (see "Authentication" below)
 - If a single accountId is returned by the platform and `timefold.accountId` wasn't provided, the plugin will use it
+- Fails the build when the account id can neither be taken from `timefold.accountId` nor derived from the platform response, i.e. when the personal access token is associated with no account or with several of them. In the latter case `timefold.accountId` has to be set explicitly
 - Writes a properties file at `target/generated-resources/timefold-build.properties` with entries such as:
 ** `quarkus.container-image.registry` — value taken from platform config.containerRegistry
 ** `quarkus.container-image.group` — the account id used
