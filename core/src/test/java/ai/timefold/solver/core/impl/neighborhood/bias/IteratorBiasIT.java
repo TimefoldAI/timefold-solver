@@ -27,10 +27,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * The bias fixes at the {@code bavet.common.index} iterator/indexer level: uniformity of
- * {@code RepeatingRandomIterator}, {@code DefaultRetiringRandomIterator} after retirement,
- * {@code UniqueRandomIterator}'s full-drain permutation order, and both flavors' multi-bucket
- * weighting by bucket size.
+ * The bias fixes at the {@code bavet.common.index} iterator/indexer level:
+ * uniformity of {@link RepeatingRandomIterator}, {@code DefaultRetiringRandomIterator} after retirement,
+ * {@link UniqueRandomIterator}'s full-drain permutation order,
+ * and both flavors' multi-bucket weighting by bucket size.
  */
 class IteratorBiasIT extends AbstractBiasIT {
 
@@ -63,9 +63,9 @@ class IteratorBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * Protects {@code ComparisonIndexer}'s plain (repeating, with-replacement) flavor: it must pick
-     * across every matching bucket, weighted by bucket size, not just the first bucket it
-     * encounters while walking the boundary.
+     * Protects {@code ComparisonIndexer}'s plain (repeating, with-replacement) flavor:
+     * it must pick across every matching bucket, weighted by bucket size,
+     * not just the first bucket it encounters while walking the boundary.
      */
     @Test
     void comparisonIndexerRandomIteratorWeightsByBucketSize() {
@@ -86,8 +86,8 @@ class IteratorBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * A tuple reachable under more than one query key must not be over-sampled relative to a tuple
-     * reachable under only one.
+     * A tuple reachable under more than one query key
+     * must not be over-sampled relative to a tuple reachable under only one.
      */
     @Test
     void containingAnyOfUniqueIteratorIsUniformOverOverlappingBuckets() {
@@ -112,10 +112,9 @@ class IteratorBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * Protects {@code DefaultRetiringRandomIterator} against the old "snap to nearest active index"
-     * correction: retiring an interior element used to oversample its surviving neighbors, since a
-     * draw that landed on the retired index moved to whichever survivor was closest instead of
-     * being redrawn from the live pool uniformly.
+     * Retiring an interior element used to oversample its surviving neighbors,
+     * since a draw that landed on the retired index moved to whichever survivor was closest
+     * instead of being redrawn from the live pool uniformly.
      */
     @Test
     void retiringRandomIteratorStaysUniformAfterRetirement() {
@@ -126,22 +125,21 @@ class IteratorBiasIT extends AbstractBiasIT {
         var survivorList = elementList.stream().filter(e -> !retiredElementSet.contains(e)).toList();
 
         var root = new Random(0);
-        BiasReport<Integer> report = tally("DefaultRetiringRandomIterator uniform after interior retirement", trialCount,
-                trial -> {
-                    var splitRandom = splitFrom(root);
-                    var iterator = RetiringRandomIterator.of(toEntries(elementList), splitRandom);
-                    for (var retiredElement : retiredElementSet) {
-                        retireElement(iterator, retiredElement);
-                    }
-                    return iterator.next();
-                });
+        var report = tally("DefaultRetiringRandomIterator uniform after interior retirement", trialCount, trial -> {
+            var splitRandom = splitFrom(root);
+            var iterator = RetiringRandomIterator.of(toEntries(elementList), splitRandom);
+            for (var retiredElement : retiredElementSet) {
+                retireElement(iterator, retiredElement);
+            }
+            return iterator.next();
+        });
         report.expectUniform(survivorList).assertWithinSigma(SIGMA_LIMIT);
     }
 
     /**
-     * Draws (with replacement) until {@code target} is picked, then retires it. Any non-matching
-     * draw along the way is left untouched, exactly as an ordinary caller that decides not to
-     * retire what it just drew would leave it.
+     * Draws (with replacement) until {@code target} is picked, then retires it.
+     * Any non-matching draw along the way is left untouched,
+     * exactly as an ordinary caller that decides not to retire what it just drew would leave it.
      */
     private static void retireElement(RetiringRandomIterator<Integer> iterator, int target) {
         while (!iterator.next().equals(target)) {
@@ -151,9 +149,10 @@ class IteratorBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * Protects {@code DefaultRetiringRandomIterator} (which {@code UniqueRandomIterator.of} builds
-     * on) against the same "snap to nearest active index" bias, this time over a full drain: every
-     * one of the {@code n!} possible draw orders must be equally likely.
+     * Protects {@code DefaultRetiringRandomIterator}
+     * (which {@code UniqueRandomIterator.of} builds on) against the same "snap to nearest active index" bias,
+     * this time over a full drain:
+     * every one of the {@code n!} possible draw orders must be equally likely.
      */
     @Test
     void uniqueRandomIteratorDrainsInUniformPermutationOrder() {
@@ -161,7 +160,7 @@ class IteratorBiasIT extends AbstractBiasIT {
         var elementList = List.of(0, 1, 2, 3, 4);
 
         var root = new Random(0);
-        BiasReport<List<Integer>> report = tally("UniqueRandomIterator uniform full-drain permutation order", trialCount,
+        var report = tally("UniqueRandomIterator uniform full-drain permutation order", trialCount,
                 trial -> {
                     var splitRandom = splitFrom(root);
                     var iterator = UniqueRandomIterator.of(toEntries(elementList), splitRandom);
@@ -197,24 +196,26 @@ class IteratorBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * Protects {@code MultiBucketUniqueRandomIterator} (built for a multi-key/multi-bucket unique
-     * query by both {@code ComparisonIndexer} and {@code ContainedInIndexer}) against the old bug
-     * where a boundary-ordered walk drained one bucket entirely before moving to the next, so every
-     * draw was biased towards whichever bucket came first in that walk. {@code drawIndex} 1 catches
-     * that first-draw bias directly; 2 and 10 additionally catch a would-be continuation bug
-     * (draining a bucket rather than re-sampling on every draw), since in a correctly uniform
-     * without-replacement drain, the bucket occupying any fixed draw position is weighted by bucket
-     * size exactly like the first, by the same symmetry a uniformly shuffled deck has: every
-     * position in the shuffle is equally likely to hold a card from any given suit, in proportion
-     * to that suit's size.
+     * Protects {@code MultiBucketUniqueRandomIterator}
+     * (built for a multi-key/multi-bucket unique query by both {@code ComparisonIndexer} and {@code ContainedInIndexer})
+     * against the old bug where a boundary-ordered walk drained one bucket entirely before moving to the next,
+     * so every draw was biased towards whichever bucket came first in that walk.
+     * {@code drawIndex} 1 catches that first-draw bias directly;
+     * 2 and 10 additionally catch a would-be continuation bug
+     * (draining a bucket rather than re-sampling on every draw),
+     * since in a correctly uniform without-replacement drain,
+     * the bucket occupying any fixed draw position is weighted by bucket size exactly like the first,
+     * by the same symmetry a uniformly shuffled deck has:
+     * every position in the shuffle is equally likely to hold a card from any given suit,
+     * in proportion to that suit's size.
      */
     @MethodSource("multiBucketUniqueRandomIteratorArguments")
     @ParameterizedTest
     void multiBucketUniqueRandomIteratorWeightsByBucketSize(MultiBucketFlavour flavour, int drawIndex) {
         var trialCount = 200_000;
-        // Three buckets, sizes 1, 3, and 6 (weight 0.1 / 0.3 / 0.6). Built once; a unique iterator's
-        // retire() never touches the underlying bucket, so replaying draws against the same indexer
-        // across trials is safe.
+        // Three buckets, sizes 1, 3, and 6 (weight 0.1 / 0.3 / 0.6).
+        // Built once; a unique iterator's retire() never touches the underlying bucket,
+        // so replaying draws against the same indexer across trials is safe.
         var indexer = flavour.buildIndexer();
         var root = new Random(0);
         tally("%s multi-bucket unique, draw #%d".formatted(flavour, drawIndex), trialCount, trial -> {
@@ -239,16 +240,14 @@ class IteratorBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * The two indexers whose multi-bucket {@code uniqueRandomIterator} is backed by
-     * {@code MultiBucketUniqueRandomIterator}. {@code ContainingAnyOfIndexer} is deliberately
-     * excluded: its buckets can overlap, so no bucket weighting can make it uniform (see the
-     * impossibility proof on its own {@code uniqueRandomIteratorManyKeys} javadoc), and it drains
-     * to a list instead.
+     * The two indexers whose multi-bucket {@code uniqueRandomIterator} is backed by {@code MultiBucketUniqueRandomIterator}.
+     * {@code ContainingAnyOfIndexer} is deliberately excluded:
+     * its buckets can overlap, so no bucket weighting can make it uniform,
+     * and it drains to a list instead.
      */
     private enum MultiBucketFlavour {
 
         COMPARISON {
-
             @Override
             Indexer<UniTuple<String>> buildIndexer() {
                 var joiner = (DefaultBiNeighborhoodsJoiner<TestPerson, TestPerson>) NeighborhoodsJoiners
@@ -269,7 +268,6 @@ class IteratorBiasIT extends AbstractBiasIT {
 
         },
         CONTAINED_IN {
-
             @Override
             Indexer<UniTuple<String>> buildIndexer() {
                 var joiner = new DefaultBiNeighborhoodsJoiner<TestWorker, TestJob>(TestWorker::skills,
@@ -297,10 +295,10 @@ class IteratorBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * Only used for their accessor method references, to build a {@code ContainedInIndexer}
-     * directly via {@code JoinerType.CONTAINED_IN}, the same way {@code ContainedInIndexerTest}
-     * does; no instance of either is ever constructed, since buckets here are populated directly by
-     * {@link #putContainedInBucket}.
+     * Only used for their accessor method references,
+     * to build a {@code ContainedInIndexer} directly via {@code JoinerType.CONTAINED_IN};
+     * no instance of either is ever constructed,
+     * since buckets here are populated directly by {@link #putContainedInBucket}.
      */
     private record TestWorker(List<String> skills) {
     }

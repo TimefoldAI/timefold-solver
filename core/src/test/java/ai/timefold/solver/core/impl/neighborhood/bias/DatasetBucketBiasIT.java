@@ -18,13 +18,6 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/**
- * End-to-end regression for the multi-bucket unique-iterator fix ({@code MultiBucketUniqueRandomIterator}),
- * reached through the only route to it that is public API: a just-in-time bi-join's per-A
- * {@code uniqueRandomIterator}, backed by {@code ComparisonIndexer}. {@link NeighborhoodsJoiners}
- * has no public {@code containedIn}, so {@code ContainedInIndexer}'s flavor of the same fix cannot
- * be reached from here at all; {@link IteratorBiasIT} covers that one directly.
- */
 class DatasetBucketBiasIT extends AbstractBiasIT {
 
     private static final int TRIAL_COUNT = 200_000;
@@ -38,8 +31,7 @@ class DatasetBucketBiasIT extends AbstractBiasIT {
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner = NeighborhoodsJoiners.lessThanOrEqual(
                 entity -> Integer.parseInt(entity.getCode()), value -> Integer.parseInt(value.getCode()));
-        // Just-in-time: the join is computed inside the BiDatasetInstance, via register(a).join(b),
-        // the same shape ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.DatasetTest uses.
+        // Just-in-time: the join is computed inside the BiDatasetInstance, via register(a).join(b).
         var entityDataset = moveStreamFactory.register(entityStream);
         var justInTimeDataset = entityDataset.join(valueStream, joiner);
 

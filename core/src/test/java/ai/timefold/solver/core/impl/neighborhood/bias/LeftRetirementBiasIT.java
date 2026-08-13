@@ -13,6 +13,7 @@ import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -23,19 +24,21 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 /**
- * End-to-end regressions for the two ways a left value's retirement can go wrong: retiring it
- * biases which surviving left is drawn next ({@code DefaultRetiringRandomIterator}'s old
- * "snap to nearest active index" correction), or it gets retired even though it still has a real
- * match ({@code RetiringBiWalk}'s old single-probe bail-out).
+ * End-to-end regressions for the two ways a left value's retirement can go wrong:
+ * retiring it biases which surviving left is drawn next
+ * ({@code DefaultRetiringRandomIterator}'s old "snap to nearest active index" correction),
+ * or it gets retired even though it still has a real match
+ * ({@code RetiringBiWalk}'s old single-probe bail-out).
  */
 class LeftRetirementBiasIT extends AbstractBiasIT {
 
     /**
-     * Before the fix, retiring an interior left entity biased its surviving neighbors; only edge
-     * retirements were fair. 4 interior entities (out of 20) are unreachable ("dead": a bucket
-     * size of 0 gives them no matching value at all, per {@link BucketedFixture}), which retires
-     * them for good during the warm-up phase; the measured phase then checks that doing so left
-     * every survivor equally likely.
+     * Before the fix, retiring an interior left entity biased its surviving neighbors;
+     * only edge retirements were fair.
+     * 4 interior entities (out of 20) are unreachable
+     * ("dead": a bucket size of 0 gives them no matching value at all, per {@link BucketedFixture}),
+     * which retires them for good during the warm-up phase;
+     * the measured phase then checks that doing so left every survivor equally likely.
      */
     @Test
     void interiorRetirementsStayUniformOverSurvivingEntities() {
@@ -69,12 +72,13 @@ class LeftRetirementBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * Under a {@code filtering()} joiner, {@code FilteringIterator}'s bail-out is a per-call false
-     * negative, not proof of emptiness: before the fix, one such bail-out was enough to permanently
-     * retire a left that still had a real match, and "hard" (1 match out of 20 values) permanently
-     * disappeared partway through this run. After the fix, {@code RetiringBiWalk.PROBE_ATTEMPT_COUNT}
-     * independent probes are required before giving up. "hard" must therefore still be drawn near
-     * the end of the run, not only near the start.
+     * Under {@link NeighborhoodsJoiners#filtering(BiNeighborhoodsPredicate)},
+     * {@code FilteringIterator}'s bail-out is a per-call false negative, not proof of emptiness:
+     * before the fix, one such bail-out was enough to permanently retire a left that still had a real match,
+     * and "hard" (1 match out of 20 values) permanently disappeared partway through this run.
+     * After the fix, {@code RetiringBiWalk.PROBE_ATTEMPT_COUNT} independent probes are required before giving up.
+     * "hard" must therefore still be drawn near the end of the run,
+     * not only near the start.
      */
     @Test
     void hardToMatchEntityStaysReachableThroughoutTheRun() {
@@ -88,7 +92,7 @@ class LeftRetirementBiasIT extends AbstractBiasIT {
         for (var i = 0; i < 20; i++) {
             valueList.add(new TestdataValue("v" + i));
         }
-        var hardMatch = valueList.get(0);
+        var hardMatch = valueList.getFirst();
 
         var solution = new TestdataSolution("solution");
         solution.setEntityList(List.of(hardEntity, easyEntity));
@@ -113,8 +117,9 @@ class LeftRetirementBiasIT extends AbstractBiasIT {
                 .as("'hard' must still be drawn in the final %d draws, not permanently retired", tailDrawCount)
                 .isPositive();
 
-        // Both entities have exactly one matching value's worth of moves, so their overall share
-        // should be close to even (50/50), not just individually positive.
+        // Both entities have exactly one matching value's worth of moves,
+        // so their overall share should be close to even (50/50),
+        // not just individually positive.
         report.expectWeights(Map.of("hard", 0.5, "easy", 0.5)).assertWithinSigma(SIGMA_LIMIT);
     }
 
@@ -137,9 +142,9 @@ class LeftRetirementBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * Picks (entity, value) pairs via a {@code filtering()} joiner (no index, so the fairness fix
-     * from {@code PairFairnessBiasIT} is a structural no-op here): "easy" matches every value,
-     * "hard" matches only {@code hardMatch}.
+     * Picks (entity, value) pairs via a {@code filtering()} joiner
+     * (no index, so the fairness fix from {@code PairFairnessBiasIT} is a structural no-op here):
+     * "easy" matches every value, "hard" matches only {@code hardMatch}.
      */
     @NullMarked
     private record PickHardOrEasy(PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue> variable,

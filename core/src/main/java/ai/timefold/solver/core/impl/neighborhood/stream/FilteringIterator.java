@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
  * {@code RetiringBiWalk} depends on this property.
  */
 @NullMarked
-public final class FilteringIterator<T> implements Iterator<T> {
+public final class FilteringIterator<T extends @Nullable Object>
+        implements Iterator<T> {
 
     /**
      * Multiplied by the candidate population's size to size a bail-out budget,
@@ -86,7 +87,7 @@ public final class FilteringIterator<T> implements Iterator<T> {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        var result = Objects.requireNonNull(next);
+        var result = next;
         hasNext = false;
         next = null;
         return result;

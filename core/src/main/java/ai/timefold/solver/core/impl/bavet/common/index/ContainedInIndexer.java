@@ -199,11 +199,12 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
         return "size = " + downstreamIndexerMap.size();
     }
 
-    private class DefaultIterator implements Iterator<T> {
+    private final class DefaultIterator implements Iterator<T> {
 
         private final Iterator<Key_> indexerIterator;
         private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
-        protected @Nullable Iterator<T> downstreamIterator = null;
+        @Nullable
+        private Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
         public DefaultIterator(Object queryCompositeKey, SequencedCollection<Key_> indexKeyCollection) {
@@ -211,7 +212,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
                     downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
         }
 
-        protected DefaultIterator(SequencedCollection<Key_> indexKeyCollection,
+        private DefaultIterator(SequencedCollection<Key_> indexKeyCollection,
                 Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexerIterator = indexKeyCollection.iterator();
             this.downstreamIteratorFunction = downstreamIteratorFunction;

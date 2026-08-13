@@ -103,7 +103,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
         return iterator(Objects.requireNonNull(workingRandom));
     }
 
-    public Iterator<Move<Solution_>> iterator(RandomGenerator random) {
+    public Iterator<Move<Solution_>> iterator(RandomGenerator random) { // For testing only.
         return new RandomOrderNeighborhoodIterator<>(Objects.requireNonNull(moveIterableList), random);
     }
 

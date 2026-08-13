@@ -1,19 +1,20 @@
 package ai.timefold.solver.core.impl.neighborhood.stream;
 
-import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
-import ai.timefold.solver.core.preview.api.move.Move;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
+
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.preview.api.move.Move;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An iterator for the bi-move stream which returns (A,B) pairs in random order.

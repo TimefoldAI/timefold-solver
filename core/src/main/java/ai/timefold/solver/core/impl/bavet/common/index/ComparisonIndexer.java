@@ -455,22 +455,23 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
      * branching internally ({@link #advanceFromArray}/{@link #advanceFromTree})
      * rather than splitting into two {@code Iterator} implementations behind a shared type.
      */
-    private class DefaultIterator implements Iterator<T> {
+    private final class DefaultIterator implements Iterator<T> {
 
         private final Key_ indexKey;
         private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         // Tree mode: entries pulled from here. Array mode: this is null and the array cursor fields are used instead.
         private final @Nullable Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator;
-        private int arrayCursor;
         private final int arrayStep;
-        protected @Nullable Iterator<T> downstreamIterator = null;
+
+        private int arrayCursor;
+        private @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
         public DefaultIterator(Object queryCompositeKey) {
             this(queryCompositeKey, downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
         }
 
-        protected DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+        private DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexKey = keyUnpacker.apply(queryCompositeKey);
             this.downstreamIteratorFunction = downstreamIteratorFunction;
             if (comparisonMap.isArrayBased()) {

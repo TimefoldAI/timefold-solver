@@ -27,13 +27,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * End-to-end regressions for {@code BiRandomMoveIterator}'s per-pair fairness fix: a left picked
- * uniformly and then rejected with probability {@code 1 - weight/bound} makes the resulting pair
- * probability uniform, not just the left draw, so a pair in a small bucket must not be drawn any
- * more (or less) often, per pair, than a pair in a large bucket, for an indexing {@code equal}
- * join. A {@code filtering()}-only join has no composite key to restrict the right side by, so
- * {@code weight == bound} for every left always: the fix is a structural no-op there, deliberately
- * left alone.
+ * End-to-end regressions for {@code BiRandomMoveIterator}'s per-pair fairness fix:
+ * a left picked uniformly and then rejected with probability {@code 1 - weight/bound}
+ * makes the resulting pair probability uniform, not just the left draw,
+ * so a pair in a small bucket must not be drawn any more (or less) often, per pair,
+ * than a pair in a large bucket, for an indexing {@code equal} join.
+ * A {@code filtering()}-only join has no composite key to restrict the right side by,
+ * so {@code weight == bound} for every left always:
+ * the fix is a structural no-op there, deliberately left alone.
  */
 class PairFairnessBiasIT extends AbstractBiasIT {
 
@@ -66,8 +67,9 @@ class PairFairnessBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * A same-shape regression guard on {@code CachedBiDatasetInstance}, unaffected by the fix
-     * since it draws from all materialized pairs directly, with no per-left walk at all.
+     * A same-shape regression guard on {@code CachedBiDatasetInstance},
+     * unaffected by the fix since it draws from all materialized pairs directly,
+     * with no per-left walk at all.
      */
     @Test
     void cachedJoin_sameSkewedShapeStaysUniformOverAllMaterializedPairs() {
@@ -88,7 +90,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
             var entity = fixture.entityList.get(bucketIndex);
             for (var value : fixture.valueList) {
                 if (value.getCode().startsWith(entity.getCode() + "-")) {
-                    expectedPairList.add(List.<Object> of(entity, value));
+                    expectedPairList.add(List.of(entity, value));
                 }
             }
         }
@@ -100,12 +102,11 @@ class PairFairnessBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * {@code JustInTimeBiDatasetInstance}'s whole-dataset {@code uniqueRandomIterator()} (as
-     * opposed to its per-A flavor) does not override {@code acceptLeft}, so it is unaffected by the
-     * fairness fix; a full drain must still visit every pair exactly once, regardless of bucket
-     * size. See the {@code ponytail:} comment on {@code UniqueRandomBiIterator} for why only its
-     * first draw is exactly pair-uniform, unlike {@code BiRandomMoveIterator}'s every draw. Exact
-     * coverage, not a distribution, so this does not go through {@link BiasReport}.
+     * {@code JustInTimeBiDatasetInstance}'s whole-dataset {@code uniqueRandomIterator()}
+     * (as opposed to its per-A flavor)
+     * does not override {@code acceptLeft},
+     * so it is unaffected by the fairness fix;
+     * a full drain must still visit every pair exactly once, regardless of bucket size.
      */
     @Test
     void justInTimeJoin_uniqueDrainCoversEveryPairExactlyOnce() {
@@ -132,9 +133,10 @@ class PairFairnessBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * A filtering()-only joiner has no composite key to restrict the right side by, so
-     * {@code weight == bound} for every left always: the fairness fix is a structural no-op here,
-     * deliberately. This only checks reachability and a loose starvation floor, not uniformity,
+     * A filtering()-only joiner has no composite key to restrict the right side by,
+     * so {@code weight == bound} for every left always:
+     * the fairness fix is a structural no-op here, deliberately.
+     * This only checks reachability and a loose starvation floor, not uniformity,
      * since the old per-left bias is still present and expected.
      */
     @Test
@@ -156,8 +158,8 @@ class PairFairnessBiasIT extends AbstractBiasIT {
                 return largestLabel;
             }
             return "other";
-        }).assertShareRatioAtLeast(smallestLabel, BUCKET_SIZE_LIST.get(0), largestLabel,
-                BUCKET_SIZE_LIST.get(BUCKET_SIZE_LIST.size() - 1), 5);
+        }).assertShareRatioAtLeast(smallestLabel, BUCKET_SIZE_LIST.getFirst(), largestLabel,
+                BUCKET_SIZE_LIST.getLast(), 5);
     }
 
     /**
