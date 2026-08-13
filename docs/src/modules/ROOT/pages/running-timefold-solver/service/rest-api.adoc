@@ -143,22 +143,39 @@ Additionally, more fields might be added for specific model implementations.
 
 The `run` configuration has four fields:
 
-- `name` - The run name (if empty, it will be generated).
-- `maxThreadCount` - The maximum thread count, which indicates the maximum number of threads to be used for solving.
+- `name`: The run name (if empty, it will be generated).
+- `maxThreadCount`: The maximum thread count, which indicates the maximum number of threads to be used for solving.
 If not provided, 1 will be used.
-- `tags` - The tags, which are a set of optional tags to be assigned to the run.
-- `termination` - The termination properties determining how long the solver should run:
+- `tags`: The tags, which are a set of optional tags to be assigned to the run.
+- `termination`: The termination properties determining how long the solver should run:
 
-* `spentLimit` - The maximum duration to keep the solver running (ISO 8601 Duration).
+* `spentLimit`: The maximum duration to keep the solver running (ISO 8601 Duration).
 If omitted, no maximum duration will be set (platform limits will apply).
 
-* `unimprovedSpentLimit` - The maximum unimproved score duration, i.e. if the score has not improved during this period, the solver will terminate (ISO 8601 Duration).
-If omitted, the https://docs.timefold.ai/timefold-solver/latest/optimization-algorithms/overview#diminishedReturnsTermination[diminished returns termination] will be used.
+* `unimprovedSpentLimit`: The maximum unimproved score duration, that is, if the score has not improved during this period, the solver will terminate (ISO 8601 Duration).
+If omitted, the https://docs.timefold.ai/timefold-solver/latest/optimization-algorithms/overview#diminishedReturnsTermination[diminished returns termination] applies.
+If set, `stepCountLimit` must be empty.
+Using this option disables the default diminished returns termination, which is recommended for most use cases.
+
+* `stepCountLimit`: The maximum solver step count.
+The solver stops after a predetermined number of steps.
+Because step count is independent of hardware performance, use this option to benchmark your models.
+It is not recommended for production use.
+If set, `unimprovedSpentLimit` must be empty.
+Using this option disables the default diminished returns termination, which is recommended for most use cases.
+
+* `slidingWindowDuration`: The sliding window (ISO 8601 Duration) over which the diminished returns termination measures score improvement.
+Defaults to `PT30S` when omitted.
+This option only takes effect when the diminished returns termination is active, that is, when both `unimprovedSpentLimit` and `stepCountLimit` are empty.
+
+* `minimumImprovementRatio`: The minimum ratio between current and initial improvement before the diminished returns termination triggers.
+This value must be strictly positive, and defaults to `0.0001` when omitted.
+This option only takes effect when the diminished returns termination is active, that is, when both `unimprovedSpentLimit` and `stepCountLimit` are empty.
 
 [TIP]
 The diminished returns termination is the recommended default setting.
 This termination is desirable since it terminates based on the relative rate of improvement, and behaves similarly on different hardware and different problem instances.
-`unimprovedSpentLimit` should be set only when necessary.
+Set `unimprovedSpentLimit` or `stepCountLimit` only when necessary.
 
 The `model` configuration is a model-specific field that contains additional global model configuration attributes.
 See xref:running-timefold-solver/service/model-config-overrides.adoc#serviceWeightOverrides[constraint weights] for more information.
