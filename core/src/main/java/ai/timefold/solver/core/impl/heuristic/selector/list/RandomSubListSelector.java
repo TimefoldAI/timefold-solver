@@ -65,6 +65,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
         triangleElementFactory = null;
         listVariableStateSupply = null;
     }

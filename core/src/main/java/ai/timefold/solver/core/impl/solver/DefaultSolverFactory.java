@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.solver;
 
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -91,6 +90,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory;
     private final ScoreDirectorFactory<Solution_, ?> defaultScoreDirectorFactory;
     private final DomainAccessType domainAccessType;
+    private final List<SolverMetric> metricsRequiringConstraintMatchList;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
         this(solverConfig, DomainAccessType.AUTO);
@@ -105,25 +105,20 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         this.solutionDescriptor = buildSolutionDescriptor();
         var scoreDirectorFactoryConfig =
                 Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(), ScoreDirectorFactoryConfig::new);
-        var hasMetricRequiringConstraintMatch = hasMetricRequiringConstraintMatch(solverConfig);
+        this.metricsRequiringConstraintMatchList = determineMetricsRequiringConstraintMatch(solverConfig);
         this.delegateScoreDirectorFactory = new DelegateScoreDirectorFactory<>(
-                Objects.requireNonNull(scoreDirectorFactoryConfig), hasMetricRequiringConstraintMatch);
+                Objects.requireNonNull(scoreDirectorFactoryConfig), !metricsRequiringConstraintMatchList.isEmpty());
         // Caching score director factory as it potentially does expensive things
         this.defaultScoreDirectorFactory =
                 this.delegateScoreDirectorFactory.buildScoreDirectorFactory(defaultEnvironmentMode, solutionDescriptor);
     }
 
-    private static boolean hasMetricRequiringConstraintMatch(SolverConfig solverConfig) {
+    private static List<SolverMetric> determineMetricsRequiringConstraintMatch(SolverConfig solverConfig) {
         var monitoringConfig = solverConfig.determineMetricConfig();
         var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
-        var metricsRequiringConstraintMatch = false;
-        if (!solverMetricList.isEmpty()) {
-            metricsRequiringConstraintMatch = !solverMetricList.stream()
-                    .filter(SolverMetric::isMetricConstraintMatchBased)
-                    .toList()
-                    .isEmpty();
-        }
-        return metricsRequiringConstraintMatch;
+        return solverMetricList.stream()
+                .filter(SolverMetric::isMetricConstraintMatchBased)
+                .toList();
     }
 
     public Clock getClock() {
@@ -148,22 +143,17 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var monitoringConfig = solverConfig.determineMetricConfig();
         solverScope.setMonitoringTags(Tags.empty());
         var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
-        var metricsRequiringConstraintMatchSet = Collections.<SolverMetric> emptyList();
         if (!solverMetricList.isEmpty()) {
             solverScope.setSolverMetricSet(EnumSet.copyOf(solverMetricList));
-            metricsRequiringConstraintMatchSet = solverScope.getSolverMetricSet().stream()
-                    .filter(SolverMetric::isMetricConstraintMatchBased)
-                    .filter(solverScope::isMetricEnabled)
-                    .toList();
         } else {
             solverScope.setSolverMetricSet(EnumSet.noneOf(SolverMetric.class));
         }
         var isStepAssertOrMore = defaultEnvironmentMode.isStepAssertOrMore();
-        var constraintMatchEnabled = !metricsRequiringConstraintMatchSet.isEmpty() || isStepAssertOrMore;
+        var constraintMatchEnabled = !metricsRequiringConstraintMatchList.isEmpty() || isStepAssertOrMore;
         if (constraintMatchEnabled && !isStepAssertOrMore) {
             LOGGER.info(
                     "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
-                    metricsRequiringConstraintMatchSet);
+                    metricsRequiringConstraintMatchList);
         }
         var scoreDirector = delegateScoreDirectorFactory.createScoreDirector(getScoreDirectorFactory());
         solverScope.setScoreDirector(scoreDirector);

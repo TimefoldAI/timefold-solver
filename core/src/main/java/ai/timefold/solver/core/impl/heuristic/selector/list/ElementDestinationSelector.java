@@ -104,6 +104,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
         listVariableStateSupply = null;
     }
 

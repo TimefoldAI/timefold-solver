@@ -56,8 +56,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             Supplier<RandomSource> randomFactory, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             BasicPlumbingTermination<Solution_> basicPlumbingTermination, UniversalTermination<Solution_> termination,
             List<Phase<Solution_>> phaseList, SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
-        super(SolverContext.of(environmentMode, solverScope, bestSolutionRecaller), delegateScoreDirectorFactory,
-                bestSolutionRecaller, termination, phaseList);
+        super(SolverContext.of(environmentMode, solverScope), delegateScoreDirectorFactory, bestSolutionRecaller, termination,
+                phaseList);
         this.randomFactory = randomFactory;
         this.basicPlumbingTermination = basicPlumbingTermination;
         this.solverScope = solverScope;

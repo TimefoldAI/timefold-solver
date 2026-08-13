@@ -77,6 +77,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
         this.solverScope = null;
         this.listVariableStateSupply = null;
     }

@@ -213,8 +213,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void incrementCalculationCount() {
-        this.calculationCount++;
+    public void incrementCalculationCount(long count) {
+        this.calculationCount += count;
     }
 
     @Override

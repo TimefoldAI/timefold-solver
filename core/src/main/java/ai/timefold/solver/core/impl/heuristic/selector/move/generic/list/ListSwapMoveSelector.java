@@ -50,6 +50,8 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
+        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
         listVariableStateSupply = null;
     }
 

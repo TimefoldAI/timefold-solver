@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.random.RandomGenerator;
@@ -69,9 +70,12 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
@@ -569,6 +573,46 @@ class DefaultSolverTest {
             assertThat(bestSolution.get().getValueList()).hasSize(valueCount + 1);
             solver.terminateEarly();
         }
+    }
+
+    @Test
+    void solvingEndedRestoresDefaultContext() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a different EnvironmentMode than the default, forcing
+        // AbstractSolver.preparePhase() to swap in a non-default context for it.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+        var problem = TestdataSolution.generateSolution(2, 2);
+        solver.solve(problem);
+        assertThat(solver.defaultSolverContext.scoreDirector().getWorkingSolution()).isNull();
+    }
+
+    @Test
+    void ensureScoreCalculationCountConsistent() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a different EnvironmentMode than the default, forcing
+        // AbstractSolver.preparePhase() to swap to a non-default context for it, and solvingEnded() to
+        // restore the (already-populated, since CH ran on it first) default context afterward.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+        var problem = TestdataSolution.generateSolution(2, 2);
+
+        // Capture the score calculation count after the CH phase and
+        var calculationCountBeforeRestore = new AtomicLong(-1);
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                calculationCountBeforeRestore.set(solverScope.getScoreDirector().getCalculationCount());
+            }
+        });
+        solver.solve(problem);
+
+        // After solvingEnded() restores defaultSolverContext, its calculation count must equal exactly
+        // the true running total captured above
+        assertThat(solver.defaultSolverContext.scoreDirector().getCalculationCount())
+                .isEqualTo(calculationCountBeforeRestore.get());
     }
 
     @Test
@@ -2418,6 +2462,38 @@ class DefaultSolverTest {
         var problem = TestdataListSolution.generateUninitializedSolution(20, 5);
         var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(bestSolution).isNotNull();
+    }
+
+    @Test
+    void ensureListVariableStateIsReleased() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var phaseConfigList = new ArrayList<>(solverConfig.getPhaseConfigList());
+        phaseConfigList.add(new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
+        solverConfig.setPhaseConfigList(phaseConfigList);
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var problem = TestdataListSolution.generateUninitializedSolution(10, 4);
+
+        var listVariableDescriptor = solver.defaultSolverContext.scoreDirector().getSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListEntity.class)
+                .getListVariableDescriptor();
+
+        // Capture the SupplyManager's demand ref count right after each phase ends (CH, LS1, LS2 in order).
+        var countsAfterEachPhase = new ArrayList<Long>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataListSolution>() {
+            @Override
+            public void phaseEnded(AbstractPhaseScope<TestdataListSolution> phaseScope) {
+                countsAfterEachPhase.add(phaseScope.getScoreDirector().getSupplyManager()
+                        .getActiveCount(listVariableDescriptor.getStateDemand()));
+            }
+        });
+        solver.solve(problem);
+        // Three phases: CS, LS1 and LS2
+        assertThat(countsAfterEachPhase).hasSize(3);
+        // The count of demanded list variable state must be equal for both LS phases
+        assertThat(countsAfterEachPhase.get(2)).isEqualTo(countsAfterEachPhase.get(1));
     }
 
     @NullMarked

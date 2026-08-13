@@ -114,7 +114,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
                 .buildScoreDirectorFactory(phase.getEnvironmentMode(), solverScope.getSolutionDescriptor());
         var newScoreDirector = delegateScoreDirectorFactory.createScoreDirector(newScoreDirectorFactory);
         var newSolverContext = new SolverContext<>(phase.getEnvironmentMode(), newScoreDirector,
-                new DefaultProblemChangeDirector<>(newScoreDirector), currentContext.bestSolutionRecaller);
+                new DefaultProblemChangeDirector<>(newScoreDirector));
         loadContext(currentContext, newSolverContext, solverScope);
     }
 
@@ -125,6 +125,9 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         // We will use the same working solution set from the previous phase, as it has already been cloned
         newSolverContext.scoreDirector().setWorkingSolution(oldSolverContext.scoreDirector().getWorkingSolution());
         bestSolutionRecaller.enableAssertions(newSolverContext.environmentMode());
+        // Ensure that the score calculation count is consistent for the new director
+        newSolverContext.scoreDirector().resetCalculationCount();
+        newSolverContext.scoreDirector().incrementCalculationCount(oldSolverContext.scoreDirector().getCalculationCount());
         if (oldSolverContext != defaultSolverContext) {
             oldSolverContext.release();
         }
@@ -154,8 +157,9 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
         if (currentContext != defaultSolverContext) {
-            // Release the last context if it is not the default one
-            currentContext.release();
+            // Restore the default context
+            // so solverScope operate on the original score director
+            loadContext(currentContext, defaultSolverContext, solverScope);
         }
     }
 
@@ -248,14 +252,13 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public record SolverContext<Solution_, Score_ extends Score<Score_>>(EnvironmentMode environmentMode,
-            InnerScoreDirector<Solution_, Score_> scoreDirector, DefaultProblemChangeDirector<Solution_> problemChangeDirector,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller) {
+            InnerScoreDirector<Solution_, Score_> scoreDirector,
+            DefaultProblemChangeDirector<Solution_> problemChangeDirector) {
 
-        public static <Solution_, Score_ extends Score<Score_>> SolverContext<Solution_, Score_> of(
-                EnvironmentMode environmentMode,
-                SolverScope<Solution_> solverScope, BestSolutionRecaller<Solution_> bestSolutionRecaller) {
+        public static <Solution_, Score_ extends Score<Score_>> SolverContext<Solution_, Score_>
+                of(EnvironmentMode environmentMode, SolverScope<Solution_> solverScope) {
             return new SolverContext<>(environmentMode, solverScope.<Score_> getScoreDirector(),
-                    solverScope.getProblemChangeDirector(), bestSolutionRecaller);
+                    solverScope.getProblemChangeDirector());
         }
 
         void release() {

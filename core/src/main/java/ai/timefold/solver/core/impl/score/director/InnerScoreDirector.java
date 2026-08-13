@@ -209,7 +209,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     void resetCalculationCount();
 
-    void incrementCalculationCount();
+    default void incrementCalculationCount() {
+        incrementCalculationCount(1L);
+    }
+
+    void incrementCalculationCount(long count);
 
     /**
      * @return never null
