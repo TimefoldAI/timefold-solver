@@ -210,6 +210,37 @@ If your production environment doesn't care about reproducibility, use this mode
 Unlike all the other modes,
 this mode doesn't use any fixed <<randomNumberGenerator,random seed>> unless one is provided.
 
+[#environmentModePerPhase]
+=== Using different environment modes per phase
+
+By default, every phase of the solver - such as xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristicsOverview[Construction Heuristic] and xref:optimization-algorithms/local-search.adoc#localSearchOverview[Local Search] - runs in the solver's environment mode.
+If the solver's environment mode is not explicitly configured, that is the default `<<environmentModePhaseAssert,PHASE_ASSERT>>` mode.
+
+Each phase can override the solver's environment mode with a stricter mode of its own.
+This is useful when you suspect that a bug is introduced during a specific phase:
+instead of paying the performance cost of a stricter mode (such as `<<environmentModeFullAssert,FULL_ASSERT>>`) for the entire solver,
+you enable it for only the phase under suspicion, while the other phases keep running at a faster mode.
+
+A phase's environment mode must be at least as strict as the solver's environment mode; it can never be less strict.
+At least one phase must still use the solver's environment mode as-is.
+If the solver's environment mode is `<<environmentModeNonReproducible,NON_REPRODUCIBLE>>`, no phase can override it,
+because every other mode is <<environmentModeReproducibility,reproducible>> and therefore stricter.
+
+[source,java,options="nowrap"]
+----
+SolverConfig solverConfig = new SolverConfig()
+    ...
+    .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
+    .withPhases(
+        new ConstructionHeuristicPhaseConfig(),
+        new LocalSearchPhaseConfig()
+            .withEnvironmentMode(EnvironmentMode.FULL_ASSERT));
+----
+
+In this example, the solver's environment mode is `PHASE_ASSERT`.
+The Construction Heuristic phase has no environment mode of its own, so it uses that default.
+The Local Search phase overrides it and runs in the stricter `FULL_ASSERT` mode instead.
+
 
 [#environmentModeBestPractices]
 === Best practices
