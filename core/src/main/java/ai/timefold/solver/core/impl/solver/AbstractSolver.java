@@ -168,6 +168,11 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         for (Phase<Solution_> phase : phaseList) {
             phase.solvingError(solverScope, exception);
         }
+        if (currentContext != defaultSolverContext) {
+            // A phase may have failed while operating under a non-default environment mode,
+            // and we need to restore the default context
+            loadContext(currentContext, defaultSolverContext, solverScope);
+        }
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {

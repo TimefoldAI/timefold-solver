@@ -73,6 +73,7 @@ import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -2078,6 +2079,41 @@ class DefaultSolverTest {
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
                 .hasMessageContaining(
                         "The value (bad value) from the planning variable (valueList) has been assigned to the entity (Generated Entity 0), but it is outside of the related value range [Generated Value 0-Generated Value 1]");
+    }
+
+    @Test
+    void solvingErrorRestoresDefaultContextWhenPhaseFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // Force invalid move factory
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+
+        // Expected to be the director created for the LS phase
+        var swappedScoreDirector = new AtomicReference<>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataListSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 1) {
+                    swappedScoreDirector.set(phaseScope.getScoreDirector());
+                }
+            }
+        });
+
+        assertThatCode(() -> solver.solve(problem))
+                .hasMessageContaining("The value (bad value) from the planning variable (valueList)");
+
+        // The orphaned non-default director must have been closed
+        assertThat(swappedScoreDirector.get()).isNotNull();
+        var closedWorkingSolution = ((InnerScoreDirector<?, ?>) swappedScoreDirector.get()).getWorkingSolution();
+        assertThat(closedWorkingSolution).isNull();
     }
 
     @Test
