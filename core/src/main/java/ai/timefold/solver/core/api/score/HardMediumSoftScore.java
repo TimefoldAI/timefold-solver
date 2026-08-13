@@ -201,7 +201,8 @@ public record HardMediumSoftScore(long structuralScore, long hardScore, long med
     @Override
     public String toString() {
         return (structuralScore < 0)
-                ? "%d%s/%d%s/%d%s/%d%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL,
+                ? "%d%s/%d%s/%d%s/%d%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, mediumScore,
+                        MEDIUM_LABEL,
                         softScore, SOFT_LABEL)
                 : "%d%s/%d%s/%d%s".formatted(hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL, softScore, SOFT_LABEL);
     }

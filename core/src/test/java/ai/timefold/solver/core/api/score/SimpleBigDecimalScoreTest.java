@@ -23,6 +23,7 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     void toShortString() {
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.0")).toShortString()).isEqualTo("0");
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("-147.2")).toShortString()).isEqualTo("-147.2");
+        assertThat(new SimpleBigDecimalScore(-1L, new BigDecimal("-147.2")).toShortString()).isEqualTo("-1structural/-147.2");
     }
 
     @Test
@@ -32,12 +33,14 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
             softly.assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.0"))).hasToString("0");
             softly.assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.00"))).hasToString("0");
             softly.assertThat(SimpleBigDecimalScore.of(new BigDecimal("-147.2"))).hasToString("-147.2");
+            softly.assertThat(new SimpleBigDecimalScore(-1L, new BigDecimal("-147.2"))).hasToString("-1structural/-147.2");
         });
     }
 
     @Test
     void parseScoreIllegalArgument() {
         assertThatIllegalArgumentException().isThrownBy(() -> SimpleBigDecimalScore.parseScore("-147.2hard/-258.3soft"));
+        assertThatIllegalArgumentException().isThrownBy(() -> SimpleBigDecimalScore.parseScore("-1structural/-147.2hard"));
     }
 
     @Test
@@ -118,14 +121,19 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
                 SimpleBigDecimalScore.of(new BigDecimal("-10.0")),
                 SimpleBigDecimalScore.of(new BigDecimal("-10.0")),
                 SimpleBigDecimalScore.of(new BigDecimal("-10.000")));
+        PlannerAssert.assertObjectsAreEqual(
+                new SimpleBigDecimalScore(-1L, new BigDecimal("-10.0")),
+                new SimpleBigDecimalScore(-1L, new BigDecimal("-10.0")));
         PlannerAssert.assertObjectsAreNotEqual(
                 SimpleBigDecimalScore.of(new BigDecimal("-10.0")),
-                SimpleBigDecimalScore.of(new BigDecimal("-30.0")));
+                SimpleBigDecimalScore.of(new BigDecimal("-30.0")),
+                new SimpleBigDecimalScore(-1L, new BigDecimal("-10.0")));
     }
 
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
+                new SimpleBigDecimalScore(-1L, new BigDecimal("-300.5")),
                 SimpleBigDecimalScore.of(new BigDecimal("-300.5")),
                 SimpleBigDecimalScore.of(new BigDecimal("-300")),
                 SimpleBigDecimalScore.of(new BigDecimal("-20.067")),

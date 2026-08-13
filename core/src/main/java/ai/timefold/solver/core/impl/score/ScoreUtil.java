@@ -164,6 +164,9 @@ public final class ScoreUtil {
     public static <Score_ extends IBendableScore<Score_>> String buildBendableShortString(IBendableScore<Score_> score,
             Predicate<Number> notZero) {
         var shortString = new StringBuilder();
+        if (score.structuralScore() != 0L) {
+            shortString.append(score.structuralScore()).append(STRUCTURAL_LABEL);
+        }
         var levelNumbers = score.toLevelNumbers();
         var hardLevelsSize = score.hardLevelsSize();
         if (Arrays.stream(levelNumbers).limit(hardLevelsSize).anyMatch(notZero)) {

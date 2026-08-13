@@ -29,17 +29,20 @@ class SimpleScoreTest extends AbstractScoreTest {
     void toShortString() {
         assertThat(SimpleScore.of(0L).toShortString()).isEqualTo("0");
         assertThat(SimpleScore.of(-147L).toShortString()).isEqualTo("-147");
+        assertThat(new SimpleScore(-1L, -147L).toShortString()).isEqualTo("-1structural/-147");
     }
 
     @Test
     void testToString() {
         assertThat(SimpleScore.of(0)).hasToString("0");
         assertThat(SimpleScore.of(-147L)).hasToString("-147");
+        assertThat(new SimpleScore(-1L, -147L)).hasToString("-1structural/-147");
     }
 
     @Test
     void parseScoreIllegalArgument() {
         assertThatIllegalArgumentException().isThrownBy(() -> SimpleScore.parseScore("-147hard/-258soft"));
+        assertThatIllegalArgumentException().isThrownBy(() -> SimpleScore.parseScore("-1structural/-147hard"));
     }
 
     @Test
@@ -101,13 +104,17 @@ class SimpleScoreTest extends AbstractScoreTest {
     void equalsAndHashCode() {
         PlannerAssert.assertObjectsAreEqual(SimpleScore.of(-10L),
                 SimpleScore.of(-10L));
+        PlannerAssert.assertObjectsAreEqual(new SimpleScore(-1L, -10L),
+                new SimpleScore(-1L, -10L));
         PlannerAssert.assertObjectsAreNotEqual(SimpleScore.of(-10L),
-                SimpleScore.of(-30L));
+                SimpleScore.of(-30L),
+                new SimpleScore(-1L, -10L));
     }
 
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
+                new SimpleScore(-1L, Integer.MIN_VALUE - 4000L),
                 SimpleScore.of(Integer.MIN_VALUE - 4000L),
                 SimpleScore.of(-300L),
                 SimpleScore.of(-20L),

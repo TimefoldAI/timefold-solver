@@ -30,17 +30,20 @@ class HardSoftScoreTest extends AbstractScoreTest {
         assertThat(HardSoftScore.of(0L, -258L).toShortString()).isEqualTo("-258soft");
         assertThat(HardSoftScore.of(-147L, 0L).toShortString()).isEqualTo("-147hard");
         assertThat(HardSoftScore.of(-147L, -258L).toShortString()).isEqualTo("-147hard/-258soft");
+        assertThat(new HardSoftScore(-1L, -147L, -258L).toShortString()).isEqualTo("-1structural/-147hard/-258soft");
     }
 
     @Test
     void testToString() {
         assertThat(HardSoftScore.of(0L, -258L)).hasToString("0hard/-258soft");
         assertThat(HardSoftScore.of(-147L, -258L)).hasToString("-147hard/-258soft");
+        assertThat(new HardSoftScore(-1L, -147L, -258L)).hasToString("-1structural/-147hard/-258soft");
     }
 
     @Test
     void parseScoreIllegalArgument() {
         assertThatIllegalArgumentException().isThrownBy(() -> HardSoftScore.parseScore("-147"));
+        assertThatIllegalArgumentException().isThrownBy(() -> HardSoftScore.parseScore("-1structural/0hard"));
     }
 
     @Test
@@ -112,15 +115,19 @@ class HardSoftScoreTest extends AbstractScoreTest {
     void equalsAndHashCode() {
         PlannerAssert.assertObjectsAreEqual(HardSoftScore.of(-10L, -200L),
                 HardSoftScore.of(-10L, -200L));
+        PlannerAssert.assertObjectsAreEqual(new HardSoftScore(-1L, -10L, -200L),
+                new HardSoftScore(-1L, -10L, -200L));
         PlannerAssert.assertObjectsAreNotEqual(
                 HardSoftScore.of(-10L, -200L),
                 HardSoftScore.of(-30L, -200L),
-                HardSoftScore.of(-10L, -400L));
+                HardSoftScore.of(-10L, -400L),
+                new HardSoftScore(-1L, -10L, -200L));
     }
 
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
+                new HardSoftScore(-1L, -20L, Long.MIN_VALUE),
                 HardSoftScore.of(-20L, Long.MIN_VALUE),
                 HardSoftScore.of(-20L, -20L),
                 HardSoftScore.of(-1L, -300L),

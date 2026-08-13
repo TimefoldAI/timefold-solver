@@ -36,17 +36,21 @@ class HardMediumSoftScoreTest extends AbstractScoreTest {
         assertThat(HardMediumSoftScore.of(0L, -258L, 0L).toShortString()).isEqualTo("-258medium");
         assertThat(HardMediumSoftScore.of(0L, -258L, -369L).toShortString()).isEqualTo("-258medium/-369soft");
         assertThat(HardMediumSoftScore.of(-147L, -258L, -369L).toShortString()).isEqualTo("-147hard/-258medium/-369soft");
+        assertThat(new HardMediumSoftScore(-1L, -147L, -258L, -369L).toShortString())
+                .isEqualTo("-1structural/-147hard/-258medium/-369soft");
     }
 
     @Test
     void testToString() {
         assertThat(HardMediumSoftScore.of(0L, -258L, -369L)).hasToString("0hard/-258medium/-369soft");
         assertThat(HardMediumSoftScore.of(-147L, -258L, -369L)).hasToString("-147hard/-258medium/-369soft");
+        assertThat(new HardMediumSoftScore(-1L, -147L, -258L, -369L)).hasToString("-1structural/-147hard/-258medium/-369soft");
     }
 
     @Test
     void parseScoreIllegalArgument() {
         assertThatIllegalArgumentException().isThrownBy(() -> HardMediumSoftScore.parseScore("-147"));
+        assertThatIllegalArgumentException().isThrownBy(() -> HardMediumSoftScore.parseScore("-1structural/0hard"));
     }
 
     @Test
@@ -119,16 +123,21 @@ class HardMediumSoftScoreTest extends AbstractScoreTest {
         PlannerAssert.assertObjectsAreEqual(
                 HardMediumSoftScore.of(-10L, -200L, -3000L),
                 HardMediumSoftScore.of(-10L, -200L, -3000L));
+        PlannerAssert.assertObjectsAreEqual(
+                new HardMediumSoftScore(-1L, -10L, -200L, -3000L),
+                new HardMediumSoftScore(-1L, -10L, -200L, -3000L));
         PlannerAssert.assertObjectsAreNotEqual(
                 HardMediumSoftScore.of(-10L, -200L, -3000L),
                 HardMediumSoftScore.of(-30L, -200L, -3000L),
                 HardMediumSoftScore.of(-10L, -400L, -3000L),
-                HardMediumSoftScore.of(-10L, -400L, -5000L));
+                HardMediumSoftScore.of(-10L, -400L, -5000L),
+                new HardMediumSoftScore(-1L, -10L, -200L, -3000L));
     }
 
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
+                new HardMediumSoftScore(-1L, -20L, Long.MIN_VALUE, Long.MIN_VALUE),
                 HardMediumSoftScore.of(-20L, Long.MIN_VALUE, Long.MIN_VALUE),
                 HardMediumSoftScore.of(-20L, Long.MIN_VALUE, -20L),
                 HardMediumSoftScore.of(-20L, Long.MIN_VALUE, 1L),

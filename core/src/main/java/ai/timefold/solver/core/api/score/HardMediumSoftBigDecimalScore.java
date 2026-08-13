@@ -240,7 +240,8 @@ public record HardMediumSoftBigDecimalScore(long structuralScore, BigDecimal har
     @Override
     public String toString() {
         return (structuralScore < 0)
-                ? "%d%s/%s%s/%s%s/%s%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL,
+                ? "%d%s/%s%s/%s%s/%s%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, mediumScore,
+                        MEDIUM_LABEL,
                         softScore, SOFT_LABEL)
                 : "%s%s/%s%s/%s%s".formatted(hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL, softScore, SOFT_LABEL);
     }
