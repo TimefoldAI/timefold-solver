@@ -8,11 +8,8 @@ public class HillClimbingAcceptor<Solution_> extends AbstractAcceptor<Solution_>
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isStructurallyValidSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         InnerScore moveScore = moveScope.getScore();
-        if (moveScore.isInvalid()) {
-            return false;
-        }
         InnerScore lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
         return moveScore.compareTo(lastStepScore) >= 0;
     }

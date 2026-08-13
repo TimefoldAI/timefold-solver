@@ -51,10 +51,7 @@ public class CompositeAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
     }
 
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        if (moveScope.getScore().isInvalid()) {
-            return false;
-        }
+    public boolean isStructurallyValidSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         for (Acceptor<Solution_> acceptor : acceptorList) {
             boolean accepted = acceptor.isAccepted(moveScope);
             if (!accepted) {
