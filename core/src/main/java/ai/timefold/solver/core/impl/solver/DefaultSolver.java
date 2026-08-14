@@ -208,7 +208,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 EventProducerId.solvingStarted());
 
         LOGGER.info("Solving {}: time spent ({}), best score ({}), "
-                + "environment mode ({}), move thread count ({}), random ({}).",
+                + "default environment mode ({}), move thread count ({}), random ({}).",
                 (startingSolverCount == 1 ? "started" : "restarted"),
                 solverScope.calculateTimeMillisSpentUpToNow(),
                 solverScope.getBestScore().raw(),
@@ -314,7 +314,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
-        logger.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
+        LOGGER.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
                 solverScope.getBestScore().raw(),
@@ -341,7 +341,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             while (problemChange != null) {
                 problemChange.doChange(solverScope.getWorkingSolution(), solverScope.getProblemChangeDirector());
                 solverScope.getScoreDirector().updateShadowVariables();
-                logger.debug("    Real-time problem change applied; step index ({}).", stepIndex);
+                LOGGER.debug("    Real-time problem change applied; step index ({}).", stepIndex);
                 stepIndex++;
                 problemChange = problemChangeQueue.poll();
             }
@@ -353,7 +353,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             basicPlumbingTermination.endProblemChangesProcessing();
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
                     EventProducerId.problemChange());
-            logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
+            LOGGER.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);
             return true;
         }

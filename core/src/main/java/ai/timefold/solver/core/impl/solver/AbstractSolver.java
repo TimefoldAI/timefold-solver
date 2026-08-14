@@ -76,9 +76,24 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         this.currentContext = defaultSolverContext;
     }
 
+    public void solvingStarted(SolverScope<Solution_> solverScope) {
+        solverScope.setWorkingSolutionFromBestSolution();
+        bestSolutionRecaller.solvingStarted(solverScope);
+        globalTermination.solvingStarted(solverScope);
+        phaseLifecycleSupport.fireSolvingStarted(solverScope);
+        // Using value range manager from the same score director as the working solution; this is a correct use.
+        var problemSizeStatistics = solverScope.getScoreDirector()
+                .getValueRangeManager()
+                .getProblemSizeStatistics();
+        solverScope.setProblemSizeStatistics(problemSizeStatistics);
+        for (Phase<Solution_> phase : phaseList) {
+            phase.solvingStarted(solverScope);
+        }
+    }
+
     protected void runPhases(SolverScope<Solution_> solverScope) {
         if (!solverScope.getSolutionDescriptor().hasMovableEntities(solverScope.getScoreDirector())) {
-            logger.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
+            LOGGER.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
                     phaseList.size(), solverScope.getWorkingEntityCount());
             return;
         }
@@ -132,21 +147,6 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             oldSolverContext.release();
         }
         currentContext = newSolverContext;
-    }
-
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        solverScope.setWorkingSolutionFromBestSolution();
-        bestSolutionRecaller.solvingStarted(solverScope);
-        globalTermination.solvingStarted(solverScope);
-        phaseLifecycleSupport.fireSolvingStarted(solverScope);
-        // Using value range manager from the same score director as the working solution; this is a correct use.
-        var problemSizeStatistics = solverScope.getScoreDirector()
-                .getValueRangeManager()
-                .getProblemSizeStatistics();
-        solverScope.setProblemSizeStatistics(problemSizeStatistics);
-        for (Phase<Solution_> phase : phaseList) {
-            phase.solvingStarted(solverScope);
-        }
     }
 
     public void solvingEnded(SolverScope<Solution_> solverScope) {
