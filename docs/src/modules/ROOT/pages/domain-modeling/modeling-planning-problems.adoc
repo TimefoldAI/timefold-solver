@@ -1698,7 +1698,7 @@ public class Line {
 ----
 ====
 
-NOTE: This approach does not allow pinning of the individual variables. If that is something your use case requires, you'll need xref:#mixedModelsMultipleEntities[multiple entities].
+NOTE: With both variables on the same entity, you can pin the entire entity (using `@PlanningPin`) or partially pin the list (using `@PlanningPinToIndex`), but you cannot pin the basic assignment independently; if you need that, use xref:#mixedModelsMultipleEntities[multiple entities].
 
 [#mixedModelsMultipleEntities]
 === Multiple entities with independent variable types
