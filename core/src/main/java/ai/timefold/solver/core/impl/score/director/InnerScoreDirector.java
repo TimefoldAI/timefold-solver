@@ -115,6 +115,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * Executes a move, finds out its score, and immediately undoes it.
+     * The undo action also restores the working solution score to its original value.
      * If appropriate, consider setting {@link #setAllChangesWillBeUndoneBeforeStepEnds(boolean)} to true beforehand,
      * and resetting it to false afterward.
      * There are performance gains to be made
