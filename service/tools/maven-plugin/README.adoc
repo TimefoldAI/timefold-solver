@@ -32,7 +32,7 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 
 - Read-only diagnostic that never changes anything on the platform; useful to verify whether the configured token has the right permissions for the selected tenant before (or after a failed) deploy
 - Uses the same configuration as the other goals (`timefold.platformUrl`, `timefold.model.tenants`) and the same `TIMEFOLD_PAT` token
-- Fetches the token identity by calling GET /api/platform/v1/aboutme and prints a human-readable summary: user, granted scopes (permissions), tenants, accounts, the selected tenant, and whether the token is allowed to register/update models
+- Fetches the token identity by calling GET /api/platform/v1/aboutme and prints a human-readable summary: user, granted scopes (permissions), tenants, namespaces, the selected tenant, and whether the token is allowed to register/update models
 - Not bound to any lifecycle phase; invoke it explicitly, e.g. `mvn timefold:permissions`
 
 === Deploy goal (timefold:deploy)

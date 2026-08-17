@@ -103,7 +103,7 @@ public class PermissionsMojoTest {
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
 
-        log.assertContains("Scopes   : \\(none\\)", Level.INFO);
+        log.assertContains("Scopes +: \\(none\\)", Level.INFO);
         log.assertContains("token CANNOT register/update models", Level.WARN);
     }
 

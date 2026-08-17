@@ -29,11 +29,11 @@ public class PermissionsMojo extends AbstractPlatformModelMojo {
 
     private void report(PlatformIdentityInfo info) {
         getLog().info("Timefold Platform - configured token");
-        getLog().info("  Platform : " + getPlatformUrl());
-        getLog().info("  User     : " + orNone(info.user()));
-        getLog().info("  Scopes   : " + joinStrings(info.scopes()));
-        getLog().info("  Tenants  : " + joinUuids(info.tenants()));
-        getLog().info("  Accounts : " + joinStrings(info.accountIds()));
+        getLog().info("  Platform   : " + getPlatformUrl());
+        getLog().info("  User       : " + orNone(info.user()));
+        getLog().info("  Scopes     : " + joinStrings(info.scopes()));
+        getLog().info("  Tenants    : " + joinUuids(info.tenants()));
+        getLog().info("  Namespaces : " + joinStrings(info.accountIds()));
 
         List<String> selectedTenants = getTenants();
         if (selectedTenants != null && !selectedTenants.isEmpty()) {
@@ -41,9 +41,9 @@ public class PermissionsMojo extends AbstractPlatformModelMojo {
         }
 
         if (info.hasPushAccessRights()) {
-            getLog().info("  Deploy   : OK - token can register/update models (push access granted)");
+            getLog().info("  Deploy     : OK - token can register/update models (push access granted)");
         } else {
-            getLog().warn("  Deploy   : token CANNOT register/update models - missing "
+            getLog().warn("  Deploy     : token CANNOT register/update models - missing "
                     + "'registered-model:create' or 'registered-model:update' scope");
         }
     }
