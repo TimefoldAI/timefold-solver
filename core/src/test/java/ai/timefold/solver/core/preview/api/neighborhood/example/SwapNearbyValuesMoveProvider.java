@@ -36,7 +36,7 @@ final class SwapNearbyValuesMoveProvider implements MoveProvider<TestdataListEnt
     @Override
     public MoveStream<TestdataListEntityProvidingSolution> build(
             MoveStreamFactory<TestdataListEntityProvidingSolution> factory) {
-        var nearbyValuePairs = factory.register(factory.forEachAssignedValue(variableMetaModel))
+        var nearbyValuePairs = factory.forEachAssignedValue(variableMetaModel).asCachedDataset()
                 .join(factory.forEachAssignedValue(variableMetaModel),
                         NeighborhoodsJoiners.lessThan(TestdataListEntityProvidingValue::getCode),
                         NeighborhoodsJoiners.filtering(this::isNearbySwap));

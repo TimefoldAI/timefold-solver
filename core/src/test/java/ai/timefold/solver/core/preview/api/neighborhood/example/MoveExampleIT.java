@@ -37,7 +37,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
  */
 @NullMarked
 @Execution(ExecutionMode.CONCURRENT)
-class MoveProviderExampleIT {
+class MoveExampleIT {
 
     @Test
     void swapValuesInCodeRangeDoesNotCorruptScore() {

@@ -79,7 +79,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
                 EnvironmentMode.PHASE_ASSERT);
         var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
-        var cachedDataset = moveStreamFactory.register(entityStream.join(valueStream, fixture.joiner()));
+        var cachedDataset = entityStream.join(valueStream, fixture.joiner()).asCachedDataset();
 
         var session = session(moveStreamFactory, fixture.solution);
         var instance = session.getInstance(cachedDataset);
@@ -116,7 +116,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
                 EnvironmentMode.PHASE_ASSERT);
         var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
-        var entityDataset = moveStreamFactory.register(entityStream);
+        var entityDataset = entityStream.asCachedDataset();
         var justInTimeDataset = entityDataset.join(valueStream, fixture.joiner());
 
         var session = session(moveStreamFactory, fixture.solution);

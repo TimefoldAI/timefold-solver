@@ -36,16 +36,17 @@ final class SwapEntityTailsMoveProvider implements MoveProvider<TestdataListSolu
     public MoveStream<TestdataListSolution> build(MoveStreamFactory<TestdataListSolution> factory) {
         // Just-in-time: many entity pairs, few ever drawn.
         // Ordered, so no mirrored duplicate.
-        var entityPairs = factory.register(factory.forEach(TestdataListEntity.class, false))
+        var entityPairs = factory.forEach(TestdataListEntity.class, false).asCachedDataset()
                 .join(factory.forEach(TestdataListEntity.class, false),
                         NeighborhoodsJoiners.lessThan(TestdataListEntity::getCode));
 
         // Cached, entity on the left:
         // queried per-A for its own destinations on every candidate pair,
         // and the exact per-A size is what bounds the cut.
-        var entityDestinations = factory.register(factory.forEach(TestdataListEntity.class, false)
+        var entityDestinations = factory.forEach(TestdataListEntity.class, false)
                 .join(factory.forEachDestination(variableMetaModel),
-                        NeighborhoodsJoiners.equal(entity -> entity, PositionInList::entity)));
+                        NeighborhoodsJoiners.equal(entity -> entity, PositionInList::entity))
+                .asCachedDataset();
 
         return factory.buildMoveStream((session, random) -> {
             var pairInstance = session.getInstance(entityPairs);

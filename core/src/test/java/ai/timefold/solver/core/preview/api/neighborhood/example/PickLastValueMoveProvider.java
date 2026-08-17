@@ -20,8 +20,8 @@ record PickLastValueMoveProvider(
 
     @Override
     public MoveStream<TestdataSolution> build(MoveStreamFactory<TestdataSolution> factory) {
-        var entities = factory.register(factory.forEach(TestdataEntity.class, false));
-        var values = factory.register(factory.forEach(TestdataValue.class, false));
+        var entities = factory.forEach(TestdataEntity.class, false).asCachedDataset();
+        var values = factory.forEach(TestdataValue.class, false).asCachedDataset();
         return factory.buildMoveStream((session, random) -> {
             var entityInstance = session.getInstance(entities);
             var valueInstance = session.getInstance(values);

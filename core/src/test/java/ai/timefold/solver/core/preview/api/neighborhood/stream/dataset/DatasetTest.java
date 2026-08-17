@@ -44,9 +44,9 @@ class DatasetTest {
     }
 
     @Test
-    void registerUni_sizeAndIteratorsVisitEveryElementExactlyOnce() {
+    void asCachedDatasetUni_sizeAndIteratorsVisitEveryElementExactlyOnce() {
         var moveStreamFactory = factory();
-        var entityDataset = moveStreamFactory.register(moveStreamFactory.forEach(TestdataEntity.class, false));
+        var entityDataset = moveStreamFactory.forEach(TestdataEntity.class, false).asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 3); // 2 values, 3 entities.
         var session = createSession(moveStreamFactory, solution);
@@ -65,9 +65,9 @@ class DatasetTest {
     }
 
     @Test
-    void registerUni_randomIteratorNeverEndsAndCanRepeat() {
+    void asCachedDatasetUni_randomIteratorNeverEndsAndCanRepeat() {
         var moveStreamFactory = factory();
-        var entityDataset = moveStreamFactory.register(moveStreamFactory.forEach(TestdataEntity.class, false));
+        var entityDataset = moveStreamFactory.forEach(TestdataEntity.class, false).asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 2); // 2 values, 2 entities.
         var session = createSession(moveStreamFactory, solution);
@@ -93,11 +93,11 @@ class DatasetTest {
     }
 
     @Test
-    void registerSameStreamTwice_sharesOneDataset() {
+    void asCachedDatasetSameStreamTwice_sharesOneDataset() {
         var moveStreamFactory = factory();
         var stream = moveStreamFactory.forEach(TestdataEntity.class, false);
 
-        assertThat(moveStreamFactory.register(stream)).isEqualTo(moveStreamFactory.register(stream));
+        assertThat(stream.asCachedDataset()).isEqualTo(stream.asCachedDataset());
     }
 
     @Test
@@ -108,10 +108,10 @@ class DatasetTest {
         BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner =
                 NeighborhoodsJoiners.equal(TestdataEntity::getValue, v -> v);
 
-        // Cached: the join is materialized in bavet, via register(a.join(b)).
-        var cachedDataset = moveStreamFactory.register(entityStream.join(valueStream, joiner));
-        // Just-in-time: the join is computed inside the BiDatasetInstance, via register(a).join(b).
-        var entityDataset = moveStreamFactory.register(entityStream);
+        // Cached: the join is materialized in bavet, via a.join(b).asCachedDataset().
+        var cachedDataset = entityStream.join(valueStream, joiner).asCachedDataset();
+        // Just-in-time: the join is computed inside the BiDatasetInstance, via a.asCachedDataset().join(b).
+        var entityDataset = entityStream.asCachedDataset();
         var justInTimeDataset = entityDataset.join(valueStream, joiner);
 
         var solution = TestdataSolution.generateSolution(4, 2); // 4 values, 2 entities.
@@ -144,7 +144,7 @@ class DatasetTest {
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         var joiner =
                 NeighborhoodsJoiners.equal(TestdataEntity::getCode, TestdataValue::getCode);
-        var cachedDataset = moveStreamFactory.register(entityStream.join(valueStream, joiner));
+        var cachedDataset = entityStream.join(valueStream, joiner).asCachedDataset();
 
         var solution = new TestdataSolution("solution");
         solution.setEntityList(List.of(rareEntity, commonEntity));
@@ -181,7 +181,7 @@ class DatasetTest {
         var moveStreamFactory = factory();
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         var joiner = NeighborhoodsJoiners.lessThan(TestdataValue::getCode);
-        var cachedDataset = moveStreamFactory.register(valueStream.join(valueStream, joiner));
+        var cachedDataset = valueStream.join(valueStream, joiner).asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(3, 0); // 3 values, 0 entities: only the values matter here.
         var session = createSession(moveStreamFactory, solution);
@@ -199,7 +199,7 @@ class DatasetTest {
         var moveStreamFactory = factory();
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         var joiner = NeighborhoodsJoiners.lessThan(TestdataValue::getCode);
-        var valueDataset = moveStreamFactory.register(valueStream);
+        var valueDataset = valueStream.asCachedDataset();
         var justInTimeDataset = valueDataset.join(valueStream, joiner);
 
         var solution = TestdataSolution.generateSolution(3, 0);

@@ -27,7 +27,7 @@ public final class UniLeftDataset<Solution_, A> extends AbstractLeftDataset<Solu
             BiNeighborhoodsJoiner<A, B>... joiners) {
         var joinerComber = BiNeighborhoodsJoinerComber.<Solution_, A, B> comb(joiners);
         var rightDataset =
-                ((AbstractUniEnumeratingStream<Solution_, B>) other).createRightDataset(joinerComber);
+                ((AbstractUniEnumeratingStream<Solution_, B>) other).asCachedDataset(joinerComber);
         return new JustInTimeBiDataset<>(this, rightDataset);
     }
 

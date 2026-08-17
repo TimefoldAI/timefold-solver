@@ -157,13 +157,14 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
         return groupBy(ConstantLambdaUtils.neighborhoodsUniPickFirst());
     }
 
-    public UniLeftDataset<Solution_, A> createLeftDataset() {
+    @Override
+    public UniLeftDataset<Solution_, A> asCachedDataset() {
         var stream = shareAndAddChild(new LeftTerminalUniEnumeratingStream<>(enumeratingStreamFactory, this));
         return stream.getDataset();
     }
 
     public <Other_> UniRightDataset<Solution_, Other_, A>
-            createRightDataset(BiNeighborhoodsJoinerComber<Solution_, Other_, A> joinerComber) {
+            asCachedDataset(BiNeighborhoodsJoinerComber<Solution_, Other_, A> joinerComber) {
         var stream = shareAndAddChild(new RightTerminalUniEnumeratingStream<>(enumeratingStreamFactory, this, joinerComber));
         return stream.getDataset();
     }

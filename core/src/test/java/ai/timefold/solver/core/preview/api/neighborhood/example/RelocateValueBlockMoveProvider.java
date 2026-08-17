@@ -39,18 +39,21 @@ final class RelocateValueBlockMoveProvider implements MoveProvider<TestdataListE
     @Override
     public MoveStream<TestdataListEntityProvidingSolution> build(
             MoveStreamFactory<TestdataListEntityProvidingSolution> factory) {
+
         // Just-in-time: many entity pairs, few ever drawn.
         // Ordered, so no mirrored duplicate.
-        var entityPairs = factory.register(factory.forEach(TestdataListEntityProvidingEntity.class, false))
-                .join(factory.forEach(TestdataListEntityProvidingEntity.class, false),
-                        NeighborhoodsJoiners.lessThan(TestdataListEntityProvidingEntity::getCode));
+        var entityPairs =
+                factory.forEach(TestdataListEntityProvidingEntity.class, false).asCachedDataset()
+                        .join(factory.forEach(TestdataListEntityProvidingEntity.class, false),
+                                NeighborhoodsJoiners.lessThan(TestdataListEntityProvidingEntity::getCode));
 
         // Plain, unjoined:
         // every entity's destinations at once, filtered inside the loop below.
-        var destinations = factory.register(factory.forEachDestination(variableMetaModel));
+        var destinations = factory.forEachDestination(variableMetaModel).asCachedDataset();
 
         return factory.buildMoveStream((session, random) -> {
-            var pairInstance = session.getInstance(entityPairs);
+            var pairInstance =
+                    session.getInstance(entityPairs);
             if (pairInstance.size() == 0) {
                 return Collections.emptyIterator(); // Fewer than 2 entities.
             }

@@ -25,11 +25,6 @@ import org.jspecify.annotations.NullMarked;
  * as that will have no lasting impact on the iterator or the bound solution instance.
  * <p>
  * This class is NOT thread-safe.
- * <p>
- * <strong>This package and all of its contents are part of the Neighborhoods API,
- * which is under development and is only offered as a preview feature.</strong>
- * There are no guarantees for backward compatibility; any method or field may change
- * or be removed without prior notice, although we will strive to avoid this as much as possible.
  *
  * @param <Solution_> the planning solution type
  */

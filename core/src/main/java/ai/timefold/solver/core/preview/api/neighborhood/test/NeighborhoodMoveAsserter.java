@@ -15,11 +15,6 @@ import org.jspecify.annotations.NullMarked;
  * {@link Object#equals(Object) equals()}:
  * {@link #producesAllOf} fails if the limit is exhausted while any expected move has not been seen;
  * {@link #producesNoneOf} fails as soon as any expected move is seen.
- * <p>
- * <strong>This package and all of its contents are part of the Neighborhoods API,
- * which is under development and is only offered as a preview feature.</strong>
- * There are no guarantees for backward compatibility; any method or field may change
- * or be removed without prior notice, although we will strive to avoid this as much as possible.
  *
  * @param <Solution_> the planning solution type
  */

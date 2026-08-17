@@ -31,8 +31,8 @@ class DatasetBucketBiasIT extends AbstractBiasIT {
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner = NeighborhoodsJoiners.greaterThanOrEqual(
                 entity -> Integer.parseInt(entity.getCode()), value -> Integer.parseInt(value.getCode()));
-        // Just-in-time: the join is computed inside the BiDatasetInstance, via register(a).join(b).
-        var entityDataset = moveStreamFactory.register(entityStream);
+        // Just-in-time: the join is computed inside the BiDatasetInstance, via a.asCachedDataset().join(b).
+        var entityDataset = entityStream.asCachedDataset();
         var justInTimeDataset = entityDataset.join(valueStream, joiner);
 
         // One probing entity (key 50) and three value buckets (keys 10/20/30, sizes 2/3/5), all <= 50.

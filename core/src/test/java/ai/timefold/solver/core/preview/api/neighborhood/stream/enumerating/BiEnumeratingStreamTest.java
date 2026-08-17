@@ -78,7 +78,7 @@ class BiEnumeratingStreamTest {
         BiNeighborhoodsMapper<TestdataSolution, TestdataEntity, TestdataValue, String> byValueCode =
                 (view, entity, value) -> value.getCode();
         var groupedStream = (AbstractUniEnumeratingStream<TestdataSolution, String>) biStream.groupBy(byValueCode);
-        var dataset = groupedStream.createLeftDataset();
+        var dataset = groupedStream.asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 4);
         var session = createSession(factory, solution);
@@ -102,7 +102,7 @@ class BiEnumeratingStreamTest {
                 NeighborhoodsCollectors.toList((view, entity, value) -> entity.getCode()));
         var mappedStream = (AbstractUniEnumeratingStream<TestdataSolution, String>) groupedStream
                 .map((view, value, entityCodes) -> value.getCode() + "=" + entityCodes.size());
-        var dataset = mappedStream.createLeftDataset();
+        var dataset = mappedStream.asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 4);
         var session = createSession(factory, solution);

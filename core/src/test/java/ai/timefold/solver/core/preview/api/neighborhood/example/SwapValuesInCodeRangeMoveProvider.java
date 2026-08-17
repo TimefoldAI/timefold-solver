@@ -38,21 +38,21 @@ final class SwapValuesInCodeRangeMoveProvider implements MoveProvider<TestdataSo
     @Override
     public MoveStream<TestdataSolution> build(MoveStreamFactory<TestdataSolution> factory) {
         // Cached: queried per-A, for both values of every candidate pair.
-        var valueEntities = factory.register(
-                factory.forEach(TestdataValue.class, false)
-                        .join(factory.forEach(TestdataEntity.class, false),
-                                NeighborhoodsJoiners.equal(value -> value, TestdataEntity::getValue)));
+        var valueEntities = factory.forEach(TestdataValue.class, false)
+                .join(factory.forEach(TestdataEntity.class, false),
+                        NeighborhoodsJoiners.equal(value -> value, TestdataEntity::getValue))
+                .asCachedDataset();
 
         // Just-in-time: many pairs, few ever drawn.
         // Ordered, so no mirrored duplicate.
-        var valuePairs = factory.register(factory.forEach(TestdataValue.class, false))
+        var valuePairs = factory.forEach(TestdataValue.class, false).asCachedDataset()
                 .join(factory.forEach(TestdataValue.class, false), NeighborhoodsJoiners.lessThan(TestdataValue::getCode));
 
         // Just-in-time, same reasoning: the range bounds are drawn sparsely too.
         var entityCodes = factory.forEach(TestdataEntity.class, false)
                 .map((solutionView, entity) -> entity.getCode())
                 .distinct();
-        var codeRanges = factory.register(entityCodes).join(entityCodes, NeighborhoodsJoiners.lessThan(code -> code));
+        var codeRanges = entityCodes.asCachedDataset().join(entityCodes, NeighborhoodsJoiners.lessThan(code -> code));
 
         return factory.buildMoveStream((session, random) -> {
             var valueEntityInstance = session.getInstance(valueEntities);
