@@ -23,8 +23,16 @@ public interface NeighborhoodMoveAsserter<Solution_> {
 
     /**
      * Returns a new asserter configured with an explicit iteration limit,
-     * overriding the default;
+     * overriding the default of 1000;
      * this asserter is left unmodified.
+     * <p>
+     * The limit applies only to {@link #producesAllOf} and {@link #producesNoneOf}.
+     * The iterators and streams of {@link NeighborhoodTestContext} are not bounded by it;
+     * they stay (likely never-ending) as documented on
+     * {@link NeighborhoodTestContext#getMovesAsIterator()}.
+     *
+     * @param iterationLimit the maximum number of moves to draw
+     * @return a new asserter with the given limit
      */
     NeighborhoodMoveAsserter<Solution_> within(int iterationLimit);
 
