@@ -44,7 +44,7 @@ final class SwapNearbyValuesMoveProvider implements MoveProvider<TestdataListEnt
 
         return factory.buildMoveStream((session, random) -> {
             var instance = session.getInstance(nearbyValuePairs);
-            var pairIterator = instance.uniqueRandomIterator(random);
+            var pairIterator = instance.exhaustiveIterator(random);
             return new Iterator<>() {
 
                 @Override

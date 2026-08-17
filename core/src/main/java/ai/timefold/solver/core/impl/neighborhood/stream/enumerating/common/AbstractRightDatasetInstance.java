@@ -100,15 +100,7 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     }
 
     /**
-     * As defined by {@link UniDatasetInstance#iterator()},
-     * only accepts a key for joins.
-     */
-    public Iterator<UniTuple<Right_>> iterator(Object compositeKey) {
-        return indexer.iterator(compositeKey);
-    }
-
-    /**
-     * As defined by {@link UniDatasetInstance#randomIterator(RandomGenerator)},
+     * As defined by {@link UniDatasetInstance#iterator(RandomGenerator)},
      * only accepts a key for joins.
      */
     public Iterator<UniTuple<Right_>> randomIterator(Object compositeKey, RandomGenerator workingRandom) {
@@ -116,7 +108,7 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     }
 
     /**
-     * As defined by {@link UniDatasetInstance#uniqueRandomIterator(RandomGenerator)},
+     * As defined by {@link UniDatasetInstance#exhaustiveIterator(RandomGenerator)},
      * only accepts a key for joins.
      */
     public UniqueRandomIterator<UniTuple<Right_>> uniqueRandomIterator(Object compositeKey, RandomGenerator workingRandom) {

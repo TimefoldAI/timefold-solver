@@ -38,7 +38,7 @@ final class UniRandomMoveIterator<Solution_, A> implements Iterator<Move<Solutio
             return true;
         }
         if (tupleIterator == null) { // Only create a possibly expensive instance when we actually need it.
-            tupleIterator = context.getDatasetInstance().randomIterator(Objects.requireNonNull(workingRandom));
+            tupleIterator = context.getDatasetInstance().iterator(Objects.requireNonNull(workingRandom));
         }
         if (!tupleIterator.hasNext()) {
             return false;

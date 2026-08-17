@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRight
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiIterator;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -51,17 +50,12 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     }
 
     @Override
-    public BiIterator<A, B> iterator() {
-        return new OriginalBiIterator<>(leftDatasetInstance, rightDatasetInstance, solutionView);
-    }
-
-    @Override
-    public BiIterator<A, B> randomIterator(RandomGenerator random) {
+    public BiIterator<A, B> iterator(RandomGenerator random) {
         return new RepeatingRandomBiIterator<>(leftDatasetInstance, rightDatasetInstance, solutionView, random);
     }
 
     @Override
-    public BiIterator<A, B> uniqueRandomIterator(RandomGenerator random) {
+    public BiIterator<A, B> exhaustiveIterator(RandomGenerator random) {
         return new UniqueRandomBiIterator<>(leftDatasetInstance, rightDatasetInstance, solutionView, random);
     }
 
@@ -71,20 +65,7 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     }
 
     @Override
-    public Iterator<@Nullable B> iterator(@Nullable A a) {
-        var compositeKey = rightDatasetInstance.produceCompositeKey(a);
-        var tupleIterator = rightDatasetInstance.iterator(compositeKey);
-        var filter = rightDatasetInstance.getFilter();
-        if (filter != null) {
-            // The delegate is finite and deterministic, so there is nothing to bail out of.
-            tupleIterator =
-                    new FilteringIterator<>(tupleIterator, rightTuple -> filter.test(solutionView, a, rightTuple.getA()));
-        }
-        return new FactIteratorAdapter<>(tupleIterator);
-    }
-
-    @Override
-    public Iterator<@Nullable B> randomIterator(@Nullable A a, RandomGenerator random) {
+    public Iterator<@Nullable B> iterator(@Nullable A a, RandomGenerator random) {
         var compositeKey = rightDatasetInstance.produceCompositeKey(a);
         var tupleIterator = rightDatasetInstance.randomIterator(compositeKey, random);
         var filter = rightDatasetInstance.getFilter();
@@ -99,7 +80,7 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     }
 
     @Override
-    public Iterator<@Nullable B> uniqueRandomIterator(@Nullable A a, RandomGenerator random) {
+    public Iterator<@Nullable B> exhaustiveIterator(@Nullable A a, RandomGenerator random) {
         var compositeKey = rightDatasetInstance.produceCompositeKey(a);
         var filter = rightDatasetInstance.getFilter();
         var tupleIterator = filter == null
@@ -134,81 +115,6 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         @Override
         public void forEachRemaining(Consumer<? super @Nullable B> action) {
             tupleIterator.forEachRemaining(tuple -> action.accept(tuple.getA()));
-        }
-
-    }
-
-    /**
-     * Ports {@code BiOriginalMoveIterator}'s left-then-right walk:
-     * fix a left tuple, walk all matching right tuples,
-     * then advance to the next left tuple.
-     */
-    private static final class OriginalBiIterator<Solution_, A, B>
-            implements BiIterator<A, B> {
-
-        private final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
-        private final SolutionView<Solution_> solutionView;
-        private final @Nullable BiNeighborhoodsPredicate<Solution_, A, B> filter;
-        private final Iterator<UniTuple<A>> leftTupleIterator;
-
-        private @Nullable Iterator<UniTuple<B>> rightTupleIterator;
-        private @Nullable UniTuple<A> leftTuple;
-        private @Nullable UniTuple<A> pendingLeftTuple;
-        private @Nullable UniTuple<B> pendingRightTuple;
-        private @Nullable UniTuple<A> currentLeftTuple;
-        private @Nullable UniTuple<B> currentRightTuple;
-
-        private OriginalBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
-                UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance, SolutionView<Solution_> solutionView) {
-            this.rightDatasetInstance = rightDatasetInstance;
-            this.solutionView = solutionView;
-            this.filter = rightDatasetInstance.getFilter();
-            this.leftTupleIterator = leftDatasetInstance.iterator();
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (pendingRightTuple != null) {
-                return true;
-            }
-            while (true) {
-                if (rightTupleIterator != null && rightTupleIterator.hasNext()) {
-                    pendingLeftTuple = leftTuple;
-                    pendingRightTuple = rightTupleIterator.next();
-                    return true;
-                }
-                if (!leftTupleIterator.hasNext()) {
-                    return false;
-                }
-                leftTuple = leftTupleIterator.next();
-                var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
-                var raw = rightDatasetInstance.iterator(compositeKey);
-                // The delegate is finite and deterministic, so there is nothing to bail out of.
-                rightTupleIterator = filter == null ? raw
-                        : new FilteringIterator<>(raw,
-                                rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
-            }
-        }
-
-        @Override
-        public void next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            currentLeftTuple = pendingLeftTuple;
-            currentRightTuple = pendingRightTuple;
-            pendingLeftTuple = null;
-            pendingRightTuple = null;
-        }
-
-        @Override
-        public @Nullable A a() {
-            return currentLeftTuple.getA();
-        }
-
-        @Override
-        public @Nullable B b() {
-            return currentRightTuple.getA();
         }
 
     }

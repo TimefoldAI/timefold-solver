@@ -32,18 +32,13 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
     }
 
     @Override
-    public BiIterator<A, B> iterator() {
-        return new TupleBiIterator<>(delegate.iterator());
+    public BiIterator<A, B> iterator(RandomGenerator random) {
+        return new TupleBiIterator<>(delegate.iterator(random));
     }
 
     @Override
-    public BiIterator<A, B> randomIterator(RandomGenerator random) {
-        return new TupleBiIterator<>(delegate.randomIterator(random));
-    }
-
-    @Override
-    public BiIterator<A, B> uniqueRandomIterator(RandomGenerator random) {
-        return new TupleBiIterator<>(delegate.uniqueRandomIterator(random));
+    public BiIterator<A, B> exhaustiveIterator(RandomGenerator random) {
+        return new TupleBiIterator<>(delegate.exhaustiveIterator(random));
     }
 
     @Override
@@ -52,18 +47,13 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
     }
 
     @Override
-    public Iterator<@Nullable B> iterator(@Nullable A a) {
-        return new FactIterator<>(delegate.iterator(a));
-    }
-
-    @Override
-    public Iterator<@Nullable B> randomIterator(@Nullable A a, RandomGenerator random) {
+    public Iterator<@Nullable B> iterator(@Nullable A a, RandomGenerator random) {
         return new FactIterator<>(delegate.randomIterator(a, random));
     }
 
     @Override
-    public Iterator<@Nullable B> uniqueRandomIterator(@Nullable A a, RandomGenerator random) {
-        return new FactIterator<>(delegate.uniqueRandomIterator(a, random));
+    public Iterator<@Nullable B> exhaustiveIterator(@Nullable A a, RandomGenerator random) {
+        return new FactIterator<>(delegate.exhaustiveRandomIterator(a, random));
     }
 
     private static final class TupleBiIterator<A, B> implements BiIterator<A, B> {

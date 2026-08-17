@@ -2,8 +2,11 @@ package ai.timefold.solver.core.preview.api.neighborhood.example;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -18,6 +21,7 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * For a randomly picked pair of distinct values,
@@ -61,36 +65,58 @@ final class SwapValuesInCodeRangeMoveProvider implements MoveProvider<TestdataSo
             if (pairInstance.size() == 0 || rangeInstance.size() == 0) {
                 return Collections.emptyIterator(); // Fewer than 2 values, or fewer than 2 distinct entity codes.
             }
+            // Both walks draw with replacement and never end.
+            var pairIterator = pairInstance.iterator(random);
+            var rangeIterator = rangeInstance.iterator(random);
+            return new Iterator<>() {
 
-            var moveList = new ArrayList<Move<TestdataSolution>>();
-            var pairIterator = pairInstance.iterator();
-            while (pairIterator.hasNext()) {
-                pairIterator.next();
-                var valueA = pairIterator.a();
-                var valueB = pairIterator.b();
+                private @Nullable Move<TestdataSolution> nextMove;
 
-                var rangeIterator = rangeInstance.iterator();
-                while (rangeIterator.hasNext()) {
-                    rangeIterator.next();
-                    var start = rangeIterator.a();
-                    var end = rangeIterator.b();
-
-                    var swapList = new ArrayList<Move<TestdataSolution>>();
-                    collectSwaps(valueEntityInstance, valueA, valueB, start, end, swapList);
-                    collectSwaps(valueEntityInstance, valueB, valueA, start, end, swapList);
-                    if (!swapList.isEmpty()) {
-                        moveList.add(Moves.compose(swapList));
+                @Override
+                public boolean hasNext() {
+                    while (nextMove == null && pairIterator.hasNext() && rangeIterator.hasNext()) {
+                        nextMove = draw();
                     }
-                    // Else: the picked range held no entity for either value. Nothing to add for this combination.
+                    return nextMove != null;
                 }
-            }
-            return moveList.iterator();
+
+                @Override
+                public Move<TestdataSolution> next() {
+                    if (!hasNext()) {
+                        throw new NoSuchElementException();
+                    }
+                    var move = Objects.requireNonNull(nextMove);
+                    nextMove = null;
+                    return move;
+                }
+
+                /**
+                 * @return null if the drawn combination is not a valid move; the caller draws again
+                 */
+                private @Nullable Move<TestdataSolution> draw() {
+                    pairIterator.next();
+                    var valueA = Objects.requireNonNull(pairIterator.a());
+                    var valueB = Objects.requireNonNull(pairIterator.b());
+                    rangeIterator.next();
+                    var start = Objects.requireNonNull(rangeIterator.a());
+                    var end = Objects.requireNonNull(rangeIterator.b());
+
+                    // This list holds the components of the single composed move, not the neighborhood.
+                    var swapList = new ArrayList<Move<TestdataSolution>>();
+                    collectSwaps(valueEntityInstance, valueA, valueB, start, end, random, swapList);
+                    collectSwaps(valueEntityInstance, valueB, valueA, start, end, random, swapList);
+                    // An empty list means the drawn range held no entity for either value.
+                    return swapList.isEmpty() ? null : Moves.compose(swapList);
+                }
+            };
         });
     }
 
     private void collectSwaps(BiDatasetInstance<TestdataValue, TestdataEntity> valueEntityInstance,
-            TestdataValue from, TestdataValue to, String start, String end, List<Move<TestdataSolution>> swapList) {
-        var entityIterator = valueEntityInstance.iterator(from);
+            TestdataValue from, TestdataValue to, String start, String end, RandomGenerator random,
+            List<Move<TestdataSolution>> swapList) {
+        // Every entity of this value, exactly once, in random order.
+        var entityIterator = valueEntityInstance.exhaustiveIterator(from, random);
         while (entityIterator.hasNext()) {
             var entity = entityIterator.next();
             var code = entity.getCode();

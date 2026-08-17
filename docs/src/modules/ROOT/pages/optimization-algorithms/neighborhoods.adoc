@@ -695,7 +695,7 @@ public class BestShiftMoveProvider implements MoveProvider<Roster> {
             var shiftInstance = session.getInstance(shifts);
             var solutionView = session.getSolutionView();
             return new Iterator<Move<Roster>>() {
-                private final Iterator<Employee> employeeIterator = employeeInstance.randomIterator(random);
+                private final Iterator<Employee> employeeIterator = employeeInstance.iterator(random);
 
                 @Override
                 public boolean hasNext() {
@@ -725,9 +725,9 @@ as opposed to fully expanded and persisted in memory.
 
 Inside `buildMoveStream(...)`, the `MoveIteratorSession` resolves each dataset handle
 to a `UniDatasetInstance` or `BiDatasetInstance`,
-which exposes `size()`, `iterator()`, `randomIterator(RandomGenerator)` and `uniqueRandomIterator(RandomGenerator)` -
+which exposes `size()`, `iterator(RandomGenerator)` and `exhaustiveIterator(RandomGenerator)` -
  the same random-walk sampling used throughout Move Streams.
- A `BiDatasetInstance` additionally exposes the same four operations keyed by a left-side value,
+ A `BiDatasetInstance` additionally exposes the same three operations keyed by a left-side value,
 for datasets produced by a join.
 
 IMPORTANT: The order in which the iterator yields moves is never part of the API's contract,

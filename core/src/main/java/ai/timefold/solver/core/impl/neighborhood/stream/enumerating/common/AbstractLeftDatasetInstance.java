@@ -54,23 +54,28 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
         entry.remove();
     }
 
+    /**
+     * Not part of {@link UniDatasetInstance}: only satisfies {@link Iterable}, for callers
+     * (such as {@code JustInTimeBiDatasetInstance#size()}) that need a plain,
+     * non-random walk internally.
+     */
     @Override
     public Iterator<Tuple_> iterator() {
         return tupleList.iterator();
     }
 
     @Override
-    public Iterator<Tuple_> randomIterator(RandomGenerator workingRandom) {
+    public Iterator<Tuple_> iterator(RandomGenerator workingRandom) {
         return RepeatingRandomIterator.of(tupleList, workingRandom);
     }
 
     @Override
-    public UniqueRandomIterator<Tuple_> uniqueRandomIterator(RandomGenerator workingRandom) {
+    public UniqueRandomIterator<Tuple_> exhaustiveIterator(RandomGenerator workingRandom) {
         return UniqueRandomIterator.of(tupleList, workingRandom);
     }
 
     /**
-     * As defined by {@link #uniqueRandomIterator(RandomGenerator)},
+     * As defined by {@link #exhaustiveIterator(RandomGenerator)},
      * but the caller must call {@link RetiringRandomIterator#retire()} itself
      * after each {@link Iterator#next()} to permanently drop an element.
      * Only meant for a caller which must decide by itself

@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.preview.api.neighborhood.example;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -12,13 +12,13 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * For a randomly picked ordered pair of distinct entities
@@ -47,52 +47,77 @@ final class RelocateValueBlockMoveProvider implements MoveProvider<TestdataListE
                         .join(factory.forEach(TestdataListEntityProvidingEntity.class, false),
                                 NeighborhoodsJoiners.lessThan(TestdataListEntityProvidingEntity::getCode));
 
-        // Plain, unjoined:
-        // every entity's destinations at once, filtered inside the loop below.
-        var destinations = factory.forEachDestination(variableMetaModel).asCachedDataset();
+        // Cached, entity on the left:
+        // queried per-A both for the relocation destination and for the source block's start index.
+        var entityDestinations = factory.forEach(TestdataListEntityProvidingEntity.class, false)
+                .join(factory.forEachDestination(variableMetaModel),
+                        NeighborhoodsJoiners.equal(entity -> entity, PositionInList::entity))
+                .asCachedDataset();
 
         return factory.buildMoveStream((session, random) -> {
-            var pairInstance =
-                    session.getInstance(entityPairs);
+            var pairInstance = session.getInstance(entityPairs);
             if (pairInstance.size() == 0) {
                 return Collections.emptyIterator(); // Fewer than 2 entities.
             }
-            var destinationInstance = session.getInstance(destinations);
+            var destinationInstance = session.getInstance(entityDestinations);
             var solutionView = session.getSolutionView();
+            var pairIterator = pairInstance.iterator(random); // Draws with replacement; never ends.
+            return new Iterator<>() {
 
-            var moveList = new ArrayList<Move<TestdataListEntityProvidingSolution>>();
-            var pairIterator = pairInstance.iterator();
-            while (pairIterator.hasNext()) {
-                pairIterator.next();
-                var entityA = pairIterator.a();
-                var entityB = pairIterator.b();
-                collectRelocations(solutionView, destinationInstance, entityA, entityB, moveList);
-                collectRelocations(solutionView, destinationInstance, entityB, entityA, moveList);
-            }
-            return moveList.iterator();
-        });
-    }
+                private @Nullable Move<TestdataListEntityProvidingSolution> nextMove;
 
-    private void collectRelocations(SolutionView<TestdataListEntityProvidingSolution> solutionView,
-            UniDatasetInstance<PositionInList> destinationInstance, TestdataListEntityProvidingEntity sourceEntity,
-            TestdataListEntityProvidingEntity destinationEntity,
-            List<Move<TestdataListEntityProvidingSolution>> moveList) {
-        var sourceSize = solutionView.countValues(variableMetaModel, sourceEntity);
-        var destinationIterator = destinationInstance.iterator();
-        while (destinationIterator.hasNext()) {
-            var destination = Objects.requireNonNull(destinationIterator.next());
-            if (destination.entity() != destinationEntity) {
-                continue; // Not a destination in the entity we're relocating into this time.
-            }
-            for (var start = 0; start < sourceSize; start++) {
-                for (var length = 1; start + length <= sourceSize; length++) {
-                    if (isBlockInRange(solutionView, sourceEntity, start, length, destinationEntity)) {
-                        moveList.add(new RelocateValueBlockMove(variableMetaModel, sourceEntity, start, length,
-                                destinationEntity, destination.index()));
+                @Override
+                public boolean hasNext() {
+                    while (nextMove == null && pairIterator.hasNext()) {
+                        nextMove = draw();
                     }
+                    return nextMove != null;
                 }
-            }
-        }
+
+                @Override
+                public Move<TestdataListEntityProvidingSolution> next() {
+                    if (!hasNext()) {
+                        throw new NoSuchElementException();
+                    }
+                    var move = Objects.requireNonNull(nextMove);
+                    nextMove = null;
+                    return move;
+                }
+
+                /**
+                 * @return null if the drawn combination is not a valid move; the caller draws again
+                 */
+                private @Nullable Move<TestdataListEntityProvidingSolution> draw() {
+                    pairIterator.next();
+                    var entityA = Objects.requireNonNull(pairIterator.a());
+                    var entityB = Objects.requireNonNull(pairIterator.b());
+                    // The drawn destination's entity picks the direction: the pair's other entity is the source.
+                    var intoA = random.nextBoolean();
+                    var destinationEntity = intoA ? entityA : entityB;
+                    var sourceEntity = intoA ? entityB : entityA;
+                    var destinationIterator = destinationInstance.iterator(destinationEntity, random);
+                    if (!destinationIterator.hasNext()) {
+                        return null; // No destination for destinationEntity.
+                    }
+                    var destination = Objects.requireNonNull(destinationIterator.next());
+                    var sourceIterator = destinationInstance.iterator(sourceEntity, random);
+                    if (!sourceIterator.hasNext()) {
+                        return null; // No index for sourceEntity.
+                    }
+                    var start = Objects.requireNonNull(sourceIterator.next()).index();
+                    var sourceSize = solutionView.countValues(variableMetaModel, sourceEntity);
+                    if (start == sourceSize) {
+                        return null; // The append position starts no block.
+                    }
+                    var length = 1 + random.nextInt(sourceSize - start);
+                    // Some value in the block may be outside the destination entity's value range.
+                    return isBlockInRange(solutionView, sourceEntity, start, length, destinationEntity)
+                            ? new RelocateValueBlockMove(variableMetaModel, sourceEntity, start, length,
+                                    destinationEntity, destination.index())
+                            : null;
+                }
+            };
+        });
     }
 
     private boolean isBlockInRange(SolutionView<TestdataListEntityProvidingSolution> solutionView,

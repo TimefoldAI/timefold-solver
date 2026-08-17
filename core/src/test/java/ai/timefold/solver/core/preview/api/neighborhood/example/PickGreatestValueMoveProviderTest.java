@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class PickLastValueMoveProviderTest {
+class PickGreatestValueMoveProviderTest {
 
     @Test
     void buildMoveStream_customScoringRuleNotExpressibleAsAJoin() {
@@ -21,17 +21,17 @@ class PickLastValueMoveProviderTest {
         var solution = TestdataSolution.generateSolution(2, 2);
         var e1 = solution.getEntityList().get(0);
         var e2 = solution.getEntityList().get(1);
-        var firstValue = solution.getValueList().get(0);
-        var lastValue = solution.getValueList().get(1);
+        var smallestValue = solution.getValueList().get(0);
+        var greatestValue = solution.getValueList().get(1);
 
-        var context = NeighborhoodTester.build(new PickLastValueMoveProvider(variableMetaModel), solutionMetaModel)
+        var context = NeighborhoodTester.build(new PickGreatestValueMoveProvider(variableMetaModel), solutionMetaModel)
                 .using(solution);
         context.producesAllOf(
-                Moves.change(variableMetaModel, e1, lastValue),
-                Moves.change(variableMetaModel, e2, lastValue));
+                Moves.change(variableMetaModel, e1, greatestValue),
+                Moves.change(variableMetaModel, e2, greatestValue));
         context.producesNoneOf(
-                Moves.change(variableMetaModel, e1, firstValue),
-                Moves.change(variableMetaModel, e2, firstValue));
+                Moves.change(variableMetaModel, e1, smallestValue),
+                Moves.change(variableMetaModel, e2, smallestValue));
     }
 
 }

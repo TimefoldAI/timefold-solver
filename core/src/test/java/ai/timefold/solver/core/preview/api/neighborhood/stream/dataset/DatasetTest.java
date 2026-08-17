@@ -54,15 +54,11 @@ class DatasetTest {
 
         assertThat(instance.size()).isEqualTo(3);
 
-        var seen = new HashSet<TestdataEntity>();
-        instance.iterator().forEachRemaining(seen::add);
-        assertThat(seen).containsExactlyInAnyOrderElementsOf(solution.getEntityList());
-
         // The Dataset wires in exactly this instance's elements.
         var uniquelySeen = new HashSet<TestdataEntity>();
-        var uniqueRandomIterator = instance.uniqueRandomIterator(RandomSource.seeded(0L).moveIteratorUsage());
-        while (uniqueRandomIterator.hasNext()) {
-            uniquelySeen.add(uniqueRandomIterator.next());
+        var exhaustiveIterator = instance.exhaustiveIterator(RandomSource.seeded(0L).moveIteratorUsage());
+        while (exhaustiveIterator.hasNext()) {
+            uniquelySeen.add(exhaustiveIterator.next());
         }
         assertThat(uniquelySeen).containsExactlyInAnyOrderElementsOf(solution.getEntityList());
     }
@@ -77,7 +73,7 @@ class DatasetTest {
         var instance = session.getInstance(entityDataset);
 
         var random = RandomSource.seeded(0L).moveIteratorUsage();
-        var randomIterator = instance.randomIterator(random);
+        var randomIterator = instance.iterator(random);
 
         // Draw far more times than there are elements; it must still never run dry.
         var draws = new ArrayList<TestdataEntity>();
@@ -157,7 +153,7 @@ class DatasetTest {
 
         var random = RandomSource.seeded(0L).moveIteratorUsage();
         for (var draw = 0; draw < 200; draw++) {
-            var iterator = instance.randomIterator(rareEntity, random);
+            var iterator = instance.iterator(rareEntity, random);
             assertThat(iterator.hasNext())
                     .as("draw %d: the rare entity's single partner must always be found once indexed", draw)
                     .isTrue();
@@ -166,7 +162,7 @@ class DatasetTest {
 
         var seenCommonValueSet = new HashSet<TestdataValue>();
         for (var draw = 0; draw < 2_000; draw++) {
-            var iterator = instance.randomIterator(commonEntity, random);
+            var iterator = instance.iterator(commonEntity, random);
             assertThat(iterator.hasNext()).isTrue();
             seenCommonValueSet.add(iterator.next());
         }
@@ -176,7 +172,7 @@ class DatasetTest {
         moveStreamFactory.getSolutionDescriptor().visitAll(solution, session::retract);
         session.settle();
         assertThat(instance.size(rareEntity)).isZero();
-        assertThat(instance.randomIterator(rareEntity, random).hasNext()).isFalse();
+        assertThat(instance.iterator(rareEntity, random).hasNext()).isFalse();
     }
 
     @Test
@@ -218,7 +214,7 @@ class DatasetTest {
 
     private static <A, B> Set<List<Object>> collectPairs(BiDatasetInstance<A, B> instance) {
         Set<List<Object>> pairs = new HashSet<>();
-        var iterator = instance.iterator();
+        var iterator = instance.exhaustiveIterator(RandomSource.seeded(0L).moveIteratorUsage());
         while (iterator.hasNext()) {
             iterator.next();
             pairs.add(Arrays.asList(iterator.a(), iterator.b()));
@@ -229,7 +225,7 @@ class DatasetTest {
     private static Set<TestdataValue> collectValues(BiDatasetInstance<TestdataEntity, TestdataValue> instance,
             TestdataEntity a) {
         var result = new HashSet<TestdataValue>();
-        var iterator = instance.iterator(a);
+        var iterator = instance.exhaustiveIterator(a, RandomSource.seeded(0L).moveIteratorUsage());
         while (iterator.hasNext()) {
             var value = iterator.next();
             if (value != null) {

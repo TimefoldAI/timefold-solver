@@ -83,7 +83,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
 
         var session = session(moveStreamFactory, fixture.solution);
         var instance = session.getInstance(cachedDataset);
-        var iterator = instance.randomIterator(new Random(0));
+        var iterator = instance.iterator(new Random(0));
 
         var expectedPairList = new ArrayList<List<Object>>();
         for (var bucketIndex = 0; bucketIndex < BUCKET_SIZE_LIST.size(); bucketIndex++) {
@@ -102,7 +102,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
     }
 
     /**
-     * {@code JustInTimeBiDatasetInstance}'s whole-dataset {@code uniqueRandomIterator()}
+     * {@code JustInTimeBiDatasetInstance}'s whole-dataset {@code exhaustiveIterator()}
      * (as opposed to its per-A flavor)
      * does not override {@code acceptLeft},
      * so it is unaffected by the fairness fix;
@@ -123,7 +123,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
         var instance = session.getInstance(justInTimeDataset);
 
         var seenPairSet = new HashSet<List<Object>>();
-        var iterator = instance.uniqueRandomIterator(new Random(0));
+        var iterator = instance.exhaustiveIterator(new Random(0));
         while (iterator.hasNext()) {
             iterator.next();
             List<Object> pair = List.of(iterator.a(), iterator.b());

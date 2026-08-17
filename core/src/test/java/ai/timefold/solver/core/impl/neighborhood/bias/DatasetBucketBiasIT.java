@@ -54,7 +54,7 @@ class DatasetBucketBiasIT extends AbstractBiasIT {
         var root = new Random(0);
         tally("just-in-time per-A unique, draw #" + drawIndex, TRIAL_COUNT, trial -> {
             var splitRandom = splitFrom(root);
-            var iterator = instance.uniqueRandomIterator(probe, splitRandom);
+            var iterator = instance.exhaustiveIterator(probe, splitRandom);
             TestdataValue pick = null;
             for (var i = 0; i < drawIndex; i++) {
                 pick = iterator.next();

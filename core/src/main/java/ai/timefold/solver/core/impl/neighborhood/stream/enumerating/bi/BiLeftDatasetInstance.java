@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.random.RandomGenerator;
 
@@ -81,14 +80,7 @@ public final class BiLeftDatasetInstance<Solution_, A, B>
     }
 
     /**
-     * As defined by {@link #iterator()}, restricted to tuples paired with the given left value.
-     */
-    public Iterator<BiTuple<A, B>> iterator(@Nullable A a) {
-        return bucketOrEmpty(a).iterator();
-    }
-
-    /**
-     * As defined by {@link #randomIterator(RandomGenerator)}, restricted to tuples paired with the given left
+     * As defined by {@link #iterator(RandomGenerator)}, restricted to tuples paired with the given left
      * value. No filter, no bail-out needed: {@link #bucketOrEmpty} is already exactly that restriction.
      */
     public RepeatingRandomIterator<BiTuple<A, B>> randomIterator(@Nullable A a, RandomGenerator workingRandom) {
@@ -96,10 +88,10 @@ public final class BiLeftDatasetInstance<Solution_, A, B>
     }
 
     /**
-     * As defined by {@link #uniqueRandomIterator(RandomGenerator)}, restricted to tuples paired with the
+     * As defined by {@link #exhaustiveIterator(RandomGenerator)}, restricted to tuples paired with the
      * given left value.
      */
-    public UniqueRandomIterator<BiTuple<A, B>> uniqueRandomIterator(@Nullable A a, RandomGenerator workingRandom) {
+    public UniqueRandomIterator<BiTuple<A, B>> exhaustiveRandomIterator(@Nullable A a, RandomGenerator workingRandom) {
         return UniqueRandomIterator.of(bucketOrEmpty(a), workingRandom);
     }
 

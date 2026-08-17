@@ -13,7 +13,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
-record PickLastValueMoveProvider(
+record PickGreatestValueMoveProvider(
         PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue> variableMetaModel)
         implements
             MoveProvider<TestdataSolution> {
@@ -26,7 +26,7 @@ record PickLastValueMoveProvider(
             var entityInstance = session.getInstance(entities);
             var valueInstance = session.getInstance(values);
             return new Iterator<>() {
-                private final Iterator<TestdataEntity> entityIterator = entityInstance.randomIterator(random);
+                private final Iterator<TestdataEntity> entityIterator = entityInstance.iterator(random);
 
                 @Override
                 public boolean hasNext() {
@@ -36,13 +36,16 @@ record PickLastValueMoveProvider(
                 @Override
                 public Move<TestdataSolution> next() {
                     var entity = entityIterator.next();
-                    // A scoring rule not expressible as a join predicate: pick the last value seen.
-                    TestdataValue lastSeen = null;
-                    var valueIterator = valueInstance.iterator();
+                    // A scoring rule not expressible as a join predicate: pick the value with the greatest code.
+                    TestdataValue best = null;
+                    var valueIterator = valueInstance.exhaustiveIterator(random);
                     while (valueIterator.hasNext()) {
-                        lastSeen = valueIterator.next();
+                        var value = Objects.requireNonNull(valueIterator.next());
+                        if (best == null || value.getCode().compareTo(best.getCode()) > 0) {
+                            best = value;
+                        }
                     }
-                    return Moves.change(variableMetaModel, entity, Objects.requireNonNull(lastSeen));
+                    return Moves.change(variableMetaModel, entity, Objects.requireNonNull(best));
                 }
             };
         });

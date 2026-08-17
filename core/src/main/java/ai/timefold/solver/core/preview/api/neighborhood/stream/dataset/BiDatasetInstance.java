@@ -21,19 +21,14 @@ public interface BiDatasetInstance<A, B> {
     int size();
 
     /**
-     * As defined by {@link UniDatasetInstance#iterator()}.
+     * As defined by {@link UniDatasetInstance#iterator(RandomGenerator)}.
      */
-    BiIterator<A, B> iterator();
+    BiIterator<A, B> iterator(RandomGenerator random);
 
     /**
-     * As defined by {@link UniDatasetInstance#randomIterator(RandomGenerator)}.
+     * As defined by {@link UniDatasetInstance#exhaustiveIterator(RandomGenerator)}.
      */
-    BiIterator<A, B> randomIterator(RandomGenerator random);
-
-    /**
-     * As defined by {@link UniDatasetInstance#uniqueRandomIterator(RandomGenerator)}.
-     */
-    BiIterator<A, B> uniqueRandomIterator(RandomGenerator random);
+    BiIterator<A, B> exhaustiveIterator(RandomGenerator random);
 
     /**
      * As defined by {@link #size()},
@@ -42,21 +37,15 @@ public interface BiDatasetInstance<A, B> {
     int size(@Nullable A a);
 
     /**
-     * As defined by {@link #iterator()},
+     * As defined by {@link #iterator(RandomGenerator)},
      * but restricted to rows paired with the given left value.
      */
-    Iterator<@Nullable B> iterator(@Nullable A a);
+    Iterator<@Nullable B> iterator(@Nullable A a, RandomGenerator random);
 
     /**
-     * As defined by {@link #randomIterator(RandomGenerator)},
+     * As defined by {@link #exhaustiveIterator(RandomGenerator)},
      * but restricted to rows paired with the given left value.
      */
-    Iterator<@Nullable B> randomIterator(@Nullable A a, RandomGenerator random);
-
-    /**
-     * As defined by {@link #uniqueRandomIterator(RandomGenerator)},
-     * but restricted to rows paired with the given left value.
-     */
-    Iterator<@Nullable B> uniqueRandomIterator(@Nullable A a, RandomGenerator random);
+    Iterator<@Nullable B> exhaustiveIterator(@Nullable A a, RandomGenerator random);
 
 }

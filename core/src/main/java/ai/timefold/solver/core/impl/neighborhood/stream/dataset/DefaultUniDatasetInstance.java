@@ -28,18 +28,13 @@ public final class DefaultUniDatasetInstance<Solution_, A> implements UniDataset
     }
 
     @Override
-    public Iterator<@Nullable A> iterator() {
-        return new FactIterator<>(delegate.iterator());
+    public Iterator<@Nullable A> iterator(RandomGenerator random) {
+        return new FactIterator<>(delegate.iterator(random));
     }
 
     @Override
-    public Iterator<@Nullable A> randomIterator(RandomGenerator random) {
-        return new FactIterator<>(delegate.randomIterator(random));
-    }
-
-    @Override
-    public Iterator<@Nullable A> uniqueRandomIterator(RandomGenerator random) {
-        return new FactIterator<>(delegate.uniqueRandomIterator(random));
+    public Iterator<@Nullable A> exhaustiveIterator(RandomGenerator random) {
+        return new FactIterator<>(delegate.exhaustiveIterator(random));
     }
 
     /**
