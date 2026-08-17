@@ -771,7 +771,7 @@ The API requires:
 3. **Entity classes**: One or more classes annotated with `@PlanningEntity`
 4. **Solution instance**: The working solution to execute the move on
 
-Because the order in which a move provider generates moves is never part of the Move Streams contract,
+Because the order in which a move provider generates moves is never part of the API contract,
 `NeighborhoodTester` never exposes an exact move sequence to assert against.
 Instead, `producesAllOf(Move...)` and `producesNoneOf(Move...)` repeatedly draw moves
 (up to an iteration limit) and compare them to the given moves via `equals()`:

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -29,6 +30,19 @@ class IndexerRandomIteratorMarkerTest {
         Indexer<UniTuple<String>> indexer = new EqualIndexer<>(KeyUnpacker.single(), RandomAccessLeafIndexer::new);
         indexer.put("F", UniTuple.of("Ann", 0));
         assertMarkerTypes(indexer, "F");
+    }
+
+    @Test
+    void linkedListLeafIndexerRejectsRandomAccess() {
+        // Unlike RandomAccessLeafIndexer above,
+        // this backend has no random-access support at all.
+        Indexer<UniTuple<String>> indexer = new LinkedListLeafIndexer<>();
+        indexer.put(CompositeKey.none(), UniTuple.of("Ann", 0));
+
+        assertThatThrownBy(() -> indexer.randomIterator(CompositeKey.none(), new Random(0)))
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> indexer.uniqueRandomIterator(CompositeKey.none(), new Random(0)))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     private static void assertMarkerTypes(Indexer<UniTuple<String>> indexer, Object key) {

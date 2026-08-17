@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -60,30 +61,31 @@ abstract class AbstractIndexerTest {
         return result;
     }
 
-    static Iterable<Object> randomIterableForQuery(Indexer<Object> indexer, String key) {
-        return randomIterableForQuery(indexer, 0, key);
+    static Iterable<Object> uniqueRandomIterableForQuery(Indexer<Object> indexer, String key) {
+        return uniqueRandomIterableForQuery(indexer, 0, key);
     }
 
-    private static Iterable<Object> randomIterableForQuery(Indexer<Object> indexer, long seed, String key) {
+    private static Iterable<Object> uniqueRandomIterableForQuery(Indexer<Object> indexer, long seed, String key) {
         return () -> indexer.uniqueRandomIterator(key, new Random(seed));
     }
 
-    static List<Object> randomListForQuery(Indexer<Object> indexer, long seed, String key) {
-        var iterable = randomIterableForQuery(indexer, seed, key);
+    static List<Object> uniqueRandomListForQuery(Indexer<Object> indexer, long seed, String key) {
+        var iterable = uniqueRandomIterableForQuery(indexer, seed, key);
         return StreamSupport.stream(iterable.spliterator(), false)
                 .toList();
     }
 
-    static Iterable<Object> randomIterableForCollectionQuery(Indexer<Object> indexer, String... keys) {
-        return randomIterableForCollectionQuery(indexer, 0, keys);
+    static Iterable<Object> uniqueRandomIterableForCollectionQuery(Indexer<Object> indexer, String... keys) {
+        return uniqueRandomIterableForCollectionQuery(indexer, 0, keys);
     }
 
-    private static Iterable<Object> randomIterableForCollectionQuery(Indexer<Object> indexer, long seed, String... keys) {
+    private static Iterable<Object> uniqueRandomIterableForCollectionQuery(Indexer<Object> indexer, long seed,
+            String... keys) {
         return () -> indexer.uniqueRandomIterator(List.of(keys), new Random(seed));
     }
 
-    static List<Object> randomListForCollectionQuery(Indexer<Object> indexer, long seed, String... keys) {
-        var iterable = randomIterableForCollectionQuery(indexer, seed, keys);
+    static List<Object> uniqueRandomListForCollectionQuery(Indexer<Object> indexer, long seed, String... keys) {
+        var iterable = uniqueRandomIterableForCollectionQuery(indexer, seed, keys);
         return StreamSupport.stream(iterable.spliterator(), false)
                 .toList();
     }
@@ -115,23 +117,34 @@ abstract class AbstractIndexerTest {
                 drainedList.add(iterator.next());
             }
             assertThat(drainedList).containsExactlyInAnyOrderElementsOf(expectedList);
-            assertThat(iterator.hasNext()).isFalse();
+            assertThat(iterator).isExhausted();
             assertThatExceptionOfType(NoSuchElementException.class)
                     .isThrownBy(iterator::next);
         }
     }
 
     /**
-     * Asserts that {@link Indexer#randomIterator(Object, RandomGenerator)} never ends
-     * and every draw is a match for the query.
+     * Asserts that {@link Indexer#randomIterator(Object, RandomGenerator)} never ends,
+     * every draw is a match for the query,
+     * and every match is drawn at least once.
+     * The last part is what catches a walk that silently drops a bucket:
+     * a draw set that omits a whole matching bucket is still a subset of {@code expectedList},
+     * so membership alone would not notice it.
+     * Seed is fixed, so this is deterministic and cannot flake;
+     * if a caller's {@code drawCount} does not reach every match,
+     * raise it there rather than here.
      */
     static <T> void assertRepeatingRandomNeverEnds(Indexer<T> indexer, Object queryCompositeKey, int drawCount) {
         var expectedList = new ArrayList<T>();
         indexer.forEach(queryCompositeKey, expectedList::add);
         var iterator = indexer.randomIterator(queryCompositeKey, new Random(0));
+        var drawnSet = new HashSet<T>();
         for (var i = 0; i < drawCount; i++) {
             assertThat(iterator.hasNext()).isTrue();
-            assertThat(iterator.next()).isIn(expectedList);
+            var drawn = iterator.next();
+            assertThat(drawn).isIn(expectedList);
+            drawnSet.add(drawn);
         }
+        assertThat(drawnSet).containsExactlyInAnyOrderElementsOf(expectedList);
     }
 }

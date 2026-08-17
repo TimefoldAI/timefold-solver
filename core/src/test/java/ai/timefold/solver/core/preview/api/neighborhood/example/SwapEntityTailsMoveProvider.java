@@ -36,7 +36,8 @@ final class SwapEntityTailsMoveProvider implements MoveProvider<TestdataListSolu
     public MoveStream<TestdataListSolution> build(MoveStreamFactory<TestdataListSolution> factory) {
         // Just-in-time: many entity pairs, few ever drawn.
         // Ordered, so no mirrored duplicate.
-        var entityPairs = factory.forEach(TestdataListEntity.class, false).asCachedDataset()
+        var entityPairs = factory.forEach(TestdataListEntity.class, false)
+                .asCachedDataset()
                 .join(factory.forEach(TestdataListEntity.class, false),
                         NeighborhoodsJoiners.lessThan(TestdataListEntity::getCode));
 
@@ -60,8 +61,8 @@ final class SwapEntityTailsMoveProvider implements MoveProvider<TestdataListSolu
             var pairIterator = pairInstance.iterator();
             while (pairIterator.hasNext()) {
                 pairIterator.next();
-                var entityA = pairIterator.getA();
-                var entityB = pairIterator.getB();
+                var entityA = pairIterator.a();
+                var entityB = pairIterator.b();
                 var overlap = Math.min(solutionView.countValues(variableMetaModel, entityA),
                         solutionView.countValues(variableMetaModel, entityB));
 

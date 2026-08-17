@@ -117,7 +117,7 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void randomIterator() {
+    void uniqueRandomIterator() {
         var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
 
         var annX1 = putContainedInIndexer(indexer, "X");
@@ -127,16 +127,16 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
         var carlX2 = putContainedInIndexer(indexer, "X");
         var carlY2 = putContainedInIndexer(indexer, "Y");
 
-        assertThat(randomIterableForCollectionQuery(indexer, "X"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "X"))
                 .containsExactlyInAnyOrder(annX1, bethX1, carlX2);
-        assertThat(randomIterableForCollectionQuery(indexer, "Y"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "Y"))
                 .containsExactlyInAnyOrder(annY1, carlY2);
-        assertThat(randomIterableForCollectionQuery(indexer, "Z"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "Z"))
                 .containsExactlyInAnyOrder(bethZ1);
 
-        var list1 = randomListForCollectionQuery(indexer, 0, "X");
+        var list1 = uniqueRandomListForCollectionQuery(indexer, 0, "X");
         // seed 0 and 1 has the same list, but 2 is different
-        var list2 = randomListForCollectionQuery(indexer, 2, "X");
+        var list2 = uniqueRandomListForCollectionQuery(indexer, 2, "X");
         assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
         assertThat(list1).isNotEqualTo(list2);
     }

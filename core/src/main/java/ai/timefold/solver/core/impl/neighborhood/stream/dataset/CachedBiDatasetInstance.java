@@ -86,12 +86,12 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
         }
 
         @Override
-        public @Nullable A getA() {
+        public @Nullable A a() {
             return Objects.requireNonNull(current).getA();
         }
 
         @Override
-        public @Nullable B getB() {
+        public @Nullable B b() {
             return Objects.requireNonNull(current).getB();
         }
 

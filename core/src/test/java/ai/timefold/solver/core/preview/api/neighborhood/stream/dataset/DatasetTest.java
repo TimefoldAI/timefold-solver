@@ -58,9 +58,12 @@ class DatasetTest {
         instance.iterator().forEachRemaining(seen::add);
         assertThat(seen).containsExactlyInAnyOrderElementsOf(solution.getEntityList());
 
+        // The Dataset wires in exactly this instance's elements.
         var uniquelySeen = new HashSet<TestdataEntity>();
         var uniqueRandomIterator = instance.uniqueRandomIterator(RandomSource.seeded(0L).moveIteratorUsage());
-        uniqueRandomIterator.forEachRemaining(uniquelySeen::add);
+        while (uniqueRandomIterator.hasNext()) {
+            uniquelySeen.add(uniqueRandomIterator.next());
+        }
         assertThat(uniquelySeen).containsExactlyInAnyOrderElementsOf(solution.getEntityList());
     }
 
@@ -218,7 +221,7 @@ class DatasetTest {
         var iterator = instance.iterator();
         while (iterator.hasNext()) {
             iterator.next();
-            pairs.add(Arrays.asList(iterator.getA(), iterator.getB()));
+            pairs.add(Arrays.asList(iterator.a(), iterator.b()));
         }
         return pairs;
     }

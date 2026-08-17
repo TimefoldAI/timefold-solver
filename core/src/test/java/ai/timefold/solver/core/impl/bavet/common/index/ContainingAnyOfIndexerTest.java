@@ -24,7 +24,7 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
             new DefaultBiNeighborhoodsJoiner<>(TestWorker::skills, JoinerType.CONTAINING_ANY_OF, TestJob::skills);
 
     private final DefaultBiNeighborhoodsJoiner<TestWorker, TestJob> randomAccessMultiJoiner =
-            new DefaultBiNeighborhoodsJoiner<TestWorker, TestJob>(TestWorker::skills, JoinerType.CONTAINING_ANY_OF,
+            new DefaultBiNeighborhoodsJoiner<>(TestWorker::skills, JoinerType.CONTAINING_ANY_OF,
                     TestJob::skills)
                     .and(NeighborhoodsJoiners.equal(TestWorker::department, TestJob::department));
 
@@ -143,7 +143,7 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void randomIterator() {
+    void uniqueRandomIterator() {
         var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
 
         var annXY1 = putContainingIndexer(indexer, List.of("X", "Y"));
@@ -151,15 +151,15 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
         var carlXY2 = putContainingIndexer(indexer, List.of("X", "Y"));
         var zero1 = putContainingIndexer(indexer, List.of());
 
-        assertThat(randomIterableForCollectionQuery(indexer, "X"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "X"))
                 .containsExactlyInAnyOrder(annXY1, bethXZ1, carlXY2);
-        assertThat(randomIterableForCollectionQuery(indexer, "Y"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "Y"))
                 .containsExactlyInAnyOrder(annXY1, carlXY2);
-        assertThat(randomIterableForCollectionQuery(indexer, "Z"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "Z"))
                 .containsExactlyInAnyOrder(bethXZ1);
 
-        var list1 = randomListForCollectionQuery(indexer, 0, "X");
-        var list2 = randomListForCollectionQuery(indexer, 2, "X");
+        var list1 = uniqueRandomListForCollectionQuery(indexer, 0, "X");
+        var list2 = uniqueRandomListForCollectionQuery(indexer, 2, "X");
         assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
         assertThat(list1).isNotEqualTo(list2);
     }

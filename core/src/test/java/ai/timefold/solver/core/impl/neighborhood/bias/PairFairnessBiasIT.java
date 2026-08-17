@@ -97,7 +97,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
 
         tally("cached join, buckets %s".formatted(BUCKET_SIZE_LIST), drawCount, draw -> {
             iterator.next();
-            return List.<Object> of(iterator.getA(), iterator.getB());
+            return List.<Object> of(iterator.a(), iterator.b());
         }).expectUniform(expectedPairList).assertWithinSigma(SIGMA_LIMIT);
     }
 
@@ -126,7 +126,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
         var iterator = instance.uniqueRandomIterator(new Random(0));
         while (iterator.hasNext()) {
             iterator.next();
-            List<Object> pair = List.of(iterator.getA(), iterator.getB());
+            List<Object> pair = List.of(iterator.a(), iterator.b());
             assertThat(seenPairSet.add(pair)).as("pair %s must not be visited twice", pair).isTrue();
         }
         assertThat(seenPairSet).hasSize(totalPairCount);

@@ -202,12 +202,12 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         }
 
         @Override
-        public @Nullable A getA() {
+        public @Nullable A a() {
             return currentLeftTuple.getA();
         }
 
         @Override
-        public @Nullable B getB() {
+        public @Nullable B b() {
             return currentRightTuple.getA();
         }
 
@@ -278,12 +278,12 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         }
 
         @Override
-        public @Nullable A getA() {
+        public @Nullable A a() {
             return currentLeftTuple.getA();
         }
 
         @Override
-        public @Nullable B getB() {
+        public @Nullable B b() {
             return currentRightTuple.getA();
         }
 
@@ -365,12 +365,12 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         }
 
         @Override
-        public @Nullable A getA() {
+        public @Nullable A a() {
             return currentLeftTuple.getA();
         }
 
         @Override
-        public @Nullable B getB() {
+        public @Nullable B b() {
             return currentRightTuple.getA();
         }
 

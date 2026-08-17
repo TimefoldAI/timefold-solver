@@ -255,7 +255,7 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
         public DefaultIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection) {
             this.queryCompositeKey = queryCompositeKey;
             this.indexerIterator = indexKeyCollection.iterator();
-            this.distinctingSet = new HashSet<>(indexKeyCollection.size() * 16);
+            this.distinctingSet = HashSet.newHashSet(indexKeyCollection.size() * 16);
         }
 
         @Override

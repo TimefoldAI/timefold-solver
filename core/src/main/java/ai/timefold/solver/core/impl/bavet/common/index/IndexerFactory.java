@@ -621,12 +621,15 @@ public final class IndexerFactory<Right_> {
         }
     }
 
-    private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyUnpacker<?> keyUnpacker,
+    /**
+     * A right bridge node stores B, keyed by rightMapping,
+     * and is queried using A's leftMapping-derived key.
+     * The joiner type has to be flipped to translate "leftMapping(A) OP rightMapping(B)"
+     * into the equivalent "storedKey OP' queryKey" relation,
+     * regardless of whether a left bridge also exists to pair with it.
+     */
+    private static <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyUnpacker<?> keyUnpacker,
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        // A right bridge node stores B, keyed by rightMapping, and is queried using A's leftMapping-derived key.
-        // The joiner type has to be flipped to translate "leftMapping(A) OP rightMapping(B)"
-        // into the equivalent "storedKey OP' queryKey" relation,
-        // regardless of whether a left bridge also exists to pair with it.
         if (!isLeftBridge) {
             joinerType = joinerType.flip();
         }

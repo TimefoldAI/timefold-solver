@@ -16,6 +16,25 @@ import org.jspecify.annotations.Nullable;
  * even after retirements.
  * It accepts a list of unique items on input,
  * and does not copy or modify it.
+ * <p>
+ * The classic Fisher-Yates shuffle repeats,
+ * over a shrinking range {@code [0, i]}:
+ * pick a random index {@code j} in the range,
+ * swap the items at {@code i} and {@code j},
+ * then shrink the range ({@code i--}).
+ * This class performs the same steps,
+ * split across two calls,
+ * over a virtual permutation layer instead of the real list:
+ * <ul>
+ * <li>{@link #hasNext()} draws the random {@code j}:
+ * {@code nextSlot = workingRandom.nextInt(activeCount)}.
+ * <li>{@link #retire()} performs the swap-and-shrink:
+ * it moves the item that lives in the last live slot into the retired slot's position
+ * (see {@link #slotMap} for this "reservation"),
+ * then shrinks {@link #activeCount} so the last slot drops out of the live range.
+ * </ul>
+ * Only one side of the swap is ever written,
+ * because the slot that drops out of range is never read again.
  *
  * @param <T>
  */
@@ -43,6 +62,9 @@ final class DefaultRetiringRandomIterator<T extends @Nullable Object>
      */
     private final Map<Integer, Integer> slotMap = new HashMap<>();
 
+    /**
+     * [0, activeCount) is the live Fisher-Yates range.
+     */
     private int activeCount;
 
     private int nextSlot = -1;
@@ -63,7 +85,7 @@ final class DefaultRetiringRandomIterator<T extends @Nullable Object>
         if (nextSlot != -1) {
             return true;
         }
-        nextSlot = workingRandom.nextInt(activeCount);
+        nextSlot = workingRandom.nextInt(activeCount); // The Fisher-Yates random pick.
         next = source.get(resolveSlot(nextSlot));
         slotToOptionallyRetire = -1;
         return true;
@@ -90,7 +112,7 @@ final class DefaultRetiringRandomIterator<T extends @Nullable Object>
     }
 
     @Override
-    public void retire() {
+    public void retire() { // Fisher-Yates swap-and-shrink; one-sided lazy map update.
         if (slotToOptionallyRetire == -1) {
             throw new IllegalStateException(
                     "The next() method has not been called yet, or the retire() method was already called after the last next() call.");

@@ -66,23 +66,39 @@ class IteratorBiasIT extends AbstractBiasIT {
      * Protects {@code ComparisonIndexer}'s plain (repeating, with-replacement) flavor:
      * it must pick across every matching bucket, weighted by bucket size,
      * not just the first bucket it encounters while walking the boundary.
+     * Parameterized over both directions:
+     * LTE walks {@code comparisonMap} forward,
+     * GTE walks it in {@code reverseOrder},
+     * and the two directions share no code path other than {@code collectMatchingBuckets} itself.
+     * The GTE query (10) is also the smallest bucket's own key,
+     * so it additionally decides the sign-flipped {@code hasOrEquals} branch under sampling.
      */
-    @Test
-    void comparisonIndexerRandomIteratorWeightsByBucketSize() {
+    @MethodSource("comparisonIndexerRandomIteratorWeightsByBucketSizeArguments")
+    @ParameterizedTest
+    void comparisonIndexerRandomIteratorWeightsByBucketSize(JoinerType joinerType, int queryAge) {
         var trialCount = 200_000;
-        var joiner = (DefaultBiNeighborhoodsJoiner<TestPerson, TestPerson>) NeighborhoodsJoiners
-                .lessThanOrEqual(TestPerson::age);
+        var joiner = (DefaultBiNeighborhoodsJoiner<TestPerson, TestPerson>) (joinerType == JoinerType.LESS_THAN_OR_EQUAL
+                ? NeighborhoodsJoiners.lessThanOrEqual(TestPerson::age)
+                : NeighborhoodsJoiners.greaterThanOrEqual(TestPerson::age));
         Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        // Three buckets, all matching a query of age 50, with sizes 1, 3, and 6 (weight 0.1 / 0.3 / 0.6).
+        // Three buckets, all matching the query, with sizes 1, 3, and 6 (weight 0.1 / 0.3 / 0.6).
         putBucket(indexer, 10, 1);
         putBucket(indexer, 20, 3);
         putBucket(indexer, 30, 6);
 
         var random = new Random(0);
-        tally("ComparisonIndexer repeating, multi-bucket by size", trialCount,
-                trial -> Bucket.of(indexer.randomIterator(CompositeKey.of(50), random).next()))
+        tally("ComparisonIndexer repeating, multi-bucket by size (%s)".formatted(joinerType), trialCount,
+                trial -> Bucket.of(indexer.randomIterator(CompositeKey.of(queryAge), random).next()))
                 .expectWeights(Bucket.weightMap())
                 .assertWithinSigma(SIGMA_LIMIT);
+    }
+
+    private static List<Arguments> comparisonIndexerRandomIteratorWeightsByBucketSizeArguments() {
+        return List.of(
+                // Query 50: every bucket (10, 20, 30) is <= 50, so all three match, walked forward.
+                Arguments.of(JoinerType.LESS_THAN_OR_EQUAL, 50),
+                // Query 10: every bucket is >= 10, so all three match, walked in reverseOrder.
+                Arguments.of(JoinerType.GREATER_THAN_OR_EQUAL, 10));
     }
 
     /**

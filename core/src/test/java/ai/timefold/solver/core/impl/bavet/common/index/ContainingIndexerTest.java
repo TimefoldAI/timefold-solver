@@ -131,7 +131,7 @@ class ContainingIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void randomIterator() {
+    void uniqueRandomIterator() {
         var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
 
         var annXY1 = putContainingIndexer(indexer, List.of("X", "Y"));
@@ -139,16 +139,16 @@ class ContainingIndexerTest extends AbstractIndexerTest {
         var carlXY2 = putContainingIndexer(indexer, List.of("X", "Y"));
         var zero1 = putContainingIndexer(indexer, List.of());
 
-        assertThat(randomIterableForQuery(indexer, "X"))
+        assertThat(uniqueRandomIterableForQuery(indexer, "X"))
                 .containsExactlyInAnyOrder(annXY1, bethXZ1, carlXY2);
-        assertThat(randomIterableForQuery(indexer, "Y"))
+        assertThat(uniqueRandomIterableForQuery(indexer, "Y"))
                 .containsExactlyInAnyOrder(annXY1, carlXY2);
-        assertThat(randomIterableForQuery(indexer, "Z"))
+        assertThat(uniqueRandomIterableForQuery(indexer, "Z"))
                 .containsExactlyInAnyOrder(bethXZ1);
 
-        var list1 = randomListForQuery(indexer, 0, "X");
+        var list1 = uniqueRandomListForQuery(indexer, 0, "X");
         // seed 0 and 1 has the same list, but 2 is different
-        var list2 = randomListForQuery(indexer, 2, "X");
+        var list2 = uniqueRandomListForQuery(indexer, 2, "X");
         assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
         assertThat(list1).isNotEqualTo(list2);
 
@@ -162,6 +162,20 @@ class ContainingIndexerTest extends AbstractIndexerTest {
 
         var noMatchIterator = indexer.uniqueRandomIterator("Q", new Random(0));
         assertThat(noMatchIterator.hasNext()).isFalse();
+    }
+
+    @Test
+    void randomIteratorNeverEnds() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        putContainingIndexer(indexer, List.of("X", "Y"));
+        putContainingIndexer(indexer, List.of("X", "Z"));
+        putContainingIndexer(indexer, List.of("X", "Y"));
+
+        assertRepeatingRandomNeverEnds(indexer, "X", 30);
+
+        var deadIterator = indexer.randomIterator("Q", new Random(0));
+        assertThat(deadIterator.hasNext()).isFalse();
     }
 
     record TestWorker(String name, List<String> skills, String department, String affinity) {

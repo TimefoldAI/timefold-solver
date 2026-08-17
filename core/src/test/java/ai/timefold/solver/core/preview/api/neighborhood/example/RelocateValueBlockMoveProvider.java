@@ -64,8 +64,8 @@ final class RelocateValueBlockMoveProvider implements MoveProvider<TestdataListE
             var pairIterator = pairInstance.iterator();
             while (pairIterator.hasNext()) {
                 pairIterator.next();
-                var entityA = pairIterator.getA();
-                var entityB = pairIterator.getB();
+                var entityA = pairIterator.a();
+                var entityB = pairIterator.b();
                 collectRelocations(solutionView, destinationInstance, entityA, entityB, moveList);
                 collectRelocations(solutionView, destinationInstance, entityB, entityA, moveList);
             }

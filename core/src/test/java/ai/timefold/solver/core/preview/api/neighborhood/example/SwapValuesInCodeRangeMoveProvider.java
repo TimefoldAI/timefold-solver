@@ -66,14 +66,14 @@ final class SwapValuesInCodeRangeMoveProvider implements MoveProvider<TestdataSo
             var pairIterator = pairInstance.iterator();
             while (pairIterator.hasNext()) {
                 pairIterator.next();
-                var valueA = pairIterator.getA();
-                var valueB = pairIterator.getB();
+                var valueA = pairIterator.a();
+                var valueB = pairIterator.b();
 
                 var rangeIterator = rangeInstance.iterator();
                 while (rangeIterator.hasNext()) {
                     rangeIterator.next();
-                    var start = rangeIterator.getA();
-                    var end = rangeIterator.getB();
+                    var start = rangeIterator.a();
+                    var end = rangeIterator.b();
 
                     var swapList = new ArrayList<Move<TestdataSolution>>();
                     collectSwaps(valueEntityInstance, valueA, valueB, start, end, swapList);
