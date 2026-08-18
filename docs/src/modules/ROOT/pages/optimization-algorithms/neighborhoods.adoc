@@ -897,18 +897,14 @@ which only includes change and swap moves.
 === Runtime limitations
 
 As the Neighborhoods API is still in an early stage of development,
-it has some limitations which we will address in future releases:
+it has some limitations which we will address in future releases,
+such as:
 
 - The Neighborhoods API is not compatible with `LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT`;
 configuring both together throws an exception at solver build time.
 - The Neighborhoods API does not yet support move probability weighting.
 All move providers included in the neighborhood have the same probability of being selected to generate a move.
-- The Neighborhoods API also has the same probability of selection as the move-selector based neighborhood.
-This means that the solver will first pick whether to use the Neighborhoods API or the move selectors to generate the next move,
-and only then use that particular method to generate the move.
 
-The coexistence of Move Selectors and Neighborhoods is an issue we are actively working on.
-We will also work on adding more advanced moves in the default neighborhood,
+We are actively working on adding more advanced moves in the default neighborhood,
 such as 2-opt, 3-opt and xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection].
 The Neighborhoods API is still far from being a full replacement of Move Selectors.
-

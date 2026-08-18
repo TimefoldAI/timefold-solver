@@ -39,6 +39,10 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
         phaseLifecycleSupport.addEventListener(childMoveSelector);
     }
 
+    public MoveSelector<Solution_> getChildMoveSelector() {
+        return childMoveSelector;
+    }
+
     // ************************************************************************
     // Worker methods
     // ************************************************************************

@@ -28,7 +28,6 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.composite.UnionMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.composite.UnionMoveSelectorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
@@ -36,6 +35,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
 import ai.timefold.solver.core.impl.neighborhood.DefaultNeighborhoodProvider;
+import ai.timefold.solver.core.impl.neighborhood.MixedMoveSelector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.MoveSelectorBasedMoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
@@ -48,6 +48,8 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
+
+import org.jspecify.annotations.NonNull;
 
 public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFactory<Solution_, LocalSearchPhaseConfig> {
 
@@ -147,18 +149,13 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
         var legacyMoveSelector = buildMoveSelector(configPolicy, neighborhoodProviderClass != null);
-        if (legacyMoveSelector instanceof UnionMoveSelector<?> unionMoveSelector
-                && unionMoveSelector.getSelectorProbabilityWeightFactory() != null) {
-            throw new UnsupportedOperationException(
-                    "Probability-weighted move selectors are not supported together with the Neighborhoods API.");
-        } else if (legacyMoveSelector == null) { // There were no move selectors configured.
+        if (legacyMoveSelector == null) { // There were no move selectors configured.
             return buildNeighborhoodsBasedDecider(configPolicy, termination, neighborhoodProviderClass);
         }
         var neighborhoodsMoveSelector =
                 new NeighborhoodsMoveSelector<>(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
-        var moveSelectorList = List.of(legacyMoveSelector, neighborhoodsMoveSelector);
-        var unionMoveSelector = new UnionMoveSelector<>(moveSelectorList, pickSelectionOrder() == SelectionOrder.RANDOM);
-        var moveRepository = new MoveSelectorBasedMoveRepository<>(unionMoveSelector);
+        var moveSelector = new MixedMoveSelector<>(legacyMoveSelector, neighborhoodsMoveSelector);
+        var moveRepository = new MoveSelectorBasedMoveRepository<>(moveSelector);
         return buildDecider(moveRepository, configPolicy, termination);
     }
 
@@ -201,20 +198,25 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 throw new UnsupportedOperationException(
                         "Variable Neighborhood descent is not yet supported with the Neighborhoods API.");
             }
-            var acceptorType = switch (localSearchType_) {
-                case HILL_CLIMBING, VARIABLE_NEIGHBORHOOD_DESCENT -> AcceptorType.HILL_CLIMBING;
-                case TABU_SEARCH -> AcceptorType.ENTITY_TABU;
-                case SIMULATED_ANNEALING -> AcceptorType.SIMULATED_ANNEALING;
-                case LATE_ACCEPTANCE -> AcceptorType.LATE_ACCEPTANCE;
-                case DIVERSIFIED_LATE_ACCEPTANCE -> AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE;
-                case GREAT_DELUGE -> AcceptorType.GREAT_DELUGE;
-            };
-            if (neighborhoodsEnabled && acceptorType.isTabu()) {
-                throw new UnsupportedOperationException("Tabu search is not yet supported with the Neighborhoods API.");
-            }
+            var acceptorType = getAcceptorType(neighborhoodsEnabled, localSearchType_);
             acceptorConfig_.setAcceptorTypeList(Collections.singletonList(acceptorType));
             return buildAcceptor(acceptorConfig_, configPolicy);
         }
+    }
+
+    private static @NonNull AcceptorType getAcceptorType(boolean neighborhoodsEnabled, LocalSearchType localSearchType_) {
+        var acceptorType = switch (localSearchType_) {
+            case HILL_CLIMBING, VARIABLE_NEIGHBORHOOD_DESCENT -> AcceptorType.HILL_CLIMBING;
+            case TABU_SEARCH -> AcceptorType.ENTITY_TABU;
+            case SIMULATED_ANNEALING -> AcceptorType.SIMULATED_ANNEALING;
+            case LATE_ACCEPTANCE -> AcceptorType.LATE_ACCEPTANCE;
+            case DIVERSIFIED_LATE_ACCEPTANCE -> AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE;
+            case GREAT_DELUGE -> AcceptorType.GREAT_DELUGE;
+        };
+        if (neighborhoodsEnabled && acceptorType.isTabu()) {
+            throw new UnsupportedOperationException("Tabu search is not yet supported with the Neighborhoods API.");
+        }
+        return acceptorType;
     }
 
     private Acceptor<Solution_> buildAcceptor(LocalSearchAcceptorConfig acceptorConfig,

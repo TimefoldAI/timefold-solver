@@ -41,6 +41,10 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
         return true;
     }
 
+    public int getNeighborhoodCount() {
+        return moveStreamList.size();
+    }
+
     @Override
     public void initialize(SessionContext<Solution_> context) {
         if (neighborhoodSession != null) {
