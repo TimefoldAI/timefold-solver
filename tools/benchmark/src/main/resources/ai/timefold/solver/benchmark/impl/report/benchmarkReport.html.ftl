@@ -750,7 +750,7 @@
                                             <#assign chartList = pureSubSingleStatistic.getChartList()>
                                             <#if chartList?size != 0>
                                                 <#if singleStatisticType.hasScoreLevels()>
-                                                    <@addChartList chartList=chartList idPrefix="singleStatistic_" + problemBenchmarkResult.anchorId + "_" + singleStatisticType.anchorId />
+                                                    <@addChartList chartList=chartList idPrefix="singleStatistic_" + pureSubSingleStatistic.anchorId + "_" + singleStatisticType.anchorId />
                                                 <#else>
                                                     <@addChart chart=chartList[0] />
                                                 </#if>
