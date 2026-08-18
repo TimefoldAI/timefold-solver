@@ -28,7 +28,11 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
             Map.entry("timefold.model.rest-resource", "ai.timefold.platform.model-resource"),
             Map.entry("timefold.model.schema.validation.enable", "ai.timefold.platform.models.validation.enable"),
             Map.entry("timefold.model.test.serialization.callback.disable",
-                    "ai.timefold.platform.model.test.serialization.callback.disable"));
+                    "ai.timefold.platform.model.test.serialization.callback.disable"),
+            Map.entry("timefold.tenant.store", "ai.timefold.tenant.store"),
+            Map.entry("timefold.maps.store", "ai.timefold.maps.store"),
+            Map.entry("timefold.models.store", "ai.timefold.models.store"),
+            Map.entry("timefold.plan.store", "ai.timefold.plan.store"));
 
     // Renames of every property under a given prefix, checked in order; the first match wins.
     private static final Map<String, String> RENAMED_PROPERTY_PREFIXES = Map.ofEntries(
@@ -37,8 +41,7 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
             Map.entry("timefold.model.contact.", "timefold.application.contact."),
             Map.entry("timefold.model.rest.", "timefold.rest."),
             Map.entry("timefold.storage.", "ai.timefold.storage."),
-            Map.entry("timefold.platform.", "ai.timefold.platform."),
-            Map.entry("timefold.", "ai.timefold."));
+            Map.entry("timefold.platform.", "ai.timefold.platform."));
 
     // Properties that each replace two distinct legacy properties, so we check both legacy names.
     private static final Map<String, List<String>> RENAMED_PROPERTIES_WITH_MULTIPLE_LEGACY_NAMES = Map.of(
