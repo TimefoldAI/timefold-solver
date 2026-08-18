@@ -61,6 +61,8 @@ jobs:
   java_full:
     name: "Java Solver (with flag -Dfull, no tests)"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v7
