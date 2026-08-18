@@ -14,7 +14,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -65,7 +64,7 @@ class LeftRetirementBiasIT extends AbstractBiasIT {
             }
         }
 
-        tally("interior retirement, live entities", measuredDrawCount, draw -> {
+        BiasReport.tally("interior retirement, live entities", measuredDrawCount, draw -> {
             var move = iterator.next();
             return ((TestdataEntity) move.getPlanningEntities().getFirst()).getCode();
         }).expectUniform(liveEntityCodeList).assertWithinSigma(SIGMA_LIMIT);
@@ -102,7 +101,7 @@ class LeftRetirementBiasIT extends AbstractBiasIT {
         var iterator = moveIterator(moveProvider, solution);
 
         var hardCountInTail = new int[1];
-        var report = tally("hard/easy filtering() reachability", drawCount, draw -> {
+        var report = BiasReport.tally("hard/easy filtering() reachability", drawCount, draw -> {
             var move = iterator.next();
             var isHard = move.getPlanningEntities().getFirst() == hardEntity;
             if (draw >= drawCount - tailDrawCount && isHard) {
@@ -121,24 +120,6 @@ class LeftRetirementBiasIT extends AbstractBiasIT {
         // so their overall share should be close to even (50/50),
         // not just individually positive.
         report.expectWeights(Map.of("hard", 0.5, "easy", 0.5)).assertWithinSigma(SIGMA_LIMIT);
-    }
-
-    /**
-     * Picks (entity, value) pairs matched by the given joiner.
-     */
-    @NullMarked
-    private record PickPair(PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue> variable,
-            BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner) implements MoveProvider<TestdataSolution> {
-
-        @Override
-        public MoveStream<TestdataSolution> build(MoveStreamFactory<TestdataSolution> moveStreamFactory) {
-            var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
-            var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
-            return moveStreamFactory.pick(entityStream)
-                    .pick(valueStream, joiner)
-                    .asMove((solutionView, entity, value) -> Moves.change(variable, entity, value));
-        }
-
     }
 
     /**

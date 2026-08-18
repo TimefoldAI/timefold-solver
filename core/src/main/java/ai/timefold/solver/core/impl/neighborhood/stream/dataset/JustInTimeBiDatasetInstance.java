@@ -120,16 +120,21 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     }
 
     /**
-     * Ports {@code BiRandomMoveIterator}'s never-ending walk over (A, B) pairs:
-     * the right side is drawn with replacement,
-     * and a left tuple is only ever retired once its right side is confirmed empty.
+     * Holds the pending/current-tuple state and the retirement walk shared by
+     * {@link RepeatingRandomBiIterator} and {@link UniqueRandomBiIterator}:
+     * {@code retire()} is never called by either subclass directly,
+     * it happens entirely inside {@link RetiringBiWalk#advance},
+     * driven by {@link #leftTupleIterator}.
+     * Only {@link #createRightIterator} differs between them
+     * (with-replacement vs memoized without-replacement),
+     * which is why it stays abstract here.
      */
-    private static final class RepeatingRandomBiIterator<Solution_, A, B>
+    private abstract static class AbstractRandomBiIterator<Solution_, A, B>
             implements BiIterator<A, B>, RetiringBiWalk<UniTuple<A>, UniTuple<B>> {
 
-        private final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
-        private final SolutionView<Solution_> solutionView;
-        private final RandomGenerator workingRandom;
+        final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
+        final SolutionView<Solution_> solutionView;
+        final RandomGenerator workingRandom;
         private final RetiringRandomIterator<UniTuple<A>> leftTupleIterator;
 
         private @Nullable UniTuple<A> pendingLeftTuple;
@@ -137,7 +142,7 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         private @Nullable UniTuple<A> currentLeftTuple;
         private @Nullable UniTuple<B> currentRightTuple;
 
-        private RepeatingRandomBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
+        private AbstractRandomBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
                 UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance, SolutionView<Solution_> solutionView,
                 RandomGenerator workingRandom) {
             this.rightDatasetInstance = rightDatasetInstance;
@@ -147,8 +152,51 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         }
 
         @Override
-        public boolean hasNext() {
+        public final boolean hasNext() {
             return pendingRightTuple != null || RetiringBiWalk.advance(leftTupleIterator, this);
+        }
+
+        @Override
+        public final void accept(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
+            pendingLeftTuple = leftTuple;
+            pendingRightTuple = rightTuple;
+        }
+
+        @Override
+        public final void next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            currentLeftTuple = pendingLeftTuple;
+            currentRightTuple = pendingRightTuple;
+            pendingLeftTuple = null;
+            pendingRightTuple = null;
+        }
+
+        @Override
+        public final @Nullable A a() {
+            return currentLeftTuple.getA();
+        }
+
+        @Override
+        public final @Nullable B b() {
+            return currentRightTuple.getA();
+        }
+
+    }
+
+    /**
+     * Ports {@code BiRandomMoveIterator}'s never-ending walk over (A, B) pairs:
+     * the right side is drawn with replacement,
+     * and a left tuple is only ever retired once its right side is confirmed empty.
+     */
+    private static final class RepeatingRandomBiIterator<Solution_, A, B>
+            extends AbstractRandomBiIterator<Solution_, A, B> {
+
+        private RepeatingRandomBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
+                UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance, SolutionView<Solution_> solutionView,
+                RandomGenerator workingRandom) {
+            super(leftDatasetInstance, rightDatasetInstance, solutionView, workingRandom);
         }
 
         @Override
@@ -166,64 +214,20 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
                     rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()), bailOutSize);
         }
 
-        @Override
-        public void accept(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-            pendingLeftTuple = leftTuple;
-            pendingRightTuple = rightTuple;
-        }
-
-        @Override
-        public void next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            currentLeftTuple = pendingLeftTuple;
-            currentRightTuple = pendingRightTuple;
-            pendingLeftTuple = null;
-            pendingRightTuple = null;
-        }
-
-        @Override
-        public @Nullable A a() {
-            return currentLeftTuple.getA();
-        }
-
-        @Override
-        public @Nullable B b() {
-            return currentRightTuple.getA();
-        }
-
     }
 
     /**
      * Ports {@code BiRandomMoveIterator}'s sampling-without-replacement walk over (A, B) pairs.
      */
     private static final class UniqueRandomBiIterator<Solution_, A, B>
-            implements BiIterator<A, B>, RetiringBiWalk<UniTuple<A>, UniTuple<B>> {
+            extends AbstractRandomBiIterator<Solution_, A, B> {
 
-        private final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
-        private final SolutionView<Solution_> solutionView;
-        private final RandomGenerator workingRandom;
         private final Map<UniTuple<A>, Iterator<UniTuple<B>>> leftTupleToRightIteratorMap = new HashMap<>();
-        private final RetiringRandomIterator<UniTuple<A>> leftTupleIterator;
-
-        private @Nullable UniTuple<A> pendingLeftTuple;
-        private @Nullable UniTuple<B> pendingRightTuple;
-        private @Nullable UniTuple<A> currentLeftTuple;
-        private @Nullable UniTuple<B> currentRightTuple;
 
         private UniqueRandomBiIterator(AbstractLeftDatasetInstance<Solution_, UniTuple<A>> leftDatasetInstance,
                 UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance, SolutionView<Solution_> solutionView,
                 RandomGenerator workingRandom) {
-            this.rightDatasetInstance = rightDatasetInstance;
-            this.solutionView = solutionView;
-            this.workingRandom = workingRandom;
-            this.leftTupleIterator = leftDatasetInstance.retiringRandomIterator(workingRandom);
-        }
-
-        @Override
-        public boolean hasNext() {
-            return pendingRightTuple != null || RetiringBiWalk.advance(leftTupleIterator, this);
+            super(leftDatasetInstance, rightDatasetInstance, solutionView, workingRandom);
         }
 
         @Override
@@ -249,35 +253,8 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         }
 
         @Override
-        public void accept(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-            pendingLeftTuple = leftTuple;
-            pendingRightTuple = rightTuple;
-        }
-
-        @Override
         public void onExhausted(UniTuple<A> leftTuple) {
             leftTupleToRightIteratorMap.remove(leftTuple);
-        }
-
-        @Override
-        public void next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            currentLeftTuple = pendingLeftTuple;
-            currentRightTuple = pendingRightTuple;
-            pendingLeftTuple = null;
-            pendingRightTuple = null;
-        }
-
-        @Override
-        public @Nullable A a() {
-            return currentLeftTuple.getA();
-        }
-
-        @Override
-        public @Nullable B b() {
-            return currentRightTuple.getA();
         }
 
     }

@@ -12,7 +12,6 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class EqualIndexer<T, Key_> implements Indexer<T> {
@@ -92,15 +91,10 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return;
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, compositeKey);
+        if (downstreamIndexer != null) {
+            downstreamIndexer.forEach(compositeKey, tupleConsumer);
         }
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return;
-        }
-        downstreamIndexer.forEach(compositeKey, tupleConsumer);
     }
 
     @Override
@@ -108,21 +102,15 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
         return downstreamIndexerMap.isEmpty();
     }
 
+    @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return Collections.emptyIterator();
-        }
-        return downstreamIndexer.iterator(queryCompositeKey);
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
+        return downstreamIndexer == null ? Collections.emptyIterator() : downstreamIndexer.iterator(queryCompositeKey);
     }
 
     @Override
     public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        var downstreamIndexer = findDownstreamIndexer(queryCompositeKey);
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
         if (downstreamIndexer == null) {
             return RepeatingRandomIterator.empty();
         }
@@ -131,19 +119,11 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        var downstreamIndexer = findDownstreamIndexer(queryCompositeKey);
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
         if (downstreamIndexer == null) {
             return UniqueRandomIterator.empty();
         }
         return downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
-    }
-
-    private @Nullable Indexer<T> findDownstreamIndexer(Object queryCompositeKey) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return null;
-        }
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        return downstreamIndexerMap.get(indexKey);
     }
 
     @Override

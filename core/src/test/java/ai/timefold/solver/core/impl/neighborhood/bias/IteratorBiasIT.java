@@ -51,7 +51,7 @@ class IteratorBiasIT extends AbstractBiasIT {
         var trialCount = 1_000_000;
         var sampleList = toEntries(SAMPLES);
         var root = new Random(0);
-        tally("RepeatingRandomIterator uniform at draw #" + n, trialCount, trial -> {
+        BiasReport.tally("RepeatingRandomIterator uniform at draw #" + n, trialCount, trial -> {
             var splitRandom = splitFrom(root);
             var iterator = RepeatingRandomIterator.of(sampleList, splitRandom);
             Integer element = null;
@@ -87,7 +87,7 @@ class IteratorBiasIT extends AbstractBiasIT {
         putBucket(indexer, 30, 6);
 
         var random = new Random(0);
-        tally("ComparisonIndexer repeating, multi-bucket by size (%s)".formatted(joinerType), trialCount,
+        BiasReport.tally("ComparisonIndexer repeating, multi-bucket by size (%s)".formatted(joinerType), trialCount,
                 trial -> Bucket.of(indexer.randomIterator(CompositeKey.of(queryAge), random).next()))
                 .expectWeights(Bucket.weightMap())
                 .assertWithinSigma(SIGMA_LIMIT);
@@ -121,7 +121,7 @@ class IteratorBiasIT extends AbstractBiasIT {
         indexer.put(List.of("Y"), t3);
 
         var random = new Random(0);
-        tally("ContainingAnyOfIndexer unique, overlapping buckets", trialCount,
+        BiasReport.tally("ContainingAnyOfIndexer unique, overlapping buckets", trialCount,
                 trial -> indexer.uniqueRandomIterator(List.of("X", "Y"), random).next())
                 .expectUniform(List.of(t1, t2, t3))
                 .assertWithinSigma(SIGMA_LIMIT);
@@ -141,7 +141,7 @@ class IteratorBiasIT extends AbstractBiasIT {
         var survivorList = elementList.stream().filter(e -> !retiredElementSet.contains(e)).toList();
 
         var root = new Random(0);
-        var report = tally("DefaultRetiringRandomIterator uniform after interior retirement", trialCount, trial -> {
+        var report = BiasReport.tally("DefaultRetiringRandomIterator uniform after interior retirement", trialCount, trial -> {
             var splitRandom = splitFrom(root);
             var iterator = RetiringRandomIterator.of(toEntries(elementList), splitRandom);
             for (var retiredElement : retiredElementSet) {
@@ -176,7 +176,7 @@ class IteratorBiasIT extends AbstractBiasIT {
         var elementList = List.of(0, 1, 2, 3, 4);
 
         var root = new Random(0);
-        var report = tally("UniqueRandomIterator uniform full-drain permutation order", trialCount,
+        var report = BiasReport.tally("UniqueRandomIterator uniform full-drain permutation order", trialCount,
                 trial -> {
                     var splitRandom = splitFrom(root);
                     var iterator = UniqueRandomIterator.of(toEntries(elementList), splitRandom);
@@ -234,7 +234,7 @@ class IteratorBiasIT extends AbstractBiasIT {
         // so replaying draws against the same indexer across trials is safe.
         var indexer = flavour.buildIndexer();
         var root = new Random(0);
-        tally("%s multi-bucket unique, draw #%d".formatted(flavour, drawIndex), trialCount, trial -> {
+        BiasReport.tally("%s multi-bucket unique, draw #%d".formatted(flavour, drawIndex), trialCount, trial -> {
             var splitRandom = splitFrom(root);
             var iterator = flavour.uniqueRandomIterator(indexer, splitRandom);
             UniTuple<String> pick = null;

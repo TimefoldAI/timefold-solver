@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -16,7 +15,6 @@ import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
@@ -132,7 +130,17 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
         if (indexKeyCollection.isEmpty()) {
             return RepeatingRandomIterator.empty();
         }
-        return new RepeatingIterator(queryCompositeKey, indexKeyCollection, workingRandom);
+        return multiIndexerRepeatingIterator(queryCompositeKey, indexKeyCollection, workingRandom);
+    }
+
+    /**
+     * Every {@code next()} independently picks a key by its downstream size, with replacement,
+     * so this never ends: there is no shrinking distribution and no removed set to maintain.
+     */
+    private RepeatingRandomIterator<T> multiIndexerRepeatingIterator(Object queryCompositeKey,
+            SequencedCollection<Key_> indexKeyCollection, RandomGenerator workingRandom) {
+        return ContainingAnyOfIndexer.multiIndexerRepeatingIterator(queryCompositeKey, downstreamIndexerMap, indexKeyCollection,
+                workingRandom);
     }
 
     @Override
@@ -166,7 +174,12 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
     private UniqueRandomIterator<T> uniqueRandomIteratorManyKeys(SequencedCollection<Key_> indexKeyCollection,
             Object queryCompositeKey, RandomGenerator workingRandom) {
         var bucketIteratorList = new ArrayList<UniqueRandomIterator<T>>(indexKeyCollection.size());
-        var sizeList = new ArrayList<Integer>(indexKeyCollection.size());
+        // Upper-bounded by indexKeyCollection.size(); a trailing 0 in distribution is never sampled
+        // (sampleWithDistribution() only ever walks its non-zero prefix),
+        // so no trim to the real count is needed.
+        var distribution = new int[indexKeyCollection.size()];
+        var bucketCount = 0;
+        var distributionSum = 0;
         for (var indexKey : indexKeyCollection) {
             var downstreamIndexer = downstreamIndexerMap.get(indexKey);
             if (downstreamIndexer == null) {
@@ -176,17 +189,14 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
             if (size == 0) {
                 continue;
             }
-            sizeList.add(size);
+            distribution[bucketCount++] = size;
+            distributionSum += size;
             bucketIteratorList.add(downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom));
         }
-        if (bucketIteratorList.isEmpty()) {
+        if (distributionSum == 0) {
             return UniqueRandomIterator.empty();
         }
-        var distribution = new int[sizeList.size()];
-        for (var i = 0; i < sizeList.size(); i++) {
-            distribution[i] = sizeList.get(i);
-        }
-        return new MultiBucketUniqueRandomIterator<>(bucketIteratorList, distribution, workingRandom);
+        return new MultiBucketUniqueRandomIterator<>(bucketIteratorList, distribution, distributionSum, workingRandom);
     }
 
     @Override
@@ -201,21 +211,15 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
 
     private final class DefaultIterator implements Iterator<T> {
 
+        private final Object queryCompositeKey;
         private final Iterator<Key_> indexerIterator;
-        private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         @Nullable
         private Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
         public DefaultIterator(Object queryCompositeKey, SequencedCollection<Key_> indexKeyCollection) {
-            this(indexKeyCollection,
-                    downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
-        }
-
-        private DefaultIterator(SequencedCollection<Key_> indexKeyCollection,
-                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            this.queryCompositeKey = queryCompositeKey;
             this.indexerIterator = indexKeyCollection.iterator();
-            this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
 
         @Override
@@ -229,12 +233,11 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
             }
             while (indexerIterator.hasNext()) {
                 var indexKey = indexerIterator.next();
-                // Boundary condition not yet reached; include the indexer in the range.
                 var downstreamIndexer = downstreamIndexerMap.get(indexKey);
                 if (downstreamIndexer == null) {
                     continue;
                 }
-                downstreamIterator = downstreamIteratorFunction.apply(downstreamIndexer);
+                downstreamIterator = downstreamIndexer.iterator(queryCompositeKey);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
@@ -252,57 +255,6 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends SequencedCollecti
             next = null;
             return result;
         }
-
-    }
-
-    /**
-     * Every {@link #next()} independently picks a key by its downstream size, with replacement,
-     * so this class never ends:
-     * there is no shrinking distribution and no removed set to maintain.
-     */
-    final class RepeatingIterator implements RepeatingRandomIterator<T> {
-
-        private final List<Iterator<T>> downstreamIteratorList;
-        private final int[] distribution;
-        private final int distributionSum;
-        private final RandomGenerator workingRandom;
-
-        RepeatingIterator(Object queryCompositeKey, SequencedCollection<Key_> indexKeyCollection,
-                RandomGenerator workingRandom) {
-            this.workingRandom = workingRandom;
-            this.downstreamIteratorList = new ArrayList<>(indexKeyCollection.size());
-            this.distribution = new int[indexKeyCollection.size()];
-            var index = 0;
-            var sum = 0;
-            for (var indexKey : indexKeyCollection) {
-                var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-                if (downstreamIndexer == null) {
-                    downstreamIteratorList.add(Collections.emptyIterator());
-                } else {
-                    distribution[index] = downstreamIndexer.size(queryCompositeKey);
-                    downstreamIteratorList.add(downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
-                    sum += distribution[index];
-                }
-                index++;
-            }
-            this.distributionSum = sum;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return distributionSum > 0;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            var selectedIndex = RandomUtils.sampleWithDistribution(workingRandom, distributionSum, distribution);
-            return downstreamIteratorList.get(selectedIndex).next();
-        }
-
-        // No remove()/forEachRemaining() overrides: RepeatingRandomIterator's defaults already throw.
 
     }
 

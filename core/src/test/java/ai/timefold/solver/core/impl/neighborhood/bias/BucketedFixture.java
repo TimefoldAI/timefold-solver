@@ -15,11 +15,12 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 /**
- * One entity ({@code "b0"}, {@code "b1"}, ...) per bucket in {@code bucketSizeList}, each paired
- * only with its own bucket's values ({@code "b0-0"}, {@code "b0-1"}, ..., matched by an indexing
- * {@code equal} on the code prefix). A bucket size of 0 gives its entity zero matching values,
- * which is how {@link LeftRetirementBiasIT} builds an unreachable ("dead") left without a separate
- * fixture: liveness here just means a non-empty bucket.
+ * One entity ({@code "b0"}, {@code "b1"}, ...) per bucket in {@code bucketSizeList},
+ * each paired only with its own bucket's values ({@code "b0-0"}, {@code "b0-1"}, ...,
+ * matched by an indexing {@code equal} on the code prefix).
+ * A bucket size of 0 gives its entity zero matching values,
+ * which is how {@link LeftRetirementBiasIT} builds an unreachable ("dead") left
+ * without a separate fixture: liveness here just means a non-empty bucket.
  */
 final class BucketedFixture {
 
@@ -64,10 +65,6 @@ final class BucketedFixture {
             }
         }
         return moveSet;
-    }
-
-    int bucketSize(int bucketIndex) {
-        return movesFor(bucketIndex).size();
     }
 
 }

@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,10 +13,8 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.ListEntry;
-import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * As defined by {@link Joiners#containing(Function, Function)}
@@ -49,42 +46,15 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
     public ListEntry<T> put(Object modifyCompositeKey, T tuple) {
         unremovedSize++;
         var indexKeyCollection = modifyKeyUnpacker.apply(modifyCompositeKey);
-        var children = new ArrayList<Triple<Key_, Indexer<T>, ListEntry<T>>>(indexKeyCollection.size());
-        for (var indexKey : indexKeyCollection) {
-            // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-            var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-            if (downstreamIndexer == null) {
-                downstreamIndexer = downstreamIndexerSupplier.get();
-                downstreamIndexerMap.put(indexKey, downstreamIndexer);
-            }
-            // Even though this method puts a tuple in multiple downstreamIndexers, it does not break size() or forEach()
-            // because at most one of those downstreamIndexers matches for a particular compositeKey
-            var childListEntry = downstreamIndexer.put(modifyCompositeKey, tuple);
-            // The downstream indexer rides along so that remove() doesn't need to look it up again.
-            children.add(new Triple<>(indexKey, downstreamIndexer, childListEntry));
-        }
-        return new CompositeListEntry<>(tuple, children);
+        return ContainingAnyOfIndexer.put(modifyCompositeKey, downstreamIndexerMap, downstreamIndexerSupplier, tuple,
+                indexKeyCollection);
     }
 
     @Override
     public void remove(Object modifyCompositeKey, ListEntry<T> entry) {
         unremovedSize--;
         var indexKeyCollection = modifyKeyUnpacker.apply(modifyCompositeKey);
-        var children = ((CompositeListEntry<Key_, T>) entry).children();
-        if (indexKeyCollection.size() != children.size()) {
-            throw new IllegalStateException("""
-                    Impossible state: the tuple (%s) with composite key (%s) has a different number of children (%d) \
-                    than the index key collection size (%d)."""
-                    .formatted(entry, modifyCompositeKey, children.size(), indexKeyCollection.size()));
-        }
-        for (var i = 0; i < indexKeyCollection.size(); i++) { // Avoid creating an iterator on the hot path
-            var child = children.get(i);
-            var downstreamIndexer = child.b();
-            downstreamIndexer.remove(modifyCompositeKey, child.c());
-            if (downstreamIndexer.isRemovable()) {
-                downstreamIndexerMap.remove(child.a());
-            }
-        }
+        ContainingAnyOfIndexer.remove(modifyCompositeKey, downstreamIndexerMap, entry, indexKeyCollection);
     }
 
     @Override
@@ -102,33 +72,21 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return;
+        var downstreamIndexer = queryKeyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
+        if (downstreamIndexer != null) {
+            downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
         }
-        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return;
-        }
-        downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
     }
 
     @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return Collections.emptyIterator();
-        }
-        return downstreamIndexer.iterator(queryCompositeKey);
+        var downstreamIndexer = queryKeyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
+        return downstreamIndexer == null ? Collections.emptyIterator() : downstreamIndexer.iterator(queryCompositeKey);
     }
 
     @Override
     public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        var downstreamIndexer = findDownstreamIndexer(queryCompositeKey);
+        var downstreamIndexer = queryKeyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
         if (downstreamIndexer == null) {
             return RepeatingRandomIterator.empty();
         }
@@ -137,19 +95,11 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
 
     @Override
     public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        var downstreamIndexer = findDownstreamIndexer(queryCompositeKey);
+        var downstreamIndexer = queryKeyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
         if (downstreamIndexer == null) {
             return UniqueRandomIterator.empty();
         }
         return downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
-    }
-
-    private @Nullable Indexer<T> findDownstreamIndexer(Object queryCompositeKey) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return null;
-        }
-        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
-        return downstreamIndexerMap.get(indexKey);
     }
 
     @Override

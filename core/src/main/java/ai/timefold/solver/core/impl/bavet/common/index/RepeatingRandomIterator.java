@@ -26,10 +26,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public sealed interface RepeatingRandomIterator<T>
         extends Iterator<T>
-        permits DefaultRepeatingRandomIterator,
-        ComparisonIndexer.RepeatingIterator,
-        ContainedInIndexer.RepeatingIterator,
-        ContainingAnyOfIndexer.RepeatingIterator {
+        permits DefaultRepeatingRandomIterator, WeightedRepeatingIterator {
 
     static <T> RepeatingRandomIterator<T> of(ElementAwareArrayList<T> list, RandomGenerator random) {
         return new DefaultRepeatingRandomIterator<>(list, random);

@@ -62,7 +62,7 @@ class MixedMoveSelectorSplitBiasIT extends AbstractBiasIT {
         mixedMoveSelector.stepStarted(stepScope);
 
         var iterator = mixedMoveSelector.iterator();
-        var report = tally("mixed classic/neighborhoods split", 100_000, i -> classify(iterator.next()));
+        var report = BiasReport.tally("mixed classic/neighborhoods split", 100_000, i -> classify(iterator.next()));
 
         mixedMoveSelector.stepEnded(stepScope);
         mixedMoveSelector.phaseEnded(phaseScope);
@@ -81,14 +81,18 @@ class MixedMoveSelectorSplitBiasIT extends AbstractBiasIT {
         var classicMoveSelector = new UnionMoveSelector<>(classicChildMoveSelectorList, true);
 
         // Neighborhoods side: 2 move providers, each an endless source of "neighborhood" moves.
+        var neighborhoodsMoveSelector = getNeighborhoodsMoveSelector(solutionDescriptor);
+        return new MixedMoveSelector<>(classicMoveSelector, neighborhoodsMoveSelector);
+    }
+
+    private static @NonNull NeighborhoodsMoveSelector<TestdataSolution>
+            getNeighborhoodsMoveSelector(SolutionDescriptor<TestdataSolution> solutionDescriptor) {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var neighborhoodProviderList =
                 List.of(neverEndingMoveProvider("neighborhood-a"), neverEndingMoveProvider("neighborhood-b"));
         var neighborhoodsMoveRepository =
                 new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, neighborhoodProviderList);
-        var neighborhoodsMoveSelector = new NeighborhoodsMoveSelector<>(neighborhoodsMoveRepository);
-
-        return new MixedMoveSelector<>(classicMoveSelector, neighborhoodsMoveSelector);
+        return new NeighborhoodsMoveSelector<>(neighborhoodsMoveRepository);
     }
 
     private static String classify(Move<TestdataSolution> move) {

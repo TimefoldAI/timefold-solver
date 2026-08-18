@@ -10,18 +10,11 @@ import java.util.Random;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.builtin.Moves;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -61,7 +54,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
             }
         }
 
-        tally("indexed join, buckets %s".formatted(bucketSizeList), drawCount, draw -> iterator.next())
+        BiasReport.tally("indexed join, buckets %s".formatted(bucketSizeList), drawCount, draw -> iterator.next())
                 .expectWeights(expectedShareByPair)
                 .assertWithinSigma(SIGMA_LIMIT);
     }
@@ -95,7 +88,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
             }
         }
 
-        tally("cached join, buckets %s".formatted(BUCKET_SIZE_LIST), drawCount, draw -> {
+        BiasReport.tally("cached join, buckets %s".formatted(BUCKET_SIZE_LIST), drawCount, draw -> {
             iterator.next();
             return List.<Object> of(iterator.a(), iterator.b());
         }).expectUniform(expectedPairList).assertWithinSigma(SIGMA_LIMIT);
@@ -150,7 +143,7 @@ class PairFairnessBiasIT extends AbstractBiasIT {
         var smallestLabel = "smallest";
         var largestLabel = "largest";
 
-        tally("filtering()-only join, buckets %s".formatted(BUCKET_SIZE_LIST), drawCount, draw -> {
+        BiasReport.tally("filtering()-only join, buckets %s".formatted(BUCKET_SIZE_LIST), drawCount, draw -> {
             var move = iterator.next();
             if (smallestBucketMoves.contains(move)) {
                 return smallestLabel;
@@ -160,25 +153,6 @@ class PairFairnessBiasIT extends AbstractBiasIT {
             return "other";
         }).assertShareRatioAtLeast(smallestLabel, BUCKET_SIZE_LIST.getFirst(), largestLabel,
                 BUCKET_SIZE_LIST.getLast(), 5);
-    }
-
-    /**
-     * Picks (entity, value) pairs matched by the given joiner; reused for both the indexing
-     * {@code equal} and the {@code filtering()} shape.
-     */
-    @NullMarked
-    private record PickPair(PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue> variable,
-            BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner) implements MoveProvider<TestdataSolution> {
-
-        @Override
-        public MoveStream<TestdataSolution> build(MoveStreamFactory<TestdataSolution> moveStreamFactory) {
-            var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
-            var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
-            return moveStreamFactory.pick(entityStream)
-                    .pick(valueStream, joiner)
-                    .asMove((solutionView, entity, value) -> Moves.change(variable, entity, value));
-        }
-
     }
 
 }

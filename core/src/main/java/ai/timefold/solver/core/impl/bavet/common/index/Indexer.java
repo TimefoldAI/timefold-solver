@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
@@ -53,6 +54,17 @@ public sealed interface Indexer<T>
 
     /**
      * Query operation.
+     * Must be exact and de-duplicated (the count of distinct matching elements),
+     * not an upper bound:
+     * it seeds {@code AbstractIndexedIfExistsNode}'s {@code countRight},
+     * which is thereafter only incremented/decremented and compared against zero, never recomputed,
+     * so an over-count would never return to zero again;
+     * it also feeds {@link MultiBucketUniqueRandomIterator}'s per-bucket weights,
+     * which are decremented as elements are drawn,
+     * so an over-count there throws {@link NoSuchElementException} once the bucket is actually exhausted.
+     * An implementation whose buckets can overlap
+     * (see {@link ContainingAnyOfIndexer})
+     * must de-duplicate before counting, not sum per-key bucket sizes.
      *
      * @param queryCompositeKey query composite key
      * @return at least 0

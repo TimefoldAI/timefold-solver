@@ -3,18 +3,16 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.util.ListEntry;
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -295,29 +293,28 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private Iterator<T> iteratorSingleIndexer(Object compositeKey) {
-        return comparisonMap.isArrayBased() ? iteratorSingleIndexerArray(compositeKey)
-                : iteratorSingleIndexerTree(compositeKey);
+        var indexer = singleIndexer(compositeKey);
+        return indexer == null ? Collections.emptyIterator() : indexer.iterator(compositeKey);
     }
 
-    private Iterator<T> iteratorSingleIndexerArray(Object compositeKey) {
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var entryKey = comparisonMap.keyAt(0);
-        var entryValue = comparisonMap.valueAt(0);
-        if (boundaryReached(entryKey, indexKey)) {
-            return Collections.emptyIterator();
+    /**
+     * Resolves the single bucket this indexer holds when {@link #comparisonMap} has exactly one entry,
+     * or null if {@code queryCompositeKey}'s boundary is already reached at that one bucket (nothing matches).
+     * Shared by {@link #iteratorSingleIndexer}, {@link #singleIndexerRepeatingIterator} and
+     * {@link #singleIndexerUniqueIterator}:
+     * only the accessor each calls on the result,
+     * and the {@code empty()} marker it returns instead,
+     * differ between them.
+     */
+    private @Nullable Indexer<T> singleIndexer(Object queryCompositeKey) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        if (comparisonMap.isArrayBased()) {
+            var entryKey = comparisonMap.keyAt(0);
+            return boundaryReached(entryKey, indexKey) ? null : comparisonMap.valueAt(0);
+        } else {
+            var entry = comparisonMap.firstEntry();
+            return boundaryReached(entry.getKey(), indexKey) ? null : entry.getValue();
         }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return entryValue.iterator(compositeKey);
-    }
-
-    private Iterator<T> iteratorSingleIndexerTree(Object compositeKey) {
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var entry = comparisonMap.firstEntry();
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            return Collections.emptyIterator();
-        }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return entry.getValue().iterator(compositeKey);
     }
 
     @Override
@@ -325,26 +322,15 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         return switch (comparisonMap.size()) {
             case 0 -> RepeatingRandomIterator.empty();
             case 1 -> singleIndexerRepeatingIterator(queryCompositeKey, workingRandom);
-            default -> new RepeatingIterator(queryCompositeKey, workingRandom);
+            default -> multiIndexerRepeatingIterator(queryCompositeKey, workingRandom);
         };
     }
 
     private RepeatingRandomIterator<T> singleIndexerRepeatingIterator(Object queryCompositeKey,
             RandomGenerator workingRandom) {
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        if (comparisonMap.isArrayBased()) {
-            var entryKey = comparisonMap.keyAt(0);
-            if (boundaryReached(entryKey, indexKey)) {
-                return RepeatingRandomIterator.empty();
-            }
-            return comparisonMap.valueAt(0).randomIterator(queryCompositeKey, workingRandom);
-        } else {
-            var entry = comparisonMap.firstEntry();
-            if (boundaryReached(entry.getKey(), indexKey)) {
-                return RepeatingRandomIterator.empty();
-            }
-            return entry.getValue().randomIterator(queryCompositeKey, workingRandom);
-        }
+        var indexer = singleIndexer(queryCompositeKey);
+        return indexer == null ? RepeatingRandomIterator.empty()
+                : indexer.randomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
@@ -364,28 +350,33 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
      */
     private UniqueRandomIterator<T> multiIndexerUniqueIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
         var bucketIteratorList = new ArrayList<UniqueRandomIterator<T>>();
-        var sizeList = new ArrayList<Integer>();
+        // Upper-bounded by comparisonMap.size();
+        // a trailing 0 in distribution is never sampled
+        // (sampleWithDistribution() only ever walks its non-zero prefix),
+        // so no trim to the real count is needed.
+        var distribution = new int[comparisonMap.size()];
+        var bucketCount = new MutableInt();
+        var distributionSum = new MutableInt();
         collectMatchingBuckets(queryCompositeKey, bucket -> {
             var size = bucket.size(queryCompositeKey);
             if (size > 0) {
-                sizeList.add(size);
+                var newBucketCount = bucketCount.increment();
+                distribution[newBucketCount - 1] = size;
+                distributionSum.add(size);
                 bucketIteratorList.add(bucket.uniqueRandomIterator(queryCompositeKey, workingRandom));
             }
         });
-        if (bucketIteratorList.isEmpty()) {
+        var sum = distributionSum.intValue();
+        if (sum == 0) {
             return UniqueRandomIterator.empty();
         }
-        var distribution = new int[sizeList.size()];
-        for (var i = 0; i < sizeList.size(); i++) {
-            distribution[i] = sizeList.get(i);
-        }
-        return new MultiBucketUniqueRandomIterator<>(bucketIteratorList, distribution, workingRandom);
+        return new MultiBucketUniqueRandomIterator<>(bucketIteratorList, distribution, sum, workingRandom);
     }
 
     /**
      * Walks every bucket matching {@code queryCompositeKey}'s boundary (in {@link #comparisonMap}'s iteration order,
      * respecting {@link #reverseOrder}), handing each one to {@code matchingBucketConsumer}, empty or not.
-     * Shared by {@link RepeatingIterator} and {@link #multiIndexerUniqueIterator},
+     * Shared by {@link RepeatingRandomIterator} and {@link #multiIndexerUniqueIterator},
      * both of which need every matching bucket upfront:
      * there is no boundary-ordered walk to fall back on for either,
      * since a never-ending downstream would never let the walk advance past the first bucket.
@@ -424,20 +415,9 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private UniqueRandomIterator<T> singleIndexerUniqueIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        if (comparisonMap.isArrayBased()) {
-            var entryKey = comparisonMap.keyAt(0);
-            if (boundaryReached(entryKey, indexKey)) {
-                return UniqueRandomIterator.empty();
-            }
-            return comparisonMap.valueAt(0).uniqueRandomIterator(queryCompositeKey, workingRandom);
-        } else {
-            var entry = comparisonMap.firstEntry();
-            if (boundaryReached(entry.getKey(), indexKey)) {
-                return UniqueRandomIterator.empty();
-            }
-            return entry.getValue().uniqueRandomIterator(queryCompositeKey, workingRandom);
-        }
+        var indexer = singleIndexer(queryCompositeKey);
+        return indexer == null ? UniqueRandomIterator.empty()
+                : indexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
@@ -457,8 +437,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
      */
     private final class DefaultIterator implements Iterator<T> {
 
+        private final Object queryCompositeKey;
         private final Key_ indexKey;
-        private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         // Tree mode: entries pulled from here. Array mode: this is null and the array cursor fields are used instead.
         private final @Nullable Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator;
         private final int arrayStep;
@@ -468,12 +448,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         private @Nullable T next = null;
 
         public DefaultIterator(Object queryCompositeKey) {
-            this(queryCompositeKey, downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
-        }
-
-        private DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            this.queryCompositeKey = queryCompositeKey;
             this.indexKey = keyUnpacker.apply(queryCompositeKey);
-            this.downstreamIteratorFunction = downstreamIteratorFunction;
             if (comparisonMap.isArrayBased()) {
                 this.indexerIterator = null;
                 this.arrayCursor = reverseOrder ? comparisonMap.size() - 1 : 0;
@@ -504,7 +480,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = downstreamIteratorFunction.apply(entry.getValue());
+                downstreamIterator = entry.getValue().iterator(queryCompositeKey);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
@@ -523,7 +499,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = downstreamIteratorFunction.apply(indexer);
+                downstreamIterator = indexer.iterator(queryCompositeKey);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
@@ -544,52 +520,30 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     /**
-     * Every {@link #next()} independently picks a matching bucket weighted by its size, with replacement,
-     * so this class never ends:
-     * there is no shrinking distribution and no removed set to maintain.
+     * Every matching bucket is disjoint from every other (each is a distinct map key),
+     * so {@link WeightedRepeatingIterator} applies directly:
+     * {@link #collectMatchingBuckets} walks every matching, non-empty bucket upfront to learn its size,
+     * and weighted, with-replacement sampling takes care of the rest.
      */
-    final class RepeatingIterator implements RepeatingRandomIterator<T> {
-
-        private final List<Iterator<T>> downstreamIteratorList = new ArrayList<>();
-        private final int[] distribution;
-        private final int distributionSum;
-        private final RandomGenerator workingRandom;
-
-        RepeatingIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-            this.workingRandom = workingRandom;
-            var sizeList = new ArrayList<Integer>();
-            collectMatchingBuckets(queryCompositeKey, bucket -> {
-                var size = bucket.size(queryCompositeKey);
-                if (size > 0) {
-                    sizeList.add(size);
-                    downstreamIteratorList.add(bucket.randomIterator(queryCompositeKey, workingRandom));
-                }
-            });
-            this.distribution = new int[sizeList.size()];
-            var sum = 0;
-            for (var i = 0; i < sizeList.size(); i++) {
-                distribution[i] = sizeList.get(i);
-                sum += distribution[i];
+    private RepeatingRandomIterator<T> multiIndexerRepeatingIterator(Object queryCompositeKey,
+            RandomGenerator workingRandom) {
+        var downstreamIteratorList = new ArrayList<Iterator<T>>();
+        // Upper-bounded by comparisonMap.size(); a trailing 0 in distribution is never sampled
+        // (sampleWithDistribution() only ever walks its non-zero prefix), so no trim to the real count is needed.
+        var distribution = new int[comparisonMap.size()];
+        var bucketCount = new MutableInt();
+        var distributionSum = new MutableInt();
+        collectMatchingBuckets(queryCompositeKey, bucket -> {
+            var size = bucket.size(queryCompositeKey);
+            if (size > 0) {
+                var newBucketCount = bucketCount.increment();
+                distribution[newBucketCount - 1] = size;
+                distributionSum.add(size);
+                downstreamIteratorList.add(bucket.randomIterator(queryCompositeKey, workingRandom));
             }
-            this.distributionSum = sum;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return distributionSum > 0;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            var selectedIndex = RandomUtils.sampleWithDistribution(workingRandom, distributionSum, distribution);
-            return downstreamIteratorList.get(selectedIndex).next();
-        }
-
-        // No remove()/forEachRemaining() overrides: RepeatingRandomIterator's defaults already throw.
-
+        });
+        return new WeightedRepeatingIterator<>(downstreamIteratorList, distribution, distributionSum.intValue(),
+                workingRandom);
     }
 
 }

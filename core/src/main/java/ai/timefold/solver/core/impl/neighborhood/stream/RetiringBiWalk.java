@@ -73,6 +73,11 @@ public interface RetiringBiWalk<L, R> {
      * in a row report no next value, not after just one:
      * {@link #createRightIterator} is called again from scratch on every attempt,
      * so each gets its own fresh bail-out budget.
+     * This independence assumes {@link #createRightIterator} itself returns a fresh iterator each call;
+     * a caller that memoizes the right iterator per left (to make it survive across draws)
+     * gets back the same iterator on every attempt,
+     * so only the first of the {@link #PROBE_ATTEMPT_COUNT} attempts can change the outcome
+     * and the rest are deterministic no-ops.
      *
      * @return true if a pair was found and passed to {@link #accept(Object, Object)}
      */

@@ -485,8 +485,7 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * Terminal operation: materializes this stream as a {@link UniDataset},
      * kept up to date in memory as the working solution changes.
      * Use this instead of {@link MoveStreamFactory#pick(UniEnumeratingStream)}
-     * when the dataset is to be consumed from a custom {@link MoveIteratorProvider},
-     * as opposed to being consumed by {@link MoveStreamFactory#pick(UniEnumeratingStream)}
+     * when the dataset is to be consumed from a custom {@link MoveIteratorProvider}.
      * Resolve the returned handle against a {@link MoveIteratorSession}
      * inside {@link MoveStreamFactory#buildMoveStream(MoveIteratorProvider)}.
      * <p>

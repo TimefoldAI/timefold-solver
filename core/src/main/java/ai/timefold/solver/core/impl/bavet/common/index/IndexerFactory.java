@@ -526,10 +526,6 @@ public final class IndexerFactory<Right_> {
         return tuple -> CompositeKey.of(keyFunction.apply(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD()));
     }
 
-    public Function<Right_, Object> buildRightFactKeysExtractor() {
-        return buildUniFactKeysExtractor(joiner::getRightMapping);
-    }
-
     public UniKeysExtractor<Right_> buildRightKeysExtractor() {
         return buildUniTupleKeysExtractor(joiner::getRightMapping);
     }

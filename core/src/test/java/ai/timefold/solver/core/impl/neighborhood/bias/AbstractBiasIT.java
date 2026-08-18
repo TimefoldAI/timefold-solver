@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.neighborhood.bias;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -12,11 +11,19 @@ import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSessi
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
@@ -75,10 +82,6 @@ abstract class AbstractBiasIT {
                 .getMovesAsIterator();
     }
 
-    static <Category_> BiasReport<Category_> tally(String label, int sampleCount, IntFunction<Category_> sampler) {
-        return BiasReport.tally(label, sampleCount, sampler);
-    }
-
     /**
      * Builds and settles a {@code DatasetSession} directly
      * (bypassing a real {@code ScoreDirector} and solver),
@@ -93,6 +96,25 @@ abstract class AbstractBiasIT {
         moveStreamFactory.getSolutionDescriptor().visitAll(solution, session::insert);
         session.settle();
         return session;
+    }
+
+    /**
+     * Picks (entity, value) pairs matched by the given joiner; reused for both the indexing
+     * {@code equal} and the {@code filtering()} shape.
+     */
+    @NullMarked
+    record PickPair(PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue> variable,
+            BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner) implements MoveProvider<TestdataSolution> {
+
+        @Override
+        public MoveStream<TestdataSolution> build(MoveStreamFactory<TestdataSolution> moveStreamFactory) {
+            var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
+            var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
+            return moveStreamFactory.pick(entityStream)
+                    .pick(valueStream, joiner)
+                    .asMove((solutionView, entity, value) -> Moves.change(variable, entity, value));
+        }
+
     }
 
 }

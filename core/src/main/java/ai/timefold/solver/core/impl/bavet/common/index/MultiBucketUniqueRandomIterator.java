@@ -39,16 +39,19 @@ final class MultiBucketUniqueRandomIterator<T> implements UniqueRandomIterator<T
 
     private int distributionSum;
 
+    /**
+     *
+     * @param bucketIteratorList
+     * @param distribution
+     * @param distributionSum The sum of items in the distribution must match.
+     * @param workingRandom
+     */
     MultiBucketUniqueRandomIterator(List<UniqueRandomIterator<T>> bucketIteratorList, int[] distribution,
-            RandomGenerator workingRandom) {
+            int distributionSum, RandomGenerator workingRandom) {
         this.bucketIteratorList = bucketIteratorList;
         this.distribution = distribution;
+        this.distributionSum = distributionSum;
         this.workingRandom = workingRandom;
-        var sum = 0;
-        for (var weight : distribution) {
-            sum += weight;
-        }
-        this.distributionSum = sum;
     }
 
     @Override
