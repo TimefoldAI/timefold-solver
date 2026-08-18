@@ -446,7 +446,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType) {
         // Most score directors don't need derived status; CS will override this.
         switch (childThreadType) {
-            case ChildThreadType.PART_THREAD -> {
+            case PART_THREAD -> {
                 var childThreadScoreDirector =
                         scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(lookUpEnabled)
                                 .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
@@ -455,7 +455,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 childThreadScoreDirector.calculationCount = calculationCount;
                 return childThreadScoreDirector;
             }
-            case ChildThreadType.MOVE_THREAD -> {
+            case MOVE_THREAD -> {
                 var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(true)
                         .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
                 childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());

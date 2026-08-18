@@ -287,7 +287,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction);
 
@@ -301,7 +300,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param predictedScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertPredictedScoreFromScratch(InnerScore<Score_> predictedScore, Object completedAction);
 
