@@ -42,6 +42,7 @@ class SelectorBasedListSwapMoveTest {
 
     @BeforeEach
     void setUp() {
+        when(innerScoreDirector.isLastVariableUpdateSuccessful()).thenReturn(true);
         when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
     }
 

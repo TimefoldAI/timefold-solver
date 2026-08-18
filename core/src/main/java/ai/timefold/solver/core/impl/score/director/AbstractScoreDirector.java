@@ -495,6 +495,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         lastVariableUpdateSuccessful = shadowVariableSupport.updateShadowVariables();
     }
 
+    @Override
     public boolean isLastVariableUpdateSuccessful() {
         return lastVariableUpdateSuccessful;
     }

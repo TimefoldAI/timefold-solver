@@ -332,6 +332,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     /**
+     * @return true if the last {@link #updateShadowVariables()} was successful, false otherwise.
+     */
+    boolean isLastVariableUpdateSuccessful();
+
+    /**
      * A derived score director is created from a root score director.
      * The derived score director can be used to create separate* instances for use cases like multithreaded solving.
      */

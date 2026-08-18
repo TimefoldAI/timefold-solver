@@ -1556,7 +1556,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveCustomPhaseReturnsInconsistent() {
+    void solveCustomPhaseReturnsStructurallyFlawed() {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
@@ -1600,8 +1600,8 @@ class DefaultSolverTest {
         problem.setValues(values);
 
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem, false))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContainingAll("The custom phase command", "resulted in an inconsistent solution.");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("The move ", "caused the solution to become structurally flawed.");
     }
 
     @Test

@@ -40,13 +40,17 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
             throw new IllegalArgumentException("The unassignedCount (%d) must be >= 0."
                     .formatted(unassignedCount));
         }
+        if (raw.structuralScore() > 0) {
+            throw new IllegalArgumentException("The structuralScore (%d) must be <= 0."
+                    .formatted(raw.structuralScore()));
+        }
     }
 
     public boolean isFullyAssigned() {
         return unassignedCount == 0;
     }
 
-    public boolean isInvalid() {
+    public boolean isStructurallyFlawed() {
         return raw.structuralScore() < 0;
     }
 
