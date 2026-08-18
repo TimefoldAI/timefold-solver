@@ -37,7 +37,8 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
             Map.entry("timefold.model.contact.", "timefold.application.contact."),
             Map.entry("timefold.model.rest.", "timefold.rest."),
             Map.entry("timefold.storage.", "ai.timefold.storage."),
-            Map.entry("timefold.platform.", "ai.timefold.platform."));
+            Map.entry("timefold.platform.", "ai.timefold.platform."),
+            Map.entry("timefold.", "ai.timefold."));
 
     // Properties that each replace two distinct legacy properties, so we check both legacy names.
     private static final Map<String, List<String>> RENAMED_PROPERTIES_WITH_MULTIPLE_LEGACY_NAMES = Map.of(
