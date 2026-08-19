@@ -3,8 +3,11 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
@@ -114,7 +117,7 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void randomIterator() {
+    void uniqueRandomIterator() {
         var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
 
         var annX1 = putContainedInIndexer(indexer, "X");
@@ -124,18 +127,92 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
         var carlX2 = putContainedInIndexer(indexer, "X");
         var carlY2 = putContainedInIndexer(indexer, "Y");
 
-        assertThat(randomIterableForCollectionQuery(indexer, "X"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "X"))
                 .containsExactlyInAnyOrder(annX1, bethX1, carlX2);
-        assertThat(randomIterableForCollectionQuery(indexer, "Y"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "Y"))
                 .containsExactlyInAnyOrder(annY1, carlY2);
-        assertThat(randomIterableForCollectionQuery(indexer, "Z"))
+        assertThat(uniqueRandomIterableForCollectionQuery(indexer, "Z"))
                 .containsExactlyInAnyOrder(bethZ1);
 
-        var list1 = randomListForCollectionQuery(indexer, 0, "X");
+        var list1 = uniqueRandomListForCollectionQuery(indexer, 0, "X");
         // seed 0 and 1 has the same list, but 2 is different
-        var list2 = randomListForCollectionQuery(indexer, 2, "X");
+        var list2 = uniqueRandomListForCollectionQuery(indexer, 2, "X");
         assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
         assertThat(list1).isNotEqualTo(list2);
+    }
+
+    @Test
+    void uniqueRandomIteratorDrainsEachMatchExactlyOnce() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        putContainedInIndexer(indexer, "X");
+        putContainedInIndexer(indexer, "Y");
+        putContainedInIndexer(indexer, "X");
+        putContainedInIndexer(indexer, "Z");
+
+        assertUniqueRandomDrainMatchesForEach(indexer, List.of("X", "Y", "Z"));
+    }
+
+    @Test
+    void duplicateQueryKeyIsVisitedOnce() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        var annX = putContainedInIndexer(indexer, "X");
+        var bethX = putContainedInIndexer(indexer, "X");
+        var carlY = putContainedInIndexer(indexer, "Y");
+        var query = List.of("X", "X", "Y");
+
+        assertThat(indexer.size(query)).isEqualTo(3);
+        var drainedByForEach = new ArrayList<>();
+        indexer.forEach(query, drainedByForEach::add);
+        assertThat(drainedByForEach).containsExactlyInAnyOrder(annX, bethX, carlY);
+
+        assertUniqueRandomDrainMatchesForEach(indexer, query);
+    }
+
+    @Test
+    void uniqueRandomIteratorUnmatchedQueryKey() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+        putContainedInIndexer(indexer, "X");
+
+        // Already guarded (DefaultIterator.hasNext() skips a null downstreamIndexer); locking it in.
+        assertUniqueRandomDrainMatchesForEach(indexer, List.of("X", "Q"));
+
+        var noMatchIterator = indexer.uniqueRandomIterator(List.of("Q"), new Random(0));
+        assertThat(noMatchIterator.hasNext()).isFalse();
+    }
+
+    @Test
+    void randomIteratorNeverEnds() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        putContainedInIndexer(indexer, "X");
+        putContainedInIndexer(indexer, "Y");
+        putContainedInIndexer(indexer, "X");
+
+        assertRepeatingRandomNeverEnds(indexer, List.of("X", "Y"), 30);
+
+        var deadIterator = indexer.randomIterator(List.of("Q"), new Random(0));
+        assertThat(deadIterator.hasNext()).isFalse();
+    }
+
+    @Test
+    void uniqueRandomIteratorFirstDrawIsNotBiasedToFirstBucket() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+        var xTuple = putContainedInIndexer(indexer, "X");
+        var yTuple = putContainedInIndexer(indexer, "Y");
+
+        // Seeding every draw straight off an increasing int (new Random(0), new Random(1), ...) will not do:
+        // java.util.Random's first nextInt(2) call is constant across such small, close seeds (an LCG artifact),
+        // so it could never surface a first-bucket bias regardless of whether one exists. Derive each seed from
+        // one root random's nextLong() instead, exactly as AbstractBiasIT.splitFrom does.
+        var root = new Random(0);
+        var firstDraws = new HashSet<>();
+        for (var trial = 0; trial < 20; trial++) {
+            var iterator = indexer.uniqueRandomIterator(List.of("X", "Y"), new Random(root.nextLong()));
+            firstDraws.add(iterator.next());
+        }
+        assertThat(firstDraws).containsExactlyInAnyOrder(xTuple, yTuple);
     }
 
     record TestWorker(String name, List<String> skills, String department, String affinity) {

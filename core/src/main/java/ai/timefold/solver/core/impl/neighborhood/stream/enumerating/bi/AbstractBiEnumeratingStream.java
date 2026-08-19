@@ -99,4 +99,10 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
         return groupBy(ConstantLambdaUtils.neighborhoodsBiPickFirst(), ConstantLambdaUtils.neighborhoodsBiPickSecond());
     }
 
+    @Override
+    public BiLeftDataset<Solution_, A, B> asCachedDataset() {
+        var stream = shareAndAddChild(new LeftTerminalBiEnumeratingStream<>(enumeratingStreamFactory, this));
+        return stream.getDataset();
+    }
+
 }

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import static ai.timefold.solver.core.impl.bavet.common.index.SelectionProbabilityTest.toEntries;
+import static ai.timefold.solver.core.impl.bavet.common.index.AbstractIndexerTest.toEntries;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Execution;
@@ -21,7 +23,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * The class under test uses randomness, and has a whole lot of possible corner cases.
+ * Filtering a {@link UniqueRandomIterator} with a {@link FilteringIterator} (no bail-out, since the
+ * delegate already ends by itself) has a whole lot of possible corner cases.
  * Therefore, we run the same tests with a variety of random seeds to increase coverage.
  * None of these are expected to fail.
  * If any fail, the random seed is printed in the test name for reproducibility.
@@ -29,7 +32,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @MethodSource("randomSeeds")
 @ParameterizedClass
 @Execution(ExecutionMode.CONCURRENT)
-class FilteredUniqueRandomIteratorTest {
+class FilteredUniqueIterationTest {
 
     private static final List<String> ELEMENTS = List.of("A", "B", "C", "D");
 
@@ -61,7 +64,7 @@ class FilteredUniqueRandomIteratorTest {
         Predicate<String> filter = Predicate.not(list::contains);
 
         // Everything is filtered out, but the sequence has no way of knowing that.
-        var sequence = new FilteredUniqueRandomIterator<>(toEntries(list), random, filter);
+        var sequence = new FilteringIterator<>(UniqueRandomIterator.of(toEntries(list), random), filter);
         assertThatThrownBy(sequence::next)
                 .isInstanceOf(NoSuchElementException.class);
     }

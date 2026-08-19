@@ -3,69 +3,94 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
+import java.util.function.Predicate;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Wraps an iterator with a filter, skipping elements which do not match.
+ * <p>
+ * If the wrapped iterator never ends,
+ * a rejecting filter can make {@link #hasNext()} loop forever,
+ * as no amount of skipped elements can prove that no matching element exists.
+ * A non-negative {@code bailOutSize} avoids this:
+ * after that many consecutive rejections,
+ * {@link #hasNext()} gives up and returns false,
+ * even though a matching element might still exist.
+ * A negative {@code bailOutSize} disables the bail-out,
+ * for use with a wrapped iterator which is already known to end by itself.
+ * <p>
+ * The bail-out counter ({@code attemptsBeforeBailOut}, below) is a local,
+ * reset to {@code bailOutSize} on every {@link #hasNext()} call
+ * (the cached-{@code hasNext} fast path aside).
+ * A bail-out is therefore a per-call false negative, not proof of emptiness:
+ * calling {@link #hasNext()} again gives the delegate a fresh, independent budget to find a match in.
+ * {@code RetiringBiWalk} depends on this property.
+ */
 @NullMarked
-final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> {
+public final class FilteringIterator<T extends @Nullable Object>
+        implements Iterator<T> {
 
-    @SuppressWarnings("rawtypes")
-    private static final UniTuple EMPTY_TUPLE = UniTuple.of(0);
+    /**
+     * Multiplied by the candidate population's size to size a bail-out budget,
+     * wherever this iterator is built with one.
+     */
+    public static final long BAIL_OUT_SAFETY_MULTIPLIER = 10L;
 
-    private final SolutionView<Solution_> solutionView;
-    private final BiNeighborhoodsPredicate<Solution_, A, B> filter;
-    private final UniTuple<A> leftTuple;
-    private final Iterator<UniTuple<B>> rightTupleIterator;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilteringIterator.class);
 
-    // Required for iteration.
+    private final Iterator<T> delegate;
+    private final Predicate<T> filter;
+    private final long bailOutSize;
+
     private boolean hasNext = false;
+    private @Nullable T next;
 
-    @SuppressWarnings("unchecked")
-    private UniTuple<B> next = EMPTY_TUPLE;
-
-    public FilteringIterator(BiNeighborhoodsPredicate<Solution_, A, B> filter, SolutionView<Solution_> solutionView,
-            UniTuple<A> leftTuple, Iterator<UniTuple<B>> rightTupleIterator) {
-        this.solutionView = Objects.requireNonNull(solutionView);
-        this.rightTupleIterator = Objects.requireNonNull(rightTupleIterator);
-        this.filter = filter;
-        this.leftTuple = leftTuple;
+    public FilteringIterator(Iterator<T> delegate, Predicate<T> filter) {
+        this(delegate, filter, -1);
     }
 
-    @SuppressWarnings("unchecked")
+    public FilteringIterator(Iterator<T> delegate, Predicate<T> filter, long bailOutSize) {
+        this.delegate = Objects.requireNonNull(delegate);
+        this.filter = Objects.requireNonNull(filter);
+        this.bailOutSize = bailOutSize;
+    }
+
     @Override
     public boolean hasNext() {
         if (hasNext) {
             return true;
         }
-
-        var leftFact = leftTuple.getA();
-        while (rightTupleIterator.hasNext()) {
-            var rightTuple = rightTupleIterator.next();
-            var rightFact = rightTuple.getA();
-            if (filter.test(solutionView, leftFact, rightFact)) {
+        var attemptsBeforeBailOut = bailOutSize; // Fresh, independent budget every call; see the class javadoc.
+        while (delegate.hasNext()) {
+            if (bailOutSize >= 0 && attemptsBeforeBailOut <= 0) {
+                LOGGER.trace("Bailing out of filtering iterator ({}) after ({}) attempts to avoid an infinite loop.", this,
+                        bailOutSize);
+                return false;
+            }
+            var candidate = delegate.next();
+            if (filter.test(candidate)) {
                 hasNext = true;
-                next = rightTuple;
+                next = candidate;
                 return true;
             }
+            attemptsBeforeBailOut--;
         }
-        hasNext = false;
-        next = EMPTY_TUPLE;
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public UniTuple<B> next() {
+    public T next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        var result = Objects.requireNonNull(next);
+        var result = next;
         hasNext = false;
-        next = EMPTY_TUPLE;
+        next = null;
         return result;
     }
+
 }
