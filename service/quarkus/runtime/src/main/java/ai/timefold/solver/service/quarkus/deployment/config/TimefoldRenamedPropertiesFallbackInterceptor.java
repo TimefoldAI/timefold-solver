@@ -7,6 +7,9 @@ import java.util.Map;
 
 import jakarta.annotation.Priority;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.smallrye.config.ConfigSourceInterceptorContext;
 import io.smallrye.config.ConfigValue;
 import io.smallrye.config.FallbackConfigSourceInterceptor;
@@ -18,6 +21,8 @@ import io.smallrye.config.Priorities;
  */
 @Priority(Priorities.LIBRARY + 290)
 public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfigSourceInterceptor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimefoldRenamedPropertiesFallbackInterceptor.class);
 
     // Renames that don't follow any of the prefix patterns below.
     private static final Map<String, String> RENAMED_EXACT_PROPERTIES = Map.ofEntries(
@@ -55,11 +60,13 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
     private static String toLegacyName(String name) {
         var exactLegacyName = RENAMED_EXACT_PROPERTIES.get(name);
         if (exactLegacyName != null) {
+            logWarningForResolvedKey(name, exactLegacyName);
             return exactLegacyName;
         }
         for (Map.Entry<String, String> prefix : RENAMED_PROPERTY_PREFIXES.entrySet()) {
             if (name.startsWith(prefix.getKey())) {
                 var legacyName = prefix.getValue() + name.substring(prefix.getKey().length());
+                logWarningForResolvedKey(name, legacyName);
                 return legacyName;
             }
         }
@@ -77,9 +84,15 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
         for (String legacyName : legacyNames) {
             ConfigValue legacyValue = context.proceed(legacyName);
             if (legacyValue != null && (value == null || CONFIG_SOURCE_COMPARATOR.compare(legacyValue, value) > 0)) {
+                logWarningForResolvedKey(name, legacyName);
                 value = legacyValue.withName(name);
             }
         }
         return value;
+    }
+
+    private static void logWarningForResolvedKey(String key, String legacyKey) {
+        LOGGER.warn("Deprecated configuration key '{}' has been resolved to '{}'.\nPlease use the '{}' instead.",
+                legacyKey, key, key);
     }
 }
