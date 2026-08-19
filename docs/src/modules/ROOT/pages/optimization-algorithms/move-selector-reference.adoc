@@ -1081,9 +1081,6 @@ only set the distribution type (so without a `distributionSizeMaximum` parameter
 
 These moves are applicable to planning variables that aren’t part of a list,
 also called xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic variables].
-By default, the solver uses the following move selectors:
-xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
-xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap].
 
 [#changeMoveSelector]
 === `ChangeMoveSelector`
@@ -1489,14 +1486,17 @@ public class MyStageProvider implements BasicVariableStageProvider<Schedule, Shi
 }
 ----
 
+[NOTE]
+====
+By default, the solver uses the moves
+xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change] and
+xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap].
+====
+
 [#listMoveSelectors]
 == Move selectors for list variables
 
 These moves are applicable to xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list planning variables].
-By default, the solver uses the following move selectors:
-xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
-xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
-xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[K-OPT].
 
 [#listChangeMoveSelector]
 === `ListChangeMoveSelector`
@@ -1765,6 +1765,14 @@ public class MyStageProvider implements ListVariableStageProvider<RoutePlan, Veh
     }
 }
 ----
+
+[NOTE]
+====
+By default, the solver uses the moves
+xref:optimization-algorithms/move-selector-reference.adoc#listChangeMoveSelector[Change],
+xref:optimization-algorithms/move-selector-reference.adoc#listSwapMoveSelector[Swap], and
+xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[K-OPT].
+====
 
 [#customMovesIntroduction]
 == Custom moves
