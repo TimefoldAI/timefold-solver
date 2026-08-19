@@ -43,8 +43,7 @@ class ProcessModelAppJsUITest {
         ModelDescriptor descriptor = new ModelDescriptor();
         descriptor.setId("test-model_v1");
 
-        assertThatCode(() -> ReflectionTestSupport.invoke(new TimefoldModelDescriptorProcessor(), "processModelAppJsUI",
-                new Class<?>[] { ModelDescriptor.class, Path.class }, descriptor, outputDirectory))
+        assertThatCode(() -> new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory))
                 .doesNotThrowAnyException();
 
         Path uiDestination = outputDirectory.resolve("timefold").resolve(descriptor.getId()).resolve("ui");
@@ -74,8 +73,7 @@ class ProcessModelAppJsUITest {
         Files.createDirectories(uiDestination.resolve("nested"));
         Files.writeString(uiDestination.resolve("nested").resolve("app.js"), "stale content from a previous build");
 
-        assertThatCode(() -> ReflectionTestSupport.invoke(new TimefoldModelDescriptorProcessor(), "processModelAppJsUI",
-                new Class<?>[] { ModelDescriptor.class, Path.class }, descriptor, outputDirectory))
+        assertThatCode(() -> new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory))
                 .doesNotThrowAnyException();
 
         assertThat(uiDestination.resolve("index.html")).exists().hasContent("<html></html>");
@@ -95,8 +93,7 @@ class ProcessModelAppJsUITest {
         ModelDescriptor descriptor = new ModelDescriptor();
         descriptor.setId("test-model_v1");
 
-        Object found = ReflectionTestSupport.invoke(new TimefoldModelDescriptorProcessor(), "processModelAppJsUI",
-                new Class<?>[] { ModelDescriptor.class, Path.class }, descriptor, outputDirectory);
+        boolean found = new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory);
 
         assertThat(found).isEqualTo(true);
     }
@@ -110,8 +107,7 @@ class ProcessModelAppJsUITest {
         ModelDescriptor descriptor = new ModelDescriptor();
         descriptor.setId("test-model_v1");
 
-        Object found = ReflectionTestSupport.invoke(new TimefoldModelDescriptorProcessor(), "processModelAppJsUI",
-                new Class<?>[] { ModelDescriptor.class, Path.class }, descriptor, outputDirectory);
+        boolean found = new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory);
 
         assertThat(found).isEqualTo(false);
     }

@@ -1226,7 +1226,7 @@ class TimefoldModelDescriptorProcessor {
         }
     }
 
-    private boolean processModelAppJsUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
+    public boolean processModelAppJsUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
         Objects.requireNonNull(outputDirectory);
 
         // copy model's ui resources
