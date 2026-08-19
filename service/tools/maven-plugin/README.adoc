@@ -21,11 +21,11 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 - Fails the build when no `ai.timefold.solver.enterprise` artifact is on the resolved classpath, i.e. the model was built with the Community Edition, which Timefold Platform does not accept. Both checks only run when `timefold:deploy` is among the requested goals, run even when `timefold.model.configuration.skip` is set.
 - Fetches platform identity/config by calling GET /api/platform/v1/aboutme?includeConfig=true
 - Requires a platform personal access token available via environment variable `TIMEFOLD_PAT` (see "Authentication" below)
-- If a single accountId is returned by the platform and `timefold.accountId` wasn't provided, the plugin will use it
-- Fails the build when the account id can neither be taken from `timefold.accountId` nor derived from the platform response, i.e. when the personal access token is associated with no account or with several of them. In the latter case `timefold.accountId` has to be set explicitly
+- If a single namespace is returned by the platform and `timefold.namespace` wasn't provided, the plugin will use it. The platform reports the namespaces either as `namespaces` or, before the migration to that name is complete, as `accountIds`; both are accepted
+- Fails the build when the namespace can neither be taken from `timefold.namespace` nor derived from the platform response, i.e. when the personal access token is associated with no namespace or with several of them. In the latter case `timefold.namespace` has to be set explicitly
 - Writes a properties file at `target/generated-resources/timefold-build.properties` with entries such as:
 ** `quarkus.container-image.registry` — value taken from platform config.containerRegistry
-** `quarkus.container-image.group` — the account id used
+** `quarkus.container-image.group` — the namespace used
 ** `quarkus.container-image.push` — set to `true`
 ** `image.native-suffix` — set to `""` when native support is disabled (default)
 
@@ -63,7 +63,7 @@ These are the most important configuration properties for the plugin. They are s
 
 === Configure goal specific
 
-- `timefold.accountId` (String) — optional account id to use; if not provided and platform returns a single account, the plugin uses it. Set via `<accountId>` or `-Dtimefold.accountId=...`.
+- `timefold.namespace` (String) — optional namespace to use; if not provided and platform returns a single namespace, the plugin uses it. Set via `<namespace>` or `-Dtimefold.namespace=...`.
 - `timefold.model.configuration.skip` (boolean, default=false) — skip `timefold:configure`. Property name remains `timefold.model.configuration.skip`.
 - `timefold.model.nativeSupported` (boolean, default=false) — whether target image should use native suffix; when `false` `image.native-suffix` is set to an empty string allowing JVM builds to be used for native image use cases. Use `-Dtimefold.model.nativeSupported=true` to mark native support.
 
@@ -123,7 +123,7 @@ Bind `timefold:configure` to the `initialize` phase via `<executions>` so it run
             <!-- tenants are optional for Public models -->
             <tenant>UUID_OF_THE_TENANT</tenant>
         </tenants>
-        <!-- optional: accountId, etc. -->
+        <!-- optional: namespace, etc. -->
       </configuration>
     </plugin>
   </plugins>

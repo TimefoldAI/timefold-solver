@@ -26,7 +26,7 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "configure", defaultPhase = LifecyclePhase.INITIALIZE, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class ConfigureMojo extends AbstractPlatformModelMojo {
 
-    protected static final String PROP_ACCOUNT_ID = "timefold.accountId";
+    protected static final String PROP_NAMESPACE = "timefold.namespace";
 
     protected static final String PROP_MODEL_NATIVE_SUPPORTED = "timefold.model.nativeSupported";
 
@@ -46,10 +46,10 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
     private MavenProject project;
 
     /**
-     * Account id that model is associated with
+     * Namespace that model is associated with
      */
-    @Parameter(property = PROP_ACCOUNT_ID, required = false)
-    protected String accountId;
+    @Parameter(property = PROP_NAMESPACE, required = false)
+    protected String namespace;
 
     /**
      * Determines if the native build of the model is supported and by that should be defined in model descriptor
@@ -87,13 +87,13 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                 PlatformIdentityInfo info = fetchPlatformIdentityInfo(true);
 
                 if (info == null || !info.hasPushAccessRights()) {
-                    throw new RuntimeException("No access to deploy model on Timefold Platform");
+                    throw new MojoFailureException("No access to deploy model on Timefold Platform");
                 }
-                var resolvedAccountId = resolveAccountId(info);
+                var resolvedNamespace = resolveNamespace(info);
 
-                if (!info.hasAccessToAccountId(resolvedAccountId)) {
-                    throw new RuntimeException(
-                            "No access to configured account id " + resolvedAccountId + " or account not configured");
+                if (!info.hasAccessToNamespace(resolvedNamespace)) {
+                    // Only a namespace configured explicitly can get here; one derived from the token is always allowed.
+                    throw new MojoFailureException(describeMissingNamespaceAccess(info, resolvedNamespace));
                 }
 
                 Path path = Paths.get("target", "generated-resources", "timefold-build.properties");
@@ -109,7 +109,7 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                 timefoldBuildProperties.setProperty("quarkus.profile", "container");
                 timefoldBuildProperties.setProperty("quarkus.container-image.build", "true");
                 timefoldBuildProperties.setProperty("quarkus.container-image.registry", registry);
-                timefoldBuildProperties.setProperty("quarkus.container-image.group", resolvedAccountId);
+                timefoldBuildProperties.setProperty("quarkus.container-image.group", resolvedNamespace);
 
                 // configure container image and arguments based on model parent pom settings
                 timefoldBuildProperties.setProperty("quarkus.jib.jvm-additional-arguments",
@@ -146,42 +146,55 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
     }
 
     /**
-     * Resolves the account id the model is deployed under, which becomes the group of the container image. It is either
-     * configured explicitly, or, when the personal access token is associated with exactly one account, that account.
+     * Resolves the namespace the model is deployed under, which becomes the group of the container image. It is either
+     * configured explicitly, or, when the personal access token is associated with exactly one namespace, that namespace.
      *
-     * @throws MojoFailureException when the account id is neither configured nor unambiguously derivable from the
+     * @throws MojoFailureException when the namespace is neither configured nor unambiguously derivable from the
      *         personal access token; without it the container image cannot be named, so the build must not continue.
      */
-    protected String resolveAccountId(PlatformIdentityInfo info) throws MojoFailureException {
-        String configuredAccountId = getPropertyOrParameter(PROP_ACCOUNT_ID, this.accountId);
-        if (configuredAccountId != null && !configuredAccountId.isBlank()) {
-            return configuredAccountId.trim();
+    protected String resolveNamespace(PlatformIdentityInfo info) throws MojoFailureException {
+        String configuredNamespace = getPropertyOrParameter(PROP_NAMESPACE, this.namespace);
+        if (configuredNamespace != null && !configuredNamespace.isBlank()) {
+            return configuredNamespace.trim();
         }
 
-        Set<String> accountIds = info.accountIds() == null ? Set.of() : info.accountIds();
-        if (accountIds.size() == 1) {
-            return accountIds.iterator().next();
+        Set<String> namespaces = info.namespaces();
+        if (namespaces.size() == 1) {
+            return namespaces.iterator().next();
         }
 
-        if (accountIds.isEmpty()) {
+        if (namespaces.isEmpty()) {
             throw new MojoFailureException("""
-                    Unable to resolve the Timefold Platform account id: the personal access token is not associated with \
-                    any account, so the container image of this model cannot be built.
-                    Use a personal access token of an account that is allowed to deploy models.
+                    Unable to resolve the Timefold Platform namespace: the personal access token is not associated with \
+                    any namespace, so the container image of this model cannot be built.
+                    Use a personal access token that is associated with a namespace allowed to deploy models.
                     See https://docs.timefold.ai/timefold-solver/latest/deploying-to-platform/guide""");
         }
         throw new MojoFailureException("""
-                Unable to resolve the Timefold Platform account id: the personal access token is associated with %d \
-                accounts (%s), so the account to deploy this model to has to be configured explicitly.
+                Unable to resolve the Timefold Platform namespace: the personal access token is associated with %d \
+                namespaces (%s), so the namespace to deploy this model to has to be configured explicitly.
                 Either pass it on the command line:
-                  mvn clean package -D%s=<account id> timefold:deploy
+                  mvn clean package -D%s=<namespace> timefold:deploy
                 or declare it in the plugin configuration:
                   <configuration>
-                    <accountId>...</accountId>
+                    <namespace>...</namespace>
                   </configuration>
                 See https://docs.timefold.ai/timefold-solver/latest/deploying-to-platform/guide"""
-                .formatted(accountIds.size(), accountIds.stream().sorted().collect(Collectors.joining(", ")),
-                        PROP_ACCOUNT_ID));
+                .formatted(namespaces.size(), namespaces.stream().sorted().collect(Collectors.joining(", ")),
+                        PROP_NAMESPACE));
+    }
+
+    /**
+     * Explains why the configured namespace cannot be deployed to, telling a namespace the token does not grant apart
+     * from a token that grants no namespace at all, as those need different fixes.
+     */
+    private static String describeMissingNamespaceAccess(PlatformIdentityInfo info, String configuredNamespace) {
+        if (info.namespaces().isEmpty()) {
+            return "The personal access token is not associated with any namespace, so this model cannot be deployed "
+                    + "to the configured namespace " + configuredNamespace;
+        }
+        return "The personal access token is not associated with the configured namespace %s, but with %s"
+                .formatted(configuredNamespace, info.namespaces().stream().sorted().collect(Collectors.joining(", ")));
     }
 
     /**
