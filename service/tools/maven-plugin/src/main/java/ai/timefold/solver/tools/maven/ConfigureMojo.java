@@ -125,7 +125,7 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
 
                     // configure container registry credentials as system properties to not write them to any files
                     System.setProperty("quarkus.container-image.username", "token");
-                    System.setProperty("quarkus.container-image.password", getAccessTokenProvider().getAccessToken());
+                    System.setProperty("quarkus.container-image.password", requireAccessToken());
                 }
                 if (!getPropertyOrParameter(PROP_MODEL_NATIVE_SUPPORTED, nativeSupported)) {
                     // allow to use jvm image for native use cases

@@ -13,6 +13,7 @@ import ai.timefold.solver.tools.maven.utils.InMemoryMojoLog.Level;
 
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -112,8 +113,8 @@ class PermissionsMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
-                .hasMessage("Platform authentication failed with 401 status code");
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessage("Platform authentication failed with 401 status code: no error message reported by the platform");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
@@ -125,9 +126,11 @@ class PermissionsMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(
-                        "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessageContaining("Personal Access Token for Timefold Platform is required")
+                .hasMessageContaining("export TIMEFOLD_PAT=<your token>")
+                .hasMessageContaining("<id>timefold-platform</id>")
+                .hasMessageContaining("mvn --encrypt-password");
 
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
