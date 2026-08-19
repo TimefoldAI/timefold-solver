@@ -418,31 +418,48 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
+        var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
+        var workingSolution = backingScoreDirector.getWorkingSolution();
+        var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move);
         var score = backingScoreDirector.calculateScore();
         ephemeralMoveDirector.close(); // This undoes the move.
+        // Restore the previous working score
+        solutionDescriptor.setScore(workingSolution, previousScore);
         return score;
     }
 
     public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
             TemporaryMovePostprocessor<Solution_, Score_, @Nullable Result_> postprocessor) {
+        var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
+        var workingSolution = backingScoreDirector.getWorkingSolution();
+        var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         try (var ephemeralMoveDirector = ephemeral()) {
             ephemeralMoveDirector.execute(move);
             var score = backingScoreDirector.calculateScore();
             return postprocessor.apply(score, ephemeralMoveDirector.createUndoMove());
+        } finally {
+            // Restore the previous working score
+            solutionDescriptor.setScore(workingSolution, previousScore);
         }
     }
 
     public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> postprocessor,
             boolean guaranteeFreshScore) {
+        var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
+        var workingSolution = backingScoreDirector.getWorkingSolution();
+        var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move, true);
         var result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
         ephemeralMoveDirector.close(); // This undoes the move.
         if (guaranteeFreshScore) {
             backingScoreDirector.calculateScore();
+        } else {
+            // Restore the previous working score
+            solutionDescriptor.setScore(workingSolution, previousScore);
         }
         return result;
     }

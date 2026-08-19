@@ -4,9 +4,9 @@
     "title" : "Integration Tests - Simplified Employee Shift Scheduling model",
     "description" : "",
     "contact" : {
-      "name" : "",
-      "url" : "",
-      "email" : ""
+      "name" : "Timefold BV",
+      "url" : "https://timefold.ai",
+      "email" : "info@timefold.ai"
     },
     "version" : "v1"
   },

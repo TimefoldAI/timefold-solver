@@ -1,18 +1,18 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.util.ListEntry;
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -149,8 +149,10 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     /**
-     * Whether {@code entryKey}, and every key past it in iteration order, fails to match {@code indexKey}
-     * and the range scan (in {@code size}/{@code forEach}/{@code iterator}/{@code randomIterator}) should stop.
+     * Whether {@code entryKey}, and every key past it in iteration order,
+     * fails to match {@code indexKey} and the range scan
+     * (in {@code size}/{@code forEach}/{@code iterator}/{@code randomIterator})
+     * should stop.
      * <p>
      * {@code comparisonMap} is always iterated ascending by natural order (see {@link ScalingNavigableMap});
      * {@link #reverseOrder} instead flips the sign of the comparison here,
@@ -291,83 +293,131 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     }
 
     private Iterator<T> iteratorSingleIndexer(Object compositeKey) {
-        return comparisonMap.isArrayBased() ? iteratorSingleIndexerArray(compositeKey)
-                : iteratorSingleIndexerTree(compositeKey);
+        var indexer = singleIndexer(compositeKey);
+        return indexer == null ? Collections.emptyIterator() : indexer.iterator(compositeKey);
     }
 
-    private Iterator<T> iteratorSingleIndexerArray(Object compositeKey) {
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var entryKey = comparisonMap.keyAt(0);
-        var entryValue = comparisonMap.valueAt(0);
-        if (boundaryReached(entryKey, indexKey)) {
-            return Collections.emptyIterator();
+    /**
+     * Resolves the single bucket this indexer holds when {@link #comparisonMap} has exactly one entry,
+     * or null if {@code queryCompositeKey}'s boundary is already reached at that one bucket (nothing matches).
+     * Shared by {@link #iteratorSingleIndexer}, {@link #singleIndexerRepeatingIterator} and
+     * {@link #singleIndexerUniqueIterator}:
+     * only the accessor each calls on the result,
+     * and the {@code empty()} marker it returns instead,
+     * differ between them.
+     */
+    private @Nullable Indexer<T> singleIndexer(Object queryCompositeKey) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        if (comparisonMap.isArrayBased()) {
+            var entryKey = comparisonMap.keyAt(0);
+            return boundaryReached(entryKey, indexKey) ? null : comparisonMap.valueAt(0);
+        } else {
+            var entry = comparisonMap.firstEntry();
+            return boundaryReached(entry.getKey(), indexKey) ? null : entry.getValue();
         }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return entryValue.iterator(compositeKey);
-    }
-
-    private Iterator<T> iteratorSingleIndexerTree(Object compositeKey) {
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var entry = comparisonMap.firstEntry();
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            return Collections.emptyIterator();
-        }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return entry.getValue().iterator(compositeKey);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        return createRandomIterator(queryCompositeKey, workingRandom, null);
-    }
-
-    private Iterator<T> createRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom,
-            @Nullable Predicate<T> filter) {
+    public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
         return switch (comparisonMap.size()) {
-            case 0 -> Collections.emptyIterator();
-            case 1 ->
-                comparisonMap.isArrayBased() ? randomIteratorSingleIndexerArray(queryCompositeKey, workingRandom, filter)
-                        : randomIteratorSingleIndexerTree(queryCompositeKey, workingRandom, filter);
-            default -> {
-                if (filter == null) {
-                    yield new RandomIterator(queryCompositeKey,
-                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
-                } else {
-                    yield new RandomIterator(queryCompositeKey,
-                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter));
-                }
-            }
+            case 0 -> RepeatingRandomIterator.empty();
+            case 1 -> singleIndexerRepeatingIterator(queryCompositeKey, workingRandom);
+            default -> multiIndexerRepeatingIterator(queryCompositeKey, workingRandom);
         };
     }
 
-    private Iterator<T> randomIteratorSingleIndexerArray(Object queryCompositeKey, RandomGenerator workingRandom,
-            @Nullable Predicate<T> filter) {
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var entryKey = comparisonMap.keyAt(0);
-        var entryValue = comparisonMap.valueAt(0);
-        if (boundaryReached(entryKey, indexKey)) {
-            return Collections.emptyIterator();
-        }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return filter == null ? entryValue.randomIterator(queryCompositeKey, workingRandom)
-                : entryValue.randomIterator(queryCompositeKey, workingRandom, filter);
-    }
-
-    private Iterator<T> randomIteratorSingleIndexerTree(Object queryCompositeKey, RandomGenerator workingRandom,
-            @Nullable Predicate<T> filter) {
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var entry = comparisonMap.firstEntry();
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            return Collections.emptyIterator();
-        }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return filter == null ? entry.getValue().randomIterator(queryCompositeKey, workingRandom)
-                : entry.getValue().randomIterator(queryCompositeKey, workingRandom, filter);
+    private RepeatingRandomIterator<T> singleIndexerRepeatingIterator(Object queryCompositeKey,
+            RandomGenerator workingRandom) {
+        var indexer = singleIndexer(queryCompositeKey);
+        return indexer == null ? RepeatingRandomIterator.empty()
+                : indexer.randomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
-        return createRandomIterator(queryCompositeKey, workingRandom, filter);
+    public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        return switch (comparisonMap.size()) {
+            case 0 -> UniqueRandomIterator.empty();
+            case 1 -> singleIndexerUniqueIterator(queryCompositeKey, workingRandom);
+            default -> multiIndexerUniqueIterator(queryCompositeKey, workingRandom);
+        };
+    }
+
+    /**
+     * Every matching bucket is disjoint from every other (each is a distinct map key),
+     * so {@link MultiBucketUniqueRandomIterator} applies directly:
+     * {@link #collectMatchingBuckets} walks every matching, non-empty bucket upfront to learn its size,
+     * and weighted uniform-without-replacement sampling takes care of the rest.
+     */
+    private UniqueRandomIterator<T> multiIndexerUniqueIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var bucketIteratorList = new ArrayList<UniqueRandomIterator<T>>();
+        // Upper-bounded by comparisonMap.size();
+        // a trailing 0 in distribution is never sampled
+        // (sampleWithDistribution() only ever walks its non-zero prefix),
+        // so no trim to the real count is needed.
+        var distribution = new int[comparisonMap.size()];
+        var bucketCount = new MutableInt();
+        var distributionSum = new MutableInt();
+        collectMatchingBuckets(queryCompositeKey, bucket -> {
+            var size = bucket.size(queryCompositeKey);
+            if (size > 0) {
+                var newBucketCount = bucketCount.increment();
+                distribution[newBucketCount - 1] = size;
+                distributionSum.add(size);
+                bucketIteratorList.add(bucket.uniqueRandomIterator(queryCompositeKey, workingRandom));
+            }
+        });
+        var sum = distributionSum.intValue();
+        if (sum == 0) {
+            return UniqueRandomIterator.empty();
+        }
+        return new MultiBucketUniqueRandomIterator<>(bucketIteratorList, distribution, sum, workingRandom);
+    }
+
+    /**
+     * Walks every bucket matching {@code queryCompositeKey}'s boundary (in {@link #comparisonMap}'s iteration order,
+     * respecting {@link #reverseOrder}), handing each one to {@code matchingBucketConsumer}, empty or not.
+     * Shared by {@link RepeatingRandomIterator} and {@link #multiIndexerUniqueIterator},
+     * both of which need every matching bucket upfront:
+     * there is no boundary-ordered walk to fall back on for either,
+     * since a never-ending downstream would never let the walk advance past the first bucket.
+     */
+    private void collectMatchingBuckets(Object queryCompositeKey, Consumer<Indexer<T>> matchingBucketConsumer) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        if (comparisonMap.isArrayBased()) {
+            collectMatchingBucketsFromArray(indexKey, matchingBucketConsumer);
+        } else {
+            collectMatchingBucketsFromTree(indexKey, matchingBucketConsumer);
+        }
+    }
+
+    private void collectMatchingBucketsFromArray(Key_ indexKey, Consumer<Indexer<T>> matchingBucketConsumer) {
+        var arraySize = comparisonMap.size();
+        var i = reverseOrder ? arraySize - 1 : 0;
+        var step = reverseOrder ? -1 : 1;
+        while (i >= 0 && i < arraySize) {
+            if (boundaryReached(comparisonMap.keyAt(i), indexKey)) {
+                return;
+            }
+            matchingBucketConsumer.accept(comparisonMap.valueAt(i));
+            i += step;
+        }
+    }
+
+    private void collectMatchingBucketsFromTree(Key_ indexKey, Consumer<Indexer<T>> matchingBucketConsumer) {
+        var entryIterator = comparisonMap.iterator(reverseOrder);
+        while (entryIterator.hasNext()) {
+            var entry = entryIterator.next();
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return;
+            }
+            matchingBucketConsumer.accept(entry.getValue());
+        }
+    }
+
+    private UniqueRandomIterator<T> singleIndexerUniqueIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var indexer = singleIndexer(queryCompositeKey);
+        return indexer == null ? UniqueRandomIterator.empty()
+                : indexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
@@ -385,24 +435,21 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
      * branching internally ({@link #advanceFromArray}/{@link #advanceFromTree})
      * rather than splitting into two {@code Iterator} implementations behind a shared type.
      */
-    private class DefaultIterator implements Iterator<T> {
+    private final class DefaultIterator implements Iterator<T> {
 
+        private final Object queryCompositeKey;
         private final Key_ indexKey;
-        private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         // Tree mode: entries pulled from here. Array mode: this is null and the array cursor fields are used instead.
         private final @Nullable Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator;
-        private int arrayCursor;
         private final int arrayStep;
-        protected @Nullable Iterator<T> downstreamIterator = null;
+
+        private int arrayCursor;
+        private @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
         public DefaultIterator(Object queryCompositeKey) {
-            this(queryCompositeKey, downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
-        }
-
-        protected DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            this.queryCompositeKey = queryCompositeKey;
             this.indexKey = keyUnpacker.apply(queryCompositeKey);
-            this.downstreamIteratorFunction = downstreamIteratorFunction;
             if (comparisonMap.isArrayBased()) {
                 this.indexerIterator = null;
                 this.arrayCursor = reverseOrder ? comparisonMap.size() - 1 : 0;
@@ -433,7 +480,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = downstreamIteratorFunction.apply(entry.getValue());
+                downstreamIterator = entry.getValue().iterator(queryCompositeKey);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
@@ -452,7 +499,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = downstreamIteratorFunction.apply(indexer);
+                downstreamIterator = indexer.iterator(queryCompositeKey);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
@@ -472,20 +519,31 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         }
     }
 
-    private final class RandomIterator extends DefaultIterator {
-
-        public RandomIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
-            super(queryCompositeKey, downstreamIteratorFunction);
-        }
-
-        @Override
-        public void remove() {
-            if (downstreamIterator == null) {
-                throw new IllegalStateException("next() must be called before remove().");
+    /**
+     * Every matching bucket is disjoint from every other (each is a distinct map key),
+     * so {@link WeightedRepeatingIterator} applies directly:
+     * {@link #collectMatchingBuckets} walks every matching, non-empty bucket upfront to learn its size,
+     * and weighted, with-replacement sampling takes care of the rest.
+     */
+    private RepeatingRandomIterator<T> multiIndexerRepeatingIterator(Object queryCompositeKey,
+            RandomGenerator workingRandom) {
+        var downstreamIteratorList = new ArrayList<Iterator<T>>();
+        // Upper-bounded by comparisonMap.size(); a trailing 0 in distribution is never sampled
+        // (sampleWithDistribution() only ever walks its non-zero prefix), so no trim to the real count is needed.
+        var distribution = new int[comparisonMap.size()];
+        var bucketCount = new MutableInt();
+        var distributionSum = new MutableInt();
+        collectMatchingBuckets(queryCompositeKey, bucket -> {
+            var size = bucket.size(queryCompositeKey);
+            if (size > 0) {
+                var newBucketCount = bucketCount.increment();
+                distribution[newBucketCount - 1] = size;
+                distributionSum.add(size);
+                downstreamIteratorList.add(bucket.randomIterator(queryCompositeKey, workingRandom));
             }
-            downstreamIterator.remove();
-        }
-
+        });
+        return new WeightedRepeatingIterator<>(downstreamIteratorList, distribution, distributionSum.intValue(),
+                workingRandom);
     }
 
 }

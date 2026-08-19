@@ -34,6 +34,17 @@ public abstract class AbstractJoiner<Right_> {
     }
 
     /**
+     * Whether indexers built from this joiner must support random access into their contents.
+     * Only the Neighborhoods API needs it, to draw a random tuple from an indexer bucket;
+     * constraint-stream joins only ever iterate, so they take the cheaper linked-list leaf indexer.
+     *
+     * @return false unless overridden
+     */
+    public boolean requiresRandomAccess() {
+        return false;
+    }
+
+    /**
      * Computes a stable permutation that moves all {@link JoinerType#EQUAL} joiners to the front,
      * preserving the original relative order within the equal group and within the rest.
      * Subclasses use it in {@code reorderedEqualsFirst()} so the comber can emit an equal-first

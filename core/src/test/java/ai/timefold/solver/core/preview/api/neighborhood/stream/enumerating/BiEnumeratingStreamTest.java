@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
@@ -42,7 +43,8 @@ class BiEnumeratingStreamTest {
 
     private static <A> UniLeftDatasetInstance<TestdataSolution, A> getInstance(DatasetSession<TestdataSolution> session,
             UniLeftDataset<TestdataSolution, A> dataset) {
-        return (UniLeftDatasetInstance<TestdataSolution, A>) session.getInstance(dataset);
+        return (UniLeftDatasetInstance<TestdataSolution, A>) session
+                .getInstance((AbstractLeftDataset<TestdataSolution, UniTuple<A>>) dataset);
     }
 
     private static DatasetSession<TestdataSolution> createSession(
@@ -76,7 +78,7 @@ class BiEnumeratingStreamTest {
         BiNeighborhoodsMapper<TestdataSolution, TestdataEntity, TestdataValue, String> byValueCode =
                 (view, entity, value) -> value.getCode();
         var groupedStream = (AbstractUniEnumeratingStream<TestdataSolution, String>) biStream.groupBy(byValueCode);
-        var dataset = groupedStream.createLeftDataset();
+        var dataset = groupedStream.asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 4);
         var session = createSession(factory, solution);
@@ -100,7 +102,7 @@ class BiEnumeratingStreamTest {
                 NeighborhoodsCollectors.toList((view, entity, value) -> entity.getCode()));
         var mappedStream = (AbstractUniEnumeratingStream<TestdataSolution, String>) groupedStream
                 .map((view, value, entityCodes) -> value.getCode() + "=" + entityCodes.size());
-        var dataset = mappedStream.createLeftDataset();
+        var dataset = mappedStream.asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 4);
         var session = createSession(factory, solution);

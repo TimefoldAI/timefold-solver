@@ -19,6 +19,8 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
@@ -166,7 +168,12 @@ public final class DefaultMoveStreamFactory<Solution_>
     @Override
     public <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream) {
         return new DefaultUniSamplingStream<>(
-                ((AbstractUniEnumeratingStream<Solution_, A>) enumeratingStream).createLeftDataset());
+                ((AbstractUniEnumeratingStream<Solution_, A>) enumeratingStream).asCachedDataset());
+    }
+
+    @Override
+    public MoveStream<Solution_> buildMoveStream(MoveIteratorProvider<Solution_> iteratorProvider) {
+        return new IteratorMoveStream<>(iteratorProvider);
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {

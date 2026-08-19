@@ -151,21 +151,21 @@ class TimefoldModelDescriptorProcessor {
     private static final String RESPONSE_CODE_TOO_MANY_REQUESTS = "429";
 
     private static final List<String> CONFIG_PROPERTIES = List.of(
-            "ai.timefold.platform.termination.spent-limit",
-            "ai.timefold.platform.termination.maximum-spent-limit",
-            "ai.timefold.platform.termination.unimproved-spent-limit",
-            "ai.timefold.platform.termination.maximum-unimproved-spent-limit",
-            "ai.timefold.platform.map-service.max-distance-from-road");
+            "timefold.model.termination.spent-limit",
+            "timefold.model.termination.maximum-spent-limit",
+            "timefold.model.termination.unimproved-spent-limit",
+            "timefold.model.termination.maximum-unimproved-spent-limit",
+            "timefold.platform.map-service.max-distance-from-road");
 
     private static final String MODEL_MATURITY_LEVEL_PROPERTY = "timefold.model.maturity-level";
 
     private static final String MODEL_FEATURES_PROPERTY = "timefold.model.features";
 
-    private static final String MODEL_MAX_THREAD_COUNT_PROPERTY = "ai.timefold.model.max-thread-count";
+    private static final String MODEL_MAX_THREAD_COUNT_PROPERTY = "timefold.model.max-thread-count";
 
-    private static final String APPLICATION_NAME_PROPERTY = "timefold.application.name";
-    private static final String APPLICATION_DESCRIPTION_PROPERTY = "timefold.application.description";
-    static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
+    private static final String APPLICATION_NAME_PROPERTY = "timefold.model.name";
+    private static final String APPLICATION_DESCRIPTION_PROPERTY = "timefold.model.description";
+    static final String APPLICATION_VERSION_PROPERTY = "timefold.model.api-version";
 
     private static final String MODEL_TRIAL_DURATION_PROPERTY = "timefold.model.trial.duration";
     private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "timefold.model.trial.max-extensions";
