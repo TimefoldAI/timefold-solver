@@ -8,8 +8,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
-
 import ai.timefold.solver.tools.maven.utils.InMemoryMojoLog;
 import ai.timefold.solver.tools.maven.utils.InMemoryMojoLog.Level;
 
