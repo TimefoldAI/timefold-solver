@@ -197,21 +197,21 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             }
             return buildAcceptor(acceptorConfig, configPolicy, environmentMode);
         } else {
-            var localSearchType_ = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
-            var acceptorConfig_ = new LocalSearchAcceptorConfig();
-            if (neighborhoodsEnabled && localSearchType_ == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
+            var updatedLocalSearchType = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
+            acceptorConfig = new LocalSearchAcceptorConfig();
+            if (neighborhoodsEnabled && updatedLocalSearchType == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
                 // Maybe works, but never tested.
                 throw new UnsupportedOperationException(
                         "Variable Neighborhood descent is not yet supported with the Neighborhoods API.");
             }
-            var acceptorType = getAcceptorType(neighborhoodsEnabled, localSearchType_);
-            acceptorConfig_.setAcceptorTypeList(Collections.singletonList(acceptorType));
-            return buildAcceptor(acceptorConfig_, configPolicy);
+            var acceptorType = getAcceptorType(neighborhoodsEnabled, updatedLocalSearchType);
+            acceptorConfig.setAcceptorTypeList(Collections.singletonList(acceptorType));
+            return buildAcceptor(acceptorConfig, configPolicy, environmentMode);
         }
     }
 
-    private static @NonNull AcceptorType getAcceptorType(boolean neighborhoodsEnabled, LocalSearchType localSearchType_) {
-        var acceptorType = switch (localSearchType_) {
+    private static @NonNull AcceptorType getAcceptorType(boolean neighborhoodsEnabled, LocalSearchType localSearchType) {
+        var acceptorType = switch (localSearchType) {
             case HILL_CLIMBING, VARIABLE_NEIGHBORHOOD_DESCENT -> AcceptorType.HILL_CLIMBING;
             case TABU_SEARCH -> AcceptorType.ENTITY_TABU;
             case SIMULATED_ANNEALING -> AcceptorType.SIMULATED_ANNEALING;
