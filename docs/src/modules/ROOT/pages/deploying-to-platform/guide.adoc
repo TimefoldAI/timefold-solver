@@ -79,15 +79,60 @@ When selecting its permissions, scope the token to the tenant you want to regist
 
 See https://docs.timefold.ai/timefold-platform/latest/api/platform-api#_authentication_with_personal_access_tokens[Authentication with Personal Access Tokens] for the full walkthrough, including screenshots of the token generation dialog.
 
-=== Export the token
+[#_provide_the_token]
+=== Provide the token
 
-The plugin reads your PAT from the `TIMEFOLD_PAT` environment variable.
-Export it before building:
+The plugin takes the PAT from the `TIMEFOLD_PAT` environment variable, and falls back to your Maven settings when that variable is not set.
+
+Export the variable when you deploy from CI, where the token comes from the pipeline's secret store, or for a one-off deploy from your own shell:
 
 [source,bash,options="nowrap"]
 ----
 export TIMEFOLD_PAT=<your-personal-access-token>
 ----
+
+On your own machine, prefer storing the token in your Maven settings instead, so that you configure it once rather than in every shell.
+Maven encrypts server passwords with a master password of your own, so the token is not written to disk in clear text.
+Create that master password once, and put the result in `~/.m2/settings-security.xml`:
+
+[source,bash,options="nowrap"]
+----
+mvn --encrypt-master-password
+----
+
+[source,xml,options="nowrap"]
+----
+<settingsSecurity>
+  <master>{jSMOWnoPFgsHVpMvz5VrIt5kRbzGpI8u+9EF1iFQyJQ=}</master>
+</settingsSecurity>
+----
+
+Then encrypt the PAT, and add it as a `timefold-platform` server in `~/.m2/settings.xml`:
+
+[source,bash,options="nowrap"]
+----
+mvn --encrypt-password
+----
+
+[source,xml,options="nowrap"]
+----
+<settings>
+  <servers>
+    <server>
+      <id>timefold-platform</id>
+      <password>{COQLCE6DU6GtcS5P=}</password>
+    </server>
+  </servers>
+</settings>
+----
+
+Both commands prompt for the value, so it never reaches your shell history.
+If you keep tokens for several platform environments, point the build at another entry with `-Dtimefold.serverId=<id>`.
+See https://maven.apache.org/guides/mini/guide-encryption.html[Maven Password Encryption] for the full details.
+
+CAUTION: Maven 3 encrypts the master password itself with a hardcoded key, so `settings-security.xml` protects your token against casual reading rather than against someone who can read both files. Maven 4 lifts that limitation: its `mvnenc` tool can take the master password from a GPG agent, a pinentry prompt, an environment variable or 1Password, and the plugin reads those tokens too.
+
+NOTE: `TIMEFOLD_PAT` wins when both are configured, so unset it if a stale value in your shell shadows the token in your settings.
 
 [#_build_and_deploy]
 == Build and deploy

@@ -25,6 +25,7 @@ import ai.timefold.solver.tools.maven.utils.InMemoryMojoLog.Level;
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -153,16 +154,57 @@ public class DeployModelMojoTest {
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testSkipByParameter(DeployModelMojo mojo) throws Exception {
 
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.execute();
         // assert that plugin executed and produced expected logs
         log.assertContains("Model deployment skipped by configuration", Level.INFO);
     }
 
+    /**
+     * Deploying without a token has to say so, rather than let the platform answer the empty bearer token with an
+     * authentication error that reads as if the token were wrong.
+     */
+    @Test
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testFailsWithoutAccessToken(DeployModelMojo mojo) {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider(null));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessageContaining("Personal Access Token for Timefold Platform is required")
+                .hasMessageContaining("export TIMEFOLD_PAT=<your token>")
+                .hasMessageContaining("<id>timefold-platform</id>")
+                .hasMessageContaining("mvn --encrypt-password");
+
+        // the build fails before anything is sent, so the platform never sees an unauthenticated request
+        wm1.verify(0, postRequestedFor(urlPathEqualTo("/api/platform/v1/models")));
+    }
+
+    /**
+     * A dry run sends no request, so it must not insist on a token either.
+     */
+    @Test
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @MojoParameter(name = "dryRun", value = "true")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testDryRunDoesNotNeedAnAccessToken(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider(null));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        log.assertContains("DRY_RUN: Would perform POST on .*", Level.INFO);
+        wm1.verify(0, postRequestedFor(urlPathEqualTo("/api/platform/v1/models")));
+    }
+
     @Test
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testRegisterModel(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
         mojo.execute();
@@ -183,6 +225,7 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testRegisterModelWithPatch(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
         mojo.execute();
@@ -203,6 +246,7 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testRegisterModelWithPatchOnModelVersionConflict(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
         mojo.execute();
@@ -222,10 +266,11 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testFailWithoutPatchOnModelIdConflict(DeployModelMojo mojo) {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).rootCause().isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-14004) that cannot be resolved by updating the registration with key existing-model-id: Existing private model (model_v1), already exists for tenants");
 
@@ -244,10 +289,11 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testFailWithoutPatchOnUnidentifiedConflict(DeployModelMojo mojo) {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).rootCause().isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-99999) that cannot be resolved by updating the registration with key unknown-conflict: Registered model conflicts with existing model (model_v1)");
 
@@ -266,11 +312,12 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testFailOnUpdateReportsPlatformError(DeployModelMojo mojo) {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         // the reason reported by the platform is part of the failure and not only of the build log
-        assertThatThrownBy(mojo::execute).rootCause().isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
                 .hasMessage(
                         "Model deployment (override) failed with 404 status code: Model with registration key 'failing-update' was not found");
 
@@ -285,11 +332,12 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testFailWithoutPatchOnMalformedConflictBody(DeployModelMojo mojo) {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         // a body that cannot be read as JSON reports no error code, so the conflict is not resolvable
-        assertThatThrownBy(mojo::execute).rootCause().isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-99999) that cannot be resolved by updating the registration with key malformed-conflict: <html>Conflict</html>");
 
@@ -308,11 +356,12 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testFailWithoutPatchOnEmptyConflictBody(DeployModelMojo mojo) {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         // a conflict without a body reports no error code, so the conflict is not resolvable
-        assertThatThrownBy(mojo::execute).rootCause().isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-99999) that cannot be resolved by updating the registration with key empty-conflict: no error message reported by the platform");
 
@@ -342,6 +391,7 @@ public class DeployModelMojoTest {
     @MojoParameter(name = "descriptorOnly", value = "true")
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom-shared.xml")
     public void testRegisterModelSharedType(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
         mojo.execute();
@@ -359,6 +409,7 @@ public class DeployModelMojoTest {
     @Test
     @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testFailOnIncompleteDeploy(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 

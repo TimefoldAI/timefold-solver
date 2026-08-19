@@ -28,6 +28,7 @@ import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Parent;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.project.MavenProject;
@@ -97,6 +98,15 @@ public class ConfigureMojoTest {
                 .atPriority(10)
                 .willReturn(aResponse()
                         .withStatus(401)));
+
+        // a refusal the platform explains, as opposed to the bare 401 above
+        wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
+                .withHeader("Authorization", equalTo("Bearer expired"))
+                .atPriority(10)
+                .willReturn(aResponse()
+                        .withStatus(401)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"code\":\"TFP-10002\",\"message\":\"The personal access token has expired\"}")));
 
         wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
                 .withHeader("Authorization", equalTo("Bearer noaccess"))
@@ -298,10 +308,29 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
-                .hasMessage("Platform authentication failed with 401 status code");
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessage("Platform authentication failed with 401 status code: no error message reported by the platform");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    /**
+     * A refusal the platform explains has to carry that explanation, or the build only learns the status code.
+     */
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureReportsWhyThePlatformRefusedTheToken(ConfigureMojo mojo) {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("expired"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessage("Platform authentication failed with 401 status code: "
+                        + "The personal access token has expired");
     }
 
     @Test
@@ -315,11 +344,33 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(
-                        "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessageContaining("Personal Access Token for Timefold Platform is required")
+                .hasMessageContaining("export TIMEFOLD_PAT=<your token>")
+                .hasMessageContaining("<id>timefold-platform</id>")
+                .hasMessageContaining("mvn --encrypt-password");
 
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    /**
+     * Unlike deploy and undeploy, this goal reads the platform configuration even on a dry run, as it has to write
+     * the registry and account id the build would use, so it needs a token either way.
+     */
+    @Test
+    @MojoParameter(name = "dryRun", value = "true")
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureNeedsAnAccessTokenEvenOnADryRun(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider(null));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessageContaining("Personal Access Token for Timefold Platform is required");
     }
 
     @Test

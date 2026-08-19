@@ -1,5 +1,6 @@
 package ai.timefold.solver.tools.maven;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
@@ -48,7 +49,7 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
             Path modelDescriptorArchivePath = Paths.get(buildDirectory, "model-descriptor.zip");
 
             if (!Files.exists(modelDescriptorArchivePath)) {
-                throw new IllegalStateException("Model descriptor not found in target folder");
+                throw new MojoExecutionException("Model descriptor not found in target folder");
             }
             ObjectNode modelDescriptor = readModelDescriptor(modelDescriptorArchivePath);
             getLog().info(String.format("Model %s (%s) is going to be undeployed from platform %s with registration key %s",
@@ -76,18 +77,18 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
                                     key));
                 } else {
                     printErrorInfo(response.body());
-                    throw new IllegalStateException(
+                    throw new MojoExecutionException(
                             "Model undeploy failed with " + response.statusCode() + " status code: "
                                     + readErrorMessage(response.body()));
                 }
             }
-        } catch (IllegalStateException e) {
+        } catch (MojoExecutionException e) {
             throw e;
-        } catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw new RuntimeException("Unexpected error while undeploying model", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new MojoExecutionException("Interrupted while undeploying model", e);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unexpected error while undeploying model", e);
         }
 
     }

@@ -20,6 +20,7 @@ import ai.timefold.solver.tools.maven.utils.InMemoryMojoLog.Level;
 import org.apache.maven.api.plugin.testing.InjectMojo;
 import org.apache.maven.api.plugin.testing.MojoParameter;
 import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -71,10 +72,33 @@ public class UndeployModelMojoTest {
     @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testSkipByParameter(UndeployModelMojo mojo) throws Exception {
 
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.execute();
         // assert that plugin executed and produced expected logs
         log.assertContains("Model undeployment skipped by configuration", Level.INFO);
+    }
+
+    /**
+     * Undeploying without a token has to say so, rather than let the platform answer the empty bearer token with an
+     * authentication error that reads as if the token were wrong.
+     */
+    @Test
+    @MojoParameter(name = "key", value = "existing")
+    @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testFailsWithoutAccessToken(UndeployModelMojo mojo) {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider(null));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
+                .hasMessageContaining("Personal Access Token for Timefold Platform is required")
+                .hasMessageContaining("export TIMEFOLD_PAT=<your token>")
+                .hasMessageContaining("<id>timefold-platform</id>")
+                .hasMessageContaining("mvn --encrypt-password");
+
+        // the build fails before anything is sent, so the platform never sees an unauthenticated request
+        wm1.verify(0, deleteRequestedFor(urlPathEqualTo("/api/platform/v1/models/existing")));
     }
 
     @Test
@@ -82,6 +106,7 @@ public class UndeployModelMojoTest {
     @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testUndeploy(UndeployModelMojo mojo) throws Exception {
 
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
         mojo.execute();
@@ -98,10 +123,11 @@ public class UndeployModelMojoTest {
     @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testUndeployNotExisting(UndeployModelMojo mojo) {
 
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
         // the reason reported by the platform is part of the failure and not only of the build log
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage(
                         "Model undeploy failed with 404 status code: Model with registration key 'notexisting' was not found");
 
@@ -116,9 +142,10 @@ public class UndeployModelMojoTest {
     @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
     public void testUndeployFailureWithoutDetails(UndeployModelMojo mojo) {
 
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage("Model undeploy failed with 500 status code: no error message reported by the platform");
 
         wm1.verify(1, deleteRequestedFor(urlPathEqualTo("/api/platform/v1/models/nodetails")));

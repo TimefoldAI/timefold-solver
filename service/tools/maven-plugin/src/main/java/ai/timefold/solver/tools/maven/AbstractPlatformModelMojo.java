@@ -21,14 +21,15 @@ import ai.timefold.solver.tools.maven.client.PlatformIdentityInfo;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public abstract class AbstractPlatformModelMojo extends AbstractMojo {
-
-    private AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
 
     private static final String DESCRIPTOR_FILE_NAME = "timefold-model-descriptor.json";
 
@@ -42,8 +43,25 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
 
     protected static final String PROP_MODEL_SUBS = "timefold.model.handleSubscription";
 
+    protected static final String PROP_SERVER_ID = "timefold.serverId";
+
     @Parameter(defaultValue = "${session}", readonly = true)
     protected MavenSession session;
+
+    @Component
+    private SettingsDecrypter settingsDecrypter;
+
+    /**
+     * Id of the {@code <server>} entry in the Maven settings that holds the personal access token, as an alternative
+     * to exporting it as {@code TIMEFOLD_PAT}
+     */
+    @Parameter(property = PROP_SERVER_ID, required = false, defaultValue = AccessTokenProvider.DEFAULT_SERVER_ID)
+    protected String serverId;
+
+    /**
+     * Built lazily, as it needs the settings of the session the mojo runs in; tests replace it with a double.
+     */
+    private AccessTokenProvider accessTokenProvider;
 
     /**
      * URL to the platform that model should be deployed to
@@ -82,20 +100,19 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
             .connectTimeout(Duration.ofSeconds(10)).build();
 
     protected AccessTokenProvider getAccessTokenProvider() {
+        if (accessTokenProvider == null) {
+            accessTokenProvider = new AccessTokenProvider(session == null ? null : session.getSettings(),
+                    settingsDecrypter, getConfiguredServerId(), getLog());
+        }
         return accessTokenProvider;
     }
 
-    protected void setAccessTokenProvider(AccessTokenProvider accessTokenProvider) {
-        this.accessTokenProvider = accessTokenProvider;
+    protected void setAccessTokenProvider(AccessTokenProvider provider) {
+        this.accessTokenProvider = provider;
     }
 
-    protected PlatformIdentityInfo fetchPlatformIdentityInfo(boolean includeConfig) {
-        var platformPAT = accessTokenProvider.getAccessToken();
-
-        if (platformPAT == null) {
-            throw new IllegalArgumentException(
-                    "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
-        }
+    protected PlatformIdentityInfo fetchPlatformIdentityInfo(boolean includeConfig) throws MojoExecutionException {
+        var platformPAT = requireAccessToken();
 
         var requestBuilder = HttpRequest.newBuilder().GET();
         requestBuilder.header("Accept", "application/json");
@@ -109,22 +126,63 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
                 return mapper.readValue(authResponse.body(), PlatformIdentityInfo.class);
             } else {
                 getLog().debug(authResponse.body());
-                throw new IllegalStateException(
-                        "Platform authentication failed with " + authResponse.statusCode() + " status code");
+                throw new MojoExecutionException("Platform authentication failed with " + authResponse.statusCode()
+                        + " status code: " + readErrorMessage(authResponse.body()));
             }
-        } catch (IllegalStateException e) {
+        } catch (MojoExecutionException e) {
             throw e;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Unexpected error while making platform info call", e);
-        } catch (Exception e) {
-            throw new RuntimeException("Unexpected error while making platform info call", e);
+            throw new MojoExecutionException("Interrupted while making platform info call", e);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unexpected error while making platform info call", e);
         }
     }
 
-    protected void configureHttpRequest(Builder builder) {
+    /**
+     * Resolves the personal access token, failing the build when none is configured. Without this the request goes out
+     * with an empty bearer token and the platform answers with an authentication error, which points at the token
+     * being wrong rather than at it never having been configured.
+     * <p>
+     * Deliberately called while a request is built rather than up front, so that the goals which send nothing on a
+     * dry run still run without a token: {@code deploy} and {@code undeploy} only reach here once they have decided
+     * to actually call the platform. {@code configure} reads the platform configuration even on a dry run, as it has
+     * to write the registry and account id it would build with, so that goal needs a token either way.
+     *
+     * @throws MojoExecutionException when no token is configured, or when the configured one cannot be read
+     */
+    protected String requireAccessToken() throws MojoExecutionException {
+        String accessToken = getAccessTokenProvider().getAccessToken();
+        if (accessToken == null || accessToken.isBlank()) {
+            throw new MojoExecutionException("""
+                    Personal Access Token for Timefold Platform is required.
+                    Either export it for this build:
+                      export %s=<your token>
+                    or store it, encrypted, in your Maven settings (~/.m2/settings.xml):
+                      <server>
+                        <id>%s</id>
+                        <password>{encrypted token}</password>
+                      </server>
+                    Encrypt the token with 'mvn --encrypt-password', after creating a master password with \
+                    'mvn --encrypt-master-password'; see %s
+                    See https://docs.timefold.ai/timefold-solver/latest/deploying-to-platform/guide"""
+                    .formatted(AccessTokenProvider.PAT_ENV_VARIABLE, getAccessTokenProvider().getServerId(),
+                            AccessTokenProvider.ENCRYPTION_GUIDE_URL));
+        }
+        return accessToken;
+    }
+
+    /**
+     * The raw configured value, which {@link AccessTokenProvider} normalizes; read it back from there rather than
+     * here whenever it is reported, so that it names the entry that is actually looked up.
+     */
+    private String getConfiguredServerId() {
+        return session == null ? serverId : getPropertyOrParameter(PROP_SERVER_ID, serverId);
+    }
+
+    protected void configureHttpRequest(Builder builder) throws MojoExecutionException {
         builder.timeout(Duration.ofSeconds(30));
-        builder.header("Authorization", "Bearer " + accessTokenProvider.getAccessToken());
+        builder.header("Authorization", "Bearer " + requireAccessToken());
         builder.header("Content-Type", "application/octet-stream");
         builder.header("Accept", "application/json");
         var tenants = getTenants();

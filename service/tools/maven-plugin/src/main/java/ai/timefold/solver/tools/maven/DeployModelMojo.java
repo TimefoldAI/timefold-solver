@@ -1,5 +1,6 @@
 package ai.timefold.solver.tools.maven;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -184,11 +185,13 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                             + readErrorMessage(response.body()));
                 }
             }
-        } catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw new RuntimeException("Unexpected error while deploying model", e);
+        } catch (MojoExecutionException e) {
+            throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new MojoExecutionException("Interrupted while deploying model", e);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unexpected error while deploying model", e);
         }
 
     }
