@@ -2424,6 +2424,9 @@
                   
       
       <xs:enumeration value="NEIGHBORHOODS"/>
+                  
+      
+      <xs:enumeration value="SOLVE_WITH_INDICTMENTS"/>
                 
     
     </xs:restriction>
