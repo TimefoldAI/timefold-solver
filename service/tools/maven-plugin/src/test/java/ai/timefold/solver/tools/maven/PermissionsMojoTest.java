@@ -22,7 +22,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
 @MojoTest
-public class PermissionsMojoTest {
+class PermissionsMojoTest {
 
     @RegisterExtension
     static WireMockExtension wm1 = WireMockExtension.newInstance()
@@ -32,7 +32,7 @@ public class PermissionsMojoTest {
     private InMemoryMojoLog log = new InMemoryMojoLog();
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         log.clear();
         wm1.resetAll();
 
@@ -77,7 +77,7 @@ public class PermissionsMojoTest {
 
     @Test
     @InjectMojo(goal = "permissions", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testReportsPermissions(PermissionsMojo mojo) throws Exception {
+    void testReportsPermissions(PermissionsMojo mojo) throws Exception {
         mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
@@ -95,7 +95,7 @@ public class PermissionsMojoTest {
 
     @Test
     @InjectMojo(goal = "permissions", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testWarnsWhenTokenLacksPushAccess(PermissionsMojo mojo) throws Exception {
+    void testWarnsWhenTokenLacksPushAccess(PermissionsMojo mojo) throws Exception {
         mojo.setAccessTokenProvider(new TestAccessTokenProvider("noaccess"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
@@ -109,7 +109,7 @@ public class PermissionsMojoTest {
 
     @Test
     @InjectMojo(goal = "permissions", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testFailsWhenNotAuthorized(PermissionsMojo mojo) {
+    void testFailsWhenNotAuthorized(PermissionsMojo mojo) {
         mojo.setAccessTokenProvider(new TestAccessTokenProvider("wrong"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
@@ -122,7 +122,7 @@ public class PermissionsMojoTest {
 
     @Test
     @InjectMojo(goal = "permissions", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testFailsWhenAccessTokenMissing(PermissionsMojo mojo) {
+    void testFailsWhenAccessTokenMissing(PermissionsMojo mojo) {
         mojo.setAccessTokenProvider(new TestAccessTokenProvider(null));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
