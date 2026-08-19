@@ -1,6 +1,5 @@
 package ai.timefold.solver.tools.maven;
 
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -35,7 +34,7 @@ public class PermissionsMojo extends AbstractPlatformModelMojo {
         getLog().info("  Tenants    : " + joinUuids(info.tenants()));
         getLog().info("  Namespaces : " + joinStrings(info.accountIds()));
 
-        List<String> selectedTenants = getTenants();
+        var selectedTenants = getTenants();
         if (selectedTenants != null && !selectedTenants.isEmpty()) {
             getLog().info("  Selected tenant : " + selectedTenants.getFirst());
         }
@@ -63,7 +62,7 @@ public class PermissionsMojo extends AbstractPlatformModelMojo {
         if (values == null || values.isEmpty()) {
             return NONE;
         }
-        TreeSet<String> sorted = new TreeSet<>();
+        var sorted = new TreeSet<String>();
         for (UUID value : values) {
             sorted.add(value.toString());
         }
