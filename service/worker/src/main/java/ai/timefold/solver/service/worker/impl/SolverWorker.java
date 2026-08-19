@@ -374,7 +374,8 @@ public class SolverWorker {
 
             sendEvent(datasetOutputsComputedEmitter,
                     new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested,
-                            mapEnrichmentContext.getResolvedMapLocation()));
+                            mapEnrichmentContext.getResolvedMapLocation(), configuredCores(configuration),
+                            configuredMemory(configuration)));
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }
@@ -825,6 +826,20 @@ public class SolverWorker {
             LOGGER.error("Unable to get model output for id (%s)".formatted(id), e);
             return null;
         }
+    }
+
+    private static Integer configuredCores(Configuration<?> configuration) {
+        return (configuration != null && configuration.run() != null)
+                ? configuration.run().maxThreadCount()
+                : null;
+    }
+
+    private static Integer configuredMemory(Configuration<?> configuration) {
+        if (configuration == null || configuration.resourcesConfiguration() == null
+                || configuration.resourcesConfiguration().memory() == null) {
+            return null;
+        }
+        return (int) Math.round(configuration.resourcesConfiguration().memory());
     }
 
     private ModelInputMetrics extractInputMetrics(SolverModel solverModel) {
