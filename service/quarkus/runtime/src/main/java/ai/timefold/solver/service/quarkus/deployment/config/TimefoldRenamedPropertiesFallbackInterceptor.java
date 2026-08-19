@@ -92,7 +92,9 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
     }
 
     private static void logWarningForResolvedKey(String key, String legacyKey) {
-        LOGGER.warn("Deprecated configuration key '{}' has been resolved to '{}'.\nPlease use the '{}' instead.",
+        LOGGER.warn("""
+                Deprecated configuration key '{}' has been resolved to '{}'.
+                Please use the '{}' instead.""",
                 legacyKey, key, key);
     }
 }
