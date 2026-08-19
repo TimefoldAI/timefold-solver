@@ -96,6 +96,59 @@ public class ConfigureMojoTest {
                                 }
                                 }
                                 """)));
+
+        // the token is allowed to deploy models, but is not associated with any account
+        wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
+                .withHeader("Authorization", equalTo("Bearer noaccounts"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                                {
+                                "user" : "test@email.com",
+                                "scopes" : ["registered-model:create"],
+                                "tenants" : [],
+                                "accountIds" : [],
+                                "config" : {
+                                    "containerRegistry" : "test.registry.com"
+                                }
+                                }
+                                """)));
+
+        // the platform does not report the accountIds field at all
+        wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
+                .withHeader("Authorization", equalTo("Bearer noaccountids"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                                {
+                                "user" : "test@email.com",
+                                "scopes" : ["registered-model:create"],
+                                "tenants" : [],
+                                "config" : {
+                                    "containerRegistry" : "test.registry.com"
+                                }
+                                }
+                                """)));
+
+        // the token is associated with several accounts, so the account id cannot be derived from it
+        wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
+                .withHeader("Authorization", equalTo("Bearer multipleaccounts"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                                {
+                                "user" : "test@email.com",
+                                "scopes" : ["registered-model:create"],
+                                "tenants" : [],
+                                "accountIds" : ["test", "company"],
+                                "config" : {
+                                    "containerRegistry" : "test.registry.com"
+                                }
+                                }
+                                """)));
     }
 
     @Test
@@ -172,7 +225,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = "///";
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
                 .hasMessage("Platform Url is mandatory");
 
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
@@ -224,7 +277,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
                 .hasMessage("Platform authentication failed with 401 status code");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
@@ -241,7 +294,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(RuntimeException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(RuntimeException.class)
                 .hasMessage(
                         "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
 
@@ -260,10 +313,89 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(RuntimeException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(RuntimeException.class)
                 .hasMessage("No access to configured account id company or account not configured");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureFailsWhenTokenHasNoAccount(ConfigureMojo mojo) {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("noaccounts"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("Unable to resolve the Timefold Platform account id")
+                .hasMessageContaining("not associated with any account");
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureFailsWhenPlatformReportsNoAccountIds(ConfigureMojo mojo) {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("noaccountids"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("not associated with any account");
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureFailsWhenAccountIdIsAmbiguous(ConfigureMojo mojo) {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("multipleaccounts"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("associated with 2 accounts (company, test)")
+                .hasMessageContaining("-Dtimefold.accountId=<account id>");
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    @Test
+    @MojoParameter(name = "accountId", value = "company")
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureUsesConfiguredAccountIdWhenSeveralAreAvailable(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("multipleaccounts"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+
+        log.assertContains("Configured Timefold Platform integration", Level.INFO);
+
+        Path buildProperties = Paths.get("target", "generated-resources", "timefold-build.properties");
+
+        Properties props = new Properties();
+        try (InputStream in = Files.newInputStream(buildProperties)) {
+            props.load(in);
+        }
+        assertThat(props).containsEntry("quarkus.container-image.group", "company");
     }
 
     @Test
@@ -277,7 +409,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(RuntimeException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(RuntimeException.class)
                 .hasMessage("No access to deploy model on Timefold Platform");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
@@ -295,7 +427,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(MojoFailureException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("built with the Community Edition of Timefold Solver")
                 .hasMessageContaining("-Denterprise=true");
 
@@ -313,7 +445,7 @@ public class ConfigureMojoTest {
 
         mojo.setLog(log);
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(MojoFailureException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("built with the Community Edition of Timefold Solver");
     }
 
@@ -346,7 +478,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(MojoFailureException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("does not inherit from ai.timefold.solver:timefold-solver-service-parent");
 
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
@@ -364,7 +496,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(MojoFailureException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("does not inherit from ai.timefold.solver:timefold-solver-service-parent");
     }
 
