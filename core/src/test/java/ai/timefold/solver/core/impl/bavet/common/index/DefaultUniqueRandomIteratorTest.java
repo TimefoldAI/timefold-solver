@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import static ai.timefold.solver.core.impl.bavet.common.index.SelectionProbabilityTest.toEntries;
+import static ai.timefold.solver.core.impl.bavet.common.index.AbstractIndexerTest.toEntries;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -9,88 +9,72 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
-
-import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Unlike {@link DefaultRetiringRandomIteratorTest},
+ * this iterator needs no cooperation from the caller:
+ * it retires every element it returns by itself,
+ * so it ends on its own once every element has been drawn exactly once.
+ */
 class DefaultUniqueRandomIteratorTest {
 
     @Test
-    void emptySet() {
-        var emptySet = new DefaultUniqueRandomIterator<>(new ElementAwareArrayList<>(), new Random(0));
-
-        SoftAssertions.assertSoftly(softly -> {
-            softly.assertThat(emptySet.hasNext())
-                    .isFalse();
-            softly.assertThatExceptionOfType(NoSuchElementException.class)
-                    .isThrownBy(emptySet::next);
-            softly.assertThatExceptionOfType(IllegalStateException.class)
-                    .isThrownBy(emptySet::remove);
-        });
-    }
-
-    @Test
-    void singleElementSetPickAndRemove() {
-        var list = List.of("A");
-        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
-
-        assertThat(set.hasNext()).isTrue();
-
-        var element = set.next();
-        assertThat(element).isEqualTo("A");
-
-        set.remove();
-        assertThat(set.hasNext()).isFalse();
-
-        assertThatExceptionOfType(NoSuchElementException.class)
-                .isThrownBy(set::next);
-    }
-
-    @Test
-    void multipleElementSet() {
+    void drawsEveryElementExactlyOnce() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
+        var iterator = UniqueRandomIterator.of(toEntries(list), new Random(0));
 
-        assertThat(set.hasNext()).isTrue();
-
-        var element = set.next();
-        assertThat(element).isIn(list);
-    }
-
-    @Test
-    void pickDoesNotModifySet() {
-        var list = List.of("A", "B", "C");
-        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
-
-        var element1 = set.next();
-        var element2 = set.next();
-        var element3 = set.next();
-
-        assertThat(set.hasNext()).isTrue();
-        // Elements may be the same since we never called remove().
-        assertThat(element1).isIn(list);
-        assertThat(element2).isIn(list);
-        assertThat(element3).isIn(list);
-    }
-
-    @Test
-    void removeAllElements() {
-        var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
-
-        var clearedElements = new HashSet<String>();
-        for (int i = 0; i < 5; i++) {
-            assertThat(set.hasNext()).isTrue();
-            clearedElements.add(set.next());
-            set.remove();
+        var drawnElements = new HashSet<String>();
+        for (var i = 0; i < list.size(); i++) {
+            assertThat(iterator.hasNext()).isTrue();
+            drawnElements.add(iterator.next());
         }
 
-        assertThat(set.hasNext()).isFalse();
-        assertThat(clearedElements).containsExactlyInAnyOrderElementsOf(list);
-
+        assertThat(drawnElements).containsExactlyInAnyOrderElementsOf(list);
+        assertThat(iterator.hasNext()).isFalse();
         assertThatExceptionOfType(NoSuchElementException.class)
-                .isThrownBy(set::next);
+                .isThrownBy(iterator::next);
+    }
+
+    @Test
+    void removeThrows() {
+        var list = List.of("A");
+        var iterator = UniqueRandomIterator.of(toEntries(list), new Random(0));
+
+        iterator.next();
+        assertThatExceptionOfType(UnsupportedOperationException.class)
+                .isThrownBy(iterator::remove);
+    }
+
+    @Test
+    void forEachRemainingDrainsEveryElementExactlyOnce() {
+        // Unlike RepeatingRandomIterator and RetiringRandomIterator,
+        // this iterator ends on its own,
+        // so it does not override forEachRemaining() to throw;
+        // the JDK default loop just works.
+        // The only other place that fact is exercised today is DatasetTest,
+        // through a full solver stack.
+        var list = List.of("A", "B", "C", "D", "E");
+        var iterator = UniqueRandomIterator.of(toEntries(list), new Random(0));
+
+        var drainedElements = new HashSet<String>();
+        iterator.forEachRemaining(drainedElements::add);
+
+        assertThat(drainedElements).containsExactlyInAnyOrderElementsOf(list);
+        assertThat(iterator.hasNext()).isFalse();
+
+        // A further call is a safe no-op, not an error: hasNext() is already false, so the loop body never runs.
+        iterator.forEachRemaining(drainedElements::add);
+        assertThat(drainedElements).containsExactlyInAnyOrderElementsOf(list);
+    }
+
+    @Test
+    void emptySource() {
+        var iterator = UniqueRandomIterator.<String> empty();
+
+        assertThat(iterator.hasNext()).isFalse();
+        assertThatExceptionOfType(NoSuchElementException.class)
+                .isThrownBy(iterator::next);
     }
 
 }

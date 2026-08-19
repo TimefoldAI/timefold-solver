@@ -10,6 +10,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
@@ -123,5 +124,12 @@ public interface MoveStreamFactory<Solution_> {
             forEachDestinationIncludingUnassigned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
     <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream);
+
+    /**
+     * Terminal operation for datasets {@link UniEnumeratingStream#asCachedDataset() cached} from streams
+     * started on this factory, parallel to {@link UniSamplingStream#asMove}.
+     * The move order of the given provider's iterator is never part of the API contract.
+     */
+    MoveStream<Solution_> buildMoveStream(MoveIteratorProvider<Solution_> iteratorProvider);
 
 }

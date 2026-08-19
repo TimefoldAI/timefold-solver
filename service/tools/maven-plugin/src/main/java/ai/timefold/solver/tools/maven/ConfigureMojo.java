@@ -15,6 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.tools.maven.client.PlatformIdentityInfo;
 
@@ -100,14 +102,11 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                 if (info == null || !info.hasPushAccessRights()) {
                     throw new RuntimeException("No access to deploy model on Timefold Platform");
                 }
-                String accountId = getPropertyOrParameter(PROP_ACCOUNT_ID, this.accountId);
-                if (accountId == null && info.accountIds().size() == 1) {
-                    accountId = info.accountIds().iterator().next();
-                }
+                var resolvedAccountId = resolveAccountId(info);
 
-                if (accountId != null && !info.hasAccessToAccountId(accountId)) {
+                if (!info.hasAccessToAccountId(resolvedAccountId)) {
                     throw new RuntimeException(
-                            "No access to configured account id " + accountId + " or account not configured");
+                            "No access to configured account id " + resolvedAccountId + " or account not configured");
                 }
 
                 Path path = Paths.get("target", "generated-resources", "timefold-build.properties");
@@ -123,13 +122,13 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                 timefoldBuildProperties.setProperty("quarkus.profile", "container");
                 timefoldBuildProperties.setProperty("quarkus.container-image.build", "true");
                 timefoldBuildProperties.setProperty("quarkus.container-image.registry", registry);
-                timefoldBuildProperties.setProperty("quarkus.container-image.group", accountId);
+                timefoldBuildProperties.setProperty("quarkus.container-image.group", resolvedAccountId);
 
                 // configure container image and arguments based on model parent pom settings
                 timefoldBuildProperties.setProperty("quarkus.jib.jvm-additional-arguments",
-                        project.getProperties().getProperty("ai.timefold.model.jvm-image-arguments", ""));
+                        project.getProperties().getProperty("timefold.model.jvm-image-arguments", ""));
                 timefoldBuildProperties.setProperty("quarkus.jib.base-jvm-image",
-                        project.getProperties().getProperty("ai.timefold.model.base-jvm-image",
+                        project.getProperties().getProperty("timefold.model.base-jvm-image",
                                 "must-be-set-from-parent-pom"));
 
                 if (!getPropertyOrParameter(PROP_DRY_RUN, dryRun)) {
@@ -157,6 +156,45 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                 throw new MojoExecutionException(e);
             }
         }
+    }
+
+    /**
+     * Resolves the account id the model is deployed under, which becomes the group of the container image. It is either
+     * configured explicitly, or, when the personal access token is associated with exactly one account, that account.
+     *
+     * @throws MojoFailureException when the account id is neither configured nor unambiguously derivable from the
+     *         personal access token; without it the container image cannot be named, so the build must not continue.
+     */
+    protected String resolveAccountId(PlatformIdentityInfo info) throws MojoFailureException {
+        String configuredAccountId = getPropertyOrParameter(PROP_ACCOUNT_ID, this.accountId);
+        if (configuredAccountId != null && !configuredAccountId.isBlank()) {
+            return configuredAccountId.trim();
+        }
+
+        Set<String> accountIds = info.accountIds() == null ? Set.of() : info.accountIds();
+        if (accountIds.size() == 1) {
+            return accountIds.iterator().next();
+        }
+
+        if (accountIds.isEmpty()) {
+            throw new MojoFailureException("""
+                    Unable to resolve the Timefold Platform account id: the personal access token is not associated with \
+                    any account, so the container image of this model cannot be built.
+                    Use a personal access token of an account that is allowed to deploy models.
+                    See https://docs.timefold.ai/timefold-solver/latest/deploying-to-platform/guide""");
+        }
+        throw new MojoFailureException("""
+                Unable to resolve the Timefold Platform account id: the personal access token is associated with %d \
+                accounts (%s), so the account to deploy this model to has to be configured explicitly.
+                Either pass it on the command line:
+                  mvn clean package -D%s=<account id> timefold:deploy
+                or declare it in the plugin configuration:
+                  <configuration>
+                    <accountId>...</accountId>
+                  </configuration>
+                See https://docs.timefold.ai/timefold-solver/latest/deploying-to-platform/guide"""
+                .formatted(accountIds.size(), accountIds.stream().sorted().collect(Collectors.joining(", ")),
+                        PROP_ACCOUNT_ID));
     }
 
     /**

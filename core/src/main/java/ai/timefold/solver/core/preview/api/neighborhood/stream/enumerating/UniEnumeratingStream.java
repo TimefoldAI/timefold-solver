@@ -1,11 +1,16 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
 
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.UniSamplingStream;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -475,5 +480,19 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      *         at the cost of increased time and memory usage
      */
     UniEnumeratingStream<Solution_, A> distinct();
+
+    /**
+     * Terminal operation: materializes this stream as a {@link UniDataset},
+     * kept up to date in memory as the working solution changes.
+     * Use this instead of {@link MoveStreamFactory#pick(UniEnumeratingStream)}
+     * when the dataset is to be consumed from a custom {@link MoveIteratorProvider}.
+     * Resolve the returned handle against a {@link MoveIteratorSession}
+     * inside {@link MoveStreamFactory#buildMoveStream(MoveIteratorProvider)}.
+     * <p>
+     * Repeated calls on the same stream return an equal handle, and the rows are materialized only once.
+     *
+     * @see UniSamplingStream For the declarative alternative, which reads from this stream directly.
+     */
+    UniDataset<Solution_, A> asCachedDataset();
 
 }
