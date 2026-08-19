@@ -126,9 +126,9 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
 
                 // configure container image and arguments based on model parent pom settings
                 timefoldBuildProperties.setProperty("quarkus.jib.jvm-additional-arguments",
-                        project.getProperties().getProperty("ai.timefold.model.jvm-image-arguments", ""));
+                        project.getProperties().getProperty("timefold.model.jvm-image-arguments", ""));
                 timefoldBuildProperties.setProperty("quarkus.jib.base-jvm-image",
-                        project.getProperties().getProperty("ai.timefold.model.base-jvm-image",
+                        project.getProperties().getProperty("timefold.model.base-jvm-image",
                                 "must-be-set-from-parent-pom"));
 
                 if (!getPropertyOrParameter(PROP_DRY_RUN, dryRun)) {

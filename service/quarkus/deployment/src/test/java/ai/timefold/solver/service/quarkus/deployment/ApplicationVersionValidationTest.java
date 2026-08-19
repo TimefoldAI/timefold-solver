@@ -17,20 +17,20 @@ class ApplicationVersionValidationTest {
     void nullVersionThrows() {
         assertThatThrownBy(() -> validateApplicationVersion(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("timefold.application.version");
+                .hasMessageContaining("timefold.model.api-version");
     }
 
     @Test
     void emptyVersionThrows() {
         assertThatThrownBy(() -> validateApplicationVersion(""))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("timefold.application.version");
+                .hasMessageContaining("timefold.model.api-version");
     }
 
     @Test
     void blankVersionThrows() {
         assertThatThrownBy(() -> validateApplicationVersion("   "))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("timefold.application.version");
+                .hasMessageContaining("timefold.model.api-version");
     }
 }
