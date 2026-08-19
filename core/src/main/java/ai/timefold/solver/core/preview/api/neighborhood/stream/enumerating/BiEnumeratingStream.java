@@ -1,5 +1,9 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
 
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.BiNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
@@ -59,5 +63,17 @@ public interface BiEnumeratingStream<Solution_, A, B> extends EnumeratingStream 
      * As defined by {@link UniEnumeratingStream#distinct()}.
      */
     BiEnumeratingStream<Solution_, A, B> distinct();
+
+    /**
+     * Terminal operation: materializes this stream as a {@link BiDataset},
+     * kept up to date in memory as the working solution changes.
+     * Use this to consume the dataset from a custom {@link MoveIteratorProvider},
+     * as opposed to being consumed by {@link MoveStreamFactory#pick(UniEnumeratingStream)}
+     * Resolve the returned handle against a {@link MoveIteratorSession}
+     * inside {@link MoveStreamFactory#buildMoveStream(MoveIteratorProvider)}.
+     * <p>
+     * Repeated calls on the same stream return an equal handle, and the rows are materialized only once.
+     */
+    BiDataset<Solution_, A, B> asCachedDataset();
 
 }

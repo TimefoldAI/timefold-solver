@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
+import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -25,8 +26,10 @@ import org.jspecify.annotations.Nullable;
  * If the move has to touch shadow variables, it is responsible for updating them
  * consistently across the entire dependency graph.
  * <p>
- * For tabu search, a Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()},
- * {@link #getPlanningEntities()} and {@link #getPlanningValues()}.
+ * A move must implement {@link Object#equals(Object)} and {@link Object#hashCode()}
+ * in a way which can distinguish individual move instances from each other
+ * and only marks moves as equal if they result in the exact same solution.
+ * This is used by several features, such as tabu search and {@link NeighborhoodTester}.
  *
  * @param <Solution_>
  * @see MoveTester How to test {@link Move}s.

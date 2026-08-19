@@ -59,6 +59,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -263,6 +264,41 @@ class DefaultSolverTest {
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("NEIGHBORHOODS");
+    }
+
+    @Test
+    void neighborhoodsRejectsVariableNeighborhoodDescent() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0"))
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withLocalSearchType(LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+        Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("does not support the Neighborhoods API");
+    }
+
+    @Test
+    void variableNeighborhoodDescentStillWorksWithoutNeighborhoods() {
+        // Preview feature not enabled: plain VND, using legacy move selectors, must remain unaffected.
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0"))
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withLocalSearchType(LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+        var result = PlannerTestUtils.solve(solverConfig, solution);
+        Assertions.assertThat(result).isNotNull();
     }
 
     @Test
