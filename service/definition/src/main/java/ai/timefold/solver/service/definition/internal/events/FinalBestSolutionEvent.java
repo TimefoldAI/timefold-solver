@@ -9,9 +9,8 @@ import ai.timefold.solver.service.definition.api.domain.Metadata;
  */
 public final class FinalBestSolutionEvent extends SolverWorkerEvent {
 
-    public FinalBestSolutionEvent(Metadata metadata, SolverModel model, SolverJob job, String planName, String tenantName,
-            Integer configuredCores, Long configuredMemoryMi) {
-        super(metadata, model, job, planName, tenantName, null, configuredCores, configuredMemoryMi);
+    public FinalBestSolutionEvent(Metadata metadata, SolverModel model, SolverJob job, String planName, String tenantName) {
+        super(metadata, model, job, planName, tenantName, null);
     }
 
 }

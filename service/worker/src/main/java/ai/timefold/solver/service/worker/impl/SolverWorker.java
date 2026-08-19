@@ -374,7 +374,8 @@ public class SolverWorker {
 
             sendEvent(datasetOutputsComputedEmitter,
                     new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested,
-                            mapEnrichmentContext.getResolvedMapLocation()));
+                            mapEnrichmentContext.getResolvedMapLocation(), configuredCores(configuration),
+                            configuredMemory(configuration)));
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }
@@ -711,10 +712,8 @@ public class SolverWorker {
                     extractOutputMetrics(solverModel));
 
             processor.onNext(metadata);
-            var configuration = getConfiguration(id);
             sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
-                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName,
-                    configuredCores(configuration), configuredMemoryMi(configuration)));
+                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName));
 
             postProcessCompleteOutput(id, modelOutput, solverModel);
 
@@ -776,9 +775,7 @@ public class SolverWorker {
             storageService.storeMetadata(problemId, metadata);
 
             processor.onNext(metadata);
-            var configuration = getConfiguration(problemId);
-            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName,
-                    configuredCores(configuration), configuredMemoryMi(configuration)));
+            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
         } finally {
 
             for (var processor : modelPostProcessors) {
@@ -831,27 +828,18 @@ public class SolverWorker {
         }
     }
 
-    private Configuration<?> getConfiguration(String id) {
-        try {
-            return storageService.getConfiguration(id);
-        } catch (Exception e) {
-            LOGGER.warn("Unable to load configuration for id {} to report configured resources: {}", id, e.getMessage());
-            return null;
-        }
-    }
-
-    private Integer configuredCores(Configuration<?> configuration) {
+    private static Integer configuredCores(Configuration<?> configuration) {
         return (configuration != null && configuration.run() != null)
                 ? configuration.run().maxThreadCount()
                 : null;
     }
 
-    private Long configuredMemoryMi(Configuration<?> configuration) {
+    private static Integer configuredMemory(Configuration<?> configuration) {
         if (configuration == null || configuration.resourcesConfiguration() == null
                 || configuration.resourcesConfiguration().memory() == null) {
             return null;
         }
-        return Math.round(configuration.resourcesConfiguration().memory());
+        return (int) Math.round(configuration.resourcesConfiguration().memory());
     }
 
     private ModelInputMetrics extractInputMetrics(SolverModel solverModel) {

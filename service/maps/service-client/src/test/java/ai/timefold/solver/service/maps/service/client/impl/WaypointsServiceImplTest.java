@@ -107,7 +107,7 @@ public class WaypointsServiceImplTest {
         Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
 
         // finally send the final solution
-        enricher.onFinalBestSolution(new FinalBestSolutionEvent(metadata, sampleModel, null, null, null, null, null));
+        enricher.onFinalBestSolution(new FinalBestSolutionEvent(metadata, sampleModel, null, null, null));
         waypoints = enricher.getWaypoints(metadata.getId(), Set.of());
 
         Assertions.assertThat(waypoints.size()).isEqualTo(1);

@@ -15,12 +15,6 @@ public final class FailedSolutionEvent extends SolverWorkerEvent {
         this.cause = cause;
     }
 
-    public FailedSolutionEvent(Metadata metadata, SolverJob job, Throwable cause, String planName, String tenantName,
-            Integer configuredCores, Long configuredMemoryMi) {
-        super(metadata, null, job, planName, tenantName, null, configuredCores, configuredMemoryMi);
-        this.cause = cause;
-    }
-
     public Throwable getCause() {
         return cause;
     }
