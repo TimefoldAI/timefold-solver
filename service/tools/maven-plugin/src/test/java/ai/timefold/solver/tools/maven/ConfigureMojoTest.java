@@ -51,7 +51,7 @@ public class ConfigureMojoTest {
     private MavenSession session;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         log.clear();
         wm1.resetAll();
 
@@ -67,6 +67,25 @@ public class ConfigureMojoTest {
                                 "scopes" : ["registered-model:create"],
                                 "tenants" : [],
                                 "accountIds" : ["test"],
+                                "config" : {
+                                    "containerRegistry" : "test.registry.com"
+                                }
+                                }
+                                """)));
+
+        // the platform reports the migrated field name instead of accountIds, next to a field the plugin does not know
+        wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
+                .withHeader("Authorization", equalTo("Bearer namespaces"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                                {
+                                "user" : "test@email.com",
+                                "scopes" : ["registered-model:create"],
+                                "tenants" : [],
+                                "namespaces" : ["test"],
+                                "roles" : ["model-publisher"],
                                 "config" : {
                                     "containerRegistry" : "test.registry.com"
                                 }
@@ -97,9 +116,9 @@ public class ConfigureMojoTest {
                                 }
                                 """)));
 
-        // the token is allowed to deploy models, but is not associated with any account
+        // the token is allowed to deploy models, but is not associated with any namespace
         wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
-                .withHeader("Authorization", equalTo("Bearer noaccounts"))
+                .withHeader("Authorization", equalTo("Bearer emptyaccountids"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -115,9 +134,9 @@ public class ConfigureMojoTest {
                                 }
                                 """)));
 
-        // the platform does not report the accountIds field at all
+        // the platform reports neither the accountIds nor the namespaces field
         wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
-                .withHeader("Authorization", equalTo("Bearer noaccountids"))
+                .withHeader("Authorization", equalTo("Bearer nonamespaces"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
@@ -132,7 +151,7 @@ public class ConfigureMojoTest {
                                 }
                                 """)));
 
-        // the token is associated with several accounts, so the account id cannot be derived from it
+        // the token is associated with several namespaces, so the namespace cannot be derived from it
         wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
                 .withHeader("Authorization", equalTo("Bearer multipleaccounts"))
                 .willReturn(aResponse()
@@ -179,21 +198,31 @@ public class ConfigureMojoTest {
         // assert that plugin executed and produced expected logs
         log.assertContains("Configured Timefold Platform integration", Level.INFO);
 
-        Path buildProperties = Paths.get("target", "generated-resources", "timefold-build.properties");
-
-        // assert the build properties file exists
-        assertThat(Files.exists(buildProperties)).isTrue();
-
         // load configured build properties and assert expected entry
-        Properties props = new Properties();
-        try (InputStream in = Files.newInputStream(buildProperties)) {
-            props.load(in);
-        }
-        assertThat(props)
-                .containsEntry("quarkus.container-image.group", "test")// test is returned from aboutme endpoint as this is the account that access token grants
+        assertThat(readBuildProperties())
+                // test is returned from aboutme endpoint as this is the namespace that access token grants
+                .containsEntry("quarkus.container-image.group", "test")
                 .containsEntry("quarkus.container-image.registry", "test.registry.com")
                 .containsEntry("quarkus.container-image.push", "true")
                 .containsEntry("image.native-suffix", "");
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureSuccessfullyWhenPlatformReportsNamespaces(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("namespaces"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        log.assertContains("Configured Timefold Platform integration", Level.INFO);
+
+        // the namespace is resolved from the migrated field name exactly like it is from accountIds
+        assertThat(readBuildProperties()).containsEntry("quarkus.container-image.group", "test");
     }
 
     @Test
@@ -216,7 +245,7 @@ public class ConfigureMojoTest {
 
     @Test
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureFailsWithBlankPlatformUrl(ConfigureMojo mojo) throws Exception {
+    public void testConfigureFailsWithBlankPlatformUrl(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
@@ -249,18 +278,10 @@ public class ConfigureMojoTest {
         // assert that plugin executed and produced expected logs
         log.assertContains("Configured Timefold Platform integration", Level.INFO);
 
-        Path buildProperties = Paths.get("target", "generated-resources", "timefold-build.properties");
-
-        // assert the build properties file exists
-        assertThat(Files.exists(buildProperties)).isTrue();
-
         // load configured build properties and assert expected entry
-        Properties props = new Properties();
-        try (InputStream in = Files.newInputStream(buildProperties)) {
-            props.load(in);
-        }
-        assertThat(props)
-                .containsEntry("quarkus.container-image.group", "test")// test is returned from aboutme endpoint as this is the account that access token grants
+        assertThat(readBuildProperties())
+                // test is returned from aboutme endpoint as this is the namespace that access token grants
+                .containsEntry("quarkus.container-image.group", "test")
                 .containsEntry("quarkus.container-image.registry", "test.registry.com")
                 .containsEntry("quarkus.container-image.push", "true")
                 .doesNotContainKey("image.native-suffix");
@@ -268,7 +289,7 @@ public class ConfigureMojoTest {
 
     @Test
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureNotAuthorizaed(ConfigureMojo mojo) throws Exception {
+    public void testConfigureNotAuthorized(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
@@ -285,7 +306,7 @@ public class ConfigureMojoTest {
 
     @Test
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureMissingAccessToken(ConfigureMojo mojo) throws Exception {
+    public void testConfigureMissingAccessToken(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
@@ -302,9 +323,9 @@ public class ConfigureMojoTest {
     }
 
     @Test
-    @MojoParameter(name = "accountId", value = "company")
+    @MojoParameter(name = "namespace", value = "company")
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureNotAuthorizaedForAccountId(ConfigureMojo mojo) throws Exception {
+    public void testConfigureNotAuthorizedForNamespace(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
@@ -313,50 +334,71 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(RuntimeException.class)
-                .hasMessage("No access to configured account id company or account not configured");
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
+                .hasMessage("The personal access token is not associated with the configured namespace company, "
+                        + "but with test");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
 
     @Test
+    @MojoParameter(name = "namespace", value = "company")
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureFailsWhenTokenHasNoAccount(ConfigureMojo mojo) {
+    public void testConfigureNotAuthorizedForNamespaceWhenTokenHasNoNamespace(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
 
-        mojo.setAccessTokenProvider(new TestAccessTokenProvider("noaccounts"));
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("emptyaccountids"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
+        // the configured namespace short circuits the resolution, so the token granting none is only reported here
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("Unable to resolve the Timefold Platform account id")
-                .hasMessageContaining("not associated with any account");
+                .hasMessage("The personal access token is not associated with any namespace, "
+                        + "so this model cannot be deployed to the configured namespace company");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
 
     @Test
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureFailsWhenPlatformReportsNoAccountIds(ConfigureMojo mojo) {
+    public void testConfigureFailsWhenTokenHasNoNamespace(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
 
-        mojo.setAccessTokenProvider(new TestAccessTokenProvider("noaccountids"));
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("emptyaccountids"));
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("not associated with any account");
+                .hasMessageContaining("Unable to resolve the Timefold Platform namespace")
+                .hasMessageContaining("not associated with any namespace");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
 
     @Test
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureFailsWhenAccountIdIsAmbiguous(ConfigureMojo mojo) {
+    public void testConfigureFailsWhenPlatformReportsNoNamespaceField(ConfigureMojo mojo) {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("nonamespaces"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("not associated with any namespace");
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureFailsWhenNamespaceIsAmbiguous(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
@@ -366,16 +408,16 @@ public class ConfigureMojoTest {
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("associated with 2 accounts (company, test)")
-                .hasMessageContaining("-Dtimefold.accountId=<account id>");
+                .hasMessageContaining("associated with 2 namespaces (company, test)")
+                .hasMessageContaining("-Dtimefold.namespace=<namespace>");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
 
     @Test
-    @MojoParameter(name = "accountId", value = "company")
+    @MojoParameter(name = "namespace", value = "company")
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureUsesConfiguredAccountIdWhenSeveralAreAvailable(ConfigureMojo mojo) throws Exception {
+    public void testConfigureUsesConfiguredNamespaceWhenSeveralAreAvailable(ConfigureMojo mojo) throws Exception {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
@@ -389,18 +431,12 @@ public class ConfigureMojoTest {
 
         log.assertContains("Configured Timefold Platform integration", Level.INFO);
 
-        Path buildProperties = Paths.get("target", "generated-resources", "timefold-build.properties");
-
-        Properties props = new Properties();
-        try (InputStream in = Files.newInputStream(buildProperties)) {
-            props.load(in);
-        }
-        assertThat(props).containsEntry("quarkus.container-image.group", "company");
+        assertThat(readBuildProperties()).containsEntry("quarkus.container-image.group", "company");
     }
 
     @Test
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureWrongScopes(ConfigureMojo mojo) throws Exception {
+    public void testConfigureWrongScopes(ConfigureMojo mojo) {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
         setEnterpriseModel(mojo);
@@ -409,7 +445,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(RuntimeException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
                 .hasMessage("No access to deploy model on Timefold Platform");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
@@ -535,6 +571,17 @@ public class ConfigureMojoTest {
 
         assertThat(log.getEvents()).isEmpty();
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    private static Properties readBuildProperties() throws IOException {
+        Path buildProperties = Paths.get("target", "generated-resources", "timefold-build.properties");
+        assertThat(Files.exists(buildProperties)).isTrue();
+
+        Properties props = new Properties();
+        try (InputStream in = Files.newInputStream(buildProperties)) {
+            props.load(in);
+        }
+        return props;
     }
 
     /**

@@ -32,7 +32,7 @@ public class PermissionsMojo extends AbstractPlatformModelMojo {
         getLog().info("  User       : " + orNone(info.user()));
         getLog().info("  Scopes     : " + joinStrings(info.scopes()));
         getLog().info("  Tenants    : " + joinUuids(info.tenants()));
-        getLog().info("  Namespaces : " + joinStrings(info.accountIds()));
+        getLog().info("  Namespaces : " + joinStrings(info.namespaces()));
 
         var selectedTenants = getTenants();
         if (selectedTenants != null && !selectedTenants.isEmpty()) {
