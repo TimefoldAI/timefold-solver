@@ -91,6 +91,14 @@ For performance reasons and especially with large datasets that you'll later nee
 In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
 ====
 
+[NOTE]
+====
+`SolutionManager.analyze(...)` requires a structurally sound solution.
+If the solution has a negative xref:constraints-and-score/overview.adoc#structuralScore[structural score],
+the method fails fast and throws an `InconsistentSolutionException`
+instead of returning a `ScoreAnalysis`.
+====
+
 It is also possible to print the score summary:
 
 [tabs]

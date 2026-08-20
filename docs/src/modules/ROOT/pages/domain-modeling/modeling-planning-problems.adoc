@@ -2035,7 +2035,32 @@ For example, if variable `a` depends on `b` and `b` depends on `a`, both are in 
 - It depends on another variable that is inconsistent.
 For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
 
-When a declarative shadow variable is inconsistent, it will be set to `null`.
+When a declarative shadow variable is inconsistent, the solver's reaction depends on whether any entity in the model declares a `@ShadowVariablesInconsistent` field.
+If at least one entity declares such a field, the inconsistent shadow variables are set to `null`
+and the `@ShadowVariablesInconsistent` field of every involved entity is set to `true`.
+If no entity declares such a field, the shadow variable update fails instead
+and the solution's score receives a negative xref:constraints-and-score/overview.adoc#structuralScore[structural score],
+which marks the solution as structurally flawed.
+Models that relied on inconsistent shadow variables being silently set to `null`
+must therefore declare a `@ShadowVariablesInconsistent` field to keep that behavior.
+
+[NOTE]
+====
+The xref:constraints-and-score/overview.adoc#structuralScore[structural score] is a component of every `Score`
+that is `0` for structurally sound solutions and negative for structurally flawed ones.
+A structurally flawed score is worse than any structurally sound score,
+so a structurally flawed solution is never accepted during solving.
+
+When a structurally flawed solution is passed to `SolutionManager.update(...)` or `SolutionManager.analyze(...)`,
+these methods fail fast and throw an `InconsistentSolutionException`,
+which exposes the solution and the entities involved in the inconsistency.
+
+When a structurally flawed solution is passed to `Solver.solve`,
+the `Solver` logs a warning and unassigns the involved planning entities before solving.
+If the inconsistency cannot be resolved this way,
+for example because an involved entity is xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned],
+the `Solver` throws an `Exception`.
+====
 
 To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
 The solver will set this field to true if the entity has any inconsistent shadow variables.
