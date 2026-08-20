@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 /**
@@ -21,6 +22,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 public final class ListVariableStateSupplyHolder<Solution_> {
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
+    private SupplyManager supplyManager;
     private ListVariableStateSupply<Solution_, ?, ?> listVariableStateSupply;
 
     public ListVariableStateSupplyHolder(ListVariableDescriptor<Solution_> listVariableDescriptor) {
@@ -28,17 +30,23 @@ public final class ListVariableStateSupplyHolder<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        listVariableStateSupply = phaseScope.getScoreDirector().getSupplyManager()
-                .demand(listVariableDescriptor.getStateDemand());
+        this.supplyManager = phaseScope.getScoreDirector().getSupplyManager();
     }
 
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        phaseScope.getScoreDirector().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
+        if (listVariableStateSupply != null) {
+            supplyManager.cancel(listVariableDescriptor.getStateDemand());
+        }
+        supplyManager = null;
         listVariableStateSupply = null;
     }
 
     @SuppressWarnings("unchecked")
     public <Entity_, Element_> ListVariableStateSupply<Solution_, Entity_, Element_> get() {
+        if (listVariableStateSupply == null) {
+            // Lazy initilization of the list variable state
+            listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
+        }
         return (ListVariableStateSupply<Solution_, Entity_, Element_>) Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }

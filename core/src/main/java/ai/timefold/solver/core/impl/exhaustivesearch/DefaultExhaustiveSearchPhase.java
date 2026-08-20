@@ -134,7 +134,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         }
     }
 
-    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
+    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_, DefaultExhaustiveSearchPhase<Solution_>> {
 
         private final Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator;
         private final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
@@ -150,12 +150,14 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
             this.decider = decider;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public Builder<Solution_> enableAssertions() {
+        public <Builder_ extends AbstractPhaseBuilder<Solution_, DefaultExhaustiveSearchPhase<Solution_>>> Builder_
+                enableAssertions() {
             super.enableAssertions();
             assertWorkingSolutionScoreFromScratch = environmentMode.isFullyAsserted();
             assertExpectedWorkingSolutionScore = environmentMode.isIntrusivelyAsserted();
-            return this;
+            return (Builder_) this;
         }
 
         @Override

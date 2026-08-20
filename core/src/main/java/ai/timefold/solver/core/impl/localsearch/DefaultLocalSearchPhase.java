@@ -254,7 +254,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         decider.solvingError(solverScope, exception);
     }
 
-    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
+    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_, DefaultLocalSearchPhase<Solution_>> {
 
         private final LocalSearchDecider<Solution_> decider;
 
@@ -262,12 +262,6 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 PhaseTermination<Solution_> phaseTermination, LocalSearchDecider<Solution_> decider) {
             super(phaseIndex, environmentMode, logIndentation, phaseTermination);
             this.decider = decider;
-        }
-
-        @Override
-        public Builder<Solution_> enableAssertions() {
-            super.enableAssertions();
-            return this;
         }
 
         @Override

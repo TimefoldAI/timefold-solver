@@ -14,7 +14,7 @@ public abstract class AbstractPossiblyInitializingPhase<Solution_>
 
     private final boolean lastInitializingPhase;
 
-    protected AbstractPossiblyInitializingPhase(AbstractPossiblyInitializingPhaseBuilder<Solution_> builder) {
+    protected AbstractPossiblyInitializingPhase(AbstractPossiblyInitializingPhaseBuilder<Solution_, ?> builder) {
         super(builder);
         this.lastInitializingPhase = builder.isLastInitializingPhase();
     }
@@ -54,8 +54,8 @@ public abstract class AbstractPossiblyInitializingPhase<Solution_>
         }
     }
 
-    public abstract static class AbstractPossiblyInitializingPhaseBuilder<Solution_>
-            extends AbstractPhaseBuilder<Solution_> {
+    public abstract static class AbstractPossiblyInitializingPhaseBuilder<Solution_, Phase_ extends AbstractPhase<Solution_>>
+            extends AbstractPhaseBuilder<Solution_, Phase_> {
 
         private final boolean lastInitializingPhase;
 

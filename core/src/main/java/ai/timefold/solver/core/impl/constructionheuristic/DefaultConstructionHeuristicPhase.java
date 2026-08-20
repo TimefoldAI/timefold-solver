@@ -228,7 +228,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     }
 
     public static class DefaultConstructionHeuristicPhaseBuilder<Solution_>
-            extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
+            extends AbstractPossiblyInitializingPhaseBuilder<Solution_, DefaultConstructionHeuristicPhase<Solution_>> {
 
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
@@ -239,12 +239,6 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             super(phaseIndex, lastInitializingPhase, environmentMode, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
-        }
-
-        @Override
-        public DefaultConstructionHeuristicPhaseBuilder<Solution_> enableAssertions() {
-            super.enableAssertions();
-            return this;
         }
 
         public EntityPlacer<Solution_> getEntityPlacer() {

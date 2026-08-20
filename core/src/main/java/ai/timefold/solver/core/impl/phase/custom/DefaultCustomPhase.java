@@ -122,7 +122,7 @@ public final class DefaultCustomPhase<Solution_>
     }
 
     public static final class DefaultCustomPhaseBuilder<Solution_>
-            extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
+            extends AbstractPossiblyInitializingPhaseBuilder<Solution_, DefaultCustomPhase<Solution_>> {
 
         private final List<PhaseCommand<Solution_>> customPhaseCommandList;
 
@@ -131,12 +131,6 @@ public final class DefaultCustomPhase<Solution_>
                 List<PhaseCommand<Solution_>> customPhaseCommandList) {
             super(phaseIndex, lastInitializingPhase, environmentMode, logIndentation, phaseTermination);
             this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
-        }
-
-        @Override
-        public DefaultCustomPhaseBuilder<Solution_> enableAssertions() {
-            super.enableAssertions();
-            return this;
         }
 
         @Override

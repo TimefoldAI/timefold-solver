@@ -48,7 +48,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
-    protected AbstractPhase(AbstractPhaseBuilder<Solution_> builder) {
+    protected AbstractPhase(AbstractPhaseBuilder<Solution_, ?> builder) {
         phaseIndex = builder.phaseIndex;
         environmentMode = builder.environmentMode;
         logIndentation = builder.logIndentation;
@@ -260,7 +260,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
     }
 
-    public abstract static class AbstractPhaseBuilder<Solution_> {
+    public abstract static class AbstractPhaseBuilder<Solution_, Phase_ extends AbstractPhase<Solution_>> {
 
         private final int phaseIndex;
         protected final EnvironmentMode environmentMode;
@@ -280,14 +280,15 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             this.phaseTermination = phaseTermination;
         }
 
-        public AbstractPhaseBuilder<Solution_> enableAssertions() {
+        @SuppressWarnings("unchecked")
+        public <Builder_ extends AbstractPhaseBuilder<Solution_, Phase_>> Builder_ enableAssertions() {
             assertPhaseScoreFromScratch = environmentMode.isAsserted();
             assertStepScoreFromScratch = environmentMode.isFullyAsserted();
             assertExpectedStepScore = environmentMode.isIntrusivelyAsserted();
             assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusivelyAsserted();
-            return this;
+            return (Builder_) this;
         }
 
-        protected abstract AbstractPhase<Solution_> build();
+        public abstract Phase_ build();
     }
 }
