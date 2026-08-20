@@ -1,27 +1,28 @@
 package ai.timefold.solver.tools.maven;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import ai.timefold.solver.tools.maven.client.PlatformIdentityInfo;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -80,12 +81,53 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
     protected HttpClient httpClient = HttpClient.newBuilder().version(Version.HTTP_2).followRedirects(Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(10)).build();
 
+    protected AccessTokenProvider getAccessTokenProvider() {
+        return accessTokenProvider;
+    }
+
+    protected void setAccessTokenProvider(AccessTokenProvider accessTokenProvider) {
+        this.accessTokenProvider = accessTokenProvider;
+    }
+
+    protected PlatformIdentityInfo fetchPlatformIdentityInfo(boolean includeConfig) {
+        var platformPAT = accessTokenProvider.getAccessToken();
+
+        if (platformPAT == null) {
+            throw new IllegalArgumentException(
+                    "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
+        }
+
+        var requestBuilder = HttpRequest.newBuilder().GET();
+        requestBuilder.header("Accept", "application/json");
+        requestBuilder.header("Authorization", "Bearer " + platformPAT);
+        requestBuilder.uri(URI.create(getPlatformUrl() + "/api/platform/v1/aboutme?includeConfig=" + includeConfig));
+
+        var httpRequest = requestBuilder.build();
+        try {
+            var authResponse = httpClient.send(httpRequest, BodyHandlers.ofString());
+            if (authResponse.statusCode() == 200) {
+                return mapper.readValue(authResponse.body(), PlatformIdentityInfo.class);
+            } else {
+                getLog().debug(authResponse.body());
+                throw new IllegalStateException(
+                        "Platform authentication failed with " + authResponse.statusCode() + " status code");
+            }
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Unexpected error while making platform info call", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error while making platform info call", e);
+        }
+    }
+
     protected void configureHttpRequest(Builder builder) {
         builder.timeout(Duration.ofSeconds(30));
         builder.header("Authorization", "Bearer " + accessTokenProvider.getAccessToken());
         builder.header("Content-Type", "application/octet-stream");
         builder.header("Accept", "application/json");
-        List<String> tenants = getTenants();
+        var tenants = getTenants();
         if (tenants != null && !tenants.isEmpty()) {
             builder.header("X-TF-TENANT-ID", tenants.getFirst());
             getLog().debug("Tenant " + tenants.getFirst() + " is used as context of the request");
@@ -109,7 +151,7 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
      * report every error as an {@code ErrorInfo}.
      */
     protected String readErrorMessage(String responseBody) {
-        String message = readErrorField(responseBody, "message");
+        var message = readErrorField(responseBody, "message");
         if (message != null && !message.isBlank()) {
             return message;
         }
@@ -121,7 +163,7 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
             return null;
         }
         try {
-            JsonNode field = mapper.readTree(responseBody).get(fieldName);
+            var field = mapper.readTree(responseBody).get(fieldName);
             return field == null || field.isNull() ? null : field.asText();
         } catch (IOException e) {
             getLog().debug("Unable to read error " + fieldName + " from response body " + responseBody, e);
@@ -134,10 +176,10 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
      * safely concatenated with a path that starts with a slash (e.g. "/api/platform/v1/...").
      */
     protected String getPlatformUrl() {
-        String url = getPropertyOrParameter(PROP_PLATFORM_URL, this.platformUrl);
+        var url = getPropertyOrParameter(PROP_PLATFORM_URL, this.platformUrl);
         if (url != null) {
             url = url.trim();
-            int end = url.length();
+            var end = url.length();
             while (end > 0 && url.charAt(end - 1) == '/') {
                 end--;
             }
@@ -150,7 +192,7 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
     }
 
     protected ObjectNode readModelDescriptor(Path modelDescriptorArchivePath) throws IOException {
-        Path modelDescriptorPath = Paths.get(buildDirectory, "timefold", DESCRIPTOR_FILE_NAME);
+        var modelDescriptorPath = Paths.get(buildDirectory, "timefold", DESCRIPTOR_FILE_NAME);
 
         if (Files.exists(modelDescriptorPath)) {
 
@@ -161,14 +203,14 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
                 throw new IOException("Model descriptor archive not found: " + modelDescriptorArchivePath);
             }
 
-            try (ZipFile zip = new ZipFile(modelDescriptorArchivePath.toFile())) {
-                ZipEntry entry = zip.getEntry(DESCRIPTOR_FILE_NAME);
+            try (var zip = new ZipFile(modelDescriptorArchivePath.toFile())) {
+                var entry = zip.getEntry(DESCRIPTOR_FILE_NAME);
 
                 // if not found by exact name, search entries for a matching file name
                 if (entry == null) {
-                    Enumeration<? extends ZipEntry> entries = zip.entries();
+                    var entries = zip.entries();
                     while (entries.hasMoreElements()) {
-                        ZipEntry e = entries.nextElement();
+                        var e = entries.nextElement();
                         if (!e.isDirectory() && e.getName().endsWith(DESCRIPTOR_FILE_NAME)) {
                             entry = e;
                             break;
@@ -180,7 +222,7 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
                     throw new IOException(DESCRIPTOR_FILE_NAME + " not found in archive: " + modelDescriptorArchivePath);
                 }
 
-                try (InputStream in = zip.getInputStream(entry)) {
+                try (var in = zip.getInputStream(entry)) {
                     return (ObjectNode) mapper.readTree(in);
                 }
             }
@@ -189,7 +231,7 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
 
     @SuppressWarnings("unchecked")
     protected <T> T getPropertyOrParameter(String propertyName, T parameter) {
-        Object value = session.getUserProperties().getOrDefault(propertyName, parameter);
+        var value = session.getUserProperties().getOrDefault(propertyName, parameter);
 
         if (value != null && parameter != null) {
 
@@ -203,7 +245,7 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
 
     public List<String> getTenants() {
 
-        String stringTenants = session.getUserProperties().getProperty(PROP_MODEL_TENANTS);
+        var stringTenants = session.getUserProperties().getProperty(PROP_MODEL_TENANTS);
 
         if (stringTenants != null && !stringTenants.isBlank()) {
             return Arrays.asList(stringTenants.split(","));

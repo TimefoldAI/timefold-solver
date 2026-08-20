@@ -3,13 +3,6 @@ package ai.timefold.solver.tools.maven;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpClient.Redirect;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.Builder;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,14 +23,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @Mojo(name = "configure", defaultPhase = LifecyclePhase.INITIALIZE, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class ConfigureMojo extends AbstractPlatformModelMojo {
-
-    private HttpClient httpClient = HttpClient.newBuilder().followRedirects(Redirect.ALWAYS).build();
-    private ObjectMapper mapper = new ObjectMapper();
-    private AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
 
     protected static final String PROP_ACCOUNT_ID = "timefold.accountId";
 
@@ -97,7 +84,7 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
         }
         if (deployRequested) {
             try {
-                PlatformIdentityInfo info = fetchPlatformConfiguration();
+                PlatformIdentityInfo info = fetchPlatformIdentityInfo(true);
 
                 if (info == null || !info.hasPushAccessRights()) {
                     throw new RuntimeException("No access to deploy model on Timefold Platform");
@@ -138,7 +125,7 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
 
                     // configure container registry credentials as system properties to not write them to any files
                     System.setProperty("quarkus.container-image.username", "token");
-                    System.setProperty("quarkus.container-image.password", accessTokenProvider.getAccessToken());
+                    System.setProperty("quarkus.container-image.password", getAccessTokenProvider().getAccessToken());
                 }
                 if (!getPropertyOrParameter(PROP_MODEL_NATIVE_SUPPORTED, nativeSupported)) {
                     // allow to use jvm image for native use cases
@@ -249,53 +236,12 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                         || groupId.startsWith(ENTERPRISE_GROUP_ID + "."));
     }
 
-    private PlatformIdentityInfo fetchPlatformConfiguration() {
-        String platformPAT = accessTokenProvider.getAccessToken();
-
-        if (platformPAT == null) {
-            throw new RuntimeException(
-                    "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
-        }
-
-        Builder requestBuilder = HttpRequest.newBuilder().GET();
-        requestBuilder.header("Accept", "application/json");
-
-        requestBuilder.header("Authorization", "Bearer " + platformPAT);
-        String platformUrl = getPlatformUrl();
-        requestBuilder.uri(URI.create(platformUrl + "/api/platform/v1/aboutme?includeConfig=true"));
-
-        HttpRequest httpRequest = requestBuilder.build();
-        try {
-            HttpResponse<String> authResponse = httpClient.send(httpRequest, BodyHandlers.ofString());
-            if (authResponse.statusCode() == 200) {
-                String payload = authResponse.body();
-
-                return mapper.readValue(payload, PlatformIdentityInfo.class);
-            } else {
-                getLog().debug(authResponse.body());
-                throw new IllegalStateException(
-                        "Platform authentication failed with " + authResponse.statusCode() + " status code");
-            }
-        } catch (IllegalStateException e) {
-            throw e;
-        } catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            throw new RuntimeException("Unexpected error while making platform info call", e);
-        }
-    }
-
     /*
      * Executes only when timefold:deploy goal is requested
      */
     protected boolean shouldExecute() {
         List<String> goals = session.getRequest().getGoals();
         return goals.contains("timefold:deploy");
-    }
-
-    protected void setAccessTokenProvider(AccessTokenProvider provider) {
-        this.accessTokenProvider = provider;
     }
 
     protected MavenProject getProject() {

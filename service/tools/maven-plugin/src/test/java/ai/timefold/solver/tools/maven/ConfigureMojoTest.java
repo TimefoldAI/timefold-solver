@@ -294,7 +294,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(RuntimeException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(
                         "Personal Access Token for Timefold Platform is required. Set this via TIMEFOLD_PAT environment variable");
 
