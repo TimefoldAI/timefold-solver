@@ -26,7 +26,7 @@ public class PermissionsMojo extends AbstractPlatformModelMojo {
         report(info);
     }
 
-    private void report(PlatformIdentityInfo info) {
+    private void report(PlatformIdentityInfo info) throws MojoExecutionException {
         getLog().info("Timefold Platform - configured token");
         getLog().info("  Platform   : " + getPlatformUrl());
         getLog().info("  User       : " + orNone(info.user()));

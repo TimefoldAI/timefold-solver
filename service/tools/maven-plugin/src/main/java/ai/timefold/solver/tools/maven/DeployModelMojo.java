@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -88,14 +87,14 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
         // ensure that package goal was used or explicitly allow to deploy without build (and by that push of container image)
         List<String> goals = session.getRequest().getGoals();
         if (!goals.contains("package") && !getPropertyOrParameter(PROP_MODEL_DEPLOY_DESCRIPTOR_ONLY, descriptorOnly)) {
-            throw new IllegalStateException(
-                    "'package' goal was not requested, deploy of timefold model might not be complete, make sure to use 'clean package timefold:deploy' or set '-Dtimefold.model.deploy.descriptorOnly=true'");
+            throw new MojoExecutionException(
+                    "'package' goal was not requested, deploy of Timefold model might not be complete, make sure to use 'clean package timefold:deploy' or set '-Dtimefold.model.deploy.descriptorOnly=true'");
         }
 
         Path modelDescriptorArchivePath = Paths.get(buildDirectory, "model-descriptor.zip");
 
         if (!Files.exists(modelDescriptorArchivePath)) {
-            throw new IllegalStateException("Model descriptor not found in target folder");
+            throw new MojoExecutionException("Model descriptor not found in target folder");
         }
 
         try {
@@ -150,7 +149,7 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                         // e.g. the model id is already registered under a different registration key, updating the
                         // registration key used here would only fail with 404 as it was never registered
                         printErrorInfo(conflictBody);
-                        throw new IllegalStateException(String.format(
+                        throw new MojoExecutionException(String.format(
                                 "Model deployment of %s failed due to conflict (%s) that cannot be resolved by updating the registration with key %s: %s",
                                 modelDescriptor.get("id").asText(), errorCode, key, readErrorMessage(conflictBody)));
                     }
@@ -169,24 +168,22 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                                     key));
                         } else {
                             printErrorInfo(response.body());
-                            throw new IllegalStateException(
+                            throw new MojoExecutionException(
                                     "Model deployment (override) failed with " + response.statusCode() + " status code: "
                                             + readErrorMessage(response.body()));
                         }
                     } else {
                         printErrorInfo(conflictBody);
-                        throw new IllegalStateException(String.format(
+                        throw new MojoExecutionException(String.format(
                                 "Model deployment failed due to conflict (%s), there is already model with that registration key %s use 'overwrite' parameter to update existing: %s",
                                 errorCode, key, readErrorMessage(conflictBody)));
                     }
                 } else {
                     printErrorInfo(response.body());
-                    throw new IllegalStateException("Model deployment failed with " + response.statusCode() + " status code: "
+                    throw new MojoExecutionException("Model deployment failed with " + response.statusCode() + " status code: "
                             + readErrorMessage(response.body()));
                 }
             }
-        } catch (MojoExecutionException e) {
-            throw e;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new MojoExecutionException("Interrupted while deploying model", e);
@@ -205,14 +202,14 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
         return code == null ? ERROR_CODE_UNKNOWN : code;
     }
 
-    protected void validate(String type) {
+    protected void validate(String type) throws MojoExecutionException {
         super.validate();
 
         if (type.equalsIgnoreCase(SHARED_MODEL_TYPE) || type.equalsIgnoreCase(PRIVATE_MODEL_TYPE)) {
             List<String> tenants = getTenants();
-            Objects.requireNonNull(tenants, "Tenants are mandatory");
-            if (tenants.isEmpty()) {
-                throw new IllegalArgumentException("Tenants must be specified (at least one)");
+            if (tenants == null || tenants.isEmpty()) {
+                throw new MojoExecutionException(
+                        "Tenants must be specified (at least one) for a model of type " + type);
             }
         }
     }

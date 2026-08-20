@@ -264,7 +264,7 @@ public class ConfigureMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = "///";
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage("Platform Url is mandatory");
 
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));

@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.zip.ZipFile;
 
 import ai.timefold.solver.tools.maven.client.PlatformIdentityInfo;
@@ -192,9 +191,17 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
         }
     }
 
-    protected void validate() {
-        Objects.requireNonNull(platformUrl, "Platform Url is mandatory");
-        Objects.requireNonNull(key, "Registration key is mandatory");
+    /**
+     * @throws MojoExecutionException when a mandatory parameter is not configured; a missing parameter is a build
+     *         configuration problem, so it has to be reported as one rather than as an internal error
+     */
+    protected void validate() throws MojoExecutionException {
+        if (platformUrl == null) {
+            throw new MojoExecutionException("Platform Url is mandatory");
+        }
+        if (key == null) {
+            throw new MojoExecutionException("Registration key is mandatory");
+        }
     }
 
     protected void printErrorInfo(String responseBody) {
@@ -232,8 +239,10 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
     /**
      * Resolves the configured platform URL, stripping any trailing slashes so it can be
      * safely concatenated with a path that starts with a slash (e.g. "/api/platform/v1/...").
+     *
+     * @throws MojoExecutionException when no platform URL is configured, which no goal can work without
      */
-    protected String getPlatformUrl() {
+    protected String getPlatformUrl() throws MojoExecutionException {
         var url = getPropertyOrParameter(PROP_PLATFORM_URL, this.platformUrl);
         if (url != null) {
             url = url.trim();
@@ -244,7 +253,7 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
             url = url.substring(0, end);
         }
         if (url == null || url.isEmpty()) {
-            throw new IllegalStateException("Platform Url is mandatory");
+            throw new MojoExecutionException("Platform Url is mandatory");
         }
         return url;
     }
