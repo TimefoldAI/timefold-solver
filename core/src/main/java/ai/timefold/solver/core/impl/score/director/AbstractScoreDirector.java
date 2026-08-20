@@ -112,7 +112,19 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
+        // We set the shadow variable support,
+        // which will be necessary for obtaining the change notifier
         this.shadowVariableSupport = ShadowVariableSupport.create(this);
+        // When using a list variable,
+        // we ensure that the listVariableStateSupply is initialized,
+        // as it will serve as the single source of truth for all other classes.
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null) {
+            this.listVariableStateSupply = null;
+        } else {
+            this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
+        }
+        // We can now initialize the shadow variables since all the necessary resources have been allocated
         this.shadowVariableSupport.linkShadowVariables();
         //  When true, a snapshot of the solution is created before, after and after the undo of a move.
         //  In {@link EnvironmentMode#TRACKED_FULL_ASSERT}, the snapshots are compared when corruption is detected,
@@ -121,12 +133,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
         this.valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
-        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        if (listVariableDescriptor == null) {
-            this.listVariableStateSupply = null;
-        } else {
-            this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
-        }
         setAllChangesWillBeUndoneBeforeStepEnds(false); // Make sure the notifier is correctly initialized.
         // Enable assertions
         this.isAssertClonedSolution = environmentMode.isFullyAsserted();

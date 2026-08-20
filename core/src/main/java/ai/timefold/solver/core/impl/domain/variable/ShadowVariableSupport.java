@@ -110,7 +110,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void linkShadowVariables() {
         if (listVariableDescriptor != null) {
-            listVariableChangeHandlerList.add(demand(listVariableDescriptor.getStateDemand()));
+            listVariableChangeHandlerList.add(scoreDirector.getListVariableStateSupply(listVariableDescriptor));
         }
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)

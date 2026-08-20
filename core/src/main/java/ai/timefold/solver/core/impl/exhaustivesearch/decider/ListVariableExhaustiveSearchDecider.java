@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -158,9 +159,8 @@ public final class ListVariableExhaustiveSearchDecider<Solution_, Score_ extends
     @Override
     public void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        var listVariableDescriptor = phaseScope.getSolutionDescriptor().getListVariableDescriptor();
-        this.listVariableState =
-                phaseScope.getSolverScope().getScoreDirector().getListVariableStateSupply(listVariableDescriptor);
+        var listVariableDescriptor = Objects.requireNonNull(phaseScope.getSolutionDescriptor().getListVariableDescriptor());
+        this.listVariableState = phaseScope.getScoreDirector().getListVariableStateSupply(listVariableDescriptor);
     }
 
     @Override
