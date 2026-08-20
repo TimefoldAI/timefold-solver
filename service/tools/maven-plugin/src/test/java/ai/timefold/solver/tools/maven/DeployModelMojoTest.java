@@ -270,7 +270,7 @@ public class DeployModelMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-14004) that cannot be resolved by updating the registration with key existing-model-id: Existing private model (model_v1), already exists for tenants");
 
@@ -293,7 +293,7 @@ public class DeployModelMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-99999) that cannot be resolved by updating the registration with key unknown-conflict: Registered model conflicts with existing model (model_v1)");
 
@@ -317,7 +317,7 @@ public class DeployModelMojoTest {
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         // the reason reported by the platform is part of the failure and not only of the build log
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage(
                         "Model deployment (override) failed with 404 status code: Model with registration key 'failing-update' was not found");
 
@@ -337,7 +337,7 @@ public class DeployModelMojoTest {
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         // a body that cannot be read as JSON reports no error code, so the conflict is not resolvable
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-99999) that cannot be resolved by updating the registration with key malformed-conflict: <html>Conflict</html>");
 
@@ -361,7 +361,7 @@ public class DeployModelMojoTest {
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         // a conflict without a body reports no error code, so the conflict is not resolvable
-        assertThatThrownBy(mojo::execute).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
                 .hasMessage(
                         "Model deployment of timefold-test-model_v2-beta failed due to conflict (TFP-99999) that cannot be resolved by updating the registration with key empty-conflict: no error message reported by the platform");
 
@@ -382,7 +382,7 @@ public class DeployModelMojoTest {
         Path targetModelDescriptor = Paths.get("target", "model-descriptor.zip");
         Files.deleteIfExists(targetModelDescriptor);
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(MojoExecutionException.class)
                 .hasMessage("Model descriptor not found in target folder");
 
     }
@@ -413,9 +413,9 @@ public class DeployModelMojoTest {
         mojo.setLog(log);
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
-        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(() -> mojo.execute()).isInstanceOf(MojoExecutionException.class)
                 .hasMessage(
-                        "'package' goal was not requested, deploy of timefold model might not be complete, make sure to use 'clean package timefold:deploy' or set '-Dtimefold.model.deploy.descriptorOnly=true'");
+                        "'package' goal was not requested, deploy of Timefold model might not be complete, make sure to use 'clean package timefold:deploy' or set '-Dtimefold.model.deploy.descriptorOnly=true'");
 
     }
 }

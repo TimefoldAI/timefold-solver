@@ -82,8 +82,6 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
                                     + readErrorMessage(response.body()));
                 }
             }
-        } catch (MojoExecutionException e) {
-            throw e;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new MojoExecutionException("Interrupted while undeploying model", e);

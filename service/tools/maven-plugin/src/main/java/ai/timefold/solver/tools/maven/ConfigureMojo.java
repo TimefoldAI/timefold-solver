@@ -135,12 +135,13 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                 try (FileOutputStream output = new FileOutputStream(timefoldBuildPropertiesFile)) {
                     timefoldBuildProperties.store(output, "Timefold Platform configuration");
                 } catch (IOException e) {
-                    throw new IllegalStateException("Unable to store build properties", e);
+                    throw new MojoExecutionException(
+                            "Unable to store the build properties in " + timefoldBuildPropertiesFile, e);
                 }
 
                 getLog().info("Configured Timefold Platform integration");
             } catch (IOException e) {
-                throw new MojoExecutionException(e);
+                throw new MojoExecutionException("Unable to configure the Timefold Platform integration", e);
             }
         }
     }
