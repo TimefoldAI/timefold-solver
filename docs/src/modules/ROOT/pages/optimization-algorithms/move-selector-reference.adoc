@@ -1486,6 +1486,13 @@ public class MyStageProvider implements BasicVariableStageProvider<Schedule, Shi
 }
 ----
 
+[NOTE]
+====
+By default, the solver uses the moves
+xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change] and
+xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap].
+====
+
 [#listMoveSelectors]
 == Move selectors for list variables
 
@@ -1758,6 +1765,14 @@ public class MyStageProvider implements ListVariableStageProvider<RoutePlan, Veh
     }
 }
 ----
+
+[NOTE]
+====
+By default, the solver uses the moves
+xref:optimization-algorithms/move-selector-reference.adoc#listChangeMoveSelector[Change],
+xref:optimization-algorithms/move-selector-reference.adoc#listSwapMoveSelector[Swap], and
+xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[K-OPT].
+====
 
 [#customMovesIntroduction]
 == Custom moves
