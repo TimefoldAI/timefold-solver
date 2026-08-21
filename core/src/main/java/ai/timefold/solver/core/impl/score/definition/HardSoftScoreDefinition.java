@@ -39,6 +39,11 @@ public class HardSoftScoreDefinition extends AbstractScoreDefinition<HardSoftSco
     }
 
     @Override
+    public HardSoftScore getStructurallyFlawedScore(HardSoftScore score) {
+        return new HardSoftScore(-1L, score.hardScore(), score.softScore());
+    }
+
+    @Override
     public HardSoftScore getZeroScore() {
         return HardSoftScore.ZERO;
     }

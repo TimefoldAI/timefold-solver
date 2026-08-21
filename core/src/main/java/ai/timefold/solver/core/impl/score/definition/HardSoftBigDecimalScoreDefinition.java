@@ -40,6 +40,11 @@ public class HardSoftBigDecimalScoreDefinition extends AbstractScoreDefinition<H
     }
 
     @Override
+    public HardSoftBigDecimalScore getStructurallyFlawedScore(HardSoftBigDecimalScore score) {
+        return new HardSoftBigDecimalScore(-1L, score.hardScore(), score.softScore());
+    }
+
+    @Override
     public HardSoftBigDecimalScore getZeroScore() {
         return HardSoftBigDecimalScore.ZERO;
     }

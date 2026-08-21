@@ -39,6 +39,11 @@ public class SimpleBigDecimalScoreDefinition extends AbstractScoreDefinition<Sim
     }
 
     @Override
+    public SimpleBigDecimalScore getStructurallyFlawedScore(SimpleBigDecimalScore score) {
+        return new SimpleBigDecimalScore(-1L, score.score());
+    }
+
+    @Override
     public SimpleBigDecimalScore getZeroScore() {
         return SimpleBigDecimalScore.ZERO;
     }

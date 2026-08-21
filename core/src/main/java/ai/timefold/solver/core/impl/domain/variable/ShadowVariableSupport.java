@@ -306,7 +306,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
                     shadowVariableGraphCreator);
             shadowVariableSession =
                     shadowVariableSessionFactory.forSolution(consistencyTracker,
-                            scoreDirector.getWorkingSolution());
+                            scoreDirector.getWorkingSolution(),
+                            scoreDirector.ignoreInconsistentSolutions());
         }
     }
 
@@ -425,8 +426,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public Collection<Object> getInconsistentEntities() {
         if (shadowVariableSession == null) {
-            throw new IllegalStateException(
-                    "Impossible state: The shadowVariableSession is null. A solution without shadow variables cannot be inconsistent.");
+            return Collections.emptyList();
         }
         return shadowVariableSession.getInconsistentEntities();
     }
