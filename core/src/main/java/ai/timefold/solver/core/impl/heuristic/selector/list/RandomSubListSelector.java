@@ -4,33 +4,31 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupplyHolder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
-public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_> implements SubListSelector<Solution_> {
+import org.jspecify.annotations.NonNull;
+
+public final class RandomSubListSelector<Solution_> extends AbstractListMoveSelector<Solution_>
+        implements SubListSelector<Solution_> {
 
     private final EntitySelector<Solution_> entitySelector;
     private final IterableValueSelector<Solution_> valueSelector;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final int minimumSubListSize;
     private final int maximumSubListSize;
 
     private TriangleElementFactory triangleElementFactory;
-    private final ListVariableStateSupplyHolder<Solution_> listVariableStateSupplyHolder;
 
     public RandomSubListSelector(
             EntitySelector<Solution_> entitySelector,
             IterableValueSelector<Solution_> valueSelector,
             int minimumSubListSize, int maximumSubListSize) {
+        super((ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor());
         this.entitySelector = entitySelector;
-        this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
-        this.listVariableStateSupplyHolder = new ListVariableStateSupplyHolder<>(listVariableDescriptor);
-        this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableStateSupplyHolder::get);
+        this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
         if (minimumSubListSize < 1) {
             throw new IllegalArgumentException("The minimumSubListSize (%d) must be greater than 0."
                     .formatted(minimumSubListSize));
@@ -48,18 +46,14 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     }
 
     @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+    public void phaseStarted(@NonNull AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         this.triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
-        // The phase may run under a different environment mode, which swaps in a new score director
-        // (and thus a new SupplyManager); re-demand so the supply doesn't go stale.
-        listVariableStateSupplyHolder.phaseStarted(phaseScope);
     }
 
     @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+    public void phaseEnded(@NonNull AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        listVariableStateSupplyHolder.phaseEnded(phaseScope);
         triangleElementFactory = null;
     }
 
@@ -140,7 +134,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
                 // Using valueSelector instead of entitySelector is fairer
                 // because entities with bigger list variables will be selected more often.
                 var value = valueIterator.next();
-                sourceEntity = listVariableStateSupplyHolder.get().getInverseSingleton(value);
+                sourceEntity = listVariableStateSupply.getInverseSingleton(value);
                 if (sourceEntity == null) { // Ignore values which are unassigned.
                     continue;
                 }

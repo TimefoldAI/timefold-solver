@@ -4,29 +4,23 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupplyHolder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public final class ListSwapMoveSelector<Solution_> extends GenericListMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> leftValueSelector;
     private final IterableValueSelector<Solution_> rightValueSelector;
     private final boolean randomSelection;
 
-    private final ListVariableStateSupplyHolder<Solution_> listVariableStateSupplyHolder;
-
     public ListSwapMoveSelector(IterableValueSelector<Solution_> leftValueSelector,
             IterableValueSelector<Solution_> rightValueSelector, boolean randomSelection) {
-        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor();
-        this.listVariableStateSupplyHolder = new ListVariableStateSupplyHolder<>(listVariableDescriptor);
+        super((ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor());
         this.leftValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, listVariableStateSupplyHolder::get);
+                filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, this::getListVariableStateSupply);
         this.rightValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, listVariableStateSupplyHolder::get);
+                filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, this::getListVariableStateSupply);
         this.randomSelection = randomSelection;
 
         phaseLifecycleSupport.addEventListener(this.leftValueSelector);
@@ -34,25 +28,11 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     }
 
     @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseStarted(phaseScope);
-        // The phase may operate in a different environment mode, which uses a new score director.
-        // We must ensure that the list variable state supply remains up to date.
-        listVariableStateSupplyHolder.phaseStarted(phaseScope);
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseEnded(phaseScope);
-        listVariableStateSupplyHolder.phaseEnded(phaseScope);
-    }
-
-    @Override
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
-            return new RandomListSwapIterator<>(listVariableStateSupplyHolder.get(), leftValueSelector, rightValueSelector);
+            return new RandomListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector);
         } else {
-            return new OriginalListSwapIterator<>(listVariableStateSupplyHolder.get(), leftValueSelector, rightValueSelector);
+            return new OriginalListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector);
         }
     }
 

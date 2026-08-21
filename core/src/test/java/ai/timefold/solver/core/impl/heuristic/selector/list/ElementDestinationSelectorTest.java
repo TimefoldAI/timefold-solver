@@ -504,7 +504,7 @@ class ElementDestinationSelectorTest {
         scoreDirector.setWorkingSolution(solution);
 
         // Value selector
-        var listVariableDescriptor = TestdataListUnassignedPinnedEntityProvidingEntity.buildVariableDescriptorForValueList();
+        var listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
         var iterableValueSelector = mockIterableValueSelector(listVariableDescriptor, v1, v2);
         var mimicRecorder = new ManualValueMimicRecorder<>(iterableValueSelector);
         var replayingValueSelector = new MimicReplayingValueSelector<>(mimicRecorder);
@@ -559,7 +559,7 @@ class ElementDestinationSelectorTest {
 
         var entitySelector = mockEntitySelector(new TestdataListEntity[0]);
         var valueSelector =
-                mockIterableValueSelector(TestdataListEntity.buildVariableDescriptorForValueList(), v1, v2, v3);
+                mockIterableValueSelector(scoreDirector.getSolutionDescriptor().getListVariableDescriptor(), v1, v2, v3);
 
         var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
         var solverScope = solvingStarted(randomSelector, scoreDirector);
