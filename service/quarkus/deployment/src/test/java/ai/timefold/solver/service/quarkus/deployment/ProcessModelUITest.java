@@ -20,7 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
  * with an {@code UncheckedIOException} on any rebuild of a UI resource tree containing a subdirectory. The fix adds
  * an else-branch so {@code Files.copy} only runs for non-directory entries.
  */
-class ProcessModelTest {
+class ProcessModelUITest {
 
     @TempDir
     Path tempDir;
