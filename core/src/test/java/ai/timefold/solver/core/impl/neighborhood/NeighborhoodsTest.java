@@ -69,7 +69,7 @@ class NeighborhoodsTest {
                 List.of(new ChangeMoveProvider<>(variableMetaModel)));
 
         var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig().withLateAcceptanceSize(400))
-                .buildAcceptor(heuristicConfigPolicy, heuristicConfigPolicy.getEnvironmentMode());
+                .buildAcceptor(heuristicConfigPolicy);
         var forager = LocalSearchForagerFactory
                 .<TestdataSolution> create(new LocalSearchForagerConfig().withAcceptedCountLimit(1)).buildForager();
         var localSearchDecider = new LocalSearchDecider<>("", termination, moveRepository, acceptor, forager);

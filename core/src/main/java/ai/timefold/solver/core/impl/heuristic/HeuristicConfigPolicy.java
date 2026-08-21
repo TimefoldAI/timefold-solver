@@ -142,16 +142,31 @@ public class HeuristicConfigPolicy<Solution_> {
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
-        return cloneBuilder()
+        return copyConfigPolicy(null);
+    }
+
+    public HeuristicConfigPolicy<Solution_> copyConfigPolicy(EnvironmentMode environmentMode) {
+        var builder = cloneBuilder()
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .withReinitializeVariableFilterEnabled(reinitializeVariableFilterEnabled)
-                .withUnassignedValuesAllowed(unassignedValuesAllowed)
-                .build();
+                .withUnassignedValuesAllowed(unassignedValuesAllowed);
+        if (environmentMode != null) {
+            builder.withEnvironmentMode(environmentMode);
+        }
+        return builder.build();
     }
 
     public HeuristicConfigPolicy<Solution_> copyPhaseConfigPolicy() {
-        return cloneBuilder().build();
+        return copyPhaseConfigPolicy(null);
+    }
+
+    public HeuristicConfigPolicy<Solution_> copyPhaseConfigPolicy(EnvironmentMode environmentMode) {
+        var builder = cloneBuilder();
+        if (environmentMode != null) {
+            builder.withEnvironmentMode(environmentMode);
+        }
+        return builder.build();
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicyWithoutNearbySetting() {

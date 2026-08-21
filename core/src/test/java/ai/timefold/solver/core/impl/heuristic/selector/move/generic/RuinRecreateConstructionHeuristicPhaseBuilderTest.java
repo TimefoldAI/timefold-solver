@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -18,6 +19,7 @@ class RuinRecreateConstructionHeuristicPhaseBuilderTest {
     @Test
     void buildSingleThreaded() {
         var solverConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withSolutionDescriptor(TestdataSolution.buildSolutionDescriptor())
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] {
                         InitializingScoreTrendLevel.ANY, InitializingScoreTrendLevel.ANY, InitializingScoreTrendLevel.ANY }))
@@ -31,6 +33,7 @@ class RuinRecreateConstructionHeuristicPhaseBuilderTest {
     @Test
     void buildMultiThreaded() {
         var solverConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withSolutionDescriptor(TestdataSolution.buildSolutionDescriptor())
                 .withMoveThreadCount(2)
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] {

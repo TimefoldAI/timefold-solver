@@ -55,7 +55,7 @@ class AcceptorFactoryTest {
 
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
         Acceptor<Solution_> acceptor =
-                acceptorFactory.buildAcceptor(heuristicConfigPolicy, heuristicConfigPolicy.getEnvironmentMode());
+                acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(acceptor).isExactlyInstanceOf(CompositeAcceptor.class);
         CompositeAcceptor<Solution_> compositeAcceptor = (CompositeAcceptor<Solution_>) acceptor;
         assertThat(compositeAcceptor.acceptorList)
@@ -70,7 +70,7 @@ class AcceptorFactoryTest {
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(new LocalSearchAcceptorConfig());
         assertThatIllegalArgumentException()
                 .isThrownBy(
-                        () -> acceptorFactory.buildAcceptor(mock(HeuristicConfigPolicy.class), EnvironmentMode.PHASE_ASSERT))
+                        () -> acceptorFactory.buildAcceptor(mock(HeuristicConfigPolicy.class)))
                 .withMessageContaining("The acceptor does not specify any acceptorType");
     }
 
@@ -80,13 +80,13 @@ class AcceptorFactoryTest {
                 .withAcceptorTypeList(List.of(AcceptorType.LATE_ACCEPTANCE));
         HeuristicConfigPolicy<Solution_> heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
-        var acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy, EnvironmentMode.PHASE_ASSERT);
+        var acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(acceptor).isExactlyInstanceOf(LateAcceptanceAcceptor.class);
 
         localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
                 .withLateAcceptanceSize(10);
         acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
-        acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy, EnvironmentMode.PHASE_ASSERT);
+        acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(acceptor).isExactlyInstanceOf(LateAcceptanceAcceptor.class);
     }
 
@@ -96,14 +96,14 @@ class AcceptorFactoryTest {
                 .withAcceptorTypeList(List.of(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE));
         HeuristicConfigPolicy<Solution_> heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
-        var acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy, EnvironmentMode.PHASE_ASSERT);
+        var acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(acceptor).isExactlyInstanceOf(DiversifiedLateAcceptanceAcceptor.class);
 
         localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
                 .withAcceptorTypeList(List.of(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE))
                 .withLateAcceptanceSize(10);
         acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
-        acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy, EnvironmentMode.PHASE_ASSERT);
+        acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(acceptor).isExactlyInstanceOf(DiversifiedLateAcceptanceAcceptor.class);
 
         doThrow(new IllegalStateException()).when(heuristicConfigPolicy).ensurePreviewFeature(any());
@@ -112,7 +112,7 @@ class AcceptorFactoryTest {
                 .withLateAcceptanceSize(10);
         AcceptorFactory<Solution_> badAcceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
         assertThatIllegalStateException()
-                .isThrownBy(() -> badAcceptorFactory.buildAcceptor(heuristicConfigPolicy, EnvironmentMode.PHASE_ASSERT));
+                .isThrownBy(() -> badAcceptorFactory.buildAcceptor(heuristicConfigPolicy));
     }
 
     @Test
@@ -121,7 +121,7 @@ class AcceptorFactoryTest {
                 .withAcceptorTypeList(List.of(AcceptorType.VALUE_TABU));
         var factory = AcceptorFactory.create(config);
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> factory.buildAcceptor(mock(HeuristicConfigPolicy.class), EnvironmentMode.PHASE_ASSERT));
+                .isThrownBy(() -> factory.buildAcceptor(mock(HeuristicConfigPolicy.class)));
     }
 
     @Test
@@ -130,6 +130,6 @@ class AcceptorFactoryTest {
                 .withAcceptorTypeList(List.of(AcceptorType.MOVE_TABU));
         var factory = AcceptorFactory.create(config);
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> factory.buildAcceptor(mock(HeuristicConfigPolicy.class), EnvironmentMode.PHASE_ASSERT));
+                .isThrownBy(() -> factory.buildAcceptor(mock(HeuristicConfigPolicy.class)));
     }
 }

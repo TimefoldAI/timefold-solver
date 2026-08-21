@@ -74,9 +74,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
         if (multithreaded && scoreDirector.isDerived()) {
             return new RuinRecreateConstructionHeuristicPhaseBuilder<>(configPolicy, constructionHeuristicPhaseFactory,
                     phaseTermination, super.getEntityPlacer().copy(),
-                    // The R&R decider uses the root solver environment mode by default
-                    constructionHeuristicPhaseFactory.buildDecider(configPolicy, configPolicy.getEnvironmentMode(),
-                            phaseTermination));
+                    constructionHeuristicPhaseFactory.buildDecider(configPolicy, phaseTermination));
         }
         return this;
     }

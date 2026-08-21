@@ -11,8 +11,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public abstract sealed class AbstractListMoveSelector<Solution_> extends AbstractSelector<Solution_>
-        permits ElementDestinationSelector, RandomSubListSelector {
+public abstract class AbstractListMoveSelector<Solution_> extends AbstractSelector<Solution_> {
 
     protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
     @Nullable

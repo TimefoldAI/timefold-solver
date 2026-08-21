@@ -21,10 +21,10 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
     public CustomPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
-        var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy();
+        var environmentMode = resolveEnvironmentMode(solverConfigPolicy);
+        var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy(environmentMode);
         var customPhaseCommandClassList = phaseConfig.getCustomPhaseCommandClassList();
         var customPhaseCommandList = phaseConfig.getCustomPhaseCommandList();
-        var environmentMode = resolveEnvironmentMode(phaseConfigPolicy);
         if (ConfigUtils.isEmptyCollection(customPhaseCommandClassList)
                 && ConfigUtils.isEmptyCollection(customPhaseCommandList)) {
             throw new IllegalArgumentException(

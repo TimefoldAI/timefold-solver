@@ -19,7 +19,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.Cartesia
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -61,7 +60,9 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         var valueSorterManner = Objects.requireNonNullElse(
                 phaseConfig.getValueSorterManner(),
                 exhaustiveSearchType.getDefaultValueSorterManner());
+        var environmentMode = resolveEnvironmentMode(solverConfigPolicy);
         var phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
+                .withEnvironmentMode(environmentMode)
                 .withReinitializeVariableFilterEnabled(true)
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
@@ -70,20 +71,18 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var scoreBounderEnabled = exhaustiveSearchType.isScoreBounderEnabled();
         var nodeExplorationType = getNodeExplorationType(exhaustiveSearchType, phaseConfig);
-        var environmentMode = resolveEnvironmentMode(phaseConfigPolicy);
         AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
         if (isMixedModel) {
             var basicVarEntitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy, false);
             var basicVarEntitySelector = EntitySelectorFactory.<Solution_> create(basicVarEntitySelectorConfig)
                     .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
-            var basicVarDecider =
-                    buildDecider(phaseConfigPolicy, basicVarEntitySelector, bestSolutionRecaller, environmentMode,
-                            phaseTermination, scoreBounderEnabled, false);
+            var basicVarDecider = buildDecider(phaseConfigPolicy, basicVarEntitySelector, bestSolutionRecaller,
+                    phaseTermination, scoreBounderEnabled, false);
             var listVarEntitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy, true);
             var listVarEntitySelector = EntitySelectorFactory.<Solution_> create(listVarEntitySelectorConfig)
                     .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
-            var listVarDecider = buildDecider(phaseConfigPolicy, listVarEntitySelector, bestSolutionRecaller, environmentMode,
-                    phaseTermination, scoreBounderEnabled, true);
+            var listVarDecider = buildDecider(phaseConfigPolicy, listVarEntitySelector, bestSolutionRecaller, phaseTermination,
+                    scoreBounderEnabled, true);
             decider = new MixedVariableExhaustiveSearchDecider<>(basicVarDecider, listVarDecider);
         } else {
             var isListVariable = solverConfigPolicy.getSolutionDescriptor().getListVariableDescriptor() != null;
@@ -91,7 +90,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
             var entitySelector =
                     EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
                             .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
-            decider = buildDecider(phaseConfigPolicy, entitySelector, bestSolutionRecaller, environmentMode, phaseTermination,
+            decider = buildDecider(phaseConfigPolicy, entitySelector, bestSolutionRecaller, phaseTermination,
                     scoreBounderEnabled, isListVariable);
         }
         return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex, environmentMode, solverConfigPolicy.getLogIndentation(),
@@ -159,8 +158,8 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
 
     private AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> buildDecider(
             HeuristicConfigPolicy<Solution_> configPolicy, EntitySelector<Solution_> sourceEntitySelector,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, EnvironmentMode environmentMode,
-            PhaseTermination<Solution_> termination, boolean scoreBounderEnabled, boolean isListVariable) {
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, PhaseTermination<Solution_> termination,
+            boolean scoreBounderEnabled, boolean isListVariable) {
         var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
         var entityClassName = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName();
         var mimicSelectorId = ConfigUtils.addRandomSuffix(entityClassName, configPolicy.getRandom().factoryUsage());
@@ -201,7 +200,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                     new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
 
         }
-        decider.enableAssertions(environmentMode);
+        decider.enableAssertions(configPolicy.getEnvironmentMode());
         return decider;
     }
 

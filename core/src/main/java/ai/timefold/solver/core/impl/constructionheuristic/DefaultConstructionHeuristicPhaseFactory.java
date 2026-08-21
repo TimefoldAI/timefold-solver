@@ -17,7 +17,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.Cartesia
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder;
@@ -53,7 +52,9 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 constructionHeuristicType_.getDefaultEntitySorterManner());
         var valueSorterManner = Objects.requireNonNullElse(phaseConfig.getValueSorterManner(),
                 constructionHeuristicType_.getDefaultValueSorterManner());
+        var environmentMode = resolveEnvironmentMode(solverConfigPolicy);
         var phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
+                .withEnvironmentMode(environmentMode)
                 .withReinitializeVariableFilterEnabled(true)
                 .withUnassignedValuesAllowed(true)
                 .withEntitySorterManner(entitySorterManner)
@@ -70,10 +71,9 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             HeuristicConfigPolicy<Solution_> phaseConfigPolicy, SolverTermination<Solution_> solverTermination, int phaseIndex,
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var environmentMode = resolveEnvironmentMode(phaseConfigPolicy);
-        return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase, environmentMode,
-                phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
-                buildDecider(phaseConfigPolicy, environmentMode, phaseTermination))
+        return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
+                phaseConfigPolicy.getEnvironmentMode(), phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
+                buildDecider(phaseConfigPolicy, phaseTermination))
                 .enableAssertions();
     }
 
@@ -160,14 +160,14 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     protected ConstructionHeuristicDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            EnvironmentMode environmentMode, PhaseTermination<Solution_> termination) {
+            PhaseTermination<Solution_> termination) {
         var forager = buildForager(configPolicy);
         var moveThreadCount = configPolicy.getMoveThreadCount();
         var decider = (moveThreadCount == null)
                 ? new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager)
                 : TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                         .buildConstructionHeuristic(termination, forager, configPolicy);
-        decider.enableAssertions(environmentMode);
+        decider.enableAssertions(configPolicy.getEnvironmentMode());
         return decider;
     }
 
