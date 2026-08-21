@@ -20,7 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
  * with an {@code UncheckedIOException} on any rebuild of a UI resource tree containing a subdirectory. The fix adds
  * an else-branch so {@code Files.copy} only runs for non-directory entries.
  */
-class ProcessModelAppJsUITest {
+class ProcessModelTest {
 
     @TempDir
     Path tempDir;
@@ -43,7 +43,7 @@ class ProcessModelAppJsUITest {
         ModelDescriptor descriptor = new ModelDescriptor();
         descriptor.setId("test-model_v1");
 
-        assertThatCode(() -> new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory))
+        assertThatCode(() -> new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory))
                 .doesNotThrowAnyException();
 
         Path uiDestination = outputDirectory.resolve("timefold").resolve(descriptor.getId()).resolve("ui");
@@ -73,7 +73,7 @@ class ProcessModelAppJsUITest {
         Files.createDirectories(uiDestination.resolve("nested"));
         Files.writeString(uiDestination.resolve("nested").resolve("app.js"), "stale content from a previous build");
 
-        assertThatCode(() -> new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory))
+        assertThatCode(() -> new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory))
                 .doesNotThrowAnyException();
 
         assertThat(uiDestination.resolve("index.html")).exists().hasContent("<html></html>");
@@ -93,7 +93,7 @@ class ProcessModelAppJsUITest {
         ModelDescriptor descriptor = new ModelDescriptor();
         descriptor.setId("test-model_v1");
 
-        boolean found = new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory);
+        boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
 
         assertThat(found).isEqualTo(true);
     }
@@ -107,7 +107,7 @@ class ProcessModelAppJsUITest {
         ModelDescriptor descriptor = new ModelDescriptor();
         descriptor.setId("test-model_v1");
 
-        boolean found = new TimefoldModelDescriptorProcessor().processModelAppJsUI(descriptor, outputDirectory);
+        boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
 
         assertThat(found).isEqualTo(false);
     }

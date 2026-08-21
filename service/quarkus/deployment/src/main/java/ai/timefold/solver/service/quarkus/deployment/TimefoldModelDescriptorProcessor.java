@@ -1206,7 +1206,7 @@ class TimefoldModelDescriptorProcessor {
             if (uiSupport == UISupport.APP_JS) {
                 LOG.debug("UI support declared by the property (%s) is (%s). Processing UI resources."
                         .formatted(UI_SUPPORT_PROPERTY, UISupport.APP_JS));
-                boolean success = processModelAppJsUI(descriptor, outputDirectory);
+                boolean success = processModelUI(descriptor, outputDirectory);
                 if (!success) {
                     throw new IllegalStateException("The model's UI resources were not found in the expected location (%s)."
                             .formatted(UI_SOURCE_PATH.toString()));
@@ -1215,7 +1215,7 @@ class TimefoldModelDescriptorProcessor {
             }
         } else { // If not configured, try detecting the APP_JS UI resources.
             LOG.debug("UI support is not configured by the property (%s). Detecting the UI resources.");
-            boolean success = processModelAppJsUI(descriptor, outputDirectory);
+            boolean success = processModelUI(descriptor, outputDirectory);
             if (success) {
                 descriptor.setUiSupport(UISupport.APP_JS);
             } else {
@@ -1226,7 +1226,7 @@ class TimefoldModelDescriptorProcessor {
         }
     }
 
-    public boolean processModelAppJsUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
+    boolean processModelUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
         Objects.requireNonNull(outputDirectory);
 
         // copy model's ui resources
