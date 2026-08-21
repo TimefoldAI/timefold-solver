@@ -95,7 +95,7 @@ class ProcessModelUITest {
 
         boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
 
-        assertThat(found).isEqualTo(true);
+        assertThat(found).isTrue();
     }
 
     @Test
@@ -109,6 +109,6 @@ class ProcessModelUITest {
 
         boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
 
-        assertThat(found).isEqualTo(false);
+        assertThat(found).isFalse());
     }
 }
