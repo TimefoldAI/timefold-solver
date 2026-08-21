@@ -93,10 +93,9 @@ In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the de
 
 [NOTE]
 ====
-`SolutionManager.analyze(...)` requires a structurally sound solution.
-If the solution has a negative xref:constraints-and-score/overview.adoc#structuralScore[structural score],
-the method fails fast and throws an `InconsistentSolutionException`
-instead of returning a `ScoreAnalysis`.
+The score analysis of structurally flawed solutions has a structural flaw analysis,
+which can be used to get inconsistent entities.
+Constraint analyses are still available for structurally flawed solutions, but will exclude any matches sourced from an inconsistent entity.
 ====
 
 It is also possible to print the score summary:

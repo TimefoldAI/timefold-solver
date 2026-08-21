@@ -2051,9 +2051,12 @@ that is `0` for structurally sound solutions and negative for structurally flawe
 A structurally flawed score is worse than any structurally sound score,
 so a structurally flawed solution is never accepted during solving.
 
-When a structurally flawed solution is passed to `SolutionManager.update(...)` or `SolutionManager.analyze(...)`,
-these methods fail fast and throw an `InconsistentSolutionException`,
+When a structurally flawed solution is passed to `SolutionManager.update(...)`,
+the method fails fast and throws an `InconsistentSolutionException`,
 which exposes the solution and the entities involved in the inconsistency.
+When passed to `SolutionManager.analyze(...)`,
+the returned xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
+has a structural flaw analysis that can be used to get the inconsistent entities.
 
 When a structurally flawed solution is passed to `Solver.solve`,
 the `Solver` logs a warning and unassigns the involved planning entities before solving.
