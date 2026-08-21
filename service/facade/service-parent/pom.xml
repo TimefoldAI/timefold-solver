@@ -35,7 +35,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <revision>999-SNAPSHOT</revision>
+    <revision>2.6.0-rc-1</revision>
     <timefold.solver.enterprise>false</timefold.solver.enterprise>
 
     <!-- ************************************************************************ -->
