@@ -1242,7 +1242,7 @@ class TimefoldModelDescriptorProcessor {
                                 Paths.get(outputDirectory.toString(), "timefold", descriptor.getId(), "ui", fileName);
                         try {
                             Files.createDirectories(destinationPath.getParent());
-                            if (Files.isDirectory(destinationPath)) {
+                            if (Files.isDirectory(resourceFile)) {
                                 Files.createDirectories(destinationPath);
                             } else {
                                 Files.copy(resourceFile, destinationPath, StandardCopyOption.REPLACE_EXISTING);
