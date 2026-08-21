@@ -180,7 +180,7 @@ class TimefoldModelDescriptorProcessor {
     private static final String DOCUMENTATION_SOURCE_PROPERTY = "timefold.model.documentation.source";
 
     private static final String UI_SUPPORT_PROPERTY = "timefold.model.ui-support";
-    private static final Path APP_JS_SOURCE_PATH = Path.of("src", "main", "resources", "META-INF", "resources");
+    private static final Path UI_SOURCE_PATH = Path.of("src", "main", "resources", "META-INF", "resources");
 
     // To avoid depending on the whole OpenAPI, we use the fully qualified class name.
     private static final DotName OPEN_API_SCHEMA_ANNOTATION_FQCN =
@@ -1206,31 +1206,31 @@ class TimefoldModelDescriptorProcessor {
             if (uiSupport == UISupport.APP_JS) {
                 LOG.debug("UI support declared by the property (%s) is (%s). Processing UI resources."
                         .formatted(UI_SUPPORT_PROPERTY, UISupport.APP_JS));
-                boolean success = processModelAppJsUI(descriptor, outputDirectory);
+                boolean success = processModelUI(descriptor, outputDirectory);
                 if (!success) {
                     throw new IllegalStateException("The model's UI resources were not found in the expected location (%s)."
-                            .formatted(APP_JS_SOURCE_PATH.toString()));
+                            .formatted(UI_SOURCE_PATH.toString()));
                 }
                 descriptor.setUiSupport(UISupport.APP_JS);
             }
         } else { // If not configured, try detecting the APP_JS UI resources.
             LOG.debug("UI support is not configured by the property (%s). Detecting the UI resources.");
-            boolean success = processModelAppJsUI(descriptor, outputDirectory);
+            boolean success = processModelUI(descriptor, outputDirectory);
             if (success) {
                 descriptor.setUiSupport(UISupport.APP_JS);
             } else {
                 LOG.debug("The model's UI resources were not found in the expected location (%s). Assuming no UI is supported."
-                        .formatted(APP_JS_SOURCE_PATH.toString()));
+                        .formatted(UI_SOURCE_PATH.toString()));
                 descriptor.setUiSupport(UISupport.NONE);
             }
         }
     }
 
-    private boolean processModelAppJsUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
+    boolean processModelUI(ModelDescriptor descriptor, Path outputDirectory) throws IOException {
         Objects.requireNonNull(outputDirectory);
 
         // copy model's ui resources
-        Path uiResourcesPath = Paths.get(outputDirectory.getParent().toString(), APP_JS_SOURCE_PATH.toString());
+        Path uiResourcesPath = Paths.get(outputDirectory.getParent().toString(), UI_SOURCE_PATH.toString());
         boolean uiResourcesFound = Files.exists(uiResourcesPath);
 
         if (uiResourcesFound) {
@@ -1242,10 +1242,11 @@ class TimefoldModelDescriptorProcessor {
                                 Paths.get(outputDirectory.toString(), "timefold", descriptor.getId(), "ui", fileName);
                         try {
                             Files.createDirectories(destinationPath.getParent());
-                            if (Files.isDirectory(destinationPath)) {
+                            if (Files.isDirectory(resourceFile)) {
                                 Files.createDirectories(destinationPath);
+                            } else {
+                                Files.copy(resourceFile, destinationPath, StandardCopyOption.REPLACE_EXISTING);
                             }
-                            Files.copy(resourceFile, destinationPath, StandardCopyOption.REPLACE_EXISTING);
 
                         } catch (IOException e) {
                             throw new UncheckedIOException("Unexpected IO exception while collecting model's UI resources",
