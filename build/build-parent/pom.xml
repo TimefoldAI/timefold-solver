@@ -80,7 +80,7 @@
     <version.site.plugin>3.22.0</version.site.plugin> <!-- We don't use site, but maven automatically configure it -->
     <version.sonar.plugin>5.7.0.6970</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
-    <version.spotless.plugin>3.9.0</version.spotless.plugin>
+    <version.spotless.plugin>3.10.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin>
     <version.versions.plugin>2.21.0</version.versions.plugin>
     <version.git-commit-id.plugin>10.0.0</version.git-commit-id.plugin>
