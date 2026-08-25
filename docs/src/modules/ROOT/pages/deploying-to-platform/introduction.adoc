@@ -82,7 +82,7 @@ See xref:deploying-to-platform/guide.adoc[Deploying to the platform guide] for t
 
 [#_model_identifier]
 Model identifier:: Made up of your model's bare ID and its API version, combined as `<model>_<version>` (for example `schooltimetabling_v1`).
-This is what appears in the consumer-facing API path (`/api/models/<model>/<version>`). The version comes from `timefold.application.version`.
+This is what appears in the consumer-facing API path (`/api/models/<model>/<version>`). The version comes from `timefold.model.version`.
 
 [#_registration_key]
 Registration key:: The `key` you set through the Maven plugin, as described in xref:deploying-to-platform/guide.adoc#_add_the_maven_plugin[Add the Maven plugin].

@@ -16,6 +16,11 @@ public final class ForEachFilteredUniNode<A>
 
     private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
     private final Predicate<A> filter;
+    /**
+     * Counts every fact currently inserted into this node, including those which do not pass the filter.
+     * Only {@link #insert(Object)} and {@link #retract(Object)} may mutate it;
+     * the filter transitions inside {@link #update(Object)} concern facts already counted.
+     */
     private int tupleCountWithoutFiltering = 0;
 
     public ForEachFilteredUniNode(Class<A> forEachClass, Predicate<A> filter,
@@ -41,7 +46,11 @@ public final class ForEachFilteredUniNode<A>
 
     @Override
     public void insert(@Nullable A a) {
-        tupleCountWithoutFiltering++; // This is safe; each element is only inserted once, guaranteed by a fail-fast in the parent.
+        tupleCountWithoutFiltering++;
+        insertIfPassing(a);
+    }
+
+    private void insertIfPassing(@Nullable A a) {
         if (!filter.test(a)) { // Skip inserting the tuple as it does not pass the filter.
             return;
         }
@@ -52,17 +61,21 @@ public final class ForEachFilteredUniNode<A>
     public void update(@Nullable A a) {
         var tuple = tupleMap.get(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
-            insert(a);
+            insertIfPassing(a);
         } else if (filter.test(a)) {
             updateExisting(a, tuple);
-        } else { // Tuple no longer passes the filter.
-            retract(a);
+        } else { // Tuple no longer passes the filter; the fact itself remains inserted.
+            retractIfPresent(a);
         }
     }
 
     @Override
     public void retract(@Nullable A a) {
         tupleCountWithoutFiltering--;
+        retractIfPresent(a);
+    }
+
+    private void retractIfPresent(@Nullable A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             return;

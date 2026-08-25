@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.nextprev;
 
-import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -81,12 +80,11 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
                             variableMemberAccessor.getName(), sourceVariableName, variableMemberAccessor.getType(),
                             sourceVariableDescriptor.getElementType(), sourceVariableDescriptor));
         }
-        sourceVariableDescriptor.registerSinkVariableDescriptor(this);
     }
 
     @Override
-    public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return Collections.singletonList(sourceVariableDescriptor);
+    public VariableDescriptor<Solution_> getSourceVariableDescriptor() {
+        return sourceVariableDescriptor;
     }
 
     @Override
@@ -95,8 +93,4 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
                 "Impossible state: Handled by %s.".formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 
-    @Override
-    public boolean isListVariableSource() {
-        return true;
-    }
 }

@@ -1,7 +1,5 @@
 package ai.timefold.solver.service.quarkus.deployment;
 
-import static ai.timefold.solver.service.quarkus.deployment.DefaultConfigProfileProcessor.MODEL_CONFIG_TERMINATION_SPENT_LIMIT;
-import static ai.timefold.solver.service.worker.impl.termination.TerminationConfigParams.TERMINATION_SPENT_LIMIT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -28,18 +26,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class ValidationIssueTypesTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar
-                    .addClasses(TestdataEntity.class, TestdataSolution.class, TestdataConstraintProvider.class,
-                            TestdataModelValidator.class, ValidationBuilder.class, IssueType.class, TestdataRest.class,
-                            TestdataModelValidator.TestIssue.class))
-            .overrideConfigKey(MODEL_CONFIG_TERMINATION_SPENT_LIMIT, "PT1S")
-            .overrideConfigKey(TERMINATION_SPENT_LIMIT, "PT1S");
+    static final QuarkusExtensionTest config = ExtensionTestUtil.createDeploymentWithMandatoryConfig(TestdataEntity.class,
+            TestdataSolution.class, TestdataConstraintProvider.class, TestdataModelValidator.class,
+            ValidationBuilder.class, IssueType.class, TestdataRest.class, TestdataModelValidator.TestIssue.class);
 
     @Inject
     ObjectMapper objectMapper;

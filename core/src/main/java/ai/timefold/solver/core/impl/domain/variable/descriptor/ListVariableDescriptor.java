@@ -90,8 +90,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         var applicableShadowDescriptors = inverseRelationEntityDescriptor.getShadowVariableDescriptors()
                 .stream()
                 .filter(f -> f instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor
-                        && Objects.equals(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptorList().getFirst(),
-                                this))
+                        && Objects.equals(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor(), this))
                 .toList();
         if (applicableShadowDescriptors.isEmpty()) {
             return null;

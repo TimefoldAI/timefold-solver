@@ -1,7 +1,5 @@
 package ai.timefold.solver.service.quarkus.deployment.descriptor;
 
-import static ai.timefold.solver.service.quarkus.deployment.DefaultConfigProfileProcessor.MODEL_CONFIG_TERMINATION_SPENT_LIMIT;
-import static ai.timefold.solver.service.worker.impl.termination.TerminationConfigParams.TERMINATION_SPENT_LIMIT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -13,6 +11,7 @@ import jakarta.inject.Inject;
 import ai.timefold.solver.service.definition.api.ModelDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ConstraintDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ConstraintGroupDescriptor;
+import ai.timefold.solver.service.quarkus.deployment.ExtensionTestUtil;
 import ai.timefold.solver.service.quarkus.deployment.testdata.constraintgroup.TestdataConstraintProvider;
 import ai.timefold.solver.service.quarkus.deployment.testdata.constraintgroup.TestdataEntity;
 import ai.timefold.solver.service.quarkus.deployment.testdata.constraintgroup.TestdataModelConvertor;
@@ -24,17 +23,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class ConstraintGroupDescriptorTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar
-                    .addClasses(TestdataEntity.class, TestdataSolution.class, TestdataConstraintProvider.class,
-                            TestdataModelConvertor.class, TestdataRest.class))
-            .overrideConfigKey(MODEL_CONFIG_TERMINATION_SPENT_LIMIT, "PT1S")
-            .overrideConfigKey(TERMINATION_SPENT_LIMIT, "PT1S");
+    static final QuarkusExtensionTest config = ExtensionTestUtil.createDeploymentWithMandatoryConfig(TestdataEntity.class,
+            TestdataSolution.class, TestdataConstraintProvider.class, TestdataModelConvertor.class, TestdataRest.class);
 
     @Inject
     ObjectMapper objectMapper;

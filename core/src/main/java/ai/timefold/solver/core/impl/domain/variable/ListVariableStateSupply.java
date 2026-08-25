@@ -7,9 +7,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 import org.jspecify.annotations.NullMarked;
@@ -18,8 +18,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Single source of truth for all information about elements inside {@link PlanningListVariable list variables}.
  * Shadow variables can be connected to this class to save on iteration costs
- * that would've been incurred otherwise if using variable listeners for each of them independently.
- * This way, there is only one variable listener for all such shadow variables,
+ * that would've been incurred otherwise if each shadow variable were updated independently.
+ * This way, a single component updates all such shadow variables,
  * and therefore only a single iteration to update all the information.
  *
  * <p>
@@ -38,7 +38,25 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public interface ListVariableStateSupply<Solution_, Entity_, Element_>
-        extends SourcedListVariableListener<Solution_, Entity_, Element_> {
+        extends ListVariableChangeHandler<Solution_> {
+
+    /**
+     * Called when the entire working solution changes. In this event, the other before..()/after...() methods will not
+     * be called.
+     * At this point, implementations should clear state, if any.
+     */
+    @Override
+    default void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        // No need to do anything for stateless implementations.
+    }
+
+    /**
+     * Called before this {@link ListVariableStateSupply} is thrown away and not used anymore.
+     */
+    @Override
+    default void close() {
+        // No need to do anything for stateless implementations.
+    }
 
     void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
@@ -76,7 +94,6 @@ public interface ListVariableStateSupply<Solution_, Entity_, Element_>
     @Nullable
     Object getInverseSingleton(Object planningValue);
 
-    @Override
     ListVariableDescriptor<Solution_> getSourceVariableDescriptor();
 
     /**

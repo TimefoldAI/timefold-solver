@@ -33,7 +33,7 @@ public final class DefaultUniSamplingStream<Solution_, A> implements InnerUniSam
             BiNeighborhoodsJoiner<A, B>... joiners) {
         var comber = BiNeighborhoodsJoinerComber.<Solution_, A, B> comb(joiners);
         return new DefaultBiSamplingStream<>(dataset,
-                ((AbstractUniEnumeratingStream<Solution_, B>) uniEnumeratingStream).createRightDataset(comber));
+                ((AbstractUniEnumeratingStream<Solution_, B>) uniEnumeratingStream).asCachedDataset(comber));
     }
 
     @Override

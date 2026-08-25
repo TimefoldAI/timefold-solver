@@ -60,12 +60,12 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
             // As a result,
             // any validation using a solution would never work in these cases
             // due to an error when calling calculateScore().
-            // Calling scoreDirector.triggerVariableListeners() runs the custom listeners and clears the queue.
+            // Calling scoreDirector.updateShadowVariables() runs the custom listeners and clears the queue.
             // However, to maintain API consistency,
             // we will only trigger the listeners
             // if the user opts to use settingAllShadowVariables.
             if (bavetConstraintStreamScoreDirector != null) {
-                bavetConstraintStreamScoreDirector.clearShadowVariablesListenerQueue();
+                bavetConstraintStreamScoreDirector.clearPendingShadowVariableUpdates();
             }
             update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap());
             initialized = true;

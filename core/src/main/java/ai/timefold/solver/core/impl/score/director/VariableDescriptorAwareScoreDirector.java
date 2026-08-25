@@ -78,7 +78,7 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
      * <li>Adding one or more elements to the list variable.</li>
      * <li>Any mix of the above.</li>
      * </ul>
-     * For the sake of variable listeners' efficiency, the change notification requires an index range that contains elements
+     * For the sake of shadow variable update efficiency, the change notification requires an index range that contains elements
      * affected by the change. The range starts at {@code fromIndex} (inclusive) and ends at {@code toIndex} (exclusive).
      * <p>
      * The range has to comply with the following contract:
@@ -114,7 +114,7 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
      * <li>Adding one or more elements to the list variable.</li>
      * <li>Any mix of the above.</li>
      * </ul>
-     * For the sake of variable listeners' efficiency, the change notification requires an index range that contains elements
+     * For the sake of shadow variable update efficiency, the change notification requires an index range that contains elements
      * affected by the change. The range starts at {@code fromIndex} (inclusive) and ends at {@code toIndex} (exclusive).
      * <p>
      * The range has to comply with the following contract:

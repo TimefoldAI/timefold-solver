@@ -8,7 +8,18 @@ import ai.timefold.solver.service.definition.api.validation.ModelValidator;
  */
 public final class DatasetValidatedEvent extends AbstractDatasetEvent {
 
+    private final ValidationSummary validationSummary;
+
     public DatasetValidatedEvent(Metadata metadata) {
+        this(metadata, null);
+    }
+
+    public DatasetValidatedEvent(Metadata metadata, ValidationSummary validationSummary) {
         super(metadata);
+        this.validationSummary = validationSummary;
+    }
+
+    public ValidationSummary getValidationSummary() {
+        return validationSummary;
     }
 }

@@ -138,7 +138,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             } catch (ScoreCorruptionException | VariableCorruptionException e) {
                 throw new IllegalStateException("""
                         Solver corruption was detected. Solutions provided by this solver can not be trusted.
-                        Corruptions typically arise from a bug in either your constraints or your variable listeners,
+                        Corruptions typically arise from a bug in either your constraints or your shadow variables,
                         but they may also be caused by a rare solver bug.
                         Run your solver with %s %s to find out more information about the error \
                         and if you are convinced that the problem is not in your code, please report a bug to Timefold.

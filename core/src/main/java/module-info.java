@@ -67,6 +67,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.preview.api.move.test;
     exports ai.timefold.solver.core.preview.api.neighborhood;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream;
+    exports ai.timefold.solver.core.preview.api.neighborhood.stream.dataset;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.function;
@@ -189,7 +190,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.constructionheuristic.placer to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.variable to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.variable.supply to ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.domain.variable.listener.support to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.heuristic to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.heuristic.selector.common to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.heuristic.selector.common.iterator to ai.timefold.solver.enterprise.core;

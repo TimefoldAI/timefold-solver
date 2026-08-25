@@ -18,9 +18,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
@@ -136,38 +134,13 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         return Collections.emptyList();
     }
 
     @Override
     public Demand<?> getProvidedDemand() {
         throw new UnsupportedOperationException("Cascade update element shadow variable cannot be demanded.");
-    }
-
-    @Override
-    public boolean hasVariableListener() {
-        return false;
-    }
-
-    @Override
-    public boolean canBeUsedAsSource() {
-        return false;
-    }
-
-    @Override
-    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
-        throw new UnsupportedOperationException("Cascade update element generates no listeners.");
-    }
-
-    @Override
-    public boolean isListVariableSource() {
-        return false;
     }
 
     private record ShadowVariableTarget<Solution_>(EntityDescriptor<Solution_> entityDescriptor,

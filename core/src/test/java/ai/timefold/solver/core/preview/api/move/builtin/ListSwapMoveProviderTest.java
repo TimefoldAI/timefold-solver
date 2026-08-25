@@ -1,13 +1,9 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
-
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
@@ -26,14 +22,17 @@ class ListSwapMoveProviderTest {
                 .listVariable();
 
         var solution = TestdataPinnedListSolution.generateInitializedSolution(2, 2);
-        solution.getEntityList().getFirst().setPinned(true);
+        var firstEntity = solution.getEntityList().getFirst();
+        var secondEntity = solution.getEntityList().get(1);
+        firstEntity.setPinned(true);
 
-        // firstEntity is pinned → no swaps involving its values.
-        // secondEntity's only potential swap partner is the pinned firstEntity → 0 moves.
-        var moveList = NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+        // firstEntity is pinned -> no swaps involving its values.
+        // secondEntity's only potential swap partner is the pinned firstEntity -> 0 moves.
+        NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
-                .getMovesAsList();
-        assertThat(moveList).isEmpty();
+                .producesNoneOf(
+                        Moves.swap(variableMetaModel, secondEntity, 0, firstEntity, 0),
+                        Moves.swap(variableMetaModel, firstEntity, 0, secondEntity, 0));
     }
 
     @Test
@@ -53,66 +52,20 @@ class ListSwapMoveProviderTest {
         e2.getValueList().add(assignedValue3);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+        // We have 4 values. One is unassigned, therefore isn't included in the swaps.
+        // Three other values can be mutually swapped, each pair produced in both directions:
+        // - assignedValue1 (e1@0) <-> assignedValue2 (e2@0)
+        // - assignedValue1 (e1@0) <-> assignedValue3 (e2@1)
+        // - assignedValue2 (e2@0) <-> assignedValue3 (e2@1), within e2
+        NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
-                .getMovesAsList();
-        assertThat(moveList).hasSize(6);
-
-        // We have 4 values.
-        // One is unassigned, therefore isn't included in the swaps.
-        // Three other values can be mutually swapped:
-        // - assignedValue1 <-> assignedValue2
-        // - assignedValue1 <-> assignedValue3
-        // - assignedValue2 <-> assignedValue3
-        // That makes 6 possible swap moves. (Includes duplicates.)
-
-        var move1 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(0);
-        assertSoftly(softly -> {
-            softly.assertThat(move1.getPlanningEntities())
-                    .containsOnly(e1, e2);
-            softly.assertThat(move1.getPlanningValues())
-                    .containsOnly(assignedValue1, assignedValue2);
-        });
-
-        var move2 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(1);
-        assertSoftly(softly -> {
-            softly.assertThat(move2.getPlanningEntities())
-                    .containsOnly(e1, e2);
-            softly.assertThat(move2.getPlanningValues())
-                    .containsOnly(assignedValue1, assignedValue3);
-        });
-
-        var move3 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(move3.getPlanningEntities())
-                    .containsOnly(e1, e2);
-            softly.assertThat(move3.getPlanningValues())
-                    .containsOnly(assignedValue1, assignedValue2);
-        });
-
-        var move4 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(3);
-        assertSoftly(softly -> {
-            softly.assertThat(move4.getPlanningEntities())
-                    .containsOnly(e2);
-            softly.assertThat(move4.getPlanningValues())
-                    .containsOnly(assignedValue2, assignedValue3);
-        });
-
-        var move5 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(4);
-        assertSoftly(softly -> {
-            softly.assertThat(move5.getPlanningEntities())
-                    .containsOnly(e1, e2);
-            softly.assertThat(move5.getPlanningValues())
-                    .containsOnly(assignedValue1, assignedValue3);
-        });
-
-        var move6 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(5);
-        assertSoftly(softly -> {
-            softly.assertThat(move6.getPlanningEntities())
-                    .containsOnly(e2);
-            softly.assertThat(move6.getPlanningValues())
-                    .containsOnly(assignedValue2, assignedValue3);
-        });
+                .producesAllOf(
+                        Moves.swap(variableMetaModel, e1, 0, e2, 0),
+                        Moves.swap(variableMetaModel, e2, 0, e1, 0),
+                        Moves.swap(variableMetaModel, e1, 0, e2, 1),
+                        Moves.swap(variableMetaModel, e2, 1, e1, 0),
+                        Moves.swap(variableMetaModel, e2, 0, e2, 1),
+                        Moves.swap(variableMetaModel, e2, 1, e2, 0));
     }
 
     @Test
@@ -129,13 +82,10 @@ class ListSwapMoveProviderTest {
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+        // Only one value is assigned in total (in e2); a swap needs two assigned positions.
+        NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
-                .getMovesAsList();
-
-        // There is only one overlapping value between the ranges of e1 and e2: v1.
-        // Therefore there are no possible swap moves.
-        assertThat(moveList).isEmpty();
+                .producesNoneOf(Moves.swap(variableMetaModel, e2, 0, e2, 0));
     }
 
 }

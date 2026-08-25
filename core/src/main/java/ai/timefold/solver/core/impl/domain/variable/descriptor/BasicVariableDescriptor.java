@@ -7,9 +7,12 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableStateDemand;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
+
+    private final BasicVariableStateDemand<Solution_> stateDemand = new BasicVariableStateDemand<>(this);
 
     private boolean allowsUnassigned;
 
@@ -20,6 +23,10 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     public BasicVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
+    }
+
+    public BasicVariableStateDemand<Solution_> getStateDemand() {
+        return stateDemand;
     }
 
     public boolean allowsUnassigned() {

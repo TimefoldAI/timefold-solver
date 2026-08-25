@@ -40,7 +40,7 @@ public class TimetableDto implements ModelInput, ModelOutput {
 // TimetableSchedulingResource.java
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") // OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 public interface TimetableSchedulingResource extends ModelRest {
 }
 ----
@@ -64,7 +64,7 @@ class TimetableDto(
 // TimetableSchedulingResource.kt
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") // OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 interface TimetableSchedulingResource : ModelRest
 ----
 --
@@ -78,7 +78,15 @@ Since an xref:#openAPISpecification[OpenAPI specification] will also be automati
 == Generated endpoints
 
 The REST module generates several endpoints; the following are the core endpoints.
-The `<root>` is determined by the @Path annotation on the interface extending ModelRest (`/v1/timetables` in the example above).
+The `<root>` is the full served path, which is the model API version prefix followed by the value of the `@Path` annotation.
+The SDK default configuration sets `quarkus.rest.path=${timefold.model.version}`, which Quarkus prepends to every `@Path` at runtime.
+So for `timefold.model.version=v1` and `@Path("/timetables")`, `<root>` is `/v1/timetables`.
+
+NOTE: Do not include the version in your `@Path` annotation. The SDK handles it automatically via `quarkus.rest.path`.
+Including it (e.g. `@Path("/v1/timetables")`) results in a doubled prefix (`/v1/v1/timetables`) at runtime.
+
+NOTE: To change the API version, override the `timefold.model.version` Maven property in the `pom.xml`.
+The Quarkus property of the same name gets configured automatically from the Maven property.
 
 - `GET /<root>`: Retrieve all registered optimization datasets
 - `POST /<root>`: Create a new optimization dataset
@@ -87,15 +95,14 @@ The `<root>` is determined by the @Path annotation on the interface extending Mo
 - `DELETE /<root>/\{id\}`: Terminate a dataset optimization run
 
 If your model provides xref:./demo-data.adoc[demo data], the following endpoints are also created.
-These are *not* nested under `<root>`: they only share its version prefix (for example `/v1`), not the rest of the path.
-So for a `@Path("/v1/timetables")` resource, the demo data endpoints are at `/v1/demo-data`, not `/v1/timetables/demo-data`.
-If your resource path has no version prefix, the demo data endpoints are served at the root, without a version.
+These are *not* nested under `<root>`: the path is `/{timefold.model.version}/demo-data`, not `/<root>/demo-data`.
+For example, with `timefold.model.version=v1` this is `/v1/demo-data`.
 
 - `GET /v<version>/demo-data`: Retrieve all available demo dataset ids.
-- `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
+- `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier, as the full Solving Request (`config` and `modelInput`, see <<requestResponseStructure>>). This response is ready to `POST` directly to `<root>`.
+- `GET /v<version>/demo-data/\{demoDataId\}/input`: Retrieve the demo dataset's `modelInput` only, without the `config` envelope.
 
-// TODO See the xref:consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
-// TODO https://github.com/TimefoldAI/timefold-solver/issues/2349
+See the xref:running-timefold-solver/service/consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
 
 [#requestResponseStructure]
 == Request and response structure
@@ -136,25 +143,42 @@ Additionally, more fields might be added for specific model implementations.
 
 The `run` configuration has four fields:
 
-- `name` - The run name (if empty, it will be generated).
-- `maxThreadCount` - The maximum thread count, which indicates the maximum number of threads to be used for solving.
+- `name`: The run name (if empty, it will be generated).
+- `maxThreadCount`: The maximum thread count, which indicates the maximum number of threads to be used for solving.
 If not provided, 1 will be used.
-- `tags` - The tags, which are a set of optional tags to be assigned to the run.
-- `termination` - The termination properties determining how long the solver should run:
+- `tags`: The tags, which are a set of optional tags to be assigned to the run.
+- `termination`: The termination properties determining how long the solver should run:
 
-* `spentLimit` - The maximum duration to keep the solver running (ISO 8601 Duration).
+* `spentLimit`: The maximum duration to keep the solver running (ISO 8601 Duration).
 If omitted, no maximum duration will be set (platform limits will apply).
 
-* `unimprovedSpentLimit` - The maximum unimproved score duration, i.e. if the score has not improved during this period, the solver will terminate (ISO 8601 Duration).
-If omitted, the https://docs.timefold.ai/timefold-solver/latest/optimization-algorithms/overview#diminishedReturnsTermination[diminished returns termination] will be used.
+* `unimprovedSpentLimit`: The maximum unimproved score duration, that is, if the score has not improved during this period, the solver will terminate (ISO 8601 Duration).
+If omitted, the https://docs.timefold.ai/timefold-solver/latest/optimization-algorithms/overview#diminishedReturnsTermination[diminished returns termination] applies.
+If set, `stepCountLimit` must be empty.
+Using this option disables the default diminished returns termination, which is recommended for most use cases.
+
+* `stepCountLimit`: The maximum solver step count.
+The solver stops after a predetermined number of steps.
+Because step count is independent of hardware performance, use this option to benchmark your models.
+It is not recommended for production use.
+If set, `unimprovedSpentLimit` must be empty.
+Using this option disables the default diminished returns termination, which is recommended for most use cases.
+
+* `slidingWindowDuration`: The sliding window (ISO 8601 Duration) over which the diminished returns termination measures score improvement.
+Defaults to `PT30S` when omitted.
+This option only takes effect when the diminished returns termination is active, that is, when both `unimprovedSpentLimit` and `stepCountLimit` are empty.
+
+* `minimumImprovementRatio`: The minimum ratio between current and initial improvement before the diminished returns termination triggers.
+This value must be strictly positive, and defaults to `0.0001` when omitted.
+This option only takes effect when the diminished returns termination is active, that is, when both `unimprovedSpentLimit` and `stepCountLimit` are empty.
 
 [TIP]
 The diminished returns termination is the recommended default setting.
 This termination is desirable since it terminates based on the relative rate of improvement, and behaves similarly on different hardware and different problem instances.
-`unimprovedSpentLimit` should be set only when necessary.
+Set `unimprovedSpentLimit` or `stepCountLimit` only when necessary.
 
 The `model` configuration is a model-specific field that contains additional global model configuration attributes.
-See xref:running-timefold-solver/service/constraint-overrides.adoc#serviceWeightOverrides[constraint weights] for more information.
+See xref:running-timefold-solver/service/model-config-overrides.adoc#serviceWeightOverrides[constraint weights] for more information.
 
 [#solvingResponse]
 === Structured solving response
@@ -246,7 +270,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
-public class TimetableConvertor implements ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+public class TimetableConvertor implements ModelConvertor<HardMediumSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     @Override
     public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig,
@@ -273,7 +297,7 @@ Kotlin::
 [source,kotlin,options="nowrap"]
 ----
 @ApplicationScoped
-class TimetableConvertor : ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+class TimetableConvertor : ModelConvertor<HardMediumSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     override fun toSolverModel(modelInput: TimetableDto, modelConfig: ModelConfig<EmptyModelConfigOverrides>,
             lastModelOutput: Optional<TimetableDto>): Timetable {
@@ -455,7 +479,7 @@ Java::
 ----
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") //OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 public interface TimetableSchedulingResource extends ModelRest {
 
     @APIResponses(value = {
@@ -485,7 +509,7 @@ Kotlin::
 ----
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") //OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 interface TimetableSchedulingResource : ModelRest {
 
     @APIResponses(value = [
@@ -554,7 +578,7 @@ This uses the following format:
 
 [source,properties]
 ----
-timefold.rest.<operationname>.summary=Your custom summary here
+timefold.model.rest.<operationname>.summary=Your custom summary here
 ----
 
 The `<operationname>` is the name of the method in the API Spec (`operationId` field).
@@ -563,5 +587,5 @@ For example, if you want to override the OpenAPI summary for the `schedule` oper
 
 [source,properties]
 ----
-timefold.rest.schedule.summary=Request a timetable to be solved asynchronously.
+timefold.model.rest.schedule.summary=Request a timetable to be solved asynchronously.
 ----

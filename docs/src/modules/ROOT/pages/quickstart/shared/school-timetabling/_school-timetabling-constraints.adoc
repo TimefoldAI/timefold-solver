@@ -1,5 +1,6 @@
 = Define the constraints and calculate the score
 :imagesdir: ../..
+ifndef::score-class[:score-class: HardSoftScore]
 
 A _score_ represents the quality of a specific solution.
 The higher the better.
@@ -7,7 +8,7 @@ Timefold Solver looks for the best solution, which is the solution with the high
 It might be the _optimal_ solution.
 
 Because this use case has hard and soft constraints,
-use the `HardSoftScore` class to represent the score:
+use the `{score-class}` class to represent the score:
 
 * Hard constraints must not be broken.
 For example: _A room can have at most one lesson at the same time._
@@ -29,12 +30,12 @@ Java::
 --
 Create a `src/main/java/org/acme/schooltimetabling/solver/TimetableConstraintProvider.java` class:
 
-[source,java]
+[source,java,subs=attributes+]
 ----
 package org.acme.schooltimetabling.solver;
 
 import org.acme.schooltimetabling.domain.Lesson;
-import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.{score-class};
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -63,7 +64,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                         // ... in the same room ...
                         Joiners.equal(Lesson::getRoom))
                 // ... and penalize each pair with a hard weight.
-                .penalize(HardSoftScore.ONE_HARD)
+                .penalize({score-class}.ONE_HARD)
                 .asConstraint("Room conflict");
     }
 
@@ -73,7 +74,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .forEachUniquePair(Lesson.class,
                         Joiners.equal(Lesson::getTimeslot),
                         Joiners.equal(Lesson::getTeacher))
-                .penalize(HardSoftScore.ONE_HARD)
+                .penalize({score-class}.ONE_HARD)
                 .asConstraint("Teacher conflict");
     }
 
@@ -83,7 +84,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .forEachUniquePair(Lesson.class,
                         Joiners.equal(Lesson::getTimeslot),
                         Joiners.equal(Lesson::getStudentGroup))
-                .penalize(HardSoftScore.ONE_HARD)
+                .penalize({score-class}.ONE_HARD)
                 .asConstraint("Student group conflict");
     }
 
@@ -96,11 +97,11 @@ Kotlin::
 --
 Create a `src/main/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProvider.kt` class:
 
-[source,kotlin]
+[source,kotlin,subs=attributes+]
 ----
 package org.acme.kotlin.schooltimetabling.solver
 
-import ai.timefold.solver.core.api.score.HardSoftScore
+import ai.timefold.solver.core.api.score.{score-class}
 import ai.timefold.solver.core.api.score.stream.Constraint
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider
@@ -136,7 +137,7 @@ class TimeTableConstraintProvider : ConstraintProvider {
                 Joiners.equal(Lesson::room)
             )
             // ... and penalize each pair with a hard weight.
-            .penalize(HardSoftScore.ONE_HARD)
+            .penalize({score-class}.ONE_HARD)
             .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
                 RoomConflictJustification(lesson1.room, lesson1,lesson2)}
             .asConstraint("Room conflict")
@@ -150,7 +151,7 @@ class TimeTableConstraintProvider : ConstraintProvider {
                 Joiners.equal(Lesson::timeslot),
                 Joiners.equal(Lesson::teacher)
             )
-            .penalize(HardSoftScore.ONE_HARD)
+            .penalize({score-class}.ONE_HARD)
             .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
                 TeacherConflictJustification(lesson1.teacher, lesson1, lesson2)}
             .asConstraint("Teacher conflict")
@@ -164,7 +165,7 @@ class TimeTableConstraintProvider : ConstraintProvider {
                 Joiners.equal(Lesson::timeslot),
                 Joiners.equal(Lesson::studentGroup)
             )
-            .penalize(HardSoftScore.ONE_HARD)
+            .penalize({score-class}.ONE_HARD)
             .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
                 StudentGroupConflictJustification(lesson1.studentGroup, lesson1, lesson2)}
             .asConstraint("Student group conflict")
@@ -178,7 +179,7 @@ class TimeTableConstraintProvider : ConstraintProvider {
                 Joiners.equal(Lesson::teacher)
             )
             .filter { lesson1: Lesson, lesson2: Lesson -> lesson1.room !== lesson2.room }
-            .penalize(HardSoftScore.ONE_SOFT)
+            .penalize({score-class}.ONE_SOFT)
             .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
                 TeacherRoomStabilityJustification(lesson1.teacher, lesson1, lesson2)}
             .asConstraint("Teacher room stability")
@@ -198,7 +199,7 @@ class TimeTableConstraintProvider : ConstraintProvider {
                 )
                 !between.isNegative && between <= Duration.ofMinutes(30)
             }
-            .reward(HardSoftScore.ONE_SOFT)
+            .reward({score-class}.ONE_SOFT)
             .justifyWith{ lesson1: Lesson, lesson2: Lesson, _ ->
                 TeacherTimeEfficiencyJustification(lesson1.teacher, lesson1, lesson2)}
             .asConstraint("Teacher time efficiency")
@@ -219,7 +220,7 @@ class TimeTableConstraintProvider : ConstraintProvider {
                 )
                 !between.isNegative && between <= Duration.ofMinutes(30)
             }
-            .penalize(HardSoftScore.ONE_SOFT)
+            .penalize({score-class}.ONE_SOFT)
             .justifyWith { lesson1: Lesson, lesson2: Lesson, _ ->
                 StudentGroupSubjectVarietyJustification(lesson1.studentGroup, lesson1, lesson2)}
             .asConstraint("Student group subject variety")

@@ -70,7 +70,7 @@ final class ListVariableState<Solution_> {
         }
 
         // If the elements have any shadows, set them to null if no entity has their values
-        // We do not want to do this eagerly, since variable listener events are not triggered.
+        // We do not want to do this eagerly, since shadow variable update events are not triggered.
         var shouldUnassignElements =
                 !scoreDirector.expectShadowVariablesInCorrectState() && (externalizedIndexProcessor != null ||
                         externalizedInverseProcessor != null ||

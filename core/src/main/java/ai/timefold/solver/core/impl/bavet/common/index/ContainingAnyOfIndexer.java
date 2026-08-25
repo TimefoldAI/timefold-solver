@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -13,15 +12,13 @@ import java.util.SequencedCollection;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
-import ai.timefold.solver.core.impl.util.CompositeListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.impl.util.ListEntry;
-import ai.timefold.solver.core.impl.util.Pair;
+import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -56,7 +53,13 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
     public ListEntry<T> put(Object modifyCompositeKey, T tuple) {
         unremovedSize++;
         var indexKeyCollection = modifyKeyUnpacker.apply(modifyCompositeKey);
-        var children = new ArrayList<Pair<Key_, ListEntry<T>>>(indexKeyCollection.size());
+        return put(modifyCompositeKey, downstreamIndexerMap, downstreamIndexerSupplier, tuple, indexKeyCollection);
+    }
+
+    static <T, Key_, KeyCollection_ extends SequencedCollection<Key_>> ListEntry<T> put(Object modifyCompositeKey,
+            Map<Key_, Indexer<T>> downstreamIndexerMap, Supplier<Indexer<T>> downstreamIndexerSupplier, T tuple,
+            KeyCollection_ indexKeyCollection) {
+        var children = new ArrayList<Triple<Key_, Indexer<T>, ListEntry<T>>>(indexKeyCollection.size());
         for (var indexKey : indexKeyCollection) {
             // Avoids computeIfAbsent in order to not create lambdas on the hot path.
             var downstreamIndexer = downstreamIndexerMap.get(indexKey);
@@ -68,7 +71,8 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
             // because even though those downstreamIndexers match for a particular compositeKey,
             // the distinctingSet in those methods ensures that each tuple is only counted/consumed once.
             var childListEntry = downstreamIndexer.put(modifyCompositeKey, tuple);
-            children.add(new Pair<>(indexKey, childListEntry));
+            // The downstream indexer rides along so that remove() doesn't need to look it up again.
+            children.add(new Triple<>(indexKey, downstreamIndexer, childListEntry));
         }
         return new CompositeListEntry<>(tuple, children);
     }
@@ -77,6 +81,11 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
     public void remove(Object modifyCompositeKey, ListEntry<T> entry) {
         unremovedSize--;
         var indexKeyCollection = modifyKeyUnpacker.apply(modifyCompositeKey);
+        remove(modifyCompositeKey, downstreamIndexerMap, entry, indexKeyCollection);
+    }
+
+    static <T, Key_, KeyCollection_ extends SequencedCollection<Key_>> void remove(Object modifyCompositeKey,
+            Map<Key_, Indexer<T>> downstreamIndexerMap, ListEntry<T> entry, KeyCollection_ indexKeyCollection) {
         var children = ((CompositeListEntry<Key_, T>) entry).children();
         if (indexKeyCollection.size() != children.size()) {
             throw new IllegalStateException("""
@@ -86,24 +95,12 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
         }
         for (var i = 0; i < children.size(); i++) { // Avoids creating an iterator on the hot path.
             var child = children.get(i);
-            var indexKey = child.key();
-            var childListEntry = child.value();
-            // Avoids removeIfAbsent in order to not create lambdas on the hot path.
-            var downstreamIndexer = getDownstreamIndexer(modifyCompositeKey, indexKey);
-            downstreamIndexer.remove(modifyCompositeKey, childListEntry);
+            var downstreamIndexer = child.b();
+            downstreamIndexer.remove(modifyCompositeKey, child.c());
             if (downstreamIndexer.isRemovable()) {
-                downstreamIndexerMap.remove(indexKey);
+                downstreamIndexerMap.remove(child.a());
             }
         }
-    }
-
-    private Indexer<T> getDownstreamIndexer(Object compositeKey, Key_ indexerKey) {
-        var downstreamIndexer = downstreamIndexerMap.get(indexerKey);
-        if (downstreamIndexer == null) {
-            throw new IllegalStateException(
-                    "Impossible state: the composite key (%s) doesn't exist in the indexer %s.".formatted(compositeKey, this));
-        }
-        return downstreamIndexer;
     }
 
     @Override
@@ -188,23 +185,94 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        return randomIterator(queryCompositeKey, workingRandom, null);
+    public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return RepeatingRandomIterator.empty();
+        }
+        return multiIndexerRepeatingIterator(queryCompositeKey, indexKeyCollection, workingRandom);
+    }
+
+    /**
+     * Picks a key by its downstream bucket size,
+     * then a random element from within that bucket, with replacement;
+     * never ends and never needs to track duplicates,
+     * so there is no shrinking distribution and no removed set to maintain.
+     */
+    private RepeatingRandomIterator<T> multiIndexerRepeatingIterator(Object queryCompositeKey,
+            KeyCollection_ indexKeyCollection, RandomGenerator workingRandom) {
+        return multiIndexerRepeatingIterator(queryCompositeKey, downstreamIndexerMap, indexKeyCollection, workingRandom);
+    }
+
+    static <T, Key_, KeyCollection_ extends SequencedCollection<Key_>> RepeatingRandomIterator<T> multiIndexerRepeatingIterator(
+            Object queryCompositeKey, Map<Key_, Indexer<T>> downstreamIndexerMap, KeyCollection_ indexKeyCollection,
+            RandomGenerator workingRandom) {
+        var downstreamIteratorList = new ArrayList<Iterator<T>>(indexKeyCollection.size());
+        var distribution = new int[indexKeyCollection.size()];
+        var index = 0;
+        var distributionSum = 0;
+        for (var indexKey : indexKeyCollection) {
+            var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            if (downstreamIndexer == null) {
+                downstreamIteratorList.add(Collections.emptyIterator());
+            } else {
+                distribution[index] = downstreamIndexer.size(queryCompositeKey);
+                downstreamIteratorList.add(downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
+                distributionSum += distribution[index];
+            }
+            index++;
+        }
+        return new WeightedRepeatingIterator<>(downstreamIteratorList, distribution, distributionSum, workingRandom);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, @Nullable Predicate<T> filter) {
+    public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return UniqueRandomIterator.empty();
+        }
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
-        if (indexKeyCollection.isEmpty()) {
-            return Collections.emptyIterator();
+        return switch (indexKeyCollection.size()) {
+            case 0 -> UniqueRandomIterator.empty();
+            case 1 -> uniqueRandomIteratorSingleKey(queryCompositeKey, indexKeyCollection, workingRandom);
+            default -> uniqueRandomIteratorManyKeys(queryCompositeKey, indexKeyCollection, workingRandom);
+        };
+    }
+
+    private UniqueRandomIterator<T> uniqueRandomIteratorSingleKey(Object queryCompositeKey, KeyCollection_ indexKeyCollection,
+            RandomGenerator workingRandom) {
+        var downstreamIndexer = downstreamIndexerMap.get(indexKeyCollection.iterator().next());
+        if (downstreamIndexer == null) {
+            return UniqueRandomIterator.empty();
         }
-        if (filter == null) {
-            return new RandomIterator(indexKeyCollection, workingRandom,
-                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
-        } else {
-            return new RandomIterator(indexKeyCollection, workingRandom,
-                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
+        return downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
+    }
+
+    /**
+     * Unlike {@link ComparisonIndexer} or {@code ContainedInIndexer},
+     * whose buckets for different query keys are disjoint,
+     * a single tuple here can be reachable under more than one query key
+     * (that is the whole point of {@link Joiners#containingAnyOf(Function, Function)}).
+     * A bucket-then-uniform-inside-bucket sampler cannot be made uniform over the distinct tuples when buckets overlap:
+     * for buckets {@code X = {t1, t2}}, {@code Y = {t2, t3}},
+     * whatever weight is put on each bucket,
+     * {@code P(t1) + P(t3) = 1/2} always,
+     * since each bucket contributes half of its own probability mass to its non-shared element;
+     * but uniformity over the 3 distinct tuples needs {@code P(t1) + P(t3) = 2/3}.
+     * No weight assignment closes that gap.
+     * <p>
+     * So instead of weighting buckets,
+     * this drains the already tuple-deduplicating {@link DefaultIterator} into a plain list
+     * and delegates to {@link UniqueRandomIterator#of(ElementAwareArrayList, RandomGenerator)},
+     * which is exact over any list.
+     */
+    private UniqueRandomIterator<T> uniqueRandomIteratorManyKeys(Object queryCompositeKey, KeyCollection_ indexKeyCollection,
+            RandomGenerator workingRandom) {
+        var iterator = new DefaultIterator(queryCompositeKey, indexKeyCollection);
+        var distinctTupleList = new ElementAwareArrayList<T>();
+        while (iterator.hasNext()) {
+            distinctTupleList.add(iterator.next());
         }
+        return UniqueRandomIterator.of(distinctTupleList, workingRandom);
     }
 
     @Override
@@ -228,7 +296,7 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
         public DefaultIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection) {
             this.queryCompositeKey = queryCompositeKey;
             this.indexerIterator = indexKeyCollection.iterator();
-            this.distinctingSet = new HashSet<>(indexKeyCollection.size() * 16);
+            this.distinctingSet = HashSet.newHashSet(indexKeyCollection.size());
         }
 
         @Override
@@ -271,152 +339,6 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
             var result = next;
             next = null;
             return result;
-        }
-    }
-
-    private final class RandomIterator implements Iterator<T> {
-
-        private final List<DownstreamIterator> downstreamIteratorList;
-        private final RandomGenerator workingRandom;
-        /**
-         * How many elements are remaining for each {@link Iterator} in
-         * {@link #downstreamIteratorList}. Used with
-         * {@link RandomUtils#sampleWithDistribution(RandomGenerator, int, int[])} to
-         * fairly select an iterator (so selecting an iterator with more elements is
-         * more likely).
-         */
-        private final int[] distribution;
-        /**
-         * Sum of all values in {@link #distribution}. Used with
-         * {@link RandomUtils#sampleWithDistribution(RandomGenerator, int, int[])} to
-         * fairly select an iterator (so selecting an iterator with more elements is
-         * more likely).
-         */
-        private int distributionSum;
-        private @Nullable T next = null;
-        private @Nullable T current = null;
-
-        // These are nullable as an optimization for fast-step algorithms which
-        // will only call next() once.
-        private @Nullable Set<T> removedSet;
-        private @Nullable DownstreamIterator currentIterator = null;
-
-        private class DownstreamIterator implements Iterator<T> {
-            private final int index;
-            private final Iterator<T> cachedDownstreamIterator;
-
-            public DownstreamIterator(Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction, int index,
-                    Key_ key) {
-                this.index = index;
-                var indexer = downstreamIndexerMap.get(key);
-                this.cachedDownstreamIterator = downstreamIndexerIteratorFunction.apply(indexer);
-                distribution[index] = indexer.size(key);
-                distributionSum += distribution[index];
-            }
-
-            @Override
-            public boolean hasNext() {
-                return cachedDownstreamIterator.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return cachedDownstreamIterator.next();
-            }
-
-            @Override
-            public void remove() {
-                cachedDownstreamIterator.remove();
-                distribution[index]--;
-                distributionSum--;
-            }
-        }
-
-        public RandomIterator(KeyCollection_ indexKeyCollection, RandomGenerator workingRandom,
-                Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction) {
-            this.downstreamIteratorList = new ArrayList<>(indexKeyCollection.size());
-            this.workingRandom = workingRandom;
-            this.distribution = new int[indexKeyCollection.size()];
-            var index = 0;
-            for (var indexKey : indexKeyCollection) {
-                this.downstreamIteratorList.add(new DownstreamIterator(downstreamIndexerIteratorFunction, index, indexKey));
-                index++;
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (next != null) {
-                return true;
-            }
-            if (currentIterator != null) {
-                while (currentIterator.hasNext()) {
-                    next = currentIterator.next();
-                    if (removedSet == null || !removedSet.contains(next)) {
-                        return true;
-                    } else {
-                        currentIterator.remove();
-                        // We do not remove the current iterator from the list
-                        // if the current iterator has no more elements, since then we
-                        // would need to resize the distribution array.
-                        // The current iterator will never be picked if it has no more
-                        // elements, since it would have a weight of 0 in the sample.
-                    }
-                }
-            }
-            while (distributionSum > 0) {
-                var selectedIndex = RandomUtils.sampleWithDistribution(workingRandom, distributionSum, distribution);
-                currentIterator = downstreamIteratorList.get(selectedIndex);
-                if (!currentIterator.hasNext()) {
-                    continue;
-                }
-
-                next = currentIterator.next();
-                if (removedSet == null || !removedSet.contains(next)) {
-                    return true;
-                } else {
-                    currentIterator.remove();
-                    // We do not remove the current iterator from the list
-                    // if the current iterator has no more elements, since then we
-                    // would need to resize the distribution array.
-                    // The current iterator will never be picked if it has no more
-                    // elements, since it would have a weight of 0 in the sample.
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            current = next;
-            next = null;
-            return current;
-        }
-
-        @Override
-        public void remove() {
-            // Since we have multiple downstream iterators, and they may have
-            // duplicates, we need to keep track of removed elements ourselves
-            if (current == null) {
-                throw new IllegalStateException("next() must be called before remove().");
-            }
-            if (removedSet == null) {
-                removedSet = new HashSet<>();
-            }
-            removedSet.add(current);
-            currentIterator.remove();
-            if (!currentIterator.hasNext()) {
-                currentIterator = null;
-                // We do not remove the current iterator from the list
-                // if the current iterator has no more elements, since then we
-                // would need to resize the distribution array.
-                // The current iterator will never be picked if it has no more
-                // elements, since it would have a weight of 0 in the sample.
-            }
-            current = null;
         }
     }
 

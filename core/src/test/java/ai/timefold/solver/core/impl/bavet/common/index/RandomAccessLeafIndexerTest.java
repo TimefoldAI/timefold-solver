@@ -63,6 +63,15 @@ class RandomAccessLeafIndexerTest extends AbstractIndexerTest {
         assertThat(forEachToTuples(indexer)).containsOnly(annTuple, bethTuple);
     }
 
+    @Test
+    void randomIteratorNeverEnds() {
+        var indexer = new RandomAccessLeafIndexer<UniTuple<String>>();
+        indexer.put(CompositeKey.none(), newTuple("Ann-F-40"));
+        indexer.put(CompositeKey.none(), newTuple("Beth-F-30"));
+
+        assertRepeatingRandomNeverEnds(indexer, CompositeKey.none(), 30);
+    }
+
     private static UniTuple<String> newTuple(String factA) {
         return UniTuple.of(factA, 0);
     }

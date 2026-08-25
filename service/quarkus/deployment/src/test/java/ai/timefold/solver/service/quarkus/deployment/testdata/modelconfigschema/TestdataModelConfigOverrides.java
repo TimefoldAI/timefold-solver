@@ -1,5 +1,6 @@
 package ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 
 import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
@@ -23,10 +24,13 @@ public class TestdataModelConfigOverrides implements ModelConfigOverrides {
     @Schema(name = "duration", title = "Duration", format = DataFormat.Values.DURATION)
     private Duration duration = Duration.ZERO;
 
-    // Getters added due to serialization in tests when the extension is created (@RegisterExtension)
-
     @Schema(description = "String parameter", nullable = true)
     private String string;
+
+    @Schema(name = "bigDecimalConstraintWeight")
+    private BigDecimal bigDecimalConstraintWeight = BigDecimal.ZERO;
+
+    // Getters added due to serialization in tests when the extension is created (@RegisterExtension)
 
     public long getConstraintWeight() {
         return constraintWeight;
@@ -46,5 +50,9 @@ public class TestdataModelConfigOverrides implements ModelConfigOverrides {
 
     public String getString() {
         return string;
+    }
+
+    public BigDecimal getBigDecimalConstraintWeight() {
+        return bigDecimalConstraintWeight;
     }
 }

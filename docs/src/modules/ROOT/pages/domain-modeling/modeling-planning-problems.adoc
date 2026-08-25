@@ -1660,10 +1660,24 @@ For example, none of the `timeslot` variables of any `Lesson` may be used to det
 [#mixedModels]
 == Mixed models
 
-If both xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic] and xref:domain-modeling/modeling-planning-problems#planningListVariable[list] variables are included in the model,
+Real-world planning problems often involve multiple types of decisions simultaneously.
+A production line must both assign an operator (a single value) and sequence a list of jobs (an ordered collection).
+A vehicle route must both plan the sequence of visits and, for each visit, independently select a fallback delivery point.
+
+When a solution model combines xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic] and xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list] planning variables,
 it is referred to as a *mixed model*.
 
-The following planning entity defines two genuine variables:
+Mixed models support three distinct patterns.
+
+[#mixedModelsBothOnSingleEntity]
+=== Both variable types on a single entity
+
+A single planning entity can declare both a basic variable and a list variable.
+This is appropriate when a resource requires both a single-value assignment and an ordered workload.
+
+In the following example, each production `Line` must be assigned an `Operator` (basic variable)
+and must also maintain an ordered list of `Job` objects to process (list variable).
+The operator assignment drives skill-based constraints, while the job list drives throughput and scheduling constraints.
 
 [tabs]
 ====
@@ -1682,11 +1696,20 @@ public class Line {
     ...
 }
 ----
-
-
 ====
 
-The mixed models also allow for the creation of multiple planning entities, each defining its own variables:
+NOTE: With both variables on the same entity, you can pin the entire entity (using `@PlanningPin`) or partially pin the list (using `@PlanningPinToIndex`), but you cannot pin the basic assignment independently; if you need that, use xref:#mixedModelsMultipleEntities[multiple entities].
+
+[#mixedModelsMultipleEntities]
+=== Multiple entities with independent variable types
+
+Different planning entities can each define their own variable type.
+This is appropriate when decisions have different lifecycles or ownership, and need to be re-solved independently.
+
+In the following example, each `Line` manages its own job sequence (list variable),
+while `LineOperation` records the assigned operator (basic variable).
+Separating these into distinct entities allows staff assignments to be re-solved
+without disturbing the existing job schedules, and vice versa.
 
 [tabs]
 ====
@@ -1706,6 +1729,40 @@ public class Line {
 public class LineOperation {
     @PlanningVariable
     private Operator operator;
+
+    ...
+}
+----
+====
+
+[#mixedModelsChildEntities]
+=== Entities inside a list variable with their own basic variables
+
+Items within a list variable can themselves be planning entities that carry additional basic variables.
+This handles decisions that are scoped to individual list elements rather than to the list as a whole.
+
+In the following example, each `Vehicle` maintains an ordered list of `Delivery` objects (list variable).
+Each `Delivery` is also a planning entity that independently selects a `DropoffPoint` location (basic variable).
+The vehicle route will optimize both the order of the visits and switch out the different potential drop-off locations.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Vehicle {
+    @PlanningListVariable
+    private List<Delivery> deliveries;
+
+    ...
+}
+
+@PlanningEntity
+public class Delivery {
+    @PlanningVariable
+    private DropoffPoint dropOff;
 
     ...
 }
@@ -1790,7 +1847,7 @@ which allows access to the solution state without the need of propagating it to 
 ==== `@ShadowSources` paths
 
 When using `@ShadowSources`, you must specify the paths to the variables that the supplier method depends on to compute its value.
-These paths must follow 1 of 3 syntactic forms:
+These paths must follow 1 of 4 syntactic forms:
 
 [cols="1,1,3", options="header"]
 |===
@@ -1800,7 +1857,7 @@ These paths must follow 1 of 3 syntactic forms:
 
 |Simple Variable Name
 |"variableName"
-|Refers to a variable (genuine or shadow) on the same planning entity. A planning list variable cannot be used as a source.
+|Refers to a variable (genuine or shadow) on the same planning entity. A planning list variable cannot be used directly; use List Variable Element Access instead.
 
 |Chained Property Path
 |"a.b.c"
@@ -1809,6 +1866,10 @@ These paths must follow 1 of 3 syntactic forms:
 |Collection Element Access
 |"collectionVar[].varName"
 |Refers to a variable (`varName`) on each element in a collection (`collectionVar`) on the entity. The collection must not change during solving.
+
+|List Variable Element Access
+|"listVar[].shadowVarName"
+|Refers to a declarative shadow variable (`shadowVarName`) on each element currently assigned to a `@PlanningListVariable` (`listVar`) on the entity. The supplier is recomputed when the list variable or any element's `shadowVarName` changes.
 |===
 
 Let's illustrate this with a specific example.

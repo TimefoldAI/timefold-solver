@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.bi;
 import static ai.timefold.solver.core.impl.bavet.bi.Group1Mapping0CollectorBiNode.createGroupKey;
 
 import java.util.function.BiFunction;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -16,11 +17,11 @@ public final class Group1Mapping2CollectorBiNode<OldA, OldB, A, B, C, ResultCont
     private final int outputStoreSize;
 
     public Group1Mapping2CollectorBiNode(BiFunction<OldA, OldB, A> groupKeyMapping,
-            int groupStoreIndex, int undoStoreIndex,
+            IntSupplier storeIndexReserver,
             BiConstraintCollector<OldA, OldB, ResultContainerB_, B> collectorB,
             BiConstraintCollector<OldA, OldB, ResultContainerC_, C> collectorC,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex,
+        super(storeIndexReserver,
                 tuple -> createGroupKey(groupKeyMapping, tuple),
                 Group0Mapping2CollectorBiNode.mergeCollectors(collectorB, collectorC), nextNodesTupleLifecycle,
                 environmentMode);

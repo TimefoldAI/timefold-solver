@@ -50,11 +50,10 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
      * The primary purpose of this method is
      * to enable the {@code ConstraintVerifier}
      * to ignore events related to shadow variables when testing constraints that do not rely on them.
-     *
-     * @see AbstractScoreDirector#clearVariableListenerEvents()
      */
-    public void clearShadowVariablesListenerQueue() {
-        clearVariableListenerEvents();
+    @Override
+    public void clearPendingShadowVariableUpdates() {
+        super.clearPendingShadowVariableUpdates();
     }
 
     /**
@@ -69,14 +68,14 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         var solutionDescriptor = getSolutionDescriptor();
         var entityList = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entityList::add);
-        variableListenerSupport.setConsistencyTracker(ConsistencyTracker.frozen(
+        shadowVariableSupport.setConsistencyTracker(ConsistencyTracker.frozen(
                 getSolutionDescriptor(),
                 entityList.toArray()));
     }
 
     @Override
     public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
-        session = scoreDirectorFactory.newSession(workingSolution, variableListenerSupport.getConsistencyTracker(),
+        session = scoreDirectorFactory.newSession(workingSolution, shadowVariableSupport.getConsistencyTracker(),
                 constraintMatchPolicy, derived);
         super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, session::insert);
     }
@@ -90,7 +89,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public InnerScore<Score_> calculateScore() {
-        variableListenerSupport.assertNotificationQueuesAreEmpty();
+        shadowVariableSupport.assertShadowVariablesAreUpToDate();
         var score = session.calculateScore();
         setCalculatedScore(score);
         return new InnerScore<>(score, -getWorkingInitScore());

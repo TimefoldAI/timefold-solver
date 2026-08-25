@@ -45,7 +45,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     private final Map<BavetAbstractConstraintStream<Solution_>, List<Set<ConstraintNodeProfileId>>> streamToProfileIdSets;
     private final Map<BavetScoringConstraintStream<Solution_>, Scorer<?>> streamToScorers = new HashMap<>();
 
-    private long nextLifecycleProfilingId = 0;
+    private int nextLifecycleProfilingId = 0;
 
     public ConstraintNodeBuildHelper(ConsistencyTracker<Solution_> consistencyTracker,
             Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet, AbstractScoreInliner<Score_> scoreInliner,

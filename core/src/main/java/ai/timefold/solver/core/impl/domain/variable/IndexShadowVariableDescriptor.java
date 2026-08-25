@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
@@ -12,9 +11,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
@@ -81,16 +78,15 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
                                     variableMemberAccessor, sourceVariableName, PlanningListVariable.class.getSimpleName()));
         }
         sourceVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-        sourceVariableDescriptor.registerSinkVariableDescriptor(this);
     }
 
     @Override
-    public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return Collections.singletonList(sourceVariableDescriptor);
+    public VariableDescriptor<Solution_> getSourceVariableDescriptor() {
+        return sourceVariableDescriptor;
     }
 
     @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
@@ -101,20 +97,10 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 
-    @Override
-    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
-        throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                .formatted(ListVariableStateSupply.class.getSimpleName()));
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public Integer getValue(Object entity) {
         return super.getValue(entity);
     }
 
-    @Override
-    public boolean isListVariableSource() {
-        return true;
-    }
 }

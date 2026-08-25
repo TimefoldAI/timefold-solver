@@ -87,7 +87,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
             var changeAction = listIterator.previous();
             changeAction.undo(backingScoreDirector);
         }
-        Objects.requireNonNull(backingScoreDirector).triggerVariableListeners();
+        Objects.requireNonNull(backingScoreDirector).updateShadowVariables();
         variableChanges = new LinkedList<>(); // Do not clear the list, as createUndoMove() may hold a reference to it.
         if (cache != null) {
             cache.clear();
@@ -216,10 +216,10 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     }
 
     @Override
-    public void triggerVariableListeners() {
-        variableChanges.add(new TriggerVariableListenersAction<>());
+    public void updateShadowVariables() {
+        variableChanges.add(UpdateShadowVariablesAction.instance());
         if (backingScoreDirector != null) {
-            backingScoreDirector.triggerVariableListeners();
+            backingScoreDirector.updateShadowVariables();
         }
     }
 

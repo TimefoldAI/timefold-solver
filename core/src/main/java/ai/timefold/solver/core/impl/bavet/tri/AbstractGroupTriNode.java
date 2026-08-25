@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.tri;
 
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
@@ -21,19 +22,20 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     private final int groupAccumulatorIndex;
     private final @Nullable TriConstraintCollectorAccumulator<ResultContainer_, OldA, OldB, OldC> incrementalAccumulator;
 
-    protected AbstractGroupTriNode(int groupStoreIndex, int groupAccumulatorIndex,
+    protected AbstractGroupTriNode(IntSupplier storeIndexReserver,
             Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
             @NonNull TriConstraintCollector<OldA, OldB, OldC, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
+        super(storeIndexReserver, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
-        this.groupAccumulatorIndex = groupAccumulatorIndex;
+        this.groupAccumulatorIndex = storeIndexReserver.getAsInt();
         this.incrementalAccumulator = TriCollectorUtils.toIncremental(collector.accumulator());
     }
 
-    protected AbstractGroupTriNode(int groupStoreIndex, Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
+    protected AbstractGroupTriNode(IntSupplier storeIndexReserver,
+            Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        super(storeIndexReserver, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
         this.groupAccumulatorIndex = -1;
         this.incrementalAccumulator = null;
     }

@@ -69,7 +69,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class Timetable implements SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMetrics> {
+public class Timetable implements SolverModel<HardMediumSoftScore>, InputMetricsAware<TimetableInputMetrics> {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
@@ -79,10 +79,10 @@ public class Timetable implements SolverModel<HardSoftScore>, InputMetricsAware<
     private List<Lesson> lessons;
 
     @PlanningScore
-    private HardSoftScore score;
+    private HardMediumSoftScore score;
 
     @Override
-    public HardSoftScore getScore() {
+    public HardMediumSoftScore getScore() {
         return score;
     }
 
@@ -102,7 +102,7 @@ Kotlin::
 [source,kotlin,options="nowrap"]
 ----
 @PlanningSolution
-class Timetable : SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMetrics> {
+class Timetable : SolverModel<HardMediumSoftScore>, InputMetricsAware<TimetableInputMetrics> {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
@@ -111,10 +111,10 @@ class Timetable : SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMe
     @PlanningEntityCollectionProperty
     val lessons: List<Lesson> = emptyList()
 
-    private var _score: HardSoftScore? = null
+    private var _score: HardMediumSoftScore? = null
 
     @PlanningScore
-    override fun getScore(): HardSoftScore? = _score
+    override fun getScore(): HardMediumSoftScore? = _score
 
     override fun getInputMetrics(): TimetableInputMetrics {
         return TimetableInputMetrics(lessons.size, timeslots.size)
@@ -194,7 +194,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class Timetable implements SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutputMetrics> {
+public class Timetable implements SolverModel<HardMediumSoftScore>, OutputMetricsAware<TimetableOutputMetrics> {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
@@ -204,10 +204,10 @@ public class Timetable implements SolverModel<HardSoftScore>, OutputMetricsAware
     private List<Lesson> lessons;
 
     @PlanningScore
-    private HardSoftScore score;
+    private HardMediumSoftScore score;
 
     @Override
-    public HardSoftScore getScore() {
+    public HardMediumSoftScore getScore() {
         return score;
     }
 
@@ -231,7 +231,7 @@ Kotlin::
 [source,kotlin,options="nowrap"]
 ----
 @PlanningSolution
-class Timetable : SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutputMetrics> {
+class Timetable : SolverModel<HardMediumSoftScore>, OutputMetricsAware<TimetableOutputMetrics> {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
@@ -240,10 +240,10 @@ class Timetable : SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutput
     @PlanningEntityCollectionProperty
     val lessons: List<Lesson> = emptyList()
 
-    private var _score: HardSoftScore? = null
+    private var _score: HardMediumSoftScore? = null
 
     @PlanningScore
-    override fun getScore(): HardSoftScore? = _score
+    override fun getScore(): HardMediumSoftScore? = _score
 
     override fun getOutputMetrics(): TimetableOutputMetrics {
         val unassigned = lessons.count { it.timeslot == null || it.room == null }
@@ -270,7 +270,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class Timetable implements SolverModel<HardSoftScore>,
+public class Timetable implements SolverModel<HardMediumSoftScore>,
         InputMetricsAware<TimetableInputMetrics>,
         OutputMetricsAware<TimetableOutputMetrics> {
 
@@ -286,7 +286,7 @@ Kotlin::
 [source,kotlin,options="nowrap"]
 ----
 @PlanningSolution
-class Timetable : SolverModel<HardSoftScore>,
+class Timetable : SolverModel<HardMediumSoftScore>,
         InputMetricsAware<TimetableInputMetrics>,
         OutputMetricsAware<TimetableOutputMetrics> {
 
