@@ -72,7 +72,7 @@ public class ServiceConfigPropertiesRenameMigrationRecipe extends AbstractRecipe
 
                 // The renames above only touch the property keys; also fix up "${...}" references to those keys
                 // that appear in the values of other properties.
-                new ReplacePropertyValueTextRecipe("${timefold.application.version}", "${timefold.model.api-version}"),
+                new ReplacePropertyValueTextRecipe("${timefold.application.version}", "${model.api.version}"),
                 new ReplacePropertyValueTextRecipe("${timefold.application.id}", "${timefold.model.id}"),
                 new ReplacePropertyValueTextRecipe("${timefold.application.name}", "${timefold.model.name}"),
                 new ReplacePropertyValueTextRecipe("${timefold.application.description}", "${timefold.model.description}"),
