@@ -11,6 +11,7 @@ import ai.timefold.solver.migration.v2.GeneralPackageRenameMigrationRecipe;
 import ai.timefold.solver.migration.v2.GeneralTypeChangeMigrationRecipe;
 import ai.timefold.solver.migration.v2.PlanningSolutionAnnotationCleanupMigrationRecipe;
 import ai.timefold.solver.migration.v2.ProblemIdDeletionMigrationRecipe;
+import ai.timefold.solver.migration.v2.ServiceConfigPropertiesRenameMigrationRecipe;
 import ai.timefold.solver.migration.v2.SolverConfigOverrideSolutionDeletionMigrationRecipe;
 import ai.timefold.solver.migration.v2.TestingAPIsMigrationRecipe;
 
@@ -50,6 +51,7 @@ public final class ToLatestRecipe extends AbstractRecipe {
                 new GeneralDependencyDeleteMigrationRecipe(),
                 new GeneralPackageRenameMigrationRecipe(),
                 new SolverConfigOverrideSolutionDeletionMigrationRecipe(),
+                new ServiceConfigPropertiesRenameMigrationRecipe(),
                 new RemoveUnusedImports());
     }
 
