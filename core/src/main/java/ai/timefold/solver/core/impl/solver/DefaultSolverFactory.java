@@ -58,13 +58,13 @@ import io.micrometer.core.instrument.Tags;
  * and owns the state which is expensive to build and therefore shared by every solver it builds:
  * the {@link SolutionDescriptor} and a single {@link DelegateScoreDirectorFactory}.
  * <p>
- * The solver config has one environment mode, the default one,
+ * The solver config has one environment mode, the global one,
  * and each of its phases may override it with a stricter one.
- * The score director factory is built once for the default environment mode;
+ * The score director factory is built once for the global environment mode;
  * a phase which overrides the mode asks the delegate for a score director in its own mode instead,
  * which the delegate serves without this factory having to keep one instance per mode.
  * <p>
- * That is also why a default environment mode has to exist at all,
+ * That is also why a global environment mode has to exist at all,
  * even for a config whose phases all override it.
  * Some components depend on the score director factory
  * while being decoupled from the solving life cycle,
@@ -72,12 +72,12 @@ import io.micrometer.core.instrument.Tags;
  * {@link SolverManager} and the integrations
  * ({@code TimefoldSolverBeanFactory} injecting a {@link ConstraintMetaModel}, for instance)
  * are such components.
- * They all get the default environment mode.
+ * They all get the global environment mode.
  * <p>
  * {@link #assertEnvironmentModeConfiguration(SolverConfig)} guards the invariants this relies on:
- * no phase may be less strict than the default mode,
- * at least one phase must actually use the default mode,
- * and a non-reproducible default mode forces every phase to be non-reproducible as well.
+ * no phase may be less strict than the global mode,
+ * at least one phase must actually use the global mode,
+ * and a non-reproducible global mode admits no phase-level override at all.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see SolverFactory
@@ -284,54 +284,54 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     private static EnvironmentMode assertEnvironmentModeConfiguration(SolverConfig solverConfig) {
-        var defaultEnvironmentMode = solverConfig.determineEnvironmentMode();
+        var globalEnvironmentMode = solverConfig.determineEnvironmentMode();
         var phaseConfigList = solverConfig.getPhaseConfigList();
         if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
-            return defaultEnvironmentMode;
+            return globalEnvironmentMode;
         }
         var phaseEnvironmentList =
                 phaseConfigList.stream()
                         .map(phaseConfig -> Objects.requireNonNullElse(phaseConfig.getEnvironmentMode(),
-                                defaultEnvironmentMode))
+                                globalEnvironmentMode))
                         .toList();
-        if (defaultEnvironmentMode == EnvironmentMode.NON_REPRODUCIBLE
-                && phaseEnvironmentList.stream().anyMatch(environmentMode -> environmentMode != defaultEnvironmentMode)) {
-            // If the default environment is non-reproducible,
-            // then all phase environment modes must also be non-reproducible
+        if (globalEnvironmentMode == EnvironmentMode.NON_REPRODUCIBLE
+                && phaseEnvironmentList.stream().anyMatch(environmentMode -> environmentMode != globalEnvironmentMode)) {
+            // A non-reproducible global environment mode cannot be overridden per phase,
+            // as a phase-level override would have nothing reproducible to be an override of.
             throw new IllegalStateException(
                     "Phase-level environmentMode override is only possible when global environmentMode is reproducible, but was %s."
-                            .formatted(defaultEnvironmentMode.name()));
+                            .formatted(globalEnvironmentMode.name()));
         }
-        // If none of the phase environments use the default environment, we fail fast.
-        var checkDefaultEnvironment = phaseEnvironmentList.isEmpty();
+        // If none of the phase environments use the global environment, we fail fast.
+        var checkGlobalEnvironment = phaseEnvironmentList.isEmpty();
         for (var phaseEnvironment : phaseEnvironmentList) {
-            if (phaseEnvironment == defaultEnvironmentMode) {
-                checkDefaultEnvironment = true;
+            if (phaseEnvironment == globalEnvironmentMode) {
+                checkGlobalEnvironment = true;
                 break;
             }
         }
-        if (!checkDefaultEnvironment) {
+        if (!checkGlobalEnvironment) {
             throw new IllegalStateException("""
                     The global environment mode is %s, but none of the phase environment modes are using it [%s].
                     Maybe adjust at least one of the phase environment modes to match the global environmentMode (%s)"""
                     .formatted(
-                            defaultEnvironmentMode.name(),
+                            globalEnvironmentMode.name(),
                             String.join(", ", phaseEnvironmentList.stream().map(EnvironmentMode::name).toList()),
-                            defaultEnvironmentMode.name()));
+                            globalEnvironmentMode.name()));
         }
         var invalidPhaseEnvironmentList = new ArrayList<String>(phaseConfigList.size());
         for (var phaseEnvironment : phaseEnvironmentList) {
-            if (phaseEnvironment.ordinal() > defaultEnvironmentMode.ordinal()) {
+            if (phaseEnvironment.ordinal() > globalEnvironmentMode.ordinal()) {
                 invalidPhaseEnvironmentList.add(phaseEnvironment.name());
             }
         }
         if (!invalidPhaseEnvironmentList.isEmpty()) {
-            // The phase environments must have an assertion level greater than or equal to the default environment level
+            // The phase environments must have an assertion level greater than or equal to the global environment level
             throw new IllegalStateException(
                     "The phase environments must have an assertion level higher than or equal to the global environment level (%s). The following phase environment modes are not valid: [%s]."
-                            .formatted(defaultEnvironmentMode.name(), String.join(", ", invalidPhaseEnvironmentList)));
+                            .formatted(globalEnvironmentMode.name(), String.join(", ", invalidPhaseEnvironmentList)));
         }
-        return defaultEnvironmentMode;
+        return globalEnvironmentMode;
     }
 
     // Required for testability as final classes cannot be mocked.

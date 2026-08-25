@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
@@ -577,43 +578,70 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solvingEndedRestoresDefaultContext() {
+    void replacedScoreDirectorIsClosedWhenAPhaseOverridesTheEnvironmentMode() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        // LS (the last phase) overridden to a different EnvironmentMode than the default, forcing
-        // AbstractSolver.preparePhase() to swap in a non-default context for it.
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so SolverContextManager has to swap in a score director for it.
         solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
-        var problem = TestdataSolution.generateSolution(2, 2);
-        solver.solve(problem);
-        assertThat(solver.defaultSolverContext.scoreDirector().getWorkingSolution()).isNull();
+
+        var scoreDirectorPerPhase = new ArrayList<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        var replacedDirectorWasClosedOnSwap = new AtomicBoolean();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                // The swap already happened; solver-level listeners run after SolverContextManager.
+                if (!scoreDirectorPerPhase.isEmpty()) {
+                    // close() clears the working solution, which is the observable proof of the release.
+                    replacedDirectorWasClosedOnSwap.set(scoreDirectorPerPhase.get(0).getWorkingSolution() == null);
+                }
+                scoreDirectorPerPhase.add(phaseScope.getScoreDirector());
+            }
+        });
+        solver.solve(TestdataSolution.generateSolution(2, 2));
+
+        assertThat(scoreDirectorPerPhase).hasSize(2);
+        assertThat(scoreDirectorPerPhase.get(1)).isNotSameAs(scoreDirectorPerPhase.get(0));
+        assertThat(replacedDirectorWasClosedOnSwap).isTrue();
     }
 
     @Test
     void ensureScoreCalculationCountConsistent() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        // LS (the last phase) overridden to a different EnvironmentMode than the default, forcing
-        // AbstractSolver.preparePhase() to swap to a non-default context for it, and solvingEnded() to
-        // restore the (already-populated, since CH ran on it first) default context afterward.
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so SolverContextManager swaps in a fresh score director between the two phases.
         solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
         var problem = TestdataSolution.generateSolution(2, 2);
 
-        // Capture the score calculation count after the CH phase and
-        var calculationCountBeforeRestore = new AtomicLong(-1);
+        var countAfterFirstPhase = new AtomicLong(-1);
+        var countAtSecondPhaseStart = new AtomicLong(-1);
         solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
             @Override
-            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
-                calculationCountBeforeRestore.set(solverScope.getScoreDirector().getCalculationCount());
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 1) {
+                    countAtSecondPhaseStart.set(phaseScope.getScoreDirector().getCalculationCount());
+                }
+            }
+
+            @Override
+            public void phaseEnded(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 0) {
+                    countAfterFirstPhase.set(phaseScope.getScoreDirector().getCalculationCount());
+                }
             }
         });
         solver.solve(problem);
 
-        // After solvingEnded() restores defaultSolverContext, its calculation count must equal exactly
-        // the true running total captured above
-        assertThat(solver.defaultSolverContext.scoreDirector().getCalculationCount())
-                .isEqualTo(calculationCountBeforeRestore.get());
+        // Terminations count score calculations across the whole solve,
+        // so the swapped-in score director must continue the running total rather than restart it at zero.
+        // Not an exact match: runPhases() calls setWorkingSolutionFromBestSolution() between the two phases,
+        // which scores once more on the outgoing director before the swap copies the total over.
+        // SolverContextManagerTest pins the exact hand-over.
+        assertThat(countAfterFirstPhase).hasPositiveValue();
+        assertThat(countAtSecondPhaseStart.get()).isGreaterThanOrEqualTo(countAfterFirstPhase.get());
     }
 
     @Test
@@ -2082,7 +2110,57 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solvingErrorRestoresDefaultContextWhenPhaseFails() {
+    void solvingErrorClosesScoreDirectorWhenSolvingStartedFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // The score director the solver was built with; solving fails before any phase adopts a context for it.
+        var scoreDirector = solver.getSolverScope().getScoreDirector();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void solvingStarted(SolverScope<TestdataSolution> solverScope) {
+                throw new IllegalStateException("Boom from a listener");
+            }
+        });
+
+        // The caller must see the real failure, not a follow-up failure from the solver's own cleanup.
+        assertThatCode(() -> solver.solve(TestdataSolution.generateSolution(2, 2)))
+                .hasMessageContaining("Boom from a listener");
+
+        // Otherwise a long-lived SolverManager accumulates one unclosed score director per failed job.
+        assertThat(scoreDirector.getWorkingSolution()).isNull();
+    }
+
+    @Test
+    void solvingErrorNotifiesListenersBeforeClosingTheScoreDirector() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // Force invalid move factory
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var workingSolutionSeenByListener = new AtomicReference<Object>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataListSolution>() {
+            @Override
+            public void solvingError(SolverScope<TestdataListSolution> solverScope, Exception exception) {
+                workingSolutionSeenByListener.set(solverScope.getScoreDirector().getWorkingSolution());
+            }
+        });
+
+        assertThatCode(() -> solver.solve(TestdataListSolution.generateUninitializedSolution(2, 2)))
+                .hasMessageContaining("The value (bad value) from the planning variable (valueList)");
+
+        // Closing clears the working solution, so releasing before notifying would hand listeners a gutted
+        // score director exactly when they are trying to diagnose the failure.
+        assertThat(workingSolutionSeenByListener.get()).isNotNull();
+    }
+
+    @Test
+    void solvingErrorClosesScoreDirectorWhenPhaseFails() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
                 TestdataListValue.class);
         var localSearchPhaseConfig = new LocalSearchPhaseConfig();
@@ -2512,7 +2590,7 @@ class DefaultSolverTest {
         var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
         var problem = TestdataListSolution.generateUninitializedSolution(10, 4);
 
-        var listVariableDescriptor = solver.defaultSolverContext.scoreDirector().getSolutionDescriptor()
+        var listVariableDescriptor = solver.getScoreDirectorFactory().getSolutionDescriptor()
                 .findEntityDescriptorOrFail(TestdataListEntity.class)
                 .getListVariableDescriptor();
 

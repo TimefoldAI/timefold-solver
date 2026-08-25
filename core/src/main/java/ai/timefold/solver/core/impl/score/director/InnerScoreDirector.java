@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -182,6 +183,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return never null
      */
     ScoreDefinition<Score_> getScoreDefinition();
+
+    /**
+     * The environment mode this score director was built for,
+     * which decides which assertions it runs.
+     * It is not necessarily the solver's global environment mode:
+     * a phase may override it,
+     * in which case that phase's score director reports the phase's mode.
+     */
+    EnvironmentMode getEnvironmentMode();
 
     /**
      * Returns a planning clone of the solution,

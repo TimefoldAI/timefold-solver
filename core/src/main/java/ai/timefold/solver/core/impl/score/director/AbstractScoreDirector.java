@@ -169,6 +169,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public EnvironmentMode getEnvironmentMode() {
+        return environmentMode;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
             getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {

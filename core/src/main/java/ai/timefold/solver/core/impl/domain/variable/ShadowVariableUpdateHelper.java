@@ -278,14 +278,13 @@ public final class ShadowVariableUpdateHelper<Solution_> {
             super(solutionDescriptor, globalEnvironmentMode);
         }
 
+        /**
+         * Score directors are built directly through {@link InternalScoreDirector.Builder},
+         * never through this factory; the inherited no-arg variant funnels into this one.
+         */
         @Override
         public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?>
                 createScoreDirectorBuilder(EnvironmentMode environmentMode) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder() {
             throw new UnsupportedOperationException();
         }
     }

@@ -108,8 +108,8 @@ public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_
      */
     public DelegateScoreDirectorFactory(ScoreDirectorFactoryConfig config, SolutionDescriptor<Solution_> solutionDescriptor,
             EnvironmentMode environmentMode, List<SolverMetric> metricsRequiringConstraintMatchList) {
-        this.config = config;
-        assertCorrectDirectorFactory(Objects.requireNonNull(config));
+        this.config = Objects.requireNonNull(config);
+        assertCorrectDirectorFactory(config);
         this.solutionDescriptor = solutionDescriptor;
         this.globalEnvironmentMode = environmentMode;
         this.metricsRequiringConstraintMatchList = metricsRequiringConstraintMatchList;
@@ -213,8 +213,7 @@ public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_
 
     /**
      * Unlike the default implementation,
-     * this also enables constraint matching when a metric requires it,
-     * logging that fact as it costs performance.
+     * this also enables constraint matching when a metric requires it.
      */
     @Override
     public ConstraintMatchPolicy decideConstraintMatchPolicy(EnvironmentMode environmentMode) {

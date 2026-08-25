@@ -53,8 +53,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             Supplier<RandomSource> randomFactory, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             BasicPlumbingTermination<Solution_> basicPlumbingTermination, UniversalTermination<Solution_> termination,
             List<Phase<Solution_>> phaseList, SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
-        super(SolverContext.of(globalEnvironmentMode, solverScope), scoreDirectorFactory, bestSolutionRecaller, termination,
-                phaseList);
+        super(globalEnvironmentMode, scoreDirectorFactory, bestSolutionRecaller, termination, phaseList);
         this.randomFactory = randomFactory;
         this.basicPlumbingTermination = basicPlumbingTermination;
         this.solverScope = solverScope;
@@ -202,7 +201,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 (startingSolverCount == 1 ? "started" : "restarted"),
                 solverScope.calculateTimeMillisSpentUpToNow(),
                 solverScope.getBestScore().raw(),
-                defaultSolverContext.environmentMode().name(),
+                globalEnvironmentMode.name(),
                 moveThreadCountDescription,
                 randomFactory);
         if (LOGGER.isInfoEnabled()) { // Formatting is expensive here.
@@ -310,7 +309,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 solverScope.getBestScore().raw(),
                 solverScope.getMoveEvaluationSpeed(),
                 phaseList.size(),
-                defaultSolverContext.environmentMode().name(),
+                globalEnvironmentMode.name(),
                 moveThreadCountDescription);
         // Must be kept open for doProblemFactChange
         solverScope.getScoreDirector().close();
