@@ -221,13 +221,11 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
             super(scoreDirectorFactory, environmentMode);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public BavetConstraintStreamScoreDirector<Solution_, Score_> build() {
             return new BavetConstraintStreamScoreDirector<>(this, false);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public BavetConstraintStreamScoreDirector<Solution_, Score_> buildDerived() {
             return new BavetConstraintStreamScoreDirector<>(this, true);

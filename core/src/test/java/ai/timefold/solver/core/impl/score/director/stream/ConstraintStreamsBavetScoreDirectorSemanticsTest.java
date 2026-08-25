@@ -22,8 +22,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                     SolutionDescriptor<TestdataConstraintWeightOverridesSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
-                TestdataConstraintWeightOverridesSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
+                EnvironmentMode.PHASE_ASSERT);
     }
 
     @Override
@@ -32,8 +32,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedListConstraintProvider.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
-                TestdataPinnedListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
+                EnvironmentMode.PHASE_ASSERT);
     }
 
     @Override
@@ -42,8 +42,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedWithIndexListConstraintProvider.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
-                TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
+                EnvironmentMode.PHASE_ASSERT);
     }
 
 }

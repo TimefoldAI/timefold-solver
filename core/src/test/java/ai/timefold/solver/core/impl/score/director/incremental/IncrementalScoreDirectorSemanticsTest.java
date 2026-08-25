@@ -33,8 +33,8 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
                     SolutionDescriptor<TestdataConstraintWeightOverridesSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestdataConstraintWeightOverridesIncrementalScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
-                TestdataConstraintWeightOverridesSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
+                EnvironmentMode.PHASE_ASSERT);
     }
 
     @Override
@@ -42,8 +42,8 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
             SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestdataPinnedListIncrementalScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
-                TestdataPinnedListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
+                EnvironmentMode.PHASE_ASSERT);
     }
 
     @Override
@@ -52,8 +52,8 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestdataPinnedWithIndexListIncrementalScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
-                TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
+                EnvironmentMode.PHASE_ASSERT);
     }
 
     @NullMarked

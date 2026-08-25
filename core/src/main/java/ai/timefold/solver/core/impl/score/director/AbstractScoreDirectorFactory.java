@@ -62,9 +62,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     }
 
     @Override
-    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
-            AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
-            createScoreDirectorBuilder() {
+    public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder() {
         return createScoreDirectorBuilder(globalEnvironmentMode);
     }
 

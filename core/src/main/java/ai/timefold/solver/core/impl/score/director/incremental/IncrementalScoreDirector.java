@@ -281,7 +281,6 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
             return super.withConstraintMatchPolicy(determineCorrectPolicy(constraintMatchPolicy, incrementalScoreCalculator));
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public IncrementalScoreDirector<Solution_, Score_> build() {
             return new IncrementalScoreDirector<>(this);

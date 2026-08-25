@@ -20,12 +20,15 @@ import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreD
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
+import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.testconstraint.DummyConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class DelegateScoreDirectorFactoryTest {
 
@@ -159,10 +162,55 @@ class DelegateScoreDirectorFactoryTest {
     }
 
     @Test
+    void constraintStreamDelegateForOtherEnvironmentModeIsBuiltOnceAndShared() {
+        var scoreDirectorFactory = buildTestdataScoreDirectorFactory(constraintStreamConfig(), EnvironmentMode.PHASE_ASSERT);
+        // Building a constraint stream factory rebuilds the whole constraint network, so it must not happen per request.
+        try (var first = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT);
+                var second = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT)) {
+            assertThat(second.getScoreDirectorFactory()).isSameAs(first.getScoreDirectorFactory());
+        }
+        // A different mode still gets its own factory.
+        try (var stepAssert = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.STEP_ASSERT);
+                var fullAssert = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT)) {
+            assertThat(stepAssert.getScoreDirectorFactory())
+                    .isNotSameAs(fullAssert.getScoreDirectorFactory())
+                    .isNotSameAs(scoreDirectorFactory.getDelegate());
+        }
+    }
+
+    @Test
     void globalEnvironmentModeReusesConstraintStreamDelegate() {
         var scoreDirectorFactory = buildTestdataScoreDirectorFactory(constraintStreamConfig(), EnvironmentMode.PHASE_ASSERT);
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.PHASE_ASSERT)) {
             assertThat(scoreDirector.getScoreDirectorFactory()).isSameAs(scoreDirectorFactory.getDelegate());
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(ChildThreadType.class)
+    void childThreadScoreDirectorKeepsTheRequestedEnvironmentMode(ChildThreadType childThreadType) {
+        var scoreDirectorFactory = buildTestdataScoreDirectorFactory(incrementalConfig(), EnvironmentMode.PHASE_ASSERT);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT)) {
+            scoreDirector.setWorkingSolution(TestdataSolution.generateSolution());
+            // The child thread runs the phase's assertions, not the solver's laxer default;
+            // the factory's own mode is still PHASE_ASSERT, as the delegate was reused.
+            try (var childScoreDirector = (AbstractScoreDirector<TestdataSolution, SimpleScore, ?>) scoreDirector
+                    .createChildThreadScoreDirector(childThreadType)) {
+                assertThat(childScoreDirector.environmentMode).isEqualTo(EnvironmentMode.FULL_ASSERT);
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(ChildThreadType.class)
+    void constraintStreamChildThreadScoreDirectorKeepsTheRequestedEnvironmentMode(ChildThreadType childThreadType) {
+        var scoreDirectorFactory = buildTestdataScoreDirectorFactory(constraintStreamConfig(), EnvironmentMode.PHASE_ASSERT);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT)) {
+            scoreDirector.setWorkingSolution(TestdataSolution.generateSolution());
+            try (var childScoreDirector = (AbstractScoreDirector<TestdataSolution, SimpleScore, ?>) scoreDirector
+                    .createChildThreadScoreDirector(childThreadType)) {
+                assertThat(childScoreDirector.environmentMode).isEqualTo(EnvironmentMode.FULL_ASSERT);
+            }
         }
     }
 
@@ -234,8 +282,7 @@ class DelegateScoreDirectorFactoryTest {
         var scoreDirectorFactory =
                 (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) buildTestdataScoreDirectorFactory(config)
                         .getDelegate();
-        try (IncrementalScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector()) {
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(EnvironmentMode.PHASE_ASSERT).build()) {
             var scoreCalculator =
                     (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector.getIncrementalScoreCalculator();
             assertThat(scoreCalculator.getStringProperty()).isEqualTo("string 1");
@@ -272,9 +319,11 @@ class DelegateScoreDirectorFactoryTest {
         // The assertion factory is the delegate of its own DelegateScoreDirectorFactory,
         // as the code reading it expects a concrete factory.
         assertThat(assertionScoreDirectorFactory).isExactlyInstanceOf(IncrementalScoreDirectorFactory.class);
-        try (IncrementalScoreDirector<TestdataSolution, SimpleScore> assertionScoreDirector =
-                ((IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) assertionScoreDirectorFactory)
-                        .buildScoreDirector()) {
+        var incrementalAssertionFactory =
+                (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) assertionScoreDirectorFactory;
+        // Built through the factory default, as the point is which mode the factory itself carries.
+        try (var assertionScoreDirector =
+                (IncrementalScoreDirector<TestdataSolution, SimpleScore>) incrementalAssertionFactory.buildScoreDirector()) {
             // The assertion score director always runs in NON_REPRODUCIBLE, regardless of the requested mode.
             assertThat(assertionScoreDirector.environmentMode).isEqualTo(EnvironmentMode.NON_REPRODUCIBLE);
             var assertionScoreCalculator = assertionScoreDirector.getIncrementalScoreCalculator();

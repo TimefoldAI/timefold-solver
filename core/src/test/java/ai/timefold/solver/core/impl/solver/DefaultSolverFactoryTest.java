@@ -194,7 +194,7 @@ class DefaultSolverFactoryTest {
         solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE);
         solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NO_ASSERT);
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
-                .hasMessageContaining("must also be non-reproducible");
+                .hasMessageContaining("is only possible when global environmentMode is reproducible");
     }
 
     @Test
@@ -204,7 +204,7 @@ class DefaultSolverFactoryTest {
         solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
         solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT);
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
-                .hasMessageContaining("is not used in any of the defined phases environment modes");
+                .hasMessageContaining("but none of the phase environment modes are using it");
     }
 
     @Test
@@ -215,7 +215,7 @@ class DefaultSolverFactoryTest {
         solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NO_ASSERT);
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
                 .hasMessageContaining(
-                        "must have an assertion level higher than or equal to the default environment level");
+                        "must have an assertion level higher than or equal to the global environment level");
     }
 
 }

@@ -51,37 +51,29 @@ public interface ScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
      *
      * @param environmentMode the environment mode the resulting score director must run in
      */
-    <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
-            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
-            createScoreDirectorBuilder(EnvironmentMode environmentMode);
+    AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder(EnvironmentMode environmentMode);
 
     /**
      * As defined by {@link #createScoreDirectorBuilder(EnvironmentMode)},
      * using the environment mode this factory was built for.
      */
-    <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
-            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
-            createScoreDirectorBuilder();
+    AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder();
 
     /**
      * Builds a score director for the given environment mode,
      * with all builder options left at their defaults.
      * Use {@link #createScoreDirectorBuilder(EnvironmentMode)} to customize them.
      */
-    default <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>>
-            Director_ buildScoreDirector(EnvironmentMode environmentMode) {
-        AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder = createScoreDirectorBuilder(environmentMode);
-        return builder.build();
+    default AbstractScoreDirector<Solution_, Score_, ?> buildScoreDirector(EnvironmentMode environmentMode) {
+        return createScoreDirectorBuilder(environmentMode).build();
     }
 
     /**
      * As defined by {@link #buildScoreDirector(EnvironmentMode)},
      * using the environment mode this factory was built for.
      */
-    default <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>>
-            Director_ buildScoreDirector() {
-        AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder = createScoreDirectorBuilder();
-        return builder.build();
+    default AbstractScoreDirector<Solution_, Score_, ?> buildScoreDirector() {
+        return createScoreDirectorBuilder().build();
     }
 
     /**

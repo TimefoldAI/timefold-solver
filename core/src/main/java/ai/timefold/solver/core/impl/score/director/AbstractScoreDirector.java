@@ -458,7 +458,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         switch (childThreadType) {
             case PART_THREAD -> {
                 var childThreadScoreDirector =
-                        scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(lookUpEnabled)
+                        scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(lookUpEnabled)
                                 .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
                 // ScoreCalculationCountTermination takes into account previous phases
                 // but the calculationCount of partitions is maxed, not summed.
@@ -466,8 +466,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 return childThreadScoreDirector;
             }
             case MOVE_THREAD -> {
-                var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(true)
-                        .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
+                var childThreadScoreDirector =
+                        scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(true)
+                                .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
                 childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
                 return childThreadScoreDirector;
             }
@@ -697,7 +698,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Get the score before uncorruptedScoreDirector.calculateScore() modifies it
         var score = getSolutionDescriptor().<Score_> getScore(solution);
         // Most score directors don't need derived status; CS will override this.
-        try (var uncorruptedScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+        try (var uncorruptedScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(environmentMode)
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
@@ -763,7 +764,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             assertionScoreDirectorFactory = scoreDirectorFactory;
         }
         // Most score directors don't need derived status; CS will override this.
-        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
+        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder(environmentMode)
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(Objects.requireNonNull(workingSolution));
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
@@ -987,7 +988,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             return (Builder_) this;
         }
 
-        public abstract <Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>> Director_ build();
+        public abstract AbstractScoreDirector<Solution_, Score_, Factory_> build();
 
         /**
          * Optionally makes the score director a derived one; most score directors do not require this.
@@ -997,7 +998,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
          *
          * @return this
          */
-        public <Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>> Director_ buildDerived() {
+        public AbstractScoreDirector<Solution_, Score_, Factory_> buildDerived() {
             return build();
         }
 

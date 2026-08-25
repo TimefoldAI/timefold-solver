@@ -3,7 +3,9 @@ package ai.timefold.solver.core.impl.score.director;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -44,7 +46,8 @@ import org.slf4j.LoggerFactory;
  * so they can serve any mode and are reused as they are.
  * The exception is {@link BavetConstraintStreamScoreDirectorFactory},
  * which builds its constraint network from the environment mode up front;
- * for it, a throwaway delegate is built for the requested mode instead.
+ * for it, a separate delegate is built for the requested mode,
+ * then cached and shared like the default one, as building it is expensive.
  * <p>
  * On top of picking the delegate, this factory applies the parts of the configuration
  * which are shared by all implementations:
@@ -67,6 +70,12 @@ public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_
     private final ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
     private final List<SolverMetric> metricsRequiringConstraintMatchList;
     private final boolean requireNewFactoryOnDifferentEnvironment;
+    /**
+     * Only holds modes other than the global one;
+     * the global mode's factory is {@link #scoreDirectorFactory}.
+     */
+    private final Map<EnvironmentMode, ScoreDirectorFactory<Solution_, Score_>> environmentModeToFactoryMap =
+            new ConcurrentHashMap<>();
 
     /**
      * The constructor used by the solver,
@@ -107,6 +116,11 @@ public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_
         this.scoreDirectorFactory = internalBuildScoreDirectorFactory(solutionDescriptor, environmentMode);
         // Constraint Stream factory requires a new factory if the environment changes
         this.requireNewFactoryOnDifferentEnvironment = config.getConstraintProviderClass() != null;
+        if (!metricsRequiringConstraintMatchList.isEmpty() && !environmentMode.isStepAssertOrMore()) {
+            LOGGER.info(
+                    "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
+                    metricsRequiringConstraintMatchList);
+        }
     }
 
     @Override
@@ -136,20 +150,20 @@ public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
-            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_> createScoreDirectorBuilder() {
+    public AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder() {
         return createScoreDirectorBuilder(globalEnvironmentMode);
     }
 
     @Override
-    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
-            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
-            createScoreDirectorBuilder(EnvironmentMode environmentMode) {
+    public AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder(EnvironmentMode environmentMode) {
         if (environmentMode != globalEnvironmentMode && requireNewFactoryOnDifferentEnvironment) {
             // The BavetConstraintStreamScoreDirectorFactory creates a BavetConstraintFactory based on the environment
             // and requires a new factory to generate a new score director with a different environment.
-            var newFactory = internalBuildScoreDirectorFactory(solutionDescriptor, environmentMode);
-            return newFactory.createScoreDirectorBuilder();
+            // Building one is expensive, so each mode gets its factory built at most once and then shared,
+            // exactly as the global mode's factory is shared.
+            var factory = environmentModeToFactoryMap.computeIfAbsent(environmentMode,
+                    mode -> internalBuildScoreDirectorFactory(solutionDescriptor, mode));
+            return factory.createScoreDirectorBuilder();
         } else {
             return scoreDirectorFactory.createScoreDirectorBuilder(environmentMode);
         }
@@ -204,14 +218,9 @@ public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_
      */
     @Override
     public ConstraintMatchPolicy decideConstraintMatchPolicy(EnvironmentMode environmentMode) {
-        var isStepAssertOrMore = environmentMode.isStepAssertOrMore();
-        var constraintMatchEnabled = !metricsRequiringConstraintMatchList.isEmpty() || isStepAssertOrMore;
-        if (constraintMatchEnabled && !isStepAssertOrMore) {
-            LOGGER.info(
-                    "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
-                    metricsRequiringConstraintMatchList);
-        }
-        return constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED;
+        return !metricsRequiringConstraintMatchList.isEmpty() || environmentMode.isStepAssertOrMore()
+                ? ConstraintMatchPolicy.ENABLED
+                : ConstraintMatchPolicy.DISABLED;
     }
 
     private AbstractScoreDirectorFactory<Solution_, Score_, ?> decideMultipleScoreDirectorFactories(

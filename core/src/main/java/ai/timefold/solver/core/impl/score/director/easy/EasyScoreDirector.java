@@ -96,7 +96,6 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
             return this;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public EasyScoreDirector<Solution_, Score_> build() {
             return new EasyScoreDirector<>(this);
