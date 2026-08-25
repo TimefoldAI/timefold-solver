@@ -102,13 +102,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private @Nullable MoveRepository<Solution_> moveRepository;
 
     protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
-        this.environmentMode = builder.scoreDirectorFactory.getEnvironmentMode();
+        this.environmentMode = builder.environmentMode;
         this.scoreDirectorFactory = builder.scoreDirectorFactory;
         // Needs early init, as supplies will need the instance to exist.
         this.neighborhoodsElementUpdateNotifier = new NeighborhoodNotifier<>();
         var solutionDescriptor = this.scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = builder.lookUpEnabled;
-        this.lookUpManager = lookUpEnabled ? new LookupManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
+        this.lookUpManager =
+                lookUpEnabled ? new LookupManager(Objects.requireNonNull(solutionDescriptor.getLookUpStrategyResolver()))
+                        : null;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
@@ -126,7 +128,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         // We can now initialize the shadow variables since all the necessary resources have been allocated
         this.shadowVariableSupport.linkShadowVariables();
-        //  When true, a snapshot of the solution is created before, after and after the undo of a move.
+        //  When it's true,
+        //  a snapshot of the solution is created during the evaluation of moves,
+        //  allowing for certain assertions.
         //  In {@link EnvironmentMode#TRACKED_FULL_ASSERT}, the snapshots are compared when corruption is detected,
         //  allowing us to report exactly what variables are different.
         this.solutionTracker = environmentMode.isTracking()
@@ -467,7 +471,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
                 return childThreadScoreDirector;
             }
-            default -> throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
+            default ->
+                throw new IllegalStateException("The childThreadType (%s) is not implemented.".formatted(childThreadType));
         }
     }
 
@@ -686,7 +691,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * it would be equal to the score of that parameter.
      *
      * @param solution never null
-     * @see InnerScoreDirector#assertWorkingScoreFromScratch(InnerScore, Object)
      */
     @Override
     public void assertScoreFromScratch(Solution_ solution) {
@@ -761,7 +765,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).buildDerived()) {
-            uncorruptedScoreDirector.setWorkingSolution(workingSolution);
+            uncorruptedScoreDirector.setWorkingSolution(Objects.requireNonNull(workingSolution));
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
             if (!innerScore.equals(uncorruptedInnerScore)) {
                 var corruptionAnalyzer = new CorruptionAnalyzer<>(this);
@@ -954,13 +958,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public abstract static class AbstractScoreDirectorBuilder<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>> {
 
         protected final Factory_ scoreDirectorFactory;
+        protected final EnvironmentMode environmentMode;
 
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
 
-        protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
+        protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory, EnvironmentMode environmentMode) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
+            this.environmentMode = environmentMode;
         }
 
         @SuppressWarnings("unchecked")
@@ -981,7 +987,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             return (Builder_) this;
         }
 
-        public abstract AbstractScoreDirector<Solution_, Score_, Factory_> build();
+        public abstract <Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>> Director_ build();
 
         /**
          * Optionally makes the score director a derived one; most score directors do not require this.
@@ -991,7 +997,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
          *
          * @return this
          */
-        public AbstractScoreDirector<Solution_, Score_, Factory_> buildDerived() {
+        public <Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>> Director_ buildDerived() {
             return build();
         }
 

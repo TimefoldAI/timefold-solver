@@ -22,10 +22,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                     SolutionDescriptor<TestdataConstraintWeightOverridesSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class);
-        var scoreDirectorFactoryFactory =
-                new DelegateScoreDirectorFactory<TestdataConstraintWeightOverridesSolution, SimpleScore>(
-                        scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
+                TestdataConstraintWeightOverridesSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
     }
 
     @Override
@@ -34,9 +32,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedListConstraintProvider.class);
-        var scoreDirectorFactoryFactory =
-                new DelegateScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
+                TestdataPinnedListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
     }
 
     @Override
@@ -45,9 +42,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedWithIndexListConstraintProvider.class);
-        var scoreDirectorFactoryFactory =
-                new DelegateScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
+        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig,
+                TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
     }
 
 }

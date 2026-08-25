@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
@@ -80,8 +81,8 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
 
         private @Nullable EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
-        public Builder(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
-            super(scoreDirectorFactory);
+        public Builder(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, EnvironmentMode environmentMode) {
+            super(scoreDirectorFactory, environmentMode);
         }
 
         @Override
@@ -95,6 +96,7 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
             return this;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public EasyScoreDirector<Solution_, Score_> build() {
             return new EasyScoreDirector<>(this);

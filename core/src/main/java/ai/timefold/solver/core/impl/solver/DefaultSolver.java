@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
@@ -17,7 +16,6 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.phase.Phase;
-import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
@@ -51,12 +49,11 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public DefaultSolver(EnvironmentMode environmentMode,
-            DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory,
+    public DefaultSolver(EnvironmentMode globalEnvironmentMode, ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory,
             Supplier<RandomSource> randomFactory, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             BasicPlumbingTermination<Solution_> basicPlumbingTermination, UniversalTermination<Solution_> termination,
             List<Phase<Solution_>> phaseList, SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
-        super(SolverContext.of(environmentMode, solverScope), delegateScoreDirectorFactory, bestSolutionRecaller, termination,
+        super(SolverContext.of(globalEnvironmentMode, solverScope), scoreDirectorFactory, bestSolutionRecaller, termination,
                 phaseList);
         this.randomFactory = randomFactory;
         this.basicPlumbingTermination = basicPlumbingTermination;
@@ -67,13 +64,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     public RandomSource getRandomSource() {
         return randomFactory.get();
-    }
-
-    @SuppressWarnings({ "unchecked", "resource" })
-    public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
-        InnerScoreDirector<Solution_, Score_> scoreDirector =
-                (InnerScoreDirector<Solution_, Score_>) defaultSolverContext.scoreDirector();
-        return scoreDirector.getScoreDirectorFactory();
     }
 
     public SolverScope<Solution_> getSolverScope() {

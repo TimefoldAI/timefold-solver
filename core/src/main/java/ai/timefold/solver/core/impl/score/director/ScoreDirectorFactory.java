@@ -2,46 +2,106 @@ package ai.timefold.solver.core.impl.score.director;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector.AbstractScoreDirectorBuilder;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
+ * Builds {@link AbstractScoreDirector} instances, which in turn calculate the {@link Score} of a solution.
+ * <p>
+ * Building the factory is potentially expensive,
+ * as it eagerly does whatever the score calculation implementation needs to be set up,
+ * such as building the entire constraint network of a {@link ConstraintProvider}.
+ * Building a score director out of an existing factory is comparatively cheap.
+ * Therefore, a factory is built once and shared,
+ * while every consumer that needs to calculate a score gets its own score director.
+ * <p>
+ * Every factory is bound to a default {@link EnvironmentMode},
+ * the one it was built for.
+ * {@link #createScoreDirectorBuilder()} builds for that mode,
+ * whereas {@link #createScoreDirectorBuilder(EnvironmentMode)} builds for the requested mode instead;
+ * the latter exists because a solver phase may override the solver's environment mode.
+ * Implementations must guarantee that the returned builder produces a score director
+ * that actually runs in the requested mode,
+ * even if that means the implementation cannot reuse the state it built for its default mode.
+ * {@link DelegateScoreDirectorFactory} is the implementation which handles that situation,
+ * and therefore the one solver components are expected to hold on to.
+ *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
  */
+@NullMarked
 public interface ScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
 
-    /**
-     * @return never null
-     */
     SolutionDescriptor<Solution_> getSolutionDescriptor();
 
-    /**
-     * @return never null
-     */
     ScoreDefinition<Score_> getScoreDefinition();
 
+    /**
+     * Prepares a score director which runs in the given environment mode,
+     * regardless of the mode this factory was built for.
+     *
+     * @param environmentMode the environment mode the resulting score director must run in
+     */
+    <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
+            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
+            createScoreDirectorBuilder(EnvironmentMode environmentMode);
+
+    /**
+     * As defined by {@link #createScoreDirectorBuilder(EnvironmentMode)},
+     * using the environment mode this factory was built for.
+     */
     <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
             AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
             createScoreDirectorBuilder();
 
-    default <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
-            AbstractScoreDirector<Solution_, Score_, Factory_> buildScoreDirector() {
+    /**
+     * Builds a score director for the given environment mode,
+     * with all builder options left at their defaults.
+     * Use {@link #createScoreDirectorBuilder(EnvironmentMode)} to customize them.
+     */
+    default <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>>
+            Director_ buildScoreDirector(EnvironmentMode environmentMode) {
+        AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder = createScoreDirectorBuilder(environmentMode);
+        return builder.build();
+    }
+
+    /**
+     * As defined by {@link #buildScoreDirector(EnvironmentMode)},
+     * using the environment mode this factory was built for.
+     */
+    default <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Director_ extends AbstractScoreDirector<Solution_, Score_, Factory_>>
+            Director_ buildScoreDirector() {
         AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder = createScoreDirectorBuilder();
         return builder.build();
     }
 
     /**
-     * @return never null
+     * Decides whether the score directors built for the given environment mode need to track constraint matches,
+     * which carries a performance penalty.
+     * The assertions of {@link EnvironmentMode#STEP_ASSERT} and stricter require it;
+     * implementations may enable it for other reasons as well,
+     * such as constraint match based metrics being enabled.
+     *
+     * @param environmentMode the environment mode the score director will run in
      */
-    EnvironmentMode getEnvironmentMode();
+    default ConstraintMatchPolicy decideConstraintMatchPolicy(EnvironmentMode environmentMode) {
+        return environmentMode.isStepAssertOrMore() ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED;
+    }
 
     /**
-     * @return never null
+     * @return null if the factory was not built from a {@link ScoreDirectorFactoryConfig},
+     *         as is often the case in tests; solver-built factories always have a trend
      */
+    @Nullable
     InitializingScoreTrend getInitializingScoreTrend();
 
 }

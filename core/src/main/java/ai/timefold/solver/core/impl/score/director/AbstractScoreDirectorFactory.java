@@ -12,6 +12,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,28 +24,26 @@ import org.slf4j.LoggerFactory;
  * @param <Score_> the score type to go with the solution
  * @see ScoreDirectorFactory
  */
+@NullMarked
 public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
         implements ScoreDirectorFactory<Solution_, Score_> {
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final SolutionDescriptor<Solution_> solutionDescriptor;
-    protected final EnvironmentMode environmentMode;
+    protected final EnvironmentMode globalEnvironmentMode;
+    @Nullable
     protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
-
+    @Nullable
     protected InitializingScoreTrend initializingScoreTrend;
-
+    @Nullable
     protected ScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory = null;
 
-    protected AbstractScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
-        this.solutionDescriptor = solutionDescriptor;
-        this.environmentMode = Objects.requireNonNull(environmentMode);
+    protected AbstractScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
+            EnvironmentMode globalEnvironmentMode) {
+        this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-    }
-
-    @Override
-    public EnvironmentMode getEnvironmentMode() {
-        return environmentMode;
+        this.globalEnvironmentMode = globalEnvironmentMode;
     }
 
     @Override
@@ -57,15 +57,22 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     }
 
     @Override
-    public InitializingScoreTrend getInitializingScoreTrend() {
+    public @Nullable InitializingScoreTrend getInitializingScoreTrend() {
         return initializingScoreTrend;
+    }
+
+    @Override
+    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
+            AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
+            createScoreDirectorBuilder() {
+        return createScoreDirectorBuilder(globalEnvironmentMode);
     }
 
     public void setInitializingScoreTrend(InitializingScoreTrend initializingScoreTrend) {
         this.initializingScoreTrend = initializingScoreTrend;
     }
 
-    public ScoreDirectorFactory<Solution_, Score_> getAssertionScoreDirectorFactory() {
+    public @Nullable ScoreDirectorFactory<Solution_, Score_> getAssertionScoreDirectorFactory() {
         return assertionScoreDirectorFactory;
     }
 

@@ -19,7 +19,6 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -55,25 +54,31 @@ import org.slf4j.LoggerFactory;
 import io.micrometer.core.instrument.Tags;
 
 /**
- * The default solver factory must maintain a default score director factory,
- * as some solver components depend on this factory,
- * including {@link SolverManager} and {@code TimefoldSolverBeanFactory}.
+ * Builds {@link DefaultSolver} instances out of a {@link SolverConfig},
+ * and owns the state which is expensive to build and therefore shared by every solver it builds:
+ * the {@link SolutionDescriptor} and a single {@link DelegateScoreDirectorFactory}.
  * <p>
- * The proposed approach establishes that the configuration defines a root environment mode,
- * which is used to create the default score director factory.
- * Since the phases can override the environment,
- * the delegate factory will enable the creation of separate factories
- * while maintaining a default one that is used for all other components.
+ * The solver config has one environment mode, the default one,
+ * and each of its phases may override it with a stricter one.
+ * The score director factory is built once for the default environment mode;
+ * a phase which overrides the mode asks the delegate for a score director in its own mode instead,
+ * which the delegate serves without this factory having to keep one instance per mode.
  * <p>
- * The necessity for a default environment mode can be illustrated by the following use case.
- * Imagine a configuration that includes multiple phases, each with a different environment mode.
- * If a Quarkus application needs to inject a {@link ConstraintMetaModel}
- * instance, this instance depends on the score director factory,
- * which in turn relies on the environment mode.
- * If multiple phase environments exist,
- * selecting one of these environments is not possible
- * as this injection point is decoupled from the solving life cycle.
- * 
+ * That is also why a default environment mode has to exist at all,
+ * even for a config whose phases all override it.
+ * Some components depend on the score director factory
+ * while being decoupled from the solving life cycle,
+ * and therefore have no phase whose environment mode they could adopt;
+ * {@link SolverManager} and the integrations
+ * ({@code TimefoldSolverBeanFactory} injecting a {@link ConstraintMetaModel}, for instance)
+ * are such components.
+ * They all get the default environment mode.
+ * <p>
+ * {@link #assertEnvironmentModeConfiguration(SolverConfig)} guards the invariants this relies on:
+ * no phase may be less strict than the default mode,
+ * at least one phase must actually use the default mode,
+ * and a non-reproducible default mode forces every phase to be non-reproducible as well.
+ *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see SolverFactory
  */
@@ -86,11 +91,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final Clock clock;
     private final SolverConfig solverConfig;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final EnvironmentMode defaultEnvironmentMode;
+    private final EnvironmentMode globalEnvironmentMode;
     private final DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory;
-    private final ScoreDirectorFactory<Solution_, ?> defaultScoreDirectorFactory;
     private final DomainAccessType domainAccessType;
-    private final List<SolverMetric> metricsRequiringConstraintMatchList;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
         this(solverConfig, DomainAccessType.AUTO);
@@ -101,24 +104,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         this.clock = Objects.requireNonNullElse(solverConfig.getClock(), Clock.systemDefaultZone());
         this.solverConfig =
                 Objects.requireNonNull(solverConfig, "The solverConfig (%s) cannot be null.".formatted(solverConfig));
-        this.defaultEnvironmentMode = assertEnvironmentModeConfiguration(solverConfig);
+        this.globalEnvironmentMode = assertEnvironmentModeConfiguration(solverConfig);
         this.solutionDescriptor = buildSolutionDescriptor();
-        var scoreDirectorFactoryConfig =
-                Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(), ScoreDirectorFactoryConfig::new);
-        this.metricsRequiringConstraintMatchList = determineMetricsRequiringConstraintMatch(solverConfig);
-        this.delegateScoreDirectorFactory = new DelegateScoreDirectorFactory<>(
-                Objects.requireNonNull(scoreDirectorFactoryConfig), !metricsRequiringConstraintMatchList.isEmpty());
-        // Caching score director factory as it potentially does expensive things
-        this.defaultScoreDirectorFactory =
-                this.delegateScoreDirectorFactory.buildScoreDirectorFactory(defaultEnvironmentMode, solutionDescriptor);
-    }
-
-    private static List<SolverMetric> determineMetricsRequiringConstraintMatch(SolverConfig solverConfig) {
-        var monitoringConfig = solverConfig.determineMetricConfig();
-        var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
-        return solverMetricList.stream()
-                .filter(SolverMetric::isMetricConstraintMatchBased)
-                .toList();
+        // Caching score director factory for the default environment mode as it potentially does expensive things
+        this.delegateScoreDirectorFactory =
+                new DelegateScoreDirectorFactory<>(solverConfig, solutionDescriptor, globalEnvironmentMode);
     }
 
     public Clock getClock() {
@@ -129,9 +119,15 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return solutionDescriptor;
     }
 
+    /**
+     * @return the factory built for the default environment mode;
+     *         the delegate and not its {@link DelegateScoreDirectorFactory} wrapper,
+     *         as callers outside the solving life cycle expect the concrete implementation,
+     *         such as {@code BeanUtil#buildConstraintMetaModel} which needs a constraint stream factory
+     */
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
-        return (ScoreDirectorFactory<Solution_, Score_>) defaultScoreDirectorFactory;
+        return (ScoreDirectorFactory<Solution_, Score_>) delegateScoreDirectorFactory.getDelegate();
     }
 
     @Override
@@ -148,20 +144,16 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         } else {
             solverScope.setSolverMetricSet(EnumSet.noneOf(SolverMetric.class));
         }
-        var isStepAssertOrMore = defaultEnvironmentMode.isStepAssertOrMore();
-        var constraintMatchEnabled = !metricsRequiringConstraintMatchList.isEmpty() || isStepAssertOrMore;
-        if (constraintMatchEnabled && !isStepAssertOrMore) {
-            LOGGER.info(
-                    "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
-                    metricsRequiringConstraintMatchList);
-        }
-        var scoreDirector = delegateScoreDirectorFactory.createScoreDirector(getScoreDirectorFactory());
+        var scoreDirector = delegateScoreDirectorFactory.createScoreDirectorBuilder(globalEnvironmentMode)
+                .withLookUpEnabled(true) // Custom phases and problem changes may rely on lookups.
+                .withConstraintMatchPolicy(delegateScoreDirectorFactory.decideConstraintMatchPolicy(globalEnvironmentMode))
+                .build();
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(scoreDirector));
         var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller =
-                BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(defaultEnvironmentMode);
-        var randomFactory = buildRandomSupplier(defaultEnvironmentMode);
+                BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(globalEnvironmentMode);
+        var randomFactory = buildRandomSupplier(globalEnvironmentMode);
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
@@ -176,13 +168,13 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
         var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
                 .withPreviewFeatureSet(previewFeaturesEnabled)
-                .withEnvironmentMode(defaultEnvironmentMode)
+                .withEnvironmentMode(globalEnvironmentMode)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
                 .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
                 .withRandom(randomFactory.get())
-                .withInitializingScoreTrend(defaultScoreDirectorFactory.getInitializingScoreTrend())
+                .withInitializingScoreTrend(delegateScoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())
                 .build();
@@ -190,7 +182,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
-        return new DefaultSolver<>(defaultEnvironmentMode, delegateScoreDirectorFactory, randomFactory, bestSolutionRecaller,
+        return new DefaultSolver<>(globalEnvironmentMode, delegateScoreDirectorFactory, randomFactory, bestSolutionRecaller,
                 basicPlumbingTermination, (UniversalTermination<Solution_>) termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
@@ -307,9 +299,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             // If the default environment is non-reproducible,
             // then all phase environment modes must also be non-reproducible
             throw new IllegalStateException(
-                    "The default environment mode is (%s), and all phase environments [%s] must also be non-reproducible."
-                            .formatted(defaultEnvironmentMode.name(),
-                                    String.join(", ", phaseEnvironmentList.stream().map(EnvironmentMode::name).toList())));
+                    "Phase-level environmentMode override is only possible when global environmentMode is reproducible, but was %s."
+                            .formatted(defaultEnvironmentMode.name()));
         }
         // If none of the phase environments use the default environment, we fail fast.
         var checkDefaultEnvironment = phaseEnvironmentList.isEmpty();
@@ -321,9 +312,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
         if (!checkDefaultEnvironment) {
             throw new IllegalStateException("""
-                    The default environment mode (%s) is not used in any of the defined phases environment modes [%s].
-                    Maybe adjust the solver config's default environment mode.
-                    Maybe adjust at least one of the phase environment modes to match the default environment mode (%s)"""
+                    The global environment mode is %s, but none of the phase environment modes are using it [%s].
+                    Maybe adjust at least one of the phase environment modes to match the global environmentMode (%s)"""
                     .formatted(
                             defaultEnvironmentMode.name(),
                             String.join(", ", phaseEnvironmentList.stream().map(EnvironmentMode::name).toList()),
@@ -338,7 +328,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         if (!invalidPhaseEnvironmentList.isEmpty()) {
             // The phase environments must have an assertion level greater than or equal to the default environment level
             throw new IllegalStateException(
-                    "The phase environments must have an assertion level higher than or equal to the default environment level (%s). The following phase environment modes are not valid: [%s]."
+                    "The phase environments must have an assertion level higher than or equal to the global environment level (%s). The following phase environment modes are not valid: [%s]."
                             .formatted(defaultEnvironmentMode.name(), String.join(", ", invalidPhaseEnvironmentList)));
         }
         return defaultEnvironmentMode;

@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.score.calculator.ConstraintMatchRegistry;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -264,8 +265,9 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
         private @Nullable IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
 
-        public Builder(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
-            super(scoreDirectorFactory);
+        public Builder(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+                EnvironmentMode environmentMode) {
+            super(scoreDirectorFactory, environmentMode);
         }
 
         public Builder<Solution_, Score_>
@@ -279,6 +281,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
             return super.withConstraintMatchPolicy(determineCorrectPolicy(constraintMatchPolicy, incrementalScoreCalculator));
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public IncrementalScoreDirector<Solution_, Score_> build() {
             return new IncrementalScoreDirector<>(this);

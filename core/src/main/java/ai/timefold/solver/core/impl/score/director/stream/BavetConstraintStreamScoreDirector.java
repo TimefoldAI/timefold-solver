@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -215,18 +216,20 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
             extends
             AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
-        public Builder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
-            super(scoreDirectorFactory);
+        public Builder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+                EnvironmentMode environmentMode) {
+            super(scoreDirectorFactory, environmentMode);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public BavetConstraintStreamScoreDirector<Solution_, Score_> build() {
             return new BavetConstraintStreamScoreDirector<>(this, false);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public AbstractScoreDirector<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>>
-                buildDerived() {
+        public BavetConstraintStreamScoreDirector<Solution_, Score_> buildDerived() {
             return new BavetConstraintStreamScoreDirector<>(this, true);
         }
     }

@@ -273,8 +273,15 @@ public final class ShadowVariableUpdateHelper<Solution_> {
     private static class InternalScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
             extends AbstractScoreDirectorFactory<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>> {
 
-        public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
-            super(solutionDescriptor, environmentMode);
+        public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
+                EnvironmentMode globalEnvironmentMode) {
+            super(solutionDescriptor, globalEnvironmentMode);
+        }
+
+        @Override
+        public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?>
+                createScoreDirectorBuilder(EnvironmentMode environmentMode) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -319,7 +326,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
 
             public Builder(SolutionDescriptor<Solution_> solutionDescriptor) {
                 // We use PHASE_ASSERT by default
-                super(new InternalScoreDirectorFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT));
+                super(new InternalScoreDirectorFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT),
+                        EnvironmentMode.PHASE_ASSERT);
                 withConstraintMatchPolicy(DISABLED);
                 withLookUpEnabled(false);
                 withExpectShadowVariablesInCorrectState(false);

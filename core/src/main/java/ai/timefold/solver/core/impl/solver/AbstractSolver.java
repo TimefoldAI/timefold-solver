@@ -15,7 +15,6 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
@@ -46,7 +45,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     protected final transient Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     protected final SolverContext<Solution_, ?> defaultSolverContext;
-    private final DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory;
+    private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
     private final SolverEventSupport<Solution_> solverEventSupport = new SolverEventSupport<>(this);
     private final PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
@@ -64,10 +63,10 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     // ************************************************************************
 
     protected AbstractSolver(SolverContext<Solution_, ?> defaultSolverContext,
-            DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, UniversalTermination<Solution_> globalTermination,
-            List<Phase<Solution_>> phaseList) {
-        this.delegateScoreDirectorFactory = delegateScoreDirectorFactory;
+            ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory,
+            BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            UniversalTermination<Solution_> globalTermination, List<Phase<Solution_>> phaseList) {
+        this.scoreDirectorFactory = scoreDirectorFactory;
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.globalTermination = globalTermination;
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
@@ -125,9 +124,10 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         // Since the current logic does not cache any solver context other than the default,
         // we need to create a new solver context
         // because the required environment mode differs from both the current and the default modes.
-        ScoreDirectorFactory newScoreDirectorFactory = delegateScoreDirectorFactory
-                .buildScoreDirectorFactory(phase.getEnvironmentMode(), solverScope.getSolutionDescriptor());
-        var newScoreDirector = delegateScoreDirectorFactory.createScoreDirector(newScoreDirectorFactory);
+        var newScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(phase.getEnvironmentMode())
+                .withLookUpEnabled(true)
+                .withConstraintMatchPolicy(scoreDirectorFactory.decideConstraintMatchPolicy(phase.getEnvironmentMode()))
+                .build();
         var newSolverContext = new SolverContext<>(phase.getEnvironmentMode(), newScoreDirector,
                 new DefaultProblemChangeDirector<>(newScoreDirector));
         loadContext(currentContext, newSolverContext, solverScope);
@@ -248,8 +248,8 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    public <Score_ extends Score<Score_>> DelegateScoreDirectorFactory<Solution_, Score_> getDelegateScoreDirectorFactory() {
-        return (DelegateScoreDirectorFactory<Solution_, Score_>) delegateScoreDirectorFactory;
+    public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
+        return (ScoreDirectorFactory<Solution_, Score_>) scoreDirectorFactory;
     }
 
     public List<Phase<Solution_>> getPhaseList() {

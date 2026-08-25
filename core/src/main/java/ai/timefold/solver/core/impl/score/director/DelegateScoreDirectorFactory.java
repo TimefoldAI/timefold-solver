@@ -1,96 +1,222 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector.AbstractScoreDirectorBuilder;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * The delegate score factory creates a {@link ScoreDirectorFactory} based on the specified environment mode.
- * This functionality enables the creation of different score director factories using the delegate.
- * It is necessary because the solver phases may operate under various environment modes,
- * requiring the creation of different factories.
+ * The single entry point for turning a {@link ScoreDirectorFactoryConfig} into score directors.
+ * It decides which score calculation implementation the configuration selected
+ * ({@link EasyScoreDirectorFactory}, {@link IncrementalScoreDirectorFactory}
+ * or {@link BavetConstraintStreamScoreDirectorFactory})
+ * and delegates to a factory of that type, hiding the choice from its callers.
+ * <p>
+ * Building a delegate is potentially expensive,
+ * therefore exactly one is built eagerly for the default environment mode
+ * and then reused for every score director requested for that mode.
+ * <p>
+ * Since a solver phase may override the solver's environment mode,
+ * {@link #createScoreDirectorBuilder(EnvironmentMode)} may be called with a different mode than the default one.
+ * Most delegates only pass the environment mode on to the score director they build,
+ * so they can serve any mode and are reused as they are.
+ * The exception is {@link BavetConstraintStreamScoreDirectorFactory},
+ * which builds its constraint network from the environment mode up front;
+ * for it, a throwaway delegate is built for the requested mode instead.
+ * <p>
+ * On top of picking the delegate, this factory applies the parts of the configuration
+ * which are shared by all implementations:
+ * the {@link InitializingScoreTrend},
+ * the optional assertion score director factory,
+ * and the {@link ConstraintMatchPolicy} implied by the environment mode and the enabled metrics.
+ *
+ * @param <Solution_> the solution type, the class with the {@link PlanningSolution}
+ *        annotation
+ * @param <Score_> the score type to go with the solution
  */
 @NullMarked
-public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
+public class DelegateScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
+        implements ScoreDirectorFactory<Solution_, Score_> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DelegateScoreDirectorFactory.class);
     private final ScoreDirectorFactoryConfig config;
-    private final boolean hasMetricRequiringConstraintMatch;
+    private final SolutionDescriptor<Solution_> solutionDescriptor;
+    private final EnvironmentMode globalEnvironmentMode;
+    private final ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
+    private final List<SolverMetric> metricsRequiringConstraintMatchList;
+    private final boolean requireNewFactoryOnDifferentEnvironment;
 
-    public DelegateScoreDirectorFactory(ScoreDirectorFactoryConfig config) {
-        this(config, false);
-    }
-
-    public DelegateScoreDirectorFactory(ScoreDirectorFactoryConfig config, boolean hasMetricRequiringConstraintMatch) {
-        this.config = config;
-        this.hasMetricRequiringConstraintMatch = hasMetricRequiringConstraintMatch;
-        assertCorrectDirectorFactory(config);
+    /**
+     * The constructor used by the solver,
+     * as only a full {@link SolverConfig} tells which metrics require constraint matching.
+     *
+     * @param environmentMode the default environment mode, typically the solver's
+     */
+    public DelegateScoreDirectorFactory(SolverConfig solverConfig, SolutionDescriptor<Solution_> solutionDescriptor,
+            EnvironmentMode environmentMode) {
+        this(Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(), ScoreDirectorFactoryConfig::new),
+                solutionDescriptor, environmentMode, determineMetricsRequiringConstraintMatch(solverConfig));
     }
 
     /**
-     * Build a score director factory according to the given environment mode.
-     *
-     * @param environmentMode the environment mode
-     * @param solutionDescriptor the solution descriptor
-     * @return a new instance of the score director factory compatible with the environment mode and solver configuration.
+     * As defined by the constructor which also takes a metric list,
+     * with no metrics requiring constraint matching.
      */
-    public ScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(EnvironmentMode environmentMode,
-            SolutionDescriptor<Solution_> solutionDescriptor) {
-        var scoreDirectorFactory = decideMultipleScoreDirectorFactories(solutionDescriptor, environmentMode);
-        var assertionScoreDirectorFactory = config.getAssertionScoreDirectorFactory();
-        if (assertionScoreDirectorFactory != null) {
-            if (assertionScoreDirectorFactory.getAssertionScoreDirectorFactory() != null) {
+    public DelegateScoreDirectorFactory(ScoreDirectorFactoryConfig config, SolutionDescriptor<Solution_> solutionDescriptor,
+            EnvironmentMode environmentMode) {
+        this(config, solutionDescriptor, environmentMode, Collections.emptyList());
+    }
+
+    /**
+     * @param config the score factory configuration
+     * @param solutionDescriptor the solution descriptor
+     * @param environmentMode the default environment mode;
+     *        the delegate is built eagerly for this mode, as building it is potentially expensive
+     * @param metricsRequiringConstraintMatchList the enabled metrics which can only be computed
+     *        when the score directors track constraint matches
+     */
+    public DelegateScoreDirectorFactory(ScoreDirectorFactoryConfig config, SolutionDescriptor<Solution_> solutionDescriptor,
+            EnvironmentMode environmentMode, List<SolverMetric> metricsRequiringConstraintMatchList) {
+        this.config = config;
+        assertCorrectDirectorFactory(Objects.requireNonNull(config));
+        this.solutionDescriptor = solutionDescriptor;
+        this.globalEnvironmentMode = environmentMode;
+        this.metricsRequiringConstraintMatchList = metricsRequiringConstraintMatchList;
+        this.scoreDirectorFactory = internalBuildScoreDirectorFactory(solutionDescriptor, environmentMode);
+        // Constraint Stream factory requires a new factory if the environment changes
+        this.requireNewFactoryOnDifferentEnvironment = config.getConstraintProviderClass() != null;
+    }
+
+    @Override
+    public SolutionDescriptor<Solution_> getSolutionDescriptor() {
+        return solutionDescriptor;
+    }
+
+    @Override
+    public ScoreDefinition<Score_> getScoreDefinition() {
+        return scoreDirectorFactory.getScoreDefinition();
+    }
+
+    @Override
+    public @Nullable InitializingScoreTrend getInitializingScoreTrend() {
+        return scoreDirectorFactory.getInitializingScoreTrend();
+    }
+
+    /**
+     * Exposes the factory built for the default environment mode,
+     * for the benefit of the code which needs the concrete implementation rather than this wrapper,
+     * such as the Quarkus and Spring integrations building a
+     * {@link ConstraintMetaModel}.
+     * Prefer this factory itself wherever the environment mode may still vary.
+     */
+    public ScoreDirectorFactory<Solution_, Score_> getDelegate() {
+        return scoreDirectorFactory;
+    }
+
+    @Override
+    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
+            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_> createScoreDirectorBuilder() {
+        return createScoreDirectorBuilder(globalEnvironmentMode);
+    }
+
+    @Override
+    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>>
+            AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>
+            createScoreDirectorBuilder(EnvironmentMode environmentMode) {
+        if (environmentMode != globalEnvironmentMode && requireNewFactoryOnDifferentEnvironment) {
+            // The BavetConstraintStreamScoreDirectorFactory creates a BavetConstraintFactory based on the environment
+            // and requires a new factory to generate a new score director with a different environment.
+            var newFactory = internalBuildScoreDirectorFactory(solutionDescriptor, environmentMode);
+            return newFactory.createScoreDirectorBuilder();
+        } else {
+            return scoreDirectorFactory.createScoreDirectorBuilder(environmentMode);
+        }
+    }
+
+    private ScoreDirectorFactory<Solution_, Score_> internalBuildScoreDirectorFactory(
+            SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
+        var factory = decideMultipleScoreDirectorFactories(solutionDescriptor, environmentMode);
+        var assertionScoreDirectorFactoryConfig = config.getAssertionScoreDirectorFactory();
+        if (assertionScoreDirectorFactoryConfig != null) {
+            if (assertionScoreDirectorFactoryConfig.getAssertionScoreDirectorFactory() != null) {
                 throw new IllegalArgumentException(
                         "A assertionScoreDirectorFactory (%s) cannot have a non-null assertionScoreDirectorFactory (%s)."
-                                .formatted(assertionScoreDirectorFactory,
-                                        assertionScoreDirectorFactory.getAssertionScoreDirectorFactory()));
+                                .formatted(assertionScoreDirectorFactoryConfig,
+                                        assertionScoreDirectorFactoryConfig.getAssertionScoreDirectorFactory()));
             }
             if (environmentMode.compareTo(EnvironmentMode.STEP_ASSERT) > 0) {
                 throw new IllegalArgumentException(
                         "A non-null assertionScoreDirectorFactory (%s) requires an environmentMode (%s) of %s or lower."
-                                .formatted(assertionScoreDirectorFactory, environmentMode, EnvironmentMode.STEP_ASSERT));
+                                .formatted(assertionScoreDirectorFactoryConfig, environmentMode, EnvironmentMode.STEP_ASSERT));
             }
-            var assertionScoreDirectorFactoryFactory =
-                    new DelegateScoreDirectorFactory<Solution_, Score_>(assertionScoreDirectorFactory);
-            scoreDirectorFactory.setAssertionScoreDirectorFactory(assertionScoreDirectorFactoryFactory
-                    .buildScoreDirectorFactory(EnvironmentMode.NON_REPRODUCIBLE, solutionDescriptor));
+            var assertScoreDirectorFactory =
+                    new DelegateScoreDirectorFactory<Solution_, Score_>(assertionScoreDirectorFactoryConfig, solutionDescriptor,
+                            EnvironmentMode.NON_REPRODUCIBLE, Collections.emptyList());
+            // We use the delegate to prevent issues in areas where non-delegate factories are expected
+            factory.setAssertionScoreDirectorFactory(assertScoreDirectorFactory.getDelegate());
         }
-        scoreDirectorFactory.setInitializingScoreTrend(InitializingScoreTrend.parseTrend(
-                config.getInitializingScoreTrend() == null ? InitializingScoreTrendLevel.ANY.name()
-                        : config.getInitializingScoreTrend(),
-                solutionDescriptor.getScoreDefinition().getLevelsSize()));
-        return scoreDirectorFactory;
+        factory.setInitializingScoreTrend(decideInitializingScoreTrend(config, solutionDescriptor));
+        return factory;
+    }
+
+    private static List<SolverMetric> determineMetricsRequiringConstraintMatch(SolverConfig solverConfig) {
+        var monitoringConfig = solverConfig.determineMetricConfig();
+        var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
+        return solverMetricList.stream()
+                .filter(SolverMetric::isMetricConstraintMatchBased)
+                .toList();
+    }
+
+    private static <Solution_> InitializingScoreTrend decideInitializingScoreTrend(ScoreDirectorFactoryConfig config,
+            SolutionDescriptor<Solution_> solutionDescriptor) {
+        var initializingScoreTrend = config.getInitializingScoreTrend() == null ? InitializingScoreTrendLevel.ANY.name()
+                : config.getInitializingScoreTrend();
+        return InitializingScoreTrend.parseTrend(initializingScoreTrend,
+                solutionDescriptor.getScoreDefinition().getLevelsSize());
     }
 
     /**
-     * Creates a new instance of the score director.
-     *
-     * @param scoreScoreDirectorFactory the factory to be used to create the score director instance.
+     * Unlike the default implementation,
+     * this also enables constraint matching when a metric requires it,
+     * logging that fact as it costs performance.
      */
-    public InnerScoreDirector<Solution_, Score_>
-            createScoreDirector(ScoreDirectorFactory<Solution_, Score_> scoreScoreDirectorFactory) {
-        var isConstraintMatchEnabled =
-                hasMetricRequiringConstraintMatch || scoreScoreDirectorFactory.getEnvironmentMode().isStepAssertOrMore();
-        return scoreScoreDirectorFactory.createScoreDirectorBuilder()
-                .withLookUpEnabled(true) // Custom phases and problem changes may rely on lookups.
-                .withConstraintMatchPolicy(
-                        isConstraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)
-                .build();
+    @Override
+    public ConstraintMatchPolicy decideConstraintMatchPolicy(EnvironmentMode environmentMode) {
+        var isStepAssertOrMore = environmentMode.isStepAssertOrMore();
+        var constraintMatchEnabled = !metricsRequiringConstraintMatchList.isEmpty() || isStepAssertOrMore;
+        if (constraintMatchEnabled && !isStepAssertOrMore) {
+            LOGGER.info(
+                    "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
+                    metricsRequiringConstraintMatchList);
+        }
+        return constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED;
     }
 
     private AbstractScoreDirectorFactory<Solution_, Score_, ?> decideMultipleScoreDirectorFactories(
             SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
-        // At this point, we are guaranteed to have at most one score director factory selected.
+        // At this point, we're guaranteed to have at most one score director factory selected.
         if (config.getEasyScoreCalculatorClass() != null) {
             return EasyScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config, environmentMode);
         } else if (config.getIncrementalScoreCalculatorClass() != null) {
