@@ -2,7 +2,13 @@ package ai.timefold.solver.service.quarkus.deployment.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +23,35 @@ class TimefoldRenamedPropertiesFallbackInterceptorTest {
                 .withInterceptors(new TimefoldRenamedPropertiesFallbackInterceptor())
                 .withSources(new PropertiesConfigSource(properties, "test", 100))
                 .build();
+    }
+
+    private static List<LogRecord> captureLogs(Runnable action) {
+        Logger julLogger = Logger.getLogger(TimefoldRenamedPropertiesFallbackInterceptor.class.getName());
+        List<LogRecord> records = new ArrayList<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                records.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        Level originalLevel = julLogger.getLevel();
+        julLogger.setLevel(Level.ALL);
+        julLogger.addHandler(handler);
+        try {
+            action.run();
+        } finally {
+            julLogger.removeHandler(handler);
+            julLogger.setLevel(originalLevel);
+        }
+        return records;
     }
 
     @Test
@@ -118,5 +153,24 @@ class TimefoldRenamedPropertiesFallbackInterceptorTest {
     void unknownPropertyReturnsNull() {
         SmallRyeConfig config = buildConfig(Map.of());
         assertThat(config.getRawValue("timefold.model.name")).isNull();
+    }
+
+    @Test
+    void logsWarningWhenLegacyPropertyIsDefined() {
+        SmallRyeConfig config = buildConfig(Map.of("timefold.application.name", "my-app"));
+
+        List<LogRecord> records = captureLogs(() -> config.getRawValue("timefold.model.name"));
+
+        assertThat(records)
+                .anySatisfy(record -> assertThat(record.getMessage()).contains("Deprecated configuration key"));
+    }
+
+    @Test
+    void doesNotLogWarningWhenOnlyNewPropertyIsDefined() {
+        SmallRyeConfig config = buildConfig(Map.of("timefold.model.name", "my-app"));
+
+        List<LogRecord> records = captureLogs(() -> config.getRawValue("timefold.model.name"));
+
+        assertThat(records).isEmpty();
     }
 }
