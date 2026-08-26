@@ -2565,7 +2565,7 @@ class DefaultSolverTest {
     void assertPhaseEnvironmentMode() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
-        // LS with NO_ASSERT
+        // LS with TRACKED_FULL_ASSERT
         solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
         var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
         DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();

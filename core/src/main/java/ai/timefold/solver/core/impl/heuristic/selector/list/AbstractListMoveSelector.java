@@ -14,6 +14,18 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractListMoveSelector<Solution_> extends AbstractSelector<Solution_> {
 
     protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
+
+    /**
+     * Non-null for the duration of a phase, null outside one;
+     * see {@link #phaseStarted(AbstractPhaseScope)} and {@link #phaseEnded(AbstractPhaseScope)}.
+     * <p>
+     * Subclasses read this field directly rather than through {@link #getListVariableStateSupply()},
+     * and that is deliberate: the accessor's null check would sit on the selection path,
+     * where a selector's {@code iterator()} is not necessarily called only once per step,
+     * and some subclasses read the supply once per selected element.
+     * Nothing enforces that the field is non-null when they read it —
+     * the normal path simply never selects before the phase has started.
+     */
     @Nullable
     protected ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
@@ -21,6 +33,11 @@ public abstract class AbstractListMoveSelector<Solution_> extends AbstractSelect
         this.listVariableDescriptor = listVariableDescriptor;
     }
 
+    /**
+     * For callers off the selection path,
+     * where naming the cause of a missing supply is worth the null check;
+     * selection code reads {@link #listVariableStateSupply} directly instead.
+     */
     protected ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
         return Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");

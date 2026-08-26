@@ -55,7 +55,8 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
             RuinRecreateConstructionHeuristicPhaseFactory<Solution_> constructionHeuristicPhaseFactory,
             PhaseTermination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
             ConstructionHeuristicDecider<Solution_> decider) {
-        // The R&R uses the root solver environment mode by default
+        // The config policy here belongs to the phase whose move selector built this nested R&R,
+        // so the nested construction heuristic runs in the enclosing phase's environment mode
         super(0, false, configPolicy.getEnvironmentMode(), "", phaseTermination, entityPlacer, decider);
         this.configPolicy = configPolicy;
         this.constructionHeuristicPhaseFactory = constructionHeuristicPhaseFactory;

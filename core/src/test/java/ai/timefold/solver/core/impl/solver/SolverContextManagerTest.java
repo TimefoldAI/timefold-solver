@@ -83,18 +83,19 @@ class SolverContextManagerTest {
         var solverScope = buildSolverScope();
         var manager = buildManager(EnvironmentMode.FULL_ASSERT);
         var originalScoreDirector = solverScope.getScoreDirector();
+        var originalProblemChangeDirector = solverScope.getProblemChangeDirector();
         var workingSolution = originalScoreDirector.getWorkingSolution();
 
         manager.solvingStarted(solverScope);
         startPhase(manager, solverScope, 0);
 
         var newScoreDirector = solverScope.getScoreDirector();
+        var newProblemChangeDirector = solverScope.getProblemChangeDirector();
         assertThat(newScoreDirector).isNotSameAs(originalScoreDirector);
+        assertThat(newProblemChangeDirector).isNotSameAs(originalProblemChangeDirector);
         assertThat(newScoreDirector.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
         // The working solution carries over rather than being re-cloned.
         assertThat(newScoreDirector.getWorkingSolution()).isSameAs(workingSolution);
-        // The problem change director follows the score director, so problem changes hit the live one.
-        assertThat(solverScope.getProblemChangeDirector()).isNotSameAs(originalScoreDirector);
     }
 
     @Test

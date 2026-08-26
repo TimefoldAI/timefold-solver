@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.solver;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,7 +134,7 @@ class SolverMetricsIT extends AbstractMeterTest {
             latch.countDown();
         });
         solver.solve(solution);
-        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
@@ -225,7 +224,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solver.solve(solution);
 
-        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
@@ -288,7 +287,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solution = solver.solve(solution);
 
-        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
@@ -437,7 +436,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solution = solver.solve(solution);
 
-        assertDoesNotThrow(() -> latch.await(10, TimeUnit.SECONDS), "Failed waiting for the event to happen.");
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
         assertThat(step.get()).isEqualTo(2);
         meterRegistry.publish();
         assertThat(solution).isNotNull();

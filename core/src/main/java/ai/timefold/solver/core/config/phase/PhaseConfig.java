@@ -4,6 +4,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
@@ -43,11 +44,30 @@ public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends 
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public EnvironmentMode getEnvironmentMode() {
+    /**
+     * @return null when this phase runs in the solver's {@link EnvironmentMode}
+     * @see #setEnvironmentMode(EnvironmentMode)
+     */
+    public @Nullable EnvironmentMode getEnvironmentMode() {
         return environmentMode;
     }
 
-    public void setEnvironmentMode(EnvironmentMode environmentMode) {
+    /**
+     * Overrides the solver's {@link EnvironmentMode} for this phase only.
+     * <p>
+     * Null, the default, means the phase runs in the solver's environment mode.
+     * A non-null value must obey two rules, both checked when the
+     * {@link SolverFactory SolverFactory} is built,
+     * so that a violation fails there rather than during solving:
+     * <ul>
+     * <li>it may not be less strict than the solver's environment mode;</li>
+     * <li>it may not be set at all when the solver's environment mode is
+     * {@link EnvironmentMode#NON_REPRODUCIBLE}.</li>
+     * </ul>
+     *
+     * @param environmentMode null to run this phase in the solver's environment mode
+     */
+    public void setEnvironmentMode(@Nullable EnvironmentMode environmentMode) {
         this.environmentMode = environmentMode;
     }
 
