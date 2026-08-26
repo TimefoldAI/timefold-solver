@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
+import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -198,13 +199,70 @@ class DefaultSolverFactoryTest {
     }
 
     @Test
-    void assertEnvironmentModeWithDefaultNotUsedByAnyPhase() {
+    void assertEnvironmentModeWithGlobalNotUsedByAnyPhase() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
         solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
         solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT);
+        // Every phase may override the global mode; it still governs everything outside the phases.
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void identicalPhaseEnvironmentModesBecomeTheGlobalEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.getPhaseConfigList()
+                .forEach(phaseConfig -> phaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT));
+        var solver = (AbstractSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        // Every phase agrees, so there is nothing for the global mode to differ from:
+        // adopting it spares the solver a second score director factory for a mode no phase ever runs in.
+        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.FULL_ASSERT);
+    }
+
+    @Test
+    void differingPhaseEnvironmentModesLeaveTheGlobalEnvironmentModeAlone() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT);
+        var solver = (AbstractSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.STEP_ASSERT);
+    }
+
+    @Test
+    void onePhaseLeftOnTheGlobalEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // Only the second phase overrides; the first still runs in the global mode, so it must stay.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solver = (AbstractSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.PHASE_ASSERT);
+    }
+
+    @Test
+    void phaseEnvironmentModeCannotMakeTheGlobalNonReproducible() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.getPhaseConfigList()
+                .forEach(phaseConfig -> phaseConfig.setEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE));
+        // NON_REPRODUCIBLE is the most lenient mode, so it is rejected as an override before adoption is
+        // ever considered. Otherwise a phase-level setting could silently cost the solver its reproducibility.
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
-                .hasMessageContaining("but none of the phase environment modes are using it");
+                .hasMessageContaining("must have an assertion level higher than or equal to the global environment level");
+    }
+
+    @Test
+    void solvesWithEveryPhaseOverridingAnUnsetGlobalEnvironmentMode() {
+        // "Assert everything", expressed per phase, with the solver-level mode left at its default.
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.getPhaseConfigList().forEach(phaseConfig -> phaseConfig
+                .setEnvironmentMode(EnvironmentMode.FULL_ASSERT));
+        var solution = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver()
+                .solve(TestdataSolution.generateSolution(2, 2));
+        assertThat(solution).isNotNull();
+        assertThat(solution.getScore()).isNotNull();
     }
 
     @Test

@@ -112,10 +112,15 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> {
      * Whatever happens here must not throw: the caller is on its way to rethrowing the real failure.
      */
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {
-        if (currentContext != null) {
-            currentContext.release();
-        } else {
-            solverScope.getScoreDirector().close();
+        try {
+            if (currentContext != null) {
+                currentContext.release();
+            } else {
+                solverScope.getScoreDirector().close();
+            }
+        } catch (RuntimeException releaseException) {
+            // The caller is on its way to rethrowing the real failure; this must not take its place.
+            exception.addSuppressed(releaseException);
         }
     }
 

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -162,6 +163,21 @@ class SolverContextManagerTest {
 
         // The solver's normal cleanup does not run on the failure path, so this is the only close.
         assertThat(scoreDirectorInUse.getWorkingSolution()).isNull();
+    }
+
+    @Test
+    void solvingErrorReportsAFailedReleaseAsSuppressed() {
+        var solverScope = new SolverScope<TestdataSolution>(Clock.systemDefaultZone());
+        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        var releaseFailure = new IllegalStateException("Releasing blew up");
+        doThrow(releaseFailure).when(scoreDirector).close();
+        solverScope.setScoreDirector(scoreDirector);
+        var manager = buildManager(GLOBAL_MODE);
+        var originalFailure = new IllegalStateException("The real failure");
+        // The caller rethrows the original failure right after this returns, so a failure in here must not
+        // take its place; it is attached instead, where it stays visible without hiding the real cause.
+        assertThatCode(() -> manager.solvingError(solverScope, originalFailure)).doesNotThrowAnyException();
+        assertThat(originalFailure.getSuppressed()).containsExactly(releaseFailure);
     }
 
     @Test

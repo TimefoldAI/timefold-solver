@@ -70,7 +70,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         this.globalTermination = globalTermination;
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = List.copyOf(phaseList);
-        this.solverContextManager = new SolverContextManager<>(scoreDirectorFactory, bestSolutionRecaller, phaseList);
+        this.solverContextManager = new SolverContextManager<>(scoreDirectorFactory, bestSolutionRecaller, this.phaseList);
     }
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
