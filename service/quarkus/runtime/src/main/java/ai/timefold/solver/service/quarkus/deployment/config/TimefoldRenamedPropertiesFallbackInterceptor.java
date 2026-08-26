@@ -60,14 +60,11 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
     private static String toLegacyName(String name) {
         var exactLegacyName = RENAMED_EXACT_PROPERTIES.get(name);
         if (exactLegacyName != null) {
-            logWarningForResolvedKey(name, exactLegacyName);
             return exactLegacyName;
         }
         for (Map.Entry<String, String> prefix : RENAMED_PROPERTY_PREFIXES.entrySet()) {
             if (name.startsWith(prefix.getKey())) {
-                var legacyName = prefix.getValue() + name.substring(prefix.getKey().length());
-                logWarningForResolvedKey(name, legacyName);
-                return legacyName;
+                return prefix.getValue() + name.substring(prefix.getKey().length());
             }
         }
         return name;
@@ -76,10 +73,19 @@ public class TimefoldRenamedPropertiesFallbackInterceptor extends FallbackConfig
     @Override
     public ConfigValue getValue(final ConfigSourceInterceptorContext context, final String name) {
         List<String> legacyNames = RENAMED_PROPERTIES_WITH_MULTIPLE_LEGACY_NAMES.get(name);
-        if (legacyNames == null) {
-            return super.getValue(context, name);
+        if (legacyNames != null) {
+            return resolveWithLegacyNames(context, name, legacyNames);
         }
 
+        var legacyName = toLegacyName(name);
+        if (legacyName.equals(name)) {
+            return context.proceed(name);
+        }
+        return resolveWithLegacyNames(context, name, List.of(legacyName));
+    }
+
+    private static ConfigValue resolveWithLegacyNames(ConfigSourceInterceptorContext context, String name,
+            List<String> legacyNames) {
         ConfigValue value = context.proceed(name);
         for (String legacyName : legacyNames) {
             ConfigValue legacyValue = context.proceed(legacyName);
