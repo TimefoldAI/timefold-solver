@@ -66,7 +66,7 @@ public class ServiceConfigPropertiesRenameMigrationRecipe extends AbstractRecipe
                 prefixRename("ai.timefold.model.default-config.", "timefold.model.default-config."),
                 prefixRename("ai.timefold.platform.termination.", "timefold.model.termination."),
                 prefixRename("timefold.application.contact.", "timefold.model.contact."),
-                prefixRename("timefold.model.rest.", "timefold.rest."),
+                prefixRename("timefold.rest.", "timefold.model.rest."),
                 prefixRename("ai.timefold.storage.", "timefold.storage."),
                 prefixRename("ai.timefold.platform.", "timefold.platform."),
 
