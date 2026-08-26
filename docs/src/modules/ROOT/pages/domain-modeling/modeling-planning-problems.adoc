@@ -2018,7 +2018,7 @@ public record JobState(LocalDate readyDate, LocalDate startDate, LocalDate endDa
 @PlanningEntity
 public class Job {
 
-    @PreviousElementShadowVariable
+    @PreviousElementShadowVariable(sourceVariableName = "jobs")
     private Job previous;
 
     private LocalDate earliestStartDate;
