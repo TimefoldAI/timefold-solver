@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.util.MathUtils;
@@ -52,7 +51,7 @@ public class PlannerBenchmarkResult {
 
     private Integer parallelBenchmarkCount = null;
     private Long warmUpTimeMillisSpentLimit = null;
-    private EnvironmentMode environmentMode = null;
+    private String environmentModeLabel = null;
 
     @XmlElement(name = "solverBenchmarkResult")
     private List<SolverBenchmarkResult> solverBenchmarkResultList = null;
@@ -145,8 +144,11 @@ public class PlannerBenchmarkResult {
         this.warmUpTimeMillisSpentLimit = warmUpTimeMillisSpentLimit;
     }
 
-    public EnvironmentMode getEnvironmentMode() {
-        return environmentMode;
+    /**
+     * @return null when the solver benchmarks do not all run in the same environment mode
+     */
+    public String getEnvironmentModeLabel() {
+        return environmentModeLabel;
     }
 
     public List<SolverBenchmarkResult> getSolverBenchmarkResultList() {
@@ -334,12 +336,12 @@ public class PlannerBenchmarkResult {
         var solverBenchmarkCount = 0;
         var firstSolverBenchmarkResult = true;
         for (var solverBenchmarkResult : solverBenchmarkResultList) {
-            var solverEnvironmentMode = solverBenchmarkResult.getEnvironmentMode();
-            if (firstSolverBenchmarkResult && solverEnvironmentMode != null) {
-                environmentMode = solverEnvironmentMode;
+            var solverEnvironmentModeLabel = solverBenchmarkResult.getEnvironmentModeLabel();
+            if (firstSolverBenchmarkResult) {
+                environmentModeLabel = solverEnvironmentModeLabel;
                 firstSolverBenchmarkResult = false;
-            } else if (!firstSolverBenchmarkResult && solverEnvironmentMode != environmentMode) {
-                environmentMode = null;
+            } else if (!solverEnvironmentModeLabel.equals(environmentModeLabel)) {
+                environmentModeLabel = null;
             }
 
             var score = (Score_) solverBenchmarkResult.getAverageScore();
@@ -457,7 +459,7 @@ public class PlannerBenchmarkResult {
 
                     newResult.parallelBenchmarkCount = oldResult.parallelBenchmarkCount;
                     newResult.warmUpTimeMillisSpentLimit = oldResult.warmUpTimeMillisSpentLimit;
-                    newResult.environmentMode = oldResult.environmentMode;
+                    newResult.environmentModeLabel = oldResult.environmentModeLabel;
                     newResult.solverBenchmarkResultList = new ArrayList<>();
                     newResult.unifiedProblemBenchmarkResultList = new ArrayList<>();
                     newResult.startingTimestamp = null;
@@ -482,8 +484,8 @@ public class PlannerBenchmarkResult {
                             newResult.parallelBenchmarkCount, oldResult.parallelBenchmarkCount);
                     newResult.warmUpTimeMillisSpentLimit = ConfigUtils.mergeProperty(
                             newResult.warmUpTimeMillisSpentLimit, oldResult.warmUpTimeMillisSpentLimit);
-                    newResult.environmentMode = ConfigUtils.mergeProperty(
-                            newResult.environmentMode, oldResult.environmentMode);
+                    newResult.environmentModeLabel = ConfigUtils.mergeProperty(
+                            newResult.environmentModeLabel, oldResult.environmentModeLabel);
                 }
                 mergeMap.put(oldResult, newResult);
             }

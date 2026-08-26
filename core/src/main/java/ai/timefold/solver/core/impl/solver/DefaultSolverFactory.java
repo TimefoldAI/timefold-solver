@@ -74,9 +74,6 @@ import io.micrometer.core.instrument.Tags;
  * are such components.
  * They all get the global environment mode.
  * <p>
- * {@link #assertEnvironmentModeConfiguration(SolverConfig)} guards the invariants this relies on:
- * no phase may be less strict than the global mode,
- * and a non-reproducible global mode admits no phase-level override at all.
  * Phases are free to override the environment mode, including all of them at once —
  * the global environment mode still governs everything outside the phases.
  *
@@ -105,7 +102,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         this.clock = Objects.requireNonNullElse(solverConfig.getClock(), Clock.systemDefaultZone());
         this.solverConfig =
                 Objects.requireNonNull(solverConfig, "The solverConfig (%s) cannot be null.".formatted(solverConfig));
-        this.globalEnvironmentMode = assertEnvironmentModeConfiguration(solverConfig);
+        EnvironmentModeResolver.validate(solverConfig);
+        this.globalEnvironmentMode = EnvironmentModeResolver.resolve(solverConfig);
         this.solutionDescriptor = buildSolutionDescriptor();
         // Caching score director factory for the default environment mode as it potentially does expensive things
         this.delegateScoreDirectorFactory =
@@ -282,50 +280,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     public void ensurePreviewFeature(PreviewFeature previewFeature) {
         HeuristicConfigPolicy.ensurePreviewFeature(previewFeature, solverConfig.getEnablePreviewFeatureSet());
-    }
-
-    private static EnvironmentMode assertEnvironmentModeConfiguration(SolverConfig solverConfig) {
-        var globalEnvironmentMode = solverConfig.determineEnvironmentMode();
-        var phaseConfigList = solverConfig.getPhaseConfigList();
-        if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
-            return globalEnvironmentMode;
-        }
-        var phaseEnvironmentList =
-                phaseConfigList.stream()
-                        .map(phaseConfig -> Objects.requireNonNullElse(phaseConfig.getEnvironmentMode(),
-                                globalEnvironmentMode))
-                        .toList();
-        if (globalEnvironmentMode == EnvironmentMode.NON_REPRODUCIBLE
-                && phaseEnvironmentList.stream().anyMatch(environmentMode -> environmentMode != globalEnvironmentMode)) {
-            // A non-reproducible global environment mode cannot be overridden per phase,
-            // as a phase-level override would have nothing reproducible to be an override of.
-            throw new IllegalStateException(
-                    "Phase-level environmentMode override is only possible when global environmentMode is reproducible, but was %s."
-                            .formatted(globalEnvironmentMode.name()));
-        }
-        // Every phase may override the global mode, including all of them at once:
-        // the global mode still applies outside the phases, and the factory built for it is needed regardless
-        // by the components which are decoupled from the solving life cycle.
-        var invalidPhaseEnvironmentList = new ArrayList<String>(phaseConfigList.size());
-        for (var phaseEnvironment : phaseEnvironmentList) {
-            if (phaseEnvironment.ordinal() > globalEnvironmentMode.ordinal()) {
-                invalidPhaseEnvironmentList.add(phaseEnvironment.name());
-            }
-        }
-        if (!invalidPhaseEnvironmentList.isEmpty()) {
-            // The phase environments must have an assertion level greater than or equal to the global environment level
-            throw new IllegalStateException(
-                    "The phase environments must have an assertion level higher than or equal to the global environment level (%s). The following phase environment modes are not valid: [%s]."
-                            .formatted(globalEnvironmentMode.name(), String.join(", ", invalidPhaseEnvironmentList)));
-        }
-        // If every phase ends up in the same environment mode, that mode becomes the global one.
-        // There is then nothing to swap away from mid-solve, which spares the solver a second score director
-        // factory — and, with Constraint Streams, a second constraint network — for a mode no phase ever runs in
-        var reducedPhaseEnvironmentList = phaseEnvironmentList.stream().distinct().toList();
-        if (reducedPhaseEnvironmentList.size() == 1) {
-            return reducedPhaseEnvironmentList.getFirst();
-        }
-        return globalEnvironmentMode;
     }
 
     // Required for testability as final classes cannot be mocked.
