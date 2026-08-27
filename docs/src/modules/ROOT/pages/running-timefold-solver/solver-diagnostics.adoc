@@ -222,28 +222,16 @@ instead of paying the performance cost of a stricter mode (such as `<<environmen
 you enable it for only the phase under suspicion, while the other phases keep running at a faster mode.
 
 A phase's environment mode must be at least as strict as the solver's environment mode; it can never be less strict.
-Any number of phases can override it, including all of them:
-the solver's environment mode still applies outside the phases.
-If the solver's environment mode is `<<environmentModeNonReproducible,NON_REPRODUCIBLE>>`, no phase can override it,
+Any number of phases can override it while
+the solver's global environment mode still applies outside these phases.
+If the solver's global environment mode is `<<environmentModeNonReproducible,NON_REPRODUCIBLE>>`,
+no phase can override it,
 because every other mode is <<environmentModeReproducibility,reproducible>> and therefore stricter.
 
-If every phase ends up in the same environment mode, that mode becomes the solver's environment mode too,
-since no phase is left running in the configured one.
-
-[NOTE]
-====
-A phase that runs in a different environment mode than the solver gets its own score director.
+NOTE: A phase that runs in a different environment mode than the solver gets its own score director.
 With the xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams] API,
 that means a second constraint network is built for that mode.
 It is built once and reused, but it is not free: prefer overriding the phases you actually want to inspect.
-====
-
-[NOTE]
-====
-The solver's environment mode also applies outside the phases,
-including to xref:using-timefold-solver/modeling-planning-problems.adoc[`SolutionManager`] operations,
-so a stricter solver-level mode makes those slower as well.
-====
 
 [source,java,options="nowrap"]
 ----
@@ -258,8 +246,7 @@ SolverConfig solverConfig = new SolverConfig()
 
 In this example, the solver's environment mode is `PHASE_ASSERT`.
 The Construction Heuristic phase has no environment mode of its own, so it uses that default.
-The Local Search phase overrides it and runs in the stricter `FULL_ASSERT` mode instead.
-
+The Local Search phase overrides it and runs in the stricter `FULL_ASSERT` mode instead.11
 
 [#environmentModeBestPractices]
 === Best practices

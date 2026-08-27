@@ -578,35 +578,6 @@ class DefaultSolverTest {
     }
 
     @Test
-    void identicalPhaseEnvironmentModesShareOneScoreDirector() {
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        // Both phases agree, so the global mode becomes theirs and no phase has anything to swap away from.
-        solverConfig.getPhaseConfigList()
-                .forEach(phaseConfig -> phaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT));
-        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
-                .buildSolver();
-        // The score director the solver was built with. Comparing against the one the phases run on is what
-        // detects a swap; comparing the phases against each other would not, since after an initial swap they
-        // would share the replacement.
-        var builtScoreDirector = solver.getSolverScope().getScoreDirector();
-        var scoreDirectorPerPhase = new ArrayList<InnerScoreDirector<TestdataSolution, SimpleScore>>();
-        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
-            @Override
-            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
-                scoreDirectorPerPhase.add(phaseScope.getScoreDirector());
-            }
-        });
-        solver.solve(TestdataSolution.generateSolution(2, 2));
-        assertThat(scoreDirectorPerPhase)
-                .hasSize(2)
-                // One score director for the whole solve, which is the point: no second factory, and for Constraint
-                // Streams no second constraint network, just because the mode was expressed per phase.
-                .allSatisfy(scoreDirector -> assertThat(scoreDirector)
-                        .isSameAs(builtScoreDirector));
-        assertThat(builtScoreDirector.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
-    }
-
-    @Test
     void replacedScoreDirectorIsClosedWhenAPhaseOverridesTheEnvironmentMode() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,

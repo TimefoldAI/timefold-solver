@@ -209,15 +209,14 @@ class DefaultSolverFactoryTest {
     }
 
     @Test
-    void identicalPhaseEnvironmentModesBecomeTheGlobalEnvironmentMode() {
+    void everyPhaseOverridingLeavesTheGlobalEnvironmentModeAlone() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverConfig.getPhaseConfigList()
                 .forEach(phaseConfig -> phaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT));
         var solver = (AbstractSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
-        // Every phase agrees, so there is nothing for the global mode to differ from:
-        // adopting it spares the solver a second score director factory for a mode no phase ever runs in.
-        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.FULL_ASSERT);
+        // The configured global mode stands even though no phase runs in it
+        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.PHASE_ASSERT);
     }
 
     @Test
@@ -246,8 +245,8 @@ class DefaultSolverFactoryTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverConfig.getPhaseConfigList()
                 .forEach(phaseConfig -> phaseConfig.setEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE));
-        // NON_REPRODUCIBLE is the most lenient mode, so it is rejected as an override before adoption is
-        // ever considered. Otherwise a phase-level setting could silently cost the solver its reproducibility.
+        // NON_REPRODUCIBLE is the most lenient mode, so a phase set to it is always less strict than the
+        // global one, and the strictness rule rejects it.
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
                 .hasMessageContaining("must have an assertion level higher than or equal to the global environment level");
     }

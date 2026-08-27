@@ -226,9 +226,8 @@ public class BenchmarkReport {
                             subSingleStatistic.unhibernatePointList();
                         } catch (IllegalStateException e) {
                             if (!plannerBenchmarkResult.getAggregation()) {
-                                throw new IllegalStateException(
-                                        "Failed to unhibernate point list of SubSingleStatistic (%s) of SubSingleBenchmark (%s)."
-                                                .formatted(subSingleStatistic, subSingleBenchmarkResult),
+                                throw new IllegalStateException("Failed to unhibernate point list of SubSingleStatistic ("
+                                        + subSingleStatistic + ") of SubSingleBenchmark (" + subSingleBenchmarkResult + ").",
                                         e);
                             }
                             LOGGER.trace("This is expected, aggregator doesn't copy CSV files. Could not read CSV file "
@@ -301,62 +300,29 @@ public class BenchmarkReport {
 
     public List<String> getWarningList() {
         List<String> warningList = new ArrayList<>();
-        String javaVmName = System.getProperty("java.vm.name");
-        if (javaVmName != null && javaVmName.contains("Client VM")) {
-            warningList.add(
-                    "The Java VM (%s) is the Client VM. This decreases performance. Maybe start the java process with the argument \"-server\" to get better results."
-                            .formatted(javaVmName));
-        }
         Integer parallelBenchmarkCount = plannerBenchmarkResult.getParallelBenchmarkCount();
         Integer availableProcessors = plannerBenchmarkResult.getAvailableProcessors();
         if (parallelBenchmarkCount != null && availableProcessors != null
                 && parallelBenchmarkCount > availableProcessors) {
-            warningList.add(
-                    "The parallelBenchmarkCount (%d) is higher than the number of availableProcessors (%d). This decreases performance. Maybe reduce the parallelBenchmarkCount."
-                            .formatted(parallelBenchmarkCount, availableProcessors));
+            warningList.add("The parallelBenchmarkCount (" + parallelBenchmarkCount
+                    + ") is higher than the number of availableProcessors (" + availableProcessors + ")."
+                    + " This decreases performance."
+                    + " Maybe reduce the parallelBenchmarkCount.");
         }
-        addEnvironmentModeWarnings(warningList);
+        EnvironmentMode environmentMode = plannerBenchmarkResult.getEnvironmentMode();
+        if (environmentMode != null && environmentMode.isStepAssertOrMore()) {
+            // Phase assert performance impact is negligible.
+            warningList.add(
+                    "The environmentMode (%s) is step-asserting or more. This decreases performance. Maybe set the environmentMode to %s."
+                            .formatted(environmentMode, EnvironmentMode.PHASE_ASSERT));
+        }
         LoggingLevel loggingLevelTimefoldCore = plannerBenchmarkResult.getLoggingLevelTimefoldSolverCore();
         if (loggingLevelTimefoldCore == LoggingLevel.TRACE) {
-            warningList.add(
-                    "The loggingLevel (%s) of ai.timefold.solver.core is high. This decreases performance. Maybe set the loggingLevel to %s or lower."
-                            .formatted(loggingLevelTimefoldCore, LoggingLevel.DEBUG));
+            warningList.add("The loggingLevel (" + loggingLevelTimefoldCore + ") of ai.timefold.solver.core is high."
+                    + " This decreases performance."
+                    + " Maybe set the loggingLevel to " + LoggingLevel.DEBUG + " or lower.");
         }
         return warningList;
-    }
-
-    /**
-     * A phase may override the environment mode,
-     * so the solver-level mode alone says neither how slow a solver benchmark ran
-     * nor whether two of them ran under comparable conditions.
-     * Both are worth a warning: a benchmark is believed precisely because it is supposed to be the objective check,
-     * and a leftover {@code FULL_ASSERT} on a single phase otherwise handicaps one config with nothing in the report to say so.
-     */
-    private void addEnvironmentModeWarnings(List<String> warningList) {
-        var solverBenchmarkResultList = plannerBenchmarkResult.getSolverBenchmarkResultList();
-        if (solverBenchmarkResultList == null || solverBenchmarkResultList.isEmpty()) {
-            return;
-        }
-        for (var solverBenchmarkResult : solverBenchmarkResultList) {
-            var strictestEnvironmentMode = solverBenchmarkResult.getStrictestEnvironmentMode();
-            if (!strictestEnvironmentMode.isStepAssertOrMore()) {
-                // Phase assert performance impact is negligible.
-                continue;
-            }
-            warningList.add(
-                    "The environmentMode (%s) of solverBenchmark (%s) is step-asserting or more. This decreases performance. Maybe set the environmentMode to %s."
-                            .formatted(solverBenchmarkResult.getEnvironmentModeLabel(), solverBenchmarkResult.getName(),
-                                    EnvironmentMode.PHASE_ASSERT));
-        }
-        var distinctEnvironmentModeLabelList = solverBenchmarkResultList.stream()
-                .map(SolverBenchmarkResult::getEnvironmentModeLabel)
-                .distinct()
-                .toList();
-        if (distinctEnvironmentModeLabelList.size() > 1) {
-            warningList.add(
-                    "The solverBenchmarks do not all run in the same environmentMode (%s). Their results are not comparable. Maybe give every solverBenchmark the same environmentMode."
-                            .formatted(String.join(", ", distinctEnvironmentModeLabelList)));
-        }
     }
 
     private List<BarChart<Double>> createBestScoreSummaryChart() {
@@ -684,11 +650,11 @@ public class BenchmarkReport {
             Template template = freemarkerCfg.getTemplate(templateFilename);
             template.process(model, writer);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Can not read templateFilename (%s) or write htmlOverviewFile (%s)."
-                    .formatted(templateFilename, htmlOverviewFile), e);
+            throw new IllegalArgumentException("Can not read templateFilename (" + templateFilename
+                    + ") or write htmlOverviewFile (" + htmlOverviewFile + ").", e);
         } catch (TemplateException e) {
-            throw new IllegalArgumentException("Can not process Freemarker templateFilename (%s) to htmlOverviewFile (%s)."
-                    .formatted(templateFilename, htmlOverviewFile), e);
+            throw new IllegalArgumentException("Can not process Freemarker templateFilename (" + templateFilename
+                    + ") to htmlOverviewFile (" + htmlOverviewFile + ").", e);
         }
     }
 

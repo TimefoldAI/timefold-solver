@@ -12,13 +12,8 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import ai.timefold.solver.benchmark.impl.loader.FileProblemProvider;
-import ai.timefold.solver.benchmark.impl.ranking.TotalScoreSolverRankingComparator;
-import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -95,47 +90,6 @@ class PlannerBenchmarkResultTest {
         assertThat(mergedProblemBenchmarkResultList.get(1).getProblemProvider().getProblemName()).isEqualTo("problemB");
     }
 
-    @Test
-    void solverBenchmarksDifferingOnlyInAPhaseEnvironmentMode() {
-        var otherSolverConfig = buildSolverConfigWithPhases();
-        // Both configs declare PHASE_ASSERT at the solver level; only the phase override tells them apart.
-        otherSolverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
-        var plannerBenchmarkResult = accumulate(otherSolverConfig, buildSolverConfigWithPhases());
-        // Null is what the report renders as "Differs".
-        assertThat(plannerBenchmarkResult.getEnvironmentModeLabel()).isNull();
-    }
-
-    @Test
-    void solverBenchmarksSharingAnEnvironmentModeAggregateAsThatMode() {
-        var plannerBenchmarkResult = accumulate(buildSolverConfigWithPhases(), buildSolverConfigWithPhases());
-        assertThat(plannerBenchmarkResult.getEnvironmentModeLabel()).isEqualTo("PHASE_ASSERT");
-    }
-
-    private static SolverConfig buildSolverConfigWithPhases() {
-        return new SolverConfig()
-                .withSolutionClass(TestdataSolution.class)
-                .withEntityClasses(TestdataEntity.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig());
-    }
-
-    private static PlannerBenchmarkResult accumulate(SolverConfig... solverConfigs) {
-        var plannerBenchmarkResult = new PlannerBenchmarkResult();
-        var solverBenchmarkResultList = new ArrayList<SolverBenchmarkResult>(solverConfigs.length);
-        for (var i = 0; i < solverConfigs.length; i++) {
-            var solverBenchmarkResult = new SolverBenchmarkResult(plannerBenchmarkResult);
-            solverBenchmarkResult.setName("Solver " + (char) ('A' + i));
-            solverBenchmarkResult.setSolverConfig(solverConfigs[i]);
-            solverBenchmarkResult.setSingleBenchmarkResultList(new ArrayList<>());
-            solverBenchmarkResultList.add(solverBenchmarkResult);
-        }
-        plannerBenchmarkResult.setSolverBenchmarkResultList(solverBenchmarkResultList);
-        plannerBenchmarkResult.setUnifiedProblemBenchmarkResultList(new ArrayList<>());
-        var benchmarkReport = new BenchmarkReport(plannerBenchmarkResult);
-        benchmarkReport.setSolverRankingComparator(new TotalScoreSolverRankingComparator());
-        plannerBenchmarkResult.accumulateResults(benchmarkReport);
-        return plannerBenchmarkResult;
-    }
-
     protected SingleBenchmarkResult createSingleBenchmarkResult(SolverBenchmarkResult solverBenchmarkResult,
             ProblemBenchmarkResult problemBenchmarkResult, int score) {
         var singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult, problemBenchmarkResult);
@@ -174,12 +128,12 @@ class PlannerBenchmarkResultTest {
 
     // nested classes below are used in the testPlannerBenchmarkResult.xml
 
-    private abstract static class DummyEasyScoreCalculator
+    private static abstract class DummyEasyScoreCalculator
             implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
     }
 
-    private abstract static class DummyDistanceNearbyMeter
+    private static abstract class DummyDistanceNearbyMeter
             implements NearbyDistanceMeter<TestdataSolution, TestdataEntity> {
 
     }

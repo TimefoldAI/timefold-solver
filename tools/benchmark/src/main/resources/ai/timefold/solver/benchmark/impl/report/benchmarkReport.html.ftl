@@ -875,7 +875,7 @@
                 </tr>
                 <tr>
                     <th>Environment mode</th>
-                    <td>${benchmarkReport.plannerBenchmarkResult.environmentModeLabel!"Differs"}</td>
+                    <td>${benchmarkReport.plannerBenchmarkResult.environmentMode!"Differs"}</td>
                 </tr>
                 <tr>
                     <th>Logging level for ai.timefold.solver.core</th>

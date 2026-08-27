@@ -102,8 +102,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         this.clock = Objects.requireNonNullElse(solverConfig.getClock(), Clock.systemDefaultZone());
         this.solverConfig =
                 Objects.requireNonNull(solverConfig, "The solverConfig (%s) cannot be null.".formatted(solverConfig));
-        EnvironmentModeResolver.validate(solverConfig);
-        this.globalEnvironmentMode = EnvironmentModeResolver.resolve(solverConfig);
+        EnvironmentModeUtil.validate(solverConfig);
+        this.globalEnvironmentMode = EnvironmentModeUtil.resolve(solverConfig);
         this.solutionDescriptor = buildSolutionDescriptor();
         // Caching score director factory for the default environment mode as it potentially does expensive things
         this.delegateScoreDirectorFactory =

@@ -19,6 +19,7 @@ import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReportFactory;
 import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.solver.EnvironmentModeUtil;
 import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
 import org.jspecify.annotations.NonNull;
@@ -114,6 +115,24 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
                 && ConfigUtils.isEmptyCollection(plannerBenchmarkConfig.getSolverBenchmarkConfigList())) {
             throw new IllegalArgumentException(
                     "Configure at least 1 <solverBenchmark> (or 1 <solverBenchmarkBluePrint>) in the <plannerBenchmark> configuration.");
+        }
+        // Overriding the phase environment is not allowed
+        var solverBenchmarkConfigList = plannerBenchmarkConfig.getSolverBenchmarkConfigList();
+        if (solverBenchmarkConfigList == null) {
+            return;
+        }
+        for (var solverBenchmarkConfig : solverBenchmarkConfigList) {
+            var solverConfig = solverBenchmarkConfig.getSolverConfig();
+            if (solverConfig == null) {
+                continue;
+            }
+            var phaseEnvironmentList = EnvironmentModeUtil.resolvePhases(solverConfig, false);
+            if (!phaseEnvironmentList.isEmpty()) {
+                throw new IllegalStateException("""
+                        The phases cannot override the environment mode when in benchmark mode.
+                        Maybe remove the setting environmentMode from the benchmark configuration (%s)."""
+                        .formatted(solverBenchmarkConfig.getName()));
+            }
         }
     }
 
