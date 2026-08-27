@@ -2,11 +2,13 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.IntFunction;
+
+import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
+import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
 
 import org.jspecify.annotations.NonNull;
 
@@ -75,17 +77,21 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    public Collection<Object> getInconsistentEntities() {
-        var out = new LinkedHashSet<>();
+    public List<LoopedVariableInfo> getInconsistentGroups() {
+        var out = new ArrayList<LoopedVariableInfo>();
         var graphTrackingInconsistentEntities = new DefaultTopologicalOrderGraph(this.nodeTopologicalOrders.length);
         graph.forEachEdge(graphTrackingInconsistentEntities::addEdge);
         graphTrackingInconsistentEntities.commitChanges(new BitSet());
         var loopedComponentList = graphTrackingInconsistentEntities.getLoopedComponentList();
         for (var loopedComponent : loopedComponentList) {
+            var entityVariablePairs = new LinkedHashSet<EntityVariablePair>(loopedComponent.size());
             for (var nodeId : loopedComponent) {
                 var node = this.nodeList.get(nodeId);
-                out.add(node.entity());
+                for (var variable : node.variableReferences()) {
+                    entityVariablePairs.add(new EntityVariablePair(node.entity(), variable.id().name()));
+                }
             }
+            out.add(new LoopedVariableInfo(entityVariablePairs));
         }
         return out;
     }

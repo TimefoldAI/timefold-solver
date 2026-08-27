@@ -53,7 +53,7 @@ class DefaultPhaseCommandContextTest {
         when(scoreDirector.calculateScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.of(0)));
 
         var result = commandContext
-                .executeTemporarilyHandlingStructurallyFlawedSolutions(move,
+                .executeTemporarily(move,
                         solutionConsumer,
                         flawedSolutionConsumer);
 
@@ -69,7 +69,7 @@ class DefaultPhaseCommandContextTest {
         when(scoreDirector.calculateScore()).thenReturn(InnerScore.fullyAssigned(new SimpleScore(-1, 0)));
 
         var result = commandContext
-                .executeTemporarilyHandlingStructurallyFlawedSolutions(move,
+                .executeTemporarily(move,
                         solutionConsumer,
                         flawedSolutionConsumer);
 
@@ -85,7 +85,7 @@ class DefaultPhaseCommandContextTest {
         when(scoreDirector.calculateScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.of(0)));
 
         var result = commandContext
-                .executeTemporarilyAndCalculateScoreHandlingStructurallyFlawedSolutions(move,
+                .executeTemporarilyAndCalculateScore(move,
                         solutionConsumer,
                         flawedSolutionConsumer);
 
@@ -101,7 +101,7 @@ class DefaultPhaseCommandContextTest {
         when(scoreDirector.calculateScore()).thenReturn(InnerScore.fullyAssigned(new SimpleScore(-1, 0)));
 
         var result = commandContext
-                .executeTemporarilyAndCalculateScoreHandlingStructurallyFlawedSolutions(move,
+                .executeTemporarilyAndCalculateScore(move,
                         solutionConsumer,
                         flawedSolutionConsumer);
 

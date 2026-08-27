@@ -1,8 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
+import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
@@ -26,7 +27,7 @@ final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
     }
 
     @Override
-    public Collection<Object> getInconsistentEntities() {
+    public List<LoopedVariableInfo> getInconsistentGroups() {
         return Collections.emptyList();
     }
 

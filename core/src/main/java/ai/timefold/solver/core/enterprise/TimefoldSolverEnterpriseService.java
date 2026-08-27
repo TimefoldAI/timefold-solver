@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.enterprise;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -9,6 +8,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
@@ -227,9 +227,13 @@ public interface TimefoldSolverEnterpriseService {
 
     InnerConstraintProfiler buildConstraintProfiler();
 
+    /**
+     * @param inconsistentEntities the entities that are inconsistent
+     * @param scoreDefinition can be null if inconsistentEntities is known to be empty
+     */
     <Score_ extends Score<Score_>> ScoreAnalysis<Score_> analyze(InnerScore<Score_> state,
             Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
-            Collection<Object> inconsistentEntities,
+            List<LoopedVariableInfo> inconsistentEntities,
             @Nullable ScoreDefinition<Score_> scoreDefinition,
             ScoreAnalysisFetchPolicy fetchPolicy);
 

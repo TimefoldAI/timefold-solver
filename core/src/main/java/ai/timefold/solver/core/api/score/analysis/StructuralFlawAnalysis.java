@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.api.score.analysis;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -10,8 +10,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface StructuralFlawAnalysis {
     /**
-     * Return a collection of {@link ai.timefold.solver.core.api.domain.entity.PlanningEntity}
-     * that have inconsistent shadow variables.
+     * Return a list of independent {@link LoopedVariableInfo}
+     * that form cycles and thus cause inconsistencies in the solution.
      */
-    Collection<Object> getInconsistentEntities();
+    List<LoopedVariableInfo> getInconsistentGroups();
 }

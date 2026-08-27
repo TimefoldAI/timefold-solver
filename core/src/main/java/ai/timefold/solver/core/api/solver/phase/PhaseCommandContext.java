@@ -53,7 +53,10 @@ public interface PhaseCommandContext<Solution_>
      * without recalculating the score for performance reasons.
      *
      * @param move the move to execute
-     * @throws IllegalArgumentException if the move causes the solution to have a negative {@link Score#structuralScore()}.
+     * @throws IllegalArgumentException if the move causes the solution to have a negative
+     *         {@link Score#structuralScore()}. If you are unsure if a move will result in a structural
+     *         solution, use {@link #executeTemporarily(Move)} to check
+     *         if a move results in a structural flawed solution before executing it.
      */
     void execute(Move<Solution_> move);
 
@@ -63,7 +66,10 @@ public interface PhaseCommandContext<Solution_>
      *
      * @param move the move to execute
      * @return the new score of the working solution after executing the move
-     * @throws IllegalArgumentException if the move causes the solution to have a negative {@link Score#structuralScore()}.
+     * @throws IllegalArgumentException if the move causes the solution to have a negative
+     *         {@link Score#structuralScore()}. If you are unsure if a move will result in a structural
+     *         solution, use {@link #executeTemporarily(Move)} to check
+     *         if a move results in a structural flawed solution before executing it.
      */
     <Score_ extends Score<Score_>> Score_ executeAndCalculateScore(Move<Solution_> move);
 
@@ -77,6 +83,8 @@ public interface PhaseCommandContext<Solution_>
      *        this solution must not be modified any further.
      * @return the result of the consumer
      * @throws IllegalArgumentException if the move causes the solution to have a negative {@link Score#structuralScore()}.
+     *         Use {@link #executeTemporarily(Move, Function, Function)} instead,
+     *         where structurally flawed solutions are handled by a separate consumer.
      */
     <Result_> @Nullable Result_ executeTemporarily(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer);
@@ -86,11 +94,13 @@ public interface PhaseCommandContext<Solution_>
      * except having a separate consumer to handle solutions with a negative {@link Score#structuralScore()}.
      *
      * @param move the move to execute temporarily
-     * @param temporarySolutionConsumer the consumer to execute with the temporarily modified solution;
+     * @param temporarySolutionConsumer the consumer to execute with the temporarily modified structurally valid solution;
      *        this solution must not be modified any further.
+     * @param structurallyFlawedSolutionConsumer the consumer that is called when a move results in a structurally flawed
+     *        solution. This solution must not be modified any further.
      * @return the result of the consumer
      */
-    <Result_> @Nullable Result_ executeTemporarilyHandlingStructurallyFlawedSolutions(Move<Solution_> move,
+    <Result_> @Nullable Result_ executeTemporarily(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer,
             Function<Solution_, @Nullable Result_> structurallyFlawedSolutionConsumer);
 
@@ -113,17 +123,26 @@ public interface PhaseCommandContext<Solution_>
     /**
      * As defined by {@link #executeTemporarily(Move, Function)},
      * with the guarantee of a fresh score at the end of the method's invocation.
-     * 
+     *
+     * @param move the move to execute temporarily
+     * @param temporarySolutionConsumer the consumer to execute with the temporarily modified solution;
+     *        this solution must not be modified any further.
      * @throws IllegalArgumentException if the move causes the solution to have a negative {@link Score#structuralScore()}.
      */
     <Result_> @Nullable Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer);
 
     /**
-     * As defined by {@link #executeTemporarilyHandlingStructurallyFlawedSolutions(Move, Function, Function)},
+     * As defined by {@link #executeTemporarily(Move, Function, Function)},
      * with the guarantee of a fresh score at the end of the method's invocation.
+     *
+     * @param move the move to execute temporarily
+     * @param temporarySolutionConsumer the consumer to execute with the temporarily modified structurally valid solution;
+     *        this solution must not be modified any further.
+     * @param structurallyFlawedSolutionConsumer the consumer that is called when a move results in a structurally flawed
+     *        solution. This solution must not be modified any further.
      */
-    <Result_> @Nullable Result_ executeTemporarilyAndCalculateScoreHandlingStructurallyFlawedSolutions(Move<Solution_> move,
+    <Result_> @Nullable Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer,
             Function<Solution_, @Nullable Result_> structurallyFlawedSolutionConsumer);
 

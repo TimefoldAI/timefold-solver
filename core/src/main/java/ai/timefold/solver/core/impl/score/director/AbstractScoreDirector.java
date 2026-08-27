@@ -2,10 +2,10 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -15,6 +15,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -346,12 +347,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Do nothing
     }
 
-    public Collection<Object> computeInconsistentEntities() {
-        return shadowVariableSupport.getInconsistentEntities();
+    public List<LoopedVariableInfo> computeInconsistentGroups() {
+        return shadowVariableSupport.getInconsistentGroups();
     }
 
     public void unassignInconsistentEntities() {
-        var inconsistentEntities = computeInconsistentEntities();
+        var inconsistentCycles = computeInconsistentGroups();
+        var inconsistentEntities = new LinkedHashSet<>();
+        for (var inconsistentCycle : inconsistentCycles) {
+            inconsistentEntities.addAll(inconsistentCycle.getEntitySet());
+        }
         if (listVariableStateSupply != null) {
             var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
             var listElementClass = listVariableStateSupply.getSourceVariableDescriptor().getElementType();

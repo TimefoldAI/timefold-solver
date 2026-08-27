@@ -62,7 +62,7 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
     }
 
     @Override
-    public @Nullable <Result_> Result_ executeTemporarilyHandlingStructurallyFlawedSolutions(Move<Solution_> move,
+    public @Nullable <Result_> Result_ executeTemporarily(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer,
             Function<Solution_, @Nullable Result_> structurallyFlawedSolutionConsumer) {
         return moveDirector.executeTemporaryHandlingStructurallyFlawedSolutions(move,
@@ -85,7 +85,7 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
     }
 
     @Override
-    public @Nullable <Result_> Result_ executeTemporarilyAndCalculateScoreHandlingStructurallyFlawedSolutions(
+    public @Nullable <Result_> Result_ executeTemporarilyAndCalculateScore(
             Move<Solution_> move, Function<Solution_, @Nullable Result_> temporarySolutionConsumer,
             Function<Solution_, @Nullable Result_> structurallyFlawedSolutionConsumer) {
         return moveDirector.executeTemporaryHandlingStructurallyFlawedSolutions(move,

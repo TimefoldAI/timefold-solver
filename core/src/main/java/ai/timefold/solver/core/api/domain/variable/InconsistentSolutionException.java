@@ -1,19 +1,20 @@
 package ai.timefold.solver.core.api.domain.variable;
 
-import java.util.Collection;
 import java.util.List;
+
+import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class InconsistentSolutionException extends RuntimeException {
     private final Object solution;
-    private final Collection<Object> involvedEntityCollection;
+    private final List<LoopedVariableInfo> inconsistentGroups;
 
-    public InconsistentSolutionException(String feature, Object solution, Collection<Object> involvedEntityCollection) {
+    public InconsistentSolutionException(String feature, Object solution, List<LoopedVariableInfo> inconsistentGroups) {
         super("The solution (%s) is inconsistent. %s requires a consistent solution.".formatted(solution, feature));
         this.solution = solution;
-        this.involvedEntityCollection = involvedEntityCollection;
+        this.inconsistentGroups = inconsistentGroups;
     }
 
     @SuppressWarnings("unchecked")
@@ -21,8 +22,7 @@ public class InconsistentSolutionException extends RuntimeException {
         return (T) solution;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> List<T> getInvolvedEntityCollection() {
-        return (List<T>) involvedEntityCollection;
+    public List<LoopedVariableInfo> getInconsistentGroups() {
+        return inconsistentGroups;
     }
 }

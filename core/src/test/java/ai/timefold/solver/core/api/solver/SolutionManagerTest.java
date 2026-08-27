@@ -13,6 +13,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListEntityWithShadowHistory;
@@ -143,7 +144,18 @@ public class SolutionManagerTest {
                 .hasMessageContainingAll("The solution (",
                         "is inconsistent", "Solution update", "requires a consistent solution")
                 .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
-                .hasFieldOrPropertyWithValue("involvedEntityCollection", Set.of(valueA1, valueA2));
+                .matches(exception -> {
+                    var inconsistentGroups = ((InconsistentSolutionException) exception).getInconsistentGroups();
+                    if (inconsistentGroups.size() != 1) {
+                        return false;
+                    }
+                    return inconsistentGroups.getFirst().involvedVariableSet()
+                            .equals(Set.of(
+                                    new EntityVariablePair(valueA1, "startTime"),
+                                    new EntityVariablePair(valueA1, "endTime"),
+                                    new EntityVariablePair(valueA2, "startTime"),
+                                    new EntityVariablePair(valueA2, "endTime")));
+                });
     }
 
     private void assertShadowedListValueAllNull(SoftAssertions softly, TestdataListValueWithShadowHistory current) {
@@ -205,7 +217,18 @@ public class SolutionManagerTest {
                 .hasMessageContainingAll("The solution (",
                         "is inconsistent", "Solution update", "requires a consistent solution")
                 .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
-                .hasFieldOrPropertyWithValue("involvedEntityCollection", Set.of(valueA1, valueA2));
+                .matches(exception -> {
+                    var inconsistentGroups = ((InconsistentSolutionException) exception).getInconsistentGroups();
+                    if (inconsistentGroups.size() != 1) {
+                        return false;
+                    }
+                    return inconsistentGroups.getFirst().involvedVariableSet()
+                            .equals(Set.of(
+                                    new EntityVariablePair(valueA1, "startTime"),
+                                    new EntityVariablePair(valueA1, "endTime"),
+                                    new EntityVariablePair(valueA2, "startTime"),
+                                    new EntityVariablePair(valueA2, "endTime")));
+                });
     }
 
     @ParameterizedTest
