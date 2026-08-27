@@ -91,12 +91,9 @@ For performance reasons and especially with large datasets that you'll later nee
 In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
 ====
 
-[NOTE]
-====
-The score analysis of structurally flawed solutions has a structural flaw analysis,
+NOTE: The score analysis of structurally flawed solutions has a structural flaw analysis,
 which can be used to get inconsistent entities.
 Constraint analyses are still available for structurally flawed solutions, but will exclude any matches sourced from an inconsistent entity.
-====
 
 It is also possible to print the score summary:
 

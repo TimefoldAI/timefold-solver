@@ -2065,8 +2065,15 @@ for example because an involved entity is xref:domain-modeling/modeling-planning
 the `Solver` throws an `Exception`.
 ====
 
+If no entity have a `@ShadowVariablesInconsistent` property, you do not need to handle inconsistencies in any constraints, since the Solver will not calculate the score for any structurally flawed solutions.
+
+
+==== Deprecated: Per entity inconsistency tracking
+
 To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
 The solver will set this field to true if the entity has any inconsistent shadow variables.
+
+IMPORTANT: If you use `@ShadowVariablesInconsistent`, you would need to handle inconsistent entities in your constraints, and have a slower solve speed. It is recommended to avoid that annotation, and to remove it if you currently have it.
 
 [tabs]
 ====
