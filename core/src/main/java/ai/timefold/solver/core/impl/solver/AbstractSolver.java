@@ -114,6 +114,14 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         bestSolutionRecaller.solvingEnded(solverScope);
         globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
+        // The score director is deliberately not closed here; a real-time problem change restarts solving and
+        // runs more phases on it. DefaultSolver.outerSolvingEnded closes it, through closeSolverContext().
+    }
+
+    public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
+        // Closes the score director after the problem change loop,
+        // so the score director is finally done
+        solverContextManager.close();
     }
 
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {

@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.solver;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -43,20 +42,34 @@ import org.jspecify.annotations.Nullable;
  * the working solution, the score calculation count, the {@link SolverScope}'s view of both directors,
  * and the assertion level of the {@link BestSolutionRecaller}.
  * <p>
- * <b>Ownership of closing.</b> This class closes only the score directors it replaces.
- * The last one standing is closed by the solver
- * ({@code DefaultSolver.outerSolvingEnded}) on the normal path.
- * On the failure path {@code outerSolvingEnded} never runs,
- * so {@link #solvingError(SolverScope, Exception)} closes it instead.
+ * <b>Ownership of closing.</b> Every score director a solve opens is closed here and nowhere else,
+ * so that no caller has to work out which of them is still in use:
+ * <ul>
+ * <li>{@link #phaseStarted(AbstractPhaseScope)} closes the one it replaces,
+ * and only after {@link #loadContext} has handed everything over —
+ * closing clears the working solution,
+ * so closing any earlier would gut the director the hand-over reads from;</li>
+ * <li>{@link #close()} closes the one the solver ended on.
+ * The solver calls it from {@code DefaultSolver.outerSolvingEnded},
+ * which runs after the problem change loop.
+ * It cannot be closed at {@code solvingEnded}: a real-time problem change restarts the loop
+ * and runs more phases on that same score director;</li>
+ * <li>{@link #solvingError(SolverScope, Exception)} closes it when solving fails,
+ * because {@code outerSolvingEnded} never runs on that path.</li>
+ * </ul>
+ * Note that no score director is closed at {@code phaseEnded}.
+ * The phase which follows reads the outgoing director's working solution during the hand-over,
+ * and after the last phase the solver still needs it for the best solution,
+ * and for the problem changes which may restart solving.
  * <p>
  * Not thread-safe, and does not need to be: one instance belongs to one solver,
  * and every life-cycle method is called on that solver's own thread.
  *
- * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Solution_> the solution type
  * @param <Score_> the score type to go with the solution
  */
 @NullMarked
-public class SolverContextManager<Solution_, Score_ extends Score<Score_>> {
+public class SolverContextManager<Solution_, Score_ extends Score<Score_>> implements AutoCloseable {
 
     private final ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
     private final BestSolutionRecaller<Solution_> bestSolutionRecaller;
@@ -105,24 +118,44 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> {
     }
 
     /**
-     * Closes the score director in use, as the solver's normal cleanup does not run on the failure path.
+     * Closes the score director in use,
+     * as the solver's normal cleanup does not run on the failure path.
      * <p>
      * Solving can fail before {@link #solvingStarted(SolverScope)} has adopted a context — for instance in
-     * {@code DefaultSolver.assertCorrectSolutionState()}, or in any listener notified earlier in solving start.
+     * {@code DefaultSolver.assertCorrectSolutionState()},
+     * or in any listener notified earlier in solving start.
      * The score director the solver was built with still has to be closed in that case,
      * or a long-lived {@link SolverManager} would accumulate one per failed job.
-     * Whatever happens here must not throw: the caller is on its way to rethrowing the real failure.
      */
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {
         try {
-            if (currentContext != null) {
-                currentContext.release();
-            } else {
-                solverScope.getScoreDirector().close();
-            }
+            close(solverScope);
         } catch (RuntimeException releaseException) {
             // The caller is on its way to rethrowing the real failure; this must not take its place.
             exception.addSuppressed(releaseException);
+        }
+    }
+
+    /**
+     * Closes the score director the solver ended on.
+     * Called once the solver is done with it for good, which is after the problem change loop, not at
+     * {@code solvingEnded}: a restart runs more phases on that same score director.
+     * Idempotent, so a solve which already failed and closed through
+     * {@link #solvingError(SolverScope, Exception)} is not closed twice.
+     */
+    @Override
+    public void close() {
+        close(null);
+    }
+
+    private void close(@Nullable SolverScope<Solution_> solverScope) {
+        if (currentContext != null) {
+            currentContext.release();
+            currentContext = null;
+        } else if (solverScope != null) {
+            // Solving failed before solvingStarted() adopted a context, so the score director the solver was
+            // built with is the only one open and the scope is the only place holding it.
+            solverScope.getScoreDirector().close();
         }
     }
 

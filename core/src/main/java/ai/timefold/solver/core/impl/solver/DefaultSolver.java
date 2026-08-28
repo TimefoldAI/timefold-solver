@@ -302,7 +302,9 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         solverScope.endingNow();
     }
 
+    @Override
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
+        super.outerSolvingEnded(solverScope);
         LOGGER.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
@@ -311,8 +313,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 phaseList.size(),
                 globalEnvironmentMode.name(),
                 moveThreadCountDescription);
-        // Must be kept open for doProblemFactChange
-        solverScope.getScoreDirector().close();
         solving.set(false);
     }
 
