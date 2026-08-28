@@ -769,7 +769,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             assertionScoreDirectorFactory = scoreDirectorFactory;
         }
         // Most score directors don't need derived status; CS will override this.
-        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder(environmentMode)
+        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(Objects.requireNonNull(workingSolution));
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
