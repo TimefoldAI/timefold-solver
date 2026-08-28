@@ -7,15 +7,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
+import java.util.EnumSet;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.phase.Phase;
-import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -28,10 +32,10 @@ class SolverContextManagerTest {
 
     private static final EnvironmentMode GLOBAL_MODE = EnvironmentMode.PHASE_ASSERT;
 
-    private final DelegateScoreDirectorFactory<TestdataSolution, SimpleScore> scoreDirectorFactory =
-            new DelegateScoreDirectorFactory<>(
-                    new ScoreDirectorFactoryConfig().withConstraintProviderClass(DummyConstraintProvider.class),
-                    TestdataSolution.buildSolutionDescriptor(), GLOBAL_MODE);
+    private final ScoreDirectorFactory<TestdataSolution, SimpleScore> scoreDirectorFactory =
+            new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(
+                    new ScoreDirectorFactoryConfig().withConstraintProviderClass(DummyConstraintProvider.class))
+                    .buildScoreDirectorFactory(GLOBAL_MODE, TestdataSolution.buildSolutionDescriptor());
 
     /**
      * A solver scope holding a freshly built score director for the global environment mode,
@@ -96,6 +100,36 @@ class SolverContextManagerTest {
         assertThat(newScoreDirector.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
         // The working solution carries over rather than being re-cloned.
         assertThat(newScoreDirector.getWorkingSolution()).isSameAs(workingSolution);
+    }
+
+    @Test
+    void aSwapKeepsTheConstraintMatchingTheMetricsRequire() {
+        // A constraint match based metric enables matching regardless of the environment mode. The swapped-in
+        // score director has to keep it, or the metric silently stops reporting after the first phase change.
+        var solverScope = buildSolverScope();
+        solverScope.setSolverMetricSet(EnumSet.of(SolverMetric.CONSTRAINT_MATCH_TOTAL_BEST_SCORE));
+        var manager = buildManager(GLOBAL_MODE, EnvironmentMode.NO_ASSERT);
+
+        manager.solvingStarted(solverScope);
+        startPhase(manager, solverScope, 1);
+
+        // NO_ASSERT would disable matching on its own; only the metric keeps it on.
+        assertThat(solverScope.getScoreDirector().getEnvironmentMode()).isEqualTo(EnvironmentMode.NO_ASSERT);
+        assertThat(solverScope.getScoreDirector().getConstraintMatchPolicy())
+                .isEqualTo(ConstraintMatchPolicy.ENABLED);
+    }
+
+    @Test
+    void aSwapWithoutConstraintMatchMetricsLeavesMatchingOff() {
+        var solverScope = buildSolverScope();
+        solverScope.setSolverMetricSet(EnumSet.of(SolverMetric.BEST_SCORE));
+        var manager = buildManager(GLOBAL_MODE, EnvironmentMode.NO_ASSERT);
+
+        manager.solvingStarted(solverScope);
+        startPhase(manager, solverScope, 1);
+
+        assertThat(solverScope.getScoreDirector().getConstraintMatchPolicy())
+                .isEqualTo(ConstraintMatchPolicy.DISABLED);
     }
 
     @Test

@@ -10,8 +10,8 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
-import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
@@ -31,8 +31,10 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                     SolutionDescriptor<TestdataConstraintWeightOverridesSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataConstraintWeightOverridesEasyScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
-                EnvironmentMode.PHASE_ASSERT);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataConstraintWeightOverridesSolution, SimpleScore>(
+                        scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -41,8 +43,9 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataPinnedListEasyScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
-                EnvironmentMode.PHASE_ASSERT);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -51,8 +54,9 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataPinnedWithIndexListEasyScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
-                EnvironmentMode.PHASE_ASSERT);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Test
@@ -65,8 +69,8 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
         config.setEasyScoreCalculatorCustomProperties(customProperties);
 
         var testdataSolutionScoreDirectorFactory = buildTestdataScoreDirectoryFactory(config);
-        try (var scoreDirector = (EasyScoreDirector<TestdataSolution, SimpleScore>) testdataSolutionScoreDirectorFactory
-                .buildScoreDirector()) {
+        try (var scoreDirector =
+                (EasyScoreDirector<TestdataSolution, SimpleScore>) testdataSolutionScoreDirectorFactory.buildScoreDirector()) {
             var scoreCalculator = (TestCustomPropertiesEasyScoreCalculator) scoreDirector.getEasyScoreCalculator();
             assertThat(scoreCalculator.getStringProperty()).isEqualTo("string 1");
             assertThat(scoreCalculator.getIntProperty()).isEqualTo(7);
@@ -75,7 +79,8 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
 
     private ScoreDirectorFactory<TestdataSolution, SimpleScore> buildTestdataScoreDirectoryFactory(
             ScoreDirectorFactoryConfig config, EnvironmentMode environmentMode) {
-        return new DelegateScoreDirectorFactory<>(config, TestdataSolution.buildSolutionDescriptor(), environmentMode);
+        return new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(config)
+                .buildScoreDirectorFactory(environmentMode, TestdataSolution.buildSolutionDescriptor());
     }
 
     private ScoreDirectorFactory<TestdataSolution, SimpleScore>

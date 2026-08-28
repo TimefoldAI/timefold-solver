@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -93,8 +94,9 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> {
      * binds to the director the phase will actually run on.
      */
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        var newSolverContext = contextFor(scoreDirectorFactory, phaseList.get(phaseScope.getPhaseIndex()),
-                Objects.requireNonNull(currentContext, "Impossible state: solvingStarted() has not run yet."));
+        var newSolverContext =
+                contextFor(phaseScope.getSolverScope(), scoreDirectorFactory, phaseList.get(phaseScope.getPhaseIndex()),
+                        Objects.requireNonNull(currentContext, "Impossible state: solvingStarted() has not run yet."));
         if (newSolverContext != currentContext) {
             loadContext(phaseScope.getSolverScope(), bestSolutionRecaller, currentContext, newSolverContext);
             currentContext.release();
@@ -132,8 +134,8 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> {
      * @return the given context when the phase can run on it, otherwise a new one for the phase's environment mode
      */
     private static <Solution_, Score_ extends Score<Score_>> SolverContext<Solution_, Score_> contextFor(
-            ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, Phase<Solution_> phase,
-            SolverContext<Solution_, Score_> context) {
+            SolverScope<Solution_> solverScope, ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+            Phase<Solution_> phase, SolverContext<Solution_, Score_> context) {
         // The environment modes match, and there is no need for any changes.
         if (phase.getEnvironmentMode() == context.environmentMode()) {
             return context;
@@ -143,7 +145,8 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> {
         // and building a score director on top of an existing factory is cheap.
         var newScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(phase.getEnvironmentMode())
                 .withLookUpEnabled(true)
-                .withConstraintMatchPolicy(scoreDirectorFactory.decideConstraintMatchPolicy(phase.getEnvironmentMode()))
+                .withConstraintMatchPolicy(
+                        ScoreDirectorFactoryFactory.decideConstraintMatchPolicy(solverScope, phase.getEnvironmentMode()))
                 .build();
         var newProblemChangeDirector = new DefaultProblemChangeDirector<>(newScoreDirector);
         return new SolverContext<>(phase.getEnvironmentMode(), newScoreDirector, newProblemChangeDirector);

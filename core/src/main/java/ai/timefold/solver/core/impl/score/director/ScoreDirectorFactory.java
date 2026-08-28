@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector.AbstractScoreDirectorBuilder;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -32,8 +31,9 @@ import org.jspecify.annotations.Nullable;
  * Implementations must guarantee that the returned builder produces a score director
  * that actually runs in the requested mode,
  * even if that means the implementation cannot reuse the state it built for its default mode.
- * {@link DelegateScoreDirectorFactory} is the implementation which handles that situation,
- * and therefore the one solver components are expected to hold on to.
+ * {@link MultiEnvironmentScoreDirectorFactory} is the implementation which handles that situation,
+ * and therefore the one solver components are expected to hold on to
+ * whenever the config has a phase running in a mode of its own.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
@@ -74,19 +74,6 @@ public interface ScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
      */
     default AbstractScoreDirector<Solution_, Score_, ?> buildScoreDirector() {
         return createScoreDirectorBuilder().build();
-    }
-
-    /**
-     * Decides whether the score directors built for the given environment mode need to track constraint matches,
-     * which carries a performance penalty.
-     * The assertions of {@link EnvironmentMode#STEP_ASSERT} and stricter require it;
-     * implementations may enable it for other reasons as well,
-     * such as constraint match based metrics being enabled.
-     *
-     * @param environmentMode the environment mode the score director will run in
-     */
-    default ConstraintMatchPolicy decideConstraintMatchPolicy(EnvironmentMode environmentMode) {
-        return environmentMode.isStepAssertOrMore() ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED;
     }
 
     /**

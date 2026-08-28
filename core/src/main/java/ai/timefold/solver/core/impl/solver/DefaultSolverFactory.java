@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
+import static ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory.decideConstraintMatchPolicy;
+
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -33,8 +35,9 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
-import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.MultiEnvironmentScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
@@ -56,13 +59,13 @@ import io.micrometer.core.instrument.Tags;
 /**
  * Builds {@link DefaultSolver} instances out of a {@link SolverConfig},
  * and owns the state which is expensive to build and therefore shared by every solver it builds:
- * the {@link SolutionDescriptor} and a single {@link DelegateScoreDirectorFactory}.
+ * the {@link SolutionDescriptor} and a single {@link ScoreDirectorFactory}.
  * <p>
  * The solver config has one environment mode, the global one,
  * and each of its phases may override it with a stricter one.
- * The score director factory is built once for the global environment mode;
- * a phase which overrides the mode asks the delegate for a score director in its own mode instead,
- * which the delegate serves without this factory having to keep one instance per mode.
+ * The score director factory is built once, for the global environment mode.
+ * When a phase runs in a mode of its own, that factory is a {@link MultiEnvironmentScoreDirectorFactory},
+ * which builds and caches a further factory for each mode a phase asks for.
  * <p>
  * That is also why a global environment mode has to exist at all,
  * even for a config whose phases all override it.
@@ -90,7 +93,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final SolverConfig solverConfig;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final EnvironmentMode globalEnvironmentMode;
-    private final DelegateScoreDirectorFactory<Solution_, ?> delegateScoreDirectorFactory;
+    private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
     private final DomainAccessType domainAccessType;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
@@ -105,9 +108,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         EnvironmentModeUtil.validate(solverConfig);
         this.globalEnvironmentMode = EnvironmentModeUtil.resolve(solverConfig);
         this.solutionDescriptor = buildSolutionDescriptor();
-        // Caching score director factory for the default environment mode as it potentially does expensive things
-        this.delegateScoreDirectorFactory =
-                new DelegateScoreDirectorFactory<>(solverConfig, solutionDescriptor, globalEnvironmentMode);
+        // Built once and shared by every solver this factory builds, as building one is expensive.
+        this.scoreDirectorFactory = buildScoreDirectorFactory(globalEnvironmentMode);
     }
 
     public Clock getClock() {
@@ -119,14 +121,18 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     /**
-     * @return the factory built for the default environment mode;
-     *         the delegate and not its {@link DelegateScoreDirectorFactory} wrapper,
-     *         as callers outside the solving life cycle expect the concrete implementation,
-     *         such as {@code BeanUtil#buildConstraintMetaModel} which needs a constraint stream factory
+     * @return the factory built for the global environment mode, never a
+     *         {@link MultiEnvironmentScoreDirectorFactory} wrapper,
+     *         as callers outside the solving life cycle expect the concrete implementation —
+     *         such as {@code BeanUtil#buildConstraintMetaModel}, which needs a constraint stream factory
      */
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
-        return (ScoreDirectorFactory<Solution_, Score_>) delegateScoreDirectorFactory.getDelegate();
+        if (scoreDirectorFactory instanceof MultiEnvironmentScoreDirectorFactory<Solution_, ?, ?> multiEnvironmentScoreDirectorFactory) {
+            return (ScoreDirectorFactory<Solution_, Score_>) multiEnvironmentScoreDirectorFactory
+                    .getInnerScoreDirectorFactory();
+        }
+        return (ScoreDirectorFactory<Solution_, Score_>) scoreDirectorFactory;
     }
 
     @Override
@@ -143,9 +149,16 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         } else {
             solverScope.setSolverMetricSet(EnumSet.noneOf(SolverMetric.class));
         }
-        var scoreDirector = delegateScoreDirectorFactory.createScoreDirectorBuilder(globalEnvironmentMode)
+        var isStepAssertOrMore = globalEnvironmentMode.isStepAssertOrMore();
+        var constraintMatchEnabled = solverScope.isAnyMetricConstraintMatchBased() || isStepAssertOrMore;
+        if (constraintMatchEnabled && !isStepAssertOrMore) {
+            LOGGER.info(
+                    "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
+                    solverMetricList.stream().filter(SolverMetric::isMetricConstraintMatchBased).toList());
+        }
+        var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(globalEnvironmentMode)
                 .withLookUpEnabled(true) // Custom phases and problem changes may rely on lookups.
-                .withConstraintMatchPolicy(delegateScoreDirectorFactory.decideConstraintMatchPolicy(globalEnvironmentMode))
+                .withConstraintMatchPolicy(decideConstraintMatchPolicy(solverScope, globalEnvironmentMode))
                 .build();
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(scoreDirector));
@@ -173,7 +186,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
                 .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
                 .withRandom(randomFactory.get())
-                .withInitializingScoreTrend(delegateScoreDirectorFactory.getInitializingScoreTrend())
+                .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())
                 .build();
@@ -181,7 +194,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
-        return new DefaultSolver<>(globalEnvironmentMode, delegateScoreDirectorFactory, randomFactory, bestSolutionRecaller,
+        return new DefaultSolver<>(globalEnvironmentMode, scoreDirectorFactory, randomFactory, bestSolutionRecaller,
                 basicPlumbingTermination, (UniversalTermination<Solution_>) termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
@@ -221,6 +234,12 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 solverConfig.getGizmoMemberAccessorMap(),
                 solverConfig.getGizmoSolutionClonerMap(),
                 solverConfig.getEntityClassList());
+    }
+
+    private <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_>
+            buildScoreDirectorFactory(EnvironmentMode environmentMode) {
+        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<Solution_, Score_>(solverConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(environmentMode, solutionDescriptor);
     }
 
     Supplier<RandomSource> buildRandomSupplier(EnvironmentMode environmentMode) {

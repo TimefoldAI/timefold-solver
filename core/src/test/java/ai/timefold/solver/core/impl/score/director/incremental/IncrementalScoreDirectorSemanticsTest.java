@@ -13,8 +13,8 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
-import ai.timefold.solver.core.impl.score.director.DelegateScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
@@ -33,8 +33,10 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
                     SolutionDescriptor<TestdataConstraintWeightOverridesSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestdataConstraintWeightOverridesIncrementalScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
-                EnvironmentMode.PHASE_ASSERT);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataConstraintWeightOverridesSolution, SimpleScore>(
+                        scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -42,8 +44,9 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
             SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestdataPinnedListIncrementalScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
-                EnvironmentMode.PHASE_ASSERT);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -52,8 +55,9 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestdataPinnedWithIndexListIncrementalScoreCalculator.class);
-        return new DelegateScoreDirectorFactory<>(scoreDirectorFactoryConfig, solutionDescriptor,
-                EnvironmentMode.PHASE_ASSERT);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @NullMarked
