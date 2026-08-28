@@ -1986,8 +1986,73 @@ public class Job {
 
 ====
 
+[#customShadowVariableMultipleVariables]
+==== Updating multiple fields at once
+
+A supplier method can only update the single field it is declared on via `@ShadowVariable(supplierName = ...)`.
+There is no way for one supplier method to directly update several independent shadow variable fields.
+
+If the fields don't need to be recomputed together, chain them instead: let one shadow variable's supplier
+declare another shadow variable as one of its `@ShadowSources`, the way `endDate` sources from `startDate`
+in the earlier example on this page. Each supplier still only ever sets its own field, but Timefold
+reruns only the suppliers whose declared sources actually changed, so unrelated downstream fields
+aren't recomputed unnecessarily.
+
+However, when several pieces of shadow state are always computed together and change at the same time,
+it's often simpler, and cheaper, since the underlying calculation only has to run once, to group them
+into a single wrapper object, such as a `record`, and make that wrapper itself the shadow variable.
+The supplier method then returns a new instance of the wrapper every time it runs,
+and the individual pieces of state are read off that wrapper through its accessor methods.
+This avoids repeating the same calculation in multiple supplier methods
+and keeps a set of related fields consistent with one another.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public record JobState(LocalDate readyDate, LocalDate startDate, LocalDate endDate, int totalDurationInDays) {
+}
+
+@PlanningEntity
+public class Job {
+
+    @PreviousElementShadowVariable(sourceVariableName = "jobs")
+    private Job previous;
+
+    private LocalDate earliestStartDate;
+
+    private int durationInDays;
+
+    @ShadowVariable(supplierName = "jobStateSupplier")
+    private JobState jobState;
+
+    @ShadowSources("previous.jobState")
+    public JobState jobStateSupplier() {
+        // 1. Ready date: the previous job's end date, or null if this job is first in the chain.
+        LocalDate readyDate = previous == null ? null : previous.jobState.endDate();
+
+        // 2. Start date: can't start before the previous job ends, nor before this job's earliest start date.
+        LocalDate startDate = readyDate == null || readyDate.isBefore(earliestStartDate) ? earliestStartDate : readyDate;
+
+        // 3. End date
+        LocalDate endDate = startDate == null ? null : startDate.plusDays(durationInDays);
+
+        // 4. Total duration in days, accumulated along the chain of previous jobs
+        int totalDurationInDays = (previous == null ? 0 : previous.jobState.totalDurationInDays()) + durationInDays;
+
+        return new JobState(readyDate, startDate, endDate, totalDurationInDays);
+    }
+}
+----
+====
+
+Here, `readyDate`, `startDate`, `endDate` and `totalDurationInDays` are all recomputed together in `jobStateSupplier()` and packaged into a single `JobState` instance.
+Any code that needs one of these values reads it off the `jobState` field, for example `job.getJobState().endDate()`.
+
 [#detectingInconsistencies]
-==== Detecting Inconsistencies in Shadow Variables
+==== Detecting inconsistencies in shadow variables
 
 In certain cases, shadow variables may form an infinite loop.
 There are three ways a loop can form:
@@ -2139,7 +2204,7 @@ Constraint penalizeInconsistentJobs(ConstraintFactory factory) {
 IMPORTANT: Since `forEach` filters out inconsistent entities, you must use `forEachUnfiltered` to penalize inconsistent entities.
 
 [#aligningShadowVariables]
-==== Aligning Shadow Variables
+==== Aligning shadow variables
 
 `@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
 
@@ -2270,7 +2335,7 @@ public class Job {
 ----
 ====
 
-==== Optimizing Shadow Variables
+==== Optimizing shadow variables
 
 Each custom Shadow Variable on each planning entity constitutes one node of a reference graph.
 The Solver analyzes this graph to decide what is the most optimal strategy for updating these variables.
