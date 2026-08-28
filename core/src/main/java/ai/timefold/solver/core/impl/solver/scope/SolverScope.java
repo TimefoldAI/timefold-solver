@@ -134,10 +134,7 @@ public class SolverScope<Solution_> {
 
     public void setSolverMetricSet(EnumSet<SolverMetric> solverMetricSet) {
         this.solverMetricSet = solverMetricSet;
-        this.anyMetricConstraintMatchBased = !this.solverMetricSet.stream()
-                .filter(SolverMetric::isMetricConstraintMatchBased)
-                .toList()
-                .isEmpty();
+        this.anyMetricConstraintMatchBased = this.solverMetricSet.stream().anyMatch(SolverMetric::isMetricConstraintMatchBased);
     }
 
     public boolean isAnyMetricConstraintMatchBased() {

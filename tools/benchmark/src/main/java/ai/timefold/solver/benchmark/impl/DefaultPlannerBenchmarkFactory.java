@@ -131,7 +131,7 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
                 throw new IllegalStateException("""
                         The phases cannot override the environment mode when in benchmark mode.
                         Maybe remove the setting environmentMode from the benchmark configuration (%s)."""
-                        .formatted(solverBenchmarkConfig.getName()));
+                        .formatted(java.util.Objects.requireNonNullElse(solverBenchmarkConfig.getName(), "<unnamed>")));
             }
         }
     }

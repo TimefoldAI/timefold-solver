@@ -246,7 +246,7 @@ SolverConfig solverConfig = new SolverConfig()
 
 In this example, the solver's environment mode is `PHASE_ASSERT`.
 The Construction Heuristic phase has no environment mode of its own, so it uses that default.
-The Local Search phase overrides it and runs in the stricter `FULL_ASSERT` mode instead.11
+The Local Search phase overrides it and runs in the stricter `FULL_ASSERT` mode instead.
 
 [#environmentModeBestPractices]
 === Best practices
