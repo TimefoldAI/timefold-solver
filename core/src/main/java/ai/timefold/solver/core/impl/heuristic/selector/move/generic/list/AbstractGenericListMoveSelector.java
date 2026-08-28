@@ -4,14 +4,14 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.AbstractGenericMoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public abstract class GenericListMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public abstract class AbstractGenericListMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
 
     protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
 
@@ -29,7 +29,7 @@ public abstract class GenericListMoveSelector<Solution_> extends GenericMoveSele
     @Nullable
     protected ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
-    protected GenericListMoveSelector(ListVariableDescriptor<Solution_> listVariableDescriptor) {
+    protected AbstractGenericListMoveSelector(ListVariableDescriptor<Solution_> listVariableDescriptor) {
         this.listVariableDescriptor = listVariableDescriptor;
     }
 

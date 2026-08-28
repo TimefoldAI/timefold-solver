@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.Filtering
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public final class ListChangeMoveSelector<Solution_> extends GenericListMoveSelector<Solution_> {
+public final class ListChangeMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> sourceValueSelector;
     private final DestinationSelector<Solution_> destinationSelector;

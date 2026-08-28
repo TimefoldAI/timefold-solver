@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public final class ListSwapMoveSelector<Solution_> extends GenericListMoveSelector<Solution_> {
+public final class ListSwapMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> leftValueSelector;
     private final IterableValueSelector<Solution_> rightValueSelector;

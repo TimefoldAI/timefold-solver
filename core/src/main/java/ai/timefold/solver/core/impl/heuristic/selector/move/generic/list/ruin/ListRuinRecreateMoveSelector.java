@@ -5,7 +5,7 @@ import java.util.Iterator;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.GenericListMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.AbstractGenericListMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -15,7 +15,7 @@ import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NonNull;
 
-final class ListRuinRecreateMoveSelector<Solution_> extends GenericListMoveSelector<Solution_> {
+final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> valueSelector;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;

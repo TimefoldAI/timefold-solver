@@ -8,6 +8,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
  *
  * @see MoveSelector
  */
-public abstract class GenericMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
+public abstract class AbstractGenericMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
 
 }

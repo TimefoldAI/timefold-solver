@@ -7,13 +7,13 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.GenericListMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.AbstractGenericListMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-final class KOptListMoveSelector<Solution_> extends GenericListMoveSelector<Solution_> {
+final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> originSelector;
     private final IterableValueSelector<Solution_> valueSelector;
