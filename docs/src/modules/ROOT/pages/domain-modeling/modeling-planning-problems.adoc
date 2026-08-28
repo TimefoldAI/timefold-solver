@@ -2029,7 +2029,7 @@ public class Job {
     private JobState jobState;
 
     @ShadowSources("previous.jobState")
-    private JobState jobStateSupplier() {
+    public JobState jobStateSupplier() {
         // 1. Ready date: the previous job's end date, or null if this job is first in the chain.
         LocalDate readyDate = previous == null ? null : previous.jobState.endDate();
 
