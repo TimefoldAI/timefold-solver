@@ -301,9 +301,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         solverScope.endingNow();
     }
 
-    @Override
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
-        super.outerSolvingEnded(solverScope);
         LOGGER.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
@@ -320,10 +318,14 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         if (!restartSolver) {
             return false;
         } else {
+            // The score director is created and closed during the phase events.
+            // This check occurs after all phases have been completed,
+            // which means the score director is already closed.
+            // As a result,
+            // we need to recreate the score director to apply any real-time changes to the problem.
+            prepareForProblemChanges(solverScope);
             var problemChangeQueue = basicPlumbingTermination
                     .startProblemChangesProcessing();
-            solverScope.setWorkingSolutionFromBestSolution();
-
             var stepIndex = 0;
             var problemChange = problemChangeQueue.poll();
             while (problemChange != null) {

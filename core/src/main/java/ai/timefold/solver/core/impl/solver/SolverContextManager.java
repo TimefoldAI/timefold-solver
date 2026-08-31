@@ -98,6 +98,17 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> imple
     }
 
     /**
+     * This closes the score director used in the last phase.
+     * The score director mustn't be closed during the {@code phaseEnded} event,
+     * as it's still needed internally by the solver until the next phase begins.
+     * The {@link #phaseStarted(AbstractPhaseScope)} event is the appropriate place to close the score director
+     * before the final phase.
+     */
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        close(solverScope);
+    }
+
+    /**
      * Swaps in a score director for the phase's {@link EnvironmentMode} if it differs from the one in use,
      * and closes the one being replaced.
      * Does nothing when the modes already match, which is the common case.
@@ -115,6 +126,22 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> imple
             currentContext.release();
             currentContext = newSolverContext;
         }
+    }
+
+    /**
+     * Builds the score director the real-time problem changes are applied to,
+     * and uses the environment from the first phase.
+     * <p>
+     * Called from {@code DefaultSolver.checkProblemChanges},
+     * once the run which just ended has released the score director its phases used.
+     * A problem change needs an open score director to be applied to,
+     * and the restarted solver begins at the first phase,
+     * so that phase's {@link EnvironmentMode} is the one to build for.
+     */
+    void prepareForProblemChanges(SolverScope<Solution_> solverScope) {
+        var firstPhaseContext = contextFor(solverScope, scoreDirectorFactory, phaseList.getFirst(), null);
+        loadContext(solverScope, bestSolutionRecaller, null, firstPhaseContext);
+        currentContext = firstPhaseContext;
     }
 
     /**
@@ -168,12 +195,13 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> imple
      */
     private static <Solution_, Score_ extends Score<Score_>> SolverContext<Solution_, Score_> contextFor(
             SolverScope<Solution_> solverScope, ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            Phase<Solution_> phase, SolverContext<Solution_, Score_> context) {
-        // The environment modes match, and there is no need for any changes.
-        if (phase.getEnvironmentMode() == context.environmentMode()) {
+            Phase<Solution_> phase, @Nullable SolverContext<Solution_, Score_> context) {
+        // The environment modes match, so the phase runs on the context already in use.
+        if (context != null && phase.getEnvironmentMode() == context.environmentMode()) {
             return context;
         }
-        // The modes differ, so the phase needs its own score director.
+        // Either the modes differ, or there is no context in use at all,
+        // so the phase needs a score director of its own.
         // Solver contexts are deliberately not cached; the score director factory caches per mode instead,
         // and building a score director on top of an existing factory is cheap.
         var newScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(phase.getEnvironmentMode())
@@ -186,22 +214,30 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> imple
     }
 
     /**
-     * Hands everything a swap must keep continuous from the outgoing score director to the incoming one:
-     * the working solution, the running score calculation count,
-     * the {@link SolverScope}'s view of both directors, and the recaller's assertion level.
-     * Does not close the outgoing director; the caller does that once the hand-over is complete.
+     * Handles everything a context swap must execute:
+     * update the working solution,
+     * update the running score calculation count,
+     * and update the {@link SolverScope}'s view of both directors, and the recaller's assertion level.
+     * Does not close the outgoing director because the caller does that once the hand-over is complete.
      */
     private static <Solution_, Score_ extends Score<Score_>> void loadContext(SolverScope<Solution_> solverScope,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverContext<Solution_, Score_> oldSolverContext,
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, @Nullable SolverContext<Solution_, Score_> oldSolverContext,
             SolverContext<Solution_, Score_> newSolverContext) {
         solverScope.setScoreDirector(newSolverContext.scoreDirector());
         solverScope.setProblemChangeDirector(newSolverContext.problemChangeDirector());
-        // We will use the same working solution set from the previous phase, as it has already been cloned
-        newSolverContext.scoreDirector().setWorkingSolution(oldSolverContext.scoreDirector().getWorkingSolution());
+        if (oldSolverContext != null) {
+            // We will use the same working solution set from the previous phase, as it has already been cloned
+            newSolverContext.scoreDirector().setWorkingSolution(oldSolverContext.scoreDirector().getWorkingSolution());
+        } else {
+            // The old context is null, so we use the current best solution instead
+            solverScope.setWorkingSolutionFromBestSolution();
+        }
         bestSolutionRecaller.enableAssertions(newSolverContext.environmentMode());
         // Ensure that the score calculation count is consistent for the new director
-        newSolverContext.scoreDirector().resetCalculationCount();
-        newSolverContext.scoreDirector().incrementCalculationCount(oldSolverContext.scoreDirector().getCalculationCount());
+        if (oldSolverContext != null) {
+            newSolverContext.scoreDirector().resetCalculationCount();
+            newSolverContext.scoreDirector().incrementCalculationCount(oldSolverContext.scoreDirector().getCalculationCount());
+        }
     }
 
     /**

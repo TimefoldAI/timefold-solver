@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -575,6 +576,101 @@ class DefaultSolverTest {
             assertThat(bestSolution.get().getValueList()).hasSize(valueCount + 1);
             solver.terminateEarly();
         }
+    }
+
+    @Test
+    @Timeout(60)
+    void problemChangeAfterTheSolveRunsOnAScoreDirectorOfItsOwn() throws InterruptedException {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so the run ends on a score director which is not the one the first phase ran on.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.setDaemon(true); // Keep the solver waiting for the problem change instead of returning.
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+
+        var firstRunEnded = new CountDownLatch(1);
+        var changeProcessed = new CountDownLatch(1);
+        var firstPhaseScoreDirectorList = new CopyOnWriteArrayList<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        var restartedFirstPhaseStarted = new CountDownLatch(1);
+        var lastPhaseScoreDirector = new AtomicReference<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 0) {
+                    firstPhaseScoreDirectorList.add(phaseScope.getScoreDirector());
+                    if (firstPhaseScoreDirectorList.size() == 2) {
+                        restartedFirstPhaseStarted.countDown();
+                    }
+                } else {
+                    lastPhaseScoreDirector.compareAndSet(null, phaseScope.getScoreDirector());
+                }
+            }
+
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                try {
+                    firstRunEnded.countDown();
+                    changeProcessed.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        final var valueCount = 4;
+        var problem = TestdataSolution.generateSolution(valueCount, valueCount);
+        var endedRunScoreDirectorWasStillClosed = new AtomicBoolean();
+        var workingSolutionDuringChange = new AtomicReference<TestdataSolution>();
+        var bestSolutionAfterChange = new AtomicReference<TestdataSolution>();
+        solver.addEventListener(bestSolutionChangedEvent -> {
+            var newBestSolution = bestSolutionChangedEvent.getNewBestSolution();
+            if (bestSolutionChangedEvent.isEveryProblemChangeProcessed()
+                    && newBestSolution.getValueList().size() == valueCount + 1) {
+                bestSolutionAfterChange.compareAndSet(null, newBestSolution);
+            }
+        });
+
+        try (var executorService = Executors.newSingleThreadExecutor()) {
+            try {
+                executorService.submit(() -> solver.solve(problem));
+                // A problem change queued while a run is in progress terminates that run early,
+                // and no phase would run at all.
+                // Waiting for the run to end is the point of this test:
+                // by then its score director is closed,
+                // so checkProblemChanges has to build one of its own to apply the change to.
+                firstRunEnded.await();
+                // At this point,
+                // the solver has completed the first run
+                // and will wait for the problem change to be added,
+                // ensuring that checkProblemChanges is executed correctly.
+                solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+                    // close() clears the working solution, which is the observable proof it stayed closed.
+                    endedRunScoreDirectorWasStillClosed.set(lastPhaseScoreDirector.get().getWorkingSolution() == null);
+                    workingSolutionDuringChange.set(workingSolution);
+                    problemChangeDirector.addProblemFact(new TestdataValue("added value"), problem.getValueList()::add);
+                });
+                // The first run now finishes completely
+                changeProcessed.countDown();
+                restartedFirstPhaseStarted.await();
+            } finally {
+                solver.terminateEarly();
+            }
+        }
+
+        // The score director the run ended on close
+        assertThat(endedRunScoreDirectorWasStillClosed).isTrue();
+        assertThat(workingSolutionDuringChange.get()).isNotNull();
+        // No change to the solution from the first run
+        assertThat(workingSolutionDuringChange.get().getEntityList())
+                .as("the best solution of the run which just ended is loaded into the new score director")
+                .hasSize(valueCount)
+                .allMatch(entity -> entity.getValue() != null);
+        // The best solution must include the real-time changes
+        assertThat(bestSolutionAfterChange.get().getValueList()).hasSize(valueCount + 1);
+        // The restarted solver resumes at the first phase, on a score director of its own.
+        assertThat(firstPhaseScoreDirectorList).hasSize(2);
+        assertThat(firstPhaseScoreDirectorList.get(1)).isNotSameAs(firstPhaseScoreDirectorList.get(0));
     }
 
     @Test
