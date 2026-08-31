@@ -29,11 +29,8 @@ import org.jspecify.annotations.Nullable;
  * whereas {@link #createScoreDirectorBuilder(EnvironmentMode)} builds for the requested mode instead;
  * the latter exists because a solver phase may override the solver's environment mode.
  * Implementations must guarantee that the returned builder produces a score director
- * that actually runs in the requested mode,
+ * that actually runs in the requested environment mode,
  * even if that means the implementation cannot reuse the state it built for its default mode.
- * {@link MultiEnvironmentScoreDirectorFactory} is the implementation which handles that situation,
- * and therefore the one solver components are expected to hold on to
- * whenever the config has a phase running in a mode of its own.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
@@ -82,5 +79,12 @@ public interface ScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
      */
     @Nullable
     InitializingScoreTrend getInitializingScoreTrend();
+
+    /**
+     * Adapts the existing factory to create one that can handle multiple environments.
+     */
+    <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
+            AbstractScoreDirectorFactory<Solution_, Score_, Factory_>
+            adaptToMultiEnvironmentMode(ScoreDirectorFactoryFactory<Solution_, Score_> scoreDirectorFactoryFactory);
 
 }

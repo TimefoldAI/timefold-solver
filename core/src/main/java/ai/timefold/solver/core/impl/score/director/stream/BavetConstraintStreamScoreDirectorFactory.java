@@ -13,6 +13,8 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector.Builder;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
@@ -24,9 +26,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
-        extends
-        AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>> {
+public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> extends
+        AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>>
+        permits MultiEnvironmentBavetConstraintStreamScoreDirectorFactory {
 
     public static <Solution_, Score_ extends Score<Score_>> BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
@@ -80,6 +82,19 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
                 new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
     }
 
+    /**
+     * Create a new factory from one already built for the same environment mode,
+     * sharing the constraint network it built rather than building a second one.
+     */
+    BavetConstraintStreamScoreDirectorFactory(
+            BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> inheritedScoreDirectorFactory) {
+        super(inheritedScoreDirectorFactory.solutionDescriptor, inheritedScoreDirectorFactory.globalEnvironmentMode);
+        this.constraintSessionFactory = inheritedScoreDirectorFactory.constraintSessionFactory;
+        this.constraintMetaModel = inheritedScoreDirectorFactory.constraintMetaModel;
+        this.initializingScoreTrend = inheritedScoreDirectorFactory.initializingScoreTrend;
+        this.assertionScoreDirectorFactory = inheritedScoreDirectorFactory.assertionScoreDirectorFactory;
+    }
+
     public BavetConstraintSession<Score_> newSession(@Nullable Solution_ workingSolution,
             ConsistencyTracker<Solution_> consistencyTracker, ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived) {
@@ -105,5 +120,14 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     @Override
     public Builder<Solution_, Score_> createScoreDirectorBuilder(EnvironmentMode environmentMode) {
         return new Builder<>(this, environmentMode);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
+            AbstractScoreDirectorFactory<Solution_, Score_, Factory_>
+            adaptToMultiEnvironmentMode(ScoreDirectorFactoryFactory<Solution_, Score_> scoreDirectorFactoryFactory) {
+        return (AbstractScoreDirectorFactory<Solution_, Score_, Factory_>) new MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<>(
+                scoreDirectorFactoryFactory, this);
     }
 }

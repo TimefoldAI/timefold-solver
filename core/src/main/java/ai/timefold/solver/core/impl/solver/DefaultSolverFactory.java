@@ -35,7 +35,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
-import ai.timefold.solver.core.impl.score.director.MultiEnvironmentScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
@@ -63,9 +62,9 @@ import io.micrometer.core.instrument.Tags;
  * <p>
  * The solver config has one environment mode, the global one,
  * and each of its phases may override it with a stricter one.
- * The score director factory is built once, for the global environment mode.
- * When a phase runs in a mode of its own, that factory is a {@link MultiEnvironmentScoreDirectorFactory},
- * which builds and caches a further factory for each mode a phase asks for.
+ * The score director factory is built once, for the global environment mode,
+ * and, when a phase runs in different environment mode,
+ * it is adapted into one which handles multiple environments.
  * <p>
  * That is also why a global environment mode has to exist at all,
  * even for a config whose phases all override it.
@@ -121,17 +120,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     /**
-     * @return the factory built for the global environment mode, never a
-     *         {@link MultiEnvironmentScoreDirectorFactory} wrapper,
-     *         as callers outside the solving life cycle expect the concrete implementation —
-     *         such as {@code BeanUtil#buildConstraintMetaModel}, which needs a constraint stream factory
+     * @return the factory built for the global environment mode
      */
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
-        if (scoreDirectorFactory instanceof MultiEnvironmentScoreDirectorFactory<Solution_, ?, ?> multiEnvironmentScoreDirectorFactory) {
-            return (ScoreDirectorFactory<Solution_, Score_>) multiEnvironmentScoreDirectorFactory
-                    .getInnerScoreDirectorFactory();
-        }
         return (ScoreDirectorFactory<Solution_, Score_>) scoreDirectorFactory;
     }
 

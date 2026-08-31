@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirector;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.stream.MultiEnvironmentBavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -62,6 +63,15 @@ class ScoreDirectorFactoryFactoryTest {
      */
     private static ScoreDirectorFactory<TestdataSolution, SimpleScore> buildFactoryFromSolverConfig(
             EnvironmentMode globalEnvironmentMode, EnvironmentMode... phaseEnvironmentModes) {
+        return buildFactoryFromSolverConfig(constraintStreamConfig(), globalEnvironmentMode, phaseEnvironmentModes);
+    }
+
+    /**
+     * @param phaseEnvironmentModes one entry per phase, null meaning the phase does not override the solver's mode
+     */
+    private static ScoreDirectorFactory<TestdataSolution, SimpleScore> buildFactoryFromSolverConfig(
+            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig, EnvironmentMode globalEnvironmentMode,
+            EnvironmentMode... phaseEnvironmentModes) {
         var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
         constructionHeuristicPhaseConfig.setEnvironmentMode(phaseEnvironmentModes[0]);
         var localSearchPhaseConfig = new LocalSearchPhaseConfig();
@@ -70,7 +80,7 @@ class ScoreDirectorFactoryFactoryTest {
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withEnvironmentMode(globalEnvironmentMode)
-                .withScoreDirectorFactory(constraintStreamConfig())
+                .withScoreDirectorFactory(scoreDirectorFactoryConfig)
                 .withPhases(constructionHeuristicPhaseConfig, localSearchPhaseConfig);
         return new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(solverConfig)
                 .buildScoreDirectorFactory(globalEnvironmentMode, SOLUTION_DESCRIPTOR);
@@ -166,7 +176,7 @@ class ScoreDirectorFactoryFactoryTest {
 
     @Test
     void noPhaseOverrideYieldsTheConcreteFactory() {
-        // Nothing runs in another mode, so there is nothing to decorate.
+        // Nothing runs in another mode, so there is nothing to adapt.
         assertThat(buildFactoryFromSolverConfig(EnvironmentMode.PHASE_ASSERT, null, null))
                 .isExactlyInstanceOf(BavetConstraintStreamScoreDirectorFactory.class);
     }
@@ -175,7 +185,7 @@ class ScoreDirectorFactoryFactoryTest {
     void oneOverridingPhaseYieldsTheMultiEnvironmentFactory() {
         // The documented case: the solver stays at its default and only local search is asserted.
         assertThat(buildFactoryFromSolverConfig(EnvironmentMode.PHASE_ASSERT, null, EnvironmentMode.FULL_ASSERT))
-                .isExactlyInstanceOf(MultiEnvironmentScoreDirectorFactory.class);
+                .isExactlyInstanceOf(MultiEnvironmentBavetConstraintStreamScoreDirectorFactory.class);
     }
 
     @Test
@@ -184,7 +194,7 @@ class ScoreDirectorFactoryFactoryTest {
         // outside the phases, so two factories are needed all the same.
         assertThat(buildFactoryFromSolverConfig(EnvironmentMode.PHASE_ASSERT,
                 EnvironmentMode.FULL_ASSERT, EnvironmentMode.FULL_ASSERT))
-                .isExactlyInstanceOf(MultiEnvironmentScoreDirectorFactory.class);
+                .isExactlyInstanceOf(MultiEnvironmentBavetConstraintStreamScoreDirectorFactory.class);
     }
 
     @Test
@@ -197,8 +207,8 @@ class ScoreDirectorFactoryFactoryTest {
 
     @Test
     void multiEnvironmentFactoryCarriesTheConfiguredTrend() {
-        // The trend is applied to the concrete factory before it is decorated; applying it to the decorator
-        // would throw, and the decorator reads it back through to the factory it decorates.
+        // The trend is applied to the concrete factory before it is adapted, so the adapted factory has to
+        // carry it over; the solver reads it from there to build its HeuristicConfigPolicy.
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -206,14 +216,15 @@ class ScoreDirectorFactoryFactoryTest {
                 .withPhases(new LocalSearchPhaseConfig().withEnvironmentMode(EnvironmentMode.FULL_ASSERT));
         var scoreDirectorFactory = new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(solverConfig)
                 .buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, SOLUTION_DESCRIPTOR);
-        assertThat(scoreDirectorFactory).isExactlyInstanceOf(MultiEnvironmentScoreDirectorFactory.class);
+        assertThat(scoreDirectorFactory).isExactlyInstanceOf(MultiEnvironmentBavetConstraintStreamScoreDirectorFactory.class);
         assertThat(scoreDirectorFactory.getInitializingScoreTrend())
                 .isEqualTo(InitializingScoreTrend.parseTrend("ONLY_DOWN", 1));
     }
 
     @Test
     void multiEnvironmentFactoryCarriesTheConfiguredAssertionFactory() {
-        // The other value applied before decorating, and the other setter the decorator refuses.
+        // The other value applied before adapting. Losing it is silent: score corruption would then be
+        // asserted against the same implementation instead of the independent one configured here.
         // STEP_ASSERT because an assertionScoreDirectorFactory requires that mode or stricter.
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
@@ -224,14 +235,41 @@ class ScoreDirectorFactoryFactoryTest {
                 .withPhases(new LocalSearchPhaseConfig().withEnvironmentMode(EnvironmentMode.FULL_ASSERT));
         var scoreDirectorFactory = new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(solverConfig)
                 .buildScoreDirectorFactory(EnvironmentMode.STEP_ASSERT, SOLUTION_DESCRIPTOR);
-        assertThat(scoreDirectorFactory).isExactlyInstanceOf(MultiEnvironmentScoreDirectorFactory.class);
+        assertThat(scoreDirectorFactory).isExactlyInstanceOf(MultiEnvironmentBavetConstraintStreamScoreDirectorFactory.class);
 
         var assertionScoreDirectorFactory =
                 ((AbstractScoreDirectorFactory<TestdataSolution, ?, ?>) scoreDirectorFactory)
                         .getAssertionScoreDirectorFactory();
-        // Read through to the decorated factory, and a concrete one, as the code using it expects.
+        // Carried over from the factory it took over from, and a concrete one, as the code using it expects.
         assertThat(assertionScoreDirectorFactory)
                 .isExactlyInstanceOf(IncrementalScoreDirectorFactory.class);
+    }
+
+    @Test
+    void easyScoreCalculatorServesEveryEnvironmentModeItself() {
+        // An easy calculator has no state built from the environment mode; the mode is passed straight on to
+        // the score director, so one factory serves every mode and there is nothing to adapt.
+        assertThat(buildFactoryFromSolverConfig(easyConfig(), EnvironmentMode.PHASE_ASSERT, null,
+                EnvironmentMode.FULL_ASSERT))
+                .isExactlyInstanceOf(EasyScoreDirectorFactory.class);
+    }
+
+    @Test
+    void incrementalScoreCalculatorServesEveryEnvironmentModeItself() {
+        assertThat(buildFactoryFromSolverConfig(incrementalConfig(), EnvironmentMode.PHASE_ASSERT, null,
+                EnvironmentMode.FULL_ASSERT))
+                .isExactlyInstanceOf(IncrementalScoreDirectorFactory.class);
+    }
+
+    @Test
+    void aFactoryWhichServesEveryModeItselfStillHonoursTheRequestedMode() {
+        // Which is what makes adapting to itself correct rather than merely tolerated.
+        var scoreDirectorFactory = buildFactoryFromSolverConfig(easyConfig(), EnvironmentMode.PHASE_ASSERT, null,
+                EnvironmentMode.FULL_ASSERT);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT)) {
+            assertThat(scoreDirector.environmentMode).isEqualTo(EnvironmentMode.FULL_ASSERT);
+            assertThat(scoreDirector.getScoreDirectorFactory()).isSameAs(scoreDirectorFactory);
+        }
     }
 
     // ************************************************************************
@@ -239,33 +277,34 @@ class ScoreDirectorFactoryFactoryTest {
     // ************************************************************************
 
     @Test
-    void globalEnvironmentModeGoesToTheDecoratedFactory() {
-        var scoreDirectorFactory = (MultiEnvironmentScoreDirectorFactory<TestdataSolution, SimpleScore, ?>) //
+    void globalEnvironmentModeIsServedByTheFactoryItself() {
+        var scoreDirectorFactory = (MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<TestdataSolution, SimpleScore>) //
         buildFactoryFromSolverConfig(EnvironmentMode.PHASE_ASSERT, null, EnvironmentMode.FULL_ASSERT);
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.PHASE_ASSERT)) {
             assertThat(scoreDirector.environmentMode).isEqualTo(EnvironmentMode.PHASE_ASSERT);
-            assertThat(scoreDirector.getScoreDirectorFactory())
-                    .isSameAs(scoreDirectorFactory.getInnerScoreDirectorFactory());
+            // It took over the constraint network built for the solver's own mode, so no second factory is
+            // needed for that mode, and none is built.
+            assertThat(scoreDirector.getScoreDirectorFactory()).isSameAs(scoreDirectorFactory);
         }
     }
 
     @Test
     void otherEnvironmentModeGetsAFactoryOfItsOwn() {
-        var scoreDirectorFactory = (MultiEnvironmentScoreDirectorFactory<TestdataSolution, SimpleScore, ?>) //
+        var scoreDirectorFactory = (MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<TestdataSolution, SimpleScore>) //
         buildFactoryFromSolverConfig(EnvironmentMode.PHASE_ASSERT, null, EnvironmentMode.FULL_ASSERT);
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT)) {
             assertThat(scoreDirector.environmentMode).isEqualTo(EnvironmentMode.FULL_ASSERT);
-            // Constraint Streams builds its network from the mode, so reusing the decorated factory would
-            // have given a score director whose network does not match the mode it reports.
+            // Constraint Streams builds its network from the mode, so serving this one from the inherited
+            // network would have given a score director whose network does not match the mode it reports.
             assertThat(scoreDirector.getScoreDirectorFactory())
-                    .isNotSameAs(scoreDirectorFactory.getInnerScoreDirectorFactory())
+                    .isNotSameAs(scoreDirectorFactory)
                     .isExactlyInstanceOf(BavetConstraintStreamScoreDirectorFactory.class);
         }
     }
 
     @Test
     void theFactoryForAnotherEnvironmentModeIsBuiltOnceAndShared() {
-        var scoreDirectorFactory = (MultiEnvironmentScoreDirectorFactory<TestdataSolution, SimpleScore, ?>) //
+        var scoreDirectorFactory = (MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<TestdataSolution, SimpleScore>) //
         buildFactoryFromSolverConfig(EnvironmentMode.PHASE_ASSERT, null, EnvironmentMode.FULL_ASSERT);
         try (var first = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT);
                 var second = scoreDirectorFactory.buildScoreDirector(EnvironmentMode.FULL_ASSERT)) {

@@ -7,9 +7,12 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverTest.DummyEasyScoreCalculator;
@@ -261,6 +264,22 @@ class DefaultSolverFactoryTest {
                 .buildSolver()
                 .solve(TestdataSolution.generateSolution(2, 2));
         assertThat(solution).isNotNull();
+        assertThat(solution.getScore()).isNotNull();
+    }
+
+    @Test
+    void solvesWithConstraintStreamsAndAPhaseOverridingTheEnvironmentMode() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataConstraintProvider.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(5)));
+        var solverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
+        assertThat(solverFactory.<SimpleScore> getScoreDirectorFactory().getInitializingScoreTrend()).isNotNull();
+        var solution = solverFactory.buildSolver().solve(TestdataSolution.generateSolution(2, 2));
         assertThat(solution.getScore()).isNotNull();
     }
 

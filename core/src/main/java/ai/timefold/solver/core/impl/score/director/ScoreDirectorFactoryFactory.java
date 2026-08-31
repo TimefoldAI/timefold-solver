@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.director;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
@@ -33,12 +34,11 @@ import org.jspecify.annotations.Nullable;
  * A score director factory is built for exactly one {@link EnvironmentMode}.
  * A solver config whose phases all run in the solver's own mode therefore needs only one,
  * and gets the concrete factory.
- * As soon as a phase runs in another mode,
- * {@link #buildScoreDirectorFactory(EnvironmentMode, SolutionDescriptor)} returns a
- * {@link MultiEnvironmentScoreDirectorFactory} instead,
- * which serves that phase a factory of its own.
- *
- * @param <Solution_> the solution type
+ * If multiple environment modes are needed,
+ * {@link #buildScoreDirectorFactory(EnvironmentMode, SolutionDescriptor)} provides a factory capable of handling multiple
+ * environments.
+ * 
+ * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
  */
 @NullMarked
@@ -79,24 +79,22 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
     }
 
     /**
-     * @return a factory for the given environment mode; a {@link MultiEnvironmentScoreDirectorFactory} when the
-     *         config has a phase running in another mode, so that the phase can be served a factory of its own
+     * @return a factory for the given environment mode, adapted to serve multiple environment modes as well
+     *         when the config requires distinct environments modes.
      */
     public ScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(EnvironmentMode environmentMode,
             SolutionDescriptor<Solution_> solutionDescriptor) {
         var factory = buildConcreteScoreDirectorFactory(environmentMode, solutionDescriptor);
         if (useMultipleEnvironmentModes) {
-            return new MultiEnvironmentScoreDirectorFactory<>(this, factory, environmentMode);
+            return factory.adaptToMultiEnvironmentMode(this);
         }
         return factory;
     }
 
     /**
-     * The factory the configured score director implies and never decorated.
-     * {@link MultiEnvironmentScoreDirectorFactory} calls this for each further mode it has to serve,
-     * so that its cache holds concrete factories rather than decorators.
+     * The factory the configured score director implies, built for the given mode and never adapted.
      */
-    AbstractScoreDirectorFactory<Solution_, Score_, ?> buildConcreteScoreDirectorFactory(EnvironmentMode environmentMode,
+    public AbstractScoreDirectorFactory<Solution_, Score_, ?> buildConcreteScoreDirectorFactory(EnvironmentMode environmentMode,
             SolutionDescriptor<Solution_> solutionDescriptor) {
         var factory = decideScoreDirectorFactory(solutionDescriptor, environmentMode);
         var assertionScoreDirectorFactoryConfig = scoreDirectorFactoryConfig.getAssertionScoreDirectorFactory();
