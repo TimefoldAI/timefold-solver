@@ -25,7 +25,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
         size = childValueRange.getSize() + 1L;
     }
 
-    AbstractValueRange<T> getChildValueRange() {
+    public AbstractValueRange<T> getChildValueRange() {
         return childValueRange;
     }
 

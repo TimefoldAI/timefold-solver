@@ -127,7 +127,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public boolean isAssigned(Object element) {
-        return getInverseSingleton(element) != null;
+        return listVariableState.isElementAssigned(element);
     }
 
     @Override

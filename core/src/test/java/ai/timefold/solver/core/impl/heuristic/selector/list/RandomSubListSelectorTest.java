@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
-import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.nthTriangle;
+import static ai.timefold.solver.core.impl.util.TriangularNumbers.nthTriangle;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedListVariableDescriptor;

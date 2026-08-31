@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi;
 
+import java.util.function.Function;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
@@ -7,6 +9,8 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.NeighborhoodsGroupNodeConstructor;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeBiEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
@@ -34,6 +38,34 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
     @Override
     public final BiEnumeratingStream<Solution_, A, B> filter(BiNeighborhoodsPredicate<Solution_, A, B> filter) {
         return shareAndAddChild(new FilterBiEnumeratingStream<>(enumeratingStreamFactory, this, filter));
+    }
+
+    @Override
+    public BiEnumeratingStream<Solution_, A, B> concat(BiEnumeratingStream<Solution_, A, B> otherStream) {
+        var other = (AbstractBiEnumeratingStream<Solution_, A, B>) otherStream;
+        var leftBridge = new ForeBridgeBiEnumeratingStream<Solution_, A, B>(enumeratingStreamFactory, this);
+        var rightBridge = new ForeBridgeBiEnumeratingStream<Solution_, A, B>(enumeratingStreamFactory, other);
+        var concatStream = new BiConcatBiEnumeratingStream<>(enumeratingStreamFactory, leftBridge, rightBridge);
+        return enumeratingStreamFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream, as it is an actual new concat.
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
+    public BiEnumeratingStream<Solution_, A, B> concat(UniEnumeratingStream<Solution_, A> otherStream,
+            Function<A, B> paddingFunction) {
+        var other = (AbstractUniEnumeratingStream<Solution_, A>) otherStream;
+        var leftBridge = new ForeBridgeBiEnumeratingStream<Solution_, A, B>(enumeratingStreamFactory, this);
+        var rightBridge = new ForeBridgeUniEnumeratingStream<Solution_, A>(enumeratingStreamFactory, other);
+        var concatStream =
+                new UniConcatBiEnumeratingStream<>(enumeratingStreamFactory, leftBridge, rightBridge, paddingFunction);
+        return enumeratingStreamFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream, as it is an actual new concat.
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
     }
 
     @Override
@@ -101,8 +133,8 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
 
     @Override
     public BiLeftDataset<Solution_, A, B> asCachedDataset() {
-        var stream = shareAndAddChild(new LeftTerminalBiEnumeratingStream<>(enumeratingStreamFactory, this));
-        return stream.getDataset();
+        return shareAndAddChild(new LeftTerminalBiEnumeratingStream<>(enumeratingStreamFactory, this))
+                .getDataset();
     }
 
 }

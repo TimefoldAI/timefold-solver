@@ -18,6 +18,9 @@ import org.jspecify.annotations.NullMarked;
  * If user code already guarantees that unassigned values will never appear,
  * {@link ElementPosition#ensureAssigned()} can be used to avoid instanceof checks and casting.
  * <p>
+ * An {@link ElementPosition} is valid only at the time it is obtained.
+ * It does not update if the list variable changes afterward.
+ * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
@@ -26,8 +29,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize the API.
- * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
+ * Please direct your feedback to <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
  * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  */
 @NullMarked

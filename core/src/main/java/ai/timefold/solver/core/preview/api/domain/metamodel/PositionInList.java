@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
+
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -30,5 +32,7 @@ public sealed interface PositionInList
     <Entity_> Entity_ entity();
 
     int index();
+
+    PositionInList rebase(Lookup lookup);
 
 }

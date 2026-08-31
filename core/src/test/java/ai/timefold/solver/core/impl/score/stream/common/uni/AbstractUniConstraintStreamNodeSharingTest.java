@@ -747,6 +747,17 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
 
     @Override
     @TestTemplate
+    public void differentPaddingFunctionConcat() {
+        var biStream = constraintFactory.forEach(TestdataEntity.class).join(TestdataEntity.class);
+        Function<TestdataEntity, TestdataEntity> paddingA = a -> a;
+        Function<TestdataEntity, TestdataEntity> paddingB = a -> null;
+
+        assertThat(baseStream.concat(biStream, paddingA))
+                .isNotSameAs(baseStream.concat(biStream, paddingB));
+    }
+
+    @Override
+    @TestTemplate
     public void sameDataPrecompute() {
         Predicate<TestdataEntity> filter1 = a -> true;
         Assertions.assertThat((UniConstraintStream<?>) constraintFactory.precompute(

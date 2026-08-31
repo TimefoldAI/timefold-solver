@@ -31,6 +31,28 @@ class ChangeMoveTest {
     }
 
     @Test
+    void toStringShowsTheOriginalValueAfterAssigningAnUnassignedEntity() {
+        // getValue() used null as its "not cached yet" sentinel,
+        // so it never cached a genuinely null current value and re-read the descriptor after execute() had already changed it.
+        var solution = TestdataSolution.generateSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        entity.setValue(null);
+        var newValue = solution.getValueList().getFirst();
+
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var changeMove = Moves.change(variableMetaModel, entity, newValue);
+
+        MoveTester.build(solutionMetaModel)
+                .using(solution)
+                .execute(changeMove);
+
+        assertThat(changeMove.toString()).contains("null -> " + newValue);
+    }
+
+    @Test
     void changeMoveToNull() {
         var solution = TestdataSolution.generateSolution(2, 1);
         var entity = solution.getEntityList().getFirst();

@@ -1,10 +1,13 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
+import static ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel.VARIABLE_META_MODEL_COMPARATOR;
+
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -35,8 +38,7 @@ public record DefaultShadowVariableMetaModel<Solution_, Entity_, Value_>(
     @Override
     public boolean equals(Object o) {
         // Do not use entity in equality checks;
-        // If an entity is subclassed, that subclass will have it
-        // own distinct VariableMetaModel
+        // If an entity is subclassed, that subclass will have it own distinct VariableMetaModel
         if (o instanceof DefaultShadowVariableMetaModel<?, ?, ?> that) {
             return Objects.equals(variableDescriptor, that.variableDescriptor);
         }
@@ -46,6 +48,11 @@ public record DefaultShadowVariableMetaModel<Solution_, Entity_, Value_>(
     @Override
     public int hashCode() {
         return Objects.hashCode(variableDescriptor);
+    }
+
+    @Override
+    public int compareTo(VariableMetaModel<Solution_, Entity_, Value_> other) {
+        return VARIABLE_META_MODEL_COMPARATOR.compare(this, other);
     }
 
     @Override

@@ -135,9 +135,8 @@ public class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove<Solut
 
     @Override
     public ListSwapMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
-        return new ListSwapMove<>(variableMetaModel, lookup.lookUpWorkingObject(leftEntity), leftIndex,
-                lookup.lookUpWorkingObject(rightEntity),
-                rightIndex);
+        return new ListSwapMove<>(variableMetaModel, lookup.lookUpNonNullWorkingObject(leftEntity), leftIndex,
+                lookup.lookUpNonNullWorkingObject(rightEntity), rightIndex);
     }
 
     @Override

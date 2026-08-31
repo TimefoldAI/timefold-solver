@@ -66,6 +66,7 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -74,8 +75,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @param <Solution_> the solution type, the class with the {@link PlanningSolution}
- *        annotation
+ * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
 public final class SolutionDescriptor<Solution_> {
@@ -126,8 +126,8 @@ public final class SolutionDescriptor<Solution_> {
 
         solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
         solutionDescriptor.processAnnotations(descriptorPolicy);
-        // Before iterating over the entity classes, we need to read the inheritance chain,
-        // add all parent and child classes, and sort them.
+        // Before iterating over the entity classes, we need to read the inheritance chain, add all parent and child classes,
+        // and sort them.
         var updatedEntityClassList = new ArrayList<>(entityClassList);
         for (var entityClass : entityClassList) {
             var inheritedEntityClasses = extractInheritedClasses(entityClass);
@@ -680,13 +680,13 @@ public final class SolutionDescriptor<Solution_> {
                 for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
                     if (variableDescriptor.isListVariable()) {
                         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-                        var listVariableMetaModel =
-                                new DefaultPlanningListVariableMetaModel<>(entityMetaModel, listVariableDescriptor);
+                        var listVariableMetaModel = new DefaultPlanningListVariableMetaModel<>(
+                                (GenuineEntityMetaModel<Solution_, Object>) entityMetaModel, listVariableDescriptor);
                         entityMetaModel.addVariable(listVariableMetaModel);
                     } else {
                         var basicVariableDescriptor = (BasicVariableDescriptor<Solution_>) variableDescriptor;
-                        var basicVariableMetaModel =
-                                new DefaultPlanningVariableMetaModel<>(entityMetaModel, basicVariableDescriptor);
+                        var basicVariableMetaModel = new DefaultPlanningVariableMetaModel<>(
+                                (GenuineEntityMetaModel<Solution_, Object>) entityMetaModel, basicVariableDescriptor);
                         entityMetaModel.addVariable(basicVariableMetaModel);
                     }
                 }

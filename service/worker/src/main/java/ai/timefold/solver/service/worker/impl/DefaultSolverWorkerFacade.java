@@ -2,6 +2,7 @@ package ai.timefold.solver.service.worker.impl;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
@@ -205,7 +206,7 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
     public LogInfo getLogs(String id) {
         LogInfo podLogInfo = null;
         LogInfo logs = storageService.getLogs(id);
-        java.nio.file.Path solverLogPath = Paths.get(LoggingConstants.SOLVER_LOG_PATH);
+        Path solverLogPath = Paths.get(LoggingConstants.SOLVER_LOG_PATH);
         if (Files.exists(solverLogPath)) {
             try {
                 podLogInfo = new LogInfo(

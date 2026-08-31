@@ -1,7 +1,12 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -35,7 +40,11 @@ class SwapMoveTest {
     }
 
     @Test
-    void swapMoveWithSameValue() {
+    @SuppressWarnings("unchecked")
+    void sameValueSwapWritesBothVariables() {
+        // SwapMove does not skip a variable whose values already match;
+        // that exclusion is the provider's job (SwapMoveProvider.isValidSwap).
+        // A hand-built move over equal values now performs two writes that produce no net change, instead of none.
         var solution = TestdataSolution.generateSolution(2, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -50,13 +59,10 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        MoveTester.build(solutionMetaModel)
-                .using(solution)
-                .execute(swapMove);
+        var solutionView = mock(MutableSolutionView.class);
+        swapMove.execute(solutionView);
 
-        // Assert - both should still have the same value
-        assertThat(entity1.getValue()).isEqualTo(value);
-        assertThat(entity2.getValue()).isEqualTo(value);
+        verify(solutionView, times(2)).changeVariable(any(), any(), any());
     }
 
     @Test

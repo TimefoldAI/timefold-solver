@@ -22,24 +22,27 @@ import org.jspecify.annotations.Nullable;
  * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
-public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
+public final class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
-    protected final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    protected final Entity_ entity;
-    protected final @Nullable Value_ toPlanningValue;
+    private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
+    private final Entity_ entity;
+    private final @Nullable Value_ toPlanningValue;
 
     private @Nullable Value_ currentValue;
+    private boolean currentValueCached = false;
 
-    protected ChangeMove(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+    ChangeMove(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
             @Nullable Value_ toPlanningValue) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.entity = Objects.requireNonNull(entity);
         this.toPlanningValue = toPlanningValue;
     }
 
-    protected @Nullable Value_ getValue() {
-        if (currentValue == null) {
+    @Nullable
+    private Value_ getValue() {
+        if (!currentValueCached) {
             currentValue = getVariableDescriptor(variableMetaModel).getValue(entity);
+            currentValueCached = true;
         }
         return currentValue;
     }
@@ -52,7 +55,7 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
 
     @Override
     public ChangeMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
-        return new ChangeMove<>(variableMetaModel, lookup.lookUpWorkingObject(entity),
+        return new ChangeMove<>(variableMetaModel, lookup.lookUpNonNullWorkingObject(entity),
                 lookup.lookUpWorkingObject(toPlanningValue));
     }
 
