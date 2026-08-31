@@ -8,8 +8,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
@@ -228,12 +228,12 @@ public interface TimefoldSolverEnterpriseService {
     InnerConstraintProfiler buildConstraintProfiler();
 
     /**
-     * @param inconsistentEntities the entities that are inconsistent
-     * @param scoreDefinition can be null if inconsistentEntities is known to be empty
+     * @param variableLoops the variable loops in the solution
+     * @param scoreDefinition can be null if variableLoops is known to be empty
      */
     <Score_ extends Score<Score_>> ScoreAnalysis<Score_> analyze(InnerScore<Score_> state,
             Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
-            List<LoopedVariableInfo> inconsistentEntities,
+            List<VariableLoop> variableLoops,
             @Nullable ScoreDefinition<Score_> scoreDefinition,
             ScoreAnalysisFetchPolicy fetchPolicy);
 

@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
@@ -425,11 +425,11 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
         return true;
     }
 
-    public List<LoopedVariableInfo> getInconsistentGroups() {
+    public List<VariableLoop> getVariableLoops() {
         if (shadowVariableSession == null) {
             return Collections.emptyList();
         }
-        return shadowVariableSession.getInconsistentGroups();
+        return shadowVariableSession.getVariableLoops();
     }
 
     /**

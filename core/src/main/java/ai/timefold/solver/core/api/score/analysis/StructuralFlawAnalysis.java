@@ -10,8 +10,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface StructuralFlawAnalysis {
     /**
-     * Return a list of independent {@link LoopedVariableInfo}
+     * Return a list of independent {@link VariableLoop}
      * that form cycles and thus cause inconsistencies in the solution.
      */
-    List<LoopedVariableInfo> getInconsistentGroups();
+    List<VariableLoop> getVariableLoops();
 }

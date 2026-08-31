@@ -54,7 +54,7 @@ public interface PhaseCommandContext<Solution_>
      *
      * @param move the move to execute
      * @throws IllegalArgumentException if the move causes the solution to have a negative
-     *         {@link Score#structuralScore()}. If you are unsure if a move will result in a structural
+     *         {@link Score#structuralScore()}. If you are unsure if a move will result in a structurally valid
      *         solution, use {@link #executeTemporarily(Move)} to check
      *         if a move results in a structural flawed solution before executing it.
      */
@@ -67,7 +67,7 @@ public interface PhaseCommandContext<Solution_>
      * @param move the move to execute
      * @return the new score of the working solution after executing the move
      * @throws IllegalArgumentException if the move causes the solution to have a negative
-     *         {@link Score#structuralScore()}. If you are unsure if a move will result in a structural
+     *         {@link Score#structuralScore()}. If you are unsure if a move will result in a structurally valid
      *         solution, use {@link #executeTemporarily(Move)} to check
      *         if a move results in a structural flawed solution before executing it.
      */

@@ -9,8 +9,8 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -65,7 +65,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     private <Result_> Result_ callScoreDirector(String feature, Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy,
-            BiFunction<InnerScoreDirector<Solution_, Score_>, List<LoopedVariableInfo>, Result_> function,
+            BiFunction<InnerScoreDirector<Solution_, Score_>, List<VariableLoop>, Result_> function,
             ConstraintMatchPolicy constraintMatchPolicy,
             boolean cloneSolution, boolean handlesStructurallyFlawedSolutions) {
         var isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
@@ -93,15 +93,15 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
 
             // if handlesStructurallyFlawedSolutions is true, then the score can never be structurally flawed
             // and all variable updates will be successful
-            List<LoopedVariableInfo> inconsistentEntities = null;
+            List<VariableLoop> inconsistentEntities = null;
             if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
                 var score = scoreDirector.calculateScore();
                 if (score.isStructurallyFlawed()) {
-                    inconsistentEntities = scoreDirector.computeInconsistentGroups();
+                    inconsistentEntities = scoreDirector.computeVariableLoops();
                     throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
                 }
                 if (handlesStructurallyFlawedSolutions) {
-                    inconsistentEntities = scoreDirector.computeInconsistentGroups();
+                    inconsistentEntities = scoreDirector.computeVariableLoops();
                     if (!inconsistentEntities.isEmpty()) {
                         scoreDirector.getSolutionDescriptor().setScore(
                                 scoreDirector.getWorkingSolution(),
@@ -110,12 +110,12 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                     }
                 }
             } else if (!scoreDirector.isLastVariableUpdateSuccessful()) {
-                inconsistentEntities = scoreDirector.computeInconsistentGroups();
+                inconsistentEntities = scoreDirector.computeVariableLoops();
                 throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
             }
 
             if (inconsistentEntities == null) {
-                inconsistentEntities = (handlesStructurallyFlawedSolutions) ? scoreDirector.computeInconsistentGroups()
+                inconsistentEntities = (handlesStructurallyFlawedSolutions) ? scoreDirector.computeVariableLoops()
                         : Collections.emptyList();
             }
 

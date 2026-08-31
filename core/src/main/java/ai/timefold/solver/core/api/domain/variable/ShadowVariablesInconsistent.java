@@ -137,6 +137,6 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
-@Deprecated(since = "2.6.0")
+@Deprecated(since = "2.7.0")
 public @interface ShadowVariablesInconsistent {
 }

@@ -145,7 +145,7 @@ public class SolutionManagerTest {
                         "is inconsistent", "Solution update", "requires a consistent solution")
                 .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
                 .matches(exception -> {
-                    var inconsistentGroups = ((InconsistentSolutionException) exception).getInconsistentGroups();
+                    var inconsistentGroups = ((InconsistentSolutionException) exception).getVariableLoops();
                     if (inconsistentGroups.size() != 1) {
                         return false;
                     }
@@ -218,7 +218,7 @@ public class SolutionManagerTest {
                         "is inconsistent", "Solution update", "requires a consistent solution")
                 .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
                 .matches(exception -> {
-                    var inconsistentGroups = ((InconsistentSolutionException) exception).getInconsistentGroups();
+                    var inconsistentGroups = ((InconsistentSolutionException) exception).getVariableLoops();
                     if (inconsistentGroups.size() != 1) {
                         return false;
                     }

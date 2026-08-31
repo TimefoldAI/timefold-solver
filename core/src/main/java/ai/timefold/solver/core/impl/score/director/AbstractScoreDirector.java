@@ -15,7 +15,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -347,12 +347,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Do nothing
     }
 
-    public List<LoopedVariableInfo> computeInconsistentGroups() {
-        return shadowVariableSupport.getInconsistentGroups();
+    public List<VariableLoop> computeVariableLoops() {
+        return shadowVariableSupport.getVariableLoops();
     }
 
     public void unassignInconsistentEntities() {
-        var inconsistentCycles = computeInconsistentGroups();
+        var inconsistentCycles = computeVariableLoops();
         var inconsistentEntities = new LinkedHashSet<>();
         for (var inconsistentCycle : inconsistentCycles) {
             inconsistentEntities.addAll(inconsistentCycle.getEntitySet());

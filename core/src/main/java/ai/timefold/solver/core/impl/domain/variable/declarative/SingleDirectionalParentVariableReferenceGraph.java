@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -139,7 +139,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     }
 
     @Override
-    public List<LoopedVariableInfo> getInconsistentGroups() {
+    public List<VariableLoop> getVariableLoops() {
         return Collections.emptyList();
     }
 

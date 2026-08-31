@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
-import ai.timefold.solver.core.api.score.analysis.LoopedVariableInfo;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 
 import org.jspecify.annotations.NonNull;
 
@@ -77,8 +77,8 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    public List<LoopedVariableInfo> getInconsistentGroups() {
-        var out = new ArrayList<LoopedVariableInfo>();
+    public List<VariableLoop> getVariableLoops() {
+        var out = new ArrayList<VariableLoop>();
         var graphTrackingInconsistentEntities = new DefaultTopologicalOrderGraph(this.nodeTopologicalOrders.length);
         graph.forEachEdge(graphTrackingInconsistentEntities::addEdge);
         graphTrackingInconsistentEntities.commitChanges(new BitSet());
@@ -91,7 +91,7 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
                     entityVariablePairs.add(new EntityVariablePair(node.entity(), variable.id().name()));
                 }
             }
-            out.add(new LoopedVariableInfo(entityVariablePairs));
+            out.add(new VariableLoop(entityVariablePairs));
         }
         return out;
     }

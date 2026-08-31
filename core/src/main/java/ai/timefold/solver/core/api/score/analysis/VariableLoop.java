@@ -11,7 +11,7 @@ import org.jspecify.annotations.NullMarked;
  * @param involvedVariableSet
  */
 @NullMarked
-public record LoopedVariableInfo(Set<EntityVariablePair> involvedVariableSet) {
+public record VariableLoop(Set<EntityVariablePair> involvedVariableSet) {
     /**
      * Get the set of involved entities in the cycle
      */
