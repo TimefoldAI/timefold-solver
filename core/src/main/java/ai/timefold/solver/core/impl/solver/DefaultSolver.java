@@ -195,16 +195,15 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         // Update the best solution, since problem's shadows and score were updated
         bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
                 EventProducerId.solvingStarted());
-
-        LOGGER.info("Solving {}: time spent ({}), best score ({}), "
-                + "default environment mode ({}), move thread count ({}), random ({}).",
-                (startingSolverCount == 1 ? "started" : "restarted"),
-                solverScope.calculateTimeMillisSpentUpToNow(),
-                solverScope.getBestScore().raw(),
-                globalEnvironmentMode.name(),
-                moveThreadCountDescription,
-                randomFactory);
         if (LOGGER.isInfoEnabled()) { // Formatting is expensive here.
+            LOGGER.info("Solving {}: time spent ({}), best score ({}), "
+                    + "default environment mode ({}), move thread count ({}), random ({}).",
+                    (startingSolverCount == 1 ? "started" : "restarted"),
+                    solverScope.calculateTimeMillisSpentUpToNow(),
+                    solverScope.getBestScore().raw(),
+                    globalEnvironmentMode.name(),
+                    moveThreadCountDescription,
+                    randomFactory);
             var problemSizeStatistics = solverScope.getProblemSizeStatistics();
             LOGGER.info(
                     "Problem scale: genuine entity count ({}), genuine variable count ({}), approximate value count ({}), approximate problem scale ({}).",

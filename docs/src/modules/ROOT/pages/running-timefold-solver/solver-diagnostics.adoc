@@ -231,7 +231,7 @@ because every other mode is <<environmentModeReproducibility,reproducible>> and 
 NOTE: A phase that runs in a different environment mode than the solver gets its own score director.
 With the xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams] API,
 that means a second constraint network is built for that mode.
-It is built once and reused, but it is not free: prefer overriding the phases you actually want to inspect.
+It is built once and reused, but it is not free: only override the phases you actually want to inspect.
 
 [source,java,options="nowrap"]
 ----
