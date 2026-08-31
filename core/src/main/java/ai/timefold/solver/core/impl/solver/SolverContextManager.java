@@ -49,11 +49,8 @@ import org.jspecify.annotations.Nullable;
  * and only after {@link #loadContext} has handed everything over —
  * closing clears the working solution,
  * so closing any earlier would gut the director the hand-over reads from;</li>
- * <li>{@link #close()} closes the one the solver ended on.
- * The solver calls it from {@code DefaultSolver.outerSolvingEnded},
- * which runs after the problem change loop.
- * It cannot be closed at {@code solvingEnded}: a real-time problem change restarts the loop
- * and runs more phases on that same score director;</li>
+ * <li>{@link #solvingEnded(SolverScope)} closes the score director used in the last phase; if real-time problem changes
+ * restart solving, {@link #prepareForProblemChanges(SolverScope)} recreates a score director before applying them;</li>
  * <li>{@link #solvingError(SolverScope, Exception)} closes it when solving fails,
  * because {@code outerSolvingEnded} never runs on that path.</li>
  * </ul>
