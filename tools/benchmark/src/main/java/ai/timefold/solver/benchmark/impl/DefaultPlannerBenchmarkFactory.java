@@ -116,12 +116,23 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
             throw new IllegalArgumentException(
                     "Configure at least 1 <solverBenchmark> (or 1 <solverBenchmarkBluePrint>) in the <plannerBenchmark> configuration.");
         }
-        // Overriding the phase environment is not allowed
+        // Overriding the phase environment is not allowed in benchmark mode.
+        var allSolverBenchmarkConfigList = new ArrayList<SolverBenchmarkConfig>();
         var solverBenchmarkConfigList = plannerBenchmarkConfig.getSolverBenchmarkConfigList();
-        if (solverBenchmarkConfigList == null) {
-            return;
+        if (solverBenchmarkConfigList != null) {
+            allSolverBenchmarkConfigList.addAll(solverBenchmarkConfigList);
         }
-        for (var solverBenchmarkConfig : solverBenchmarkConfigList) {
+        var solverBenchmarkBluePrintConfigList = plannerBenchmarkConfig.getSolverBenchmarkBluePrintConfigList();
+        if (solverBenchmarkBluePrintConfigList != null) {
+            for (var bluePrintConfig : solverBenchmarkBluePrintConfigList) {
+                allSolverBenchmarkConfigList.addAll(bluePrintConfig.buildSolverBenchmarkConfigList());
+            }
+        }
+        var inheritedSolverBenchmarkConfig = plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig();
+        if (inheritedSolverBenchmarkConfig != null) {
+            allSolverBenchmarkConfigList.add(inheritedSolverBenchmarkConfig);
+        }
+        for (var solverBenchmarkConfig : allSolverBenchmarkConfigList) {
             var solverConfig = solverBenchmarkConfig.getSolverConfig();
             if (solverConfig == null) {
                 continue;
@@ -130,7 +141,7 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
             if (!phaseEnvironmentList.isEmpty()) {
                 throw new IllegalStateException("""
                         The phases cannot override the environment mode when in benchmark mode.
-                        Maybe remove the setting environmentMode from the benchmark configuration (%s)."""
+                        Maybe remove the environmentMode setting from the benchmark configuration (%s)."""
                         .formatted(java.util.Objects.requireNonNullElse(solverBenchmarkConfig.getName(), "<unnamed>")));
             }
         }
