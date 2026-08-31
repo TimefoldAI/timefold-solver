@@ -11,6 +11,8 @@ import java.util.TreeSet;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
+import ai.timefold.solver.benchmark.config.blueprint.SolverBenchmarkBluePrintConfig;
+import ai.timefold.solver.benchmark.config.blueprint.SolverBenchmarkBluePrintType;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -108,6 +110,41 @@ class DefaultPlannerBenchmarkFactoryTest {
         PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
         config.setSolverBenchmarkConfigList(Collections.singletonList(new SolverBenchmarkConfig()));
         new DefaultPlannerBenchmarkFactory(config).validate();
+    }
+
+    @Test
+    void inheritedConfigWithoutPhaseOverrideIsValid() {
+        // A global environmentMode on the inherited config is fine; only phase-level overrides are not.
+        PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
+        config.setSolverBenchmarkConfigList(Collections.singletonList(new SolverBenchmarkConfig()));
+        config.setInheritedSolverBenchmarkConfig(
+                buildSolverBenchmarkConfig(EnvironmentMode.FULL_ASSERT, null, null));
+        new DefaultPlannerBenchmarkFactory(config).validate();
+    }
+
+    @Test
+    void inheritedConfigOverridingEnvironmentModeIsRejected() {
+        PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
+        config.setSolverBenchmarkConfigList(Collections.singletonList(new SolverBenchmarkConfig()));
+        config.setInheritedSolverBenchmarkConfig(
+                buildSolverBenchmarkConfig(null, EnvironmentMode.FULL_ASSERT, null));
+        DefaultPlannerBenchmarkFactory benchmarkFactory = new DefaultPlannerBenchmarkFactory(config);
+        assertThatIllegalStateException().isThrownBy(benchmarkFactory::validate)
+                .withMessageContaining("cannot override the environment mode when in benchmark mode");
+    }
+
+    @Test
+    void inheritedConfigOverridingEnvironmentModeIsRejectedWithBluePrintsOnly() {
+        PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
+        config.setSolverBenchmarkConfigList(null);
+        config.setSolverBenchmarkBluePrintConfigList(Collections.singletonList(new SolverBenchmarkBluePrintConfig()
+                .withSolverBenchmarkBluePrintType(
+                        SolverBenchmarkBluePrintType.CONSTRUCTION_HEURISTIC_WITH_AND_WITHOUT_LOCAL_SEARCH)));
+        config.setInheritedSolverBenchmarkConfig(
+                buildSolverBenchmarkConfig(null, EnvironmentMode.FULL_ASSERT, null));
+        DefaultPlannerBenchmarkFactory benchmarkFactory = new DefaultPlannerBenchmarkFactory(config);
+        assertThatIllegalStateException().isThrownBy(benchmarkFactory::validate)
+                .withMessageContaining("cannot override the environment mode when in benchmark mode");
     }
 
     private static PlannerBenchmarkConfig buildConfigWithPhases(EnvironmentMode globalEnvironmentMode,

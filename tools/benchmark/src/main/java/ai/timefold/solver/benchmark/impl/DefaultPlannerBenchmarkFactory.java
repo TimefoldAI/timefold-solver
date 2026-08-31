@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -142,7 +143,7 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
                 throw new IllegalStateException("""
                         The phases cannot override the environment mode when in benchmark mode.
                         Maybe remove the environmentMode setting from the benchmark configuration (%s)."""
-                        .formatted(java.util.Objects.requireNonNullElse(solverBenchmarkConfig.getName(), "<unnamed>")));
+                        .formatted(Objects.requireNonNullElse(solverBenchmarkConfig.getName(), "<unnamed>")));
             }
         }
     }
