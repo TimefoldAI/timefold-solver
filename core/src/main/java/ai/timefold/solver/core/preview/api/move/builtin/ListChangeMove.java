@@ -135,8 +135,8 @@ public class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
 
     @Override
     public ListChangeMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
-        return new ListChangeMove<>(variableMetaModel, lookup.lookUpWorkingObject(sourceEntity), sourceIndex,
-                lookup.lookUpWorkingObject(destinationEntity), destinationIndex);
+        return new ListChangeMove<>(variableMetaModel, lookup.lookUpNonNullWorkingObject(sourceEntity), sourceIndex,
+                lookup.lookUpNonNullWorkingObject(destinationEntity), destinationIndex);
     }
 
     @Override

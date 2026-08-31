@@ -6,6 +6,7 @@ import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import java.lang.reflect.Modifier;
 
 import jakarta.inject.Inject;
+import jakarta.ws.rs.Path;
 
 import ai.timefold.solver.service.quarkus.deployment.GeneratedJaxRsResourceGizmoAdaptor;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
@@ -140,7 +141,7 @@ public final class ModelResourceBeanGenerator {
      */
     private void copyMethodPathAnnotations(ClassInfo restAPI, ClassCreator beanCreator) {
         for (MethodInfo method : restAPI.methods()) {
-            if (method.hasAnnotation(jakarta.ws.rs.Path.class)) {
+            if (method.hasAnnotation(Path.class)) {
                 MethodCreator additionalRestMethod = beanCreator
                         .getMethodCreator(method.name(), method.returnType().toString(),
                                 method.parameters().stream().map(p -> p.type().toString()).toArray(String[]::new))

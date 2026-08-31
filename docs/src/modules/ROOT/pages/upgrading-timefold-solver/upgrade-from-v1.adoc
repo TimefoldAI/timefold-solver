@@ -228,7 +228,7 @@ removed (`getConstraintStreamImplType()`, `setConstraintStreamImplType()`, `with
 * `PlannerBenchmark.benchmarkAndShowReportInBrowser()` renamed to `benchmark()`.
 
 
-[#manualUpgrade]
+[#manualUpgrade1to2]
 == Manual upgrade recipe
 
 In addition to the automated changes listed above, there are some changes that require manual intervention.

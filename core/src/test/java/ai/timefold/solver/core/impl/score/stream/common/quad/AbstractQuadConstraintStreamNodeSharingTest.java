@@ -8,6 +8,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
+import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.Joiners;
@@ -476,6 +477,19 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
         assertThat(baseStream
                 .concat(baseStream.filter(filter1)))
                 .isSameAs(baseStream.concat(baseStream.filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentPaddingFunctionConcat() {
+        var triStream = constraintFactory.forEach(TestdataEntity.class)
+                .join(TestdataEntity.class)
+                .join(TestdataEntity.class);
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> paddingA = (a, b, c) -> a;
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> paddingB = (a, b, c) -> null;
+
+        assertThat(baseStream.concat(triStream, paddingA))
+                .isNotSameAs(baseStream.concat(triStream, paddingB));
     }
 
     @Override

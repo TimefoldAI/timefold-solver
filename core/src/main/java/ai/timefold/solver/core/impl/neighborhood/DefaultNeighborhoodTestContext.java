@@ -7,10 +7,10 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
-import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.test.MoveTestContext;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodMoveAsserter;
@@ -84,19 +84,26 @@ final class DefaultNeighborhoodTestContext<Solution_>
     }
 
     /**
-     * Repeatedly draws moves from a fresh, seeded
-     * {@link NeighborhoodsBasedMoveRepository#iterator(java.util.random.RandomGenerator)}
-     * (restarting whenever it exhausts) until either {@code stopCondition} returns true, the iteration limit is
-     * reached, or an entire pass draws nothing.
+     * Repeatedly draws moves from {@link NeighborhoodsBasedMoveRepository#iterator(RandomGenerator)}
+     * (restarting whenever it exhausts)
+     * until either {@code stopCondition} returns true,
+     * the iteration limit is reached,
+     * or an entire pass draws nothing.
+     * <p>
+     * Every pass shares the same {@link RandomGenerator}
+     * (seeded once via {@link DefaultNeighborhoodTester#using})
+     * so that a restart advances to a new, still fully reproducible draw sequence
+     * instead of replaying the exhausted pass identically forever.
      *
      * @return whether {@code stopCondition} was met
      */
     private boolean draw(Predicate<Move<Solution_>> stopCondition) {
+        var random = phaseScope.getWorkingRandom().moveIteratorUsage();
         var draws = 0;
         while (draws < iterationLimit) {
             var stepScope = new LocalSearchStepScope<>(phaseScope);
             moveRepository.stepStarted(stepScope);
-            var iterator = moveRepository.iterator(RandomSource.seeded(0L).moveIteratorUsage());
+            var iterator = moveRepository.iterator(random);
             var drewAnythingThisPass = false;
             while (iterator.hasNext() && draws < iterationLimit) {
                 var move = iterator.next();

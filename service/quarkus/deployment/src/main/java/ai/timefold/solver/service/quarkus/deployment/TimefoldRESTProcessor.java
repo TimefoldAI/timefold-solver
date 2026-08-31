@@ -33,6 +33,7 @@ import ai.timefold.solver.service.quarkus.deployment.rest.io.AbstractScoreAnalys
 import ai.timefold.solver.service.quarkus.deployment.util.ProcessorUtils;
 import ai.timefold.solver.service.rest.api.ModelRest;
 
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
 import org.jboss.jandex.ClassInfo;
@@ -273,7 +274,7 @@ class TimefoldRESTProcessor {
                 .build();
 
         beanCreator.addAnnotation(Path.class).addValue("value", resourcePath);
-        beanCreator.addAnnotation(org.eclipse.microprofile.openapi.annotations.tags.Tag.class)
+        beanCreator.addAnnotation(Tag.class)
                 .add("description", "Generated demo data for the model").add("name", "Demo data");
 
         ClassInfo restResourceClassInfo = combinedIndex.getIndex().getClassByName(ABSTRACT_DEMO_DATA_RESOURCE);

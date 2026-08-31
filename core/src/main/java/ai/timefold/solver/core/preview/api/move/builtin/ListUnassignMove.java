@@ -23,7 +23,8 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     private @Nullable Value_ unassignedValue;
 
-    ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
+    ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ sourceEntity,
             int sourceIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.sourceEntity = Objects.requireNonNull(sourceEntity);
@@ -40,7 +41,7 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     @Override
     public Move<Solution_> rebase(Lookup lookup) {
-        return new ListUnassignMove<>(variableMetaModel, lookup.lookUpWorkingObject(sourceEntity), sourceIndex);
+        return new ListUnassignMove<>(variableMetaModel, lookup.lookUpNonNullWorkingObject(sourceEntity), sourceIndex);
     }
 
     @Override

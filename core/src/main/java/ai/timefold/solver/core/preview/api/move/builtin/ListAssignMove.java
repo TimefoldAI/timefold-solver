@@ -38,8 +38,8 @@ public class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
 
     @Override
     public Move<Solution_> rebase(Lookup lookup) {
-        return new ListAssignMove<>(variableMetaModel, lookup.lookUpWorkingObject(planningValue),
-                lookup.lookUpWorkingObject(destinationEntity), destinationIndex);
+        return new ListAssignMove<>(variableMetaModel, lookup.lookUpNonNullWorkingObject(planningValue),
+                lookup.lookUpNonNullWorkingObject(destinationEntity), destinationIndex);
     }
 
     @Override

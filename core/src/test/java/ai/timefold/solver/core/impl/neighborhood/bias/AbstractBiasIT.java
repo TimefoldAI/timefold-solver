@@ -4,12 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSession;
-import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -41,15 +35,15 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
  * it stays next to the production class it protects.
  */
 @Execution(ExecutionMode.CONCURRENT)
-abstract class AbstractBiasIT {
+public abstract class AbstractBiasIT {
 
     /**
-     * How many standard deviations of sampling noise a category's observed count
-     * may be away from its expected count before {@link BiasReport#assertWithinSigma(double)} fails.
+     * How many standard deviations of sampling noise a category's observed count may be away from its expected count
+     * before {@link BiasReport#assertWithinSigma(double)} fails.
      * <p>
      * These are max-of-many-categories tests, so the multiple-comparison penalty is real:
-     * at 5 sigma, a test over {@code k} categories has an expected false-failure rate
-     * of about {@code k * 5.7e-7} per run (two-sided).
+     * at 5 sigma, a test over {@code k} categories has an expected false-failure rate of about {@code k * 5.7e-7} per run
+     * (two-sided).
      * At the largest fixture here (310 pairs) that is about {@code 1.8e-4} per run;
      * at 3 sigma it would be about 1 run in 120.
      * Do not lower this to make a specific case pass;
@@ -57,7 +51,7 @@ abstract class AbstractBiasIT {
      * and belongs either fixed or documented with a per-case override,
      * not hidden by a looser global constant.
      */
-    static final double SIGMA_LIMIT = 5.0;
+    public static final double SIGMA_LIMIT = 5.0;
 
     /**
      * Builds one trial's seed from a root random,
@@ -65,7 +59,7 @@ abstract class AbstractBiasIT {
      * {@link Random}'s first {@code nextInt(2)} call is constant across such small, close seeds (an LCG artifact),
      * which would make a first-draw bias undetectable no matter how large it is.
      */
-    static Random splitFrom(Random root) {
+    public static Random splitFrom(Random root) {
         return new Random(root.nextLong());
     }
 
@@ -83,24 +77,8 @@ abstract class AbstractBiasIT {
     }
 
     /**
-     * Builds and settles a {@code DatasetSession} directly
-     * (bypassing a real {@code ScoreDirector} and solver),
-     * for the cached and just-in-time bi-dataset cases that have no {@code MoveProvider} route of their own.
-     */
-    static DefaultNeighborhoodSession<TestdataSolution> session(DefaultMoveStreamFactory<TestdataSolution> moveStreamFactory,
-            TestdataSolution solution) {
-        var scoreDirector = new EasyScoreDirectorFactory<>(moveStreamFactory.getSolutionDescriptor(),
-                s -> SimpleScore.ZERO, EnvironmentMode.PHASE_ASSERT).buildScoreDirector();
-        scoreDirector.setWorkingSolution(solution);
-        var session = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
-        moveStreamFactory.getSolutionDescriptor().visitAll(solution, session::insert);
-        session.settle();
-        return session;
-    }
-
-    /**
-     * Picks (entity, value) pairs matched by the given joiner; reused for both the indexing
-     * {@code equal} and the {@code filtering()} shape.
+     * Picks (entity, value) pairs matched by the given joiner;
+     * reused for both the indexing {@code equal} and the {@code filtering()} shape.
      */
     @NullMarked
     record PickPair(PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue> variable,

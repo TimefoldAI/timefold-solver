@@ -55,9 +55,9 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
     }
 
     /**
-     * Not part of {@link UniDatasetInstance}: only satisfies {@link Iterable}, for callers
-     * (such as {@code JustInTimeBiDatasetInstance#size()}) that need a plain,
-     * non-random walk internally.
+     * Not part of {@link UniDatasetInstance}: only satisfies {@link Iterable},
+     * for callers (such as {@code JustInTimeBiDatasetInstance#size()})
+     * that need a plain, non-random walk internally.
      */
     @Override
     public Iterator<Tuple_> iterator() {

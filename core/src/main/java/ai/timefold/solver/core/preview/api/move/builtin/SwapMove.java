@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -23,17 +22,29 @@ import org.jspecify.annotations.Nullable;
  * all of which must belong to the same entity class.
  *
  * <p>
- * Only provide entities whose values can be swapped;
+ * The caller MUST only provide entities whose values can be swapped;
  * for example, if one of the values is not in the value range of the other entity's variable,
- * then swapping would lead to an invalid solution.
- * This move will skip that swap,
- * but it is more efficient to not propose it in the first place.
- * 
+ * swapping would lead to an invalid solution.
+ * This move does not re-check that at execution time, matching {@link Moves#swap};
+ * if the pair is invalid, the move writes the out-of-range value anyway and the solution becomes invalid,
+ * with no exception.
+ * The built-in {@code SwapMoveProvider} never proposes such a pair.
+ * <p>
+ * Similarly, a move over two entities that already hold equal values on every listed variable now performs writes that produce
+ * no net change;
+ * the built-in {@code SwapMoveProvider} never proposes such a move either.
+ * <p>
+ * The caller is responsible for ordering the given variables consistently;
+ * this constructor does not reorder them.
+ * Two moves over the same entities and the same set of variables are only guaranteed to be equal
+ * if the caller lists the variables in the same order both times.
+ * {@code SwapMoveProvider} normalizes the order for moves it builds.
+ *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Entity_> the entity type, the class with the {@link PlanningEntity} annotation
  */
 @NullMarked
-public class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> {
+public final class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> {
 
     private final List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList;
     private final Entity_ leftEntity;
@@ -50,14 +61,14 @@ public class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> {
      */
     private @Nullable List<@Nullable Object> valueCache;
 
-    protected SwapMove(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ leftEntity,
+    SwapMove(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ leftEntity,
             Entity_ rightEntity) {
-        this.variableMetaModelList = Objects.requireNonNull(variableMetaModelList);
         if (variableMetaModelList.isEmpty()) {
             throw new IllegalArgumentException(
                     "Swap move requires at least one planning variable to swap between entities, but got (%s)."
                             .formatted(variableMetaModelList));
         }
+        this.variableMetaModelList = variableMetaModelList;
         this.leftEntity = Objects.requireNonNull(leftEntity);
         this.rightEntity = Objects.requireNonNull(rightEntity);
         if (leftEntity == rightEntity) {
@@ -81,8 +92,8 @@ public class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> {
 
     @Override
     public SwapMove<Solution_, Entity_> rebase(Lookup lookup) {
-        return new SwapMove<>(variableMetaModelList, lookup.lookUpWorkingObject(leftEntity),
-                lookup.lookUpWorkingObject(rightEntity));
+        return new SwapMove<>(variableMetaModelList, lookup.lookUpNonNullWorkingObject(leftEntity),
+                lookup.lookUpNonNullWorkingObject(rightEntity));
     }
 
     @Override
@@ -92,26 +103,14 @@ public class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> {
             var variableMetaModel = variableMetaModelList.get(i / 2);
             var oldLeftValue = cachedValues.get(i);
             var oldRightValue = cachedValues.get(i + 1);
-            if (Objects.equals(oldLeftValue, oldRightValue)
-                    || !solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
-                    || !solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)) {
-                // No change needed, skip it.
-                continue;
-            }
             solutionView.changeVariable(variableMetaModel, leftEntity, oldRightValue);
             solutionView.changeVariable(variableMetaModel, rightEntity, oldLeftValue);
         }
     }
 
     private List<@Nullable Object> getCachedValues() {
-        if (valueCache != null) {
-            return valueCache;
-        }
-        valueCache = new ArrayList<>(variableMetaModelList.size() * 2);
-        for (var variableMetaModel : variableMetaModelList) {
-            var variableDescriptor = getVariableDescriptor(variableMetaModel);
-            valueCache.add(variableDescriptor.getValue(leftEntity));
-            valueCache.add(variableDescriptor.getValue(rightEntity));
+        if (valueCache == null) {
+            valueCache = MoveProviderUtil.cachedValuesOf(leftEntity, rightEntity, variableMetaModelList);
         }
         return valueCache;
     }
@@ -142,25 +141,14 @@ public class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> {
     @Override
     public String toString() {
         var s = new StringBuilder(variableMetaModelList.size() * 16);
+        var cachedValues = getCachedValues();
         s.append(leftEntity).append(" {");
-        appendVariablesToString(s, true);
+        MoveProviderUtil.appendInterleavedRow(s, cachedValues, true);
         s.append("} <-> ");
         s.append(rightEntity).append(" {");
-        appendVariablesToString(s, false);
+        MoveProviderUtil.appendInterleavedRow(s, cachedValues, false);
         s.append("}");
         return s.toString();
-    }
-
-    private void appendVariablesToString(StringBuilder s, boolean isLeftEntity) {
-        var cachedValues = getCachedValues();
-        for (var i = 0; i < cachedValues.size(); i += 2) {
-            var index = isLeftEntity ? i : i + 1;
-            var value = cachedValues.get(index);
-            if (i > 0) {
-                s.append(", ");
-            }
-            s.append(value == null ? "null" : value.toString());
-        }
     }
 
 }

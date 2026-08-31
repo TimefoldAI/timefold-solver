@@ -10,6 +10,9 @@ import org.jspecify.annotations.NullMarked;
  * Represents the meta-model of an entity.
  * Gives access to the entity's variable meta-models.
  * <p>
+ * Instances are {@link Comparable},
+ * so that they can be sorted in a predictable iteration order.
+ * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
@@ -27,6 +30,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
+        extends Comparable<PlanningEntityMetaModel<Solution_, Entity_>>
         permits GenuineEntityMetaModel, ShadowEntityMetaModel {
 
     /**
@@ -49,6 +53,18 @@ public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
      * @return Variables declared by the entity.
      */
     List<? extends VariableMetaModel<Solution_, Entity_, ?>> variables();
+
+    /**
+     * Returns the genuine variables declared by the entity.
+     *
+     * @return Genuine variables declared by the entity.
+     */
+    default List<? extends GenuineVariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
+        return variables().stream()
+                .filter(VariableMetaModel::isGenuine)
+                .map(v -> (GenuineVariableMetaModel<Solution_, Entity_, ?>) v)
+                .toList();
+    }
 
     /**
      * Returns a {@link VariableMetaModel} for a variable with the given name.
