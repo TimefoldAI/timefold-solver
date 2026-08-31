@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class InconsistentSolutionException extends RuntimeException {
+public final class InconsistentSolutionException extends RuntimeException {
     private final Object solution;
     private final List<VariableLoop> variableLoops;
 
