@@ -70,6 +70,11 @@ public final class Metadata<Score_> implements Status<Score_> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String failureMessage;
 
+    @Schema(nullable = true, description = "The name of the execution profile the run was submitted with.")
+    @JsonAlias({ "executionprofile" })
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private String executionProfile;
+
     public Metadata() {
         this((String) null);
     }
@@ -102,6 +107,7 @@ public final class Metadata<Score_> implements Status<Score_> {
         this.parentId = metadata.parentId;
         this.originId = metadata.originId;
         this.failureMessage = metadata.failureMessage;
+        this.executionProfile = metadata.executionProfile;
     }
 
     public String getId() {
@@ -260,6 +266,14 @@ public final class Metadata<Score_> implements Status<Score_> {
         this.failureMessage = failureMessage;
     }
 
+    public String getExecutionProfile() {
+        return executionProfile;
+    }
+
+    public void setExecutionProfile(String executionProfile) {
+        this.executionProfile = executionProfile;
+    }
+
     @Override
     public void solvingStarted() {
         if (solverStatus != SolvingStatus.DATASET_COMPUTED
@@ -332,6 +346,9 @@ public final class Metadata<Score_> implements Status<Score_> {
         map.put("solverStatus", solverStatus == null ? SolvingStatus.DATASET_CREATED.name() : solverStatus.name());
         if (score != null) {
             map.put("score", score.toString());
+        }
+        if (executionProfile != null) {
+            map.put("executionProfile", executionProfile);
         }
         return map;
     }

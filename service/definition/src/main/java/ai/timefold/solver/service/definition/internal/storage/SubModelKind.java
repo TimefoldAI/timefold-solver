@@ -17,7 +17,8 @@ public enum SubModelKind {
     SCORE_ANALYSIS("score-analysis"),
     SCORE_ANALYSIS_WITH_JUSTIFICATIONS("score-analysis-with-justifications"),
     WAYPOINTS("waypoints"),
-    PATCH_REQUEST("patch-request");
+    PATCH_REQUEST("patch-request"),
+    EXECUTION_PROFILE_ARTIFACTS("execution-profile-artifacts");
 
     private String id;
 

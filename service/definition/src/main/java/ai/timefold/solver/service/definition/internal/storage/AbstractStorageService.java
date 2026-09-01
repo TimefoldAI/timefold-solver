@@ -1,5 +1,6 @@
 package ai.timefold.solver.service.definition.internal.storage;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -516,6 +517,19 @@ public abstract non-sealed class AbstractStorageService<ModelInput_ extends Mode
         acquireLock(id);
         try {
             storage.storeSubModel(storageAddress, id, SubModelKind.LOGS, info);
+        } finally {
+            releaseLock(id);
+        }
+    }
+
+    public void storeExecutionProfileArtifacts(String id, InputStream input) {
+        storeExecutionProfileArtifacts(null, id, input);
+    }
+
+    public void storeExecutionProfileArtifacts(StorageAddress storageAddress, String id, InputStream input) {
+        acquireLock(id);
+        try {
+            storage.storeSubModelStream(storageAddress, id, SubModelKind.EXECUTION_PROFILE_ARTIFACTS, input);
         } finally {
             releaseLock(id);
         }
