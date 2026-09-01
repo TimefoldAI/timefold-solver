@@ -40,6 +40,7 @@ class SelectorBasedListAssignMoveTest {
     void setUp() {
         when(innerScoreDirector.getSolutionDescriptor())
                 .thenReturn(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        when(innerScoreDirector.isLastVariableUpdateSuccessful()).thenReturn(true);
         when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
     }
 

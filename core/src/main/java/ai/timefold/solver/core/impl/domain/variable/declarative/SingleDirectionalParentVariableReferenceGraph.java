@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -12,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -139,7 +139,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     }
 
     @Override
-    public Collection<Object> getInconsistentEntities() {
+    public List<VariableLoop> getVariableLoops() {
         return Collections.emptyList();
     }
 

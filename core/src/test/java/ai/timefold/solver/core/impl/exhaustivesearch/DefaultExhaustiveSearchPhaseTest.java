@@ -60,6 +60,7 @@ class DefaultExhaustiveSearchPhaseTest {
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.isLastVariableUpdateSuccessful()).thenReturn(true);
         var moveDirector = new MoveDirector<>(scoreDirector);
         doAnswer(invocation -> {
             var move = (Move<TestdataSolution>) invocation.getArgument(0);
@@ -120,6 +121,7 @@ class DefaultExhaustiveSearchPhaseTest {
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);
         InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.isLastVariableUpdateSuccessful()).thenReturn(true);
         var moveDirector = new MoveDirector<>(scoreDirector);
         doAnswer(invocation -> {
             var move = (Move<TestdataListSolution>) invocation.getArgument(0);

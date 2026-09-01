@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
@@ -352,6 +353,14 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     default void forceTriggerVariableListeners() {
         forceUpdateShadowVariables();
     }
+
+    /**
+     * @return true if the last {@link #updateShadowVariables()} did not result in a structurally flawed solutions,
+     *         false otherwise.
+     *         <p>
+     *         Note: Planning models with {@link ShadowVariablesInconsistent} will always result in successful updates.
+     */
+    boolean isLastVariableUpdateSuccessful();
 
     /**
      * A derived score director is created from a root score director.

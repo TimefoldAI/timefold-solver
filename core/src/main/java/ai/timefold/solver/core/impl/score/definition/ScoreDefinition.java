@@ -58,6 +58,13 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
     Score_ getStructurallyFlawedScore();
 
     /**
+     * The same score as the argument, except with a negative structural score
+     *
+     * @return never null
+     */
+    Score_ getStructurallyFlawedScore(Score_ score);
+
+    /**
      * The score that represents zero.
      *
      * @return never null

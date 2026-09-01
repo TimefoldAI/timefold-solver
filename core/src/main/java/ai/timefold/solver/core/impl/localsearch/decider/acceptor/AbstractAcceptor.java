@@ -21,7 +21,7 @@ public abstract class AbstractAcceptor<Solution_> extends LocalSearchPhaseLifecy
     // ************************************************************************
     @Override
     public final boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        if (moveScope.getScore().isInvalid()) {
+        if (moveScope.getScore().isStructurallyFlawed()) {
             return false;
         }
         return isStructurallyValidSolutionAccepted(moveScope);

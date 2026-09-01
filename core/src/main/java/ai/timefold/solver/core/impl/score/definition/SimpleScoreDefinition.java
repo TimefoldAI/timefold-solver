@@ -34,6 +34,11 @@ public class SimpleScoreDefinition extends AbstractScoreDefinition<SimpleScore> 
     }
 
     @Override
+    public SimpleScore getStructurallyFlawedScore(SimpleScore score) {
+        return new SimpleScore(-1L, score.score());
+    }
+
+    @Override
     public SimpleScore getZeroScore() {
         return SimpleScore.ZERO;
     }

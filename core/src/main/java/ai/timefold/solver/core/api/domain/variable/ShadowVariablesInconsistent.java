@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
 /**
@@ -129,8 +130,13 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
  * Do not use a {@link ShadowVariablesInconsistent} property in a method annotated with {@link ShadowSources}.
  * {@link ShadowSources} marked methods do not need to check {@link ShadowVariablesInconsistent} properties,
  * since they are only called if all their dependencies are consistent.
+ *
+ * @deprecated The introduction of {@link Score#structuralScore()} removed the need for this annotation.
+ *             If you currently have this annotation on a property, you are encouraged to remove
+ *             it to have simpler constraints and faster solve speeds.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
+@Deprecated(since = "2.7.0")
 public @interface ShadowVariablesInconsistent {
 }

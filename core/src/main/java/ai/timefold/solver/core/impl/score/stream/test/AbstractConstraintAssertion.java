@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.test;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -85,7 +86,9 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
                         var constraintRef = constraintMatchTotal.getConstraintRef();
                         constraintAnalyses.put(constraintRef, constraintMatchTotal);
                     }
-                    return s.analyze(workingScore, constraintAnalyses, ScoreAnalysisFetchPolicy.FETCH_ALL)
+                    return s.analyze(workingScore, constraintAnalyses, Collections.emptyList(),
+                            null,
+                            ScoreAnalysisFetchPolicy.FETCH_ALL)
                             .summarize();
                 },
                 () -> "Score analysis is only available in Timefold Solver Enterprise Edition.");

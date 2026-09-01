@@ -88,7 +88,7 @@ public final class DefaultCustomPhase<Solution_>
                 () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
         customPhaseCommand.changeWorkingSolution(commandContext);
         calculateWorkingStepScore(stepScope, customPhaseCommand);
-        if (stepScope.getScore().isInvalid()) {
+        if (stepScope.getScore().isStructurallyFlawed()) {
             throw new IllegalStateException("The custom phase command (%s) resulted in an inconsistent solution."
                     .formatted(customPhaseCommand));
         }

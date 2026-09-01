@@ -29,6 +29,11 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
     }
 
     @Override
+    public BendableBigDecimalScore getStructurallyFlawedScore(BendableBigDecimalScore score) {
+        return new BendableBigDecimalScore(-1L, score.hardScores(), score.softScores());
+    }
+
+    @Override
     public BendableBigDecimalScore getZeroScore() {
         return BendableBigDecimalScore.zero(hardLevelsSize, softLevelsSize);
     }

@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
@@ -44,6 +45,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForag
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
@@ -225,8 +227,15 @@ public interface TimefoldSolverEnterpriseService {
 
     InnerConstraintProfiler buildConstraintProfiler();
 
+    /**
+     * @param variableLoops the variable loops in the solution
+     * @param scoreDefinition can be null if variableLoops is known to be empty
+     */
     <Score_ extends Score<Score_>> ScoreAnalysis<Score_> analyze(InnerScore<Score_> state,
-            Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap, ScoreAnalysisFetchPolicy fetchPolicy);
+            Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+            List<VariableLoop> variableLoops,
+            @Nullable ScoreDefinition<Score_> scoreDefinition,
+            ScoreAnalysisFetchPolicy fetchPolicy);
 
     <Solution_> PlanningSolutionDiff<Solution_> solutionDiff(PlanningSolutionMetaModel<Solution_> metaModel,
             Solution_ oldSolution, Solution_ newSolution);
