@@ -22,7 +22,6 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
         var environmentMode = resolveEnvironmentMode(solverConfigPolicy);
-        var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy(environmentMode);
         var customPhaseCommandClassList = phaseConfig.getCustomPhaseCommandClassList();
         var customPhaseCommandList = phaseConfig.getCustomPhaseCommandList();
         if (ConfigUtils.isEmptyCollection(customPhaseCommandClassList)
@@ -46,6 +45,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         if (customPhaseCommandList != null) {
             customPhaseCommandList_.addAll((Collection) customPhaseCommandList);
         }
+        var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy(environmentMode);
         return new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase, environmentMode,
                 solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination),
                 customPhaseCommandList_)

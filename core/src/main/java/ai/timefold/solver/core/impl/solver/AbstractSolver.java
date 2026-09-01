@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.solver;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
@@ -83,7 +82,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
                 .getValueRangeManager()
                 .getProblemSizeStatistics();
         solverScope.setProblemSizeStatistics(problemSizeStatistics);
-        for (Phase<Solution_> phase : phaseList) {
+        for (var phase : phaseList) {
             phase.solvingStarted(solverScope);
         }
         solverContextManager.solvingStarted(solverScope);
@@ -95,9 +94,9 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
                     phaseList.size(), solverScope.getWorkingEntityCount());
             return;
         }
-        Iterator<Phase<Solution_>> it = phaseList.iterator();
+        var it = phaseList.iterator();
         while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
-            Phase<Solution_> phase = it.next();
+            var phase = it.next();
             phase.solve(solverScope);
             // If there is a next phase, it starts from the best solution, which might differ from the working solution.
             // If there isn't, no need to planning clone the best solution to the working solution.
@@ -108,7 +107,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        for (Phase<Solution_> phase : phaseList) {
+        for (var phase : phaseList) {
             phase.solvingEnded(solverScope);
         }
         bestSolutionRecaller.solvingEnded(solverScope);
@@ -120,7 +119,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {
         // Notify first, so listeners still observe the score director in the state the failure left it in.
         phaseLifecycleSupport.fireSolvingError(solverScope, exception);
-        for (Phase<Solution_> phase : phaseList) {
+        for (var phase : phaseList) {
             phase.solvingError(solverScope, exception);
         }
         solverContextManager.solvingError(solverScope, exception);

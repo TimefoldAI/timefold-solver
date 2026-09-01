@@ -118,7 +118,7 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> imple
         var newSolverContext =
                 contextFor(phaseScope.getSolverScope(), scoreDirectorFactory, phaseList.get(phaseScope.getPhaseIndex()),
                         Objects.requireNonNull(currentContext, "Impossible state: solvingStarted() has not run yet."));
-        if (newSolverContext != currentContext) {
+        if (!Objects.equals(newSolverContext, currentContext)) {
             loadContext(phaseScope.getSolverScope(), bestSolutionRecaller, currentContext, newSolverContext);
             currentContext.release();
             currentContext = newSolverContext;

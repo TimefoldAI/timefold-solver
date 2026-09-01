@@ -83,8 +83,10 @@ public interface ScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
     /**
      * Adapts the existing factory to create one that can handle multiple environments.
      */
-    <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
+    default <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
             AbstractScoreDirectorFactory<Solution_, Score_, Factory_>
-            adaptToMultiEnvironmentMode(ScoreDirectorFactoryFactory<Solution_, Score_> scoreDirectorFactoryFactory);
+            adaptToMultiEnvironmentMode(ScoreDirectorFactoryFactory<Solution_, Score_> scoreDirectorFactoryFactory) {
+        return (AbstractScoreDirectorFactory<Solution_, Score_, Factory_>) this;
+    }
 
 }

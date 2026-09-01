@@ -66,16 +66,6 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
         return createScoreDirectorBuilder(globalEnvironmentMode);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
-            AbstractScoreDirectorFactory<Solution_, Score_, Factory_>
-            adaptToMultiEnvironmentMode(ScoreDirectorFactoryFactory<Solution_, Score_> scoreDirectorFactoryFactory) {
-        // Adapting to a multi-environment must be overridden by the child classes.
-        // The default behavior is to return the same factory, which does not support it.
-        return (AbstractScoreDirectorFactory<Solution_, Score_, Factory_>) this;
-    }
-
     public void setInitializingScoreTrend(InitializingScoreTrend initializingScoreTrend) {
         this.initializingScoreTrend = initializingScoreTrend;
     }

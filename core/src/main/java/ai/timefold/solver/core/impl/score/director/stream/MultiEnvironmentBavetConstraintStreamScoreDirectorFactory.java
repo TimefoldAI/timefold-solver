@@ -55,12 +55,4 @@ public final class MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<Sol
         return (BavetConstraintStreamScoreDirector.Builder<Solution_, Score_>) factory.createScoreDirectorBuilder();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
-            AbstractScoreDirectorFactory<Solution_, Score_, Factory_>
-            adaptToMultiEnvironmentMode(ScoreDirectorFactoryFactory<Solution_, Score_> scoreDirectorFactoryFactory) {
-        // The factory is already adapted and must be returned
-        return (AbstractScoreDirectorFactory<Solution_, Score_, Factory_>) this;
-    }
 }

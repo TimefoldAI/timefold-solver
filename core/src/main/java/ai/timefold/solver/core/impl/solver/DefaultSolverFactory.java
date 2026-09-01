@@ -155,9 +155,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(scoreDirector));
         var moveThreadCount = resolveMoveThreadCount(true);
-        var bestSolutionRecaller =
-                BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(globalEnvironmentMode);
-        var randomFactory = buildRandomSupplier(globalEnvironmentMode);
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
@@ -170,6 +167,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             }
         }
 
+        var randomFactory = buildRandomSupplier(globalEnvironmentMode);
         var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
                 .withPreviewFeatureSet(previewFeaturesEnabled)
                 .withEnvironmentMode(globalEnvironmentMode)
@@ -184,6 +182,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
+        var bestSolutionRecaller =
+                BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(globalEnvironmentMode);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         return new DefaultSolver<>(globalEnvironmentMode, scoreDirectorFactory, randomFactory, bestSolutionRecaller,

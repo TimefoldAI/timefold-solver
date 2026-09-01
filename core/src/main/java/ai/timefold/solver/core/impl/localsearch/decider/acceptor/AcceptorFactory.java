@@ -87,8 +87,7 @@ public class AcceptorFactory<Solution_> {
         var stepCountingHillClimbingType_ =
                 Objects.requireNonNullElse(acceptorConfig.getStepCountingHillClimbingType(),
                         StepCountingHillClimbingType.STEP);
-        return new StepCountingHillClimbingAcceptor<Solution_>(
-                stepCountingHillClimbingSize_, stepCountingHillClimbingType_);
+        return new StepCountingHillClimbingAcceptor<>(stepCountingHillClimbingSize_, stepCountingHillClimbingType_);
     }
 
     private EntityTabuAcceptor<Solution_> buildEntityTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
