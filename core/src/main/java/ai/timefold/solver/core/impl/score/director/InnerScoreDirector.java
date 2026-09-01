@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -184,6 +185,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     ScoreDefinition<Score_> getScoreDefinition();
 
     /**
+     * The environment mode this score director was built for,
+     * which decides which assertions it runs.
+     * It is not necessarily the solver's global environment mode:
+     * a phase may override it,
+     * in which case that phase's score director reports the phase's mode.
+     */
+    EnvironmentMode getEnvironmentMode();
+
+    /**
      * Returns a planning clone of the solution,
      * which is not a shallow clone nor a deep clone nor a partition clone.
      *
@@ -209,7 +219,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     void resetCalculationCount();
 
-    void incrementCalculationCount();
+    default void incrementCalculationCount() {
+        incrementCalculationCount(1L);
+    }
+
+    void incrementCalculationCount(long count);
 
     /**
      * @return never null
@@ -224,6 +238,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
             getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
+
+    /**
+     * Asserts that if the {@link Score} is calculated for the parameter solution,
+     * it would be equal to the score of that parameter.
+     *
+     * @param solution never null
+     * @see InnerScoreDirector#assertWorkingScoreFromScratch(InnerScore, Object)
+     */
+    void assertScoreFromScratch(Solution_ solution);
 
     /**
      * Do not waste performance by propagating changes to step (or higher) mechanisms.
@@ -274,7 +297,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction);
 
@@ -288,7 +310,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param predictedScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertPredictedScoreFromScratch(InnerScore<Score_> predictedScore, Object completedAction);
 

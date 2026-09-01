@@ -160,6 +160,7 @@ class SelectorBasedListRuinRecreateMoveTest {
         scoreDirector.setWorkingSolution(solution);
 
         var solverConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataPinnedWithIndexListSolution>()
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withSolutionDescriptor(solutionDescriptor)
                 .withInitializingScoreTrend(InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ANY, 1))
                 .build();

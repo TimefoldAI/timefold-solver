@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 import java.util.ArrayList;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.exhaustivesearch.event.ExhaustiveSearchPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
@@ -57,17 +58,14 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
         this.scoreBounder = scoreBounder;
     }
 
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        this.assertMoveScoreFromScratch = environmentMode.isFullyAsserted();
+        this.assertExpectedUndoMoveScore = environmentMode.isIntrusivelyAsserted();
+    }
+
     @SuppressWarnings("unchecked")
     public ScoreBounder<Score_> getScoreBounder() {
         return (ScoreBounder<Score_>) scoreBounder;
-    }
-
-    public void setAssertMoveScoreFromScratch(boolean assertMoveScoreFromScratch) {
-        this.assertMoveScoreFromScratch = assertMoveScoreFromScratch;
-    }
-
-    public void setAssertExpectedUndoMoveScore(boolean assertExpectedUndoMoveScore) {
-        this.assertExpectedUndoMoveScore = assertExpectedUndoMoveScore;
     }
 
     protected void enableAcceptUninitializedSolutions() {

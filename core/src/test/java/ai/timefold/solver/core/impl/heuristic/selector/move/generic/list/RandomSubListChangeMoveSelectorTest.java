@@ -68,7 +68,8 @@ class RandomSubListChangeMoveSelectorTest {
 
         var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         // Every possible subList is selected.
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * destinationSize,
@@ -139,7 +140,8 @@ class RandomSubListChangeMoveSelectorTest {
                 2, 2, 2, 2, 2, 2,
                 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         // Every possible subList is selected.
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * destinationSize,
@@ -218,7 +220,8 @@ class RandomSubListChangeMoveSelectorTest {
                 9, 0,
                 -1, -1);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         // Every possible subList is selected; some moves are reversing.
         assertCodesOfNeverEndingMoveSelector(moveSelector, moveSelectorSize,
@@ -266,7 +269,8 @@ class RandomSubListChangeMoveSelectorTest {
 
         var random = new TestRandom(0, 1, 2, 3, 4, -1);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         // Only subLists bigger than 1 and smaller than 4 are selected.
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * destinationSize,
@@ -339,7 +343,8 @@ class RandomSubListChangeMoveSelectorTest {
 
         var random = new TestRandom(0, 1, -1);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         // Only subLists of size 2 are selected.
         assertCodesOfNeverEndingMoveSelector(moveSelector,

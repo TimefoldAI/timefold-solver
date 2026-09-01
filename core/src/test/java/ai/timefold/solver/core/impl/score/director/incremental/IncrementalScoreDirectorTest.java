@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.score.calculator.ConstraintMatchRegistry;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
@@ -28,8 +29,9 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void illegalStateExceptionThrownWhenConstraintMatchNotEnabled() {
-        try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(false)).build()) {
+        try (var scoreDirector =
+                new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                        .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(false)).build()) {
             scoreDirector.setWorkingSolution(new Object());
             assertThatIllegalStateException().isThrownBy(scoreDirector::getConstraintMatchTotalMap)
                     .withMessageContaining(ConstraintMatchPolicy.DISABLED.name());
@@ -38,9 +40,10 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void constraintMatchTotalsNeverNull() {
-        try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(true))
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).build()) {
+        try (var scoreDirector =
+                new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                        .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(true))
+                        .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).build()) {
             scoreDirector.setWorkingSolution(new Object());
             assertThat(scoreDirector.getConstraintMatchTotalMap()).isNotNull();
         }
@@ -48,9 +51,10 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void constraintMatchIsNotEnabledWhenScoreCalculatorNotConstraintMatchAware() {
-        try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(false))
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).build()) {
+        try (var scoreDirector =
+                new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                        .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(false))
+                        .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).build()) {
             assertThat(scoreDirector.getConstraintMatchPolicy()).isEqualTo(ConstraintMatchPolicy.DISABLED);
         }
     }
@@ -78,8 +82,9 @@ class IncrementalScoreDirectorTest {
 
         @Test
         void registerConstraintMatchThrowsWhenConstraintMatchingDisabled() {
-            try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                    .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(false)).build()) {
+            try (var scoreDirector =
+                    new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                            .withIncrementalScoreCalculator(mockIncrementalScoreCalculator(false)).build()) {
                 scoreDirector.setWorkingSolution(new Object());
                 assertThatIllegalStateException()
                         .isThrownBy(() -> scoreDirector.registerConstraintMatch(CONSTRAINT_A, SimpleScore.of(-1),
@@ -91,9 +96,10 @@ class IncrementalScoreDirectorTest {
         @Test
         void registerConstraintMatchUpdatesTotalScoreAndMap() {
             var calculator = new RegistryCapturingCalculator(SimpleScore.of(-5));
-            try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                    .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                    .build()) {
+            try (var scoreDirector =
+                    new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                            .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                            .build()) {
                 scoreDirector.setWorkingSolution(new Object());
 
                 assertThat(scoreDirector.totalScore()).isEqualTo(SimpleScore.of(-5));
@@ -124,10 +130,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -136,9 +144,10 @@ class IncrementalScoreDirectorTest {
                 }
             };
 
-            try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                    .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                    .build()) {
+            try (var scoreDirector =
+                    new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                            .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                            .build()) {
                 scoreDirector.setWorkingSolution(new Object());
                 assertThat(scoreDirector.totalScore()).isEqualTo(SimpleScore.of(-3));
 
@@ -168,10 +177,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -180,9 +191,10 @@ class IncrementalScoreDirectorTest {
                 }
             };
 
-            try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                    .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                    .build()) {
+            try (var scoreDirector =
+                    new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                            .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                            .build()) {
                 scoreDirector.setWorkingSolution(new Object());
                 registration[0].cancel();
                 assertThatIllegalStateException().isThrownBy(registration[0]::cancel)
@@ -213,10 +225,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -225,9 +239,10 @@ class IncrementalScoreDirectorTest {
                 }
             };
 
-            try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                    .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                    .build()) {
+            try (var scoreDirector =
+                    new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                            .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                            .build()) {
                 scoreDirector.setWorkingSolution(new Object());
 
                 assertThat(scoreDirector.totalScore()).isEqualTo(SimpleScore.of(-10));
@@ -264,10 +279,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -276,9 +293,10 @@ class IncrementalScoreDirectorTest {
                 }
             };
 
-            try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                    .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                    .build()) {
+            try (var scoreDirector =
+                    new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                            .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                            .build()) {
                 scoreDirector.setWorkingSolution(new Object());
                 assertThat(scoreDirector.totalScore()).isEqualTo(SimpleScore.of(-7));
                 assertThat(scoreDirector.getConstraintMatchTotalMap()).containsKey(CONSTRAINT_A);
@@ -311,10 +329,12 @@ class IncrementalScoreDirectorTest {
 
                 @Override
                 public void beforeVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
                 public void afterVariableChanged(Object entity, String variableName) {
+                    // No action needed
                 }
 
                 @Override
@@ -323,9 +343,10 @@ class IncrementalScoreDirectorTest {
                 }
             };
 
-            try (var scoreDirector = new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory())
-                    .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                    .build()) {
+            try (var scoreDirector =
+                    new IncrementalScoreDirector.Builder<>(mockIncrementalScoreDirectorFactory(), EnvironmentMode.PHASE_ASSERT)
+                            .withIncrementalScoreCalculator(calculator).withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                            .build()) {
                 scoreDirector.setWorkingSolution(new Object());
 
                 assertThat(registration[0].constraintRef()).isEqualTo(CONSTRAINT_A);
@@ -358,10 +379,12 @@ class IncrementalScoreDirectorTest {
 
             @Override
             public void beforeVariableChanged(Object entity, String variableName) {
+                // No action needed
             }
 
             @Override
             public void afterVariableChanged(Object entity, String variableName) {
+                // No action needed
             }
 
             @Override

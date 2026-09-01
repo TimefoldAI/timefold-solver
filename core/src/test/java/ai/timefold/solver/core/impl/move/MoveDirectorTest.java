@@ -147,7 +147,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -193,7 +193,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -243,7 +243,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -283,7 +283,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -315,7 +315,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -357,7 +357,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -408,7 +408,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -460,7 +460,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -505,7 +505,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -535,7 +535,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -575,7 +575,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -621,7 +621,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -669,7 +669,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -709,7 +709,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -740,7 +740,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -1672,7 +1672,7 @@ class MoveDirectorTest {
                 constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                         .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                 EnvironmentMode.FULL_ASSERT);
-        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
 
@@ -1708,7 +1708,7 @@ class MoveDirectorTest {
                 constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataMixedEntity.class)
                         .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                 EnvironmentMode.FULL_ASSERT);
-        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
 
@@ -1894,7 +1894,7 @@ class MoveDirectorTest {
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint("Bad value") },
                         EnvironmentMode.FULL_ASSERT);
-        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
         return scoreDirector;

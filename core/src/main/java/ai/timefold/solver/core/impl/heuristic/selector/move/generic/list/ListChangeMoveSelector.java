@@ -1,48 +1,31 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public final class ListChangeMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> sourceValueSelector;
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
 
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
-
     public ListChangeMoveSelector(IterableValueSelector<Solution_> sourceValueSelector,
             DestinationSelector<Solution_> destinationSelector, boolean randomSelection) {
+        super((ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor());
         this.sourceValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, this::getListVariableStateSupply);
         this.destinationSelector = destinationSelector;
         this.randomSelection = randomSelection;
         phaseLifecycleSupport.addEventListener(this.sourceValueSelector);
         phaseLifecycleSupport.addEventListener(this.destinationSelector);
-    }
-
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
-    }
-
-    @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
-        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
     }
 
     public static <Solution_> IterableValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
@@ -66,12 +49,6 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     return !listVariableDescriptor.isElementPinned(scoreDirector.getWorkingSolution(), entity,
                             elementDestination.index());
                 });
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        listVariableStateSupply = null;
     }
 
     @Override

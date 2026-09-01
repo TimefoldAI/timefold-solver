@@ -14,8 +14,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.random.RandomGenerator;
@@ -68,9 +71,14 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
+import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
@@ -568,6 +576,168 @@ class DefaultSolverTest {
             assertThat(bestSolution.get().getValueList()).hasSize(valueCount + 1);
             solver.terminateEarly();
         }
+    }
+
+    @Test
+    @Timeout(60)
+    void problemChangeAfterTheSolveRunsOnAScoreDirectorOfItsOwn() throws InterruptedException {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so the run ends on a score director which is not the one the first phase ran on.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.setDaemon(true); // Keep the solver waiting for the problem change instead of returning.
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+
+        var firstRunEnded = new CountDownLatch(1);
+        var changeProcessed = new CountDownLatch(1);
+        var firstPhaseScoreDirectorList = new CopyOnWriteArrayList<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        var restartedFirstPhaseStarted = new CountDownLatch(1);
+        var lastPhaseScoreDirector = new AtomicReference<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 0) {
+                    firstPhaseScoreDirectorList.add(phaseScope.getScoreDirector());
+                    if (firstPhaseScoreDirectorList.size() == 2) {
+                        restartedFirstPhaseStarted.countDown();
+                    }
+                } else {
+                    lastPhaseScoreDirector.compareAndSet(null, phaseScope.getScoreDirector());
+                }
+            }
+
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                try {
+                    firstRunEnded.countDown();
+                    changeProcessed.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        final var valueCount = 4;
+        var problem = TestdataSolution.generateSolution(valueCount, valueCount);
+        var endedRunScoreDirectorWasStillClosed = new AtomicBoolean();
+        var workingSolutionDuringChange = new AtomicReference<TestdataSolution>();
+        var bestSolutionAfterChange = new AtomicReference<TestdataSolution>();
+        solver.addEventListener(bestSolutionChangedEvent -> {
+            var newBestSolution = bestSolutionChangedEvent.getNewBestSolution();
+            if (bestSolutionChangedEvent.isEveryProblemChangeProcessed()
+                    && newBestSolution.getValueList().size() == valueCount + 1) {
+                bestSolutionAfterChange.compareAndSet(null, newBestSolution);
+            }
+        });
+
+        try (var executorService = Executors.newSingleThreadExecutor()) {
+            try {
+                executorService.submit(() -> solver.solve(problem));
+                // A problem change queued while a run is in progress terminates that run early,
+                // and no phase would run at all.
+                // Waiting for the run to end is the point of this test:
+                // by then its score director is closed,
+                // so checkProblemChanges has to build one of its own to apply the change to.
+                firstRunEnded.await();
+                // At this point,
+                // the solver has completed the first run
+                // and will wait for the problem change to be added,
+                // ensuring that checkProblemChanges is executed correctly.
+                solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+                    // close() clears the working solution, which is the observable proof it stayed closed.
+                    endedRunScoreDirectorWasStillClosed.set(lastPhaseScoreDirector.get().getWorkingSolution() == null);
+                    workingSolutionDuringChange.set(workingSolution);
+                    problemChangeDirector.addProblemFact(new TestdataValue("added value"), problem.getValueList()::add);
+                });
+                // The first run now finishes completely
+                changeProcessed.countDown();
+                restartedFirstPhaseStarted.await();
+            } finally {
+                solver.terminateEarly();
+            }
+        }
+
+        // The score director the run ended on close
+        assertThat(endedRunScoreDirectorWasStillClosed).isTrue();
+        assertThat(workingSolutionDuringChange.get()).isNotNull();
+        // No change to the solution from the first run
+        assertThat(workingSolutionDuringChange.get().getEntityList())
+                .as("the best solution of the run which just ended is loaded into the new score director")
+                .hasSize(valueCount)
+                .allMatch(entity -> entity.getValue() != null);
+        // The best solution must include the real-time changes
+        assertThat(bestSolutionAfterChange.get().getValueList()).hasSize(valueCount + 1);
+        // The restarted solver resumes at the first phase, on a score director of its own.
+        assertThat(firstPhaseScoreDirectorList).hasSize(2);
+        assertThat(firstPhaseScoreDirectorList.get(1)).isNotSameAs(firstPhaseScoreDirectorList.get(0));
+    }
+
+    @Test
+    void replacedScoreDirectorIsClosedWhenAPhaseOverridesTheEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so SolverContextManager has to swap in a score director for it.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+
+        var scoreDirectorPerPhase = new ArrayList<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        var replacedDirectorWasClosedOnSwap = new AtomicBoolean();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                // The swap already happened; solver-level listeners run after SolverContextManager.
+                if (!scoreDirectorPerPhase.isEmpty()) {
+                    // close() clears the working solution, which is the observable proof of the release.
+                    replacedDirectorWasClosedOnSwap.set(scoreDirectorPerPhase.get(0).getWorkingSolution() == null);
+                }
+                scoreDirectorPerPhase.add(phaseScope.getScoreDirector());
+            }
+        });
+        solver.solve(TestdataSolution.generateSolution(2, 2));
+
+        assertThat(scoreDirectorPerPhase).hasSize(2);
+        assertThat(scoreDirectorPerPhase.get(1)).isNotSameAs(scoreDirectorPerPhase.get(0));
+        assertThat(replacedDirectorWasClosedOnSwap).isTrue();
+    }
+
+    @Test
+    void ensureScoreCalculationCountConsistent() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so SolverContextManager swaps in a fresh score director between the two phases.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+        var problem = TestdataSolution.generateSolution(2, 2);
+
+        var countAfterFirstPhase = new AtomicLong(-1);
+        var countAtSecondPhaseStart = new AtomicLong(-1);
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 1) {
+                    countAtSecondPhaseStart.set(phaseScope.getScoreDirector().getCalculationCount());
+                }
+            }
+
+            @Override
+            public void phaseEnded(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 0) {
+                    countAfterFirstPhase.set(phaseScope.getScoreDirector().getCalculationCount());
+                }
+            }
+        });
+        solver.solve(problem);
+
+        // Terminations count score calculations across the whole solve,
+        // so the swapped-in score director must continue the running total rather than restart it at zero.
+        // Not an exact match: runPhases() calls setWorkingSolutionFromBestSolution() between the two phases,
+        // which scores once more on the outgoing director before the swap copies the total over.
+        // SolverContextManagerTest pins the exact hand-over.
+        assertThat(countAfterFirstPhase).hasPositiveValue();
+        assertThat(countAtSecondPhaseStart.get()).isGreaterThanOrEqualTo(countAfterFirstPhase.get());
     }
 
     @Test
@@ -2036,6 +2206,91 @@ class DefaultSolverTest {
     }
 
     @Test
+    void solvingErrorClosesScoreDirectorWhenSolvingStartedFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // The score director the solver was built with; solving fails before any phase adopts a context for it.
+        var scoreDirector = solver.getSolverScope().getScoreDirector();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void solvingStarted(SolverScope<TestdataSolution> solverScope) {
+                throw new IllegalStateException("Boom from a listener");
+            }
+        });
+
+        // The caller must see the real failure, not a follow-up failure from the solver's own cleanup.
+        assertThatCode(() -> solver.solve(TestdataSolution.generateSolution(2, 2)))
+                .hasMessageContaining("Boom from a listener");
+
+        // Otherwise a long-lived SolverManager accumulates one unclosed score director per failed job.
+        assertThat(scoreDirector.getWorkingSolution()).isNull();
+    }
+
+    @Test
+    void solvingErrorNotifiesListenersBeforeClosingTheScoreDirector() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // Force invalid move factory
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var workingSolutionSeenByListener = new AtomicReference<Object>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataListSolution>() {
+            @Override
+            public void solvingError(SolverScope<TestdataListSolution> solverScope, Exception exception) {
+                workingSolutionSeenByListener.set(solverScope.getScoreDirector().getWorkingSolution());
+            }
+        });
+
+        assertThatCode(() -> solver.solve(TestdataListSolution.generateUninitializedSolution(2, 2)))
+                .hasMessageContaining("The value (bad value) from the planning variable (valueList)");
+
+        // Closing clears the working solution, so releasing before notifying would hand listeners a gutted
+        // score director exactly when they are trying to diagnose the failure.
+        assertThat(workingSolutionSeenByListener.get()).isNotNull();
+    }
+
+    @Test
+    void solvingErrorClosesScoreDirectorWhenPhaseFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // Force invalid move factory
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+
+        // Expected to be the director created for the LS phase
+        var swappedScoreDirector = new AtomicReference<>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataListSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 1) {
+                    swappedScoreDirector.set(phaseScope.getScoreDirector());
+                }
+            }
+        });
+
+        assertThatCode(() -> solver.solve(problem))
+                .hasMessageContaining("The value (bad value) from the planning variable (valueList)");
+
+        // The orphaned non-default director must have been closed
+        assertThat(swappedScoreDirector.get()).isNotNull();
+        var closedWorkingSolution = ((InnerScoreDirector<?, ?>) swappedScoreDirector.get()).getWorkingSolution();
+        assertThat(closedWorkingSolution).isNull();
+    }
+
+    @Test
     void failCustomPhaseValueRangeAssertion() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
                 TestdataListValue.class);
@@ -2352,6 +2607,103 @@ class DefaultSolverTest {
                 .hasMessageContaining("workingScore")
                 .hasMessageContaining("uncorruptedScore")
                 .hasMessageContaining("Score corruption analysis:");
+    }
+
+    @Test
+    void assertDefaultEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsOnly(EnvironmentMode.PHASE_ASSERT);
+    }
+
+    @Test
+    void assertUpdatedDefaultEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsOnly(EnvironmentMode.FULL_ASSERT);
+    }
+
+    @Test
+    void assertPhaseEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // LS with TRACKED_FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsExactly(EnvironmentMode.FULL_ASSERT, EnvironmentMode.TRACKED_FULL_ASSERT);
+    }
+
+    @Test
+    void assertDefaultPhaseEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS with FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsExactly(EnvironmentMode.PHASE_ASSERT, EnvironmentMode.FULL_ASSERT);
+    }
+
+    @Test
+    void solveWithPhaseEnvironmentModeOverride() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS phase overridden to TRACKED_FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        var problem = TestdataSolution.generateSolution(2, 2);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(bestSolution).isNotNull();
+    }
+
+    @Test
+    void solveListVariableWithPhaseEnvironmentModeOverride() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
+        // LS phase overridden to TRACKED_FULL_ASSERT
+        var localSearchPhaseConfig = solverConfig.getPhaseConfigList().get(1);
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        localSearchPhaseConfig.setTerminationConfig(new TerminationConfig().withStepCountLimit(50));
+        var problem = TestdataListSolution.generateUninitializedSolution(20, 5);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(bestSolution).isNotNull();
+    }
+
+    @Test
+    void ensureListVariableStateIsReleased() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var phaseConfigList = new ArrayList<>(solverConfig.getPhaseConfigList());
+        phaseConfigList.add(new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
+        solverConfig.setPhaseConfigList(phaseConfigList);
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var problem = TestdataListSolution.generateUninitializedSolution(10, 4);
+
+        var listVariableDescriptor = solver.getScoreDirectorFactory().getSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListEntity.class)
+                .getListVariableDescriptor();
+
+        // Capture the SupplyManager's demand ref count right after each phase ends (CH, LS1, LS2 in order).
+        var countsAfterEachPhase = new ArrayList<Long>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataListSolution>() {
+            @Override
+            public void phaseEnded(AbstractPhaseScope<TestdataListSolution> phaseScope) {
+                countsAfterEachPhase.add(phaseScope.getScoreDirector().getSupplyManager()
+                        .getActiveCount(listVariableDescriptor.getStateDemand()));
+            }
+        });
+        solver.solve(problem);
+        // Three phases: CS, LS1 and LS2
+        assertThat(countsAfterEachPhase).hasSize(3);
+        // The count of demanded list variable state must be equal for both LS phases
+        assertThat(countsAfterEachPhase.get(2)).isEqualTo(countsAfterEachPhase.get(1));
     }
 
     @NullMarked

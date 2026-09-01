@@ -6,10 +6,10 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.AbstractGenericMoveSelector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public class RandomSubListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public class RandomSubListSwapMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
 
     private final SubListSelector<Solution_> leftSubListSelector;
     private final SubListSelector<Solution_> rightSubListSelector;
