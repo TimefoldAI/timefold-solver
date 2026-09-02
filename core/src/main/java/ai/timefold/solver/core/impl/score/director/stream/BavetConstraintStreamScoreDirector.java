@@ -71,7 +71,6 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         solutionDescriptor.visitAllEntities(solution, entityList::add);
         shadowVariableSupport.setConsistencyTracker(ConsistencyTracker.frozen(
                 getSolutionDescriptor(),
-                ignoreInconsistentSolutions(),
                 entityList.toArray()));
     }
 

@@ -16,7 +16,7 @@ public record VariableLoop(Set<EntityVariablePair> involvedVariableSet) {
      * Get the set of involved entities in the cycle
      */
     @SuppressWarnings("unchecked")
-    public <T> Set<T> getEntitySet() {
+    public <T> Set<T> entitySet() {
         return (Set<T>) involvedVariableSet.stream()
                 .map(EntityVariablePair::entity)
                 .collect(Collectors.toSet());

@@ -104,7 +104,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
 
     @Override
     public AbstractScoreInliner<Score_> fireAndForget(Object... facts) {
-        var consistencyTracker = ConsistencyTracker.frozen(solutionDescriptor, false, facts);
+        var consistencyTracker = ConsistencyTracker.frozen(solutionDescriptor, facts);
         var session = newSession(null, consistencyTracker,
                 ConstraintMatchPolicy.ENABLED, true);
         Arrays.stream(facts).forEach(session::insert);

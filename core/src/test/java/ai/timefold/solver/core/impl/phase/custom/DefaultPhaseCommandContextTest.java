@@ -19,7 +19,6 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class DefaultPhaseCommandContextTest {
 
@@ -41,10 +40,10 @@ class DefaultPhaseCommandContextTest {
 
         commandContext = new DefaultPhaseCommandContext<>(new MoveDirector<>(scoreDirector), () -> false);
 
-        solutionConsumer = Mockito.mock(Function.class);
+        solutionConsumer = mock(Function.class);
         when(solutionConsumer.apply(any())).thenReturn(SUCCESS);
 
-        flawedSolutionConsumer = Mockito.mock(Function.class);
+        flawedSolutionConsumer = mock(Function.class);
         when(flawedSolutionConsumer.apply(any())).thenReturn(ERROR);
     }
 

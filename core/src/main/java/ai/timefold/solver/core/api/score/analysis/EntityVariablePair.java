@@ -4,7 +4,8 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * A pair of an entity and a variable on it.
- * 
+ *
+ * @see VariableLoop
  * @param entity The entity.
  * @param variableName The variable on the entity.
  */

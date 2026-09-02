@@ -30,7 +30,7 @@ public record BendableScore(long structuralScore, long[] hardScores,
 
     public static BendableScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableScore.class, scoreString);
-        long structuralScore = 0L;
+        var structuralScore = 0L;
         if (scoreTokens[0] != null && scoreTokens[0].length > 0) {
             structuralScore = ScoreUtil.parseLevelAsLong(BendableScore.class, scoreString, scoreTokens[0][0]);
         }

@@ -827,9 +827,8 @@ public final class SolutionDescriptor<Solution_> {
     // Look up methods
     // ************************************************************************
 
-    @Nullable
     public LookupStrategyResolver getLookUpStrategyResolver() {
-        return lookUpStrategyResolver;
+        return Objects.requireNonNull(lookUpStrategyResolver);
     }
 
     // ************************************************************************

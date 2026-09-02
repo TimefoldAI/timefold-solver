@@ -414,11 +414,9 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
             }
             listVariableChangeList.clear();
         }
-        if (shadowVariableSession != null) {
-            if (!shadowVariableSession.updateVariables()) {
-                updateSuccessful = false;
-                return false;
-            }
+        if (shadowVariableSession != null && !shadowVariableSession.updateVariables()) {
+            updateSuccessful = false;
+            return false;
         }
         dirty = false;
         updateSuccessful = true;

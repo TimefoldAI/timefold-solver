@@ -8,8 +8,8 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class InconsistentSolutionException extends RuntimeException {
-    private final Object solution;
-    private final List<VariableLoop> variableLoops;
+    private final transient Object solution;
+    private final transient List<VariableLoop> variableLoops;
 
     public InconsistentSolutionException(String feature, Object solution, List<VariableLoop> variableLoops) {
         super("The solution (%s) is inconsistent. %s requires a consistent solution.".formatted(solution, feature));

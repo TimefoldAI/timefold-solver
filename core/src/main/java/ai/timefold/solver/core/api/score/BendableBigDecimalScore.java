@@ -33,7 +33,7 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
 
     public static BendableBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableBigDecimalScore.class, scoreString);
-        long structuralScore = 0L;
+        var structuralScore = 0L;
         if (scoreTokens[0] != null && scoreTokens[0].length > 0) {
             structuralScore = ScoreUtil.parseLevelAsLong(BendableBigDecimalScore.class, scoreString, scoreTokens[0][0]);
         }

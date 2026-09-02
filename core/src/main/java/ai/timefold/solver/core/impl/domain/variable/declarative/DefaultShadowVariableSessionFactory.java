@@ -82,10 +82,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder,
             Object[] entities, IntFunction<TopologicalOrderGraph> graphCreator) {
 
-        public boolean ignoreInconsistentSolutions() {
-            return ignoreInconsistentSolutions;
-        }
-
         public GraphDescriptor(SolutionDescriptor<Solution_> solutionDescriptor,
                 ChangedVariableNotifier<Solution_> changedVariableNotifier,
                 Object... entities) {

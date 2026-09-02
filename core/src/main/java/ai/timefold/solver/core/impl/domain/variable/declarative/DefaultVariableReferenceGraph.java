@@ -69,7 +69,7 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     /**
-     * See {@link ConsistencyTracker#setUnknownConsistencyFromEntityShadowVariablesInconsistent}
+     * See {@link ConsistencyTracker#setUnknownConsistencyValues}
      */
     public void setUnknownInconsistencyValues() {
         graph.commitChanges(changeTracker);
@@ -84,7 +84,7 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         graphTrackingInconsistentEntities.commitChanges(new BitSet());
         var loopedComponentList = graphTrackingInconsistentEntities.getLoopedComponentList();
         for (var loopedComponent : loopedComponentList) {
-            var entityVariablePairs = new LinkedHashSet<EntityVariablePair>(loopedComponent.size());
+            var entityVariablePairs = LinkedHashSet.<EntityVariablePair> newLinkedHashSet(loopedComponent.size());
             for (var nodeId : loopedComponent) {
                 var node = this.nodeList.get(nodeId);
                 for (var variable : node.variableReferences()) {

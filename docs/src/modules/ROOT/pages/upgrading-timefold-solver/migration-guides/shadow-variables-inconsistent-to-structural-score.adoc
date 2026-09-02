@@ -1,0 +1,90 @@
+[#migrateShadowVariablesInconsistent]
+= `@ShadowVariablesInconsistent` to structural scores
+:doctype: book
+:icons: font
+
+This section explains how to update your planning model to use
+the xref:constraints-and-score/overview.adoc#structuralScore[structural score] approach
+instead of `@ShadowVariablesInconsistent`,
+which has been deprecated in Timefold Solver 2.x and will be removed entirely in Timefold Solver 3.0.
+
+If you have complex shadow variables that can form dependency loops and have been using the `@ShadowVariablesInconsistent` annotation, migrate to using structural scores to simplify your domain model, remove deprecated APIs, and have faster move evaluation.
+
+[#migrateShadowVariablesInconsistentMigrationSteps]
+== Migration steps
+
+=== 1. Remove the `@ShadowVariablesInconsistent` fields from all entities
+
+Identify the entities that had a `@ShadowVariablesInconsistent` field and remove the `@ShadowVariablesInconsistent` field from the entity.
+For instance,
+
+[source,java]
+----
+@PlanningEntity
+public class Visit {
+
+    @ShadowVariablesInconsistent
+    private boolean isInconsistent;
+
+    // ... other properties (capacity, etc.)
+}
+----
+
+becomes
+
+[source,java]
+----
+@PlanningEntity
+public class Visit {
+    // ... other properties (capacity, etc.)
+}
+----
+
+
+=== 2. Remove shadow variable consistency constraints
+
+In your ConstraintProvider, find the constraints that were using the `@ShadowVariablesInconsistent` field to penalize inconsistent solutions and remove them.
+For instance,
+
+
+[source,java]
+----
+public class MyConstraintProvider implements ConstraintProvider {
+
+    @Override
+    public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        return new Constraint[] {
+                penalizeInconsistentSolutions(constraintFactory),
+                // ... other constraints
+        };
+    }
+
+    Constraint penalizeInconsistentSolutions(ConstraintFactory constraintFactory) {
+        constraintFactory.forEachUnfiltered(Visit.class)
+            .filter(Visit::isInconsistent)
+            .penalize(HardMediumSoftScore.ONE_HARD)
+            .asConstraint("Inconsistent Visit");
+    }
+    // ... other constraints
+}
+----
+
+becomes
+
+[source,java]
+----
+public class MyConstraintProvider implements ConstraintProvider {
+
+    @Override
+    public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        return new Constraint[] {
+                // ... other constraints
+        };
+    }
+
+    // ... other constraints
+}
+----
+
+After these changes, your domain is now using the structural score approach.
+As a result, the Solver will automatically handle consistency in your domain, avoid calculating the score of inconsistent solutions, and other performance optimizations.

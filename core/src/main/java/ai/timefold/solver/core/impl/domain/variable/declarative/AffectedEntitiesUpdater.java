@@ -184,7 +184,7 @@ final class AffectedEntitiesUpdater<Solution_>
     }
 
     /**
-     * See {@link ConsistencyTracker#setUnknownConsistencyFromEntityShadowVariablesInconsistent}
+     * See {@link ConsistencyTracker#setUnknownConsistencyValues}
      */
     void setUnknownInconsistencyValues() {
         for (var node : nodeList) {

@@ -375,7 +375,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var inconsistentCycles = computeVariableLoops();
         var inconsistentEntities = new LinkedHashSet<>();
         for (var inconsistentCycle : inconsistentCycles) {
-            inconsistentEntities.addAll(inconsistentCycle.getEntitySet());
+            inconsistentEntities.addAll(inconsistentCycle.entitySet());
         }
         if (listVariableStateSupply != null) {
             var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
@@ -406,6 +406,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 unassignPlainEntity(inconsistentEntity);
             }
         }
+        logger.info("Unassigned the following entities which were involved in a dependency loop: {}.", inconsistentEntities);
     }
 
     private void unassignPlainEntity(Object inconsistentEntity) {

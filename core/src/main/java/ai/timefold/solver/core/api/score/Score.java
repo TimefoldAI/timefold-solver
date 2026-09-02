@@ -21,7 +21,7 @@ public sealed interface Score<Score_ extends Score<Score_>>
         SimpleBigDecimalScore, SimpleScore {
     /**
      * The structural component of a Score. 0 if the solution is structurally sound
-     * (i.e. no inconsistent variables), -1 otherwise. This behaves as a super hard Score;
+     * (i.e. no inconsistent variables), -1 otherwise. This behaves as a super hard score;
      * a Score with a negative structural score is worse than all scores with a zero
      * structural score.
      *
