@@ -88,3 +88,10 @@ public class MyConstraintProvider implements ConstraintProvider {
 
 After these changes, your domain is now using the structural score approach.
 As a result, the Solver will automatically handle consistency in your domain, avoid calculating the score of inconsistent solutions, and other performance optimizations.
+Additionally, the Solver API will behave differently when a xref:constraints-and-score/overview.adoc#structuralScore[structurally flawed solution] is passed:
+
+- When `Solver.solve`, `SolverManager.solve` or `SolverJobBuilder` is given a structurally flawed solution, all entities involved in variable loops will be unassigned before solving is started.
+
+- When `SolutionManager.update`, `SolverManager.updateShadowVariables` or `SolutionManager.recommendAssignment` is called with a structurally flawed solution, an instance of `InconsistentSolutionException` will be thrown containing the variable loops in the solution.
+
+- When `SolutionManager.analyze` is called with structurally flawed solution, the returned `ScoreAnalysis` will have a non-null `structuralFlawAnalysis` containing the variable loops in the solution.

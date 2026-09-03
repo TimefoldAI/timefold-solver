@@ -101,7 +101,7 @@ public interface ScoreAnalysis<Score_ extends Score<Score_>> {
      * @return null if the solution was not structurally flawed at the time of analysis.
      */
     @Nullable
-    StructuralFlawAnalysis getStructuralFlawAnalysis();
+    StructuralFlawAnalysis structuralFlawAnalysis();
 
     /**
      * Performs a lookup on {@link #constraintMap()}.
