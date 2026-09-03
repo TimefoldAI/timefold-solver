@@ -38,7 +38,8 @@ public class BavetPrecomputeUniConstraintStream<Solution_, A> extends BavetAbstr
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         Supplier<BavetPrecomputeBuildHelper<UniTuple<A>>> precomputeBuildHelperSupplier =
-                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream, entityClassSet);
+                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream,
+                        buildHelper.isIndictmentEnabled(), entityClassSet);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
         buildHelper.addNode(new PrecomputeUniNode<>(precomputeBuildHelperSupplier,
