@@ -1,0 +1,97 @@
+[#_platform_visualization]
+= Visualization
+:description: How a model's custom visualization UI is embedded and driven once deployed to Timefold Platform.
+:doctype: book
+:sectnums:
+:icons: font
+
+A model's solution can have a custom visualization UI, rendered inside Timefold Platform as an iframe, instead of consumers only seeing the raw solution data or the generic score analysis view.
+
+include::_preview-note.adoc[]
+
+[CAUTION]
+====
+This page documents how visualization works today, based directly on the current platform implementation.
+The contract described here, including iframe sizing, refresh behavior, asset paths, and page-announcement metadata, is still evolving and may change as the platform's visualization support matures, possibly without a smooth migration path.
+====
+
+[#_building_the_ui]
+== Building the UI
+
+The UI itself is the same set of static files described in xref:running-timefold-solver/service/visualization.adoc[], placed under `src/main/resources/META-INF/resources`.
+Once deployed, the platform repackages and serves these files under a `ui/` prefix, so the entry point the platform loads must be exactly `ui/index.html`.
+
+Asset paths under this prefix are single-segment only today: `ui/main.js` is servable, but `ui/assets/main.js` is not.
+Flatten your build output into a single directory, without subfolders.
+
+[#_iframe_embedding]
+== How the platform embeds the UI
+
+The platform renders `ui/index.html` inside a fixed-size iframe, sized by the platform's own layout, with no auto-grow or resize mechanism.
+
+Design your UI for a fixed viewport, or handle any overflow or scrolling yourself within that fixed area.
+
+[#_calling_your_api_from_the_iframe]
+== Calling your model's API from inside the iframe
+
+The platform injects the following query parameters into the iframe's `src` URL:
+
+[cols="1,3", options="header"]
+|===
+| Parameter | Purpose
+
+| `onPlatform`
+| Present when the UI is running embedded in the platform, absent when the UI is opened directly.
+
+| `runId`
+| The identifier of the dataset being viewed.
+
+| `tenantId`
+| The identifier of the tenant the dataset belongs to.
+
+| `apiUrl`
+| The base URL to use for calls to your model's API.
+
+| `apiKey`
+| The API key to use for calls to your model's API.
+|===
+
+Read `apiUrl` from `window.location.search`, strip any trailing slash, and prepend it to your own API calls, so they're routed correctly regardless of where the platform proxies from.
+Append the path your model's own REST API is served under — the same path you'd hit locally, as described in xref:running-timefold-solver/service/visualization.adoc#_calling_your_api[Calling your REST API from the UI].
+Only the base changes between running locally and running embedded in the platform.
+
+[#_refreshing_while_solving]
+== Refreshing while solving
+
+The platform doesn't push updates into the iframe or refresh it automatically.
+Your UI needs to poll its own status or solution endpoint on an interval, and stop polling once the dataset's status leaves the active or solving set.
+
+[#_error_reporting]
+== Error reporting
+
+The platform automatically injects a small error-forwarding script into the served HTML.
+This script turns uncaught JavaScript errors and unhandled promise rejections into a `postMessage` call, which the platform surfaces to the user as an alert in its own UI.
+
+Don't rely solely on `console.error` to signal failure: uncaught errors and unhandled promise rejections are what actually surface to the end user.
+Anything you only log to the console stays invisible to them.
+
+[#_announcing_visualization_pages]
+== Announcing visualization pages
+
+A model can offer multiple types of visualization, for example a map, a table, and a Gantt chart, and declares each one so the platform knows what to offer users and how to label and icon it. Declare pages through build-time configuration:
+
+[source,properties,options="nowrap"]
+----
+timefold.model.visualization.pages[0].key=map
+timefold.model.visualization.pages[0].icon=TbMap
+timefold.model.visualization.pages[0].label=Map
+timefold.model.visualization.pages[1].key=gantt
+timefold.model.visualization.pages[1].icon=TbChartGantt
+timefold.model.visualization.pages[1].label=Gantt chart
+----
+
+Each declared page has three required fields; omitting any of them fails the build.
+
+- `key`: a stable identifier for the page.
+- `icon`: an icon name from https://tabler.io/icons[Tabler Icons].
+- `label`: the human-readable name shown to users.
