@@ -24,6 +24,39 @@ public final class Samplers {
     }
 
     /**
+     * As defined by {@link #all()},
+     * but reporting an expected sample size.
+     * An unbounded sampler cannot know its own size,
+     * so the caller supplies it;
+     * it only sizes the collection the sample is assembled in,
+     * and it costs nothing but a resize if it is wrong.
+     *
+     * @param expectedSize the number of members a sample is expected to hold; at least 1
+     * @return a sampler that accepts every candidate offered,
+     *         so a sample drains its whole source or slice
+     * @throws IllegalArgumentException if expectedSize is below 1
+     */
+    public static <A> Sampler<A> all(int expectedSize) {
+        if (expectedSize < 1) {
+            throw new IllegalArgumentException(
+                    "The expectedSize (%d) of a sampler must be at least 1.".formatted(expectedSize));
+        }
+        return new Sampler<A>() {
+
+            @Override
+            public int targetSize() {
+                return expectedSize;
+            }
+
+            @Override
+            public Decision evaluate(int sizeSoFar, @Nullable A candidate) {
+                return Decision.ACCEPT;
+            }
+
+        };
+    }
+
+    /**
      * @param size the exact number of members every sample will have,
      *        or fewer if the source or slice runs dry first; at least 1
      * @return a sampler that stops a sample as soon as it reaches {@code size} members
@@ -74,6 +107,11 @@ public final class Samplers {
             @Override
             public int minimumSize() {
                 return sampler.minimumSize();
+            }
+
+            @Override
+            public int targetSize() {
+                return sampler.targetSize();
             }
 
             @Override

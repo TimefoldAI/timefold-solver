@@ -5,11 +5,11 @@ import static ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sa
 import static ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample.Decision.STOP;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.util.ScalingOrderedSet;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.PillarSampler;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
@@ -34,7 +34,7 @@ public final class SampleAssembler {
     public static <A> @Nullable Sample<A> assemble(Iterator<@Nullable A> sourceIterator, RandomGenerator random,
             Sampler<A> sampler) {
         sampler.reset(random);
-        return assemble(sourceIterator, sampler.minimumSize(), sampler, sampler);
+        return assemble(sourceIterator, sampler.minimumSize(), sampler.targetSize(), sampler, sampler);
     }
 
     /**
@@ -44,18 +44,25 @@ public final class SampleAssembler {
     public static <Key_, A> @Nullable Sample<A> assemble(Iterator<@Nullable A> sourceIterator, RandomGenerator random,
             @Nullable Key_ key, PillarSampler<Key_, A> sampler) {
         sampler.reset(random, key);
-        return assemble(sourceIterator, sampler.minimumSize(), sampler, sampler::evaluate);
+        return assemble(sourceIterator, sampler.minimumSize(), sampler.targetSize(), sampler, sampler::evaluate);
     }
 
-    private static <A> @Nullable Sample<A> assemble(Iterator<@Nullable A> sourceIterator, int minimumSize,
+    private static <A> @Nullable Sample<A> assemble(Iterator<@Nullable A> sourceIterator, int minimumSize, int targetSize,
             Object sampler, Sampler<A> evaluator) {
         if (minimumSize < 1) {
             throw new IllegalArgumentException("The minimumSize (%d) of sampler (%s) must be at least 1."
                     .formatted(minimumSize, sampler));
         }
+        if (targetSize < minimumSize) {
+            throw new IllegalArgumentException(
+                    "The targetSize (%d) of sampler (%s) must be at least the minimumSize (%d)."
+                            .formatted(targetSize, sampler, minimumSize));
+        }
         // A set, not a list: sizeSoFar passed to evaluate() and the minimumSize check below must both see the distinct member count,
         // since Sample.of() deduplicates anyway - otherwise an accepted duplicate would consume a slot the sampler believes it filled.
-        var memberSet = new LinkedHashSet<@Nullable A>();
+        // A ScalingOrderedSet, not a LinkedHashSet: a sample this small pays no hash node at all,
+        // and it is a SequencedSet, so Sample.of() adopts it instead of copying it back into a LinkedHashSet.
+        var memberSet = new ScalingOrderedSet<@Nullable A>(targetSize);
         var stoppedBySampler = false;
         while (sourceIterator.hasNext()) {
             var candidate = sourceIterator.next();
@@ -77,7 +84,7 @@ public final class SampleAssembler {
             }
         }
         if (memberSet.size() >= minimumSize) {
-            // memberSet is already a deduplicated, order-stable LinkedHashSet owned exclusively by this method,
+            // memberSet is already a deduplicated, order-stable SequencedSet owned exclusively by this method,
             // which never touches it again - Sample.of() adopts a SequencedSet like this one instead of copying it.
             return Sample.of(memberSet);
         }

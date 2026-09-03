@@ -44,6 +44,11 @@ final class DefaultSampler<A> implements Sampler<A> {
     }
 
     @Override
+    public int targetSize() {
+        return targetSize;
+    }
+
+    @Override
     public Decision evaluate(int sizeSoFar, @Nullable A candidate) {
         return sizeSoFar + 1 >= targetSize ? Decision.ACCEPT_AND_STOP : Decision.ACCEPT;
     }

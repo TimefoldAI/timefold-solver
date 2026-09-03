@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
+import ai.timefold.solver.core.impl.util.SingletonIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -207,32 +208,6 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
         @Override
         public void accept(PillarWithRange<Entity_, Value_> pillarEntry, Value_ destination) {
             nextMove = Moves.massChange(variableMetaModel, pillarEntry.pillar(), destination);
-        }
-
-    }
-
-    private static final class SingletonIterator<A extends @Nullable Object>
-            implements Iterator<A> {
-
-        private final A singleton;
-        private boolean returned = false;
-
-        public SingletonIterator(A singleton) {
-            this.singleton = singleton;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return !returned;
-        }
-
-        @Override
-        public A next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            returned = true;
-            return singleton;
         }
 
     }

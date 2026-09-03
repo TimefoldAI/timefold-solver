@@ -1,7 +1,8 @@
 package ai.timefold.solver.core.impl.move;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,7 +27,8 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         implements RevertableScoreDirector<Solution_> {
 
     private final @Nullable InnerScoreDirector<Solution_, Score_> backingScoreDirector;
-    private List<ChangeAction<Solution_>> variableChanges;
+    private @Nullable List<ChangeAction<Solution_>> variableChangeList;
+    private boolean variableChangesEscaped = false;
 
     /*
      * The fromIndex of afterListVariableChanged must match the fromIndex of its beforeListVariableChanged call.
@@ -54,15 +56,12 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> backingScoreDirector, boolean requiresIndexCache) {
         this.backingScoreDirector = (InnerScoreDirector<Solution_, Score_>) backingScoreDirector;
         this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
-        // Intentional LinkedList; fast clear, no allocations upfront,
-        // will most often only carry a small number of items.
-        this.variableChanges = new LinkedList<>();
     }
 
     private VariableChangeRecordingScoreDirector(@Nullable InnerScoreDirector<Solution_, Score_> backingScoreDirector,
-            List<ChangeAction<Solution_>> variableChanges, @Nullable Map<Object, Integer> cache) {
+            List<ChangeAction<Solution_>> variableChangeList, @Nullable Map<Object, Integer> cache) {
         this.backingScoreDirector = backingScoreDirector;
-        this.variableChanges = variableChanges;
+        this.variableChangeList = variableChangeList;
         this.cache = cache;
     }
 
@@ -73,30 +72,55 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         // Instead, the list is passed as a reference here, and instead of it being cleared by undoChanges(),
         // the reference is replaced; that way, the move does not actually share the list with anyone,
         // and copying of its contents can be avoided.
-        return new RecordedUndoMove<>(variableChanges);
+        variableChangesEscaped = true;
+        return new RecordedUndoMove<>(variableChangeList == null ? Collections.emptyList() : variableChangeList);
     }
 
     @Override
     public void undoChanges() {
-        var changeCount = variableChanges.size();
+        var changeList = getVariableChangeList();
+        var changeCount = changeList.size();
         if (changeCount == 0) {
             return;
         }
-        var listIterator = variableChanges.listIterator(changeCount);
+        var listIterator = changeList.listIterator(changeCount);
         while (listIterator.hasPrevious()) { // Iterate in reverse.
             var changeAction = listIterator.previous();
             changeAction.undo(backingScoreDirector);
         }
         Objects.requireNonNull(backingScoreDirector).updateShadowVariables();
-        variableChanges = new LinkedList<>(); // Do not clear the list, as createUndoMove() may hold a reference to it.
+        resetVariableChangeList();
         if (cache != null) {
             cache.clear();
         }
     }
 
+    private List<ChangeAction<Solution_>> getVariableChangeList() {
+        if (variableChangeList == null) {
+            // We use an ArrayList, as LinkedList is slow to iterate and brings node allocation overhead.
+            // We use a small initial capacity, as many moves will not perform that many operations.
+            // The minimum is 2 - a single change, and shadow var update;
+            // we use 4 to give some room for marginally more expensive operations as well,
+            // without allocating the full default capacity.
+            variableChangeList = new ArrayList<>(4);
+        }
+        return variableChangeList;
+    }
+
+    private void resetVariableChangeList() {
+        if (variableChangesEscaped) {
+            // We need to reallocate the list, as createUndoMove() may hold a reference to it.
+            variableChangeList = null;
+            variableChangesEscaped = false;
+        } else {
+            variableChangeList.clear(); // Do not reallocate the list on the hot path.
+        }
+    }
+
     @Override
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        variableChanges.add(new VariableChangeAction<>(entity, variableDescriptor.getValue(entity), variableDescriptor));
+        getVariableChangeList()
+                .add(new VariableChangeAction<>(entity, variableDescriptor.getValue(entity), variableDescriptor));
         if (backingScoreDirector != null) {
             backingScoreDirector.beforeVariableChanged(variableDescriptor, entity);
         }
@@ -117,7 +141,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
             cache.put(entity, fromIndex);
         }
         var list = variableDescriptor.getValue(entity);
-        variableChanges.add(new ListVariableBeforeChangeAction<>(entity,
+        getVariableChangeList().add(new ListVariableBeforeChangeAction<>(entity,
                 List.copyOf(list.subList(fromIndex, toIndex)), fromIndex, toIndex,
                 variableDescriptor));
         if (backingScoreDirector != null) {
@@ -129,7 +153,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
         if (cache != null) {
-            Integer requiredFromIndex = cache.remove(entity);
+            var requiredFromIndex = cache.remove(entity);
             if (requiredFromIndex != fromIndex) {
                 throw new IllegalArgumentException(
                         """
@@ -138,7 +162,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
                                 .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
             }
         }
-        variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
+        getVariableChangeList().add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
         if (backingScoreDirector != null) {
             backingScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }
@@ -146,7 +170,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
+        getVariableChangeList().add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
         if (backingScoreDirector != null) {
             backingScoreDirector.beforeListVariableElementAssigned(variableDescriptor, element);
         }
@@ -154,7 +178,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableAfterAssignmentAction<>(element, variableDescriptor));
+        getVariableChangeList().add(new ListVariableAfterAssignmentAction<>(element, variableDescriptor));
         if (backingScoreDirector != null) {
             backingScoreDirector.afterListVariableElementAssigned(variableDescriptor, element);
         }
@@ -162,7 +186,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void beforeListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableBeforeUnassignmentAction<>(element, variableDescriptor));
+        getVariableChangeList().add(new ListVariableBeforeUnassignmentAction<>(element, variableDescriptor));
         if (backingScoreDirector != null) {
             backingScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
         }
@@ -170,7 +194,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void afterListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableAfterUnassignmentAction<>(element, variableDescriptor));
+        getVariableChangeList().add(new ListVariableAfterUnassignmentAction<>(element, variableDescriptor));
         if (backingScoreDirector != null) {
             backingScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
         }
@@ -202,7 +226,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
      * that only tracks variable changes without firing any delegated score director events.
      */
     public VariableChangeRecordingScoreDirector<Solution_, Score_> getNonDelegating() {
-        return new VariableChangeRecordingScoreDirector<>(null, variableChanges, cache);
+        return new VariableChangeRecordingScoreDirector<>(null, getVariableChangeList(), cache);
     }
 
     @Override
@@ -217,7 +241,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void updateShadowVariables() {
-        variableChanges.add(UpdateShadowVariablesAction.instance());
+        getVariableChangeList().add(UpdateShadowVariablesAction.instance());
         if (backingScoreDirector != null) {
             backingScoreDirector.updateShadowVariables();
         }

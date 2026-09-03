@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.IntStream;
+
+import ai.timefold.solver.core.impl.util.ScalingOrderedSet;
 
 import org.junit.jupiter.api.Test;
 
@@ -64,6 +67,44 @@ class SampleTest {
     @Test
     void differentMembersAreNotEqual() {
         assertThat(Sample.of(List.of("a"))).isNotEqualTo(Sample.of(List.of("b")));
+    }
+
+    @Test
+    void ofAdoptsAScalingOrderedSetInsteadOfCopyingIt() {
+        var memberSet = new ScalingOrderedSet<String>(2);
+        memberSet.addAll(List.of("a", "b"));
+        var sample = Sample.of(memberSet);
+        memberSet.add("c");
+        // A SequencedSet is adopted, not copied - later mutation of the caller's set leaks into the sample.
+        // SampleAssembler builds exactly this type, so adoption is what keeps the assembler's set out of a LinkedHashSet.
+        assertThat(sample.size()).isEqualTo(3);
+        assertThat(sample.contains("c")).isTrue();
+        assertThat(sample.representative()).isEqualTo("a");
+    }
+
+    @Test
+    void equalityHoldsAcrossSetImplementations() {
+        var memberSet = new ScalingOrderedSet<String>(3);
+        memberSet.addAll(List.of("c", "a", "b"));
+        var left = Sample.of(memberSet);
+        var right = Sample.of(List.of("a", "b", "c"));
+
+        assertThat(left).isEqualTo(right);
+        assertThat(right).isEqualTo(left);
+        assertThat(left).hasSameHashCodeAs(right);
+    }
+
+    @Test
+    void equalityHoldsAcrossSetImplementationsAboveTheListThreshold() {
+        var memberList = IntStream.range(0, 20).boxed().toList();
+        var memberSet = new ScalingOrderedSet<Integer>(20);
+        memberSet.addAll(memberList.reversed());
+        var left = Sample.of(memberSet);
+        var right = Sample.of(memberList);
+
+        assertThat(left).isEqualTo(right);
+        assertThat(right).isEqualTo(left);
+        assertThat(left).hasSameHashCodeAs(right);
     }
 
 }

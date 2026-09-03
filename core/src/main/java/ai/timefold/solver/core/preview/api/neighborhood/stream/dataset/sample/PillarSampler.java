@@ -52,6 +52,19 @@ public interface PillarSampler<Key_, A> {
     }
 
     /**
+     * A hint at how many members this sample will hold,
+     * read after {@link #reset(RandomGenerator, Object)} and before the first {@link #evaluate(int, Object)} call.
+     * It only sizes the collection the sample is assembled in,
+     * so an under-estimate costs a resize and nothing else.
+     * A sampler which cannot know its own size in advance reports its {@link #minimumSize()}.
+     *
+     * @return at least {@link #minimumSize()}
+     */
+    default int targetSize() {
+        return minimumSize();
+    }
+
+    /**
      * @param sizeSoFar the number of members already accepted; 0 for the first candidate offered
      * @param candidate the candidate offered, drawn at most once per sample
      * @return what to do with the candidate

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.bias;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -66,6 +67,74 @@ public abstract class AbstractBiasIT {
     static <T> ElementAwareArrayList<T> toEntries(List<T> elements) {
         var list = new ElementAwareArrayList<T>();
         list.addAll(elements);
+        return list;
+    }
+
+    /**
+     * How a bias fixture lays its elements out in {@link ElementAwareArrayList}'s physical slots.
+     * The random iterators draw over those slots, not over logical indexes,
+     * so a fixture built only by {@link #toEntries(List)} never exercises the gap-rejection path at all.
+     */
+    public enum Layout {
+
+        /**
+         * Every slot holds an element, so no draw is ever rejected.
+         */
+        GAPLESS,
+        /**
+         * Interior gaps, including one at the first slot and one at the last,
+         * so that a draw must reject and redraw, and so that the boundaries are covered.
+         */
+        GAPPED;
+
+        <T> ElementAwareArrayList<T> build(List<T> elements) {
+            return this == GAPLESS ? toEntries(elements) : toEntriesWithGaps(elements);
+        }
+
+    }
+
+    /**
+     * Builds a list holding exactly {@code elements}, in order, but separated by gaps.
+     * Filler entries are interleaved and then removed,
+     * leaving the list logically equal to {@link #toEntries(List)} but physically gappy.
+     * <p>
+     * The list compacts itself once its gaps pass a quarter of its size,
+     * so at most {@code elements.size() / 4} fillers can survive;
+     * asking for more would make the list compact them all away
+     * and silently hand back a gapless fixture which tests nothing.
+     * The first and the last slot are gaps whenever the budget allows two fillers,
+     * so that the boundaries are covered too.
+     */
+    static <T> ElementAwareArrayList<T> toEntriesWithGaps(List<T> elements) {
+        var elementCount = elements.size();
+        var fillerBudget = elementCount / 4;
+        if (fillerBudget == 0) { // Too small to hold a gap; the list would just compact it away.
+            return toEntries(elements);
+        }
+        var list = new ElementAwareArrayList<T>();
+        var fillerList = new ArrayList<ElementAwareArrayList<T>.Entry>(fillerBudget);
+        var filler = elements.get(0);
+        fillerList.add(list.addEntry(filler)); // Leading filler, so slot 0 ends up a gap.
+        // Spread whatever budget is left over the body, keeping one back for the trailing filler.
+        var bodyFillers = Math.max(0, fillerBudget - 2);
+        var spacing = bodyFillers == 0 ? Integer.MAX_VALUE : elementCount / (bodyFillers + 1);
+        for (var i = 0; i < elementCount; i++) {
+            list.addEntry(elements.get(i));
+            if (fillerList.size() < fillerBudget - 1 && i > 0 && i % spacing == 0) {
+                fillerList.add(list.addEntry(filler));
+            }
+        }
+        if (fillerList.size() < fillerBudget) {
+            fillerList.add(list.addEntry(filler)); // Trailing filler, so the last slot ends up a gap.
+        }
+        for (var entry : fillerList) {
+            entry.remove();
+        }
+        if (list.slotCount() <= list.size()) {
+            throw new IllegalStateException(
+                    "The gapped fixture of (%d) elements kept no gaps (slotCount %d, size %d)."
+                            .formatted(elementCount, list.slotCount(), list.size()));
+        }
         return list;
     }
 
