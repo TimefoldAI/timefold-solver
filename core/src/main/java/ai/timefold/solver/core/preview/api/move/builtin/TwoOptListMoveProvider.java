@@ -11,7 +11,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Range;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
@@ -64,9 +63,8 @@ public final class TwoOptListMoveProvider<Solution_, Entity_, Value_> implements
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var positionStream = moveStreamFactory.forEachAssignedValue(variableMetaModel)
                 .map((solutionView, value) -> (PositionInList) solutionView.getPositionOf(variableMetaModel, value));
-        var predicate = (BiNeighborhoodsPredicate<Solution_, PositionInList, PositionInList>) this::isValidTwoOpt;
         return moveStreamFactory.pick(positionStream)
-                .pick(positionStream, NeighborhoodsJoiners.filtering(predicate))
+                .pick(positionStream, NeighborhoodsJoiners.filtering(this::isValidTwoOpt))
                 .asMove(this::buildMove);
     }
 

@@ -6,7 +6,6 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,7 +42,6 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -167,33 +165,6 @@ class MoveDirectorTest {
         when(mockScoreDirector.getListVariableStateSupply(any())).thenReturn(supplyMock);
         var actualPosition = moveDirector.getPositionOf(variableMetaModel, expectedValue2);
         assertThat(actualPosition).isEqualTo(expectedLocation);
-    }
-
-    @Test
-    void executeTemporaryWithoutScoringNeverCalculatesScoreAndAlwaysUndoes() {
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
-                .basicVariable("value", TestdataValue.class);
-
-        var originalValue = new TestdataValue("original");
-        var entity = new TestdataEntity("A", originalValue);
-        var newValue = new TestdataValue("new");
-        var move = Moves.change(variableMetaModel, entity, newValue);
-
-        var mockScoreDirector = (InnerScoreDirector<TestdataSolution, ?>) mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<>(mockScoreDirector);
-
-        var valueSeenByPostprocessor = new TestdataValue[1];
-        var result = moveDirector.executeTemporaryWithoutScoring(move, workingSolution -> {
-            // The move must already be applied by the time the postprocessor runs.
-            valueSeenByPostprocessor[0] = entity.getValue();
-            return "postprocessor result";
-        });
-
-        assertThat(result).isEqualTo("postprocessor result");
-        assertThat(valueSeenByPostprocessor[0]).isEqualTo(newValue);
-        assertThat(entity.getValue()).isEqualTo(originalValue); // Undone automatically once the postprocessor returns.
-        verify(mockScoreDirector, never()).calculateScore();
     }
 
     @Nested

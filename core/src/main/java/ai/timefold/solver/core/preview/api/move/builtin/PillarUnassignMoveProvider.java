@@ -7,6 +7,9 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMeta
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.NeighborhoodsCollectors;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -63,10 +66,28 @@ public final class PillarUnassignMoveProvider<Solution_, Entity_, Value_>
      */
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var pillarDataset = MoveProviderUtil.assignedPillars(moveStreamFactory, variableMetaModel);
+        var pillarDataset = assignedPillars(moveStreamFactory, variableMetaModel);
         return moveStreamFactory.buildMoveStream((session, random) -> new MappingIterator<>(
                 session.getInstance(pillarDataset).iterator(random),
                 pillar -> Moves.massChange(variableMetaModel, pillar, null)));
+    }
+
+    /**
+     * One cached row per distinct assigned value,
+     * each row a whole {@link Sample} of that value's members.
+     * Built once per settle per changed group,
+     * never re-assembled per draw - the drawing move providers read a row directly instead of running {@code SampleAssembler}
+     * over an index every time.
+     */
+    private static <Solution_, Entity_, Value_> UniDataset<Solution_, Sample<Entity_>> assignedPillars(
+            MoveStreamFactory<Solution_> moveStreamFactory,
+            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        return MoveProviderUtil.assignedEntities(moveStreamFactory, variableMetaModel)
+                .groupBy((solutionView, entity) -> solutionView.getValue(variableMetaModel, entity),
+                        NeighborhoodsCollectors.collectAndThen(
+                                NeighborhoodsCollectors.<Solution_, Entity_> toList(), Sample::of))
+                .map((solutionView, value, pillar) -> pillar)
+                .asCachedDataset();
     }
 
 }

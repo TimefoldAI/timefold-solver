@@ -169,17 +169,12 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             Value_ movedValue, Entity_ entity, int index) {
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
-        unassignValueElement(variableDescriptor, movedValue, entity, index);
-        externalScoreDirector.updateShadowVariables();
-    }
-
-    private <Entity_, Value_> void unassignValueElement(ListVariableDescriptor<Solution_> variableDescriptor,
-            Value_ movedValue, Entity_ entity, int index) {
         externalScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, movedValue);
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, index, index + 1);
         variableDescriptor.getValue(entity).remove(index);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, index, index);
         externalScoreDirector.afterListVariableElementUnassigned(variableDescriptor, movedValue);
+        externalScoreDirector.updateShadowVariables();
     }
 
     @Override
@@ -323,14 +318,14 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      *
      * <p>
      * <b>Why position matters</b>: {@code remove+add} shifts {@code (n−1−from) + (n−1−to)} elements in total.
-     * When one endpoint is near the tail,
-     * one of those copies is nearly free, making {@code remove+add} cheap even for large lists.
+     * When one endpoint is near the tail, one of those copies is nearly free,
+     * making {@code remove+add} cheap even for large lists.
      * {@code rotate} always pays for the full sublist span,
      * so it only wins when that span is short relative to what {@code removeAdd} would have to copy.
      *
      * <p>
-     * The threshold constant 8 was determined empirically by benchmarking on HotSpot with a microbenchmark
-     * that performed moves of varying distances and positions within lists of varying sizes.
+     * The threshold constant 8 was determined empirically by benchmarking on HotSpot
+     * with a microbenchmark that performed moves of varying distances and positions within lists of varying sizes.
      *
      * @param list the list to mutate; assumes {@link ArrayList}
      * @param from index of the element to move
@@ -591,7 +586,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             unassignValueElements(variableDescriptor, entry.getKey(), entry.getValue());
         }
         if (destination != null) {
-            assignValuesAndAddElements(variableDescriptor, valueList, destination.<Entity_> entity(),
+            assignValuesAndAddElements(variableDescriptor, valueList, destination.entity(),
                     destination.index() - removedBeforeDestination);
         }
         externalScoreDirector.updateShadowVariables();

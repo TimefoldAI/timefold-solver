@@ -147,7 +147,8 @@ public final class SubListSwapMove<Solution_, Entity_, Value_> extends AbstractM
 
     @Override
     public String toString() {
-        return "{" + leftRange + "} <-" + (reversing ? "reversing-" : "") + "> {" + rightRange + "}";
+        return "{%s} <%s> {%s}"
+                .formatted(leftRange, (reversing ? "-reversing-" : "-"), rightRange);
     }
 
 }

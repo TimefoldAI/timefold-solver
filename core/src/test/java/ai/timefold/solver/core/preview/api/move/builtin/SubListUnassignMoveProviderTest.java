@@ -129,6 +129,8 @@ class SubListUnassignMoveProviderTest {
                 .isThrownBy(() -> new SubListUnassignMoveProvider<>(variableMetaModel, 0, 5));
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> new SubListUnassignMoveProvider<>(variableMetaModel, 5, 2));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new SubListUnassignMoveProvider<>(variableMetaModel, 1, 5));
     }
 
 }

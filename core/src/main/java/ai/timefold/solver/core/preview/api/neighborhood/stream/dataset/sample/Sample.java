@@ -22,7 +22,8 @@ import org.jspecify.annotations.Nullable;
  * but it says nothing about the solution,
  * so every value a move needs must be read from the live solution.
  * <p>
- * Two samples are equal when they hold the same members, whatever the order they were drawn in.
+ * Two samples are equal when they hold the same members,
+ * whatever the order they were drawn in.
  *
  * @param <A> the type of the sample's members
  */
@@ -32,6 +33,8 @@ public final class Sample<A>
 
     private final SequencedSet<@Nullable A> memberSet;
     private final SequencedSet<@Nullable A> unmodifiableMemberSet;
+    private boolean hashCodeComputed;
+    private int hashCode;
 
     /**
      * Creates a sample from a collection, removing duplicates,
@@ -78,8 +81,8 @@ public final class Sample<A>
     }
 
     /**
-     * @return a representative member of the sample - which one is unspecified,
-     *         beyond that a given instance returns the same one on every call.
+     * @return a representative member of the sample, typically a planning entity;
+     *         which one is unspecified, beyond that a given instance returns the same one on every call.
      *         May be null, as null members are legal.
      *         Useful for reading a value every member is known to share,
      *         such as a homogeneous pillar's current variable value.
@@ -97,6 +100,10 @@ public final class Sample<A>
         return new Sample<>(rebasedSet);
     }
 
+    public SequencedSet<@Nullable A> getMemberSet() {
+        return unmodifiableMemberSet;
+    }
+
     @Override
     public Iterator<@Nullable A> iterator() {
         return unmodifiableMemberSet.iterator();
@@ -105,24 +112,34 @@ public final class Sample<A>
     @Override
     public boolean equals(@Nullable Object o) {
         return o instanceof Sample<?> other &&
+                Objects.equals(hashCode(), other.hashCode()) && // Possibly prevents expensive equality checks.
                 Objects.equals(memberSet, other.memberSet);
     }
 
     @Override
     public int hashCode() {
-        return memberSet.hashCode();
+        if (!hashCodeComputed) {
+            hashCodeComputed = true;
+            hashCode = memberSet.hashCode();
+        }
+        return hashCode;
     }
 
     @Override
     public String toString() {
-        return "Sample(" + memberSet + ")";
+        return "Sample(%s)"
+                .formatted(memberSet);
     }
 
     public enum Decision {
 
-        /** Take the candidate and continue. */
+        /**
+         * Take the candidate and continue.
+         */
         ACCEPT,
-        /** Leave the candidate out and continue. */
+        /**
+         * Leave the candidate out and continue.
+         */
         REJECT,
         /**
          * Take the candidate and finish the sample.
@@ -131,7 +148,9 @@ public final class Sample<A>
          * a sample is never finished early on the strength of a size count that didn't actually increase.
          */
         ACCEPT_AND_STOP,
-        /** Leave the candidate out and finish the sample. */
+        /**
+         * Leave the candidate out and finish the sample.
+         */
         STOP
 
     }

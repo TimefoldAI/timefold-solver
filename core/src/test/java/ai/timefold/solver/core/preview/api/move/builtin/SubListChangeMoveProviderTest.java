@@ -87,7 +87,7 @@ class SubListChangeMoveProviderTest {
 
         // The explicit constructor is untouched by the no-arg default: a larger maximum still applies.
         var contextWithLargerMax = NeighborhoodTester
-                .build(new SubListChangeMoveProvider<>(variableMetaModel, 1, listSize), solutionMetaModel)
+                .build(new SubListChangeMoveProvider<>(variableMetaModel, 2, listSize), solutionMetaModel)
                 .using(solution);
         var movesWithLargerMax = contextWithLargerMax
                 .getMovesAsStream(
@@ -190,7 +190,7 @@ class SubListChangeMoveProviderTest {
         solution.setValueList(List.of(values));
 
         var context = NeighborhoodTester
-                .build(new SubListChangeMoveProvider<>(variableMetaModel, 1, 5), solutionMetaModel)
+                .build(new SubListChangeMoveProvider<>(variableMetaModel, 2, 5), solutionMetaModel)
                 .using(solution);
 
         var distinctSpans = context
@@ -239,34 +239,6 @@ class SubListChangeMoveProviderTest {
     }
 
     @Test
-    void reversingNeverHappensForSingleElementSpan() {
-        var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
-                .listVariable("valueList", TestdataListValue.class);
-
-        var values = new TestdataListValue[6];
-        for (var i = 0; i < 6; i++) {
-            values[i] = new TestdataListValue("v" + i);
-        }
-        var entity = new TestdataListEntity("A", values);
-        var solution = new TestdataListSolution();
-        solution.setEntityList(List.of(entity));
-        solution.setValueList(List.of(values));
-
-        var context = NeighborhoodTester
-                .build(new SubListChangeMoveProvider<>(variableMetaModel, 1, 1, true, false), solutionMetaModel)
-                .using(solution);
-        var moves = context
-                .getMovesAsStream(
-                        move -> (SubListChangeMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) move)
-                .limit(300)
-                .toList();
-        assertThat(moves)
-                .isNotEmpty()
-                .noneMatch(SubListChangeMove::isReversing);
-    }
-
-    @Test
     void crossingNullDefaultTrueAlsoUnassignsSpan() {
         var solutionMetaModel = TestdataAllowsUnassignedValuesListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataAllowsUnassignedValuesListEntity.class)
@@ -304,7 +276,7 @@ class SubListChangeMoveProviderTest {
         solution.setValueList(List.of(values));
 
         var context = NeighborhoodTester
-                .build(new SubListChangeMoveProvider<>(variableMetaModel, 1, Integer.MAX_VALUE, true, false),
+                .build(new SubListChangeMoveProvider<>(variableMetaModel, 2, Integer.MAX_VALUE, true, false),
                         solutionMetaModel)
                 .using(solution);
         var moves = context.getMovesAsStream().limit(500).toList();
@@ -319,7 +291,7 @@ class SubListChangeMoveProviderTest {
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new SubListChangeMoveProvider<>(variableMetaModel, 1, 5, true, true));
+                .isThrownBy(() -> new SubListChangeMoveProvider<>(variableMetaModel, 2, 5, true, true));
     }
 
     @Test
@@ -331,6 +303,8 @@ class SubListChangeMoveProviderTest {
                 .isThrownBy(() -> new SubListChangeMoveProvider<>(variableMetaModel, 0, 5));
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> new SubListChangeMoveProvider<>(variableMetaModel, 5, 2));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new SubListChangeMoveProvider<>(variableMetaModel, 1, 5));
     }
 
 }

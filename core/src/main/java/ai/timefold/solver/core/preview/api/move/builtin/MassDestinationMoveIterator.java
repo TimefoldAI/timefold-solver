@@ -59,16 +59,16 @@ final class MassDestinationMoveIterator<Solution_, Entity_, Value_> implements I
 
     private @Nullable Move<Solution_> nextMove = null;
     /**
-     * Remembers the last distinct ranges and excluded value proven to have no legal destination,
+     * Remembers the last distinct ranges and value proven to have no legal destination,
      * so that redrawing an equal-signature sample
      * (possible even under a real {@link Sampler},
-     * since two different draws can land on the same distinct ranges and the same excluded value)
+     * since two different draws can land on the same distinct ranges and the same value)
      * does not repeat the exhaustive proof on every failed draw.
      * Keyed on both fields together:
-     * the same ranges can be empty for one excluded value and non-empty for another.
+     * the same ranges can be empty for one value and non-empty for another.
      */
     private @Nullable SampleValueRanges<Value_> provenEmptyRanges = null;
-    private @Nullable Value_ provenEmptyExcludedValue = null;
+    private @Nullable Value_ valueWithNoLegalDestination = null;
 
     MassDestinationMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
@@ -98,15 +98,16 @@ final class MassDestinationMoveIterator<Solution_, Entity_, Value_> implements I
                 failedSampleDraws++;
                 continue;
             }
-            var excludedValue = MoveProviderUtil.sharedValueOf(sample, variableMetaModel, solutionView);
+            var sharedValue = MoveProviderUtil.sharedValueOf(sample, variableMetaModel, solutionView);
             var ranges = SampleValueRanges.of(sample, variableMetaModel, solutionView);
             var provenEmptyForThisSignature =
-                    ranges.equals(provenEmptyRanges) && Objects.equals(excludedValue, provenEmptyExcludedValue);
+                    Objects.equals(sharedValue, valueWithNoLegalDestination) && Objects.equals(ranges, provenEmptyRanges);
             // A sample whose non-null intersection is empty (or already proven so)
             // still has a legal null destination (unassign), as long as it holds at least one entity to unassign.
             // Tried before the latch-based skip below, and also taken whenever the latch is already set.
-            if (crossingNull && MoveProviderUtil.anyAssigned(sample, variableMetaModel, solutionView)
-                    && (provenEmptyForThisSignature || ranges.rollNull(random))) {
+            if (crossingNull
+                    && (provenEmptyForThisSignature || ranges.rollNull(random))
+                    && MoveProviderUtil.anyAssigned(sample, variableMetaModel, solutionView)) {
                 nextMove = Moves.massChange(variableMetaModel, sample, null);
                 continue;
             }
@@ -115,10 +116,10 @@ final class MassDestinationMoveIterator<Solution_, Entity_, Value_> implements I
                 failedSampleDraws++;
                 continue;
             }
-            var destination = ranges.findDestination(random, excludedValue);
+            var destination = ranges.findDestination(random, sharedValue);
             if (destination == null) {
                 provenEmptyRanges = ranges;
-                provenEmptyExcludedValue = excludedValue;
+                valueWithNoLegalDestination = sharedValue;
                 failedSampleDraws++;
                 continue;
             }

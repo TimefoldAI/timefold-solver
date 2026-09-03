@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -31,14 +30,14 @@ import org.jspecify.annotations.Nullable;
 public final class MassChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    private final Sample<Entity_> sample;
     private final @Nullable Value_ toPlanningValue;
+    private final Sample<Entity_> sample;
 
     MassChangeMove(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Sample<Entity_> sample, @Nullable Value_ toPlanningValue) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.sample = Objects.requireNonNull(sample);
         this.toPlanningValue = toPlanningValue;
+        this.sample = Objects.requireNonNull(sample);
     }
 
     /**
@@ -65,13 +64,10 @@ public final class MassChangeMove<Solution_, Entity_, Value_> extends AbstractMo
         return new MassChangeMove<>(variableMetaModel, sample.rebase(lookup), lookup.lookUpWorkingObject(toPlanningValue));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public SequencedCollection<Object> getPlanningEntities() {
-        var entityList = new ArrayList<>(sample.size());
-        for (var entity : sample) {
-            entityList.add(entity);
-        }
-        return entityList;
+        return (SequencedCollection<Object>) sample.getMemberSet();
     }
 
     @Override
@@ -83,13 +79,13 @@ public final class MassChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     public boolean equals(Object o) {
         return o instanceof MassChangeMove<?, ?, ?> other
                 && Objects.equals(variableMetaModel, other.variableMetaModel)
-                && Objects.equals(sample, other.sample)
-                && Objects.equals(toPlanningValue, other.toPlanningValue);
+                && Objects.equals(toPlanningValue, other.toPlanningValue)
+                && Objects.equals(sample, other.sample);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variableMetaModel, sample, toPlanningValue);
+        return Objects.hash(variableMetaModel, toPlanningValue, sample);
     }
 
     @Override

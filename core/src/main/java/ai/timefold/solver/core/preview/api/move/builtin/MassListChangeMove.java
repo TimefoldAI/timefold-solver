@@ -102,11 +102,11 @@ public final class MassListChangeMove<Solution_, Entity_, Value_> extends Abstra
     // A null destination unassigns every member instead, where order does not affect the
     // resulting solution, so Sample's own order-insensitive equality is correct there.
     private boolean sampleEquals(MassListChangeMove<?, ?, ?> other) {
+        if (sample.size() != other.sample.size()) { // Cheap check to rule out unequal samples.
+            return false;
+        }
         if (destination == null) {
             return Objects.equals(sample, other.sample);
-        }
-        if (sample.size() != other.sample.size()) {
-            return false;
         }
         var iterator = sample.iterator();
         var otherIterator = other.sample.iterator();

@@ -10,7 +10,6 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
@@ -34,13 +33,11 @@ public class ListSwapMoveProvider<Solution_, Entity_, Value_> implements MovePro
                 : moveStreamFactory.forEachAssignedValue(variableMetaModel))
                 .map((solutionView, value) -> new FullElementPosition<>(value,
                         solutionView.getPositionOf(variableMetaModel, value)));
-        var predicate =
-                (BiNeighborhoodsPredicate<Solution_, FullElementPosition<Value_>, FullElementPosition<Value_>>) this::isValidSwap;
         // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
         // Move selectors don't do anything about duplicate moves either.
         return moveStreamFactory.pick(valueStream)
                 .pick(valueStream,
-                        NeighborhoodsJoiners.filtering(predicate))
+                        NeighborhoodsJoiners.filtering(this::isValidSwap))
                 .asMove(this::buildMove);
     }
 

@@ -23,13 +23,13 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     private @Nullable Value_ unassignedValue;
 
-    ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ sourceEntity,
+    ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
             int sourceIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.sourceEntity = Objects.requireNonNull(sourceEntity);
         if (sourceIndex < 0) {
-            throw new IllegalArgumentException("The sourceIndex (" + sourceIndex + ") must be greater than or equal to 0.");
+            throw new IllegalArgumentException("The sourceIndex (%d) must be greater than or equal to 0."
+                    .formatted(sourceIndex));
         }
         this.sourceIndex = sourceIndex;
     }

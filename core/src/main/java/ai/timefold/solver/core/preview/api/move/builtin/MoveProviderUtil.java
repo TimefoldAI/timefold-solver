@@ -15,7 +15,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.NeighborhoodsCollectors;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
@@ -97,30 +96,6 @@ final class MoveProviderUtil {
         return Arrays.asList(values);
     }
 
-    /**
-     * One cached row per distinct assigned value,
-     * each row a whole {@link Sample} of that value's members.
-     * Built once per settle per changed group,
-     * never re-assembled per draw - the drawing move providers read a row directly instead of running {@code SampleAssembler}
-     * over an index every time.
-     * <p>
-     * TODO: this (and {@link #assignedEntities}) captures {@code variableMetaModel} in each lambda inline,
-     * so it never hits the framework's cross-provider node-sharing cache the way
-     * {@code ChangeMoveProvider}/{@code AssignMoveProvider} do via their cached {@code NodeSharingSupportFunctions}.
-     * Two providers grouping the same variable (e.g. {@code PillarChangeMoveProvider} and {@code PillarUnassignMoveProvider})
-     * each build their own independent pipeline today.
-     */
-    public static <Solution_, Entity_, Value_> UniDataset<Solution_, Sample<Entity_>> assignedPillars(
-            MoveStreamFactory<Solution_> moveStreamFactory,
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return assignedEntities(moveStreamFactory, variableMetaModel)
-                .groupBy((solutionView, entity) -> solutionView.getValue(variableMetaModel, entity),
-                        NeighborhoodsCollectors.collectAndThen(
-                                NeighborhoodsCollectors.<Solution_, Entity_> toList(), Sample::of))
-                .map((solutionView, value, pillar) -> pillar)
-                .asCachedDataset();
-    }
-
     public static <Solution_, Entity_, Value_> UniDataset<Solution_, Value_> distinctAssignedValues(
             MoveStreamFactory<Solution_> moveStreamFactory,
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
@@ -160,7 +135,7 @@ final class MoveProviderUtil {
 
     /**
      * Every entity currently assigned a non-null value, with no grouping -
-     * unlike {@link #assignedPillars}/{@link #entitiesByAssignedValue}, members of one drawn sample need not share a value.
+     * unlike {@link #entitiesByAssignedValue}, members of one drawn sample need not share a value.
      */
     public static <Solution_, Entity_, Value_> UniDataset<Solution_, Entity_> assignedEntityDataset(
             MoveStreamFactory<Solution_> moveStreamFactory,
@@ -299,10 +274,8 @@ final class MoveProviderUtil {
     }
 
     /**
-     * Package-visible so {@link PillarChangeMoveProvider} can build its own pipeline on top of it (a settle-cached row bundling
-     * a pillar with its precomputed ranges),
-     * instead of the plain-{@link Sample} row {@link #assignedPillars} returns for {@code PillarUnassignMoveProvider},
-     * which never needs ranges and shouldn't pay to compute them.
+     * Package-visible so {@link PillarChangeMoveProvider} can build its own pipeline on top of it
+     * (a settle-cached row bundling a pillar with its precomputed ranges).
      */
     static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, Entity_> assignedEntities(
             MoveStreamFactory<Solution_> moveStreamFactory,
