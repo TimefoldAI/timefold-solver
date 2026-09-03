@@ -57,6 +57,7 @@ import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutio
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ShadowVariablesInconsistentVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -826,9 +827,8 @@ public final class SolutionDescriptor<Solution_> {
     // Look up methods
     // ************************************************************************
 
-    @Nullable
     public LookupStrategyResolver getLookUpStrategyResolver() {
-        return lookUpStrategyResolver;
+        return Objects.requireNonNull(lookUpStrategyResolver);
     }
 
     // ************************************************************************
@@ -1016,6 +1016,13 @@ public final class SolutionDescriptor<Solution_> {
         return declarativeShadowVariableDescriptorList;
     }
 
+    public boolean hasAnyShadowVariablesInconsistentMember() {
+        return entityDescriptorMap.values().stream()
+                .flatMap(entityDescriptor -> entityDescriptor.getShadowVariableDescriptors().stream())
+                .anyMatch(
+                        shadowVariableDescriptor -> shadowVariableDescriptor instanceof ShadowVariablesInconsistentVariableDescriptor<Solution_>);
+    }
+
     public Stream<Object> extractAllEntitiesStream(Solution_ solution) {
         var stream = Stream.empty();
         for (var memberAccessor : entityMemberAccessorMap.values()) {
@@ -1082,5 +1089,4 @@ public final class SolutionDescriptor<Solution_> {
     public String toString() {
         return "%s(%s)".formatted(getClass().getSimpleName(), solutionClass.getName());
     }
-
 }

@@ -125,7 +125,7 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
     }
 
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isStructurallyValidSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var maximumTabuStepIndex = locateMaximumTabuStepIndex(moveScope);
         if (maximumTabuStepIndex < 0) {
             // The move isn't tabu at all

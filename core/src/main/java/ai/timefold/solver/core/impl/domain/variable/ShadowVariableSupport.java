@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
@@ -50,7 +51,9 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public static <Solution_> ShadowVariableSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
         return new ShadowVariableSupport<>(scoreDirector,
-                TimefoldSolverEnterpriseService.loadOrDefault(service -> service::buildTopologyGraph,
+                TimefoldSolverEnterpriseService.loadOrDefault(
+                        service -> size -> service.buildTopologyGraph(size,
+                                scoreDirector.ignoreInconsistentSolutions()),
                         () -> DefaultTopologicalOrderGraph::new));
     }
 
@@ -71,6 +74,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     private final List<ListVariableChangeHandler<Solution_>> listVariableChangeHandlerList;
 
     private boolean dirty = false;
+    private boolean updateSuccessful = true;
     @Nullable
     private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
     private ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
@@ -302,7 +306,9 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
                     scoreDirector,
                     shadowVariableGraphCreator);
             shadowVariableSession =
-                    shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.getWorkingSolution());
+                    shadowVariableSessionFactory.forSolution(consistencyTracker,
+                            scoreDirector.getWorkingSolution(),
+                            scoreDirector.ignoreInconsistentSolutions());
         }
     }
 
@@ -392,12 +398,12 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
         return scoreDirector;
     }
 
-    public void updateShadowVariables() {
+    public boolean updateShadowVariables() {
         if (!dirty) {
             // Shortcut in case the trigger is called multiple times in a row,
             // without any notifications inbetween.
             // This is better than trying to ensure that the situation never ever occurs.
-            return;
+            return updateSuccessful;
         }
         if (listVariableDescriptor != null) {
             // If there is no cascade, skip the whole thing.
@@ -408,10 +414,20 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
             }
             listVariableChangeList.clear();
         }
-        if (shadowVariableSession != null) {
-            shadowVariableSession.updateVariables();
+        if (shadowVariableSession != null && !shadowVariableSession.updateVariables()) {
+            updateSuccessful = false;
+            return false;
         }
         dirty = false;
+        updateSuccessful = true;
+        return true;
+    }
+
+    public List<VariableLoop> getVariableLoops() {
+        if (shadowVariableSession == null) {
+            return Collections.emptyList();
+        }
+        return shadowVariableSession.getVariableLoops();
     }
 
     /**
@@ -490,9 +506,9 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
      *
      * @param workingSolution working solution
      */
-    public void forceUpdateAllShadowVariables(Solution_ workingSolution) {
+    public boolean forceUpdateAllShadowVariables(Solution_ workingSolution) {
         scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution, this::simulateGenuineVariableChange);
-        updateShadowVariables();
+        return updateShadowVariables();
     }
 
     /**

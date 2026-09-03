@@ -19,6 +19,12 @@ class HardSoftBigDecimalScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTes
         assertSerializeAndDeserialize(score, new TestHardSoftBigDecimalScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new HardSoftBigDecimalScore(-1L, new BigDecimal("1200.0021"), new BigDecimal("34.4300"));
+        assertSerializeAndDeserialize(score, new TestHardSoftBigDecimalScoreWrapper(score));
+    }
+
     @XmlRootElement
     public static class TestHardSoftBigDecimalScoreWrapper extends TestScoreWrapper<HardSoftBigDecimalScore> {
 

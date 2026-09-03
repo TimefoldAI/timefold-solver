@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.api.score;
 
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
@@ -22,18 +23,30 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record BendableBigDecimalScore(BigDecimal[] hardScores,
+public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardScores,
         BigDecimal[] softScores) implements IBendableScore<BendableBigDecimalScore> {
+
+    public BendableBigDecimalScore(BigDecimal[] hardScores,
+            BigDecimal[] softScores) {
+        this(0L, hardScores, softScores);
+    }
 
     public static BendableBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableBigDecimalScore.class, scoreString);
-        var hardScores = new BigDecimal[scoreTokens[0].length];
-        for (var i = 0; i < hardScores.length; i++) {
-            hardScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[0][i]);
+        var structuralScore = 0L;
+        if (scoreTokens[0] != null && scoreTokens[0].length > 0) {
+            structuralScore = ScoreUtil.parseLevelAsLong(BendableBigDecimalScore.class, scoreString, scoreTokens[0][0]);
         }
-        var softScores = new BigDecimal[scoreTokens[1].length];
+        var hardScores = new BigDecimal[scoreTokens[1].length];
+        for (var i = 0; i < hardScores.length; i++) {
+            hardScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[1][i]);
+        }
+        var softScores = new BigDecimal[scoreTokens[2].length];
         for (var i = 0; i < softScores.length; i++) {
-            softScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[1][i]);
+            softScores[i] = ScoreUtil.parseLevelAsBigDecimal(BendableBigDecimalScore.class, scoreString, scoreTokens[2][i]);
+        }
+        if (structuralScore != 0L) {
+            return new BendableBigDecimalScore(structuralScore, hardScores, softScores);
         }
         return of(hardScores, softScores);
     }
@@ -134,6 +147,9 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
 
     @Override
     public boolean isFeasible() {
+        if (structuralScore < 0) {
+            return false;
+        }
         for (var hardScore : hardScores) {
             if (hardScore.compareTo(BigDecimal.ZERO) < 0) {
                 return false;
@@ -270,6 +286,9 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
     @Override
     public boolean equals(Object o) {
         if (o instanceof BendableBigDecimalScore other) {
+            if (structuralScore != other.structuralScore) {
+                return false;
+            }
             if (hardLevelsSize() != other.hardLevelsSize()
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;
@@ -291,16 +310,22 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
 
     @Override
     public int hashCode() {
-        var scoreHashCodes = Stream.concat(Arrays.stream(hardScores), Arrays.stream(softScores))
-                .map(BigDecimal::stripTrailingZeros)
-                .mapToInt(BigDecimal::hashCode)
-                .toArray();
-        return Arrays.hashCode(scoreHashCodes);
+        var hash = Long.hashCode(structuralScore);
+        for (var hardScore : hardScores) {
+            hash = 31 * hash + hardScore.stripTrailingZeros().hashCode();
+        }
+        for (var softScore : softScores) {
+            hash = 31 * hash + softScore.stripTrailingZeros().hashCode();
+        }
+        return hash;
     }
 
     @Override
     public int compareTo(BendableBigDecimalScore other) {
         validateCompatible(other);
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         for (var i = 0; i < hardScores.length; i++) {
             var hardScoreComparison = hardScores[i].compareTo(other.hardScore(i));
             if (hardScoreComparison != 0) {
@@ -323,7 +348,10 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
 
     @Override
     public String toString() {
-        var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 7);
+        var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 15);
+        if (structuralScore < 0) {
+            s.append("%d%s/".formatted(structuralScore, STRUCTURAL_LABEL));
+        }
         s.append("[");
         var first = true;
         for (var hardScore : hardScores) {

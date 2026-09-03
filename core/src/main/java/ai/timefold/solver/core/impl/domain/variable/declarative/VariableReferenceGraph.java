@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public sealed interface VariableReferenceGraph
@@ -15,8 +16,10 @@ public sealed interface VariableReferenceGraph
      * Called after all other shadow variables are
      * updated. Declarative {@link ai.timefold.solver.core.api.domain.variable.ShadowVariable}
      * are guaranteed to be the last variables to update.
+     *
+     * @return true if the update successful; false otherwise
      */
-    void updateChanged();
+    boolean updateChanged();
 
     /**
      * Called before the variable corresponding to the {@link VariableMetaModel} on the given entity changes.
@@ -68,4 +71,5 @@ public sealed interface VariableReferenceGraph
         // Most graphs do not have edges that depend on a list variable's contents.
     }
 
+    List<VariableLoop> getVariableLoops();
 }
