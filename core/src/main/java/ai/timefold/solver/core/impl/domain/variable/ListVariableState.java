@@ -282,6 +282,37 @@ final class ListVariableState<Solution_> {
         }
     }
 
+    /**
+     * Answers the same question as
+     * {@code getElementPosition(planningValue) instanceof PositionInList p && descriptor.isElementPinned(solution,
+     * p.entity(), p.index())},
+     * without building the {@link ElementPosition}.
+     * The pinning test only needs the entity and the index,
+     * and this class already holds both,
+     * so materializing a position for it allocates once per call on a path walked per candidate value.
+     *
+     * @param workingSolution the solution the pinning question is asked about
+     * @param planningValue the element to test
+     * @return false if the element is unassigned, as an unassigned element is never pinned
+     */
+    public boolean isElementPinned(Solution_ workingSolution, Object planningValue) {
+        if (requiresPositionMap) {
+            var mutablePosition = elementPositionMap.get(planningValue);
+            if (mutablePosition == null) { // Unassigned.
+                return false;
+            }
+            return sourceVariableDescriptor.isElementPinned(workingSolution, mutablePosition.getEntity(),
+                    mutablePosition.getIndex());
+        } else { // At this point, all shadows are externalized.
+            var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
+            if (inverse == null) { // Unassigned.
+                return false;
+            }
+            return sourceVariableDescriptor.isElementPinned(workingSolution, inverse,
+                    externalizedIndexProcessor.getIndex(planningValue));
+        }
+    }
+
     public int getIndex(Object planningValue) {
         if (externalizedIndexProcessor == null) {
             var position = elementPositionMap.get(planningValue);

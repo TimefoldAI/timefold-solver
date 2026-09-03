@@ -12,6 +12,8 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * The type is public to make it easier for Bavet-specific minimal bug reproducers to be created.
  * Instances should be created through
@@ -21,6 +23,7 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInl
  *
  * @param <Score_>
  */
+@NullMarked
 public final class BavetConstraintSession<Score_ extends Score<Score_>>
         extends AbstractSession<ConstraintStreamsBavetNodeNetwork> {
 

@@ -60,6 +60,19 @@ public interface Sampler<A> {
     }
 
     /**
+     * A hint at how many members this sample will hold,
+     * read after {@link #reset(RandomGenerator)} and before the first {@link #evaluate(int, Object)} call.
+     * It only sizes the collection the sample is assembled in,
+     * so an under-estimate costs a resize and nothing else.
+     * A sampler which cannot know its own size in advance reports its {@link #minimumSize()}.
+     *
+     * @return at least {@link #minimumSize()}
+     */
+    default int targetSize() {
+        return minimumSize();
+    }
+
+    /**
      * @param sizeSoFar the number of distinct members already accepted; 0 for the first candidate offered.
      *        A duplicate acceptance (the source offers a candidate equal to one already accepted) does not advance this count,
      *        since the assembled sample deduplicates.

@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVa
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -135,13 +134,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
         if (!sourceVariableDescriptor.supportsPinning()) {
             return false;
         }
-        var position = getElementPosition(element);
-        if (position instanceof PositionInList assignedPosition) {
-            return sourceVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), assignedPosition.entity(),
-                    assignedPosition.index());
-        } else {
-            return false;
-        }
+        // Deliberately not via getElementPosition(): the pinning test needs only the entity and the index,
+        // and building an ElementPosition for them allocates once per candidate value.
+        return listVariableState.isElementPinned(Objects.requireNonNull(workingSolution), element);
     }
 
     @Override

@@ -280,4 +280,64 @@ class SamplersTest {
         assertThat(sample).isNull();
     }
 
+    @Test
+    void allReportsAnExpectedSizeWhenGivenOne() {
+        assertThat(Samplers.all().targetSize()).isEqualTo(1);
+        assertThat(Samplers.all(12).targetSize()).isEqualTo(12);
+
+        // The hint changes nothing about what the sampler accepts.
+        var sample = SampleAssembler.assemble(sourceOf(5).iterator(), seededRandom(), Samplers.<Integer> all(12));
+        assertThat(sample).isNotNull();
+        assertThat(sample.size()).isEqualTo(5);
+
+        assertThatIllegalArgumentException().isThrownBy(() -> Samplers.all(0))
+                .withMessageContaining("The expectedSize (0)");
+    }
+
+    @Test
+    void betweenReportsItsDrawnTargetSizeAfterReset() {
+        var sampler = Samplers.<Integer> between(3, 7);
+        sampler.reset(seededRandom());
+
+        assertThat(sampler.targetSize()).isBetween(3, 7);
+        assertThat(Samplers.<Integer> exactly(4).targetSize()).isEqualTo(4);
+    }
+
+    @Test
+    void pillarForwardsTargetSize() {
+        var sampler = Samplers.<Integer> exactly(6);
+        var pillarSampler = Samplers.<String, Integer> pillar(sampler);
+        pillarSampler.reset(seededRandom(), "key");
+
+        assertThat(pillarSampler.minimumSize()).isEqualTo(6);
+        assertThat(pillarSampler.targetSize()).isEqualTo(6);
+    }
+
+    @Test
+    void assembleRejectsASamplerWhoseTargetSizeIsBelowItsMinimum() {
+        var brokenSampler = new Sampler<Integer>() {
+
+            @Override
+            public int minimumSize() {
+                return 3;
+            }
+
+            @Override
+            public int targetSize() {
+                return 1;
+            }
+
+            @Override
+            public @NonNull Decision evaluate(int sizeSoFar, Integer candidate) {
+                return Decision.ACCEPT;
+            }
+
+        };
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> SampleAssembler.assemble(sourceOf(5).iterator(), seededRandom(), brokenSampler))
+                .withMessageContaining("The targetSize (1)")
+                .withMessageContaining("must be at least the minimumSize (3)");
+    }
+
 }

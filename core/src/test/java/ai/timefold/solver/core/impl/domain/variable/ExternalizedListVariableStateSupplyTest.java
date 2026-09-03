@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.mock;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -22,6 +24,9 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
@@ -269,6 +274,152 @@ class ExternalizedListVariableStateSupplyTest {
             // With nothing externalized to tell Neighborhoods about it, the notifier must fire.
             supply.afterListVariableChanged(scoreDirector, e1, 2, 2);
             verify(notifier).accept(v3);
+        }
+    }
+
+    /**
+     * Builds a mock score director over the given solution and hands it to the supply,
+     * matching what the solver does before any element state is queried.
+     */
+    private static <Solution_> InnerScoreDirector<Solution_, ?> resetOn(ExternalizedListVariableStateSupply<Solution_> supply,
+            ListVariableDescriptor<Solution_> variableDescriptor, Solution_ solution) {
+        @SuppressWarnings("unchecked")
+        var scoreDirector = (InnerScoreDirector<Solution_, ?>) mock(InnerScoreDirector.class);
+        var valueRangeManager =
+                ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
+        when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        supply.resetWorkingSolution(scoreDirector);
+        return scoreDirector;
+    }
+
+    @Test
+    void isPinnedFollowsThePinIndexBoundary() {
+        var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor, notifier)) {
+            var v1 = new TestdataPinnedWithIndexListValue("1");
+            var v2 = new TestdataPinnedWithIndexListValue("2");
+            var v3 = new TestdataPinnedWithIndexListValue("3");
+            var e1 = new TestdataPinnedWithIndexListEntity("e1", new ArrayList<>(List.of(v1, v2, v3)));
+            e1.setPinIndex(2);
+
+            var solution = new TestdataPinnedWithIndexListSolution();
+            solution.setEntityList(new ArrayList<>(List.of(e1)));
+            solution.setValueList(List.of(v1, v2, v3));
+            resetOn(supply, variableDescriptor, solution);
+
+            assertSoftly(softly -> {
+                softly.assertThat(supply.isPinned(v1)).isTrue();
+                softly.assertThat(supply.isPinned(v2)).isTrue();
+                softly.assertThat(supply.isPinned(v3)).isFalse();
+            });
+        }
+    }
+
+    @Test
+    void isPinnedIsTrueForEveryElementOfAFullyPinnedEntity() {
+        var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor, notifier)) {
+            var v1 = new TestdataPinnedWithIndexListValue("1");
+            var v2 = new TestdataPinnedWithIndexListValue("2");
+            // The entity is pinned as a whole, so the pin index never gets consulted.
+            var e1 = new TestdataPinnedWithIndexListEntity("e1", new ArrayList<>(List.of(v1, v2)));
+            e1.setPinned(true);
+            e1.setPinIndex(0);
+
+            var solution = new TestdataPinnedWithIndexListSolution();
+            solution.setEntityList(new ArrayList<>(List.of(e1)));
+            solution.setValueList(List.of(v1, v2));
+            resetOn(supply, variableDescriptor, solution);
+
+            assertSoftly(softly -> {
+                softly.assertThat(supply.isPinned(v1)).isTrue();
+                softly.assertThat(supply.isPinned(v2)).isTrue();
+            });
+        }
+    }
+
+    @Test
+    void isPinnedIsFalseForAnUnassignedElement() {
+        var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor, notifier)) {
+            var v1 = new TestdataPinnedWithIndexListValue("1");
+            var v2 = new TestdataPinnedWithIndexListValue("2");
+            // v2 belongs to no entity, so it has no position at all.
+            var e1 = new TestdataPinnedWithIndexListEntity("e1", new ArrayList<>(List.of(v1)));
+            e1.setPinIndex(1);
+
+            var solution = new TestdataPinnedWithIndexListSolution();
+            solution.setEntityList(new ArrayList<>(List.of(e1)));
+            solution.setValueList(List.of(v1, v2));
+            resetOn(supply, variableDescriptor, solution);
+
+            assertSoftly(softly -> {
+                softly.assertThat(supply.isAssigned(v2)).isFalse();
+                softly.assertThat(supply.isPinned(v2)).isFalse();
+                softly.assertThat(supply.isPinned(v1)).isTrue();
+            });
+        }
+    }
+
+    @Test
+    void isPinnedIsFalseWhenTheDescriptorDoesNotSupportPinning() {
+        var variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor, notifier)) {
+            var v1 = new TestdataListValue("1");
+
+            // Asked before the working solution is known: the unsupported-pinning guard must answer
+            // without reaching for the solution, rather than throwing.
+            assertThat(supply.isPinned(v1)).isFalse();
+
+            var e1 = new TestdataListEntity("e1", new ArrayList<>(List.of(v1)));
+            var solution = new TestdataListSolution();
+            solution.setEntityList(new ArrayList<>(List.of(e1)));
+            solution.setValueList(List.of(v1));
+            resetOn(supply, variableDescriptor, solution);
+
+            assertThat(supply.isPinned(v1)).isFalse();
+        }
+    }
+
+    @Test
+    void isPinnedFollowsAnElementAsItMoves() {
+        var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor, notifier)) {
+            var v1 = new TestdataPinnedWithIndexListValue("1");
+            var v2 = new TestdataPinnedWithIndexListValue("2");
+            var e1 = new TestdataPinnedWithIndexListEntity("e1", new ArrayList<>(List.of(v1, v2)));
+            e1.setPinIndex(1);
+
+            var solution = new TestdataPinnedWithIndexListSolution();
+            solution.setEntityList(new ArrayList<>(List.of(e1)));
+            solution.setValueList(List.of(v1, v2));
+            var scoreDirector = resetOn(supply, variableDescriptor, solution);
+
+            assertSoftly(softly -> {
+                softly.assertThat(supply.isPinned(v1)).isTrue();
+                softly.assertThat(supply.isPinned(v2)).isFalse();
+            });
+
+            // Swapping the two elements swaps which one sits below the pin index.
+            supply.beforeListVariableChanged(scoreDirector, e1, 0, 2);
+            Collections.swap(e1.getValueList(), 0, 1);
+            supply.afterListVariableChanged(scoreDirector, e1, 0, 2);
+
+            assertSoftly(softly -> {
+                softly.assertThat(supply.isPinned(v1)).isFalse();
+                softly.assertThat(supply.isPinned(v2)).isTrue();
+            });
         }
     }
 

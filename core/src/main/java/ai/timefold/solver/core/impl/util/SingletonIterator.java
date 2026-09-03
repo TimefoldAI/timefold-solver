@@ -1,22 +1,27 @@
-package ai.timefold.solver.core.impl.heuristic.selector.common.iterator;
+package ai.timefold.solver.core.impl.util;
 
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-public class SingletonIterator<T> implements ListIterator<T> {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-    private final T singleton;
+@NullMarked
+public final class SingletonIterator<T extends @Nullable Object>
+        implements ListIterator<T> {
+
+    private final @Nullable T singleton;
 
     private boolean hasNext;
     private boolean hasPrevious;
 
-    public SingletonIterator(T singleton) {
+    public SingletonIterator(@Nullable T singleton) {
         this.singleton = singleton;
         hasNext = true;
         hasPrevious = true;
     }
 
-    public SingletonIterator(T singleton, int index) {
+    public SingletonIterator(@Nullable T singleton, int index) {
         this.singleton = singleton;
         if (index < 0 || index > 1) {
             throw new IllegalArgumentException("The index (" + index + ") is invalid.");
@@ -31,7 +36,7 @@ public class SingletonIterator<T> implements ListIterator<T> {
     }
 
     @Override
-    public T next() {
+    public @Nullable T next() {
         if (!hasNext) {
             throw new NoSuchElementException();
         }
@@ -71,12 +76,12 @@ public class SingletonIterator<T> implements ListIterator<T> {
     }
 
     @Override
-    public void set(T t) {
+    public void set(@Nullable T t) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void add(T t) {
+    public void add(@Nullable T t) {
         throw new UnsupportedOperationException();
     }
 
