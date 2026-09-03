@@ -35,6 +35,7 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * <p>
      * Use {@link #distinct()} afterward if duplicate tuples are undesired.
      *
+     * @param otherStream the stream to concatenate with this stream
      * @return a stream containing every tuple of both streams
      */
     UniEnumeratingStream<Solution_, A> concat(UniEnumeratingStream<Solution_, A> otherStream);
@@ -43,6 +44,9 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * As defined by {@link #concat(UniEnumeratingStream)},
      * except {@code otherStream} has an extra fact per tuple that this stream does not have;
      * {@code paddingFunction} derives that missing fact from the one this stream does have.
+     *
+     * @param otherStream the stream to concatenate with this stream
+     * @return a stream containing every tuple of both streams
      */
     <B> BiEnumeratingStream<Solution_, A, B> concat(BiEnumeratingStream<Solution_, A, B> otherStream,
             Function<A, B> paddingFunction);
@@ -511,9 +515,9 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * Repeated calls on the same stream return an equal handle,
      * and the rows are materialized only once.
      *
-     * @see UniPickingStream For the declarative alternative, which reads from this stream directly.
      * @return Any operations called on the returned instance will not be cached.
      *         This method creates the boundary the in-memory caching from the just-in-time computations.
+     * @see UniPickingStream For the declarative alternative, which reads from this stream directly.
      */
     UniDataset<Solution_, A> asCachedDataset();
 

@@ -43,6 +43,22 @@ public final class TriangleElementFactory {
     }
 
     /**
+     * As {@link #validateSizes(int, int)}, plus a caller-specific floor above the general minimum of 1 -
+     * for example, a move type for which a span of size 1 would be redundant with a simpler move provider.
+     *
+     * @throws IllegalArgumentException as defined by {@link #validateSizes(int, int)},
+     *         or if {@code minimumSubListSize < minimumAllowedSubListSize}
+     */
+    public static void validateSizes(int minimumSubListSize, int maximumSubListSize, int minimumAllowedSubListSize) {
+        validateSizes(minimumSubListSize, maximumSubListSize);
+        if (minimumSubListSize < minimumAllowedSubListSize) {
+            throw new IllegalArgumentException(
+                    "The minimumSubListSize (%d) must be at least %d."
+                            .formatted(minimumSubListSize, minimumAllowedSubListSize));
+        }
+    }
+
+    /**
      * Produce next random element of Triangle(listSize) observing the given minimum and maximum subList size.
      *
      * @param listSize determines the Triangle to select an element from

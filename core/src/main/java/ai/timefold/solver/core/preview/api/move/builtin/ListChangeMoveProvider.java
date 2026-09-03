@@ -161,10 +161,10 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                         var valueCount = solutionView.countValues(variableMetaModel, currentAssigned.entity());
                         if (valueCount == 1) { // The value is the only value in the list; no change.
                             return false;
-                        } else if (targetAssigned.index() == valueCount) { // Trying to move the value past the end of the list.
-                            return false;
-                        } else { // Same list, same position; ignore.
-                            return currentAssigned.index() != targetAssigned.index();
+                        } else {
+                            // Either same list, same position (ignore),
+                            // or trying to move the value past the end of the list.
+                            return targetAssigned.index() != valueCount;
                         }
                     }
                     // We can move freely between entities, assuming the target entity accepts the value.

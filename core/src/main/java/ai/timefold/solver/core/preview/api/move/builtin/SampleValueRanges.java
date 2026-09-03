@@ -54,9 +54,10 @@ record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, Value
             var range = solutionView.getValueRange(variableMetaModel, null);
             return new SampleValueRanges<>(Set.of(range), range);
         }
-        // Tracks distinct ranges without a hash table until a genuinely second one shows up: ValueRangeState already
-        // deduplicates equal ranges to one shared instance,
-        // so the common case is exactly one distinct range, and a HashSet's backing table would be pure overhead for that.
+        // Tracks distinct ranges without a hash table until a genuinely second one shows up:
+        // ValueRangeState already deduplicates equal ranges to one shared instance,
+        // so the common case is exactly one distinct range,
+        // and a HashSet's backing table would be pure overhead for that.
         ValueRange<Value_> firstRange = null;
         List<ValueRange<Value_>> distinctRangeList = null;
         for (var entity : sample) {
@@ -65,6 +66,8 @@ record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, Value
                 firstRange = range;
             } else if (distinctRangeList == null) {
                 if (!range.equals(firstRange)) {
+                    // Size 4 is arbitrary, but it's a good guess for the common case of 1 or 2 distinct ranges,
+                    // while giving the backing array a chance to avoid resizing.
                     distinctRangeList = new ArrayList<>(4);
                     distinctRangeList.add(firstRange);
                     distinctRangeList.add(range);

@@ -2,7 +2,6 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
@@ -11,6 +10,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
+import ai.timefold.solver.core.impl.util.SingletonIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -176,8 +176,7 @@ public final class SubPillarChangeMoveProvider<Solution_, Entity_, Value_>
             var ranges = SampleValueRanges.of(pillar, variableMetaModel, solutionView);
             if (crossingNull && ranges.rollNull(random)) {
                 pendingPillar = pillar;
-                // List.of(null) throws; Collections.singletonList allows a null element.
-                return Collections.singletonList((Value_) null).iterator();
+                return new SingletonIterator<>(null);
             }
             var destination = ranges.findDestination(random, sliceValue);
             if (destination == null) {
@@ -185,7 +184,7 @@ public final class SubPillarChangeMoveProvider<Solution_, Entity_, Value_>
                 return Collections.emptyIterator();
             }
             pendingPillar = pillar;
-            return List.of(destination).iterator();
+            return new SingletonIterator<>(destination);
         }
 
         @Override

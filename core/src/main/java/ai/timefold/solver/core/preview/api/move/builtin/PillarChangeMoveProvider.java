@@ -195,7 +195,6 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
             }
             // The pillar is homogeneous by construction (one cached row per assigned value);
             // recover the slice value from any one member to exclude it as a no-op destination.
-
             var sliceValue = solutionView.getValue(variableMetaModel, Objects.requireNonNull(pillar.representative()));
             var destination = ranges.findDestination(random, sliceValue);
             if (destination == null) {

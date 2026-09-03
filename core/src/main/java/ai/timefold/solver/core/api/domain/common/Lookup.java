@@ -36,7 +36,7 @@ public interface Lookup {
      * but does not accept null arguments and cannot return null.
      */
     default <T> T lookUpNonNullWorkingObject(T problemFactOrPlanningEntity) {
-        return lookUpWorkingObject(Objects.requireNonNull(problemFactOrPlanningEntity));
+        return Objects.requireNonNull(lookUpWorkingObject(Objects.requireNonNull(problemFactOrPlanningEntity)));
     }
 
 }

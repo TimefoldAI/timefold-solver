@@ -65,7 +65,7 @@ public final class SubListChangeMoveProvider<Solution_, Entity_, Value_>
     private final boolean crossingNull;
 
     public SubListChangeMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        this(variableMetaModel, 1, SubListSampler.DEFAULT_MAXIMUM_SUB_LIST_SIZE, true,
+        this(variableMetaModel, 2, SubListSampler.DEFAULT_MAXIMUM_SUB_LIST_SIZE, true,
                 variableMetaModel.allowsUnassignedValues());
     }
 
@@ -83,7 +83,8 @@ public final class SubListChangeMoveProvider<Solution_, Entity_, Value_>
     public SubListChangeMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             int minimumSubListSize, int maximumSubListSize, boolean selectReversingMoveToo, boolean crossingNull) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        TriangleElementFactory.validateSizes(minimumSubListSize, maximumSubListSize);
+        // Size-1 spans are excluded: ListChangeMoveProvider already covers them.
+        TriangleElementFactory.validateSizes(minimumSubListSize, maximumSubListSize, 2);
         this.minimumSubListSize = minimumSubListSize;
         this.maximumSubListSize = maximumSubListSize;
         this.selectReversingMoveToo = selectReversingMoveToo;

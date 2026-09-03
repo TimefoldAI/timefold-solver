@@ -50,7 +50,7 @@ public final class SubListUnassignMoveProvider<Solution_, Entity_, Value_>
     private final int maximumSubListSize;
 
     public SubListUnassignMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        this(variableMetaModel, 1, SubListSampler.DEFAULT_MAXIMUM_SUB_LIST_SIZE);
+        this(variableMetaModel, 2, SubListSampler.DEFAULT_MAXIMUM_SUB_LIST_SIZE);
     }
 
     public SubListUnassignMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
@@ -61,7 +61,8 @@ public final class SubListUnassignMoveProvider<Solution_, Entity_, Value_>
                     "The variableMetaModel (%s) must allow unassigned values, but it does not."
                             .formatted(variableMetaModel));
         }
-        TriangleElementFactory.validateSizes(minimumSubListSize, maximumSubListSize);
+        // Size-1 spans are excluded: ListUnassignMoveProvider already covers them.
+        TriangleElementFactory.validateSizes(minimumSubListSize, maximumSubListSize, 2);
         this.minimumSubListSize = minimumSubListSize;
         this.maximumSubListSize = maximumSubListSize;
     }
