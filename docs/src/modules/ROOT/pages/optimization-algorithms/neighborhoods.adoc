@@ -272,7 +272,7 @@ Timefold Solver provides several built-in move implementations
 that cover the most common use cases.
 These moves are available through the `ai.timefold.solver.core.preview.api.move.builtin.Moves` class.
 
-For example, here's how you can obtain a `ChangeMove` instance using the built-in implementation:
+For example, here's how you can obtain a change move using the built-in implementation:
 
 [source,java,options="nowrap"]
 ----
@@ -282,18 +282,42 @@ var newTimeslot = ...;          // Comes from your solution.
 var move = Moves.change(timeslotVariable, lesson, newTimeslot);
 ----
 
-The built-in moves include, among others:
+The `Moves` factory builds the following kinds of change:
 
-`ChangeMove`:: Changes the value of a xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a planning entity.
-`SwapMove`:: Swaps the values of a xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic planning variable] between two planning entities.
-`ListChangeMove`:: Changes the position of a value in the xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list variable] of a planning entity.
-`ListSwapMove`:: Swaps xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list variable] elements between planning entities.
+One or two entities::
+Change the value of a xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a single entity,
+or swap the values of two entities.
+A swap can cover one variable, a chosen set of variables, or every basic variable the entities have.
+A group of entities::
+Change the values of a whole group of entities at once, which we call a mass change,
+or swap the value combination held by one pillar with the combination held by another.
+A pillar is a group of entities that currently share the same value;
+<<neighborhoodsPillarMoves,moving a whole pillar>> defines the term in full.
+One value in a list variable::
+Insert a value into a xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list variable] at a given position,
+remove it from its current position, move it to another position, or swap the positions of two values.
+The positions involved may belong to different entities.
+A block of values in a list variable::
+Move a contiguous block of values to another position, optionally reversing the order of the block,
+swap two such blocks, unassign a whole block at once,
+or reverse a block in place, which is the classic route-improvement move.
 
-We encourage you to explore the `ai.timefold.solver.core.preview.api.move.builtin.Moves` API
-to discover all the available built-in move implementations.
-Over time, we expect to add all commonly used move types to this collection,
-reducing the need for custom move implementations in most scenarios.
+A `Range` identifies a contiguous block of one entity's list variable by its start and end position.
+Pass a `Range` to `Moves` whenever a move acts on a block of values instead of a single value.
 
+Composing built-in moves this way is what you do inside your own move,
+or inside your own move provider;
+see <<neighborhoodsMoveStreams,producing custom moves using Move Streams>>.
+If you are instead looking for ready-made move generators that need no custom code at all,
+see <<neighborhoodsMoveProviders,built-in move providers>>.
+
+IMPORTANT: The runtime performance of `Move` implementations is of the utmost importance.
+Moves are on the solver hot path, and any time wasted there will directly result in
+suboptimal solver performance.
+For this reason, built-in `Move` implementations generally do not validate their input arguments
+and, unlike the rest of the solver, do not fail fast.
+In other words, a built-in move will break value ranges, or create inconsistent solutions, if told to.
+It is the responsibility of the <<neighborhoodsMoveProviders,move provider>> not to generate such moves.
 
 [#neighborhoodsTestingMoves]
 === Testing moves with `MoveTester`
@@ -397,6 +421,449 @@ The callback function receives a `SolutionView` parameter,
 but you typically won't need to use it as you can directly inspect the solution's state
 within the callback to verify that the move was applied correctly.
 Once the callback completes, the solver automatically undoes all changes made by the move.
+
+
+[#neighborhoodsMoveProviders]
+== Move providers
+
+A move and a move provider are two different things.
+A move is a single change to the solution, as described in <<neighborhoodsMove,moves and their purpose>>.
+A move provider is a generator of moves:
+you register it with the solver, and it produces move after move for the solver to evaluate during local search.
+
+Timefold Solver ships with a catalogue of move providers that work with any domain model,
+so the most common neighborhoods need no custom code.
+You register a built-in move provider exactly like your own,
+by adding it in your `NeighborhoodProvider` implementation:
+
+[source,java,options="nowrap"]
+----
+public class MyNeighborhoodProvider implements NeighborhoodProvider<Timetable> {
+
+    @Override
+    public Neighborhood defineNeighborhood(NeighborhoodBuilder<Timetable> builder) {
+        var timeslotVariable = builder.getSolutionMetaModel()
+                .genuineEntity(Lesson.class)
+                .basicVariable("timeslot", Timeslot.class);
+        return builder.add(new ChangeMoveProvider<>(timeslotVariable))
+                .build();
+    }
+
+}
+----
+
+See <<neighborhoodsConfiguration,configuring the solver to use Neighborhoods>>
+for the full solver configuration this fits into.
+
+[#neighborhoodsDefaultMoveProviders]
+=== The default set of move providers
+
+When you enable the Neighborhoods preview feature for local search
+and do not configure any move providers of your own,
+the solver uses a default set of move providers automatically.
+This default applies to local search only,
+and has no effect on the xref:optimization-algorithms/construction-heuristics.adoc[construction heuristic] phase.
+
+The solver builds the default set from your domain model as follows:
+
+For every basic planning variable::
+A provider that changes the variable, `ChangeMoveProvider`.
+When the variable allows unassigned values, the solver also adds `AssignMoveProvider` and `UnassignMoveProvider`.
+Once per entity that has at least one basic planning variable::
+A provider that swaps every basic variable of that entity together between two entities, `SwapMoveProvider`.
+For every list variable::
+Providers that change and swap a single value, `ListChangeMoveProvider` and `ListSwapMoveProvider`,
+a provider that reverses a block within one entity's list, `TwoOptListMoveProvider`,
+and a provider that swaps the tails of two entities' lists, `ListTailSwapMoveProvider`.
+When the variable allows unassigned values, the solver also adds `ListAssignMoveProvider` and `ListUnassignMoveProvider`.
+
+Two of these providers are deliberately set up to do less than they can:
+
+- By default, the change providers do not move a value into or out of the unassigned state,
+because the assign and unassign providers already generate those moves, and at a higher rate.
+- By default, the 2-opt provider only reverses a block within a single entity's list.
+It does not also swap tails across entities,
+because the tail-swap provider already covers that, and at a higher rate.
+
+Every other provider described in this chapter is absent from the default set.
+That includes the pillar, sub-pillar, mass, mass-list, and sub-list families;
+you have to add each of them explicitly.
+
+IMPORTANT: The built-in providers are generic:
+they know nothing about your domain, and they generate every move the model permits.
+Writing your own move provider is the intended way to extend the Neighborhoods API,
+not a fallback for gaps in this catalogue.
+A provider that understands your domain can skip the moves your model will never accept,
+and often performs better as a result.
+So if a move you need is missing here, or a built-in provider is not flexible enough,
+write your own instead of filing a solver feature request.
+Reserve feature requests for situations which the current API cannot possibly model.
+
+
+[#neighborhoodsSamplers]
+=== Samples and samplers
+
+Several move providers do not act on a single entity or a single value,
+but on a group of them drawn together.
+Such a group is called a sample.
+A sampler is the policy that decides how large a sample is,
+and you pass one to the provider when you construct it.
+
+The `Samplers` class offers the following ready-made samplers:
+
+[cols="1,2"]
+|===
+| Factory | Sample size
+
+| `Samplers.all()`
+| Everything available.
+
+| `Samplers.all(expectedSize)`
+| Everything available, while telling the solver roughly how large that will be.
+This is a performance hint, not a limit;
+a wrong guess costs nothing but a resize.
+
+| `Samplers.exactly(size)`
+| Exactly the given number of members.
+If fewer are available, no sample is produced at all.
+
+| `Samplers.upTo(maximumSize)`
+| A number between one and the given maximum, drawn again for every sample.
+
+| `Samplers.between(minimumSize, maximumSize)`
+| A number within the given range, drawn again for every sample.
+
+| `Samplers.pillar(sampler)`
+| The same size as the given sampler.
+Use it where a group is defined by a shared value,
+to adapt a sampler that does not need to know that value.
+|===
+
+WARNING: Drawing everything available makes the cost of a move grow with the size of your dataset.
+For anything but small datasets, prefer a bounded range.
+
+NOTE: Providers discard a drawn group that holds fewer than two members.
+Choose a sampler with a minimum of at least two, so that no draw goes to waste.
+
+[#neighborhoodsUnassignedValues]
+=== Working with unassigned values
+
+Some providers can move a value into or out of the unassigned state.
+By default, they only do so when the variable in question allows unassigned values in the first place.
+Asking a provider to do so on a variable that forbids unassigned values fails when the provider is created,
+rather than during solving.
+The sections below refer back to this rule instead of repeating it.
+
+
+[#neighborhoodsBasicVariableMoveProviders]
+=== Built-in move providers for basic variables
+
+The following providers act on xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic planning variables]:
+
+[cols="1,2,1"]
+|===
+| Provider | What it moves | Enabled by default
+
+| <<neighborhoodsSingleEntityMoves,`ChangeMoveProvider`>>
+| The value of one entity.
+| Yes
+
+| <<neighborhoodsSingleEntityMoves,`SwapMoveProvider`>>
+| The values of two entities, exchanged.
+| Yes
+
+| <<neighborhoodsSingleEntityMoves,`AssignMoveProvider`>>
+| One unassigned entity, given a value.
+| Yes, when the variable allows unassigned values
+
+| <<neighborhoodsSingleEntityMoves,`UnassignMoveProvider`>>
+| One assigned entity, left without a value.
+| Yes, when the variable allows unassigned values
+
+| <<neighborhoodsPillarMoves,`PillarChangeMoveProvider`>>
+| The value of a whole pillar.
+| No
+
+| <<neighborhoodsPillarMoves,`PillarSwapMoveProvider`>>
+| The value combinations of two pillars, exchanged.
+| No
+
+| <<neighborhoodsPillarMoves,`PillarUnassignMoveProvider`>>
+| A whole pillar, left without a value.
+| No
+
+| <<neighborhoodsSubPillarMoves,`SubPillarChangeMoveProvider`>>
+| The value of part of a pillar.
+| No
+
+| <<neighborhoodsSubPillarMoves,`SubPillarSwapMoveProvider`>>
+| The value combinations of parts of two pillars, exchanged.
+| No
+
+| <<neighborhoodsSubPillarMoves,`SubPillarUnassignMoveProvider`>>
+| Part of a pillar, left without a value.
+| No
+
+| <<neighborhoodsMassMoves,`MassChangeMoveProvider`>>
+| The values of a drawn group of entities.
+| No
+
+| <<neighborhoodsMassMoves,`MassAssignMoveProvider`>>
+| A drawn group of unassigned entities, given one shared value.
+| No
+
+| <<neighborhoodsMassMoves,`MassUnassignMoveProvider`>>
+| A drawn group of assigned entities, left without a value.
+| No
+|===
+
+[#neighborhoodsSingleEntityMoves]
+==== Moving one entity
+
+`ChangeMoveProvider`::
+For each entity with an assigned value, generates a move that changes it to a different, legal value.
+Enabled by default.
+`SwapMoveProvider`::
+For every pair of entities, generates a move that swaps their basic variable values.
+Depending on how you construct it, the move covers one specific variable,
+a chosen set of variables, or every basic variable the entity has.
+Enabled by default, swapping every basic variable of the entity.
+`AssignMoveProvider`::
+For each entity whose basic variable is currently unassigned,
+generates a move that assigns it a legal value.
+Requires the variable to allow unassigned values,
+see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Enabled by default when the variable allows unassigned values.
+`UnassignMoveProvider`::
+For each entity whose basic variable is currently assigned, generates a move that unassigns it.
+Requires the variable to allow unassigned values,
+see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Enabled by default when the variable allows unassigned values.
+
+[#neighborhoodsPillarMoves]
+==== Moving a whole pillar
+
+A pillar is the group of entities that currently share the same value.
+When more than one variable is involved, the members of a pillar share the same combination of values.
+A pillar move changes or moves the whole group together, keeping its members in sync,
+so entities that started out equal stay equal after the move.
+
+`PillarChangeMoveProvider`::
+For each pillar, generates a move that changes every member's value together
+to a different value that is legal for all of them.
+The pillar's current value is never offered back as a destination.
+Not enabled by default.
+`PillarSwapMoveProvider`::
+Swaps the value combination held by one pillar with that of another.
+You can construct it to swap a single variable, a chosen set of variables,
+or every basic variable the entities have.
+Not enabled by default.
+`PillarUnassignMoveProvider`::
+For each pillar, generates a move that unassigns every member together.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Not enabled by default.
+
+NOTE: A pillar move always acts on every member of the pillar, however large that pillar is.
+To bound the size of the move, use <<neighborhoodsSubPillarMoves,the sub-pillar providers>> instead.
+
+[#neighborhoodsSubPillarMoves]
+==== Moving part of a pillar
+
+The sub-pillar providers behave like the pillar providers above,
+but they act on a part of the pillar rather than on the whole of it.
+The part is drawn with a sampler, which lets you bound how large a single move can become.
+
+`SubPillarChangeMoveProvider`::
+Like `PillarChangeMoveProvider`, but changes only a sampled subset of the pillar.
+Not enabled by default.
+`SubPillarSwapMoveProvider`::
+Like `PillarSwapMoveProvider`, but swaps sampled subsets from each side.
+The two sides can use different samplers,
+so one side's group can be drawn differently in size or shape from the other's.
+Not enabled by default.
+`SubPillarUnassignMoveProvider`::
+Like `PillarUnassignMoveProvider`, but unassigns only a sampled subset.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Not enabled by default.
+
+See <<neighborhoodsSamplers,samples and samplers>> for how to pick a sampler.
+Prefer a sampler with a minimum size of at least two,
+as a smaller group produces no move.
+
+[#neighborhoodsMassMoves]
+==== Moving an arbitrary group of entities
+
+Unlike a pillar, a mass move draws its group with a sampler that has no shared value requirement.
+Any entities can therefore be drawn together,
+whether or not they currently hold the same value.
+
+`MassChangeMoveProvider`::
+Draws a sampled group of entities and changes every member's value together
+to a different value that is legal for all of them.
+The members need not currently share a value.
+Not enabled by default.
+`MassAssignMoveProvider`::
+Draws a sampled group of currently unassigned entities and assigns every member the same legal value.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Not enabled by default.
+`MassUnassignMoveProvider`::
+Draws a sampled group of currently assigned entities and unassigns every member together.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Not enabled by default.
+
+NOTE: The change and assign providers skip a drawn group that holds fewer than two members.
+Use a sampler with a minimum of at least two,
+see <<neighborhoodsSamplers,samples and samplers>>.
+
+
+[#neighborhoodsListVariableMoveProviders]
+=== Built-in move providers for list variables
+
+The following providers act on xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list variables]:
+
+[cols="1,2,1"]
+|===
+| Provider | What it moves | Enabled by default
+
+| <<neighborhoodsSingleValueMoves,`ListChangeMoveProvider`>>
+| One value, to another position.
+| Yes
+
+| <<neighborhoodsSingleValueMoves,`ListSwapMoveProvider`>>
+| The positions of two values, exchanged.
+| Yes
+
+| <<neighborhoodsSingleValueMoves,`ListAssignMoveProvider`>>
+| One unassigned value, given a position.
+| Yes, when the variable allows unassigned values
+
+| <<neighborhoodsSingleValueMoves,`ListUnassignMoveProvider`>>
+| One assigned value, removed from its position.
+| Yes, when the variable allows unassigned values
+
+| <<neighborhoodsSubListMoves,`SubListChangeMoveProvider`>>
+| A contiguous block of values, to another position.
+| No
+
+| <<neighborhoodsSubListMoves,`SubListSwapMoveProvider`>>
+| Two contiguous blocks of values, exchanged.
+| No
+
+| <<neighborhoodsSubListMoves,`SubListUnassignMoveProvider`>>
+| A contiguous block of values, removed from its positions.
+| No
+
+| <<neighborhoodsMassListMoves,`MassListChangeMoveProvider`>>
+| A drawn group of scattered values, gathered at one position.
+| No
+
+| <<neighborhoodsMassListMoves,`MassListAssignMoveProvider`>>
+| A drawn group of unassigned values, inserted at one position.
+| No
+
+| <<neighborhoodsMassListMoves,`MassListUnassignMoveProvider`>>
+| A drawn group of scattered values, removed from their positions.
+| No
+
+| <<neighborhoodsRouteShapeMoves,`TwoOptListMoveProvider`>>
+| A block of one entity's list, reversed in place.
+| Yes
+
+| <<neighborhoodsRouteShapeMoves,`ListTailSwapMoveProvider`>>
+| The tail ends of two entities' lists, exchanged.
+| Yes
+|===
+
+[#neighborhoodsSingleValueMoves]
+==== Moving one value
+
+`ListChangeMoveProvider`::
+For each value currently assigned to some entity's list,
+generates a move that reassigns it to a different position, possibly on a different entity.
+Enabled by default, without moving a value into or out of the unassigned state,
+see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+`ListSwapMoveProvider`::
+Swaps the positions of two values in list variables.
+The two positions may belong to different entities.
+Enabled by default.
+`ListAssignMoveProvider`::
+For each currently unassigned value,
+generates a move that assigns it to a legal position in some entity's list.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Enabled by default when the variable allows unassigned values.
+`ListUnassignMoveProvider`::
+For each value currently assigned to some entity's list, generates a move that unassigns it.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Enabled by default when the variable allows unassigned values.
+
+[#neighborhoodsSubListMoves]
+==== Moving a sublist
+
+A sublist is a contiguous block of values within one entity's list.
+The providers below move, swap, or unassign such a block as one unit,
+so the values in the block stay next to each other and keep their relative order,
+unless the move reverses them.
+
+`SubListChangeMoveProvider`::
+Relocates a contiguous block of values, possibly to a different entity,
+possibly reversing the order of the block.
+By default, a block holds two to ten values, and the reversed variant is generated too.
+You can narrow the size range and turn reversal off.
+Not enabled by default.
+`SubListSwapMoveProvider`::
+Swaps two contiguous blocks of values, possibly reversing one or both,
+possibly across different entities.
+By default, each block holds one to ten values, and you can size the two sides independently.
+The reversed variant is generated too.
+Not enabled by default.
+`SubListUnassignMoveProvider`::
+Unassigns a whole contiguous block of values at once.
+By default, a block holds two to ten values.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Not enabled by default.
+
+[#neighborhoodsMassListMoves]
+==== Moving scattered values
+
+Unlike a sublist, the providers below draw values from anywhere in any list,
+using a sampler.
+The drawn values need not sit next to each other, or even belong to the same entity.
+
+`MassListChangeMoveProvider`::
+Draws a sampled group of currently assigned values from anywhere
+and gathers them together, consecutively, at one destination position that is legal for all of them.
+Not enabled by default.
+`MassListAssignMoveProvider`::
+Draws a sampled group of currently unassigned values
+and inserts them together, consecutively, at one destination position that is legal for all of them.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Not enabled by default.
+`MassListUnassignMoveProvider`::
+Draws a sampled group of currently assigned values from anywhere and unassigns them all together.
+Requires the variable to allow unassigned values, see <<neighborhoodsUnassignedValues,working with unassigned values>>.
+Not enabled by default.
+
+NOTE: The change and assign providers skip a drawn group that holds fewer than two members.
+Use a sampler with a minimum of at least two,
+see <<neighborhoodsSamplers,samples and samplers>>.
+
+[#neighborhoodsRouteShapeMoves]
+==== Reshaping the order of values
+
+The two providers below change the order of values within a list or between two lists.
+In a vehicle routing problem, these are the moves that untangle a route
+without changing which values a route holds, or holding that change to a single exchange of tails.
+
+`TwoOptListMoveProvider`::
+The classic 2-opt move: reverses a block of one entity's list in place.
+By default, the move stays within a single entity;
+you can also allow it to occasionally act across two entities instead.
+Enabled by default, acting within a single entity only.
+`ListTailSwapMoveProvider`::
+Swaps the tail ends of two entities' lists,
+that is, everything from a chosen position to the end of each of the two lists.
+It can optionally reverse one or both of the tails.
+Enabled by default.
 
 
 [#neighborhoodsMoveStreams]
@@ -890,8 +1357,7 @@ Use the `add` method to include every single move provider you want to use in th
 Finally, call the `build` method to create the `Neighborhood` instance.
 
 NOTE: Enabling the Neighborhoods API preview feature without specifying a `NeighborhoodProvider` implementation
-will lead to the solver using the default neighborhood,
-which only includes change and swap moves.
+will lead to the solver using <<neighborhoodsDefaultMoveProviders,the default set of move providers>>.
 
 [#neighborhoodsRuntimeLimitations]
 === Runtime limitations

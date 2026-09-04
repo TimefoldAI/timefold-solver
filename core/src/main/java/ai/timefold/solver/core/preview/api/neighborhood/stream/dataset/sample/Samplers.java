@@ -57,8 +57,10 @@ public final class Samplers {
     }
 
     /**
-     * @param size the exact number of members every sample will have,
-     *        or fewer if the source or slice runs dry first; at least 1
+     * A source or slice smaller than {@code size} yields no sample at all;
+     * see {@link #between(int, int)}, of which this is a special case.
+     *
+     * @param size the exact number of members every sample will have; at least 1
      * @return a sampler that stops a sample as soon as it reaches {@code size} members
      */
     public static <A> Sampler<A> exactly(int size) {
