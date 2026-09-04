@@ -271,8 +271,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         changedVariableNotifier.innerScoreDirector());
 
         var innerGraphDescriptor = new GraphDescriptor<>(graphDescriptor.consistencyTracker(), solutionDescriptor,
-                new VariableReferenceGraphBuilder<>(flaggingNotifier), graphDescriptor.entities(),
-                graphDescriptor.graphCreator());
+                graphDescriptor.ignoreInconsistentSolutions(), new VariableReferenceGraphBuilder<>(flaggingNotifier),
+                graphDescriptor.entities(), graphDescriptor.graphCreator());
         var innerGraph = switch (graphStructureAndDirection.structure()) {
             case EMPTY -> EmptyVariableReferenceGraph.INSTANCE;
             case ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE ->

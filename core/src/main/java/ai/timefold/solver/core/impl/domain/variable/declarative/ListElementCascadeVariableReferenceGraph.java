@@ -6,10 +6,13 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -176,7 +179,7 @@ public final class ListElementCascadeVariableReferenceGraph<Solution_> implement
     }
 
     @Override
-    public void updateChanged() {
+    public boolean updateChanged() {
         isProcessing = true;
         try {
             // Classify the changed elements into per-owner dirty ranges;
@@ -232,16 +235,42 @@ public final class ListElementCascadeVariableReferenceGraph<Solution_> implement
                     }
                     walkedOwnerList.forEach(pendingOwnerSet::remove);
                 }
-                innerGraph.updateChanged();
+                if (!innerGraph.updateChanged()) {
+                    // The inner graph gave up on a structurally flawed solution and left its variables stale,
+                    // so walking the remaining chains would only spread that staleness.
+                    // Their work is put back, because the caller retries the update after undoing the move.
+                    deferPendingOwners(pendingOwnerSet, ownerToDirtyChainStart, ownerToDirtyChainEnd, wholeChainSet);
+                    return false;
+                }
                 freshlyFlaggedOwnerList = drainWholeChainOwners();
                 if (freshlyFlaggedOwnerList.isEmpty() && pendingOwnerSet.isEmpty()) {
-                    return;
+                    return true;
                 }
                 pendingOwnerSet.addAll(freshlyFlaggedOwnerList);
                 wholeChainSet.addAll(freshlyFlaggedOwnerList);
             }
         } finally {
             isProcessing = false;
+        }
+    }
+
+    /**
+     * Restores the state the classification phase of {@link #updateChanged()} consumed,
+     * so that a later update walks the chains that this one did not get to.
+     */
+    private void deferPendingOwners(Set<Object> pendingOwnerSet, Map<Object, Object> ownerToDirtyChainStart,
+            Map<Object, Object> ownerToDirtyChainEnd, Set<Object> wholeChainSet) {
+        for (var owner : pendingOwnerSet) {
+            // The classification recomputes the dirty range as the extremes of the changed elements,
+            // so the bounds alone describe the same range.
+            var dirtyChainStart = ownerToDirtyChainStart.get(owner);
+            if (dirtyChainStart != null) {
+                changedElementList.add(dirtyChainStart);
+                changedElementList.add(Objects.requireNonNull(ownerToDirtyChainEnd.get(owner)));
+            }
+            if (wholeChainSet.contains(owner)) {
+                wholeChainOwnerSet.add(owner);
+            }
         }
     }
 
@@ -317,6 +346,13 @@ public final class ListElementCascadeVariableReferenceGraph<Solution_> implement
             }
             current = nextInChain.apply(current);
         }
+    }
+
+    @Override
+    public List<VariableLoop> getVariableLoops() {
+        // The elements are only excluded from the inner graph when their sources form a chain
+        // fed by the owner's pre-chain variables, so they can never be part of a loop themselves.
+        return innerGraph.getVariableLoops();
     }
 
     private void markPostChainVariablesChanged(Object owner) {
