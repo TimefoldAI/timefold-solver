@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 
 public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
@@ -87,12 +86,6 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     @Override
     public Collection<Class<?>> getUpdaterClasses() {
-        throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                .formatted(ListVariableState.class.getSimpleName()));
-    }
-
-    @Override
-    public Demand<?> getProvidedDemand() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableState.class.getSimpleName()));
     }

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.BiConsumer;
 
-import ai.timefold.solver.core.impl.domain.variable.BasicVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -34,7 +33,7 @@ public record ChangedVariableNotifier<Solution_>(BiConsumer<VariableDescriptor<S
             var solutionDescriptor = innerScoreDirector.getSolutionDescriptor();
             var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(variableMetaModel.entity().type())
                     .getVariableDescriptor(variableMetaModel.name());
-            return innerScoreDirector.getSupplyManager().demand(new BasicVariableStateDemand<>(variableDescriptor));
+            return innerScoreDirector.getBasicVariableState(variableDescriptor);
         }
     }
 
