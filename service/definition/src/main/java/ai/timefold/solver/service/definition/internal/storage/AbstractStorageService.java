@@ -522,14 +522,14 @@ public abstract non-sealed class AbstractStorageService<ModelInput_ extends Mode
         }
     }
 
-    public void storeExecutionProfileArtifacts(String id, InputStream input) {
-        storeExecutionProfileArtifacts(null, id, input);
+    public void storeExecutionArtifacts(String id, InputStream input) {
+        storeExecutionArtifacts(null, id, input);
     }
 
-    public void storeExecutionProfileArtifacts(StorageAddress storageAddress, String id, InputStream input) {
+    public void storeExecutionArtifacts(StorageAddress storageAddress, String id, InputStream input) {
         acquireLock(id);
         try {
-            storage.storeSubModelStream(storageAddress, id, SubModelKind.EXECUTION_PROFILE_ARTIFACTS, input);
+            storage.storeSubModelStream(storageAddress, id, SubModelKind.EXECUTION_ARTIFACTS, input);
         } finally {
             releaseLock(id);
         }
