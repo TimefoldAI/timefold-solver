@@ -23,6 +23,22 @@ public class EnvironmentVars {
     public static final String ENV_TIMEFOLD_ON_START_COMMAND = "AI_TIMEFOLD_ON_START_COMMAND";
 
     /**
+     * Name of the execution profile the run was started with (always set, including for the default profile).
+     */
+    public static final String ENV_TIMEFOLD_EXECUTION_PROFILE = "AI_TIMEFOLD_EXECUTION_PROFILE";
+
+    /**
+     * Directory the solver worker collects execution-profile diagnostic artifacts into; its contents are zipped and
+     * uploaded when the run finishes.
+     */
+    public static final String ENV_TIMEFOLD_EXECUTION_PROFILE_DIR = "AI_TIMEFOLD_EXECUTION_PROFILE_DIR";
+
+    /**
+     * Default value for {@link #ENV_TIMEFOLD_EXECUTION_PROFILE_DIR} when the variable is not set.
+     */
+    public static final String DEFAULT_EXECUTION_PROFILE_DIR = "/tmp/timefold-diagnostics";
+
+    /**
      * Plan name that is being used to run the job
      */
     public static final String ENV_TIMEFOLD_PLAN_NAME = "AI_TIMEFOLD_PLAN_NAME";
