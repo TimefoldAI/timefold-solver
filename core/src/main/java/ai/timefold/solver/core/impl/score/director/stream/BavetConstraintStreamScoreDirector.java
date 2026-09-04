@@ -149,7 +149,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-            int toIndex) {
+                                         int toIndex) {
         session.update(entity);
         super.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
@@ -198,7 +198,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     /**
      * Exposed for debugging purposes, so that we can hook into it from tests and while reproducing issues.
-     * 
+     *
      * @return null before first {@link #setWorkingSolutionWithoutUpdatingShadows(Object)} or after {@link #close()}.
      */
     @SuppressWarnings("unused")
@@ -217,7 +217,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
             AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
         public Builder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-                EnvironmentMode environmentMode) {
+                       EnvironmentMode environmentMode) {
             super(scoreDirectorFactory, environmentMode);
         }
 
