@@ -57,7 +57,7 @@ public final class ExternalizedListVariableState<Solution_> implements ListVaria
     public int getIndexOrFail(Object planningValue) {
         var index = processor.getIndex(planningValue);
         if (index < 0) {
-            throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
+            throw new IllegalStateException("The element (%s) is not assigned to any list variable.".formatted(planningValue));
         }
         return index;
     }

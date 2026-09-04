@@ -42,7 +42,7 @@ record DelegatingListVariableState<Solution_>(ListVariableState<Solution_, Objec
     public int getIndexOrFail(Object planningValue) {
         var index = indexFunction.applyAsInt(planningValue);
         if (index < 0) {
-            throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
+            throw new IllegalStateException("The element (%s) is not assigned to any list variable.".formatted(planningValue));
         }
         return index;
     }

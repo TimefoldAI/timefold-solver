@@ -60,7 +60,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass,
                 entityClassSet.toArray(new Class<?>[0]));
         try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
-            // When we have a solution, we can reuse the logic from ShadowVariableSupport to update all variable types
+            // When we have a solution, we can reuse the logic from SolverVariableSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
         }
     }

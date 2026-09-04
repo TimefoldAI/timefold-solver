@@ -61,6 +61,16 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
 
     private final @Nullable ListVariableDescriptor<Solution_> listVariableDescriptor;
+    /**
+     * The single source of truth for the list variable's shadow variables,
+     * created on first request.
+     * Held in a field of its own,
+     * rather than looked up in {@link #listVariableChangeHandlerList},
+     * because that list is a notification fan-out which also carries
+     * {@link ListVariableTracker trackers};
+     * it therefore says nothing about whether this state exists or where it sits.
+     */
+    private @Nullable ExternalizedListVariableState<Solution_> listVariableState;
     private final List<ListVariableChange> listVariableChangeList;
     private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
@@ -171,6 +181,7 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public @Nullable <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
             getListVariableState(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
         if (targetVariableDescriptor != listVariableDescriptor) {
@@ -181,26 +192,30 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
         if (targetVariableDescriptor == null) {
             return null;
         }
-        if (listVariableChangeHandlerList.isEmpty()) {
-            // The list state has not been loaded yet
-            var listVariableState = new ExternalizedListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
-            listVariableChangeHandlerList.add(listVariableState);
+        if (listVariableState == null) { // The list state has not been loaded yet.
+            listVariableState = new ExternalizedListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
+            listVariableChangeHandlerList.add(listVariableState); // Still notified alongside the trackers.
             resetWorkingSolutionIfSet(() -> listVariableState.resetWorkingSolution(scoreDirector));
         }
-        return (ListVariableState<Solution_, Entity_, Value_>) listVariableChangeHandlerList.getFirst();
+        return (ListVariableState<Solution_, Entity_, Value_>) listVariableState;
     }
 
     public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
         var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        var index = handlerList.indexOf(variableDescriptor);
-        if (index == -1) {
-            var basicVariableState = new ExternalizedBasicVariableState<>(variableDescriptor, getStateChangeNotifier());
-            resetWorkingSolutionIfSet(() -> basicVariableState.resetWorkingSolution(scoreDirector));
-            registerBasicVariableChangeHandler(basicVariableState);
-            return basicVariableState;
-        } else {
-            return (BasicVariableState<Solution_>) handlerList.get(index);
+        for (var handler : handlerList) {
+            // The handler list is already specific to this variable descriptor;
+            // matching on the descriptor itself is a safety net in case that ever stops holding.
+            if (handler instanceof BasicVariableState<Solution_> basicVariableState
+                    && basicVariableState.getSourceVariableDescriptor() == variableDescriptor) {
+                return basicVariableState;
+            }
         }
+        // The state has not been loaded yet; there must only ever be one per variable,
+        // as it is the single source of truth for the inverse relation of that variable.
+        var basicVariableState = new ExternalizedBasicVariableState<>(variableDescriptor, getStateChangeNotifier());
+        resetWorkingSolutionIfSet(() -> basicVariableState.resetWorkingSolution(scoreDirector));
+        registerBasicVariableChangeHandler(basicVariableState);
+        return basicVariableState;
     }
 
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
