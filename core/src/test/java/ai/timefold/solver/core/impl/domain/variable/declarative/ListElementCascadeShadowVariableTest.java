@@ -102,6 +102,46 @@ class ListElementCascadeShadowVariableTest {
     }
 
     /**
+     * Emptying a route leaves no element to walk, so only the owner's post-chain variables
+     * carry the change; the cascade must mark them even though the changed range is empty.
+     */
+    @Test
+    void emptyingARouteUpdatesItsPostChainVariables() {
+        var x1 = new TestdataMultiEntityChainVisit("x1", 2);
+        var y1 = new TestdataMultiEntityChainVisit("y1", 3);
+
+        var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);
+        vehicleB.setPreviousVehicles(List.of(vehicleA));
+        vehicleA.setVisits(new ArrayList<>(List.of(x1)));
+        vehicleB.setVisits(new ArrayList<>(List.of(y1)));
+
+        var solution = new TestdataMultiEntityChainSolution();
+        solution.setVehicles(List.of(vehicleA, vehicleB));
+        solution.setVisits(List.of(x1, y1));
+
+        var solutionMetaModel = TestdataMultiEntityChainSolution.buildMetaModel();
+        var listVariableMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainVehicle.class)
+                .listVariable("visits", TestdataMultiEntityChainVisit.class);
+
+        var context = MoveTester.build(solutionMetaModel).using(solution);
+        // A = [2], endTime 2; B starts at 2 -> [5], endTime 5.
+        assertThat(vehicleA.getEndTime()).isEqualTo(2);
+        assertThat(vehicleB.getPreviousEndTime()).isEqualTo(2);
+        assertThat(y1.getEndServiceTime()).isEqualTo(5);
+
+        // Unassigning A's only visit falls its endTime back to its departure time,
+        // which shifts B's whole route even though A has no element left to walk.
+        context.execute(Moves.unassign(listVariableMetaModel, vehicleA, 0));
+        assertThat(x1.getEndServiceTime()).isNull();
+        assertThat(vehicleA.getEndTime()).isZero();
+        assertThat(vehicleB.getPreviousEndTime()).isZero();
+        assertThat(y1.getEndServiceTime()).isEqualTo(3);
+        assertThat(vehicleB.getEndTime()).isEqualTo(3);
+        assertShadowsAreAtFixedPoint(solution);
+    }
+
+    /**
      * An element in the middle of the chain reads a pre-chain variable directly,
      * so a pre-chain change must reach it even when its predecessors are unchanged.
      */
