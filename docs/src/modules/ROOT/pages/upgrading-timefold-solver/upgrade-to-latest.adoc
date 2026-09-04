@@ -91,12 +91,25 @@ We kindly ask Kotlin users to translate the changes accordingly.
 These changes are most likely to require you to change your code in a non-mechanical way,
 and they can only be automated partially, if at all.
 
-So far, there are no such changes.
+icon:eye[set=far] Deprecation of `@ShadowVariableInconsistent`
+[%collapsible%open]
+====
+The solver can optionally increase the performance of shadow variable processing on dense variable graphs, in exchange for the user removing the `@ShadowVariableInconsistent` from their domain model. See the xref:upgrading-timefold-solver/migration-guides/shadow-variables-inconsistent-to-structural-score.adoc[detailed migration guide].
+====
 
-=== Changes likely requiring manual intervention
+'''
 
-For the following changes, we either provide an OpenRewrite recipe which does most but not all of the necessary changes,
-or we don't have an automated recipe at all.
-Manual review and adjustments may still be necessary.
+[#previewFeatureUpgrade]
+== Changes to preview features
 
-So far, there are no such changes.
+The API of preview features is not yet entirely stable,
+and changes based on user feedback can be expected.
+This section lists all such changes,
+so that users of preview features can adapt.
+All feedback is much appreciated!
+
+=== Timefold Solver 2.7.0 hides move implementations
+
+The concrete `Move` implementations of the Neighborhoods API (such as `ChangeMove` and `ListChangeMove`) are no longer public.
+Build moves through the `Moves` factory class instead;
+see xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsBuiltInMoves[built-in moves] for the replacement.
