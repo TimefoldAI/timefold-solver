@@ -39,9 +39,8 @@ import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSo
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-class ShadowVariableSupportTest {
+class SolverVariableSupportTest {
 
     private static class MockTopologicalOrderGraph extends DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         Object[] nodeToEntities;
@@ -96,7 +95,7 @@ class ShadowVariableSupportTest {
         @SuppressWarnings("unchecked")
         var scoreDirector = (InnerScoreDirector<TestdataConcurrentSolution, HardSoftScore>) mock(InnerScoreDirector.class);
         @SuppressWarnings("unchecked")
-        var neighborhoodNotifier = (NeighborhoodNotifier<TestdataConcurrentSolution>) Mockito.mock(NeighborhoodNotifier.class);
+        var neighborhoodNotifier = (NeighborhoodNotifier<TestdataConcurrentSolution>) mock(NeighborhoodNotifier.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         when(scoreDirector.getNeighborhoodNotifier()).thenReturn(neighborhoodNotifier);
         var listVariableState = mock(ListVariableState.class);
@@ -105,7 +104,7 @@ class ShadowVariableSupportTest {
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
 
         AtomicReference<MockTopologicalOrderGraph> graphReference = new AtomicReference<>(null);
-        ShadowVariableSupport<TestdataConcurrentSolution> shadowVariableSupport;
+        SolverVariableSupport<TestdataConcurrentSolution> solverVariableSupport;
 
         var vehicle1 = new TestdataConcurrentEntity("1");
         var vehicle2 = new TestdataConcurrentEntity("2");
@@ -142,15 +141,15 @@ class ShadowVariableSupportTest {
         solution.setValues(List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC));
         valueRangeManager.reset(solution);
 
-        shadowVariableSupport =
-                new ShadowVariableSupport<>(scoreDirector, size -> {
+        solverVariableSupport =
+                new SolverVariableSupport<>(scoreDirector, size -> {
                     var out = spy(new MockTopologicalOrderGraph(size));
                     graphReference.set(out);
                     return out;
                 });
-        shadowVariableSupport.linkShadowVariables();
+        solverVariableSupport.linkShadowVariables();
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        shadowVariableSupport.resetWorkingSolution();
+        solverVariableSupport.resetWorkingSolution();
 
         var graph = graphReference.get();
 
@@ -206,10 +205,10 @@ class ShadowVariableSupportTest {
                 solutionDescriptor.getEntityDescriptorStrict(TestdataConcurrentValue.class)
                         .getShadowVariableDescriptor("entity");
 
-        shadowVariableSupport.beforeVariableChanged(previousElementDescriptor, visitB1);
-        shadowVariableSupport.beforeVariableChanged(previousElementDescriptor, visitC);
-        shadowVariableSupport.beforeVariableChanged(vehicleDescriptor, visitB1);
-        shadowVariableSupport.beforeVariableChanged(vehicleDescriptor, visitC);
+        solverVariableSupport.beforeVariableChanged(previousElementDescriptor, visitB1);
+        solverVariableSupport.beforeVariableChanged(previousElementDescriptor, visitC);
+        solverVariableSupport.beforeVariableChanged(vehicleDescriptor, visitB1);
+        solverVariableSupport.beforeVariableChanged(vehicleDescriptor, visitC);
 
         verifyRemoveEdge.accept(serviceFinishTime, visitA1, serviceReadyTime, visitB1);
         verifyRemoveEdge.accept(serviceFinishTime, visitB1, serviceReadyTime, visitC);
@@ -228,20 +227,20 @@ class ShadowVariableSupportTest {
         // Edges are added only when shadow variables are updated,
         // since we require ListVariableState to be up-to-date
         visitC.setPreviousValue(visitA1);
-        shadowVariableSupport.afterVariableChanged(previousElementDescriptor, visitC);
+        solverVariableSupport.afterVariableChanged(previousElementDescriptor, visitC);
         visitC.setEntity(vehicle1);
-        shadowVariableSupport.afterVariableChanged(vehicleDescriptor, visitC);
+        solverVariableSupport.afterVariableChanged(vehicleDescriptor, visitC);
         visitB1.setPreviousValue(null);
-        shadowVariableSupport.afterVariableChanged(previousElementDescriptor, visitB1);
+        solverVariableSupport.afterVariableChanged(previousElementDescriptor, visitB1);
 
         // The declarative shadow variable session update is still pending: score calculation would be unreliable.
-        assertThatThrownBy(shadowVariableSupport::assertShadowVariablesAreUpToDate)
+        assertThatThrownBy(solverVariableSupport::assertShadowVariablesAreUpToDate)
                 .isInstanceOf(IllegalStateException.class);
 
-        shadowVariableSupport.updateShadowVariables();
+        solverVariableSupport.updateShadowVariables();
 
         // Triggering flushed the pending declarative update: shadow variables are up to date again.
-        shadowVariableSupport.assertShadowVariablesAreUpToDate();
+        solverVariableSupport.assertShadowVariablesAreUpToDate();
 
         verifyAddEdge.accept(serviceFinishTime, visitA1, serviceReadyTime, visitC);
         verify(graph, times(expectedAddCount.get())).addEdge(any(), any(), any(), any());
@@ -251,12 +250,11 @@ class ShadowVariableSupportTest {
     @Test
     void basicVariableChangeIsDispatchedEagerly() {
         var scoreDirector = basicScoreDirectorMock(TestdataSolution.buildSolutionDescriptor());
-        var shadowVariableSupport =
-                new ShadowVariableSupport<TestdataSolution>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        shadowVariableSupport.linkShadowVariables();
-
         var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
-        var supply = shadowVariableSupport.demand(new BasicVariableStateDemand<>(variableDescriptor));
+        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        solverVariableSupport.linkShadowVariables();
+
+        var basicVariableState = solverVariableSupport.getBasicVariableState(variableDescriptor);
 
         var val1 = new TestdataValue("1");
         var val2 = new TestdataValue("2");
@@ -267,29 +265,28 @@ class ShadowVariableSupportTest {
         solution.setValueList(List.of(val1, val2));
 
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        shadowVariableSupport.resetWorkingSolution();
+        solverVariableSupport.resetWorkingSolution();
 
-        assertThat((Collection<Object>) supply.getInverseCollection(val1)).containsExactly(a);
-        assertThat((Collection<?>) supply.getInverseCollection(val2)).isEmpty();
+        assertThat(basicVariableState.getInverseCollection(val1)).containsExactly(a);
+        assertThat((Collection<?>) basicVariableState.getInverseCollection(val2)).isEmpty();
 
         // Before/after, with no call to updateShadowVariables() in between.
-        shadowVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        solverVariableSupport.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val2);
-        shadowVariableSupport.afterVariableChanged(variableDescriptor, a);
+        solverVariableSupport.afterVariableChanged(variableDescriptor, a);
 
-        assertThat((Collection<?>) supply.getInverseCollection(val1)).isEmpty();
-        assertThat((Collection<Object>) supply.getInverseCollection(val2)).containsExactly(a);
+        assertThat((Collection<?>) basicVariableState.getInverseCollection(val1)).isEmpty();
+        assertThat(basicVariableState.getInverseCollection(val2)).containsExactly(a);
     }
 
     @Test
     void repeatedBasicVariableChangeOnSameEntityBeforeUpdateIsDispatchedCorrectly() {
         var scoreDirector = basicScoreDirectorMock(TestdataSolution.buildSolutionDescriptor());
-        var shadowVariableSupport =
-                new ShadowVariableSupport<TestdataSolution>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        shadowVariableSupport.linkShadowVariables();
+        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        solverVariableSupport.linkShadowVariables();
 
         var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
-        var supply = shadowVariableSupport.demand(new BasicVariableStateDemand<>(variableDescriptor));
+        var basicVariableState = solverVariableSupport.getBasicVariableState(variableDescriptor);
 
         var val1 = new TestdataValue("1");
         var val2 = new TestdataValue("2");
@@ -301,24 +298,24 @@ class ShadowVariableSupportTest {
         solution.setValueList(List.of(val1, val2, val3));
 
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        shadowVariableSupport.resetWorkingSolution();
+        solverVariableSupport.resetWorkingSolution();
 
-        assertThat((Collection<Object>) supply.getInverseCollection(val1)).containsExactly(a);
-        assertThat((Collection<?>) supply.getInverseCollection(val2)).isEmpty();
-        assertThat((Collection<?>) supply.getInverseCollection(val3)).isEmpty();
+        assertThat(basicVariableState.getInverseCollection(val1)).containsExactly(a);
+        assertThat((Collection<?>) basicVariableState.getInverseCollection(val2)).isEmpty();
+        assertThat((Collection<?>) basicVariableState.getInverseCollection(val3)).isEmpty();
 
         // Two changes to the same entity back-to-back, with no call to updateShadowVariables() in between.
-        shadowVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        solverVariableSupport.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val2);
-        shadowVariableSupport.afterVariableChanged(variableDescriptor, a);
+        solverVariableSupport.afterVariableChanged(variableDescriptor, a);
 
-        shadowVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        solverVariableSupport.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val3);
-        shadowVariableSupport.afterVariableChanged(variableDescriptor, a);
+        solverVariableSupport.afterVariableChanged(variableDescriptor, a);
 
-        assertThat((Collection<?>) supply.getInverseCollection(val1)).isEmpty();
-        assertThat((Collection<?>) supply.getInverseCollection(val2)).isEmpty();
-        assertThat((Collection<Object>) supply.getInverseCollection(val3)).containsExactly(a);
+        assertThat((Collection<?>) basicVariableState.getInverseCollection(val1)).isEmpty();
+        assertThat((Collection<?>) basicVariableState.getInverseCollection(val2)).isEmpty();
+        assertThat(basicVariableState.getInverseCollection(val3)).containsExactly(a);
     }
 
     @Test
@@ -338,21 +335,18 @@ class ShadowVariableSupportTest {
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        var listVariableState = new ExternalizedListVariableState<>(variableDescriptor, ignore -> {
-        });
-        when(scoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
-
-        var shadowVariableSupport =
-                new ShadowVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        shadowVariableSupport.linkShadowVariables();
-        shadowVariableSupport.resetWorkingSolution();
+        var solverVariableSupport =
+                new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        solverVariableSupport.linkShadowVariables();
+        solverVariableSupport.resetWorkingSolution();
+        var listVariableState = solverVariableSupport.getListVariableState(variableDescriptor);
 
         assertThat(listVariableState.isAssigned(v2)).isFalse();
 
         // Before/after, with no call to updateShadowVariables() in between.
-        shadowVariableSupport.beforeListVariableChanged(variableDescriptor, e1, 1, 2);
+        solverVariableSupport.beforeListVariableChanged(variableDescriptor, e1, 1, 2);
         e1.getValueList().add(v2);
-        shadowVariableSupport.afterListVariableChanged(variableDescriptor, e1, 1, 2);
+        solverVariableSupport.afterListVariableChanged(variableDescriptor, e1, 1, 2);
 
         assertThat(listVariableState.isAssigned(v2)).isTrue();
     }
