@@ -49,6 +49,12 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
      */
     private final @Nullable Map<Object, Integer> cache;
 
+    // Tracks before-actions awaiting their matching after-call
+    // so the two can be merged into one undo step.
+    // Shared with getNonDelegating()'s copy, same as variableChangeList and cache,
+    // since a before/after pair can be split across the two (see SelectorBasedListRuinRecreateMove).
+    private final PendingListChangeTracker pendingListChangeTracker;
+
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> backingScoreDirector) {
         this(backingScoreDirector, true);
     }
@@ -56,13 +62,16 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> backingScoreDirector, boolean requiresIndexCache) {
         this.backingScoreDirector = (InnerScoreDirector<Solution_, Score_>) backingScoreDirector;
         this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
+        this.pendingListChangeTracker = new PendingListChangeTracker();
     }
 
     private VariableChangeRecordingScoreDirector(@Nullable InnerScoreDirector<Solution_, Score_> backingScoreDirector,
-            List<ChangeAction<Solution_>> variableChangeList, @Nullable Map<Object, Integer> cache) {
+            List<ChangeAction<Solution_>> variableChangeList, @Nullable Map<Object, Integer> cache,
+            PendingListChangeTracker pendingListChangeTracker) {
         this.backingScoreDirector = backingScoreDirector;
         this.variableChangeList = variableChangeList;
         this.cache = cache;
+        this.pendingListChangeTracker = pendingListChangeTracker;
     }
 
     @Override
@@ -93,6 +102,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         if (cache != null) {
             cache.clear();
         }
+        pendingListChangeTracker.clear();
     }
 
     private List<ChangeAction<Solution_>> getVariableChangeList() {
@@ -141,9 +151,11 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
             cache.put(entity, fromIndex);
         }
         var list = variableDescriptor.getValue(entity);
-        getVariableChangeList().add(new ListVariableBeforeChangeAction<>(entity,
+        var action = new ListVariableBeforeChangeAction<>(entity,
                 List.copyOf(list.subList(fromIndex, toIndex)), fromIndex, toIndex,
-                variableDescriptor));
+                variableDescriptor);
+        getVariableChangeList().add(action);
+        pendingListChangeTracker.put(entity, action);
         if (backingScoreDirector != null) {
             backingScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }
@@ -162,7 +174,24 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
                                 .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
             }
         }
-        getVariableChangeList().add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
+        var pendingBeforeAction = pendingListChangeTracker.remove(entity);
+        if (pendingBeforeAction != null) {
+            // Fold what would otherwise be a separate ListVariableAfterChangeAction's undo into this one action,
+            // so undo fires a single afterListVariableChanged notification instead of two.
+            // merge() mutates pendingBeforeAction in place;
+            // nothing needs to happen with it afterward here,
+            // because it is the SAME instance already sitting in variableChangeList
+            // (added in beforeListVariableChanged(), which put it in both variableChangeList and this tracker).
+            // undoChanges() will later read that mutation directly off the list.
+            pendingBeforeAction.merge(toIndex);
+        } else {
+            // No pending before-action found for this entity anywhere reachable through this tracker
+            // (shared with getNonDelegating()'s copy).
+            // A genuinely orphaned after, with no before at all -
+            // rare, but reachable via undo-move replay.
+            // Fall back to today's standalone behavior.
+            getVariableChangeList().add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
+        }
         if (backingScoreDirector != null) {
             backingScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }
@@ -226,7 +255,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
      * that only tracks variable changes without firing any delegated score director events.
      */
     public VariableChangeRecordingScoreDirector<Solution_, Score_> getNonDelegating() {
-        return new VariableChangeRecordingScoreDirector<>(null, getVariableChangeList(), cache);
+        return new VariableChangeRecordingScoreDirector<>(null, getVariableChangeList(), cache, pendingListChangeTracker);
     }
 
     @Override
