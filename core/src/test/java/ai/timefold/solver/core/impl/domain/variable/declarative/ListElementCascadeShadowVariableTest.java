@@ -146,7 +146,7 @@ class ListElementCascadeShadowVariableTest {
      * so a pre-chain change must reach it even when its predecessors are unchanged.
      */
     @Test
-    void preChainChangeReachesRebasingElement() {
+    void preChainChangeReachesElementReadingIt() {
         var w = new TestdataMultiEntityChainVisit("w", 5, false); // Initially unassigned.
         var v1 = new TestdataMultiEntityChainVisit("v1", 1, false);
         var v2 = new TestdataMultiEntityChainVisit("v2", 1, true);
@@ -173,7 +173,7 @@ class ListElementCascadeShadowVariableTest {
         assertThat(vehicleB.getEndTime()).isEqualTo(3);
 
         // Assigning w to A changes B's previousEndTime;
-        // v1 does not read it and stays unchanged, but v2 re-bases on it.
+        // v1 does not read it and stays unchanged, but v2 reads it directly.
         context.execute(Moves.assign(listVariableMetaModel, w, vehicleA, 0));
         assertThat(vehicleA.getEndTime()).isEqualTo(5);
         assertThat(vehicleB.getPreviousEndTime()).isEqualTo(5);
@@ -206,7 +206,7 @@ class ListElementCascadeShadowVariableTest {
     }
 
     @Test
-    void solveWithFullAssertWithRebasingElements() {
+    void solveWithFullAssertWithPreChainReadingElements() {
         assertShadowsAreAtFixedPoint(solve(generateSolution(true)));
     }
 
@@ -216,7 +216,7 @@ class ListElementCascadeShadowVariableTest {
                 TestdataMultiEntityChainVehicle.class, TestdataMultiEntityChainVisit.class);
     }
 
-    private static TestdataMultiEntityChainSolution generateSolution(boolean alternateRebasing) {
+    private static TestdataMultiEntityChainSolution generateSolution(boolean alternatePreChainReaders) {
         var vehicles = new ArrayList<TestdataMultiEntityChainVehicle>();
         for (var i = 0; i < 3; i++) {
             vehicles.add(new TestdataMultiEntityChainVehicle("vehicle" + i, i));
@@ -227,7 +227,7 @@ class ListElementCascadeShadowVariableTest {
         var visits = new ArrayList<TestdataMultiEntityChainVisit>();
         for (var i = 0; i < 6; i++) {
             visits.add(new TestdataMultiEntityChainVisit("visit" + i, 1 + (i % 3),
-                    !alternateRebasing || i % 2 == 0));
+                    !alternatePreChainReaders || i % 2 == 0));
         }
         var solution = new TestdataMultiEntityChainSolution();
         solution.setVehicles(vehicles);
