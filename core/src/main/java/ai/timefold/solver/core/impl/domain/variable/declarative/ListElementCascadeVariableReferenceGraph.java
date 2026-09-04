@@ -156,7 +156,6 @@ public final class ListElementCascadeVariableReferenceGraph<Solution_> implement
             throw new IllegalStateException("Impossible state: list variable changed during shadow variable update.");
         }
         innerGraph.beforeListVariableChanged(variableReference, entity, elementList, fromIndex, toIndex);
-        markPostChainVariablesChanged(entity);
     }
 
     @Override
@@ -169,8 +168,10 @@ public final class ListElementCascadeVariableReferenceGraph<Solution_> implement
             changedElementList.add(elementList.get(elementIndex));
         }
         innerGraph.afterListVariableChanged(variableReference, entity, elementList, fromIndex, toIndex);
-        // The post-chain variables' dependency set changed with the list's contents,
-        // even when the changed range is empty (e.g. an element was removed).
+        // Stands in for the marking the inner graph does for a non-cascaded model, at the same
+        // event: the element cascade skips the list element locators, hence also the mark that
+        // comes with them. Without it, removing the list's last element would leave no element
+        // to walk and no edge to the owner, so nothing would recompute its post-chain variables.
         markPostChainVariablesChanged(entity);
     }
 
