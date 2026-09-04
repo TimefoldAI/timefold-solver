@@ -91,11 +91,10 @@ final class DefaultRetiringRandomIterator<T extends @Nullable Object>
     DefaultRetiringRandomIterator(ElementAwareArrayList<T> source, RandomGenerator workingRandom) {
         this.source = source;
         this.workingRandom = workingRandom;
-        var slotCount = source.slotCount();
-        this.activeCount = slotCount;
+        this.activeCount = source.slotCount();
         this.liveRemaining = source.size();
         // activeCount only ever shrinks, so no slot outside [0, slotCount) is ever resolved.
-        this.slotMap = new SlotReservationMap(slotCount);
+        this.slotMap = new SlotReservationMap(activeCount);
     }
 
     @Override
