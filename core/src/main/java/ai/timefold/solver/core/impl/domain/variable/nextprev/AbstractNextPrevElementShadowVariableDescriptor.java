@@ -6,7 +6,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -66,10 +66,11 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
                     .formatted(entitiesWithSourceVariable.getFirst().getEntityClass().getCanonicalName(), sourceVariableName));
         }
         if (!(variableDescriptor instanceof ListVariableDescriptor)) {
-            throw new IllegalArgumentException("""
-                    The entityClass (%s) has a @%s-annotated property (%s) with sourceVariableName (%s) which is not a %s."""
-                    .formatted(entityDescriptor.getEntityClass().getCanonicalName(), getAnnotationName(),
-                            variableMemberAccessor.getName(), sourceVariableName, PlanningListVariable.class.getSimpleName()));
+            throw new IllegalArgumentException(
+                    "The entityClass (%s) has a @%s-annotated property (%s) with sourceVariableName (%s) which is not a %s."
+                            .formatted(entityDescriptor.getEntityClass().getCanonicalName(), getAnnotationName(),
+                                    variableMemberAccessor.getName(), sourceVariableName,
+                                    PlanningListVariable.class.getSimpleName()));
         }
         sourceVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
         if (!variableMemberAccessor.getType().equals(sourceVariableDescriptor.getElementType())) {
@@ -90,7 +91,7 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
     @Override
     public Demand<?> getProvidedDemand() {
         throw new UnsupportedOperationException(
-                "Impossible state: Handled by %s.".formatted(ListVariableStateSupply.class.getSimpleName()));
+                "Impossible state: Handled by %s.".formatted(ListVariableState.class.getSimpleName()));
     }
 
 }

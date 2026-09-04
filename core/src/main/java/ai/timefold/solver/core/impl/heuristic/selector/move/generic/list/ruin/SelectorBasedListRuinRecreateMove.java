@@ -73,14 +73,13 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
                 scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_, ?> recordingScoreDirector
                         ? recordingScoreDirector
                         : new VariableChangeRecordingScoreDirector<>(scoreDirector);
-        var nonRecordingScoreDirector = variableChangeRecordingScoreDirector.getBacking();
+        var nonRecordingScoreDirector = Objects.requireNonNull(variableChangeRecordingScoreDirector.getBacking());
         var onlyRecordingChangesScoreDirector = variableChangeRecordingScoreDirector.getNonDelegating();
-        try (var listVariableStateSupply = nonRecordingScoreDirector.getSupplyManager()
-                .demand(listVariableDescriptor.getStateDemand())) {
+        try (var listVariableState = nonRecordingScoreDirector.getListVariableState(listVariableDescriptor);) {
             var entityToOriginalPositionMap =
                     new IdentityHashMap<Object, NavigableSet<RuinedPosition>>(affectedEntitySet.size());
             for (var valueToRuin : ruinedValueList) {
-                var position = listVariableStateSupply.getElementPosition(valueToRuin)
+                var position = listVariableState.getElementPosition(valueToRuin)
                         .ensureAssigned();
                 entityToOriginalPositionMap.computeIfAbsent(position.entity(),
                         ignored -> new TreeSet<>()).add(new RuinedPosition(valueToRuin, position.index()));
@@ -131,7 +130,7 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
 
             for (var ruinedValue : ruinedValueList) {
                 // Some ruined values may be left unassigned
-                if (!(listVariableStateSupply.getElementPosition(ruinedValue) instanceof PositionInList position)) {
+                if (!(listVariableState.getElementPosition(ruinedValue) instanceof PositionInList position)) {
                     continue;
                 }
                 entityToNewPositionMap.computeIfAbsent(position.entity(), ignored -> new TreeSet<>())
@@ -172,8 +171,6 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
                     onlyRecordingChangesScoreDirector.afterListVariableElementAssigned(listVariableDescriptor, element);
                 }
             }
-            nonRecordingScoreDirector.getSupplyManager()
-                    .cancel(listVariableDescriptor.getStateDemand());
         }
     }
 

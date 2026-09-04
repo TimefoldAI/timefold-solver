@@ -14,11 +14,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class ExternalizedListVariableStateSupply<Solution_>
-        implements ListVariableStateSupply<Solution_, Object, Object> {
+public final class ExternalizedListVariableState<Solution_> implements ListVariableState<Solution_, Object, Object> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
-    private final ListVariableState<Solution_> listVariableState;
+    private final ListVariableProcessor<Solution_> processor;
 
     private boolean previousExternalized = false;
     private boolean nextExternalized = false;
@@ -26,38 +25,37 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Nullable
     private Solution_ workingSolution;
 
-    public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
+    public ExternalizedListVariableState(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
             Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
-        this.listVariableState = new ListVariableState<>(sourceVariableDescriptor,
-                notifier);
+        this.processor = new ListVariableProcessor<>(sourceVariableDescriptor, notifier);
     }
 
     @Override
     public void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        processor.linkShadowVariable(shadowVariableDescriptor);
     }
 
     @Override
     public void externalize(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        processor.linkShadowVariable(shadowVariableDescriptor);
     }
 
     @Override
     public void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        processor.linkShadowVariable(shadowVariableDescriptor);
         previousExternalized = true;
     }
 
     @Override
     public void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        processor.linkShadowVariable(shadowVariableDescriptor);
         nextExternalized = true;
     }
 
     @Override
     public int getIndexOrFail(Object planningValue) {
-        var index = listVariableState.getIndex(planningValue);
+        var index = processor.getIndex(planningValue);
         if (index < 0) {
             throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
         }
@@ -66,7 +64,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public int getIndexOrElse(Object planningValue, int defaultValue) {
-        var index = listVariableState.getIndex(planningValue);
+        var index = processor.getIndex(planningValue);
         if (index < 0) {
             return defaultValue;
         }
@@ -78,7 +76,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         workingSolution = scoreDirector.getWorkingSolution();
 
         // Will run over all entities and unmark all present elements as unassigned.
-        listVariableState.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
+        processor.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
                 .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
     }
 
@@ -100,7 +98,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
         var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
         for (var index = firstChangeIndex; index < elementCount; index++) {
-            var positionsDiffer = listVariableState.changeElement(entity, assignedElements, index);
+            var positionsDiffer = processor.changeElement(entity, assignedElements, index);
             if (!positionsDiffer && index >= lastChangeIndex) {
                 // Position is unchanged and we are past the part of the list that changed.
                 // We can terminate the loop prematurely.
@@ -111,17 +109,17 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
-        listVariableState.unassignElement(unassignedElement);
+        processor.unassignElement(unassignedElement);
     }
 
     @Override
     public ElementPosition getElementPosition(Object planningValue) {
-        return listVariableState.getElementPosition(planningValue);
+        return processor.getElementPosition(planningValue);
     }
 
     @Override
     public @Nullable Object getInverseSingleton(Object planningValue) {
-        return listVariableState.getInverseSingleton(planningValue);
+        return processor.getInverseSingleton(planningValue);
     }
 
     @Override
@@ -141,17 +139,17 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public int getUnassignedCount() {
-        return listVariableState.getUnassignedCount();
+        return processor.getUnassignedCount();
     }
 
     @Override
     public @Nullable Object getPreviousElement(Object element) {
-        return listVariableState.getPreviousElement(element);
+        return processor.getPreviousElement(element);
     }
 
     @Override
     public @Nullable Object getNextElement(Object element) {
-        return listVariableState.getNextElement(element);
+        return processor.getNextElement(element);
     }
 
     @Override
@@ -161,7 +159,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" + sourceVariableDescriptor.getVariableName() + ")";
+        return "%s(%s)".formatted(getClass().getSimpleName(), sourceVariableDescriptor.getVariableName());
     }
 
 }

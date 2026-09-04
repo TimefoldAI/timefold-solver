@@ -1,0 +1,390 @@
+package ai.timefold.solver.core.impl.domain.variable;
+
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+
+final class ListVariableProcessor<Solution_> {
+
+    private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
+    private final Consumer<Object> notifier;
+
+    private ExternalizedIndexVariableProcessor<Solution_> externalizedIndexProcessor = null;
+    private ExternalizedListInverseVariableProcessor<Solution_> externalizedInverseProcessor = null;
+    private ExternalizedNextPrevElementVariableProcessor<Solution_> externalizedPreviousElementProcessor = null;
+    private ExternalizedNextPrevElementVariableProcessor<Solution_> externalizedNextElementProcessor = null;
+
+    private boolean requiresPositionMap = true;
+    private InnerScoreDirector<Solution_, ?> scoreDirector;
+    private int unassignedCount = 0;
+    private Map<Object, MutablePosition> elementPositionMap;
+
+    public ListVariableProcessor(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
+            Consumer<Object> notifier) {
+        this.sourceVariableDescriptor = sourceVariableDescriptor;
+        this.notifier = notifier;
+    }
+
+    public void linkShadowVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.externalizedIndexProcessor = new ExternalizedIndexVariableProcessor<>(shadowVariableDescriptor);
+    }
+
+    public void linkShadowVariable(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.externalizedInverseProcessor =
+                new ExternalizedListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
+    }
+
+    public void linkShadowVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.externalizedPreviousElementProcessor =
+                ExternalizedNextPrevElementVariableProcessor.ofPrevious(shadowVariableDescriptor);
+    }
+
+    public void linkShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.externalizedNextElementProcessor = ExternalizedNextPrevElementVariableProcessor.ofNext(shadowVariableDescriptor);
+    }
+
+    public void initialize(InnerScoreDirector<Solution_, ?> scoreDirector, int initialUnassignedCount) {
+        this.scoreDirector = scoreDirector;
+        this.unassignedCount = initialUnassignedCount;
+
+        this.requiresPositionMap = externalizedIndexProcessor == null || externalizedInverseProcessor == null
+                || externalizedPreviousElementProcessor == null || externalizedNextElementProcessor == null;
+        if (requiresPositionMap) {
+            if (elementPositionMap == null) {
+                elementPositionMap = new IdentityHashMap<>(unassignedCount);
+            } else {
+                elementPositionMap.clear();
+            }
+        } else {
+            elementPositionMap = null;
+        }
+
+        // If the elements have any shadows, set them to null if no entity has their values
+        // We do not want to do this eagerly, since shadow variable update events are not triggered.
+        var shouldUnassignElements =
+                !scoreDirector.expectShadowVariablesInCorrectState() && (externalizedIndexProcessor != null ||
+                        externalizedInverseProcessor != null ||
+                        externalizedPreviousElementProcessor != null ||
+                        externalizedNextElementProcessor != null);
+        var unassignedValueSet = CollectionUtils.newIdentityHashSet(initialUnassignedCount);
+
+        if (shouldUnassignElements) {
+            for (var unassignedValue : (Iterable<Object>) scoreDirector.getValueRangeManager().getFromSolution(
+                    sourceVariableDescriptor.getValueRangeDescriptor(),
+                    scoreDirector.getWorkingSolution())::createOriginalIterator) {
+                unassignedValueSet.add(unassignedValue);
+            }
+        }
+
+        // elements must be added even if we are not updating shadows
+        sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(
+                scoreDirector.getWorkingSolution(), entity -> {
+                    var index = 0;
+                    var assignedElements = sourceVariableDescriptor.getValue(entity);
+                    for (var element : assignedElements) {
+                        addElement(entity, assignedElements, element, index);
+                        unassignedValueSet.remove(element);
+                        index++;
+                    }
+                });
+
+        if (shouldUnassignElements) {
+            for (var unassignedValue : unassignedValueSet) {
+                if (externalizedIndexProcessor != null) {
+                    externalizedIndexProcessor.unassignElement(scoreDirector, unassignedValue);
+                }
+                if (externalizedInverseProcessor != null) {
+                    externalizedInverseProcessor.unassignElement(scoreDirector, unassignedValue);
+                }
+                if (externalizedNextElementProcessor != null) {
+                    externalizedNextElementProcessor.unsetElement(scoreDirector, unassignedValue);
+                }
+                if (externalizedPreviousElementProcessor != null) {
+                    externalizedPreviousElementProcessor.unsetElement(scoreDirector, unassignedValue);
+                }
+            }
+        }
+    }
+
+    public void addElement(Object entity, List<Object> elements, Object element, int index) {
+        if (requiresPositionMap) {
+            var oldPosition = elementPositionMap.put(element, new MutablePosition(entity, index));
+            if (oldPosition != null) {
+                throw new IllegalStateException(
+                        "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
+                                .formatted(sourceVariableDescriptor, element, index, oldPosition));
+            }
+        }
+        var elementUpdateSent = false;
+        if (externalizedIndexProcessor != null) {
+            elementUpdateSent = externalizedIndexProcessor.addElement(scoreDirector, element, index);
+        }
+        if (externalizedInverseProcessor != null) {
+            elementUpdateSent = externalizedInverseProcessor.addElement(scoreDirector, entity, element) || elementUpdateSent;
+        }
+        if (externalizedPreviousElementProcessor != null) {
+            elementUpdateSent = externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index)
+                    || elementUpdateSent;
+        }
+        if (externalizedNextElementProcessor != null) {
+            elementUpdateSent =
+                    externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index) || elementUpdateSent;
+        }
+        unassignedCount--;
+        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
+        if (!elementUpdateSent) {
+            notifier.accept(element);
+        }
+    }
+
+    public void unassignElement(Object element) {
+        if (requiresPositionMap) {
+            var oldPosition = elementPositionMap.remove(element);
+            if (oldPosition == null) {
+                throw new IllegalStateException(
+                        "The supply for list variable (%s) is corrupted, because the element (%s) did not exist before unassigning."
+                                .formatted(sourceVariableDescriptor, element));
+            }
+        }
+        var elementUpdateSent = false;
+        if (externalizedIndexProcessor != null) {
+            elementUpdateSent = externalizedIndexProcessor.unassignElement(scoreDirector, element);
+        }
+        if (externalizedInverseProcessor != null) {
+            elementUpdateSent = externalizedInverseProcessor.unassignElement(scoreDirector, element) || elementUpdateSent;
+        }
+        if (externalizedPreviousElementProcessor != null) {
+            elementUpdateSent = externalizedPreviousElementProcessor.unsetElement(scoreDirector, element) || elementUpdateSent;
+        }
+        if (externalizedNextElementProcessor != null) {
+            elementUpdateSent = externalizedNextElementProcessor.unsetElement(scoreDirector, element) || elementUpdateSent;
+        }
+        unassignedCount++;
+        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
+        if (!elementUpdateSent) {
+            notifier.accept(element);
+        }
+    }
+
+    public boolean changeElement(Object entity, List<Object> elements, int index) {
+        var element = elements.get(index);
+        var difference = processElementPosition(entity, element, index);
+        var elementUpdateSent = false;
+        if (difference.indexChanged && externalizedIndexProcessor != null) {
+            elementUpdateSent = externalizedIndexProcessor.changeElement(scoreDirector, element, index);
+        }
+        if (difference.entityChanged && externalizedInverseProcessor != null) {
+            elementUpdateSent = externalizedInverseProcessor.changeElement(scoreDirector, entity, element) || elementUpdateSent;
+        }
+        // Next and previous still might have changed, even if the index and entity did not.
+        // Those are based on what happened elsewhere in the list.
+        if (externalizedPreviousElementProcessor != null) {
+            elementUpdateSent = externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index)
+                    || elementUpdateSent;
+        }
+        if (externalizedNextElementProcessor != null) {
+            elementUpdateSent =
+                    externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index) || elementUpdateSent;
+        }
+        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
+        if (!elementUpdateSent) {
+            notifier.accept(element);
+        }
+        return difference.anythingChanged;
+    }
+
+    private ChangeType processElementPosition(Object entity, Object element, int index) {
+        if (requiresPositionMap) { // Update the position and figure out if it is different from previous.
+            var oldPosition = elementPositionMap.get(element);
+            if (oldPosition == null) {
+                elementPositionMap.put(element, new MutablePosition(entity, index));
+                unassignedCount--;
+                return ChangeType.BOTH;
+            }
+            var changeType = comparePositions(entity, oldPosition.getEntity(), index, oldPosition.getIndex());
+            if (changeType.anythingChanged) { // Replace the map value in-place, to avoid a put() on the hot path.
+                if (changeType.entityChanged) {
+                    oldPosition.setEntity(entity);
+                }
+                if (changeType.indexChanged) {
+                    oldPosition.setIndex(index);
+                }
+            }
+            return changeType;
+        } else { // Read the position and figure out if it is different from previous.
+            var oldEntity = getInverseSingleton(element);
+            if (oldEntity == null) {
+                unassignedCount--;
+                return ChangeType.BOTH;
+            }
+            var oldIndex = getIndex(element);
+            if (oldIndex < 0) { // Technically impossible, but we handle it anyway.
+                return ChangeType.BOTH;
+            }
+            return comparePositions(entity, oldEntity, index, oldIndex);
+        }
+    }
+
+    private static ChangeType comparePositions(Object entity, Object otherEntity, int index, int otherIndex) {
+        if (entity != otherEntity) {
+            return ChangeType.BOTH; // Entity changed, so index changed too.
+        } else if (index != otherIndex) {
+            return ChangeType.INDEX;
+        } else {
+            return ChangeType.NEITHER;
+        }
+    }
+
+    public ElementPosition getElementPosition(Object planningValue) {
+        if (requiresPositionMap) {
+            var mutablePosition = elementPositionMap.get(planningValue);
+            if (mutablePosition == null) {
+                return ElementPosition.unassigned();
+            }
+            return mutablePosition.getPosition();
+        } else { // At this point, both inverse and index are externalized.
+            var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
+            if (inverse == null) {
+                return ElementPosition.unassigned();
+            }
+            return ElementPosition.of(inverse, externalizedIndexProcessor.getIndex(planningValue));
+        }
+    }
+
+    public int getIndex(Object planningValue) {
+        if (externalizedIndexProcessor == null) {
+            var position = elementPositionMap.get(planningValue);
+            if (position == null) {
+                return -1;
+            }
+            return position.getIndex();
+        }
+        var indexOrNull = externalizedIndexProcessor.getIndex(planningValue);
+        return indexOrNull == null ? -1 : indexOrNull;
+    }
+
+    public Object getInverseSingleton(Object planningValue) {
+        if (externalizedInverseProcessor == null) {
+            var position = elementPositionMap.get(planningValue);
+            if (position == null) {
+                return null;
+            }
+            return position.getEntity();
+        }
+        return externalizedInverseProcessor.getInverseSingleton(planningValue);
+    }
+
+    public Object getPreviousElement(Object element) {
+        if (externalizedPreviousElementProcessor == null) {
+            var mutablePosition = elementPositionMap.get(element);
+            if (mutablePosition == null) {
+                return null;
+            }
+            var index = mutablePosition.getIndex();
+            if (index == 0) {
+                return null;
+            }
+            return sourceVariableDescriptor.getValue(mutablePosition.getEntity())
+                    .get(index - 1);
+        }
+        return externalizedPreviousElementProcessor.getElement(element);
+    }
+
+    public Object getNextElement(Object element) {
+        if (externalizedNextElementProcessor == null) {
+            var mutablePosition = elementPositionMap.get(element);
+            if (mutablePosition == null) {
+                return null;
+            }
+            var list = sourceVariableDescriptor.getValue(mutablePosition.getEntity());
+            var index = mutablePosition.getIndex();
+            if (index == list.size() - 1) {
+                return null;
+            }
+            return list.get(index + 1);
+        }
+        return externalizedNextElementProcessor.getElement(element);
+    }
+
+    public int getUnassignedCount() {
+        return unassignedCount;
+    }
+
+    private enum ChangeType {
+
+        BOTH(true, true),
+        INDEX(false, true),
+        NEITHER(false, false);
+
+        final boolean anythingChanged;
+        final boolean entityChanged;
+        final boolean indexChanged;
+
+        ChangeType(boolean entityChanged, boolean indexChanged) {
+            this.anythingChanged = entityChanged || indexChanged;
+            this.entityChanged = entityChanged;
+            this.indexChanged = indexChanged;
+        }
+
+    }
+
+    /**
+     * This class is used to avoid creating a new {@link PositionInList} object every time we need to return a position.
+     * The actual value is held in a map and can be updated without doing a put() operation, which is more efficient.
+     * The {@link PositionInList} object is only created when it is actually requested,
+     * and stored until the next time the mutable state is updated and therefore the cache invalidated.
+     */
+    private static final class MutablePosition {
+
+        private Object entity;
+        private int index;
+        private PositionInList position;
+
+        public MutablePosition(Object entity, int index) {
+            this.entity = entity;
+            this.index = index;
+        }
+
+        public Object getEntity() {
+            return entity;
+        }
+
+        public void setEntity(Object entity) {
+            this.entity = entity;
+            this.position = null;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+            this.position = null;
+        }
+
+        public PositionInList getPosition() {
+            if (position == null) {
+                position = ElementPosition.of(entity, index);
+            }
+            return position;
+        }
+
+        @Override
+        public String toString() { // Mimics PositionInList's toString().
+            return entity + "[" + index + "]";
+        }
+
+    }
+
+}

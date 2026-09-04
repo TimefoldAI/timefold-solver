@@ -22,7 +22,8 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.common.LookupManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ExternalizedListVariableState;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.ShadowVariableSupport;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -89,7 +90,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * and operations which do not perform moves do not require them.
      */
     private final ValueRangeManager<Solution_> valueRangeManager;
-    private final @Nullable ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply; // Null when no list variable.
+    private final @Nullable ListVariableState<Solution_, Object, Object> listVariableState; // Null when no list variable.
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
 
     private long workingEntityListRevision = 0L;
@@ -122,13 +123,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // which will be necessary for obtaining the change notifier
         this.shadowVariableSupport = ShadowVariableSupport.create(this);
         // When using a list variable,
-        // we ensure that the listVariableStateSupply is initialized,
+        // we ensure that the listVariableState is initialized,
         // as it will serve as the single source of truth for all other classes.
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
-            this.listVariableStateSupply = null;
+            this.listVariableState = null;
         } else {
-            this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
+            this.listVariableState =
+                    new ExternalizedListVariableState<>(listVariableDescriptor, this.getNeighborhoodNotifier());
         }
         // We can now initialize the shadow variables since all the necessary resources have been allocated
         this.shadowVariableSupport.linkShadowVariables();
@@ -179,15 +181,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     @SuppressWarnings("unchecked")
-    public <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
-            getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
+    public <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(ListVariableDescriptor<Solution_> variableDescriptor) {
         var originalListVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (variableDescriptor != originalListVariableDescriptor) {
             throw new IllegalStateException(
                     "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
                             .formatted(variableDescriptor, originalListVariableDescriptor));
         }
-        return Objects.requireNonNull((ListVariableStateSupply<Solution_, Entity_, Value_>) listVariableStateSupply);
+        return Objects.requireNonNull((ListVariableState<Solution_, Entity_, Value_>) listVariableState);
     }
 
     @Override
@@ -582,9 +584,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         workingInitScore = 0;
         if (lookUpEnabled) {
             lookUpManager.reset();
-        }
-        if (listVariableStateSupply != null) {
-            getSupplyManager().cancel(listVariableStateSupply.getSourceVariableDescriptor().getStateDemand());
         }
         shadowVariableSupport.close();
     }

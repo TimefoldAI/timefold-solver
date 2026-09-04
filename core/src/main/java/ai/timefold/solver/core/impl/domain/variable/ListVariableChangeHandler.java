@@ -16,8 +16,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public interface ListVariableChangeHandler<Solution_>
-        extends Supply, Closeable {
+public interface ListVariableChangeHandler<Solution_> extends Supply, Closeable {
 
     VariableDescriptor<Solution_> getSourceVariableDescriptor();
 

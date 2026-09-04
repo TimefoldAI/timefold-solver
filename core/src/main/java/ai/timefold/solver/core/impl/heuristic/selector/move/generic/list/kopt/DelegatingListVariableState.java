@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.impl.domain.variable.IndexShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
@@ -15,10 +15,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-record DelegatingListVariableStateSupply<Solution_>(ListVariableStateSupply<Solution_, Object, Object> delegate,
-        ToIntFunction<Object> indexFunction)
-        implements
-            ListVariableStateSupply<Solution_, Object, Object> {
+record DelegatingListVariableState<Solution_>(ListVariableState<Solution_, Object, Object> delegate,
+        ToIntFunction<Object> indexFunction) implements ListVariableState<Solution_, Object, Object> {
 
     @Override
     public void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
@@ -66,6 +64,11 @@ record DelegatingListVariableStateSupply<Solution_>(ListVariableStateSupply<Solu
     @Override
     public ListVariableDescriptor<Solution_> getSourceVariableDescriptor() {
         return delegate.getSourceVariableDescriptor();
+    }
+
+    @Override
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

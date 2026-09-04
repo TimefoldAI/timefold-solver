@@ -12,7 +12,7 @@ import java.util.RandomAccess;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.function.TriConsumer;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
@@ -68,11 +68,11 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         }
     }
 
-    public int getIndexOfValue(ListVariableStateSupply<?, Object, Object> listVariableStateSupply, Object value) {
-        var elementPosition = listVariableStateSupply.getElementPosition(value)
+    public int getIndexOfValue(ListVariableState<?, Object, Object> listVariableState, Object value) {
+        var elementPosition = listVariableState.getElementPosition(value)
                 .ensureAssigned(() -> "Value (" + value + ") is not contained in any entity list");
         var entity = elementPosition.entity();
-        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+        var listVariableDescriptor = listVariableState.getSourceVariableDescriptor();
         for (var i = 0; i < delegateEntities.length; i++) {
             if (delegateEntities[i] == entity) {
                 var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(delegateEntities[i]);

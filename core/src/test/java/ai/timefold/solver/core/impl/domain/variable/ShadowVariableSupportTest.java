@@ -99,8 +99,8 @@ class ShadowVariableSupportTest {
         var neighborhoodNotifier = (NeighborhoodNotifier<TestdataConcurrentSolution>) Mockito.mock(NeighborhoodNotifier.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         when(scoreDirector.getNeighborhoodNotifier()).thenReturn(neighborhoodNotifier);
-        var listVariableStateSupply = mock(ListVariableStateSupply.class);
-        when(scoreDirector.getListVariableStateSupply(any(ListVariableDescriptor.class))).thenReturn(listVariableStateSupply);
+        var listVariableState = mock(ListVariableState.class);
+        when(scoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
         var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
 
@@ -338,25 +338,23 @@ class ShadowVariableSupportTest {
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        var listVariableState = new ExternalizedListVariableState<>(variableDescriptor, ignore -> {
+        });
+        when(scoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
 
         var shadowVariableSupport =
                 new ShadowVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        var listVariableStateSupply =
-                shadowVariableSupport.demand(solutionDescriptor.getListVariableDescriptor().getStateDemand());
-        when(scoreDirector.getListVariableStateSupply(any(ListVariableDescriptor.class))).thenReturn(listVariableStateSupply);
-
         shadowVariableSupport.linkShadowVariables();
         shadowVariableSupport.resetWorkingSolution();
 
-        var supply = shadowVariableSupport.demand(variableDescriptor.getStateDemand());
-        assertThat(supply.isAssigned(v2)).isFalse();
+        assertThat(listVariableState.isAssigned(v2)).isFalse();
 
         // Before/after, with no call to updateShadowVariables() in between.
         shadowVariableSupport.beforeListVariableChanged(variableDescriptor, e1, 1, 2);
         e1.getValueList().add(v2);
         shadowVariableSupport.afterListVariableChanged(variableDescriptor, e1, 1, 2);
 
-        assertThat(supply.isAssigned(v2)).isTrue();
+        assertThat(listVariableState.isAssigned(v2)).isTrue();
     }
 
     private static <Solution_> InnerScoreDirector<Solution_, ?> basicScoreDirectorMock(

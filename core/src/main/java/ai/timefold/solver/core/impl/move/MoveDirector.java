@@ -860,7 +860,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableDescriptor, Value_ value) {
-        return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(listVariableDescriptor))
+        return scoreDirector.getListVariableState(extractVariableDescriptor(listVariableDescriptor))
                 .getElementPosition(value);
     }
 
@@ -874,7 +874,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         if (value == null) {
             return false; // Null is never pinned.
         }
-        return backingScoreDirector.getListVariableStateSupply(listVariableDescriptor).isPinned(value);
+        return backingScoreDirector.getListVariableState(listVariableDescriptor).isPinned(value);
     }
 
     @Override

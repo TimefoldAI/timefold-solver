@@ -267,19 +267,20 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
     private static <Solution_> TopologicalSorter getTopologicalSorter(SolutionDescriptor<Solution_> solutionDescriptor,
             InnerScoreDirector<Solution_, ?> scoreDirector, ParentVariableType parentVariableType) {
+        var listVariableDescriptor = Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor());
         return switch (parentVariableType) {
             case PREVIOUS -> {
-                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
-                yield new TopologicalSorter(listStateSupply::getNextElement,
-                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0)),
-                        listStateSupply::getInverseSingleton);
+                var listVariableState = scoreDirector.getListVariableState(listVariableDescriptor);
+                yield new TopologicalSorter(listVariableState::getNextElement,
+                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0)),
+                        listVariableState::getInverseSingleton);
             }
             case NEXT -> {
-                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
-                yield new TopologicalSorter(listStateSupply::getPreviousElement,
-                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0))
+                var listVariableState = scoreDirector.getListVariableState(listVariableDescriptor);
+                yield new TopologicalSorter(listVariableState::getPreviousElement,
+                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0))
                                 .reversed(),
-                        listStateSupply::getInverseSingleton);
+                        listVariableState::getInverseSingleton);
             }
             default -> throw new IllegalStateException(
                     "Impossible state: expected parentVariableType to be previous or next but was %s."

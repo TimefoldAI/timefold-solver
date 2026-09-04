@@ -7,13 +7,13 @@ import static org.mockito.Mockito.mock;
 import java.util.List;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 
-public class KOptUtilsTest {
+class KOptUtilsTest {
 
     private final TestdataListValue v1 = new TestdataListValue("1");
     private final TestdataListValue v2 = new TestdataListValue("2");
@@ -260,7 +260,7 @@ public class KOptUtilsTest {
         return new KOptDescriptor<>(tourArray,
                 incl,
                 item -> originalTour.get((originalTour.indexOf(item) + 1) % originalTour.size()),
-                getBetweenPredicate(new DelegatingListVariableStateSupply<Object>(mock(ListVariableStateSupply.class),
+                getBetweenPredicate(new DelegatingListVariableState<Object>(mock(ListVariableState.class),
                         originalTour::indexOf)));
     }
 

@@ -12,14 +12,12 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
-    private final ListVariableStateDemand<Solution_> stateDemand = new ListVariableStateDemand<>(this);
     private final BiPredicate<Object, Object> inListPredicate = (element, entity) -> {
         var list = getValue(entity);
         return list.contains(element);
@@ -33,10 +31,6 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     public ListVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
-    }
-
-    public ListVariableStateDemand<Solution_> getStateDemand() {
-        return stateDemand;
     }
 
     @SuppressWarnings("unchecked")
