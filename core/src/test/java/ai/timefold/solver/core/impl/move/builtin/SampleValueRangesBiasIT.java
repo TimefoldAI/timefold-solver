@@ -66,7 +66,7 @@ class SampleValueRangesBiasIT extends AbstractBiasIT {
         var root = new Random(0);
         BiasReport.tally(
                 "findDestination, uniform over the intersection via sampling, excludedValue %s".formatted(excludedValue),
-                TRIAL_COUNT, trial -> ranges.findDestination(splitFrom(root), excludedValue))
+                TRIAL_COUNT, trial -> ranges.findTarget(splitFrom(root), excludedValue))
                 .expectUniform(expectedValueList)
                 .assertWithinSigma(SIGMA_LIMIT);
     }

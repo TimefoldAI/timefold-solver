@@ -132,7 +132,7 @@ class SampleValueRangesTest {
 
         var ranges = SampleValueRanges.of(Set.of(range));
 
-        assertThat(ranges.findDestination(random, null)).isIn("a", "b", "c");
+        assertThat(ranges.findTarget(random, null)).isIn("a", "b", "c");
     }
 
     @Test
@@ -145,7 +145,7 @@ class SampleValueRangesTest {
         // so no destination exists at all - this must come back null, not the excluded value itself.
         var ranges = SampleValueRanges.of(Set.of(only));
 
-        assertThat(ranges.findDestination(random, "only")).isNull();
+        assertThat(ranges.findTarget(random, "only")).isNull();
     }
 
     @Test
@@ -155,12 +155,12 @@ class SampleValueRangesTest {
         var random = new Random(0);
 
         var overlappingRanges = SampleValueRanges.of(Set.of(overlapping, other));
-        assertThat(overlappingRanges.findDestination(random, null)).isEqualTo("b");
+        assertThat(overlappingRanges.findTarget(random, null)).isEqualTo("b");
 
         var disjointA = new ListValueRange<>(List.of("a"));
         var disjointB = new ListValueRange<>(List.of("b"));
         var disjointRanges = SampleValueRanges.of(Set.of(disjointA, disjointB));
-        assertThat(disjointRanges.findDestination(random, null)).isNull();
+        assertThat(disjointRanges.findTarget(random, null)).isNull();
     }
 
     @Test

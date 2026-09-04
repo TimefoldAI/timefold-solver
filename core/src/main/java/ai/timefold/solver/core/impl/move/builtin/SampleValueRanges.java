@@ -41,7 +41,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
     /**
      * @return the sample members' distinct {@link ValueRange}s for {@code variableMetaModel}.
      *         Ranges may still be {@link NullAllowingValueRange}-wrapped; {@code null} is never a candidate destination
-     *         out of {@link #findDestination}/{@link #pickExactly} regardless,
+     *         out of {@link #findTarget}/{@link #pickExactly} regardless,
      *         since {@link #containsInEvery} rejects it directly - it would otherwise collide with their "not found" signal.
      *         A caller that wants a null destination decides on it separately with {@link #rollNull},
      *         before calling either method.
@@ -123,7 +123,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      *
      * @return a value legal for every distinct range, or {@code null} if none exists
      */
-    public @Nullable Value_ findDestination(RandomGenerator random, @Nullable Value_ excludedValue) {
+    public @Nullable Value_ findTarget(RandomGenerator random, @Nullable Value_ excludedValue) {
         var bailOutSize = bailOutSizeOf(smallestRange);
         var sampledCandidates = new FilteringIterator<>(smallestRange.createRandomIterator(random),
                 candidate -> !Objects.equals(candidate, excludedValue) && containsInEvery(candidate), bailOutSize);
@@ -164,7 +164,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      * @return {@code true} with probability {@code 1/(size+1)},
      *         where {@code size} is {@link #smallestRange}'s clamped size - the same probability a
      *         {@link NullAllowingValueRange} wrapper on {@link #smallestRange} would have given {@code null} as a candidate,
-     *         without ever handing {@code null} to {@link #findDestination}/{@link #pickExactly},
+     *         without ever handing {@code null} to {@link #findTarget}/{@link #pickExactly},
      *         where it would collide with their "not found" signal.
      *         Null is legal for every member whenever the variable allows unassigned values,
      *         so no range intersection is needed here - only the coin flip.

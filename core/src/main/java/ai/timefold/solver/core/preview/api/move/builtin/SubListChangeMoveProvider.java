@@ -196,12 +196,12 @@ public final class SubListChangeMoveProvider<Solution_, Entity_, Value_>
             if (destination instanceof UnassignedElement) {
                 return true;
             }
-            var targetAssigned = (PositionInList) destination;
-            Entity_ sourceEntity = range.entity();
-            Entity_ destinationEntity = targetAssigned.entity();
+            var assignedDestination = (PositionInList) destination;
+            var sourceEntity = range.entity();
+            Entity_ destinationEntity = assignedDestination.entity();
             if (sourceEntity == destinationEntity) {
-                return targetAssigned.index() != range.fromIndex()
-                        && targetAssigned.index() + range.length() <= solutionView.countValues(variableMetaModel,
+                return assignedDestination.index() != range.fromIndex()
+                        && assignedDestination.index() + range.length() <= solutionView.countValues(variableMetaModel,
                                 sourceEntity);
             }
             if (variableMetaModel.isValueRangeOnSolution()) {

@@ -108,7 +108,7 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
      * Left = pillar, right = destination value.
      * <p>
      * The destination is drawn from the pillar members' own {@link ValueRange}s
-     * ({@link SampleValueRanges#findDestination}) rather than from a global candidate pool: every candidate offered is
+     * ({@link SampleValueRanges#findTarget}) rather than from a global candidate pool: every candidate offered is
      * already legal for every member and different from the pillar's own value, so no {@code isValueInRange} filtering
      * or bail-out sampling is needed.
      *
@@ -197,17 +197,17 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
             // The pillar is homogeneous by construction (one cached row per assigned value);
             // recover the slice value from any one member to exclude it as a no-op destination.
             var sliceValue = solutionView.getValue(variableMetaModel, Objects.requireNonNull(pillar.representative()));
-            var destination = ranges.findDestination(random, sliceValue);
-            if (destination == null) {
+            var targetValue = ranges.findTarget(random, sliceValue);
+            if (targetValue == null) {
                 cachedPillarProvenEmpty = true;
                 return Collections.emptyIterator();
             }
-            return new SingletonIterator<>(destination);
+            return new SingletonIterator<>(targetValue);
         }
 
         @Override
-        public void accept(PillarWithRange<Entity_, Value_> pillarEntry, Value_ destination) {
-            nextMove = Moves.massChange(variableMetaModel, pillarEntry.pillar(), destination);
+        public void accept(PillarWithRange<Entity_, Value_> pillarEntry, Value_ targetValue) {
+            nextMove = Moves.massChange(variableMetaModel, pillarEntry.pillar(), targetValue);
         }
 
     }
