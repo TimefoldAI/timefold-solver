@@ -2165,51 +2165,42 @@ For example, if variable `a` depends on `b` and `b` depends on `a`, both are in 
 - It depends on another variable that is inconsistent.
 For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
 
-When a declarative shadow variable is inconsistent, it will be set to `null`.
+When a declarative shadow variable is inconsistent, the solver's reaction depends on whether any entity in the model declares a deprecated `@ShadowVariablesInconsistent` field:
 
-To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
-The solver will set this field to true if the entity has any inconsistent shadow variables.
+- If at least one entity declares such a field, the inconsistent shadow variables are set to `null`
+and the `@ShadowVariablesInconsistent` field of every involved entity is set to `true`.
 
-[tabs]
+- If no entity declares such a field, the shadow variable update is canceled and the solution's score will have a negative xref:constraints-and-score/overview.adoc#structuralScore[structural score],
+which marks the solution as structurally flawed.
+
+Models that relied on inconsistent shadow variables being silently set to `null`
+must therefore declare a `@ShadowVariablesInconsistent` field to keep that behavior.
+
+[NOTE]
 ====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Job {
-    @ShadowVariablesInconsistent
-    boolean isInconsistent;
+The xref:constraints-and-score/overview.adoc#structuralScore[structural score] is a component of every `Score`
+that is `0` for structurally sound solutions and negative for structurally flawed ones.
+A structurally flawed score is worse than any structurally sound score,
+so a structurally flawed solution is never accepted during solving.
 
-    public boolean isInconsistent() {
-        return isInconsistent;
-    }
-}
-----
-====
+When a structurally flawed solution is passed to `SolutionManager.update(...)`,
+the method fails fast and throws an `InconsistentSolutionException`,
+which exposes the solution and the entities involved in the inconsistency.
+When passed to `SolutionManager.analyze(...)`,
+the returned xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
+has a structural flaw analysis that can be used to get the inconsistent entities.
 
-NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariablesInconsistent`-annotated properties.
-These methods are only called if none of their shadow variables are inconsistent, and therefore the value of such properties at that time is guaranteed to be `false`.
-
-This property (`isInconsistent` in the example above) is typically used in a constraint filter to penalize entities with inconsistent shadow variables via a hard constraint, since PlanningSolution instances containing inconsistent shadow variables are generally considered invalid.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-//Example constraint
-Constraint penalizeInconsistentJobs(ConstraintFactory factory) {
-    return factory.forEachUnfiltered(Job.class)
-            .filter(job -> job.isInconsistent())
-            .penalize(HardSoftScore.ONE_HARD)
-            .asConstraint("Job has inconsistent shadow variables.");
-}
-----
+When a structurally flawed solution is passed to `Solver.solve`,
+the `Solver` logs a warning and unassigns the involved planning entities before solving.
+If the inconsistency cannot be resolved this way,
+for example because an involved entity is xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned],
+the `Solver` throws an `Exception`.
 ====
 
-IMPORTANT: Since `forEach` filters out inconsistent entities, you must use `forEachUnfiltered` to penalize inconsistent entities.
+If no entity have a `@ShadowVariablesInconsistent` property, you do not need to handle inconsistencies in any constraints, since the Solver will not calculate the score for any structurally flawed solutions.
+
+IMPORTANT: see xref:upgrading-timefold-solver/migration-guides/shadow-variables-inconsistent-to-structural-score.adoc[how to migrate from `@ShadowVariablesInconsistent` to structural scores] for a guide on how to update your domain model to remove the deprecated `@ShadowVariablesInconsistent` fields.
+
 
 [#aligningShadowVariables]
 ==== Aligning shadow variables

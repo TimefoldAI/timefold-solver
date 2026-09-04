@@ -410,11 +410,19 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      *        to ensure the score is up to date.
      */
     public final void execute(Move<Solution_> move, boolean guaranteeFreshScore) {
-        move.execute(this);
-        externalScoreDirector.updateShadowVariables();
+        executeAllowingStructurallyFlawedSolutions(move);
+        if (!backingScoreDirector.isLastVariableUpdateSuccessful()) {
+            throw new IllegalArgumentException("The move (%s) caused the solution to become structurally flawed."
+                    .formatted(move));
+        }
         if (guaranteeFreshScore) {
             backingScoreDirector.calculateScore();
         }
+    }
+
+    void executeAllowingStructurallyFlawedSolutions(Move<Solution_> move) {
+        move.execute(this);
+        externalScoreDirector.updateShadowVariables();
     }
 
     public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
@@ -422,7 +430,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         var workingSolution = backingScoreDirector.getWorkingSolution();
         var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         var ephemeralMoveDirector = ephemeral();
-        ephemeralMoveDirector.execute(move);
+        ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
         var score = backingScoreDirector.calculateScore();
         ephemeralMoveDirector.close(); // This undoes the move.
         // Restore the previous working score
@@ -436,7 +444,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         var workingSolution = backingScoreDirector.getWorkingSolution();
         var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         try (var ephemeralMoveDirector = ephemeral()) {
-            ephemeralMoveDirector.execute(move);
+            ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
             var score = backingScoreDirector.calculateScore();
             return postprocessor.apply(score, ephemeralMoveDirector.createUndoMove());
         } finally {
@@ -460,6 +468,26 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         } else {
             // Restore the previous working score
             solutionDescriptor.setScore(workingSolution, previousScore);
+        }
+        return result;
+    }
+
+    public @Nullable <Result_> Result_ executeTemporaryHandlingStructurallyFlawedSolutions(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> postprocessor,
+            Function<Solution_, @Nullable Result_> flawedSolutionProcessor,
+            boolean guaranteeFreshScore) {
+        var ephemeralMoveDirector = ephemeral();
+        ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
+        var score = backingScoreDirector.calculateScore();
+        Result_ result;
+        if (score.isStructurallyFlawed()) {
+            result = flawedSolutionProcessor.apply(backingScoreDirector.getWorkingSolution());
+        } else {
+            result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
+        }
+        ephemeralMoveDirector.close(); // This undoes the move.
+        if (guaranteeFreshScore) {
+            backingScoreDirector.calculateScore();
         }
         return result;
     }
