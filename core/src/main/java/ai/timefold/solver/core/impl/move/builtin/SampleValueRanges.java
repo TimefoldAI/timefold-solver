@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Value_> the variable's value type
  */
 @NullMarked
-record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, ValueRange<Value_> smallestRange) {
+public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, ValueRange<Value_> smallestRange) {
 
     private static final long MAX_SAFE_RANGE_SIZE = Long.MAX_VALUE / FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
 
@@ -105,7 +105,7 @@ record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, Value
                 : range.getSize();
     }
 
-    static long bailOutSizeOf(ValueRange<?> range) {
+    public static long bailOutSizeOf(ValueRange<?> range) {
         // Clamped since a range's {@link ValueRange#getSize()} can be large enough that multiplying it here would
         // overflow a {@code long} negative - which {@link FilteringIterator} reads as "bail-out disabled",
         // turning {@code hasNext()} into an infinite loop.

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,14 +27,14 @@ import org.jspecify.annotations.Nullable;
  * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
-public class SubListUnassignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
+public final class SubListUnassignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final Range<Entity_> range;
 
     private @Nullable List<Value_> unassignedValues;
 
-    SubListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public SubListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Range<Entity_> range) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.range = Objects.requireNonNull(range);

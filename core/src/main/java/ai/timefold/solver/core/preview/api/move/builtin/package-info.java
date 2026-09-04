@@ -1,8 +1,6 @@
 /**
- * Contains the built-in {@link Move} implementations,
- * and their associated {@link ai.timefold.solver.core.preview.api.neighborhood.MoveProvider} implementations.
- * Both are expected to be directly used,
- * neither are designed for extensibility.
+ * Contains the built-in {@link ai.timefold.solver.core.preview.api.neighborhood.MoveProvider} implementations.
+ * They are expected to be directly used and are not designed for extensibility.
  * Users can and should implement custom move providers more efficient than these,
  * on account of their knowledge of the problem domain.
  * There is a price we pay for generality,
@@ -16,5 +14,3 @@
  * Check Javadoc of each move for the contract you are required to follow.
  */
 package ai.timefold.solver.core.preview.api.move.builtin;
-
-import ai.timefold.solver.core.preview.api.move.Move;

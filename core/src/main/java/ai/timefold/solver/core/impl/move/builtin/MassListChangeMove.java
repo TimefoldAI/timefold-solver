@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,8 @@ public final class MassListChangeMove<Solution_, Entity_, Value_> extends Abstra
     private final Sample<Value_> sample;
     private final @Nullable PositionInList destination;
 
-    MassListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Sample<Value_> sample,
+    public MassListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Sample<Value_> sample,
             @Nullable PositionInList destination) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.sample = Objects.requireNonNull(sample);

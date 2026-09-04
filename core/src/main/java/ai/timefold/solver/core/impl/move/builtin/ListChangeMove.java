@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
-public class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
+public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final Entity_ sourceEntity;
@@ -94,7 +94,7 @@ public class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
      * @param destinationEntity planning entity instance to which a planning value will be moved, for example "Bob"
      * @param destinationIndex index in destinationEntity's list variable where the moved planning value will be inserted
      */
-    protected ListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
+    public ListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
             int sourceIndex, Entity_ destinationEntity, int destinationIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.sourceEntity = Objects.requireNonNull(sourceEntity);

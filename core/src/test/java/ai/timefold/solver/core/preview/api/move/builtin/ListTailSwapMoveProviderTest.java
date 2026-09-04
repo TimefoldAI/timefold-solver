@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.impl.move.builtin.SubListSwapMove;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Range;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;

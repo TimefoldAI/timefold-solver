@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVa
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.move.builtin.MassChangeMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.PillarChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
@@ -21,7 +23,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class MoveProviderUtil {
+public final class MoveProviderUtil {
 
     /**
      * Every basic planning variable of the entity class, in natural order,
@@ -277,7 +279,7 @@ final class MoveProviderUtil {
      * Package-visible so {@link PillarChangeMoveProvider} can build its own pipeline on top of it
      * (a settle-cached row bundling a pillar with its precomputed ranges).
      */
-    static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, Entity_> assignedEntities(
+    public static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, Entity_> assignedEntities(
             MoveStreamFactory<Solution_> moveStreamFactory,
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         var entityStream = moveStreamFactory.forEach(variableMetaModel.entity().type(), false);

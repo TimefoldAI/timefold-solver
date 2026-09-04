@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
-public class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
+public final class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final Entity_ leftEntity;
@@ -89,7 +89,7 @@ public class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove<Solut
      * @param rightEntity together with {@code rightIndex} identifies the right element to be moved
      * @param rightIndex together with {@code rightEntity} identifies the right element to be moved
      */
-    protected ListSwapMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity,
+    public ListSwapMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity,
             int leftIndex, Entity_ rightEntity, int rightIndex) {
         this.variableMetaModel = variableMetaModel;
         this.leftEntity = leftEntity;

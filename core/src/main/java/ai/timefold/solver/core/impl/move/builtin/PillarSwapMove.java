@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.move.AbstractMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 
 import org.jspecify.annotations.NullMarked;
@@ -80,7 +81,7 @@ public final class PillarSwapMove<Solution_, Entity_> extends AbstractMove<Solut
      */
     private @Nullable List<@Nullable Object> valueList;
 
-    PillarSwapMove(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList,
+    public PillarSwapMove(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList,
             Sample<Entity_> leftPillar, Sample<Entity_> rightPillar) {
         if (Objects.requireNonNull(variableMetaModelList).isEmpty()) {
             throw new IllegalArgumentException(

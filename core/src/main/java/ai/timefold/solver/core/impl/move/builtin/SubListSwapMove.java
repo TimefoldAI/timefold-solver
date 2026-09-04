@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +40,8 @@ public final class SubListSwapMove<Solution_, Entity_, Value_> extends AbstractM
     private @Nullable List<Value_> leftValues;
     private @Nullable List<Value_> rightValues;
 
-    SubListSwapMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Range<Entity_> leftRange,
+    public SubListSwapMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Range<Entity_> leftRange,
             Range<Entity_> rightRange, boolean reversing) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         // Normalize so that, when both spans are on the same entity, left always precedes right;
