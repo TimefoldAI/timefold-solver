@@ -15,7 +15,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.Neighborho
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ListSwapMoveProvider<Solution_, Entity_, Value_> implements MoveProvider<Solution_> {
+public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
 

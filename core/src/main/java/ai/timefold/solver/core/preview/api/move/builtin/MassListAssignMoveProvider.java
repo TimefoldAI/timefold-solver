@@ -44,7 +44,7 @@ import org.jspecify.annotations.NullMarked;
  * @see ListAssignMoveProvider Assigning a single value at a time.
  */
 @NullMarked
-public class MassListAssignMoveProvider<Solution_, Entity_, Value_>
+public final class MassListAssignMoveProvider<Solution_, Entity_, Value_>
         implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;

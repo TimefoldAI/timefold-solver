@@ -54,7 +54,7 @@ import org.jspecify.annotations.Nullable;
  * @see MassListChangeMoveProvider A set of values drawn together and gathered at one destination.
  */
 @NullMarked
-public class ListChangeMoveProvider<Solution_, Entity_, Value_>
+public final class ListChangeMoveProvider<Solution_, Entity_, Value_>
         implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
