@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +23,7 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     private @Nullable Value_ unassignedValue;
 
-    ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
+    public ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
             int sourceIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.sourceEntity = Objects.requireNonNull(sourceEntity);

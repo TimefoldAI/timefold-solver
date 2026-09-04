@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,62 +12,56 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.move.AbstractMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Changes the value of a {@link PlanningVariable} on every member of a {@link Sample} at once.
- * An assign is a move whose members currently hold null;
- * an unassign is a move whose {@link #toPlanningValue} is null.
- *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Entity_> the entity type, the class with the {@link PlanningEntity} annotation
  * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
-public final class MassChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
+public final class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
+    private final Entity_ entity;
     private final @Nullable Value_ toPlanningValue;
-    private final Sample<Entity_> sample;
 
-    MassChangeMove(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Sample<Entity_> sample, @Nullable Value_ toPlanningValue) {
+    private @Nullable Value_ currentValue;
+    private boolean currentValueCached = false;
+
+    public ChangeMove(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+            @Nullable Value_ toPlanningValue) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
+        this.entity = Objects.requireNonNull(entity);
         this.toPlanningValue = toPlanningValue;
-        this.sample = Objects.requireNonNull(sample);
     }
 
-    /**
-     * @return the members whose variable this move changes
-     */
-    public Sample<Entity_> getSample() {
-        return sample;
-    }
-
-    @Override
-    public List<PlanningVariableMetaModel<Solution_, Entity_, Value_>> variableMetaModels() {
-        return List.of(variableMetaModel);
+    @Nullable
+    private Value_ getValue() {
+        if (!currentValueCached) {
+            currentValue = getVariableDescriptor(variableMetaModel).getValue(entity);
+            currentValueCached = true;
+        }
+        return currentValue;
     }
 
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
-        for (var entity : sample) {
-            solutionView.changeVariable(variableMetaModel, Objects.requireNonNull(entity), toPlanningValue);
-        }
+        getValue(); // Cache the current value if not already cached.
+        solutionView.changeVariable(variableMetaModel, entity, toPlanningValue);
     }
 
     @Override
-    public MassChangeMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
-        return new MassChangeMove<>(variableMetaModel, sample.rebase(lookup), lookup.lookUpWorkingObject(toPlanningValue));
+    public ChangeMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
+        return new ChangeMove<>(variableMetaModel, lookup.lookUpNonNullWorkingObject(entity),
+                lookup.lookUpWorkingObject(toPlanningValue));
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public SequencedCollection<Object> getPlanningEntities() {
-        return (SequencedCollection<Object>) sample.getMemberSet();
+        return Collections.singletonList(entity);
     }
 
     @Override
@@ -76,21 +70,26 @@ public final class MassChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     }
 
     @Override
+    public List<PlanningVariableMetaModel<Solution_, Entity_, Value_>> variableMetaModels() {
+        return Collections.singletonList(variableMetaModel);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        return o instanceof MassChangeMove<?, ?, ?> other
+        return o instanceof ChangeMove<?, ?, ?> other
                 && Objects.equals(variableMetaModel, other.variableMetaModel)
-                && Objects.equals(toPlanningValue, other.toPlanningValue)
-                && Objects.equals(sample, other.sample);
+                && Objects.equals(entity, other.entity)
+                && Objects.equals(toPlanningValue, other.toPlanningValue);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(variableMetaModel, toPlanningValue, sample);
+        return Objects.hash(variableMetaModel, entity, toPlanningValue);
     }
 
     @Override
     public String toString() {
-        return sample + " -> " + toPlanningValue;
+        return entity + " {" + getValue() + " -> " + toPlanningValue + "}";
     }
 
 }

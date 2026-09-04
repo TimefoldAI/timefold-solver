@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,14 +13,14 @@ import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
+public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final Value_ planningValue;
     private final Entity_ destinationEntity;
     private final int destinationIndex;
 
-    ListAssignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
+    public ListAssignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
             Entity_ destinationEntity, int destinationIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.planningValue = Objects.requireNonNull(planningValue);

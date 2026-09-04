@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
+import ai.timefold.solver.core.impl.move.builtin.SampleValueRanges;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;

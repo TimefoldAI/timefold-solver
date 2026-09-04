@@ -8,6 +8,8 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
+import ai.timefold.solver.core.impl.move.builtin.SampleValueRanges;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.impl.util.SingletonIterator;
@@ -85,8 +87,7 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var pillarDataset = MoveProviderUtil.assignedEntities(moveStreamFactory, variableMetaModel)
                 .groupBy((solutionView, entity) -> solutionView.getValue(variableMetaModel, entity),
-                        NeighborhoodsCollectors.collectAndThen(
-                                NeighborhoodsCollectors.<Solution_, Entity_> toList(), Sample::of))
+                        NeighborhoodsCollectors.collectAndThen(NeighborhoodsCollectors.toList(), Sample::of))
                 .map((solutionView, value, pillar) -> new PillarWithRange<>(pillar,
                         SampleValueRanges.of(pillar, variableMetaModel, solutionView)))
                 .asCachedDataset();

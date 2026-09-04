@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.impl.move.builtin.SubListChangeMove;
+import ai.timefold.solver.core.impl.move.builtin.SubListUnassignMove;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.SubListSampler;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;

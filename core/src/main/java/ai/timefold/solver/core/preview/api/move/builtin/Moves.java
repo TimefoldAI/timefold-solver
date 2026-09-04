@@ -3,6 +3,18 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Arrays;
 import java.util.List;
 
+import ai.timefold.solver.core.impl.move.builtin.ChangeMove;
+import ai.timefold.solver.core.impl.move.builtin.ListAssignMove;
+import ai.timefold.solver.core.impl.move.builtin.ListChangeMove;
+import ai.timefold.solver.core.impl.move.builtin.ListSwapMove;
+import ai.timefold.solver.core.impl.move.builtin.ListUnassignMove;
+import ai.timefold.solver.core.impl.move.builtin.MassChangeMove;
+import ai.timefold.solver.core.impl.move.builtin.MassListChangeMove;
+import ai.timefold.solver.core.impl.move.builtin.PillarSwapMove;
+import ai.timefold.solver.core.impl.move.builtin.SubListChangeMove;
+import ai.timefold.solver.core.impl.move.builtin.SubListSwapMove;
+import ai.timefold.solver.core.impl.move.builtin.SubListUnassignMove;
+import ai.timefold.solver.core.impl.move.builtin.SwapMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -17,17 +29,6 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Factory class for creating built-in {@link Move} instances that mutate planning variables.
- * <p>
- * <strong>This package and all of its contents are part of the Neighborhoods API,
- * which is under development and is only offered as a preview feature.</strong>
- * There are no guarantees for backward compatibility;
- * any class, method, or field may change or be removed without prior notice,
- * although we will strive to avoid this as much as possible.
- * <p>
- * We encourage you to try the API and give us feedback on your experience with it,
- * before we finalize the API.
- * Please direct your feedback to <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
- * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  *
  * @see MutableSolutionView The view used by moves to perform mutating operations.
  */

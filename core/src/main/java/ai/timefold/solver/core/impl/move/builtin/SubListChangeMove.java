@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +40,7 @@ public final class SubListChangeMove<Solution_, Entity_, Value_> extends Abstrac
 
     private @Nullable List<Value_> movedValues;
 
-    SubListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Range<Entity_> source,
+    public SubListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Range<Entity_> source,
             PositionInList destination, boolean reversing) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.source = Objects.requireNonNull(source);
