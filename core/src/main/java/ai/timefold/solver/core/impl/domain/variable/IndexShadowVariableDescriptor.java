@@ -88,13 +88,13 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
     @Override
     public Collection<Class<?>> getUpdaterClasses() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                .formatted(ListVariableStateSupply.class.getSimpleName()));
+                .formatted(ListVariableState.class.getSimpleName()));
     }
 
     @Override
     public Demand<?> getProvidedDemand() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                .formatted(ListVariableStateSupply.class.getSimpleName()));
+                .formatted(ListVariableState.class.getSimpleName()));
     }
 
     @SuppressWarnings("unchecked")

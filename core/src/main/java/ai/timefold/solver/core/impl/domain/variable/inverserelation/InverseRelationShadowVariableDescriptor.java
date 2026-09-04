@@ -12,8 +12,8 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableStateDemand;
-import ai.timefold.solver.core.impl.domain.variable.ExternalizedBasicVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ExternalizedBasicVariableState;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
@@ -118,9 +118,9 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     public Collection<Class<?>> getUpdaterClasses() {
         if (singleton) {
             throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                    .formatted(ListVariableStateSupply.class.getSimpleName()));
+                    .formatted(ListVariableState.class.getSimpleName()));
         } else {
-            return Collections.singleton(ExternalizedBasicVariableStateSupply.class);
+            return Collections.singleton(ExternalizedBasicVariableState.class);
         }
     }
 
@@ -132,7 +132,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     public BasicVariableStateDemand<Solution_> getProvidedDemand() {
         if (singleton) {
             throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                    .formatted(ListVariableStateSupply.class.getSimpleName()));
+                    .formatted(ListVariableState.class.getSimpleName()));
         } else {
             return new BasicVariableStateDemand<>(sourceVariableDescriptor);
         }

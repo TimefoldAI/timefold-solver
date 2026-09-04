@@ -13,7 +13,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.MoveDirector;
@@ -239,8 +239,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     ValueRangeManager<Solution_> getValueRangeManager();
 
-    <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
-            getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
+    <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(ListVariableDescriptor<Solution_> variableDescriptor);
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
 

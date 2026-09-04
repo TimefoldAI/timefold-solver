@@ -16,10 +16,10 @@ public final class UnassignedListValueSelector<Solution_> extends AbstractInvers
 
     @Override
     protected boolean valueFilter(Object value) {
-        if (listVariableStateSupply.getUnassignedCount() == 0) {
+        if (listVariableState.getUnassignedCount() == 0) {
             return false; // Avoid hash lookup.
         }
-        return !listVariableStateSupply.isAssigned(value);
+        return !listVariableState.isAssigned(value);
     }
 
     @Override
