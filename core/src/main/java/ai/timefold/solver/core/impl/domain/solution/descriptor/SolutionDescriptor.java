@@ -227,10 +227,6 @@ public final class SolutionDescriptor<Solution_> {
         return !extractAnnotatedMembers(solutionClass).isEmpty();
     }
 
-    // ************************************************************************
-    // Non-static members
-    // ************************************************************************
-
     private final Class<Solution_> solutionClass;
     private final MemberAccessorFactory memberAccessorFactory;
 
@@ -264,7 +260,7 @@ public final class SolutionDescriptor<Solution_> {
     @Nullable
     private List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList;
     @Nullable
-    private List<ListVariableDescriptor<Solution_>> listVariableDescriptorList;
+    private ListVariableDescriptor<Solution_> listVariableDescriptor;
     @Nullable
     private List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptorList;
 
@@ -535,8 +531,7 @@ public final class SolutionDescriptor<Solution_> {
             entityDescriptor.linkVariableDescriptors(descriptorPolicy);
         }
         problemFactOrEntityClassSet = collectEntityAndProblemFactClasses();
-        listVariableDescriptorList = findListVariableDescriptors();
-        validateListVariableDescriptors();
+        listVariableDescriptor = findListVariableDescriptor();
 
         // And finally log the successful completion of processing.
         if (LOGGER.isTraceEnabled()) {
@@ -552,17 +547,6 @@ public final class SolutionDescriptor<Solution_> {
             }
         }
         initSolutionCloner(descriptorPolicy);
-    }
-
-    private void validateListVariableDescriptors() {
-        if (Objects.requireNonNull(listVariableDescriptorList).isEmpty()) {
-            return;
-        }
-        if (listVariableDescriptorList.size() > 1) {
-            throw new UnsupportedOperationException(
-                    "Defining multiple list variables (%s) across the model is currently not supported."
-                            .formatted(listVariableDescriptorList));
-        }
     }
 
     private SequencedSet<Class<?>> collectEntityAndProblemFactClasses() {
@@ -585,14 +569,23 @@ public final class SolutionDescriptor<Solution_> {
         return problemFactOrEntityClassStream.collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private List<ListVariableDescriptor<Solution_>> findListVariableDescriptors() {
-        return getGenuineEntityDescriptors().stream()
+    private @Nullable ListVariableDescriptor<Solution_> findListVariableDescriptor() {
+        var listVariableDescriptorList = getGenuineEntityDescriptors().stream()
                 .map(EntityDescriptor::getGenuineVariableDescriptorList)
                 .flatMap(Collection::stream)
                 .flatMap(e -> e instanceof ListVariableDescriptor<Solution_> listVariableDescriptor
                         ? Stream.of(listVariableDescriptor)
                         : Stream.empty())
                 .toList();
+        if (listVariableDescriptorList.isEmpty()) {
+            return null;
+        }
+        if (listVariableDescriptorList.size() > 1) {
+            throw new UnsupportedOperationException(
+                    "Defining multiple list variables (%s) across the model is currently not supported."
+                            .formatted(listVariableDescriptorList));
+        }
+        return listVariableDescriptorList.getFirst();
     }
 
     private void initSolutionCloner(DescriptorPolicy descriptorPolicy) {
@@ -658,17 +651,13 @@ public final class SolutionDescriptor<Solution_> {
 
     @Nullable
     public ListVariableDescriptor<Solution_> getListVariableDescriptor() {
-        return Objects.requireNonNull(listVariableDescriptorList).isEmpty() ? null : listVariableDescriptorList.getFirst();
+        return listVariableDescriptor;
     }
 
     @Nullable
     public SolutionCloner<Solution_> getSolutionCloner() {
         return solutionCloner;
     }
-
-    // ************************************************************************
-    // Model methods
-    // ************************************************************************
 
     public PlanningSolutionMetaModel<Solution_> getMetaModel() {
         if (planningSolutionMetaModel == null) {
@@ -823,17 +812,10 @@ public final class SolutionDescriptor<Solution_> {
         return variableDescriptor;
     }
 
-    // ************************************************************************
-    // Look up methods
-    // ************************************************************************
-
+    @Nullable
     public LookupStrategyResolver getLookUpStrategyResolver() {
         return Objects.requireNonNull(lookUpStrategyResolver);
     }
-
-    // ************************************************************************
-    // Extraction methods
-    // ************************************************************************
 
     /**
      * @param solution never null
