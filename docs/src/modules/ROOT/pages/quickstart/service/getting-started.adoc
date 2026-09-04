@@ -247,24 +247,22 @@ Create the `src/main/resources/application.properties` file:
 ----
 # The solver runs for 30 seconds by default.
 # Increase this for larger datasets to find a better solution.
-ai.timefold.platform.termination.spent-limit=PT30S
+timefold.model.termination.spent-limit=PT30S
 
 # Application metadata — included in the generated OpenAPI specification
-model.api.version=v1
-timefold.application.name=my-model
-timefold.application.contact.email=info@example.com
-timefold.application.contact.name=Your Name
-timefold.application.contact.url=https://example.com
+timefold.model.name=my-model
+timefold.model.contact.email=info@example.com
+timefold.model.contact.name=Your Name
+timefold.model.contact.url=https://example.com
 ----
 
-`ai.timefold.platform.termination.spent-limit` sets the default maximum time the solver will run.
+`timefold.model.termination.spent-limit` sets the default maximum time the solver will run.
 The value uses the https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format]: `PT30S` means 30 seconds.
 For production use, consider at least five minutes (`PT5M`) to allow the solver more time to find a better solution.
 
 NOTE: The per-request `config.run.termination.spentLimit` field in the POST body (shown later) overrides this default for individual runs.
 
-`timefold.application.name` and the contact fields are *required* metadata.
-`model.api.version` is required (for example `v1`) and is used as the default for `timefold.application.version` and `quarkus.rest.path`.
+`timefold.model.name` and the contact fields are *required* metadata.
 They are used to identify your service, validate the JSON schema of requests, and populate the generated OpenAPI specification.
 
 == REST API
@@ -300,8 +298,8 @@ public interface TimetableResource extends ModelRest {
 This is the most basic version of the interface. The SDK will automatically create multiple xref:running-timefold-solver/service/rest-api.adoc[REST API endpoints] for optimization actions.
 The `@Path` annotation is used to configure the base path of all those endpoints.
 
-NOTE: Do not include an API version in `@Path`. The SDK default configuration sets `quarkus.rest.path=${model.api.version}`, which Quarkus automatically prepends to every `@Path` at runtime.
-So with `model.api.version=v1`, `@Path("/timetables")` is served at `/v1/timetables` — locally and on the platform.
+NOTE: Do not include an API version in `@Path`. The SDK default configuration sets `quarkus.rest.path=${timefold.model.version}`, which Quarkus automatically prepends to every `@Path` at runtime.
+So with `timefold.model.version=v1`, `@Path("/timetables")` is served at `/v1/timetables` — locally and on the platform.
 
 == Running and manually testing the model
 

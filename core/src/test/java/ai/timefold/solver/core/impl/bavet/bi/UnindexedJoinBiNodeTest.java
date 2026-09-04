@@ -63,11 +63,16 @@ class UnindexedJoinBiNodeTest {
         var right = createInputTuple("R1");
         node.insertLeft(left);
         node.insertRight(right);
+        // Filtering joins defer their cross-match to prepareForSettle(); the network calls this before
+        // every layer's propagate phase (see AbstractBavetNodeNetwork#settleLayer), so a direct node test
+        // must too.
+        node.prepareForSettle();
         node.getPropagator().propagateEverything();
         verify(downstream).insert(argThat(t -> t.getA().equals("L1") && t.getB().equals("R1")));
 
         left.setA("L2");
         node.updateLeft(left);
+        node.prepareForSettle();
         node.getPropagator().propagateEverything();
         verify(downstream).update(argThat(t -> t.getA().equals("L2") && t.getB().equals("R1")));
     }
@@ -79,11 +84,16 @@ class UnindexedJoinBiNodeTest {
         var right = createInputTuple("R1");
         node.insertLeft(left);
         node.insertRight(right);
+        // Filtering joins defer their cross-match to prepareForSettle(); the network calls this before
+        // every layer's propagate phase (see AbstractBavetNodeNetwork#settleLayer), so a direct node test
+        // must too.
+        node.prepareForSettle();
         node.getPropagator().propagateEverything();
         verify(downstream).insert(argThat(t -> t.getA().equals("L1") && t.getB().equals("R1")));
 
         right.setA("R2");
         node.updateRight(right);
+        node.prepareForSettle();
         node.getPropagator().propagateEverything();
         verify(downstream).update(argThat(t -> t.getA().equals("L1") && t.getB().equals("R2")));
     }

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.phase;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -13,7 +14,7 @@ public abstract class AbstractPossiblyInitializingPhase<Solution_>
 
     private final boolean lastInitializingPhase;
 
-    protected AbstractPossiblyInitializingPhase(AbstractPossiblyInitializingPhaseBuilder<Solution_> builder) {
+    protected AbstractPossiblyInitializingPhase(AbstractPossiblyInitializingPhaseBuilder<Solution_, ?> builder) {
         super(builder);
         this.lastInitializingPhase = builder.isLastInitializingPhase();
     }
@@ -53,14 +54,14 @@ public abstract class AbstractPossiblyInitializingPhase<Solution_>
         }
     }
 
-    public static abstract class AbstractPossiblyInitializingPhaseBuilder<Solution_>
-            extends AbstractPhaseBuilder<Solution_> {
+    public abstract static class AbstractPossiblyInitializingPhaseBuilder<Solution_, Phase_ extends AbstractPhase<Solution_>>
+            extends AbstractPhaseBuilder<Solution_, Phase_> {
 
         private final boolean lastInitializingPhase;
 
-        protected AbstractPossiblyInitializingPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String phaseName,
-                PhaseTermination<Solution_> phaseTermination) {
-            super(phaseIndex, phaseName, phaseTermination);
+        protected AbstractPossiblyInitializingPhaseBuilder(int phaseIndex, boolean lastInitializingPhase,
+                EnvironmentMode environmentMode, String phaseName, PhaseTermination<Solution_> phaseTermination) {
+            super(phaseIndex, environmentMode, phaseName, phaseTermination);
             this.lastInitializingPhase = lastInitializingPhase;
         }
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.TerminalEnumeratingStream;
@@ -12,11 +14,13 @@ final class RightTerminalUniEnumeratingStream<Solution_, A, B>
         extends AbstractUniEnumeratingStream<Solution_, B>
         implements TerminalEnumeratingStream<Solution_, UniRightDataset<Solution_, A, B>> {
 
+    private final BiNeighborhoodsJoinerComber<Solution_, A, B> joinerComber;
     private final UniRightDataset<Solution_, A, B> dataset;
 
     public RightTerminalUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractUniEnumeratingStream<Solution_, B> parent, BiNeighborhoodsJoinerComber<Solution_, A, B> joinerComber) {
         super(enumeratingStreamFactory, parent);
+        this.joinerComber = joinerComber;
         this.dataset = new UniRightDataset<>(this, joinerComber);
     }
 
@@ -31,6 +35,18 @@ final class RightTerminalUniEnumeratingStream<Solution_, A, B>
     @Override
     public UniRightDataset<Solution_, A, B> getDataset() {
         return dataset;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof RightTerminalUniEnumeratingStream<?, ?, ?> other
+                && parent == other.parent
+                && Objects.equals(joinerComber, other.joinerComber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(RightTerminalUniEnumeratingStream.class, parent, joinerComber);
     }
 
     @Override

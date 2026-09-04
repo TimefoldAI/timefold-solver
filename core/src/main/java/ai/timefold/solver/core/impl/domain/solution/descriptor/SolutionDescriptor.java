@@ -57,6 +57,7 @@ import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutio
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ShadowVariablesInconsistentVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -67,7 +68,8 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +77,7 @@ import org.slf4j.LoggerFactory;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution}
  *        annotation
  */
+@NullMarked
 public final class SolutionDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolutionDescriptor.class);
@@ -104,8 +107,9 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
-            Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType, Class<Solution_> solutionClass,
-            Map<String, MemberAccessor> memberAccessorMap, Map<String, SolutionCloner> solutionClonerMap,
+            @Nullable Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType,
+            Class<Solution_> solutionClass,
+            @Nullable Map<String, MemberAccessor> memberAccessorMap, @Nullable Map<String, SolutionCloner> solutionClonerMap,
             List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
         assertSingleInheritance(solutionClass);
@@ -235,6 +239,7 @@ public final class SolutionDescriptor<Solution_> {
     private final SequencedMap<String, MemberAccessor> entityMemberAccessorMap = new LinkedHashMap<>();
     private final SequencedMap<String, MemberAccessor> entityCollectionMemberAccessorMap = new LinkedHashMap<>();
 
+    @Nullable
     private ConstraintWeightSupplier<Solution_, ?> constraintWeightSupplier;
     private final SequencedMap<Class<?>, EntityDescriptor<Solution_>> entityDescriptorMap = new LinkedHashMap<>();
     private final List<Class<?>> reversedEntityClassList = new ArrayList<>();
@@ -242,22 +247,32 @@ public final class SolutionDescriptor<Solution_> {
     private final ConcurrentMap<Class<?>, MemberAccessor> planningIdMemberAccessorMap = new ConcurrentHashMap<>();
 
     // Lazily initialized fields
+    @Nullable
     private SequencedSet<Class<?>> problemFactOrEntityClassSet;
+    @Nullable
     private ScoreDescriptor<?> scoreDescriptor;
+    @Nullable
     private DomainAccessType domainAccessType;
+    @Nullable
     private LookupStrategyResolver lookUpStrategyResolver;
+    @Nullable
     private PlanningSolutionMetaModel<Solution_> planningSolutionMetaModel;
+    @Nullable
     private SolutionCloner<Solution_> solutionCloner;
+    @Nullable
     private List<EntityDescriptor<Solution_>> genuineEntityDescriptorList;
+    @Nullable
     private List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList;
+    @Nullable
     private List<ListVariableDescriptor<Solution_>> listVariableDescriptorList;
+    @Nullable
     private List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptorList;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    private SolutionDescriptor(Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap) {
+    private SolutionDescriptor(Class<Solution_> solutionClass, @Nullable Map<String, MemberAccessor> memberAccessorMap) {
         this.solutionClass = solutionClass;
         if (solutionClass.getPackage() == null) {
             LOGGER.warn("The solutionClass ({}) should be in a proper java package.", solutionClass);
@@ -367,7 +382,7 @@ public final class SolutionDescriptor<Solution_> {
         lookUpStrategyResolver = new LookupStrategyResolver(descriptorPolicy);
     }
 
-    private @NonNull PlanningSolution extractMostRelevantPlanningSolutionAnnotation() {
+    private PlanningSolution extractMostRelevantPlanningSolutionAnnotation() {
         var solutionAnnotation = solutionClass.getAnnotation(PlanningSolution.class);
         if (solutionAnnotation != null) {
             return solutionAnnotation;
@@ -417,6 +432,7 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
+    @Nullable
     private static Class<? extends Annotation> extractFactEntityOrScoreAnnotationClass(Member member) {
         return ConfigUtils.extractAnnotationClass(member, ProblemFactProperty.class, ProblemFactCollectionProperty.class,
                 PlanningEntityProperty.class, PlanningEntityCollectionProperty.class, PlanningScore.class);
@@ -539,7 +555,7 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     private void validateListVariableDescriptors() {
-        if (listVariableDescriptorList.isEmpty()) {
+        if (Objects.requireNonNull(listVariableDescriptorList).isEmpty()) {
             return;
         }
         if (listVariableDescriptorList.size() > 1) {
@@ -604,15 +620,17 @@ public final class SolutionDescriptor<Solution_> {
         return memberAccessorFactory;
     }
 
+    @Nullable
     public DomainAccessType getDomainAccessType() {
         return domainAccessType;
     }
 
     public <Score_ extends Score<Score_>> ScoreDefinition<Score_> getScoreDefinition() {
-        return this.<Score_> getScoreDescriptor().getScoreDefinition();
+        return Objects.requireNonNull(this.<Score_> getScoreDescriptor()).getScoreDefinition();
     }
 
     @SuppressWarnings("unchecked")
+    @Nullable
     public <Score_ extends Score<Score_>> ScoreDescriptor<Score_> getScoreDescriptor() {
         return (ScoreDescriptor<Score_>) scoreDescriptor;
     }
@@ -633,14 +651,17 @@ public final class SolutionDescriptor<Solution_> {
         return entityCollectionMemberAccessorMap;
     }
 
+    @Nullable
     public SequencedSet<Class<?>> getProblemFactOrEntityClassSet() {
         return problemFactOrEntityClassSet;
     }
 
+    @Nullable
     public ListVariableDescriptor<Solution_> getListVariableDescriptor() {
-        return listVariableDescriptorList.isEmpty() ? null : listVariableDescriptorList.getFirst();
+        return Objects.requireNonNull(listVariableDescriptorList).isEmpty() ? null : listVariableDescriptorList.getFirst();
     }
 
+    @Nullable
     public SolutionCloner<Solution_> getSolutionCloner() {
         return solutionCloner;
     }
@@ -704,6 +725,7 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
+    @Nullable
     public <Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> getConstraintWeightSupplier() {
         return (ConstraintWeightSupplier<Solution_, Score_>) constraintWeightSupplier;
     }
@@ -720,12 +742,16 @@ public final class SolutionDescriptor<Solution_> {
         if (genuineEntityDescriptorList != null) {
             return genuineEntityDescriptorList;
         }
+        // Check effective genuine variable descriptors, since subclasses
+        // of a genuine entity with no new genuine variables are also
+        // genuine entities.
         genuineEntityDescriptorList = entityDescriptorMap.values().stream()
-                .filter(EntityDescriptor::hasAnyDeclaredGenuineVariableDescriptor)
+                .filter(EntityDescriptor::hasAnyEffectiveGenuineVariableDescriptor)
                 .toList();
         return genuineEntityDescriptorList;
     }
 
+    @Nullable
     public EntityDescriptor<Solution_> getEntityDescriptorStrict(Class<?> entityClass) {
         return entityDescriptorMap.get(entityClass);
     }
@@ -751,6 +777,7 @@ public final class SolutionDescriptor<Solution_> {
         return entityDescriptor;
     }
 
+    @Nullable
     public EntityDescriptor<Solution_> findEntityDescriptor(Class<?> entitySubclass) {
         /*
          * A slightly optimized variant of map.computeIfAbsent(...).
@@ -776,6 +803,7 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
+    @Nullable
     private EntityDescriptor<Solution_> innerFindEntityDescriptor(Class<?> entitySubclass) {
         // Reverse order to find the nearest ancestor
         for (var entityClass : reversedEntityClassList) {
@@ -800,7 +828,7 @@ public final class SolutionDescriptor<Solution_> {
     // ************************************************************************
 
     public LookupStrategyResolver getLookUpStrategyResolver() {
-        return lookUpStrategyResolver;
+        return Objects.requireNonNull(lookUpStrategyResolver);
     }
 
     // ************************************************************************
@@ -830,11 +858,13 @@ public final class SolutionDescriptor<Solution_> {
      * @param factClass never null
      * @return null if no such member exists
      */
+    @Nullable
     public MemberAccessor getPlanningIdAccessor(Class<?> factClass) {
         var memberAccessor = planningIdMemberAccessorMap.get(factClass);
         if (memberAccessor == null) {
             memberAccessor =
-                    ConfigUtils.findPlanningIdMemberAccessor(factClass, getMemberAccessorFactory(), getDomainAccessType());
+                    ConfigUtils.findPlanningIdMemberAccessor(factClass, getMemberAccessorFactory(),
+                            Objects.requireNonNull(getDomainAccessType()));
             var nonNullMemberAccessor = Objects.requireNonNullElse(memberAccessor, DummyMemberAccessor.INSTANCE);
             planningIdMemberAccessorMap.put(factClass, nonNullMemberAccessor);
             return memberAccessor;
@@ -986,6 +1016,13 @@ public final class SolutionDescriptor<Solution_> {
         return declarativeShadowVariableDescriptorList;
     }
 
+    public boolean hasAnyShadowVariablesInconsistentMember() {
+        return entityDescriptorMap.values().stream()
+                .flatMap(entityDescriptor -> entityDescriptor.getShadowVariableDescriptors().stream())
+                .anyMatch(
+                        shadowVariableDescriptor -> shadowVariableDescriptor instanceof ShadowVariablesInconsistentVariableDescriptor<Solution_>);
+    }
+
     public Stream<Object> extractAllEntitiesStream(Solution_ solution) {
         var stream = Stream.empty();
         for (var memberAccessor : entityMemberAccessorMap.values()) {
@@ -1001,6 +1038,7 @@ public final class SolutionDescriptor<Solution_> {
         return stream;
     }
 
+    @Nullable
     private Object extractMemberObject(MemberAccessor memberAccessor, Solution_ solution) {
         return memberAccessor.executeGetter(solution);
     }
@@ -1033,7 +1071,7 @@ public final class SolutionDescriptor<Solution_> {
      * @return sometimes null, if the {@link Score} hasn't been calculated yet
      */
     public <Score_ extends Score<Score_>> Score_ getScore(Solution_ solution) {
-        return this.<Score_> getScoreDescriptor().getScore(solution);
+        return Objects.requireNonNull(this.<Score_> getScoreDescriptor()).getScore(solution);
     }
 
     /**
@@ -1044,12 +1082,11 @@ public final class SolutionDescriptor<Solution_> {
      *        but no new ones has been calculated
      */
     public <Score_ extends Score<Score_>> void setScore(Solution_ solution, Score_ score) {
-        this.<Score_> getScoreDescriptor().setScore(solution, score);
+        Objects.requireNonNull(this.<Score_> getScoreDescriptor()).setScore(solution, score);
     }
 
     @Override
     public String toString() {
         return "%s(%s)".formatted(getClass().getSimpleName(), solutionClass.getName());
     }
-
 }

@@ -23,6 +23,7 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologic
 import ai.timefold.solver.core.impl.domain.variable.declarative.GraphNode;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.NeighborhoodNotifier;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -98,6 +99,8 @@ class ShadowVariableSupportTest {
         var neighborhoodNotifier = (NeighborhoodNotifier<TestdataConcurrentSolution>) Mockito.mock(NeighborhoodNotifier.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         when(scoreDirector.getNeighborhoodNotifier()).thenReturn(neighborhoodNotifier);
+        var listVariableStateSupply = mock(ListVariableStateSupply.class);
+        when(scoreDirector.getListVariableStateSupply(any(ListVariableDescriptor.class))).thenReturn(listVariableStateSupply);
         var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
 
@@ -338,6 +341,10 @@ class ShadowVariableSupportTest {
 
         var shadowVariableSupport =
                 new ShadowVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var listVariableStateSupply =
+                shadowVariableSupport.demand(solutionDescriptor.getListVariableDescriptor().getStateDemand());
+        when(scoreDirector.getListVariableStateSupply(any(ListVariableDescriptor.class))).thenReturn(listVariableStateSupply);
+
         shadowVariableSupport.linkShadowVariables();
         shadowVariableSupport.resetWorkingSolution();
 

@@ -40,24 +40,20 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
         }
         leftTupleList.add(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, leftOutTupleListBuilder.get());
-        if (!leftTuple.getState().isActive()) {
-            // Assume the following scenario:
-            // - The join is of two entities of the same type, both filtering out unassigned.
-            // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity became assigned, and is therefore getting inserted.
-            //
-            // This means the filter would be called with (unassignedEntity, assignedEntity),
-            // which breaks the expectation that the filter is only called on two assigned entities
-            // and requires adding null checks to the filter for something that should intuitively be impossible.
-            // We avoid this situation as it is clear that it is pointless to insert this tuple.
-            //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
+        if (isFiltering) {
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn
+            // instead of computing it now,
+            // at whatever layer the parent that produced leftTuple happens to be in.
+            // See AbstractJoinNode's pendingLeft/pendingRight javadoc.
+            enqueuePendingLeft(leftTuple);
             return;
         }
+        // Non-filtering: reads the opposite side eagerly, with no per-read staleness check needed
+        // (proven safe by dedicated regression tests; see AbstractJoinNode's insertOutTupleIfActiveFiltered javadoc).
+        // A stale read merely produces a doomed out-tuple
+        // the true retraction cleans up later via its own out-tuple list.
         for (var rightTuple = rightTupleList.first(); rightTuple != null; rightTuple = rightTupleList.next(rightTuple)) {
-            insertOutTupleFiltered(leftTuple, rightTuple);
+            insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
         }
     }
 
@@ -68,18 +64,23 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             insertLeft(leftTuple);
             return;
         }
-        innerUpdateLeft(leftTuple, rightTupleList::forEach);
+        if (isFiltering) {
+            enqueuePendingLeft(leftTuple);
+        } else {
+            innerUpdateLeft(leftTuple, rightTupleList::forEach);
+        }
     }
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
+        clearPendingLeft(leftTuple);
         TupleList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
         if (outTupleListLeft == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
         leftTupleList.remove(leftTuple);
-        outTupleListLeft.clear(this::retractOutTupleByLeft);
+        outTupleListLeft.clear(this::retractOutTupleLeft);
     }
 
     @Override
@@ -91,8 +92,13 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
         }
         rightTupleList.add(rightTuple);
         rightTuple.setStore(inputStoreIndexRightOutTupleList, rightOutTupleListBuilder.get());
+        if (isFiltering) {
+            // See the mirror comment in insertLeft.
+            enqueuePendingRight(rightTuple);
+            return;
+        }
         for (var leftTuple = leftTupleList.first(); leftTuple != null; leftTuple = leftTupleList.next(leftTuple)) {
-            insertOutTupleFilteredFromLeft(leftTuple, rightTuple);
+            insertOutTupleIfActiveFiltered(leftTuple, rightTuple);
         }
     }
 
@@ -103,18 +109,33 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             insertRight(rightTuple);
             return;
         }
-        innerUpdateRight(rightTuple, leftTupleList::forEach);
+        if (isFiltering) {
+            enqueuePendingRight(rightTuple);
+        } else {
+            innerUpdateRight(rightTuple, leftTupleList::forEach);
+        }
     }
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
+        clearPendingRight(rightTuple);
         TupleList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
         if (outTupleListRight == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
         rightTupleList.remove(rightTuple);
-        outTupleListRight.clear(this::retractOutTupleByRight);
+        outTupleListRight.clear(this::retractOutTupleRight);
+    }
+
+    @Override
+    protected void reconcilePendingLeft(LeftTuple_ leftTuple) {
+        innerUpdateLeft(leftTuple, rightTupleList::forEach);
+    }
+
+    @Override
+    protected void reconcilePendingRight(UniTuple<Right_> rightTuple) {
+        innerUpdateRight(rightTuple, leftTupleList::forEach);
     }
 
 }

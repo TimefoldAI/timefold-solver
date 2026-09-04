@@ -25,6 +25,7 @@ A finished version of this service is available in the https://github.com/Timefo
 See xref:#_generate_a_personal_access_token[Generate a Personal Access Token] below.
 * Push access to Timefold's container registry, since the `configure` goal builds and pushes your model's container image there.
 This access needs to be requested; mailto:info@timefold.ai[get in touch with the Timefold team] before you try to deploy.
+* A container runtime (like Docker) installed and running locally. During deployment, a container image is built, which requires one even if you don't interact with it directly.
 
 NOTE: Timefold Platform requires your model to be built with the Enterprise Edition of Timefold Solver, but building doesn't require a license, only running it does, and the platform provides that license when your model runs there. See xref:#_enterprise_edition[Build with the Enterprise Edition] below.
 
@@ -55,6 +56,9 @@ Build with `-Denterprise=true` to activate the `enterprise` Maven profile define
 mvn clean package -Denterprise=true
 ----
 
+If you forget, the `timefold:configure` goal fails the build during the `initialize` phase, before the container image is built and pushed.
+It checks that an `ai.timefold.solver.enterprise` artifact is actually on the classpath, and that your model inherits from `timefold-solver-service-parent`.
+
 Building with the Enterprise Edition does not itself require a license; a license is only checked when the model actually runs.
 However, if your build runs tests that exercise Enterprise Edition features, those tests run the solver, so the build fails without a valid license.
 See xref:commercial-editions/license-management.adoc[License management] to register for a free trial license.
@@ -75,15 +79,60 @@ When selecting its permissions, scope the token to the tenant you want to regist
 
 See https://docs.timefold.ai/timefold-platform/latest/api/platform-api#_authentication_with_personal_access_tokens[Authentication with Personal Access Tokens] for the full walkthrough, including screenshots of the token generation dialog.
 
-=== Export the token
+[#_provide_the_token]
+=== Provide the token
 
-The plugin reads your PAT from the `TIMEFOLD_PAT` environment variable.
-Export it before building:
+The plugin takes the PAT from the `TIMEFOLD_PAT` environment variable, and falls back to your Maven settings when that variable is not set.
+
+Export the variable when you deploy from CI, where the token comes from the pipeline's secret store, or for a one-off deploy from your own shell:
 
 [source,bash,options="nowrap"]
 ----
 export TIMEFOLD_PAT=<your-personal-access-token>
 ----
+
+On your own machine, prefer storing the token in your Maven settings instead, so that you configure it once rather than in every shell.
+Maven encrypts server passwords with a master password of your own, so the token is not written to disk in clear text.
+Create that master password once, and put the result in `~/.m2/settings-security.xml`:
+
+[source,bash,options="nowrap"]
+----
+mvn --encrypt-master-password
+----
+
+[source,xml,options="nowrap"]
+----
+<settingsSecurity>
+  <master>{jSMOWnoPFgsHVpMvz5VrIt5kRbzGpI8u+9EF1iFQyJQ=}</master>
+</settingsSecurity>
+----
+
+Then encrypt the PAT, and add it as a `timefold-platform` server in `~/.m2/settings.xml`:
+
+[source,bash,options="nowrap"]
+----
+mvn --encrypt-password
+----
+
+[source,xml,options="nowrap"]
+----
+<settings>
+  <servers>
+    <server>
+      <id>timefold-platform</id>
+      <password>{COQLCE6DU6GtcS5P=}</password>
+    </server>
+  </servers>
+</settings>
+----
+
+Both commands prompt for the value, so it never reaches your shell history.
+If you keep tokens for several platform environments, point the build at another entry with `-Dtimefold.serverId=<id>`.
+See https://maven.apache.org/guides/mini/guide-encryption.html[Maven Password Encryption] for the full details.
+
+CAUTION: Maven 3 encrypts the master password itself with a hardcoded key, so `settings-security.xml` protects your token against casual reading rather than against someone who can read both files. Maven 4 lifts that limitation: its `mvnenc` tool can take the master password from a GPG agent, a pinentry prompt, an environment variable or 1Password, and the plugin reads those tokens too.
+
+NOTE: `TIMEFOLD_PAT` wins when both are configured, so unset it if a stale value in your shell shadows the token in your settings.
 
 [#_build_and_deploy]
 == Build and deploy
@@ -109,6 +158,10 @@ The `timefold:deploy` goal uploads that archive and registers it against the pla
 
 If a model with the same `key` is already registered, the deploy fails with a conflict (HTTP 409) unless `overwrite` is enabled, in which case the existing registration is updated instead (`PATCH /api/platform/v1/models/<key>`).
 You can also set this from the command line with `-Dtimefold.model.overwrite=true`.
+
+The platform reports the kind of conflict as an error code in the response, and `overwrite` only applies to a conflict on the registration key itself (`TFP-14001`) or on the version already registered under that key (`TFP-14005`).
+Every other conflict fails the deploy regardless of `overwrite`, as there is no registration under your `key` to update.
+That is most commonly the same model already being registered under a _different_ registration key (`TFP-14002`, `TFP-14003` or `TFP-14004`); either unregister the existing registration, or deploy with the registration key it was registered under.
 
 Registering a model does not automatically subscribe your tenant to it; with `handleSubscription` set to `true`, the plugin also subscribes your tenant when it registers the model.
 Without it, your tenant won't see the model on the platform after you deploy it.

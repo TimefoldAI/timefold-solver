@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractR
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public class PillarSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public class PillarSwapMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
 
     protected final PillarSelector<Solution_> leftPillarSelector;
     protected final PillarSelector<Solution_> rightPillarSelector;

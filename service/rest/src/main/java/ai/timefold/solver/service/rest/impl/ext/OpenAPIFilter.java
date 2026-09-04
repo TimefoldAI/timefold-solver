@@ -15,7 +15,7 @@ public class OpenAPIFilter implements OASFilter {
         Config config = ConfigProvider.getConfig();
 
         Optional<String> summary =
-                config.getOptionalValue("timefold.rest." + operation.getOperationId() + ".summary", String.class);
+                config.getOptionalValue("timefold.model.rest." + operation.getOperationId() + ".summary", String.class);
 
         if (summary.isPresent()) {
             operation.setSummary(summary.get());

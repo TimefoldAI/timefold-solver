@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -14,6 +15,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -63,6 +65,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    protected final EnvironmentMode environmentMode;
     protected final Factory_ scoreDirectorFactory;
     /**
      * Sends entity updates to the {@link MoveRepository} if it is a {@link NeighborhoodsBasedMoveRepository}.
@@ -74,6 +77,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final @Nullable LookupManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     private boolean expectShadowVariablesInCorrectState;
+    private final boolean ignoreInconsistentSolutions;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final ShadowVariableSupport<Solution_> shadowVariableSupport;
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
@@ -94,12 +98,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private long calculationCount = 0L;
     protected @Nullable Solution_ workingSolution;
     private int workingInitScore = 0;
+    private boolean lastVariableUpdateSuccessful = true;
 
     private final boolean isStepAssertOrMore;
+    private final boolean isAssertClonedSolution;
 
     private @Nullable MoveRepository<Solution_> moveRepository;
 
     protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
+        this.environmentMode = builder.environmentMode;
         this.scoreDirectorFactory = builder.scoreDirectorFactory;
         // Needs early init, as supplies will need the instance to exist.
         this.neighborhoodsElementUpdateNotifier = new NeighborhoodNotifier<>();
@@ -108,22 +115,36 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.lookUpManager = lookUpEnabled ? new LookupManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
+        this.ignoreInconsistentSolutions = !solutionDescriptor.hasAnyShadowVariablesInconsistentMember()
+                && !builder.forceAllowInconsistentSolutions;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
+        // We set the shadow variable support,
+        // which will be necessary for obtaining the change notifier
         this.shadowVariableSupport = ShadowVariableSupport.create(this);
-        this.shadowVariableSupport.linkShadowVariables();
-        this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
-                ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
-                : null;
-        this.valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
+        // When using a list variable,
+        // we ensure that the listVariableStateSupply is initialized,
+        // as it will serve as the single source of truth for all other classes.
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
         } else {
             this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
         }
+        // We can now initialize the shadow variables since all the necessary resources have been allocated
+        this.shadowVariableSupport.linkShadowVariables();
+        //  When it's true,
+        //  a snapshot of the solution is created during the evaluation of moves,
+        //  allowing for certain assertions.
+        //  In {@link EnvironmentMode#TRACKED_FULL_ASSERT}, the snapshots are compared when corruption is detected,
+        //  allowing us to report exactly what variables are different.
+        this.solutionTracker = environmentMode.isTracking()
+                ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
+                : null;
+        this.valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         setAllChangesWillBeUndoneBeforeStepEnds(false); // Make sure the notifier is correctly initialized.
-        this.isStepAssertOrMore =
-                scoreDirectorFactory.environmentMode != null && scoreDirectorFactory.environmentMode.isStepAssertOrMore();
+        // Enable assertions
+        this.isAssertClonedSolution = environmentMode.isFullyAsserted();
+        this.isStepAssertOrMore = environmentMode.isStepAssertOrMore();
     }
 
     @Override
@@ -152,6 +173,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public EnvironmentMode getEnvironmentMode() {
+        return environmentMode;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
             getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
@@ -167,6 +193,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public boolean expectShadowVariablesInCorrectState() {
         return expectShadowVariablesInCorrectState;
+    }
+
+    @Override
+    public boolean ignoreInconsistentSolutions() {
+        return ignoreInconsistentSolutions;
     }
 
     @Override
@@ -206,8 +237,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void incrementCalculationCount() {
-        this.calculationCount++;
+    public void incrementCalculationCount(long count) {
+        this.calculationCount += count;
     }
 
     @Override
@@ -233,6 +264,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // ************************************************************************
     // Complex methods
     // ************************************************************************
+
+    public abstract InnerScore<Score_> innerCalculateScore();
+
+    @Override
+    public final InnerScore<Score_> calculateScore() {
+        if (lastVariableUpdateSuccessful) {
+            return innerCalculateScore();
+        } else {
+            // invalid scores are worse than any valid score, even those with unassigned values
+            var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
+            getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
+            return invalidScore;
+        }
+    }
 
     /**
      * Note: resetting the working solution does NOT substitute the calls to before/after methods of
@@ -322,6 +367,68 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Do nothing
     }
 
+    public List<VariableLoop> computeVariableLoops() {
+        return shadowVariableSupport.getVariableLoops();
+    }
+
+    public void unassignInconsistentEntities() {
+        var inconsistentCycles = computeVariableLoops();
+        var inconsistentEntities = new LinkedHashSet<>();
+        for (var inconsistentCycle : inconsistentCycles) {
+            inconsistentEntities.addAll(inconsistentCycle.entitySet());
+        }
+        if (listVariableStateSupply != null) {
+            var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+            var listElementClass = listVariableStateSupply.getSourceVariableDescriptor().getElementType();
+            for (var inconsistentEntity : inconsistentEntities) {
+                if (listElementClass.isInstance(inconsistentEntity)) {
+                    var inverse = Objects.requireNonNull(listVariableStateSupply.getInverseSingleton(inconsistentEntity));
+                    int index = listVariableStateSupply.getIndexOrFail(inconsistentEntity);
+
+                    if (listVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), inverse, index)) {
+                        throw new IllegalStateException("""
+                                Entity (%s) is pinned while involved in a dependency loop.
+                                This creates an unresolvable inconsistency.""".formatted(inconsistentEntity));
+                    }
+
+                    beforeListVariableElementUnassigned(listVariableDescriptor, inconsistentEntity);
+                    beforeListVariableChanged(listVariableDescriptor, inverse, index, index + 1);
+                    listVariableDescriptor.removeElement(inverse, index);
+                    afterListVariableChanged(listVariableDescriptor, inverse, index, index);
+                    afterListVariableElementUnassigned(listVariableDescriptor, inconsistentEntity);
+                    updateShadowVariables();
+                }
+                // Unassign any normal @PlanningVariable on the entity too
+                unassignPlainEntity(inconsistentEntity);
+            }
+        } else {
+            for (var inconsistentEntity : inconsistentEntities) {
+                unassignPlainEntity(inconsistentEntity);
+            }
+        }
+        logger.info("Unassigned the following entities which were involved in a dependency loop: {}.", inconsistentEntities);
+    }
+
+    private void unassignPlainEntity(Object inconsistentEntity) {
+        var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(inconsistentEntity.getClass());
+        if (entityDescriptor == null) {
+            throw new IllegalStateException(
+                    "Impossible state: Object (%s) is not an entity but is inconsistent".formatted(inconsistentEntity));
+        }
+        if (entityDescriptor.isGenuine()
+                && !entityDescriptor.isMovable(Objects.requireNonNull(workingSolution), inconsistentEntity)) {
+            throw new IllegalStateException("""
+                    Entity (%s) is pinned while involved in a dependency loop.
+                    This creates an unresolvable inconsistency.""".formatted(inconsistentEntity));
+        }
+        for (var genuineVariableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
+            beforeVariableChanged(genuineVariableDescriptor, inconsistentEntity);
+            genuineVariableDescriptor.setValue(inconsistentEntity, null);
+            afterVariableChanged(genuineVariableDescriptor, inconsistentEntity);
+        }
+        updateShadowVariables();
+    }
+
     @Override
     public void setMoveRepository(@Nullable MoveRepository<Solution_> moveRepository) {
         if (this.moveRepository == moveRepository) { // Prevent double initialization
@@ -389,7 +496,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var originalScore = solutionDescriptor.getScore(originalSolution);
         var cloneSolution = solutionDescriptor.getSolutionCloner().cloneSolution(originalSolution);
         var cloneScore = solutionDescriptor.getScore(cloneSolution);
-        if (scoreDirectorFactory.isAssertClonedSolution()) {
+        if (isAssertClonedSolution) {
             if (!Objects.equals(originalScore, cloneScore)) {
                 throw new CloningCorruptionException("""
                         Cloning corruption: the original's score (%s) is different from the clone's score (%s).
@@ -412,7 +519,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void updateShadowVariables() {
-        shadowVariableSupport.updateShadowVariables();
+        lastVariableUpdateSuccessful = shadowVariableSupport.updateShadowVariables();
+    }
+
+    @Override
+    public boolean isLastVariableUpdateSuccessful() {
+        return lastVariableUpdateSuccessful;
     }
 
     /**
@@ -427,7 +539,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void forceUpdateShadowVariables() {
-        shadowVariableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
+        lastVariableUpdateSuccessful = shadowVariableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
     }
 
     protected void setCalculatedScore(Score_ score) {
@@ -438,20 +550,29 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType) {
         // Most score directors don't need derived status; CS will override this.
-        if (childThreadType == ChildThreadType.PART_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(lookUpEnabled)
-                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
-            // ScoreCalculationCountTermination takes into account previous phases
-            // but the calculationCount of partitions is maxed, not summed.
-            childThreadScoreDirector.calculationCount = calculationCount;
-            return childThreadScoreDirector;
-        } else if (childThreadType == ChildThreadType.MOVE_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(true)
-                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
-            childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
-            return childThreadScoreDirector;
-        } else {
-            throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
+        switch (childThreadType) {
+            case PART_THREAD -> {
+                var childThreadScoreDirector =
+                        scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(lookUpEnabled)
+                                .withConstraintMatchPolicy(constraintMatchPolicy)
+                                .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
+                                .buildDerived();
+                // ScoreCalculationCountTermination takes into account previous phases
+                // but the calculationCount of partitions is maxed, not summed.
+                childThreadScoreDirector.calculationCount = calculationCount;
+                return childThreadScoreDirector;
+            }
+            case MOVE_THREAD -> {
+                var childThreadScoreDirector =
+                        scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(true)
+                                .withConstraintMatchPolicy(constraintMatchPolicy)
+                                .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
+                                .buildDerived();
+                childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
+                return childThreadScoreDirector;
+            }
+            default ->
+                throw new IllegalStateException("The childThreadType (%s) is not implemented.".formatted(childThreadType));
         }
     }
 
@@ -665,6 +786,31 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Assert methods
     // ************************************************************************
 
+    /**
+     * Asserts that if the {@link Score} is calculated for the parameter solution,
+     * it would be equal to the score of that parameter.
+     *
+     * @param solution never null
+     */
+    @Override
+    public void assertScoreFromScratch(Solution_ solution) {
+        // Get the score before uncorruptedScoreDirector.calculateScore() modifies it
+        var score = getSolutionDescriptor().<Score_> getScore(solution);
+        // Most score directors don't need derived status; CS will override this.
+        try (var uncorruptedScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(environmentMode)
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .buildDerived()) {
+            uncorruptedScoreDirector.setWorkingSolution(solution);
+            var uncorruptedScore = uncorruptedScoreDirector.calculateScore()
+                    .raw();
+            if (!score.equals(uncorruptedScore)) {
+                throw new IllegalStateException(
+                        "Score corruption (%s): the solution's score (%s) is not the uncorruptedScore (%s)."
+                                .formatted(score.subtract(uncorruptedScore).toShortString(), score, uncorruptedScore));
+            }
+        }
+    }
+
     @Override
     public void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction) {
         var workingScore = calculateScore();
@@ -718,8 +864,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).buildDerived()) {
-            uncorruptedScoreDirector.setWorkingSolution(workingSolution);
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
+                .buildDerived()) {
+            uncorruptedScoreDirector.setWorkingSolution(Objects.requireNonNull(workingSolution));
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
             if (!innerScore.equals(uncorruptedInnerScore)) {
                 var corruptionAnalyzer = new CorruptionAnalyzer<>(this);
@@ -912,13 +1060,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public abstract static class AbstractScoreDirectorBuilder<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>, Builder_ extends AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, Builder_>> {
 
         protected final Factory_ scoreDirectorFactory;
+        protected final EnvironmentMode environmentMode;
 
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
+        protected boolean forceAllowInconsistentSolutions = false;
 
-        protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
+        protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory, EnvironmentMode environmentMode) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
+            this.environmentMode = environmentMode;
         }
 
         @SuppressWarnings("unchecked")
@@ -936,6 +1087,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         @SuppressWarnings("unchecked")
         public Builder_ withExpectShadowVariablesInCorrectState(boolean expectShadowVariablesInCorrectState) {
             this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
+            return (Builder_) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public Builder_ withForceAllowInconsistentSolutions(boolean forceAllowInconsistentSolutions) {
+            this.forceAllowInconsistentSolutions = forceAllowInconsistentSolutions;
             return (Builder_) this;
         }
 

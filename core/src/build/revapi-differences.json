@@ -44,6 +44,24 @@
           "old": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
           "new": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
           "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.numberOfParametersChanged",
+          "old": "method void ai.timefold.solver.core.api.solver.ProblemSizeStatistics::<init>(long, long, long, double)",
+          "new": "method void ai.timefold.solver.core.api.solver.ProblemSizeStatistics::<init>(long, java.util.SequencedMap<java.lang.Class<?>, java.lang.Long>, long, long, java.util.SequencedMap<java.lang.Class<?>, java.util.SequencedMap<java.lang.String, java.lang.Long>>, double)",
+          "justification": "Type is not supposed to be constructed by user; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.phase.PhaseConfig<Config_ extends ai.timefold.solver.core.config.phase.PhaseConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.phase.PhaseConfig<Config_ extends ai.timefold.solver.core.config.phase.PhaseConfig<Config_>>",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"terminationConfig\"}",
+          "newValue": "{\"environmentMode\", \"terminationConfig\"}",
+          "justification": "Environment mode per phase"
         }
       ]
     }

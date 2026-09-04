@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.Score;
 
 public final class ScoreUtil {
 
+    public static final String STRUCTURAL_LABEL = "structural";
     public static final String HARD_LABEL = "hard";
     public static final String MEDIUM_LABEL = "medium";
     public static final String SOFT_LABEL = "soft";
@@ -17,6 +18,13 @@ public final class ScoreUtil {
     public static String[] parseScoreTokens(Class<? extends Score<?>> scoreClass, String scoreString, String... levelSuffixes) {
         var scoreTokens = new String[levelSuffixes.length];
         var suffixedScoreTokens = scoreString.split("/");
+        if (suffixedScoreTokens.length == levelSuffixes.length + 1) {
+            var newLevelSuffixes = Arrays.copyOf(levelSuffixes, levelSuffixes.length + 1);
+            System.arraycopy(levelSuffixes, 0, newLevelSuffixes, 1, levelSuffixes.length);
+            newLevelSuffixes[0] = STRUCTURAL_LABEL;
+            scoreTokens = new String[levelSuffixes.length + 1];
+            levelSuffixes = newLevelSuffixes;
+        }
         if (suffixedScoreTokens.length != levelSuffixes.length) {
             throw new IllegalArgumentException("""
                     The scoreString (%s) for the scoreClass (%s) doesn't follow the correct pattern (%s): \
@@ -94,6 +102,9 @@ public final class ScoreUtil {
             String... levelLabels) {
         var shortString = new StringBuilder();
         var i = 0;
+        if (score.structuralScore() != 0L) {
+            shortString.append(score.structuralScore()).append(STRUCTURAL_LABEL);
+        }
         for (var levelNumber : score.toLevelNumbers()) {
             if (notZero.test(levelNumber)) {
                 if (!shortString.isEmpty()) {
@@ -111,8 +122,13 @@ public final class ScoreUtil {
     }
 
     public static String[][] parseBendableScoreTokens(Class<? extends IBendableScore<?>> scoreClass, String scoreString) {
-        var scoreTokens = new String[2][];
+        var scoreTokens = new String[3][];
         var startIndex = 0;
+        var structuralSlashIndex = scoreString.indexOf(STRUCTURAL_LABEL + "/");
+        if (structuralSlashIndex >= 0) {
+            scoreTokens[0] = new String[] { scoreString.substring(0, structuralSlashIndex) };
+            startIndex = structuralSlashIndex + STRUCTURAL_LABEL.length() + 1;
+        }
         for (var i = 0; i < LEVEL_SUFFIXES.length; i++) {
             var levelSuffix = LEVEL_SUFFIXES[i];
             var endIndex = scoreString.indexOf(levelSuffix, startIndex);
@@ -131,7 +147,7 @@ public final class ScoreUtil {
                         .formatted(scoreString, scoreClass.getSimpleName(), buildScorePattern(true, LEVEL_SUFFIXES),
                                 scoreString));
             }
-            scoreTokens[i] = scoreSubString.equals("[]") ? new String[0]
+            scoreTokens[i + 1] = scoreSubString.equals("[]") ? new String[0]
                     : scoreSubString.substring(1, scoreSubString.length() - 1).split("/");
             startIndex = endIndex + levelSuffix.length() + "/".length();
         }
@@ -148,6 +164,9 @@ public final class ScoreUtil {
     public static <Score_ extends IBendableScore<Score_>> String buildBendableShortString(IBendableScore<Score_> score,
             Predicate<Number> notZero) {
         var shortString = new StringBuilder();
+        if (score.structuralScore() != 0L) {
+            shortString.append(score.structuralScore()).append(STRUCTURAL_LABEL);
+        }
         var levelNumbers = score.toLevelNumbers();
         var hardLevelsSize = score.hardLevelsSize();
         if (Arrays.stream(levelNumbers).limit(hardLevelsSize).anyMatch(notZero)) {

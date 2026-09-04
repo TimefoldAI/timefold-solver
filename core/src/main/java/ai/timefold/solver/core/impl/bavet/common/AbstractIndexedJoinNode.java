@@ -25,11 +25,14 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Indexing takes one of two forms, chosen once at construction (see {@link IndexerFactory#isFusedEqualIndexEligible()}):
  * <ul>
- * <li>the non-unified path keeps two parallel {@link Indexer}s ({@code indexerLeft}/{@code indexerRight}); a tuple
- * inserted on one side queries the OPPOSITE indexer with its OWN key (a second hash navigation of that key);</li>
- * <li>the unified path (equal-bearing joins) keeps ONE {@link FusedEqualIndex}: a tuple looks up its bucket ONCE, adds
- * itself to its side, and iterates the other side of the SAME bucket — co-location is the equal match. The resolved
- * bucket is cached on the tuple so same-key updates and retracts need no lookup at all.</li>
+ * <li>the non-unified path keeps two parallel {@link Indexer}s ({@code indexerLeft}/{@code indexerRight});
+ * a tuple inserted on one side queries the OPPOSITE indexer with its OWN key
+ * (a second hash navigation of that key);</li>
+ * <li>the unified path (equal-bearing joins) keeps ONE {@link FusedEqualIndex}:
+ * a tuple looks up its bucket ONCE, adds itself to its side,
+ * and iterates the other side of the SAME bucket;
+ * co-location is the equal match.
+ * The resolved bucket is cached on the tuple so same-key updates and retracts need no lookup at all.</li>
  * </ul>
  * The out-tuple/propagation logic in {@link AbstractJoinNode} is identical for both.
  *
@@ -100,8 +103,12 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         var newCompositeKey = keysExtractorLeft.apply(leftTuple);
         if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
-            // Prefer an update over retract-insert if possible
-            innerUpdateLeft(leftTuple, consumer -> forEachRightMatch(leftTuple, oldCompositeKey, consumer));
+            if (isFiltering) {
+                enqueuePendingLeft(leftTuple);
+            } else {
+                // Prefer an update over retract-insert if possible
+                innerUpdateLeft(leftTuple, consumer -> forEachRightMatch(leftTuple, oldCompositeKey, consumer));
+            }
         } else {
             TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
             var reuseBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
@@ -119,7 +126,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
                     indexerLeft.remove(oldCompositeKey, entry);
                 }
             }
-            outTupleListLeft.clear(this::retractOutTupleByLeft);
+            outTupleListLeft.clear(this::retractOutTupleLeft);
             // outTupleListLeft is now empty
             // No need for leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
             indexAndPropagateLeft(leftTuple, newCompositeKey, reuseBucket);
@@ -129,8 +136,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
     private void indexAndPropagateLeft(LeftTuple_ leftTuple, Object compositeKey, boolean reuseCachedBucket) {
         leftTuple.setStore(inputStoreIndexLeftCompositeKey, compositeKey);
         if (useFusedEqualIndex) {
-            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
-            // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
+            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct;
+            // no top-level lookup and no re-cache;
+            // otherwise resolve the bucket (the single top-level lookup) and cache it.
             Bucket<LeftTuple_, UniTuple<Right_>> bucket;
             if (reuseCachedBucket) {
                 bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
@@ -142,27 +150,24 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         } else {
             leftTuple.setStore(inputStoreIndexLeftEntry, indexerLeft.put(compositeKey, leftTuple));
         }
-        if (!leftTuple.getState().isActive()) {
-            // Assume the following scenario:
-            // - The join is of two entities of the same type, both filtering out unassigned.
-            // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity became assigned, and is therefore getting inserted.
-            //
-            // This means the filter would be called with (unassignedEntity, assignedEntity),
-            // which breaks the expectation that the filter is only called on two assigned entities
-            // and requires adding null checks to the filter for something that should intuitively be impossible.
-            // We avoid this situation as it is clear that it is pointless to insert this tuple.
-            //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
+        if (isFiltering) {
+            // Defer the cross-match (the opposite-side read) to this node's own layer turn
+            // instead of computing it now,
+            // at whatever layer the parent that produced leftTuple happens to be in.
+            // See AbstractJoinNode's pendingLeft/pendingRight javadoc.
+            enqueuePendingLeft(leftTuple);
             return;
         }
-        forEachRightMatch(leftTuple, compositeKey, rightTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
+        // Non-filtering: reads the opposite side eagerly, with no per-read staleness check needed
+        // (proven safe by dedicated regression tests; see AbstractJoinNode's insertOutTupleIfActiveFiltered javadoc).
+        // A stale read merely produces a doomed out-tuple
+        // the true retraction cleans up later via its own out-tuple list.
+        forEachRightMatch(leftTuple, compositeKey, rightTuple -> insertOutTupleIfActiveFiltered(leftTuple, rightTuple));
     }
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
+        clearPendingLeft(leftTuple);
         var compositeKey = leftTuple.removeStore(inputStoreIndexLeftCompositeKey);
         if (compositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -177,7 +182,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         } else {
             indexerLeft.remove(compositeKey, entry);
         }
-        outTupleListLeft.clear(this::retractOutTupleByLeft);
+        outTupleListLeft.clear(this::retractOutTupleLeft);
     }
 
     @Override
@@ -203,8 +208,12 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         var newCompositeKey = keysExtractorRight.apply(rightTuple);
         if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
-            // Prefer an update over retract-insert if possible
-            innerUpdateRight(rightTuple, consumer -> forEachLeftMatch(rightTuple, oldCompositeKey, consumer));
+            if (isFiltering) {
+                enqueuePendingRight(rightTuple);
+            } else {
+                // Prefer an update over retract-insert if possible
+                innerUpdateRight(rightTuple, consumer -> forEachLeftMatch(rightTuple, oldCompositeKey, consumer));
+            }
         } else {
             TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
             var reuseBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
@@ -222,7 +231,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
                     indexerRight.remove(oldCompositeKey, entry);
                 }
             }
-            outTupleListRight.clear(this::retractOutTupleByRight);
+            outTupleListRight.clear(this::retractOutTupleRight);
             // outTupleListRight is now empty
             // No need for rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
             indexAndPropagateRight(rightTuple, newCompositeKey, reuseBucket);
@@ -232,8 +241,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
     private void indexAndPropagateRight(UniTuple<Right_> rightTuple, Object compositeKey, boolean reuseCachedBucket) {
         rightTuple.setStore(inputStoreIndexRightCompositeKey, compositeKey);
         if (useFusedEqualIndex) {
-            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
-            // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
+            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct;
+            // no top-level lookup and no re-cache;
+            // otherwise resolve the bucket (the single top-level lookup) and cache it.
             Bucket<LeftTuple_, UniTuple<Right_>> bucket;
             if (reuseCachedBucket) {
                 bucket = rightTuple.getStore(inputStoreIndexRightBucket);
@@ -245,11 +255,17 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         } else {
             rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(compositeKey, rightTuple));
         }
-        forEachLeftMatch(rightTuple, compositeKey, leftTuple -> insertOutTupleFilteredFromLeft(leftTuple, rightTuple));
+        if (isFiltering) {
+            // See the mirror comment in indexAndPropagateLeft.
+            enqueuePendingRight(rightTuple);
+            return;
+        }
+        forEachLeftMatch(rightTuple, compositeKey, leftTuple -> insertOutTupleIfActiveFiltered(leftTuple, rightTuple));
     }
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
+        clearPendingRight(rightTuple);
         var compositeKey = rightTuple.removeStore(inputStoreIndexRightCompositeKey);
         if (compositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
@@ -265,12 +281,13 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             indexerRight.remove(compositeKey, entry);
         }
 
-        outTupleListRight.clear(this::retractOutTupleByRight);
+        outTupleListRight.clear(this::retractOutTupleRight);
     }
 
     /**
-     * Iterates the right tuples matching the given left composite key: the right side of the left tuple's cached
-     * bucket (unified), or {@code indexerRight} queried with that key (non-unified).
+     * Iterates the right tuples matching the given left composite key:
+     * the right side of the left tuple's cached bucket (unified),
+     * or {@code indexerRight} queried with that key (non-unified).
      */
     private void forEachRightMatch(LeftTuple_ leftTuple, Object compositeKey, Consumer<UniTuple<Right_>> consumer) {
         if (useFusedEqualIndex) {
@@ -282,8 +299,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
     }
 
     /**
-     * Iterates the left tuples matching the given right composite key: the left side of the right tuple's cached
-     * bucket (unified), or {@code indexerLeft} queried with that key (non-unified).
+     * Iterates the left tuples matching the given right composite key:
+     * the left side of the right tuple's cached bucket (unified),
+     * or {@code indexerLeft} queried with that key (non-unified).
      */
     private void forEachLeftMatch(UniTuple<Right_> rightTuple, Object compositeKey, Consumer<LeftTuple_> consumer) {
         if (useFusedEqualIndex) {
@@ -292,6 +310,18 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         } else {
             indexerLeft.forEach(compositeKey, consumer);
         }
+    }
+
+    @Override
+    protected void reconcilePendingLeft(LeftTuple_ leftTuple) {
+        var compositeKey = leftTuple.getStore(inputStoreIndexLeftCompositeKey);
+        innerUpdateLeft(leftTuple, consumer -> forEachRightMatch(leftTuple, compositeKey, consumer));
+    }
+
+    @Override
+    protected void reconcilePendingRight(UniTuple<Right_> rightTuple) {
+        var compositeKey = rightTuple.getStore(inputStoreIndexRightCompositeKey);
+        innerUpdateRight(rightTuple, consumer -> forEachLeftMatch(rightTuple, compositeKey, consumer));
     }
 
 }

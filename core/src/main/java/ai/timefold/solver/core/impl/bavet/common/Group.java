@@ -24,7 +24,13 @@ final class Group<OutTuple_ extends Tuple, ResultContainer_>
     private final Object groupKey;
     private final ResultContainer_ resultContainer;
     private final OutTuple_ outTuple;
-    public int parentCount = 1;
+    /**
+     * How many input tuples are currently mapped into this group.
+     * The only thing this backs is {@link #isEmpty()} (a group's sole liveness answer)
+     * so a plain counter is enough;
+     * nothing ever needs to walk or even retain the individual contributors.
+     */
+    private int contributorCount;
 
     private Group(Object groupKey, ResultContainer_ resultContainer, OutTuple_ outTuple) {
         this.groupKey = groupKey;
@@ -53,6 +59,18 @@ final class Group<OutTuple_ extends Tuple, ResultContainer_>
     @Override
     public void setState(TupleState state) {
         outTuple.setState(state);
+    }
+
+    public void addContributor() {
+        contributorCount++;
+    }
+
+    public void removeContributor() {
+        contributorCount--;
+    }
+
+    public boolean isEmpty() {
+        return contributorCount == 0;
     }
 
 }

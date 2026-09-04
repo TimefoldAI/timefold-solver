@@ -132,6 +132,10 @@ For more detailed guidance on when to use which variant, read the xref:domain-mo
 | *Typical use case*
 | Assign a room to a lesson, assign an employee to a shift
 | Route customers for a vehicle, sequence tasks for a worker
+
+| *Limitations*
+|
+| One per solution
 |===
 
 A planning entity can contain xref:mixedModels[a mix] of these genuine variables, with some limitations.
@@ -776,6 +780,8 @@ Planning list variable can be used if the domain meets the following criteria:
 
 . Each planning value is assigned to exactly one planning entity.
 No planning value may appear in multiple entities.
+
+NOTE: Only a single xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[@PlanningListVariable] is supported per solution.
 
 
 [#planningListVariableAllowingUnassigned]
@@ -1660,10 +1666,26 @@ For example, none of the `timeslot` variables of any `Lesson` may be used to det
 [#mixedModels]
 == Mixed models
 
-If both xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic] and xref:domain-modeling/modeling-planning-problems#planningListVariable[list] variables are included in the model,
+Real-world planning problems often involve multiple types of decisions simultaneously.
+A production line must both assign an operator (a single value) and sequence a list of jobs (an ordered collection).
+A vehicle route must both plan the sequence of visits and, for each visit, independently select a fallback delivery point.
+
+When a solution model combines xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic] and xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list] planning variables,
 it is referred to as a *mixed model*.
 
-The following planning entity defines two genuine variables:
+NOTE: Only a single xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[@PlanningListVariable] is supported per solution.
+
+Mixed models support three distinct patterns.
+
+[#mixedModelsBothOnSingleEntity]
+=== Both variable types on a single entity
+
+A single planning entity can declare both a basic variable and a list variable.
+This is appropriate when a resource requires both a single-value assignment and an ordered workload.
+
+In the following example, each production `Line` must be assigned an `Operator` (basic variable)
+and must also maintain an ordered list of `Job` objects to process (list variable).
+The operator assignment drives skill-based constraints, while the job list drives throughput and scheduling constraints.
 
 [tabs]
 ====
@@ -1682,11 +1704,20 @@ public class Line {
     ...
 }
 ----
-
-
 ====
 
-The mixed models also allow for the creation of multiple planning entities, each defining its own variables:
+NOTE: With both variables on the same entity, you can pin the entire entity (using `@PlanningPin`) or partially pin the list (using `@PlanningPinToIndex`), but you cannot pin the basic assignment independently; if you need that, use xref:#mixedModelsMultipleEntities[multiple entities].
+
+[#mixedModelsMultipleEntities]
+=== Multiple entities with independent variable types
+
+Different planning entities can each define their own variable type.
+This is appropriate when decisions have different lifecycles or ownership, and need to be re-solved independently.
+
+In the following example, each `Line` manages its own job sequence (list variable),
+while `LineOperation` records the assigned operator (basic variable).
+Separating these into distinct entities allows staff assignments to be re-solved
+without disturbing the existing job schedules, and vice versa.
 
 [tabs]
 ====
@@ -1706,6 +1737,40 @@ public class Line {
 public class LineOperation {
     @PlanningVariable
     private Operator operator;
+
+    ...
+}
+----
+====
+
+[#mixedModelsChildEntities]
+=== Entities inside a list variable with their own basic variables
+
+Items within a list variable can themselves be planning entities that carry additional basic variables.
+This handles decisions that are scoped to individual list elements rather than to the list as a whole.
+
+In the following example, each `Vehicle` maintains an ordered list of `Delivery` objects (list variable).
+Each `Delivery` is also a planning entity that independently selects a `DropoffPoint` location (basic variable).
+The vehicle route will optimize both the order of the visits and switch out the different potential drop-off locations.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Vehicle {
+    @PlanningListVariable
+    private List<Delivery> deliveries;
+
+    ...
+}
+
+@PlanningEntity
+public class Delivery {
+    @PlanningVariable
+    private DropoffPoint dropOff;
 
     ...
 }
@@ -1929,8 +1994,73 @@ public class Job {
 
 ====
 
+[#customShadowVariableMultipleVariables]
+==== Updating multiple fields at once
+
+A supplier method can only update the single field it is declared on via `@ShadowVariable(supplierName = ...)`.
+There is no way for one supplier method to directly update several independent shadow variable fields.
+
+If the fields don't need to be recomputed together, chain them instead: let one shadow variable's supplier
+declare another shadow variable as one of its `@ShadowSources`, the way `endDate` sources from `startDate`
+in the earlier example on this page. Each supplier still only ever sets its own field, but Timefold
+reruns only the suppliers whose declared sources actually changed, so unrelated downstream fields
+aren't recomputed unnecessarily.
+
+However, when several pieces of shadow state are always computed together and change at the same time,
+it's often simpler, and cheaper, since the underlying calculation only has to run once, to group them
+into a single wrapper object, such as a `record`, and make that wrapper itself the shadow variable.
+The supplier method then returns a new instance of the wrapper every time it runs,
+and the individual pieces of state are read off that wrapper through its accessor methods.
+This avoids repeating the same calculation in multiple supplier methods
+and keeps a set of related fields consistent with one another.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public record JobState(LocalDate readyDate, LocalDate startDate, LocalDate endDate, int totalDurationInDays) {
+}
+
+@PlanningEntity
+public class Job {
+
+    @PreviousElementShadowVariable(sourceVariableName = "jobs")
+    private Job previous;
+
+    private LocalDate earliestStartDate;
+
+    private int durationInDays;
+
+    @ShadowVariable(supplierName = "jobStateSupplier")
+    private JobState jobState;
+
+    @ShadowSources("previous.jobState")
+    public JobState jobStateSupplier() {
+        // 1. Ready date: the previous job's end date, or null if this job is first in the chain.
+        LocalDate readyDate = previous == null ? null : previous.jobState.endDate();
+
+        // 2. Start date: can't start before the previous job ends, nor before this job's earliest start date.
+        LocalDate startDate = readyDate == null || readyDate.isBefore(earliestStartDate) ? earliestStartDate : readyDate;
+
+        // 3. End date
+        LocalDate endDate = startDate == null ? null : startDate.plusDays(durationInDays);
+
+        // 4. Total duration in days, accumulated along the chain of previous jobs
+        int totalDurationInDays = (previous == null ? 0 : previous.jobState.totalDurationInDays()) + durationInDays;
+
+        return new JobState(readyDate, startDate, endDate, totalDurationInDays);
+    }
+}
+----
+====
+
+Here, `readyDate`, `startDate`, `endDate` and `totalDurationInDays` are all recomputed together in `jobStateSupplier()` and packaged into a single `JobState` instance.
+Any code that needs one of these values reads it off the `jobState` field, for example `job.getJobState().endDate()`.
+
 [#detectingInconsistencies]
-==== Detecting Inconsistencies in Shadow Variables
+==== Detecting inconsistencies in shadow variables
 
 In certain cases, shadow variables may form an infinite loop.
 There are three ways a loop can form:
@@ -2035,54 +2165,45 @@ For example, if variable `a` depends on `b` and `b` depends on `a`, both are in 
 - It depends on another variable that is inconsistent.
 For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
 
-When a declarative shadow variable is inconsistent, it will be set to `null`.
+When a declarative shadow variable is inconsistent, the solver's reaction depends on whether any entity in the model declares a deprecated `@ShadowVariablesInconsistent` field:
 
-To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
-The solver will set this field to true if the entity has any inconsistent shadow variables.
+- If at least one entity declares such a field, the inconsistent shadow variables are set to `null`
+and the `@ShadowVariablesInconsistent` field of every involved entity is set to `true`.
 
-[tabs]
+- If no entity declares such a field, the shadow variable update is canceled and the solution's score will have a negative xref:constraints-and-score/overview.adoc#structuralScore[structural score],
+which marks the solution as structurally flawed.
+
+Models that relied on inconsistent shadow variables being silently set to `null`
+must therefore declare a `@ShadowVariablesInconsistent` field to keep that behavior.
+
+[NOTE]
 ====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Job {
-    @ShadowVariablesInconsistent
-    boolean isInconsistent;
+The xref:constraints-and-score/overview.adoc#structuralScore[structural score] is a component of every `Score`
+that is `0` for structurally sound solutions and negative for structurally flawed ones.
+A structurally flawed score is worse than any structurally sound score,
+so a structurally flawed solution is never accepted during solving.
 
-    public boolean isInconsistent() {
-        return isInconsistent;
-    }
-}
-----
-====
+When a structurally flawed solution is passed to `SolutionManager.update(...)`,
+the method fails fast and throws an `InconsistentSolutionException`,
+which exposes the solution and the entities involved in the inconsistency.
+When passed to `SolutionManager.analyze(...)`,
+the returned xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
+has a structural flaw analysis that can be used to get the inconsistent entities.
 
-NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariablesInconsistent`-annotated properties.
-These methods are only called if none of their shadow variables are inconsistent, and therefore the value of such properties at that time is guaranteed to be `false`.
-
-This property (`isInconsistent` in the example above) is typically used in a constraint filter to penalize entities with inconsistent shadow variables via a hard constraint, since PlanningSolution instances containing inconsistent shadow variables are generally considered invalid.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-//Example constraint
-Constraint penalizeInconsistentJobs(ConstraintFactory factory) {
-    return factory.forEachUnfiltered(Job.class)
-            .filter(job -> job.isInconsistent())
-            .penalize(HardSoftScore.ONE_HARD)
-            .asConstraint("Job has inconsistent shadow variables.");
-}
-----
+When a structurally flawed solution is passed to `Solver.solve`,
+the `Solver` logs a warning and unassigns the involved planning entities before solving.
+If the inconsistency cannot be resolved this way,
+for example because an involved entity is xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned],
+the `Solver` throws an `Exception`.
 ====
 
-IMPORTANT: Since `forEach` filters out inconsistent entities, you must use `forEachUnfiltered` to penalize inconsistent entities.
+If no entity have a `@ShadowVariablesInconsistent` property, you do not need to handle inconsistencies in any constraints, since the Solver will not calculate the score for any structurally flawed solutions.
+
+IMPORTANT: see xref:upgrading-timefold-solver/migration-guides/shadow-variables-inconsistent-to-structural-score.adoc[how to migrate from `@ShadowVariablesInconsistent` to structural scores] for a guide on how to update your domain model to remove the deprecated `@ShadowVariablesInconsistent` fields.
+
 
 [#aligningShadowVariables]
-==== Aligning Shadow Variables
+==== Aligning shadow variables
 
 `@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
 
@@ -2213,7 +2334,7 @@ public class Job {
 ----
 ====
 
-==== Optimizing Shadow Variables
+==== Optimizing shadow variables
 
 Each custom Shadow Variable on each planning entity constitutes one node of a reference graph.
 The Solver analyzes this graph to decide what is the most optimal strategy for updating these variables.

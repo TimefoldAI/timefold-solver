@@ -300,12 +300,6 @@ public class BenchmarkReport {
 
     public List<String> getWarningList() {
         List<String> warningList = new ArrayList<>();
-        String javaVmName = System.getProperty("java.vm.name");
-        if (javaVmName != null && javaVmName.contains("Client VM")) {
-            warningList.add("The Java VM (" + javaVmName + ") is the Client VM."
-                    + " This decreases performance."
-                    + " Maybe start the java process with the argument \"-server\" to get better results.");
-        }
         Integer parallelBenchmarkCount = plannerBenchmarkResult.getParallelBenchmarkCount();
         Integer availableProcessors = plannerBenchmarkResult.getAvailableProcessors();
         if (parallelBenchmarkCount != null && availableProcessors != null

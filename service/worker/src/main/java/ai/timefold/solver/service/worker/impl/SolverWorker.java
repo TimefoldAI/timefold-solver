@@ -166,8 +166,8 @@ public class SolverWorker {
     private BroadcastProcessor<Metadata<?>> processor = BroadcastProcessor.create();
 
     @Inject
-    public SolverWorker(@ConfigProperty(name = "timefold.application.name") Optional<String> modelName,
-            @ConfigProperty(name = "timefold.application.version") Optional<String> modelVersion,
+    public SolverWorker(@ConfigProperty(name = "timefold.model.name") Optional<String> modelName,
+            @ConfigProperty(name = "timefold.model.api-version") Optional<String> modelVersion,
             @ConfigProperty(name = "quarkus.application.version") Optional<String> applicationVersion,
             AbstractStorageService<?, ?, ?, ?, ?, ?, ?> storageService,
             ModelValidator<?, ?> modelValidator,
@@ -374,7 +374,8 @@ public class SolverWorker {
 
             sendEvent(datasetOutputsComputedEmitter,
                     new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested,
-                            mapEnrichmentContext.getResolvedMapLocation()));
+                            mapEnrichmentContext.getResolvedMapLocation(), configuredCores(configuration),
+                            configuredMemory(configuration)));
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }
@@ -773,10 +774,8 @@ public class SolverWorker {
             metadata.updateStatusOnFailure(throwable.getMessage());
             storageService.storeMetadata(problemId, metadata);
 
-            if (solverJob != null) {
-                processor.onNext(metadata);
-                sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
-            }
+            processor.onNext(metadata);
+            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
         } finally {
 
             for (var processor : modelPostProcessors) {
@@ -827,6 +826,20 @@ public class SolverWorker {
             LOGGER.error("Unable to get model output for id (%s)".formatted(id), e);
             return null;
         }
+    }
+
+    private static Integer configuredCores(Configuration<?> configuration) {
+        return (configuration != null && configuration.run() != null)
+                ? configuration.run().maxThreadCount()
+                : null;
+    }
+
+    private static Integer configuredMemory(Configuration<?> configuration) {
+        if (configuration == null || configuration.resourcesConfiguration() == null
+                || configuration.resourcesConfiguration().memory() == null) {
+            return null;
+        }
+        return (int) Math.round(configuration.resourcesConfiguration().memory());
     }
 
     private ModelInputMetrics extractInputMetrics(SolverModel solverModel) {

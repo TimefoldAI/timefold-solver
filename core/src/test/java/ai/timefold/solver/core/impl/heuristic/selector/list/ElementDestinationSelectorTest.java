@@ -96,7 +96,8 @@ class ElementDestinationSelectorTest {
 
         var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
 
-        solvingStarted(selector, scoreDirector);
+        var solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(selector, solverScope);
 
         // Entity order: [A, B, C]
         // Value order: [3, 1, 2]
@@ -147,7 +148,8 @@ class ElementDestinationSelectorTest {
                 2, // => C[0]
                 -1); // (not tested)
 
-        solvingStarted(selector, scoreDirector, random);
+        var solverScope = solvingStarted(selector, scoreDirector, random);
+        phaseStarted(selector, solverScope);
 
         // Initial state:
         // - A [1, 2]
@@ -502,7 +504,7 @@ class ElementDestinationSelectorTest {
         scoreDirector.setWorkingSolution(solution);
 
         // Value selector
-        var listVariableDescriptor = TestdataListUnassignedPinnedEntityProvidingEntity.buildVariableDescriptorForValueList();
+        var listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
         var iterableValueSelector = mockIterableValueSelector(listVariableDescriptor, v1, v2);
         var mimicRecorder = new ManualValueMimicRecorder<>(iterableValueSelector);
         var replayingValueSelector = new MimicReplayingValueSelector<>(mimicRecorder);
@@ -557,10 +559,12 @@ class ElementDestinationSelectorTest {
 
         var entitySelector = mockEntitySelector(new TestdataListEntity[0]);
         var valueSelector =
-                mockIterableValueSelector(TestdataListEntity.buildVariableDescriptorForValueList(), v1, v2, v3);
+                mockIterableValueSelector(scoreDirector.getSolutionDescriptor().getListVariableDescriptor(), v1, v2, v3);
 
         var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
-        solvingStarted(randomSelector, scoreDirector);
+        var solverScope = solvingStarted(randomSelector, scoreDirector);
+        phaseStarted(randomSelector, solverScope);
+
         assertEmptyNeverEndingIterableSelector(randomSelector, 0);
 
         var originalSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
@@ -589,7 +593,9 @@ class ElementDestinationSelectorTest {
         var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
         var random = new TestRandom(0, 1);
 
-        solvingStarted(randomSelector, scoreDirector, random);
+        var solverScope = solvingStarted(randomSelector, scoreDirector, random);
+        phaseStarted(randomSelector, solverScope);
+
         // Do not assert all codes to prevent exhausting the iterator.
         assertCodesOfNeverEndingIterableSelector(randomSelector, 2, "A[0]");
     }
@@ -617,7 +623,8 @@ class ElementDestinationSelectorTest {
         var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
         var random = new TestRandom(0, 1);
 
-        solvingStarted(randomSelector, scoreDirector, random);
+        var solverScope = solvingStarted(randomSelector, scoreDirector, random);
+        phaseStarted(randomSelector, solverScope);
         // Do not assert all codes to prevent exhausting the iterator.
         assertCodesOfNeverEndingIterableSelector(randomSelector, 2, "A[0]");
     }
@@ -678,7 +685,9 @@ class ElementDestinationSelectorTest {
         // Picks value selector twice
         var random = new TestRandom(5, 5, 5, 5);
 
-        solvingStarted(selector, scoreDirector, random);
+        var solverScope = solvingStarted(selector, scoreDirector, random);
+        phaseStarted(selector, solverScope);
+
         assertAllCodesOfIterator(selector.iterator(), "B[1]", "B[1]");
 
         // Even using only the value selector,
@@ -707,7 +716,8 @@ class ElementDestinationSelectorTest {
         var selector = new ElementDestinationSelector<>(entitySelector, replayingValueSelector, valueSelector, true, false);
         // Value 0 makes the iterator to always request an entity from the related iterator
         var random = new TestRandom(0, 0);
-        solvingStarted(selector, scoreDirector, random);
+        var solverScope = solvingStarted(selector, scoreDirector, random);
+        phaseStarted(selector, solverScope);
         var iterator = selector.iterator();
         // entityIterator returns a
         assertThat(iterator.hasNext()).isTrue();

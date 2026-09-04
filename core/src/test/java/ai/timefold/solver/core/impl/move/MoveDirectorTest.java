@@ -22,6 +22,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -38,6 +39,7 @@ import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamS
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -145,7 +147,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -191,7 +193,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -241,7 +243,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -281,7 +283,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -313,7 +315,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -355,7 +357,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -406,7 +408,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -458,7 +460,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -503,7 +505,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -533,7 +535,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -573,7 +575,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -619,7 +621,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -667,7 +669,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -707,7 +709,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -738,7 +740,7 @@ class MoveDirectorTest {
                     constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                             .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                     EnvironmentMode.FULL_ASSERT);
-            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+            var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
 
@@ -1670,7 +1672,7 @@ class MoveDirectorTest {
                 constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)
                         .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                 EnvironmentMode.FULL_ASSERT);
-        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
 
@@ -1706,7 +1708,7 @@ class MoveDirectorTest {
                 constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataMixedEntity.class)
                         .penalize(SimpleScore.ONE).asConstraint("Dummy constraint") },
                 EnvironmentMode.FULL_ASSERT);
-        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f).build();
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
 
@@ -1725,6 +1727,177 @@ class MoveDirectorTest {
         assertThat(entityA.getSecondBasicValue()).isNull();
         assertThat(expectedValueA1.getEntityList()).isEmpty();
         assertThat(expectedValueA2.getEntityList()).isEmpty();
+    }
+
+    @Test
+    void restoreWorkingScoreWithoutPostprocessor() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var temporaryScore = moveDirector.executeTemporary(move);
+
+        assertSoftly(softly -> {
+            softly.assertThat(temporaryScore.raw()).isEqualTo(SimpleScore.of(-1));
+            // The move was undone.
+            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            // The working solution's score was restored to what it was before the temporary move.
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void restoreWorkingScoreWithPostprocessor() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var result = moveDirector.executeTemporary(move, (score, undoMove) -> {
+            // Called while the move is still applied, before it gets undone.
+            assertThat(entity.getValue()).isEqualTo(badValue);
+            assertThat(score.raw()).isEqualTo(SimpleScore.of(-1));
+            return "postprocessed";
+        });
+
+        assertSoftly(softly -> {
+            softly.assertThat(result).isEqualTo("postprocessed");
+            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void restoreWorkingScoreWithPostprocessorAndFailure() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        assertThatThrownBy(() -> moveDirector.executeTemporary(move, (score, undoMove) -> {
+            throw new IllegalStateException("Postprocessor failure.");
+        })).isInstanceOf(IllegalStateException.class);
+
+        assertSoftly(softly -> {
+            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void restoreWorkingScoreWithPostprocessorWithoutFreshScore() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var result = moveDirector.executeTemporary(move,
+                sol -> sol.getEntityList().get(0).getValue().getCode(), false);
+
+        assertSoftly(softly -> {
+            // Postprocessor ran while the move was still applied.
+            softly.assertThat(result).isEqualTo("bad");
+            // The move was undone.
+            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            // guaranteeFreshScore is false, so the previous score is restored instead of being recalculated.
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void restoreWorkingScoreWithPostprocessorAndFreshScore() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var result = moveDirector.executeTemporary(move,
+                sol -> sol.getEntityList().get(0).getValue().getCode(), true);
+
+        assertSoftly(softly -> {
+            softly.assertThat(result).isEqualTo("bad");
+            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            // guaranteeFreshScore is true, so the score is recalculated on the undone (reverted) solution,
+            // which must equal the score from before the temporary move.
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+    }
+
+    private BavetConstraintStreamScoreDirector<TestdataSolution, SimpleScore> buildScoreDirector(
+            SolutionDescriptor<TestdataSolution> solutionDescriptor,
+            TestdataSolution solution) {
+        BavetConstraintStreamScoreDirectorFactory<TestdataSolution, SimpleScore> f =
+                new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                        constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataEntity.class)
+                                .filter(entity -> entity.getValue().getCode().equals("bad"))
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint("Bad value") },
+                        EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+        return scoreDirector;
     }
 
 }

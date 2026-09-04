@@ -6,14 +6,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class EqualIndexer<T, Key_> implements Indexer<T> {
@@ -93,15 +91,10 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return;
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, compositeKey);
+        if (downstreamIndexer != null) {
+            downstreamIndexer.forEach(compositeKey, tupleConsumer);
         }
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return;
-        }
-        downstreamIndexer.forEach(compositeKey, tupleConsumer);
     }
 
     @Override
@@ -109,45 +102,28 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
         return downstreamIndexerMap.isEmpty();
     }
 
+    @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return Collections.emptyIterator();
-        }
-        return downstreamIndexer.iterator(queryCompositeKey);
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
+        return downstreamIndexer == null ? Collections.emptyIterator() : downstreamIndexer.iterator(queryCompositeKey);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        return createRandomIterator(queryCompositeKey, workingRandom, null);
-    }
-
-    private Iterator<T> createRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom,
-            @Nullable Predicate<T> filter) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+    public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
         if (downstreamIndexer == null) {
-            return Collections.emptyIterator();
+            return RepeatingRandomIterator.empty();
         }
-
-        if (filter == null) {
-            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
-        } else {
-            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
-        }
+        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
-        return createRandomIterator(queryCompositeKey, workingRandom, filter);
+    public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        var downstreamIndexer = keyUnpacker.findDownstream(downstreamIndexerMap, queryCompositeKey);
+        if (downstreamIndexer == null) {
+            return UniqueRandomIterator.empty();
+        }
+        return downstreamIndexer.uniqueRandomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override

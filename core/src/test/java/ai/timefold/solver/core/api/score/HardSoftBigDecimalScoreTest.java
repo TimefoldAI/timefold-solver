@@ -24,6 +24,8 @@ class HardSoftBigDecimalScoreTest extends AbstractScoreTest {
     void parseScore() {
         assertThat(HardSoftBigDecimalScore.parseScore("-147.2hard/-258.3soft"))
                 .isEqualTo(HardSoftBigDecimalScore.of(new BigDecimal("-147.2"), new BigDecimal("-258.3")));
+        assertThat(HardSoftBigDecimalScore.parseScore("-1structural/0hard/-258.3soft"))
+                .isEqualTo(new HardSoftBigDecimalScore(-1L, BigDecimal.ZERO, new BigDecimal("-258.3")));
     }
 
     @Test
@@ -35,6 +37,8 @@ class HardSoftBigDecimalScoreTest extends AbstractScoreTest {
                 .isEqualTo("-147.2hard");
         assertThat(HardSoftBigDecimalScore.of(new BigDecimal("-147.2"), new BigDecimal("-258.3")).toShortString())
                 .isEqualTo("-147.2hard/-258.3soft");
+        assertThat(new HardSoftBigDecimalScore(-1L, new BigDecimal("-147.2"), new BigDecimal("-258.3")).toShortString())
+                .isEqualTo("-1structural/-147.2hard/-258.3soft");
     }
 
     @Test
@@ -43,18 +47,22 @@ class HardSoftBigDecimalScoreTest extends AbstractScoreTest {
                 .hasToString("0.0hard/-258.3soft");
         assertThat(HardSoftBigDecimalScore.of(new BigDecimal("-147.2"), new BigDecimal("-258.3")))
                 .hasToString("-147.2hard/-258.3soft");
+        assertThat(new HardSoftBigDecimalScore(-1L, new BigDecimal("-147.2"), new BigDecimal("-258.3")))
+                .hasToString("-1structural/-147.2hard/-258.3soft");
     }
 
     @Test
     void parseScoreIllegalArgument() {
         assertThatIllegalArgumentException().isThrownBy(() -> HardSoftBigDecimalScore.parseScore("-147.2"));
+        assertThatIllegalArgumentException().isThrownBy(() -> HardSoftBigDecimalScore.parseScore("-1structural/0hard"));
     }
 
     @Test
     void feasible() {
         assertScoreNotFeasible(HardSoftBigDecimalScore.of(new BigDecimal("-5"), new BigDecimal("-300")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-5"), new BigDecimal("4000")),
-                HardSoftBigDecimalScore.of(new BigDecimal("-0.007"), new BigDecimal("4000")));
+                HardSoftBigDecimalScore.of(new BigDecimal("-0.007"), new BigDecimal("4000")),
+                new HardSoftBigDecimalScore(-1L, BigDecimal.ZERO, new BigDecimal("-300")));
         assertScoreFeasible(HardSoftBigDecimalScore.of(new BigDecimal("0"), new BigDecimal("-300.007")),
                 HardSoftBigDecimalScore.of(new BigDecimal("0"), new BigDecimal("-300")),
                 HardSoftBigDecimalScore.of(new BigDecimal("2"), new BigDecimal("-300")));
@@ -136,14 +144,19 @@ class HardSoftBigDecimalScoreTest extends AbstractScoreTest {
         PlannerAssert.assertObjectsAreEqual(HardSoftBigDecimalScore.of(new BigDecimal("-10.0"), new BigDecimal("-200.0")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-10.0"), new BigDecimal("-200.0")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-10.000"), new BigDecimal("-200.000")));
+        PlannerAssert.assertObjectsAreEqual(
+                new HardSoftBigDecimalScore(-1L, new BigDecimal("-10.0"), new BigDecimal("-200.0")),
+                new HardSoftBigDecimalScore(-1L, new BigDecimal("-10.0"), new BigDecimal("-200.0")));
         PlannerAssert.assertObjectsAreNotEqual(HardSoftBigDecimalScore.of(new BigDecimal("-10.0"), new BigDecimal("-200.0")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-30.0"), new BigDecimal("-200.0")),
-                HardSoftBigDecimalScore.of(new BigDecimal("-10.0"), new BigDecimal("-400.0")));
+                HardSoftBigDecimalScore.of(new BigDecimal("-10.0"), new BigDecimal("-400.0")),
+                new HardSoftBigDecimalScore(-1L, new BigDecimal("-10.0"), new BigDecimal("-200.0")));
     }
 
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
+                new HardSoftBigDecimalScore(-1L, new BigDecimal("-20.06"), new BigDecimal("-20")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-20.06"), new BigDecimal("-20")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-20.007"), new BigDecimal("-20")),
                 HardSoftBigDecimalScore.of(new BigDecimal("-20"), new BigDecimal("-20.06")),

@@ -228,11 +228,12 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
         logger.info("""
-                {}Local Search phase ({}) ended: time spent ({}), best score ({}), \
+                {}Local Search phase ({}) ended: time spent ({}), environment mode ({}), best score ({}), \
                 {}move evaluation speed ({}/sec), step total ({}).""",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                environmentMode.name(),
                 phaseScope.getBestScore().raw(),
                 // Multithreaded solving uses "effective" move evaluation speed, since not all evaluated moves
                 // are foraged
@@ -253,20 +254,14 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         decider.solvingError(solverScope, exception);
     }
 
-    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
+    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_, DefaultLocalSearchPhase<Solution_>> {
 
         private final LocalSearchDecider<Solution_> decider;
 
-        public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
-                LocalSearchDecider<Solution_> decider) {
-            super(phaseIndex, logIndentation, phaseTermination);
+        public Builder(int phaseIndex, EnvironmentMode environmentMode, String logIndentation,
+                PhaseTermination<Solution_> phaseTermination, LocalSearchDecider<Solution_> decider) {
+            super(phaseIndex, environmentMode, logIndentation, phaseTermination);
             this.decider = decider;
-        }
-
-        @Override
-        public Builder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
-            super.enableAssertions(environmentMode);
-            return this;
         }
 
         @Override

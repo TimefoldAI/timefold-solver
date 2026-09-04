@@ -9,8 +9,8 @@ public class RemoteMapServiceConfigurationProfile implements QuarkusTestProfile 
     @Override
     public Map<String, String> getConfigOverrides() {
         return Map.of(
-                "ai.timefold.platform.map-service.use-remote", "true",
-                "quarkus.rest-client.map-service.url", "${ai.timefold.platform.map-service.url}");
+                "timefold.platform.map-service.use-remote", "true",
+                "quarkus.rest-client.map-service.url", "${timefold.platform.map-service.url}");
     }
 
 }

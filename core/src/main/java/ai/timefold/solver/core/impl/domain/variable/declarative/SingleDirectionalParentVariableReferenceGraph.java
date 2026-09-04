@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -80,7 +82,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     }
 
     @Override
-    public void updateChanged() {
+    public boolean updateChanged() {
         isUpdating = true;
         changedEntities.sort(topologicalOrderComparator);
         for (var changedEntity : changedEntities) {
@@ -94,6 +96,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         isUpdating = false;
         changedEntities.clear();
         keyToLastProcessedObject.clear();
+        return true;
     }
 
     /**
@@ -133,6 +136,11 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         if (!isUpdating && monitoredSourceVariableSet.contains(variableReference) && monitoredEntityClass.isInstance(entity)) {
             changedEntities.add(entity);
         }
+    }
+
+    @Override
+    public List<VariableLoop> getVariableLoops() {
+        return Collections.emptyList();
     }
 
 }

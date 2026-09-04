@@ -48,6 +48,7 @@ public class SolverScope<Solution_> {
     private final AtomicLong endingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
 
     private Set<SolverMetric> solverMetricSet = Collections.emptySet();
+    private boolean anyMetricConstraintMatchBased;
     private Tags monitoringTags;
     private int startingSolverCount;
     private RandomSource workingRandom;
@@ -133,6 +134,11 @@ public class SolverScope<Solution_> {
 
     public void setSolverMetricSet(EnumSet<SolverMetric> solverMetricSet) {
         this.solverMetricSet = solverMetricSet;
+        this.anyMetricConstraintMatchBased = this.solverMetricSet.stream().anyMatch(SolverMetric::isMetricConstraintMatchBased);
+    }
+
+    public boolean isAnyMetricConstraintMatchBased() {
+        return anyMetricConstraintMatchBased;
     }
 
     public int getStartingSolverCount() {
@@ -193,7 +199,7 @@ public class SolverScope<Solution_> {
     }
 
     public void assertScoreFromScratch(Solution_ solution) {
-        scoreDirector.getScoreDirectorFactory().assertScoreFromScratch(solution);
+        scoreDirector.assertScoreFromScratch(solution);
     }
 
     @SuppressWarnings("unchecked")

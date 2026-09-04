@@ -42,6 +42,9 @@ class SelectorBasedListSwapMoveTest {
 
     @BeforeEach
     void setUp() {
+        when(innerScoreDirector.isLastVariableUpdateSuccessful()).thenReturn(true);
+        when(innerScoreDirector.getSolutionDescriptor())
+                .thenReturn(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
         when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
     }
 
@@ -81,9 +84,13 @@ class SelectorBasedListSwapMoveTest {
     void doMove() {
         var e1 = new TestdataListEntity("e1", v1, v2);
         var e2 = new TestdataListEntity("e2", v3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(e1, e2));
+        solution.setValueList(List.of(v1, v2, v3));
 
         var moveDirector = new MoveDirector<>(innerScoreDirector);
         // Swap Move 1: between two entities
+        when(innerScoreDirector.getWorkingSolution()).thenReturn(solution);
         moveDirector.executeTemporary(new SelectorBasedListSwapMove<>(variableDescriptor, e1, 0, e2, 0),
                 (__, ___) -> {
                     assertThat(e1.getValueList()).containsExactly(v3, v2);
