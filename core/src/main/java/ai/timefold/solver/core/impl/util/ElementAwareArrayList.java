@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.NullMarked;
@@ -53,7 +54,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
 
     private static final int DEFAULT_CAPACITY = 2;
     private static final int RETAIN_THRESHOLD = DEFAULT_CAPACITY; // Retain backing array when length <= this.
-    private Object @Nullable [] entries = EMPTY_ARRAY;
+    private @Nullable Object[] entries = EMPTY_ARRAY;
     private int lastElementPosition = -1;
     private int gapCount = 0; // Always equals the total number of null slots in entryList.
     private int size = 0;
@@ -106,11 +107,20 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
      * @param slot the physical slot to read
      * @return {@code null} if the slot is a gap
      */
-    public Entry entryAt(int slot) {
+    public @Nullable Entry entryAt(int slot) {
         if (slot < 0 || slot >= slotCount()) {
             throw slotOutOfBounds(slot);
         }
+        return uncheckedEntryAt(slot);
+    }
+
+    @SuppressWarnings("unchecked")
+    private @Nullable Entry uncheckedEntryAt(int slot) {
         return (Entry) entries[slot];
+    }
+
+    private Entry uncheckedNonNullEntryAt(int slot) {
+        return Objects.requireNonNull(uncheckedEntryAt(slot));
     }
 
     /**
@@ -143,11 +153,11 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             throw new IndexOutOfBoundsException(
                     "The index (%d) must be >= 0 and < size (%d).".formatted(index, size()));
         } else if (gapCount == 0) {
-            return (Entry) entries[index];
+            return uncheckedNonNullEntryAt(index);
         }
         var remaining = index;
         for (var position = 0; position <= lastElementPosition; position++) {
-            var entry = (Entry) entries[position];
+            var entry = uncheckedEntryAt(position);
             if (entry != null && remaining-- == 0) {
                 return entry;
             }
@@ -168,7 +178,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         }
         var compactPosition = 0;
         for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
-            var entry = (Entry) entries[currentPosition];
+            var entry = uncheckedEntryAt(currentPosition);
             if (entry == null) {
                 continue;
             }
@@ -220,7 +230,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         var newEntry = new Entry(element, index);
         resize(lastElementPosition + 2);
         for (var i = lastElementPosition; i >= index; i--) {
-            var shifted = (Entry) entries[i];
+            var shifted = uncheckedNonNullEntryAt(i);
             entries[i + 1] = shifted;
             shifted.moveTo(i + 1);
         }
@@ -315,10 +325,9 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         }
     }
 
-    @SuppressWarnings("DataFlowIssue")
     private void forEachWithoutGaps(Consumer<? super T> elementConsumer) {
         for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
-            elementConsumer.accept(((Entry) entries[currentPosition]).element); // entries[i] is provably non-null (gapCount==0)
+            elementConsumer.accept(uncheckedNonNullEntryAt(currentPosition).element); // entries[i] is provably non-null (gapCount==0)
         }
     }
 
@@ -338,7 +347,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         }
         var compactPosition = 0;
         for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
-            var entry = (Entry) entries[currentPosition];
+            var entry = uncheckedEntryAt(currentPosition);
             if (entry == null) {
                 continue;
             }
@@ -429,10 +438,9 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             if (logicalPosition >= size()) {
                 throw new NoSuchElementException();
             }
-            var entry = (Entry) entries[currentPosition];
+            var entry = uncheckedEntryAt(currentPosition);
             while (entry == null) {
-                var position = ++currentPosition;
-                entry = (Entry) entries[position];
+                entry = uncheckedEntryAt(++currentPosition);
             }
             currentPosition++;
             logicalPosition++;
@@ -448,8 +456,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             }
             Entry entry = null;
             while (entry == null) {
-                var position = --currentPosition;
-                entry = (Entry) entries[position];
+                entry = uncheckedEntryAt(--currentPosition);
             }
             logicalPosition--;
             lastEntry = entry;

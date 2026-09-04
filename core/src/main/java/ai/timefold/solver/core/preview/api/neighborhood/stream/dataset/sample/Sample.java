@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -32,7 +31,6 @@ public final class Sample<A>
         implements Iterable<@Nullable A> {
 
     private final SequencedSet<@Nullable A> memberSet;
-    private final SequencedSet<@Nullable A> unmodifiableMemberSet;
     private boolean hashCodeComputed;
     private int hashCode;
 
@@ -62,7 +60,6 @@ public final class Sample<A>
             throw new IllegalArgumentException("The memberCollection (%s) of a sample must not be empty."
                     .formatted(memberSet));
         }
-        this.unmodifiableMemberSet = Collections.unmodifiableSequencedSet(memberSet);
     }
 
     /**
@@ -100,13 +97,21 @@ public final class Sample<A>
         return new Sample<>(rebasedSet);
     }
 
+    /**
+     *
+     * @return May allow mutation; the user must not change the set.
+     */
     public SequencedSet<@Nullable A> getMemberSet() {
-        return unmodifiableMemberSet;
+        return memberSet;
     }
 
+    /**
+     *
+     * @return May allow mutation; the user must not use this to change the set.
+     */
     @Override
     public Iterator<@Nullable A> iterator() {
-        return unmodifiableMemberSet.iterator();
+        return memberSet.iterator();
     }
 
     @Override

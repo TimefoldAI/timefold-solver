@@ -120,10 +120,10 @@ final class SlotReservationMap {
             }
             if (sparseEntryCount < maxSparseEntryCount) {
                 if (log == null) {
-                    log = new int[maxSparseEntryCount << 1];
+                    log = new int[maxSparseEntryCount * 2];
                     sparseLog = log;
                 }
-                var offset = sparseEntryCount << 1;
+                var offset = sparseEntryCount * 2;
                 log[offset] = slot;
                 log[offset + 1] = logicalIndex;
                 sparseEntryCount++;
@@ -153,7 +153,7 @@ final class SlotReservationMap {
         if (offset == NOT_FOUND) {
             return;
         }
-        var lastOffset = (sparseEntryCount - 1) << 1; // The log order carries no meaning; move the last pair in.
+        var lastOffset = (sparseEntryCount - 1) * 2; // The log order carries no meaning; move the last pair in.
         log[offset] = log[lastOffset];
         log[offset + 1] = log[lastOffset + 1];
         sparseEntryCount--;
@@ -164,7 +164,7 @@ final class SlotReservationMap {
         var log = sparseLog;
         if (log != null) { // Null when maxSparseEntryCount is zero, which reaches this method with no log at all.
             for (var entry = 0; entry < sparseEntryCount; entry++) {
-                var offset = entry << 1;
+                var offset = entry * 2;
                 dense[log[offset]] = log[offset + 1] + 1;
             }
         }
@@ -178,7 +178,7 @@ final class SlotReservationMap {
      * @return the even offset of the pair for the given slot, or {@link #NOT_FOUND}
      */
     private int findOffset(int[] log, int slot) {
-        var usedLength = sparseEntryCount << 1;
+        var usedLength = sparseEntryCount * 2;
         for (var offset = 0; offset < usedLength; offset += 2) {
             if (log[offset] == slot) {
                 return offset;
@@ -234,7 +234,7 @@ final class SlotReservationMap {
             var log = sparseLog;
             if (log != null) { // Never more than MAX_SPARSE_ENTRY_COUNT pairs, so this needs no limit.
                 for (var entry = 0; entry < sparseEntryCount; entry++) {
-                    var offset = entry << 1;
+                    var offset = entry * 2;
                     appendReservation(builder, renderedCount, log[offset], log[offset + 1]);
                     renderedCount++;
                 }
