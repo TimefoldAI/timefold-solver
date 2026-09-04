@@ -122,7 +122,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // which will be necessary for obtaining the change notifier
         this.solverVariableSupport = SolverVariableSupport.create(this);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        if (listVariableDescriptor == null) {
+        if (listVariableDescriptor != null) {
             // We load the list variable state
             this.solverVariableSupport.getListVariableState(listVariableDescriptor);
         }

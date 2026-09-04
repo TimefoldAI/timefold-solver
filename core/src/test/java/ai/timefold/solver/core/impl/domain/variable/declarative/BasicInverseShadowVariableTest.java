@@ -18,9 +18,8 @@ import org.junit.jupiter.api.Test;
  * Covers the map-mode-only path of {@link ChangedVariableNotifier#getCollectionInverseVariableSupply}:
  * the "group" basic variable of {@link TestdataBasicInverseEntity} has no
  * {@code @InverseRelationShadowVariable} declared anywhere, so the declarative "ownerCode" shadow
- * (sourced from "group.owner") can only be kept correct if the framework demands a fresh,
- * non-externalized {@code BasicVariableStateSupply} to track "which entities point to a given group"
- * purely in memory.
+ * (sourced from "group.owner") can only be kept correct if the framework tracks "which entities
+ * point to a given group" in a non-externalized {@code BasicVariableState}, purely in memory.
  */
 class BasicInverseShadowVariableTest {
 

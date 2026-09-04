@@ -1,32 +1,19 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
-import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
-import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
-import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
-import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
-import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
@@ -41,35 +28,35 @@ class ExternalizedListVariableStateTest {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        try (var state = new ExternalizedListVariableState<>(variableDescriptor, notifier)) {
+        var state = new ExternalizedListVariableState<>(variableDescriptor, notifier);
 
-            var v1 = new TestdataAllowsUnassignedValuesListValue("1");
-            var v2 = new TestdataAllowsUnassignedValuesListValue("2");
-            var v3 = new TestdataAllowsUnassignedValuesListValue("3");
-            var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
-            var e2 = new TestdataAllowsUnassignedValuesListEntity("e2");
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var v3 = new TestdataAllowsUnassignedValuesListValue("3");
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+        var e2 = new TestdataAllowsUnassignedValuesListEntity("e2");
 
-            var solution = new TestdataAllowsUnassignedValuesListSolution();
-            solution.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
-            solution.setValueList(Arrays.asList(v1, v2, v3));
-            var scoreDirector = mock(InnerScoreDirector.class);
-            var valueRangeManager =
-                    ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
-            when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
-            when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-            state.resetWorkingSolution(scoreDirector);
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
+        solution.setValueList(Arrays.asList(v1, v2, v3));
+        var scoreDirector = mock(InnerScoreDirector.class);
+        var valueRangeManager =
+                ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
+        when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        state.resetWorkingSolution(scoreDirector);
 
-            assertSoftly(softly -> {
-                softly.assertThat(state.getUnassignedCount()).isEqualTo(2);
-                softly.assertThat(state.isAssigned(v1)).isTrue();
-                softly.assertThat(state.isAssigned(v2)).isFalse();
-                softly.assertThat(state.isAssigned(v3)).isFalse();
-            });
+        assertSoftly(softly -> {
+            softly.assertThat(state.getUnassignedCount()).isEqualTo(2);
+            softly.assertThat(state.isAssigned(v1)).isTrue();
+            softly.assertThat(state.isAssigned(v2)).isFalse();
+            softly.assertThat(state.isAssigned(v3)).isFalse();
+        });
 
-            verify(notifier).accept(v1);
-            verifyNoMoreInteractions(notifier);
-            // v2 and v3 are not visited since they are unassigned so their state isn't updated by initialization
-        }
+        verify(notifier).accept(v1);
+        verifyNoMoreInteractions(notifier);
+        // v2 and v3 are not visited since they are unassigned so their state isn't updated
+        // by initialization
     }
 
     @Test
@@ -77,51 +64,51 @@ class ExternalizedListVariableStateTest {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        try (var state = new ExternalizedListVariableState<>(variableDescriptor, notifier)) {
+        var state = new ExternalizedListVariableState<>(variableDescriptor, notifier);
 
-            var v1 = new TestdataAllowsUnassignedValuesListValue("1");
-            var v2 = new TestdataAllowsUnassignedValuesListValue("2");
-            var v3 = new TestdataAllowsUnassignedValuesListValue("3");
-            var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
-            var e2 = new TestdataAllowsUnassignedValuesListEntity("e2");
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var v3 = new TestdataAllowsUnassignedValuesListValue("3");
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+        var e2 = new TestdataAllowsUnassignedValuesListEntity("e2");
 
-            var solution = new TestdataAllowsUnassignedValuesListSolution();
-            solution.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
-            solution.setValueList(Arrays.asList(v1, v2, v3));
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
+        solution.setValueList(Arrays.asList(v1, v2, v3));
 
-            var scoreDirector = mock(InnerScoreDirector.class);
-            var valueRangeManager =
-                    ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
-            when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
-            when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-            state.resetWorkingSolution(scoreDirector);
+        var scoreDirector = mock(InnerScoreDirector.class);
+        var valueRangeManager =
+                ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
+        when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        state.resetWorkingSolution(scoreDirector);
 
-            assertSoftly(softly -> {
-                softly.assertThat(state.getUnassignedCount()).isEqualTo(2);
-                softly.assertThat(state.getElementPosition(v1)).isEqualTo(ElementPosition.of(e1, 0));
-                softly.assertThat(state.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
-                softly.assertThat(state.getElementPosition(v3)).isEqualTo(ElementPosition.unassigned());
-            });
+        assertSoftly(softly -> {
+            softly.assertThat(state.getUnassignedCount()).isEqualTo(2);
+            softly.assertThat(state.getElementPosition(v1)).isEqualTo(ElementPosition.of(e1, 0));
+            softly.assertThat(state.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
+            softly.assertThat(state.getElementPosition(v3)).isEqualTo(ElementPosition.unassigned());
+        });
 
-            verify(notifier).accept(v1);
-            verifyNoMoreInteractions(notifier);
-            // v2 and v3 are not visited since they are unassigned so their state isn't updated by initialization
-            Mockito.reset(notifier);
+        verify(notifier).accept(v1);
+        verifyNoMoreInteractions(notifier);
+        // v2 and v3 are not visited since they are unassigned so their state isn't updated
+        // by initialization
+        Mockito.reset(notifier);
 
-            state.afterListElementUnassigned(scoreDirector, v1);
-            assertSoftly(softly -> {
-                softly.assertThat(state.getUnassignedCount()).isEqualTo(3);
-                softly.assertThat(state.getElementPosition(v1)).isEqualTo(ElementPosition.unassigned());
-                softly.assertThat(state.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
-                softly.assertThat(state.getElementPosition(v3)).isEqualTo(ElementPosition.unassigned());
-            });
-            verify(notifier).accept(v1);
-            verifyNoMoreInteractions(notifier);
+        state.afterListElementUnassigned(scoreDirector, v1);
+        assertSoftly(softly -> {
+            softly.assertThat(state.getUnassignedCount()).isEqualTo(3);
+            softly.assertThat(state.getElementPosition(v1)).isEqualTo(ElementPosition.unassigned());
+            softly.assertThat(state.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
+            softly.assertThat(state.getElementPosition(v3)).isEqualTo(ElementPosition.unassigned());
+        });
+        verify(notifier).accept(v1);
+        verifyNoMoreInteractions(notifier);
 
-            // Cannot unassign again.
-            assertThatThrownBy(() -> state.afterListElementUnassigned(scoreDirector, v1))
-                    .isInstanceOf(IllegalStateException.class);
-        }
+        // Cannot unassign again.
+        assertThatThrownBy(() -> state.afterListElementUnassigned(scoreDirector, v1))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     /**
