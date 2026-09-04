@@ -26,9 +26,6 @@ public class TestdataNonOwnerDepot extends TestdataObject {
     public TestdataNonOwnerDepot(String code, int baseTime) {
         super(code);
         this.baseTime = baseTime;
-        // A depot without other depots has an empty fact collection as its only source,
-        // so its supplier is never triggered; initialize to the value it would compute.
-        this.openTime = baseTime;
     }
 
     @ShadowSources("otherDepots[].openTime")

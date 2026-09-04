@@ -34,9 +34,6 @@ public class TestdataMultiEntityChainNextVehicle extends TestdataObject {
     public TestdataMultiEntityChainNextVehicle(String code, int deadline) {
         super(code);
         this.deadline = deadline;
-        // A tail vehicle's only source is an empty fact collection,
-        // so its supplier is never triggered; initialize to the value it would compute.
-        this.nextStartTime = deadline;
     }
 
     @ShadowSources("nextVehicles[].startTime")
@@ -56,7 +53,7 @@ public class TestdataMultiEntityChainNextVehicle extends TestdataObject {
         if (visits.isEmpty()) {
             return nextStartTime;
         }
-        return visits.get(0).getLatestStartTime();
+        return visits.getFirst().getLatestStartTime();
     }
 
     public List<TestdataMultiEntityChainNextVehicle> getNextVehicles() {

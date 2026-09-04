@@ -171,7 +171,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
     static <Solution_> VariableReferenceGraph buildGraphForStructureAndDirection(
             GraphStructure.GraphStructureAndDirection graphStructureAndDirection, GraphDescriptor<Solution_> graphDescriptor) {
-        if (graphStructureAndDirection.elementCascade() != null) {
+        if (graphStructureAndDirection.cascadedElementClass() != null) {
             var scoreDirector =
                     graphDescriptor.variableReferenceGraphBuilder().changedVariableNotifier.innerScoreDirector();
             if (scoreDirector == null) {
@@ -221,7 +221,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             GraphDescriptor<Solution_> graphDescriptor,
             GraphStructure.GraphStructureAndDirection graphStructureAndDirection) {
         var solutionDescriptor = graphDescriptor.solutionDescriptor();
-        var elementEntityClass = Objects.requireNonNull(graphStructureAndDirection.elementCascade()).elementEntityClass();
+        var elementEntityClass = Objects.requireNonNull(graphStructureAndDirection.cascadedElementClass());
         var allDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         var elementDescriptorList = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
         var innerDescriptorList = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
@@ -244,7 +244,9 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         for (var descriptor : elementDescriptorList) {
             for (var source : descriptor.getSources()) {
                 if (source.parentVariableType() == ParentVariableType.INVERSE) {
-                    elementReadVariableSet.add(source.variableSourceReferences().get(1).variableMetaModel());
+                    // Non-null: the detection rejects inverse sources targeting non-declarative variables.
+                    elementReadVariableSet.add(Objects.requireNonNull(
+                            source.variableSourceReferences().getFirst().downstreamDeclarativeVariableMetamodel()));
                 }
             }
         }
@@ -294,7 +296,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             if (elementList.isEmpty()) {
                 return null;
             }
-            return isPreviousDirection ? elementList.get(0) : elementList.get(elementList.size() - 1);
+            return isPreviousDirection ? elementList.getFirst() : elementList.getLast();
         };
         var topologicalSorter = getTopologicalSorter(solutionDescriptor,
                 Objects.requireNonNull(changedVariableNotifier.innerScoreDirector()),

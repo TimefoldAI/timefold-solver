@@ -16,7 +16,8 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 @PlanningEntity
 public class TestdataMultiEntityChainVehicle extends TestdataObject {
 
-    List<TestdataMultiEntityChainVehicle> previousVehicles = new ArrayList<>();
+    // Null for a head vehicle, exercising null fact collection support.
+    List<TestdataMultiEntityChainVehicle> previousVehicles;
     int departureTime;
 
     @PlanningListVariable(allowsUnassignedValues = true)
@@ -37,15 +38,15 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
     public TestdataMultiEntityChainVehicle(String code, int departureTime) {
         super(code);
         this.departureTime = departureTime;
-        // A head vehicle's only source is an empty fact collection,
-        // so its supplier is never triggered; initialize to the value it would compute.
-        this.previousEndTime = departureTime;
     }
 
     @ShadowSources("previousVehicles[].endTime")
     public Integer previousEndTimeSupplier() {
         previousEndTimeCalledCount++;
         var max = departureTime;
+        if (previousVehicles == null) {
+            return max;
+        }
         for (var previousVehicle : previousVehicles) {
             if (previousVehicle.getEndTime() == null) {
                 return null;
@@ -61,7 +62,7 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
         if (visits.isEmpty()) {
             return previousEndTime;
         }
-        return visits.get(visits.size() - 1).getEndServiceTime();
+        return visits.getLast().getEndServiceTime();
     }
 
     public List<TestdataMultiEntityChainVehicle> getPreviousVehicles() {

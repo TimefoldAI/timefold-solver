@@ -41,7 +41,7 @@ public class TestdataWatchedVisitsVehicle extends TestdataObject {
         if (visits.isEmpty()) {
             return departureTime;
         }
-        return visits.get(visits.size() - 1).getEndServiceTime();
+        return visits.getLast().getEndServiceTime();
     }
 
     @ShadowSources("watchedVisits[].endServiceTime")

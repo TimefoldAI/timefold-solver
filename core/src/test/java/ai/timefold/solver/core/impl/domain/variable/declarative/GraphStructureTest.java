@@ -153,8 +153,7 @@ class GraphStructureTest {
                 TestdataListElementSolution.buildSolutionDescriptor(), entity, value))
                 .hasFieldOrPropertyWithValue("structure", GraphStructure.NO_DYNAMIC_EDGES)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("elementCascade",
-                        new GraphStructure.ListElementCascade(TestdataListElementValue.class));
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataListElementValue.class);
     }
 
     @Test
@@ -170,7 +169,7 @@ class GraphStructureTest {
     void multiEntityChainStructure() {
         var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
         var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);
-        vehicleB.getPreviousVehicles().add(vehicleA);
+        vehicleB.setPreviousVehicles(List.of(vehicleA));
         var visit = new TestdataMultiEntityChainVisit("v1");
         // The visits are cascaded; the vehicles' fact collection dependency is the inner graph's.
         assertThat(GraphStructure.determineGraphStructure(
@@ -178,8 +177,7 @@ class GraphStructureTest {
                 .hasFieldOrPropertyWithValue("structure",
                         GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("elementCascade",
-                        new GraphStructure.ListElementCascade(TestdataMultiEntityChainVisit.class));
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataMultiEntityChainVisit.class);
     }
 
     @Test
@@ -193,8 +191,7 @@ class GraphStructureTest {
                 .hasFieldOrPropertyWithValue("structure",
                         GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("elementCascade",
-                        new GraphStructure.ListElementCascade(TestdataFactChainVisit.class));
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataFactChainVisit.class);
     }
 
     @Test
@@ -206,8 +203,7 @@ class GraphStructureTest {
                 TestdataMultiEntityChainNextSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", GraphStructure.NO_DYNAMIC_EDGES)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.NEXT)
-                .hasFieldOrPropertyWithValue("elementCascade",
-                        new GraphStructure.ListElementCascade(TestdataMultiEntityChainNextVisit.class));
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataMultiEntityChainNextVisit.class);
     }
 
     @Test
@@ -219,7 +215,7 @@ class GraphStructureTest {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataWatchedVisitsSolution.buildSolutionDescriptor(), vehicle, watcher, visit))
                 .hasFieldOrPropertyWithValue("structure", ARBITRARY)
-                .hasFieldOrPropertyWithValue("elementCascade", null);
+                .hasFieldOrPropertyWithValue("cascadedElementClass", null);
     }
 
     @Test
@@ -233,8 +229,7 @@ class GraphStructureTest {
                 TestdataNonOwnerSolution.buildSolutionDescriptor(), vehicle, visit, depot))
                 .hasFieldOrPropertyWithValue("structure", GraphStructure.NO_DYNAMIC_EDGES)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("elementCascade",
-                        new GraphStructure.ListElementCascade(TestdataNonOwnerVisit.class));
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataNonOwnerVisit.class);
     }
 
     @Test

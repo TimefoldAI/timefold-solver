@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -55,21 +54,18 @@ public enum GraphStructure {
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphStructure.class);
 
     /**
-     * When present, the planning list variable's elements are excluded from the variable
-     * reference graph, which only covers the other entity classes;
-     * the elements are instead updated by a cascade that walks each dirty entity's list
-     * in the direction of {@link GraphStructureAndDirection#direction()}.
+     * When {@code cascadedElementClass} is non-null, the planning list variable's elements
+     * are excluded from the variable reference graph, which only covers the other entity
+     * classes; the elements are instead updated by a cascade that walks each dirty entity's
+     * list in the direction of {@link #direction()}.
      * This decomposition is valid because the elements only read their chain and,
      * through their inverse, pre-chain declarative variables of their own list entity,
      * and because the other classes only reach the elements through the list variable itself.
      */
-    public record ListElementCascade(Class<?> elementEntityClass) {
-    }
-
     public record GraphStructureAndDirection(GraphStructure structure,
             @Nullable VariableMetaModel<?, ?, ?> parentMetaModel,
             @Nullable ParentVariableType direction,
-            @Nullable ListElementCascade elementCascade) {
+            @Nullable Class<?> cascadedElementClass) {
 
         public GraphStructureAndDirection(GraphStructure structure,
                 @Nullable VariableMetaModel<?, ?, ?> parentMetaModel,
@@ -93,7 +89,7 @@ public enum GraphStructure {
         var elementCascadeAndDirection = determineListElementCascade(solutionDescriptor,
                 declarativeShadowVariableDescriptors);
         if (elementCascadeAndDirection != null) {
-            var elementEntityClass = elementCascadeAndDirection.elementCascade().elementEntityClass();
+            var elementEntityClass = elementCascadeAndDirection.elementEntityClass();
             var innerDescriptors = declarativeShadowVariableDescriptors.stream()
                     .filter(descriptor -> !elementEntityClass
                             .isAssignableFrom(descriptor.getEntityDescriptor().getEntityClass()))
@@ -102,7 +98,7 @@ public enum GraphStructure {
             return new GraphStructureAndDirection(innerStructure.structure(),
                     elementCascadeAndDirection.parentMetaModel(),
                     elementCascadeAndDirection.direction(),
-                    elementCascadeAndDirection.elementCascade());
+                    elementEntityClass);
         }
         return determineGraphStructure(declarativeShadowVariableDescriptors, null, entities);
     }
@@ -191,29 +187,25 @@ public enum GraphStructure {
         }
     }
 
-    private record ListElementCascadeAndDirection(ListElementCascade elementCascade,
+    private record ListElementCascadeAndDirection(Class<?> elementEntityClass,
             VariableMetaModel<?, ?, ?> parentMetaModel,
             ParentVariableType direction) {
     }
 
     /**
      * Non-null if the planning list variable's elements can be excluded from the variable
-     * reference graph and updated by a cascade instead; see {@link ListElementCascade}.
+     * reference graph and updated by a cascade instead;
+     * see {@link GraphStructureAndDirection#cascadedElementClass()}.
      * Only the element class's sources and the references towards the element class are
      * checked here: the rest of the model is covered by the graph, whatever its structure.
      */
     private static <Solution_> @Nullable ListElementCascadeAndDirection determineListElementCascade(
             SolutionDescriptor<Solution_> solutionDescriptor,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
-        var listVariableDescriptorList = solutionDescriptor.getListVariableDescriptorList();
-        if (listVariableDescriptorList.size() != 1) {
-            // The detection does not match list element sources against a specific list variable,
-            // and the wrapper routes every list change event to the cascade;
-            // both rely on the elements' list being the model's only list variable,
-            // which SolutionDescriptor currently guarantees. Re-audit both before lifting this.
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null) {
             return null;
         }
-        var listVariableDescriptor = listVariableDescriptorList.getFirst();
         // The element class is the entity class of the single previous or next directional parent.
         VariableMetaModel<?, ?, ?> parentMetaModel = null;
         ParentVariableType direction = null;
@@ -222,13 +214,15 @@ public enum GraphStructure {
             for (var source : descriptor.getSources()) {
                 var parentVariableType = source.parentVariableType();
                 if (parentVariableType == ParentVariableType.PREVIOUS || parentVariableType == ParentVariableType.NEXT) {
-                    var sourceParentMetaModel = source.variableSourceReferences().get(0).variableMetaModel();
+                    var sourceParentMetaModel = source.variableSourceReferences().getFirst().variableMetaModel();
                     if (parentMetaModel == null) {
                         parentMetaModel = sourceParentMetaModel;
                         direction = parentVariableType;
                         // The class declaring the directional parent, so extended element classes are covered.
                         elementEntityClass = sourceParentMetaModel.entity().type();
-                    } else if (!parentMetaModel.equals(sourceParentMetaModel)) {
+                    } else if (!parentMetaModel.equals(sourceParentMetaModel)
+                            || direction != parentVariableType) {
+                        // The cascade walks each list in a single direction.
                         return null;
                     }
                 }
@@ -245,12 +239,15 @@ public enum GraphStructure {
             // so the element class must cover the list's elements and be distinct from the owner.
             return null;
         }
-        var elementDescriptorList = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
         var hasNonElementDescriptors = false;
         for (var descriptor : declarativeShadowVariableDescriptors) {
             var entityClass = descriptor.getEntityDescriptor().getEntityClass();
             if (elementEntityClass.isAssignableFrom(entityClass)) {
-                elementDescriptorList.add(descriptor);
+                if (descriptor.getAlignmentKeyMap() != null) {
+                    // The cascade walks one chain at a time,
+                    // which an alignment key's grouped updater contradicts.
+                    return null;
+                }
             } else if (entityClass.isAssignableFrom(elementEntityClass)) {
                 // A declarative superclass of the elements would be entangled with the cascade.
                 return null;
@@ -265,11 +262,6 @@ public enum GraphStructure {
         }
         if (!hasNonElementDescriptors) {
             // A model with only element variables is covered by the existing structures.
-            return null;
-        }
-        var hasElementAlignmentKey = elementDescriptorList.stream()
-                .anyMatch(descriptor -> descriptor.getAlignmentKeyMap() != null);
-        if (hasElementAlignmentKey) {
             return null;
         }
         var postChainVariableSet = computePostChainVariables(declarativeShadowVariableDescriptors, elementEntityClass);
@@ -294,10 +286,9 @@ public enum GraphStructure {
                             // Only safe when it targets a pre-chain declarative variable of the owner:
                             // post-chain variables depend on the chain itself,
                             // and a non-declarative variable change does not trigger a chain walk.
-                            var references = variableSource.variableSourceReferences();
-                            if (references.size() < 2
-                                    || !references.get(1).isDeclarative()
-                                    || postChainVariableSet.contains(references.get(1).variableMetaModel())) {
+                            var inverseTarget = variableSource.variableSourceReferences().getFirst()
+                                    .downstreamDeclarativeVariableMetamodel();
+                            if (inverseTarget == null || postChainVariableSet.contains(inverseTarget)) {
                                 return null;
                             }
                         }
@@ -309,7 +300,7 @@ public enum GraphStructure {
                     // Only safe when it accesses the list's own elements directly:
                     // an entity reached through an element's fact may belong to another list,
                     // whose changes would not recompute this variable.
-                    var reference = variableSource.variableSourceReferences().get(0);
+                    var reference = variableSource.variableSourceReferences().getFirst();
                     if (!reference.chainFromRootEntityToVariableEntity().isEmpty()) {
                         return null;
                     }
@@ -323,7 +314,7 @@ public enum GraphStructure {
                 }
             }
         }
-        return new ListElementCascadeAndDirection(new ListElementCascade(elementEntityClass), parentMetaModel, direction);
+        return new ListElementCascadeAndDirection(elementEntityClass, parentMetaModel, direction);
     }
 
     /**

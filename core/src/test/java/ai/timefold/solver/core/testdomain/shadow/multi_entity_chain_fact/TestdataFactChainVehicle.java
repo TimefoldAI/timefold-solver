@@ -38,9 +38,6 @@ public class TestdataFactChainVehicle extends TestdataObject {
     public TestdataFactChainVehicle(String code, int departureTime) {
         super(code);
         this.departureTime = departureTime;
-        // A head vehicle's only source is a null fact,
-        // so its supplier is never triggered; initialize to the value it would compute.
-        this.startTime = departureTime;
     }
 
     @ShadowSources("previousVehicle.endTime")
@@ -61,7 +58,7 @@ public class TestdataFactChainVehicle extends TestdataObject {
         if (visits.isEmpty()) {
             return startTime;
         }
-        return visits.get(visits.size() - 1).getEndServiceTime();
+        return visits.getLast().getEndServiceTime();
     }
 
     public TestdataFactChainVehicle getPreviousVehicle() {

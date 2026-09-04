@@ -32,7 +32,7 @@ class ListElementCascadeShadowVariableTest {
 
         var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
         var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);
-        vehicleB.getPreviousVehicles().add(vehicleA);
+        vehicleB.setPreviousVehicles(List.of(vehicleA));
         vehicleA.setVisits(new ArrayList<>(List.of(x1, x2)));
         vehicleB.setVisits(new ArrayList<>(List.of(y1, y2)));
 
@@ -114,7 +114,7 @@ class ListElementCascadeShadowVariableTest {
 
         var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
         var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);
-        vehicleB.getPreviousVehicles().add(vehicleA);
+        vehicleB.setPreviousVehicles(List.of(vehicleA));
         vehicleB.setVisits(new ArrayList<>(List.of(v1, v2, v3)));
 
         var solution = new TestdataMultiEntityChainSolution();
@@ -148,8 +148,8 @@ class ListElementCascadeShadowVariableTest {
     void cyclicVehicleFactsFailFast() {
         var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
         var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);
-        vehicleA.getPreviousVehicles().add(vehicleB);
-        vehicleB.getPreviousVehicles().add(vehicleA);
+        vehicleA.setPreviousVehicles(List.of(vehicleB));
+        vehicleB.setPreviousVehicles(List.of(vehicleA));
 
         var solution = new TestdataMultiEntityChainSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB));
@@ -182,8 +182,8 @@ class ListElementCascadeShadowVariableTest {
             vehicles.add(new TestdataMultiEntityChainVehicle("vehicle" + i, i));
         }
         // vehicle0 -> vehicle1 -> vehicle2 chain.
-        vehicles.get(1).getPreviousVehicles().add(vehicles.get(0));
-        vehicles.get(2).getPreviousVehicles().add(vehicles.get(1));
+        vehicles.get(1).setPreviousVehicles(List.of(vehicles.get(0)));
+        vehicles.get(2).setPreviousVehicles(List.of(vehicles.get(1)));
         var visits = new ArrayList<TestdataMultiEntityChainVisit>();
         for (var i = 0; i < 6; i++) {
             visits.add(new TestdataMultiEntityChainVisit("visit" + i, 1 + (i % 3),

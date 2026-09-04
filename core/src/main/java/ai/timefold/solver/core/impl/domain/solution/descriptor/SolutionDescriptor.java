@@ -641,10 +641,6 @@ public final class SolutionDescriptor<Solution_> {
         return listVariableDescriptorList.isEmpty() ? null : listVariableDescriptorList.getFirst();
     }
 
-    public List<ListVariableDescriptor<Solution_>> getListVariableDescriptorList() {
-        return listVariableDescriptorList;
-    }
-
     public SolutionCloner<Solution_> getSolutionCloner() {
         return solutionCloner;
     }

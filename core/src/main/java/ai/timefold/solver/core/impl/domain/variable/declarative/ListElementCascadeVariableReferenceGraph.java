@@ -17,7 +17,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A variable reference graph that excludes a planning list variable's elements from the graph
- * and updates them by a cascade instead; see {@link GraphStructure.ListElementCascade}.
+ * and updates them by a cascade instead;
+ * see {@link GraphStructure.GraphStructureAndDirection#cascadedElementClass()}.
  * <p>
  * The inner graph covers everything but the elements and is built by the normal machinery.
  * The cascade walks each dirty entity's list from the earliest dirty element,
@@ -27,6 +28,15 @@ import org.jspecify.annotations.Nullable;
  * {@link #updateChanged()} alternates the cascade and the inner graph until neither has work left,
  * which terminates because the flagged values converge
  * (or stop changing once the inner graph marks their entities inconsistent).
+ * <p>
+ * The element suppliers run once per update, since a flagged entity's walk is deferred
+ * until its pre-chain variables have settled. The flagged entity's post-chain variables
+ * are the one exception: the inner update that changes the pre-chain variable recomputes
+ * them in the same topological pass, through their pre-chain edge and before the cascade
+ * has re-walked the chain they depend on, and they are recomputed once more after the walk
+ * when it changed an element. This costs one extra supplier call per flagged entity and
+ * update; {@code ListElementCascadeVariableReferenceGraphTest} pins both the single element
+ * computations and this residual double evaluation.
  */
 @NullMarked
 public final class ListElementCascadeVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -90,7 +100,7 @@ public final class ListElementCascadeVariableReferenceGraph<Solution_> implement
         this.isProcessing = false;
 
         this.elementConsistencyState = consistencyTracker
-                .getDeclarativeEntityConsistencyState(sortedElementDescriptorList.get(0).getEntityDescriptor());
+                .getDeclarativeEntityConsistencyState(sortedElementDescriptorList.getFirst().getEntityDescriptor());
         this.monitoredSourceVariableSet = new HashSet<>();
         this.elementUpdaters = new VariableUpdaterInfo[sortedElementDescriptorList.size()];
         var updaterId = 0;
