@@ -36,7 +36,7 @@ import org.jspecify.annotations.Nullable;
  * matching the fixed-width-probe design of the pillar family.
  * This is not neutral to every model, but it costs nothing on the two that matter:
  * a solution-wide {@link ValueRange} is one deduplicated range,
- * so {@link SampleValueRanges#findDestination} accepts the first candidate;
+ * so {@link SampleValueRanges#findTarget} accepts the first candidate;
  * overlapping entity-dependent ranges normally intersect too,
  * so the first draw succeeds there as well.
  * Only disjoint entity-dependent ranges fail systematically,
@@ -118,14 +118,14 @@ final class MassDestinationMoveIterator<Solution_, Entity_, Value_> implements I
                 failedSampleDraws++;
                 continue;
             }
-            var destination = ranges.findDestination(random, sharedValue);
-            if (destination == null) {
+            var targetValue = ranges.findTarget(random, sharedValue);
+            if (targetValue == null) {
                 provenEmptyRanges = ranges;
                 valueWithNoLegalDestination = sharedValue;
                 failedSampleDraws++;
                 continue;
             }
-            nextMove = Moves.massChange(variableMetaModel, sample, destination);
+            nextMove = Moves.massChange(variableMetaModel, sample, targetValue);
         }
         return nextMove != null;
     }

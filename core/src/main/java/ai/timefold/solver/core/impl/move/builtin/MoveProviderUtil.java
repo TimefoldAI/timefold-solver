@@ -149,7 +149,7 @@ public final class MoveProviderUtil {
      * @return the value every member of {@code sample} currently holds,
      *         or {@code null} if any two members disagree,
      *         or if {@code sample} is entirely unassigned.
-     *         Either answer is the correct {@code excludedValue} for {@link SampleValueRanges#findDestination}:
+     *         Either answer is the correct {@code excludedValue} for {@link SampleValueRanges#findTarget}:
      *         {@code null} is never itself a candidate destination,
      *         so excluding "no shared value" excludes nothing.
      */

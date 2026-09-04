@@ -109,7 +109,7 @@ public final class SubPillarChangeMoveProvider<Solution_, Entity_, Value_>
      * and caching the first one would turn {@link RetiringBiWalk}'s remaining probes into deterministic no-ops.
      * <p>
      * The destination is drawn from the (sub)pillar members' own {@link ValueRange}s
-     * ({@link SampleValueRanges#findDestination}) rather than from a global candidate pool:
+     * ({@link SampleValueRanges#findTarget}) rather than from a global candidate pool:
      * every candidate offered is already legal for every member and different from the slice value,
      * so no {@code isValueInRange} filtering or bail-out sampling is needed.
      *
@@ -180,18 +180,18 @@ public final class SubPillarChangeMoveProvider<Solution_, Entity_, Value_>
                 pendingPillar = pillar;
                 return new SingletonIterator<>(null);
             }
-            var destination = ranges.findDestination(random, sliceValue);
-            if (destination == null) {
+            var targetValue = ranges.findTarget(random, sliceValue);
+            if (targetValue == null) {
                 pendingPillar = null;
                 return Collections.emptyIterator();
             }
             pendingPillar = pillar;
-            return new SingletonIterator<>(destination);
+            return new SingletonIterator<>(targetValue);
         }
 
         @Override
-        public void accept(Value_ sliceValue, Value_ destination) {
-            nextMove = Moves.massChange(variableMetaModel, Objects.requireNonNull(pendingPillar), destination);
+        public void accept(Value_ sliceValue, Value_ targetValue) {
+            nextMove = Moves.massChange(variableMetaModel, Objects.requireNonNull(pendingPillar), targetValue);
             pendingPillar = null;
         }
 

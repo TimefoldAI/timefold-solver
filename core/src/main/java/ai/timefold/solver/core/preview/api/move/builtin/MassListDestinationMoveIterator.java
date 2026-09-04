@@ -99,8 +99,8 @@ final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> implemen
         if (destination instanceof UnassignedElement) {
             return true;
         }
-        var targetAssigned = (PositionInList) destination;
-        Entity_ destinationEntity = targetAssigned.entity();
+        var assignedDestination = (PositionInList) destination;
+        Entity_ destinationEntity = assignedDestination.entity();
         if (variableMetaModel.isValueRangeOnSolution()) {
             // We can move freely between entities, no per-entity value range to violate.
             return true;
