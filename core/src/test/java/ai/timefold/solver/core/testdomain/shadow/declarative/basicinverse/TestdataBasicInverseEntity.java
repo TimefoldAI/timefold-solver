@@ -10,8 +10,8 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
  * The "group" variable has no {@code @InverseRelationShadowVariable} declared for it anywhere
  * in this model. The declarative "ownerCode" shadow chains through two genuine (non-declarative)
  * variables ("group", then "group.owner"), which forces the framework to resolve "which entities
- * currently point to a given group" via a fresh, non-externalized (map-mode)
- * {@code BasicVariableStateDemand}/{@code ExternalizedBasicVariableStateSupply}, since no annotated
+ * currently point to a given group" via a non-externalized (map-mode)
+ * {@code BasicVariableState}/{@code ExternalizedBasicVariableState}, since no annotated
  * inverse field exists to reuse.
  */
 @PlanningEntity

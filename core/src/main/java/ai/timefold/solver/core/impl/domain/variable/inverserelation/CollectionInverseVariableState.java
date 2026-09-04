@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 
-@FunctionalInterface
 public interface CollectionInverseVariableState extends Supply {
 
     /**

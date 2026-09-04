@@ -11,6 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,15 +19,19 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.function.QuadConsumer;
 import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.GraphNode;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.violation.ListVariableTracker;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.NeighborhoodNotifier;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -34,9 +39,19 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.testdomain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
+import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseEntity;
+import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseGroup;
+import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseOwner;
+import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseSolution;
+import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedEntity;
+import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -349,6 +364,179 @@ class SolverVariableSupportTest {
         solverVariableSupport.afterListVariableChanged(variableDescriptor, e1, 1, 2);
 
         assertThat(listVariableState.isAssigned(v2)).isTrue();
+    }
+
+    @Test
+    void basicVariableStateIsCreatedOncePerVariable() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        solverVariableSupport.linkShadowVariables();
+        var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataEntity.class)
+                .getGenuineVariableDescriptor("value");
+
+        // The state is the single source of truth for the variable's inverse relation;
+        // every caller must get the same instance, or they observe different inverse collections
+        // and each extra instance is another handler notified on every variable change.
+        var basicVariableState = solverVariableSupport.getBasicVariableState(variableDescriptor);
+        assertThat(solverVariableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+        assertThat(solverVariableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+    }
+
+    @Test
+    void listVariableStateIsCreatedOncePerVariable() {
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        solverVariableSupport.linkShadowVariables();
+        var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
+
+        var listVariableState = solverVariableSupport.getListVariableState(variableDescriptor);
+        assertThat(listVariableState).isNotNull();
+        assertThat(solverVariableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
+        assertThat(solverVariableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
+    }
+
+    @Test
+    void basicVariableStateSurvivesWorkingSolutionResets() {
+        // This domain's declarative shadow variable chains through two genuine variables,
+        // so rebuilding the shadow variable session asks for the basic variable state.
+        // That rebuild happens on every setWorkingSolution() and on every problem change,
+        // so a state which is not reused would accumulate one stale handler per reset.
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataBasicInverseSolution.class,
+                TestdataBasicInverseEntity.class, TestdataBasicInverseGroup.class);
+        var owner = new TestdataBasicInverseOwner("o1");
+        var group = new TestdataBasicInverseGroup("g1");
+        group.setOwner(owner);
+        var entity = new TestdataBasicInverseEntity("e1");
+        entity.setGroup(group);
+        var solution = new TestdataBasicInverseSolution(List.of(entity), List.of(group), List.of(owner));
+        var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataBasicInverseEntity.class)
+                .getGenuineVariableDescriptor("group");
+
+        try (var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor, s -> SimpleScore.ZERO,
+                EnvironmentMode.PHASE_ASSERT).buildScoreDirector()) {
+            scoreDirector.setWorkingSolution(solution);
+            var basicVariableState = scoreDirector.getBasicVariableState(variableDescriptor);
+            for (var i = 0; i < 3; i++) {
+                scoreDirector.setWorkingSolution(solution);
+                assertThat(scoreDirector.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+            }
+        }
+    }
+
+    @Test
+    void mixedModelStatesAreCreatedOncePerVariable() {
+        // A mixed model: the entity owns a list variable, and its values are entities in their own right,
+        // carrying a basic variable, list-sourced inverse and previous shadows,
+        // and a declarative shadow chaining through both.
+        // Both the basic and the list handler registries are therefore populated at once.
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataMixedSolution.class,
+                TestdataMixedEntity.class, TestdataMixedValue.class);
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        var delayVariableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataMixedValue.class)
+                .getGenuineVariableDescriptor("delay");
+
+        var value1 = new TestdataMixedValue("v1");
+        var value2 = new TestdataMixedValue("v2");
+        var entity = new TestdataMixedEntity("e1");
+        entity.setValueList(new ArrayList<>(List.of(value1, value2)));
+        var solution = new TestdataMixedSolution();
+        solution.setMixedEntityList(List.of(entity));
+        solution.setMixedValueList(List.of(value1, value2));
+        solution.setDelayList(List.of(1, 2));
+
+        try (var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor, s -> SimpleScore.ZERO,
+                EnvironmentMode.PHASE_ASSERT).buildScoreDirector()) {
+            scoreDirector.setWorkingSolution(solution);
+
+            var basicVariableState = scoreDirector.getBasicVariableState(delayVariableDescriptor);
+            var listVariableState = scoreDirector.getListVariableState(listVariableDescriptor);
+
+            // Neither lookup may hand out the state of the other kind of variable.
+            assertThat(basicVariableState.getSourceVariableDescriptor()).isSameAs(delayVariableDescriptor);
+            assertThat(listVariableState.getSourceVariableDescriptor()).isSameAs(listVariableDescriptor);
+            assertThat(listVariableState).isNotSameAs(basicVariableState);
+
+            // Both are reused, rather than replaced, on every subsequent call ...
+            assertThat(scoreDirector.getBasicVariableState(delayVariableDescriptor)).isSameAs(basicVariableState);
+            assertThat(scoreDirector.getListVariableState(listVariableDescriptor)).isSameAs(listVariableState);
+
+            // ... including after a working solution reset, which rebuilds the shadow variable session.
+            scoreDirector.setWorkingSolution(solution);
+            assertThat(scoreDirector.getBasicVariableState(delayVariableDescriptor)).isSameAs(basicVariableState);
+            assertThat(scoreDirector.getListVariableState(listVariableDescriptor)).isSameAs(listVariableState);
+        }
+    }
+
+    @Test
+    void multiVariableModelStatesAreCreatedOncePerVariable() {
+        // One entity with three basic variables, two of which share the same value type.
+        // Each variable owns the inverse relation of its own values,
+        // so each needs its own state; sharing one would cross their inverse collections.
+        var solutionDescriptor = TestdataMultiVarSolution.buildSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataMultiVarEntity.class);
+        var primaryVariableDescriptor = entityDescriptor.getGenuineVariableDescriptor("primaryValue");
+        var secondaryVariableDescriptor = entityDescriptor.getGenuineVariableDescriptor("secondaryValue");
+        var tertiaryVariableDescriptor = entityDescriptor.getGenuineVariableDescriptor("tertiaryValueAllowedUnassigned");
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var otherValue = new TestdataOtherValue("o1");
+        var entity = new TestdataMultiVarEntity("e1", value1, value2, otherValue);
+        var solution = new TestdataMultiVarSolution("s1");
+        solution.setValueList(List.of(value1, value2));
+        solution.setOtherValueList(List.of(otherValue));
+        solution.setMultiVarEntityList(List.of(entity));
+
+        try (var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor, s -> SimpleScore.ZERO,
+                EnvironmentMode.PHASE_ASSERT).buildScoreDirector()) {
+            scoreDirector.setWorkingSolution(solution);
+
+            var primaryState = scoreDirector.getBasicVariableState(primaryVariableDescriptor);
+            var secondaryState = scoreDirector.getBasicVariableState(secondaryVariableDescriptor);
+            var tertiaryState = scoreDirector.getBasicVariableState(tertiaryVariableDescriptor);
+
+            // One state per variable, never shared between the variables of the same entity ...
+            assertThat(primaryState.getSourceVariableDescriptor()).isSameAs(primaryVariableDescriptor);
+            assertThat(secondaryState.getSourceVariableDescriptor()).isSameAs(secondaryVariableDescriptor);
+            assertThat(tertiaryState.getSourceVariableDescriptor()).isSameAs(tertiaryVariableDescriptor);
+            assertThat(primaryState).isNotSameAs(secondaryState).isNotSameAs(tertiaryState);
+            assertThat(secondaryState).isNotSameAs(tertiaryState);
+
+            // ... each is reused on every subsequent call ...
+            assertThat(scoreDirector.getBasicVariableState(primaryVariableDescriptor)).isSameAs(primaryState);
+            assertThat(scoreDirector.getBasicVariableState(secondaryVariableDescriptor)).isSameAs(secondaryState);
+            assertThat(scoreDirector.getBasicVariableState(tertiaryVariableDescriptor)).isSameAs(tertiaryState);
+
+            // ... and each tracks only its own variable's inverse relation,
+            // even where two variables point into the same value range.
+            assertThat(primaryState.<TestdataMultiVarEntity> getInverseCollection(value1)).containsExactly(entity);
+            assertThat(primaryState.<TestdataMultiVarEntity> getInverseCollection(value2)).isEmpty();
+            assertThat(secondaryState.<TestdataMultiVarEntity> getInverseCollection(value1)).isEmpty();
+            assertThat(secondaryState.<TestdataMultiVarEntity> getInverseCollection(value2)).containsExactly(entity);
+            assertThat(tertiaryState.<TestdataMultiVarEntity> getInverseCollection(otherValue)).containsExactly(entity);
+        }
+    }
+
+    @Test
+    void listVariableStateIsFoundWhenAnotherHandlerIsRegisteredFirst() {
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
+
+        // A tracker shares the list variable change notification list with the state,
+        // and tracking environment modes demand one.
+        // Registering it first must not stop the state from being created, nor be mistaken for the state.
+        var listVariableTracker = new ListVariableTracker<>(variableDescriptor);
+        solverVariableSupport.demand(listVariableTracker.demand());
+
+        var listVariableState = solverVariableSupport.getListVariableState(variableDescriptor);
+        assertThat(listVariableState).isNotNull();
+        assertThat(listVariableState).isNotSameAs(listVariableTracker);
+        assertThat(listVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+        assertThat(solverVariableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
     }
 
     private static <Solution_> InnerScoreDirector<Solution_, ?> basicScoreDirectorMock(
