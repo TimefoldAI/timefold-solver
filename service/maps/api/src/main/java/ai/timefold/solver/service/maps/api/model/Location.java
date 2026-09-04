@@ -1,6 +1,8 @@
 package ai.timefold.solver.service.maps.api.model;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.ToIntFunction;
 
 import jakarta.validation.constraints.Max;
@@ -49,6 +51,20 @@ public class Location {
 
     @JsonIgnore
     private ToIntFunction<OffsetDateTime> timeframeIndexResolver;
+
+    // Non-default transport types only. The default mode ({@link TransportType#CAR}) continues to use the scalar/
+    // timeframe fields above so its lookups keep the IndexableDistanceMatrix index-cache fast path.
+    @JsonIgnore
+    private Map<TransportType, DistanceMatrix> travelTimeMatrixByMode;
+
+    @JsonIgnore
+    private Map<TransportType, DistanceMatrix> distanceMatrixByMode;
+
+    @JsonIgnore
+    private Map<TransportType, DistanceMatrix[]> travelTimesByTimeframeByMode;
+
+    @JsonIgnore
+    private Map<TransportType, DistanceMatrix[]> distancesByTimeframeByMode;
 
     public Location() {
     }
@@ -118,6 +134,54 @@ public class Location {
         if (distanceMatrix == null) {
             setDistanceMatrix(firstAvailableMatrix(distancesByTimeframe));
         }
+    }
+
+    public void setTravelTimeMatrix(TransportType transportType, DistanceMatrix travelTimeMatrix) {
+        if (isDefaultMode(transportType)) {
+            setTravelTimeMatrix(travelTimeMatrix);
+            return;
+        }
+        if (travelTimeMatrixByMode == null) {
+            travelTimeMatrixByMode = new HashMap<>();
+        }
+        travelTimeMatrixByMode.put(transportType, travelTimeMatrix);
+    }
+
+    public void setDistanceMatrix(TransportType transportType, DistanceMatrix distanceMatrix) {
+        if (isDefaultMode(transportType)) {
+            setDistanceMatrix(distanceMatrix);
+            return;
+        }
+        if (distanceMatrixByMode == null) {
+            distanceMatrixByMode = new HashMap<>();
+        }
+        distanceMatrixByMode.put(transportType, distanceMatrix);
+    }
+
+    public void setTravelTimeMatrices(TransportType transportType, DistanceMatrix[] travelTimesByTimeframe,
+            ToIntFunction<OffsetDateTime> indexResolver) {
+        if (isDefaultMode(transportType)) {
+            setTravelTimeMatrices(travelTimesByTimeframe, indexResolver);
+            return;
+        }
+        if (travelTimesByTimeframeByMode == null) {
+            travelTimesByTimeframeByMode = new HashMap<>();
+        }
+        travelTimesByTimeframeByMode.put(transportType, travelTimesByTimeframe);
+        this.timeframeIndexResolver = indexResolver;
+    }
+
+    public void setDistanceMatrices(TransportType transportType, DistanceMatrix[] distancesByTimeframe,
+            ToIntFunction<OffsetDateTime> indexResolver) {
+        if (isDefaultMode(transportType)) {
+            setDistanceMatrices(distancesByTimeframe, indexResolver);
+            return;
+        }
+        if (distancesByTimeframeByMode == null) {
+            distancesByTimeframeByMode = new HashMap<>();
+        }
+        distancesByTimeframeByMode.put(transportType, distancesByTimeframe);
+        this.timeframeIndexResolver = indexResolver;
     }
 
     /**
@@ -226,6 +290,69 @@ public class Location {
         return TravelDistance.of(distance);
     }
 
+    /**
+     * Returns the travel time for a route between this location and the given location using the given transport type.
+     *
+     * @param location the location representing the route destination
+     * @param transportType the routing profile to use; {@code null} is treated as {@link TransportType#CAR}
+     * @return {@link TravelTime} instance representing the travel time in seconds.
+     * @throws IllegalArgumentException When the resolved matrix does not include both locations.
+     * @throws IllegalStateException When no travel time matrix is configured for the given transport type.
+     */
+    public TravelTime getTravelTimeTo(Location location, TransportType transportType) {
+        DistanceMatrix matrix = travelTimeMatrixForMode(transportType);
+        return TravelTime.of(lookup(matrix, location, transportType, "travel time", null));
+    }
+
+    /**
+     * Returns the travel time for a route between this location and the given location at the given departure time,
+     * using the given transport type.
+     *
+     * @param location the location representing the route destination
+     * @param departureTime the instant used to select the traffic timeframe matrix
+     * @param transportType the routing profile to use; {@code null} is treated as {@link TransportType#CAR}
+     * @return {@link TravelTime} instance representing the travel time in seconds.
+     * @throws IllegalArgumentException When the resolved matrix does not include both locations, or the resolver
+     *         returns an out-of-bounds index.
+     * @throws IllegalStateException When no travel time matrix is configured for the given transport type.
+     */
+    public TravelTime getTravelTimeTo(Location location, OffsetDateTime departureTime, TransportType transportType) {
+        DistanceMatrix matrix = travelTimeMatrixForMode(transportType, departureTime);
+        return TravelTime.of(lookup(matrix, location, transportType, "travel time", departureTime));
+    }
+
+    /**
+     * Returns the travel distance for a route between this location and the given location using the given transport
+     * type.
+     *
+     * @param location the location representing the route destination
+     * @param transportType the routing profile to use; {@code null} is treated as {@link TransportType#CAR}
+     * @return {@link TravelDistance} instance representing the travel distance in meters.
+     * @throws IllegalArgumentException When the resolved matrix does not include both locations.
+     * @throws IllegalStateException When no distance matrix is configured for the given transport type.
+     */
+    public TravelDistance getDistanceTo(Location location, TransportType transportType) {
+        DistanceMatrix matrix = distanceMatrixForMode(transportType);
+        return TravelDistance.of(lookup(matrix, location, transportType, "distance", null));
+    }
+
+    /**
+     * Returns the travel distance for a route between this location and the given location at the given departure
+     * time, using the given transport type.
+     *
+     * @param location the location representing the route destination
+     * @param departureTime the instant used to select the traffic timeframe matrix
+     * @param transportType the routing profile to use; {@code null} is treated as {@link TransportType#CAR}
+     * @return {@link TravelDistance} instance representing the travel distance in meters.
+     * @throws IllegalArgumentException When the resolved matrix does not include both locations, or the resolver
+     *         returns an out-of-bounds index.
+     * @throws IllegalStateException When no distance matrix is configured for the given transport type.
+     */
+    public TravelDistance getDistanceTo(Location location, OffsetDateTime departureTime, TransportType transportType) {
+        DistanceMatrix matrix = distanceMatrixForMode(transportType, departureTime);
+        return TravelDistance.of(lookup(matrix, location, transportType, "distance", departureTime));
+    }
+
     public short getIndex(DistanceMatrix matrix) {
         if (matrix == travelTimeMatrix) {
             return travelTimeMatrixIndex;
@@ -278,6 +405,72 @@ public class Location {
                             .formatted(what, index, this, departureTime));
         }
         return matrix;
+    }
+
+    private static boolean isDefaultMode(TransportType transportType) {
+        return transportType == null || TransportType.CAR.equals(transportType);
+    }
+
+    private DistanceMatrix travelTimeMatrixForMode(TransportType transportType) {
+        if (isDefaultMode(transportType)) {
+            return travelTimeMatrix;
+        }
+        return travelTimeMatrixByMode == null ? null : travelTimeMatrixByMode.get(transportType);
+    }
+
+    private DistanceMatrix travelTimeMatrixForMode(TransportType transportType, OffsetDateTime departureTime) {
+        if (isDefaultMode(transportType)) {
+            return hasTimeframeMatrices(travelTimesByTimeframe)
+                    ? resolveTimeframeMatrix(travelTimesByTimeframe, departureTime, "travel time")
+                    : travelTimeMatrix;
+        }
+        DistanceMatrix[] byTimeframe = travelTimesByTimeframeByMode == null
+                ? null
+                : travelTimesByTimeframeByMode.get(transportType);
+        if (byTimeframe != null && timeframeIndexResolver != null) {
+            return resolveTimeframeMatrix(byTimeframe, departureTime, "travel time");
+        }
+        return travelTimeMatrixByMode == null ? null : travelTimeMatrixByMode.get(transportType);
+    }
+
+    private DistanceMatrix distanceMatrixForMode(TransportType transportType) {
+        if (isDefaultMode(transportType)) {
+            return distanceMatrix;
+        }
+        return distanceMatrixByMode == null ? null : distanceMatrixByMode.get(transportType);
+    }
+
+    private DistanceMatrix distanceMatrixForMode(TransportType transportType, OffsetDateTime departureTime) {
+        if (isDefaultMode(transportType)) {
+            return hasTimeframeMatrices(distancesByTimeframe)
+                    ? resolveTimeframeMatrix(distancesByTimeframe, departureTime, "distance")
+                    : distanceMatrix;
+        }
+        DistanceMatrix[] byTimeframe = distancesByTimeframeByMode == null
+                ? null
+                : distancesByTimeframeByMode.get(transportType);
+        if (byTimeframe != null && timeframeIndexResolver != null) {
+            return resolveTimeframeMatrix(byTimeframe, departureTime, "distance");
+        }
+        return distanceMatrixByMode == null ? null : distanceMatrixByMode.get(transportType);
+    }
+
+    private long lookup(DistanceMatrix matrix, Location to, TransportType transportType, String what,
+            OffsetDateTime departureTime) {
+        TransportType resolvedMode = transportType == null ? TransportType.CAR : transportType;
+        if (matrix == null) {
+            throw new IllegalStateException(
+                    "No %s matrix configured for a location (%s) and transport type (%s).".formatted(what, this,
+                            resolvedMode));
+        }
+        long value = matrix.get(this, to);
+        if (value == -1) {
+            String at = departureTime == null ? "" : " at (%s)".formatted(departureTime);
+            throw new IllegalArgumentException(("No %s information found for a route from (%s) to (%s) for transport "
+                    + "type (%s)%s. Are both locations in the configured map and in the location set (if used)?")
+                    .formatted(what, this, to, resolvedMode, at));
+        }
+        return value;
     }
 
     private void updateIndex(DistanceMatrix distanceMatrix) {

@@ -1,11 +1,14 @@
 package ai.timefold.solver.service.maps.service.client.impl;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import ai.timefold.solver.service.maps.api.model.TransportType;
 import ai.timefold.solver.service.maps.service.integration.internal.MapServiceOptions;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -25,9 +28,9 @@ public class MapServiceOptionsSupplier {
 
     private final Optional<String> tenantId;
 
-    private final Optional<String> transportType;
-
     private final Optional<Double> maxDistanceFromRoad;
+
+    private final List<TransportType> transportTypes;
 
     public MapServiceOptionsSupplier(
             @ConfigProperty(name = "timefold.platform.map-service.provider") Optional<String> provider,
@@ -46,7 +49,11 @@ public class MapServiceOptionsSupplier {
         this.modelResource = modelResource;
         this.tenantId = tenantId;
         this.maxDistanceFromRoad = maxDistanceFromRoad;
-        this.transportType = transportType;
+        this.transportTypes = resolveTransportTypes(transportType);
+    }
+
+    public List<TransportType> getTransportTypes() {
+        return transportTypes;
     }
 
     public String getOptions() {
@@ -54,6 +61,15 @@ public class MapServiceOptionsSupplier {
     }
 
     public String getOptions(Optional<String> locationSetName) {
+        // Legacy single-mode callers get the primary transport type.
+        return getOptions(locationSetName, transportTypes.get(0));
+    }
+
+    public String getOptions(TransportType transportType) {
+        return getOptions(Optional.empty(), transportType);
+    }
+
+    public String getOptions(Optional<String> locationSetName, TransportType transportType) {
         String providerOption = provider.map(MapServiceOptions::getProviderOption).orElse("");
         String locationOption = location.map(MapServiceOptions::getLocationOption).orElse("");
         String modelOption = model.map(MapServiceOptions::getModelOption).orElse("");
@@ -62,7 +78,9 @@ public class MapServiceOptionsSupplier {
         String tenantIdOption = tenantId.map(MapServiceOptions::getTenantIdOption).orElse("");
         String locationSetNameOption = locationSetName.map(MapServiceOptions::getLocationSetNameOption).orElse("");
         String maxDistanceFromRoadOption = maxDistanceFromRoad.map(MapServiceOptions::getMaxDistanceFromRoadOption).orElse("");
-        String transportTypeOption = transportType.map(MapServiceOptions::getTransportTypeOption).orElse("");
+        String transportTypeOption = transportType == null
+                ? ""
+                : MapServiceOptions.getTransportTypeOption(transportType.value());
         String options = Stream
                 .of(providerOption, locationOption, modelOption, modelVersionOption, modelResourceOption, tenantIdOption,
                         locationSetNameOption,
@@ -70,6 +88,18 @@ public class MapServiceOptionsSupplier {
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.joining(","));
         return options.isEmpty() ? "" : options;
+    }
+
+    private static List<TransportType> resolveTransportTypes(Optional<String> transportType) {
+        return transportType
+                .map(value -> Arrays.stream(value.split(","))
+                        .map(String::trim)
+                        .filter(part -> !part.isEmpty())
+                        .map(TransportType::of)
+                        .distinct()
+                        .toList())
+                .filter(list -> !list.isEmpty())
+                .orElseGet(() -> List.of(TransportType.CAR));
     }
 
 }
