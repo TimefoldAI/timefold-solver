@@ -1,11 +1,12 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.function.BiConsumer;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableSupply;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
@@ -21,9 +22,14 @@ public record ChangedVariableNotifier<Solution_>(BiConsumer<VariableDescriptor<S
             },
             null);
 
-    public CollectionInverseVariableSupply getCollectionInverseVariableSupply(VariableMetaModel<?, ?, ?> variableMetaModel) {
+    public CollectionInverseVariableState getCollectionInverseVariableSupply(VariableMetaModel<?, ?, ?> variableMetaModel) {
         if (innerScoreDirector == null) {
-            return entity -> Collections.emptyList();
+            return new CollectionInverseVariableState() {
+                @Override
+                public <Entity_> Collection<Entity_> getInverseCollection(Object planningValue) {
+                    return Collections.emptyList();
+                }
+            };
         } else {
             var solutionDescriptor = innerScoreDirector.getSolutionDescriptor();
             var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(variableMetaModel.entity().type())

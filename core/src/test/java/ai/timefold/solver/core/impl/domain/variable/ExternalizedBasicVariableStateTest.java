@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
@@ -24,7 +23,7 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class ExternalizedBasicVariableStateSupplyTest {
+class ExternalizedBasicVariableStateTest {
 
     @Test
     void externalizedMode() {
@@ -37,7 +36,7 @@ class ExternalizedBasicVariableStateSupplyTest {
                         .getShadowVariableDescriptor("entities");
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        var supply = new ExternalizedBasicVariableStateSupply<>(entityDescriptor.getGenuineVariableDescriptor("value"),
+        var supply = new ExternalizedBasicVariableState<>(entityDescriptor.getGenuineVariableDescriptor("value"),
                 notifier);
         supply.externalize(entitiesVariableDescriptor);
 
@@ -72,7 +71,7 @@ class ExternalizedBasicVariableStateSupplyTest {
         var scoreDirector = mock(InnerScoreDirector.class);
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        var supply = new ExternalizedBasicVariableStateSupply<>(variableDescriptor, notifier);
+        var supply = new ExternalizedBasicVariableState<>(variableDescriptor, notifier);
 
         var val1 = new TestdataValue("1");
         var val2 = new TestdataValue("2");
@@ -89,9 +88,9 @@ class ExternalizedBasicVariableStateSupplyTest {
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
         supply.resetWorkingSolution(scoreDirector);
 
-        assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val1)).containsExactlyInAnyOrder(a, b);
-        assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val2)).isEmpty();
-        assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val3)).containsExactlyInAnyOrder(c, d);
+        assertThat(supply.<TestdataEntity> getInverseCollection(val1)).containsExactlyInAnyOrder(a, b);
+        assertThat(supply.<TestdataEntity> getInverseCollection(val2)).isEmpty();
+        assertThat(supply.<TestdataEntity> getInverseCollection(val3)).containsExactlyInAnyOrder(c, d);
 
         verify(notifier, times(2)).accept(val1);
         verify(notifier, times(0)).accept(val2);
@@ -104,9 +103,9 @@ class ExternalizedBasicVariableStateSupplyTest {
         c.setValue(val2);
         supply.afterVariableChanged(scoreDirector, c);
 
-        assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val1)).containsExactlyInAnyOrder(a, b);
-        assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val2)).containsExactly(c);
-        assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val3)).containsExactly(d);
+        assertThat(supply.<TestdataEntity> getInverseCollection(val1)).containsExactlyInAnyOrder(a, b);
+        assertThat(supply.<TestdataEntity> getInverseCollection(val2)).containsExactly(c);
+        assertThat(supply.<TestdataEntity> getInverseCollection(val3)).containsExactly(d);
 
         verify(notifier).accept(val3);
         verify(notifier).accept(val2);
@@ -125,7 +124,7 @@ class ExternalizedBasicVariableStateSupplyTest {
                         .getShadowVariableDescriptor("entities");
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        var supply = new ExternalizedBasicVariableStateSupply<>(entityDescriptor.getGenuineVariableDescriptor("value"),
+        var supply = new ExternalizedBasicVariableState<>(entityDescriptor.getGenuineVariableDescriptor("value"),
                 notifier);
         supply.externalize(entitiesVariableDescriptor);
 

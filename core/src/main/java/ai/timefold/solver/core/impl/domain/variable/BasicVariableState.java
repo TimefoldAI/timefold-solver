@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableSupply;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableState;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Single source of truth for the inverse relation of a basic
- * {@link ai.timefold.solver.core.api.domain.variable.PlanningVariable}.
+ * Single source of truth for the inverse relation of a basic {@link PlanningVariable}.
  * If the {@link InverseRelationShadowVariableDescriptor} is externalized,
  * there is a field on an entity holding the inverse collection and that field is used.
  * Otherwise, an internal map is used to track the inverse collection.
@@ -15,8 +15,8 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_>
  */
 @NullMarked
-public interface BasicVariableStateSupply<Solution_>
-        extends BasicVariableChangeHandler<Solution_>, CollectionInverseVariableSupply {
+public interface BasicVariableState<Solution_>
+        extends BasicVariableChangeHandler<Solution_>, CollectionInverseVariableState {
 
     void externalize(InverseRelationShadowVariableDescriptor<Solution_> descriptor);
 

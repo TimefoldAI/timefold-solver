@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptUtils.getMultiEntitySuccessorFunction;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,10 +14,8 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -167,12 +166,9 @@ class SelectorBasedKOptListMoveTest {
                         { v6, destinationV6 },
                         { e1, destinationE1 },
                 });
-        var supplyManager = Mockito.mock(SupplyManager.class);
-        var inverseVariableSupply = Mockito.mock(ListVariableStateSupply.class);
-
-        when(destinationScoreDirector.getSupplyManager()).thenReturn(supplyManager);
-        when(supplyManager.demand(Mockito.any(ListVariableStateDemand.class))).thenReturn(inverseVariableSupply);
-        when(inverseVariableSupply.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
+        var listVariableState = Mockito.mock(ListVariableState.class);
+        when(destinationScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
+        when(listVariableState.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
 
         var rebasedMove = kOptListMove.rebase(destinationScoreDirector.getMoveDirector());
         assertThat(rebasedMove.isMoveDoable(destinationScoreDirector)).isTrue();
@@ -217,13 +213,11 @@ class SelectorBasedKOptListMoveTest {
                         { e1, destinationE1 },
                         { e2, destinationE2 },
                 });
-        var supplyManager = Mockito.mock(SupplyManager.class);
-        var inverseVariableSupply = Mockito.mock(ListVariableStateSupply.class);
+        var listVariableState = Mockito.mock(ListVariableState.class);
 
-        when(destinationScoreDirector.getSupplyManager()).thenReturn(supplyManager);
-        when(supplyManager.demand(Mockito.any(ListVariableStateDemand.class))).thenReturn(inverseVariableSupply);
-        when(inverseVariableSupply.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
-        when(inverseVariableSupply.getInverseSingleton(destinationE2.getValueList().get(0))).thenReturn(destinationE2);
+        when(destinationScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
+        when(listVariableState.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
+        when(listVariableState.getInverseSingleton(destinationE2.getValueList().get(0))).thenReturn(destinationE2);
 
         var rebasedMove = kOptListMove.rebase(destinationScoreDirector.getMoveDirector());
 
@@ -671,12 +665,12 @@ class SelectorBasedKOptListMoveTest {
 
         var pickedValues = removedEdgeList.toArray(Object[]::new);
 
-        var listVariableDataSupply = scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand());
-        listVariableDataSupply = spy(listVariableDataSupply);
-        when(listVariableDataSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptorSpy);
+        var listVariableState = scoreDirector.getListVariableState(listVariableDescriptor);
+        listVariableState = spy(listVariableState);
+        when(listVariableState.getSourceVariableDescriptor()).thenReturn(listVariableDescriptorSpy);
 
         Function<Value_, Value_> successorFunction =
-                getSuccessorFunction(listVariableDescriptorSpy, listVariableDataSupply);
+                getSuccessorFunction(listVariableDescriptorSpy, listVariableState);
 
         for (var i = 0; i < removedEdgeList.size(); i += 2) {
             if (successorFunction.apply(removedEdgeList.get(i)) != removedEdgeList.get(i + 1)
@@ -708,17 +702,17 @@ class SelectorBasedKOptListMoveTest {
         }
 
         var descriptor = new KOptDescriptor<>(tourArray, incl,
-                getMultiEntitySuccessorFunction(pickedValues, listVariableDataSupply),
-                getMultiEntityBetweenPredicate(pickedValues, listVariableDataSupply));
-        return descriptor.getKOptListMove(listVariableDataSupply);
+                getMultiEntitySuccessorFunction(pickedValues, listVariableState),
+                getMultiEntityBetweenPredicate(pickedValues, listVariableState));
+        return descriptor.getKOptListMove(listVariableState);
     }
 
     private static <Node_> Function<Node_, Node_> getSuccessorFunction(ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
+            ListVariableState<?, Object, Object> listVariableState) {
         return node -> {
-            var entity = listVariableStateSupply.getInverseSingleton(node);
+            var entity = listVariableState.getInverseSingleton(node);
             var valueList = (List<Node_>) listVariableDescriptor.getValue(entity);
-            var index = listVariableStateSupply.getIndexOrFail(node);
+            var index = listVariableState.getIndexOrFail(node);
             if (index == valueList.size() - 1) {
                 var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(entity);
                 return valueList.get(firstUnpinnedIndex);

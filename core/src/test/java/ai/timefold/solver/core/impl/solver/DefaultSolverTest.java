@@ -2864,38 +2864,6 @@ class DefaultSolverTest {
         assertThat(bestSolution).isNotNull();
     }
 
-    @Test
-    void ensureListVariableStateIsReleased() {
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
-                TestdataListValue.class);
-        var phaseConfigList = new ArrayList<>(solverConfig.getPhaseConfigList());
-        phaseConfigList.add(new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
-        solverConfig.setPhaseConfigList(phaseConfigList);
-
-        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
-        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
-        var problem = TestdataListSolution.generateUninitializedSolution(10, 4);
-
-        var listVariableDescriptor = solver.getScoreDirectorFactory().getSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataListEntity.class)
-                .getListVariableDescriptor();
-
-        // Capture the SupplyManager's demand ref count right after each phase ends (CH, LS1, LS2 in order).
-        var countsAfterEachPhase = new ArrayList<Long>();
-        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataListSolution>() {
-            @Override
-            public void phaseEnded(AbstractPhaseScope<TestdataListSolution> phaseScope) {
-                countsAfterEachPhase.add(phaseScope.getScoreDirector().getSupplyManager()
-                        .getActiveCount(listVariableDescriptor.getStateDemand()));
-            }
-        });
-        solver.solve(problem);
-        // Three phases: CS, LS1 and LS2
-        assertThat(countsAfterEachPhase).hasSize(3);
-        // The count of demanded list variable state must be equal for both LS phases
-        assertThat(countsAfterEachPhase.get(2)).isEqualTo(countsAfterEachPhase.get(1));
-    }
-
     @NullMarked
     public static class CorruptedIncrementalScoreCalculator
             implements AnalyzableIncrementalScoreCalculator<TestdataSolution, SimpleScore> {

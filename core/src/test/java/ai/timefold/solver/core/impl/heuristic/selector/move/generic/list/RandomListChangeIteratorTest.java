@@ -51,7 +51,7 @@ class RandomListChangeIteratorTest {
         phaseStarted(destinationSelector, solverScope);
 
         var randomListChangeIterator = new RandomListChangeIterator<>(
-                scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
+                scoreDirector.getListVariableState(listVariableDescriptor),
                 sourceValueSelector,
                 destinationSelector);
 

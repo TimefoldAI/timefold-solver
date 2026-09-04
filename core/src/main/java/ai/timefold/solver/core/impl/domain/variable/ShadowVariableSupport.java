@@ -114,7 +114,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void linkShadowVariables() {
         if (listVariableDescriptor != null) {
-            listVariableChangeHandlerList.add(scoreDirector.getListVariableStateSupply(listVariableDescriptor));
+            listVariableChangeHandlerList.add(scoreDirector.getListVariableState(listVariableDescriptor));
         }
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
@@ -127,29 +127,28 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     // Shadow variables which are not related to a list variable are processed normally.
     // Cascading, declarative, and inconsistent shadow variables are routed elsewhere and need no wiring here.
     private void linkShadowVariable(ShadowVariableDescriptor<Solution_> descriptor) {
-        var listVariableStateSupply = getListVariableStateSupply();
+        var listVariableState = getListVariableState();
         if (descriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
             if (inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor() instanceof ListVariableDescriptor<?>) {
-                if (listVariableStateSupply != null) {
-                    processShadowVariableDescriptorWithListVariable(inverseRelationShadowVariableDescriptor,
-                            listVariableStateSupply);
+                if (listVariableState != null) {
+                    processShadowVariableDescriptorWithListVariable(inverseRelationShadowVariableDescriptor, listVariableState);
                 }
             } else {
                 var basicVariableStateDemand = inverseRelationShadowVariableDescriptor.getProvidedDemand();
                 demand(basicVariableStateDemand).externalize(inverseRelationShadowVariableDescriptor);
                 basicVariableStateDemandList.add(basicVariableStateDemand);
             }
-        } else if (listVariableStateSupply != null) {
+        } else if (listVariableState != null) {
             switch (descriptor) {
                 // When multiple variable types are used,
                 // the shadow variable process needs to account for each variable
                 // and process them according to their types.
                 case IndexShadowVariableDescriptor<Solution_> d ->
-                    processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                    processShadowVariableDescriptorWithListVariable(d, listVariableState);
                 case PreviousElementShadowVariableDescriptor<Solution_> d ->
-                    processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                    processShadowVariableDescriptorWithListVariable(d, listVariableState);
                 case NextElementShadowVariableDescriptor<Solution_> d ->
-                    processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                    processShadowVariableDescriptorWithListVariable(d, listVariableState);
                 case DeclarativeShadowVariableDescriptor<Solution_> ignored -> {
                     // Needs no handling here.
                 }
@@ -166,24 +165,24 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
         }
     }
 
-    private @Nullable ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
+    private @Nullable ListVariableState<Solution_, Object, Object> getListVariableState() {
         if (listVariableChangeHandlerList.isEmpty()) {
             return null;
         }
-        return (ListVariableStateSupply<Solution_, Object, Object>) listVariableChangeHandlerList.getFirst();
+        return (ListVariableState<Solution_, Object, Object>) listVariableChangeHandlerList.getFirst();
     }
 
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
-            ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply) {
+            ListVariableState<Solution_, Object, Object> listVariableState) {
         switch (shadowVariableDescriptor) {
             case IndexShadowVariableDescriptor<Solution_> indexShadowVariableDescriptor ->
-                listVariableStateSupply.externalize(indexShadowVariableDescriptor);
+                listVariableState.externalize(indexShadowVariableDescriptor);
             case InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor ->
-                listVariableStateSupply.externalize(inverseRelationShadowVariableDescriptor);
+                listVariableState.externalize(inverseRelationShadowVariableDescriptor);
             case PreviousElementShadowVariableDescriptor<Solution_> previousElementShadowVariableDescriptor ->
-                listVariableStateSupply.externalize(previousElementShadowVariableDescriptor);
+                listVariableState.externalize(previousElementShadowVariableDescriptor);
             case NextElementShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor ->
-                listVariableStateSupply.externalize(nextElementShadowVariableDescriptor);
+                listVariableState.externalize(nextElementShadowVariableDescriptor);
             default -> // The list variable supply supports no other shadow variables.
                 throw new IllegalStateException(
                         "Impossible state: list-variable-source shadow variable %s (%s) is not Index, InverseRelation, Previous, or Next."
@@ -220,9 +219,6 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
             var basicVariableChangeHandler = (BasicVariableChangeHandler<Solution_>) handler;
             resetWorkingSolutionIfSet(() -> basicVariableChangeHandler.resetWorkingSolution(scoreDirector));
             registerBasicVariableChangeHandler(basicVariableChangeHandler);
-        } else if (supply instanceof ListVariableStateSupply<?, ?, ?> rawListStateSupply) {
-            var listStateSupply = (ListVariableStateSupply<Solution_, Object, ?>) rawListStateSupply;
-            resetWorkingSolutionIfSet(() -> listStateSupply.resetWorkingSolution(scoreDirector));
         } else if (supply instanceof ListVariableTracker<?> tracker) {
             var listVariableTracker = (ListVariableTracker<Solution_>) tracker;
             resetWorkingSolutionIfSet(() -> listVariableTracker.resetWorkingSolution(scoreDirector));
@@ -322,9 +318,6 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
                     handler.close();
                 }
             }
-        }
-        if (listVariableDescriptor != null && getListVariableStateSupply() != null) {
-            cancel(listVariableDescriptor.getStateDemand());
         }
         for (var basicVariableStateDemand : basicVariableStateDemandList) {
             cancel(basicVariableStateDemand);
