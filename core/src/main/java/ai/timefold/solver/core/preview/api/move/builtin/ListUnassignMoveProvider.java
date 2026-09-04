@@ -24,7 +24,7 @@ import org.jspecify.annotations.NullMarked;
  * @see MassListUnassignMoveProvider A set of values drawn together.
  */
 @NullMarked
-public class ListUnassignMoveProvider<Solution_, Entity_, Value_> implements MoveProvider<Solution_> {
+public final class ListUnassignMoveProvider<Solution_, Entity_, Value_> implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
 
