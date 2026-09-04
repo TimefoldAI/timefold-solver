@@ -132,6 +132,10 @@ For more detailed guidance on when to use which variant, read the xref:domain-mo
 | *Typical use case*
 | Assign a room to a lesson, assign an employee to a shift
 | Route customers for a vehicle, sequence tasks for a worker
+
+| *Limitations*
+|
+| One per solution
 |===
 
 A planning entity can contain xref:mixedModels[a mix] of these genuine variables, with some limitations.
@@ -776,6 +780,8 @@ Planning list variable can be used if the domain meets the following criteria:
 
 . Each planning value is assigned to exactly one planning entity.
 No planning value may appear in multiple entities.
+
+NOTE: Only a single xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[@PlanningListVariable] is supported per solution.
 
 
 [#planningListVariableAllowingUnassigned]
@@ -1666,6 +1672,8 @@ A vehicle route must both plan the sequence of visits and, for each visit, indep
 
 When a solution model combines xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic] and xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list] planning variables,
 it is referred to as a *mixed model*.
+
+NOTE: Only a single xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[@PlanningListVariable] is supported per solution.
 
 Mixed models support three distinct patterns.
 
