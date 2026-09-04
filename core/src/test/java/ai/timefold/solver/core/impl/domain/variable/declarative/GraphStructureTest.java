@@ -38,6 +38,9 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fact.Testdat
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVisit;
@@ -230,6 +233,20 @@ class GraphStructureTest {
                 .hasFieldOrPropertyWithValue("structure", GraphStructure.NO_DYNAMIC_EDGES)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
                 .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataNonOwnerVisit.class);
+    }
+
+    @Test
+    void multiEntityChainWithPlanningVariableChainedVehicles() {
+        var vehicle = new TestdataChainLoopVehicle("A", 0);
+        var visit = new TestdataChainLoopVisit("v1", 1);
+        // The vehicles chain through a planning variable, so the inner graph has dynamic edges;
+        // that does not concern the visits, which are still cascaded.
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataChainLoopSolution.buildSolutionDescriptor(), vehicle, visit))
+                .hasFieldOrPropertyWithValue("structure",
+                        GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataChainLoopVisit.class);
     }
 
     @Test
