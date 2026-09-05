@@ -11,11 +11,11 @@ import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
 
-class ScalingOrderedSetTest {
+class ScalingSequencedSetTest {
 
     @Test
     void emptySetProperties() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
 
         assertThat(set)
                 .doesNotContain("test")
@@ -24,7 +24,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void addSingleElement() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
 
         var changed = set.add("test");
 
@@ -36,7 +36,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void addDuplicateElement() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
 
         set.add("test");
         var changed = set.add("test");
@@ -49,7 +49,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void addAllWithNewElements() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
 
         var changed = set.addAll(Arrays.asList("a", "b", "c"));
 
@@ -61,7 +61,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void addAllWithDuplicateElements() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -75,7 +75,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void addAllWithAllDuplicateElements() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -89,7 +89,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void removeSingleElement() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
 
         var removed = set.remove("a");
@@ -100,7 +100,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void removeNonexistentElement() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
 
         var removed = set.remove("b");
@@ -113,7 +113,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void clearEmptiesTheSet() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -124,7 +124,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void toArrayReturnsCorrectArray() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -135,7 +135,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void toArrayWithTypeReturnsCorrectArray() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -146,7 +146,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void iteratorReturnsAllElements() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -161,7 +161,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void iteratorRemoveThrowsException() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
 
         var iterator = set.iterator();
@@ -173,7 +173,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void containsWorks() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
 
         assertThat(set)
@@ -183,7 +183,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void containsAllWorks() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -193,7 +193,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void retainAllThrowsException() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
 
         var list = List.of("a");
         assertThatThrownBy(() -> set.retainAll(list))
@@ -203,7 +203,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void removeAllThrowsException() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
 
         var list = List.of("a");
         assertThatThrownBy(() -> set.removeAll(list))
@@ -213,7 +213,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void toStringWorks() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
         set.add("b");
 
@@ -222,89 +222,89 @@ class ScalingOrderedSetTest {
 
     @Test
     void scalingFromListToSet() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
 
         // Add elements up to the threshold (16)
-        for (var i = 0; i < ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 0; i < ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             set.add(i);
         }
 
         // At this point, it should still be using a list
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
 
         // Adding one more should cause it to switch to a set
-        set.add(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+        set.add(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
 
         // Verify it still works correctly
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
-        for (var i = 0; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD + 1);
+        for (var i = 0; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             assertThat(set).contains(i);
         }
     }
 
     @Test
     void scalingFromSetToList() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
 
         // Add elements beyond threshold to ensure it's using a set
-        for (var i = 0; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 0; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             set.add(i);
         }
 
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD + 1);
 
         // Remove elements until we're at threshold
-        set.remove(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+        set.remove(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
 
         // At threshold, it should still be a set
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
 
         // Remove one more to trigger scaling back to list
         set.remove(0);
 
         // Verify it still works correctly
         assertThat(set)
-                .hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD - 1)
+                .hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD - 1)
                 .doesNotContain(0);
-        for (var i = 1; i < ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 1; i < ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             assertThat(set).contains(i);
         }
     }
 
     @Test
     void addAllCausingScaling() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
 
         // Add some elements but stay below threshold
-        for (var i = 0; i < ScalingOrderedSet.LIST_SIZE_THRESHOLD - 5; i++) {
+        for (var i = 0; i < ScalingSequencedSet.LIST_SIZE_THRESHOLD - 5; i++) {
             set.add(i);
         }
 
         // Prepare a collection that will push it over threshold when added
         var toAdd = List.of(
-                ScalingOrderedSet.LIST_SIZE_THRESHOLD - 5,
-                ScalingOrderedSet.LIST_SIZE_THRESHOLD - 4,
-                ScalingOrderedSet.LIST_SIZE_THRESHOLD - 3,
-                ScalingOrderedSet.LIST_SIZE_THRESHOLD - 2,
-                ScalingOrderedSet.LIST_SIZE_THRESHOLD - 1,
-                ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+                ScalingSequencedSet.LIST_SIZE_THRESHOLD - 5,
+                ScalingSequencedSet.LIST_SIZE_THRESHOLD - 4,
+                ScalingSequencedSet.LIST_SIZE_THRESHOLD - 3,
+                ScalingSequencedSet.LIST_SIZE_THRESHOLD - 2,
+                ScalingSequencedSet.LIST_SIZE_THRESHOLD - 1,
+                ScalingSequencedSet.LIST_SIZE_THRESHOLD);
 
         // Add the collection, which should trigger scaling
         var changed = set.addAll(toAdd);
 
         assertThat(changed).isTrue();
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
-        for (var i = 0; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD + 1);
+        for (var i = 0; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             assertThat(set).contains(i);
         }
     }
 
     @Test
     void attemptToRemoveNonExistentElementFromSet() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
 
         // Add enough elements to use a set internally
-        for (var i = 0; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 0; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             set.add(i);
         }
 
@@ -313,12 +313,12 @@ class ScalingOrderedSetTest {
 
         // Verify element wasn't removed and set didn't change state
         assertThat(removed).isFalse();
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD + 1);
     }
 
     @Test
     void equalsAndHashCodeFollowTheSetContract() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.addAll(List.of("a", "b", "c"));
         var otherSet = new LinkedHashSet<>(List.of("c", "a", "b"));
 
@@ -329,11 +329,11 @@ class ScalingOrderedSetTest {
 
     @Test
     void equalsAndHashCodeFollowTheSetContractAboveTheThreshold() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
         var otherSet = new LinkedHashSet<Integer>();
-        for (var i = 0; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 0; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             set.add(i);
-            otherSet.add(ScalingOrderedSet.LIST_SIZE_THRESHOLD - i);
+            otherSet.add(ScalingSequencedSet.LIST_SIZE_THRESHOLD - i);
         }
 
         assertThat(set.equals(otherSet)).isTrue();
@@ -343,7 +343,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void nullIsALegalElement() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
 
         assertThat(set.add(null)).isTrue();
         assertThat(set.add(null)).isFalse();
@@ -358,8 +358,8 @@ class ScalingOrderedSetTest {
 
     @Test
     void emptySetIsDistinctFromASetHoldingNull() {
-        var emptySet = new ScalingOrderedSet<String>();
-        var nullHoldingSet = new ScalingOrderedSet<String>();
+        var emptySet = new ScalingSequencedSet<String>();
+        var nullHoldingSet = new ScalingSequencedSet<String>();
         nullHoldingSet.add(null);
 
         assertThat(emptySet).isEmpty();
@@ -371,7 +371,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void tiersAdvanceOnAdd() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
         assertThat(set).isEmpty();
 
         set.add(0);
@@ -380,22 +380,22 @@ class ScalingOrderedSetTest {
         set.add(1);
         assertThat(set).containsExactly(0, 1);
 
-        for (var i = 2; i < ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 2; i < ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             set.add(i);
         }
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
 
-        set.add(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
-        assertThat(set).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
-        for (var i = 0; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        set.add(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
+        assertThat(set).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD + 1);
+        for (var i = 0; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             assertThat(set).contains(i);
         }
     }
 
     @Test
     void aHintAboveTheThresholdStartsInTheSetTier() {
-        var expectedSize = ScalingOrderedSet.LIST_SIZE_THRESHOLD + 4;
-        var set = new ScalingOrderedSet<Integer>(expectedSize);
+        var expectedSize = ScalingSequencedSet.LIST_SIZE_THRESHOLD + 4;
+        var set = new ScalingSequencedSet<Integer>(expectedSize);
         assertThat(set).isEmpty();
 
         set.add(0);
@@ -411,17 +411,17 @@ class ScalingOrderedSetTest {
 
     @Test
     void expectedSizeConstructorRejectsZeroAndNegative() {
-        assertThatThrownBy(() -> new ScalingOrderedSet<String>(0))
+        assertThatThrownBy(() -> new ScalingSequencedSet<String>(0))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The expectedSize (0)");
-        assertThatThrownBy(() -> new ScalingOrderedSet<String>(-1))
+        assertThatThrownBy(() -> new ScalingSequencedSet<String>(-1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The expectedSize (-1)");
     }
 
     @Test
     void getFirstAndGetLastFollowInsertionOrder() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
         assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(set::getFirst);
         assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(set::getLast);
 
@@ -433,16 +433,16 @@ class ScalingOrderedSetTest {
         assertThat(set.getFirst()).isZero();
         assertThat(set.getLast()).isEqualTo(1);
 
-        for (var i = 2; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 2; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             set.add(i);
         }
         assertThat(set.getFirst()).isZero();
-        assertThat(set.getLast()).isEqualTo(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+        assertThat(set.getLast()).isEqualTo(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
     }
 
     @Test
     void reversedIteratesInReverseOrder() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
         assertThat(set.reversed()).isEmpty();
 
         set.add(0);
@@ -457,24 +457,24 @@ class ScalingOrderedSetTest {
 
     @Test
     void reversedIsALiveView() {
-        var set = new ScalingOrderedSet<Integer>();
+        var set = new ScalingSequencedSet<Integer>();
         set.add(0);
         set.add(1);
         var reversedSet = set.reversed();
         assertThat(reversedSet).containsExactly(1, 0);
 
         // Cross the list-to-set transition; the view must follow.
-        for (var i = 2; i <= ScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
+        for (var i = 2; i <= ScalingSequencedSet.LIST_SIZE_THRESHOLD; i++) {
             set.add(i);
         }
-        assertThat(reversedSet).hasSize(ScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
-        assertThat(reversedSet.getFirst()).isEqualTo(ScalingOrderedSet.LIST_SIZE_THRESHOLD);
+        assertThat(reversedSet).hasSize(ScalingSequencedSet.LIST_SIZE_THRESHOLD + 1);
+        assertThat(reversedSet.getFirst()).isEqualTo(ScalingSequencedSet.LIST_SIZE_THRESHOLD);
         assertThat(reversedSet.getLast()).isZero();
     }
 
     @Test
     void reversedOfReversedIsTheOriginalSet() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.addAll(List.of("a", "b"));
 
         assertThat(set.reversed().reversed()).isSameAs(set);
@@ -482,7 +482,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void reversedIsReadOnly() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.addAll(List.of("a", "b"));
         var reversedSet = set.reversed();
 
@@ -492,7 +492,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void reversedIteratorRemoveThrowsException() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.addAll(List.of("a", "b"));
         var iterator = set.reversed().iterator();
         iterator.next();
@@ -502,7 +502,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void addFirstAndAddLastThrowException() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.add("a");
 
         assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> set.addFirst("b"));
@@ -511,7 +511,7 @@ class ScalingOrderedSetTest {
 
     @Test
     void clearReturnsToEmpty() {
-        var set = new ScalingOrderedSet<String>();
+        var set = new ScalingSequencedSet<String>();
         set.addAll(List.of("a", "b", "c"));
         set.clear();
 

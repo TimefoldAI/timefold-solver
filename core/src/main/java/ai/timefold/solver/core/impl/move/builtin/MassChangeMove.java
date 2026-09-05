@@ -67,7 +67,7 @@ public final class MassChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     @SuppressWarnings("unchecked")
     @Override
     public SequencedCollection<Object> getPlanningEntities() {
-        return (SequencedCollection<Object>) sample.getMemberSet();
+        return (SequencedCollection<Object>) sample.memberCollection();
     }
 
     @Override

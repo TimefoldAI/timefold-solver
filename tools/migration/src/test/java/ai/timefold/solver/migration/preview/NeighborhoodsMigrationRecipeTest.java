@@ -23,7 +23,7 @@ class NeighborhoodsMigrationRecipeTest implements RewriteTest {
                 .typeValidationOptions(TypeValidation.builder().allowMissingType(ignore -> true).build())
                 .parser(JavaParser.fromJavaVersion()
                         .styles(List.of(new NoWildCardImportStyle()))
-                        // We must add all old classes as stubs to the JavaTemplate
+                        // We must add all old classes as stubs to the JavaParser classpath
                         .dependsOn(
                                 "package ai.timefold.solver.core.preview.api.neighborhood.stream.sampling; public interface SamplingStream {}",
                                 "package ai.timefold.solver.core.preview.api.neighborhood.stream.sampling; public interface UniSamplingStream<Solution_, A> {}",

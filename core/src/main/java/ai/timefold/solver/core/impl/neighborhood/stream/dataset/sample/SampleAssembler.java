@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.util.ScalingOrderedSet;
+import ai.timefold.solver.core.impl.util.ScalingSequencedSet;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.PillarSampler;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
@@ -58,11 +58,12 @@ public final class SampleAssembler {
                     "The targetSize (%d) of sampler (%s) must be at least the minimumSize (%d)."
                             .formatted(targetSize, sampler, minimumSize));
         }
-        // A set, not a list: sizeSoFar passed to evaluate() and the minimumSize check below must both see the distinct member count,
-        // since Sample.of() deduplicates anyway - otherwise an accepted duplicate would consume a slot the sampler believes it filled.
-        // A ScalingOrderedSet, not a LinkedHashSet: a sample this small pays no hash node at all,
-        // and it is a SequencedSet, so Sample.of() adopts it instead of copying it back into a LinkedHashSet.
-        var memberSet = new ScalingOrderedSet<@Nullable A>(targetSize);
+        // A set, not a list: sizeSoFar passed to evaluate() and the minimumSize check below
+        // must both see the distinct member count,
+        // since a duplicate candidate must not consume a slot the sampler believes it filled.
+        // A ScalingSequencedSet, not a LinkedHashSet: a sample this small pays no hash node at all,
+        // and it is a SequencedSet, so Sample.wrap() adopts it directly instead of copying it into a LinkedHashSet.
+        var memberSet = new ScalingSequencedSet<@Nullable A>(targetSize);
         var stoppedBySampler = false;
         while (sourceIterator.hasNext()) {
             var candidate = sourceIterator.next();
@@ -85,8 +86,8 @@ public final class SampleAssembler {
         }
         if (memberSet.size() >= minimumSize) {
             // memberSet is already a deduplicated, order-stable SequencedSet owned exclusively by this method,
-            // which never touches it again - Sample.of() adopts a SequencedSet like this one instead of copying it.
-            return Sample.of(memberSet);
+            // which never touches it again - safe to wrap directly, no copy needed.
+            return Sample.wrap(memberSet);
         }
         if (stoppedBySampler) {
             // The sampler chose to stop itself, below its own declared floor:

@@ -52,7 +52,7 @@ import org.jspecify.annotations.Nullable;
  * @param <E> the element type; may be a nullable type
  */
 @NullMarked
-public final class ScalingOrderedSet<E extends @Nullable Object>
+public final class ScalingSequencedSet<E extends @Nullable Object>
         extends AbstractSet<E>
         implements SequencedSet<E> {
 
@@ -78,27 +78,32 @@ public final class ScalingOrderedSet<E extends @Nullable Object>
     private @Nullable List<E> list;
     private @Nullable SequencedSet<E> set;
 
-    public ScalingOrderedSet() {
+    public ScalingSequencedSet() {
         this(1);
     }
 
     /**
-     * @param expectedSize the number of elements this set is expected to hold, at least 1;
+     * @param numElements the number of elements this set is expected to hold, at least 1;
      *        a value above {@value #LIST_SIZE_THRESHOLD} starts the set in its {@link LinkedHashSet} tier
      * @throws IllegalArgumentException if expectedSize is below 1
      */
-    public ScalingOrderedSet(int expectedSize) {
-        if (expectedSize < 1) {
+    public ScalingSequencedSet(int numElements) {
+        if (numElements < 1) {
             throw new IllegalArgumentException(
-                    "The expectedSize (%d) of a ScalingOrderedSet must be at least 1.".formatted(expectedSize));
+                    "The expectedSize (%d) of a ScalingSequencedSet must be at least 1.".formatted(numElements));
         }
-        this.expectedSize = expectedSize;
-        if (expectedSize > LIST_SIZE_THRESHOLD) {
+        this.expectedSize = numElements;
+        if (numElements > LIST_SIZE_THRESHOLD) {
             this.tier = Tier.SET;
-            this.set = LinkedHashSet.newLinkedHashSet(expectedSize);
+            this.set = LinkedHashSet.newLinkedHashSet(numElements);
         } else {
             this.tier = Tier.EMPTY;
         }
+    }
+
+    public ScalingSequencedSet(Collection<E> memberCollection) {
+        this(memberCollection.size());
+        addAll(memberCollection);
     }
 
     @Override
@@ -300,12 +305,12 @@ public final class ScalingOrderedSet<E extends @Nullable Object>
 
         @Override
         public int size() {
-            return ScalingOrderedSet.this.size();
+            return ScalingSequencedSet.this.size();
         }
 
         @Override
         public boolean contains(Object o) {
-            return ScalingOrderedSet.this.contains(o);
+            return ScalingSequencedSet.this.contains(o);
         }
 
         @Override
@@ -320,17 +325,17 @@ public final class ScalingOrderedSet<E extends @Nullable Object>
 
         @Override
         public E getFirst() {
-            return ScalingOrderedSet.this.getLast();
+            return ScalingSequencedSet.this.getLast();
         }
 
         @Override
         public E getLast() {
-            return ScalingOrderedSet.this.getFirst();
+            return ScalingSequencedSet.this.getFirst();
         }
 
         @Override
         public SequencedSet<E> reversed() {
-            return ScalingOrderedSet.this;
+            return ScalingSequencedSet.this;
         }
 
     }
