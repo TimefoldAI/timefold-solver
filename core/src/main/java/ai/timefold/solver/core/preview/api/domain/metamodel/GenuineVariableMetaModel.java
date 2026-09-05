@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 import org.jspecify.annotations.NullMarked;
@@ -38,5 +40,16 @@ public sealed interface GenuineVariableMetaModel<Solution_, Entity_, Value_>
     default boolean isListVariable() {
         return this instanceof PlanningListVariableMetaModel;
     }
+
+    /**
+     * Whether this variable's value range is declared on {@link PlanningSolution},
+     * as opposed to on the {@link PlanningEntity entity}.
+     *
+     * @return true if the value range is on the solution, false if it is on the entity
+     */
+    boolean isValueRangeOnSolution();
+
+    @Override
+    GenuineEntityMetaModel<Solution_, Entity_> entity();
 
 }

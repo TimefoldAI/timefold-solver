@@ -2,17 +2,9 @@ package ai.timefold.solver.migration;
 
 import java.util.List;
 
-import ai.timefold.solver.migration.v2.ConstraintArgRemovalMigrationRecipe;
-import ai.timefold.solver.migration.v2.ConstraintMetadataMigrationRecipe;
-import ai.timefold.solver.migration.v2.GeneralDependencyDeleteMigrationRecipe;
-import ai.timefold.solver.migration.v2.GeneralMethodChangeNameMigrationRecipe;
-import ai.timefold.solver.migration.v2.GeneralMethodDeleteInvocationMigrationRecipe;
-import ai.timefold.solver.migration.v2.GeneralPackageRenameMigrationRecipe;
-import ai.timefold.solver.migration.v2.GeneralTypeChangeMigrationRecipe;
-import ai.timefold.solver.migration.v2.PlanningSolutionAnnotationCleanupMigrationRecipe;
-import ai.timefold.solver.migration.v2.ProblemIdDeletionMigrationRecipe;
-import ai.timefold.solver.migration.v2.SolverConfigOverrideSolutionDeletionMigrationRecipe;
-import ai.timefold.solver.migration.v2.TestingAPIsMigrationRecipe;
+import ai.timefold.solver.migration.preview.PreviewToLatestRecipe;
+import ai.timefold.solver.migration.v1.ToLatestV1Recipe;
+import ai.timefold.solver.migration.v2.ToLatestV2Recipe;
 
 import org.openrewrite.Recipe;
 import org.openrewrite.java.RemoveUnusedImports;
@@ -38,18 +30,8 @@ public final class ToLatestRecipe extends AbstractRecipe {
     public List<Recipe> getRecipeList() {
         return List.of(
                 new ToLatestV1Recipe(),
-                new ChangeVersionRecipe(),
-                new ConstraintArgRemovalMigrationRecipe(),
-                new ConstraintMetadataMigrationRecipe(),
-                new PlanningSolutionAnnotationCleanupMigrationRecipe(),
-                new GeneralMethodDeleteInvocationMigrationRecipe(),
-                new GeneralMethodChangeNameMigrationRecipe(),
-                new GeneralTypeChangeMigrationRecipe(),
-                new ProblemIdDeletionMigrationRecipe(),
-                new TestingAPIsMigrationRecipe(),
-                new GeneralDependencyDeleteMigrationRecipe(),
-                new GeneralPackageRenameMigrationRecipe(),
-                new SolverConfigOverrideSolutionDeletionMigrationRecipe(),
+                new ToLatestV2Recipe(),
+                new PreviewToLatestRecipe(),
                 new RemoveUnusedImports());
     }
 

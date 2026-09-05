@@ -593,6 +593,7 @@
                     <file>eclipse.importorder</file>
                   </importOrder>
                   <removeUnusedImports/>
+                  <shortenFullyQualifiedTypes />
                   <replaceRegex> <!-- Wildcard imports will break the build. -->
                     <name>Remove wildcard imports</name>
                     <searchRegex>import\s+[^\*\s]+\*;(\r\n|\r|\n)</searchRegex>

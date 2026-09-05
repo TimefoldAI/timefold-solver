@@ -41,7 +41,15 @@ final class DefaultRepeatingRandomIterator<T> implements RepeatingRandomIterator
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        return source.get(workingRandom.nextInt(source.size()));
+        // Draw over the physical slots and reject gaps,
+        // instead of asking for a logical index;
+        // the latter would make the list compact just to resolve that index.
+        var slotCount = source.slotCount();
+        ElementAwareArrayList<T>.Entry entry;
+        do {
+            entry = source.entryAt(workingRandom.nextInt(slotCount));
+        } while (entry == null);
+        return entry.element();
     }
 
     // No remove()/forEachRemaining() overrides: RepeatingRandomIterator's defaults already throw.

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.bias;
 
+import static ai.timefold.solver.core.testutil.NeighborhoodTestUtils.createSession;
+
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -48,7 +50,7 @@ class DatasetBucketBiasIT extends AbstractBiasIT {
         solution.setEntityList(List.of(probe));
         solution.setValueList(valueList);
 
-        var session = session(moveStreamFactory, solution);
+        var session = createSession(moveStreamFactory, solution);
         var instance = session.getInstance(justInTimeDataset);
 
         var root = new Random(0);

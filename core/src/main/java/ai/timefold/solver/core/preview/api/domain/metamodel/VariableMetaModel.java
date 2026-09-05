@@ -6,6 +6,9 @@ import org.jspecify.annotations.NullMarked;
  * Describes a variable in the domain model.
  * See extending interfaces for more specific types of variables.
  * <p>
+ * Instances are {@link Comparable},
+ * so that they can be sorted in a predictable iteration order.
+ * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
@@ -14,8 +17,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize the API.
- * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
+ * Please direct your feedback to <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
  * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  * 
  * @param <Solution_>
@@ -24,6 +26,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
+        extends Comparable<VariableMetaModel<Solution_, Entity_, Value_>>
         permits GenuineVariableMetaModel, ShadowVariableMetaModel {
 
     /**

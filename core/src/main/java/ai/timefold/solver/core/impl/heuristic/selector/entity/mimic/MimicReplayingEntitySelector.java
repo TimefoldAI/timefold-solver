@@ -8,11 +8,12 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 public class MimicReplayingEntitySelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
-        implements ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector<Solution_> {
+        implements EntitySelector<Solution_> {
 
     private final EntityMimicRecorder<Solution_> entityMimicRecorder;
 
