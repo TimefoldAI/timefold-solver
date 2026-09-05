@@ -1,12 +1,15 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.SequencedCollection;
 import java.util.SequencedSet;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
+import ai.timefold.solver.core.impl.util.ScalingSequencedSet;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -23,22 +26,23 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Two samples are equal when they hold the same members,
  * whatever the order they were drawn in.
+ * Calling {@link #equals(Object)} may be expensive,
+ * based on the type of the collection the sample was created from.
  *
  * @param <A> the type of the sample's members
  */
 @NullMarked
-public final class Sample<A>
-        implements Iterable<@Nullable A> {
+public final class Sample<A extends @Nullable Object>
+        implements Iterable<A> {
 
-    private final SequencedSet<@Nullable A> memberSet;
+    private final SequencedCollection<@Nullable A> memberCollection;
     private boolean hashCodeComputed;
     private int hashCode;
 
     /**
-     * Creates a sample from a collection, removing duplicates,
-     * so that {@link #size()} never disagrees with {@link Object#equals(Object)}.
-     * A {@link SequencedSet} is adopted directly and must not be modified afterward;
-     * every other collection is copied.
+     * Creates a sample from a collection, removing duplicates and copying it,
+     * so that {@link #size()} never disagrees with {@link Object#equals(Object)},
+     * and so that later mutation of the given collection never affects this sample.
      *
      * @param memberCollection may contain nulls
      * @param <A> the type of the sample's members
@@ -46,19 +50,50 @@ public final class Sample<A>
      * @throws NullPointerException if memberCollection is null
      * @throws IllegalArgumentException if memberCollection is empty
      */
-    public static <A> Sample<A> of(Collection<@Nullable A> memberCollection) {
-        return new Sample<>(memberCollection);
+    public static <A> Sample<A> of(SequencedCollection<@Nullable A> memberCollection) {
+        return Sample.wrap(new ScalingSequencedSet<>(memberCollection));
     }
 
-    private Sample(Collection<@Nullable A> memberCollection) {
-        // A SequencedSet is already deduplicated and order-stable, so it is adopted, not copied.
-        // SampleAssembler relies on this: it builds exactly such a set and never touches it again afterward.
-        this.memberSet = memberCollection instanceof SequencedSet<@Nullable A> sequencedSet
-                ? sequencedSet
-                : new LinkedHashSet<>(memberCollection);
-        if (memberSet.isEmpty()) {
+    /**
+     * Creates a sample from a collection, copying it
+     * so that later mutation of the given collection never affects this sample.
+     * The caller must guarantee both it contains no duplicate members.
+     *
+     * @param uniqueElementCollection may contain nulls;
+     *        deliberately not {@link SequencedSet},
+     *        to not exclude lists of deduplicated elements.
+     * @param <A> the type of the sample's members
+     * @return never null
+     * @throws NullPointerException if uniqueElementCollection is null
+     * @throws IllegalArgumentException if uniqueElementCollection is empty
+     */
+    @SuppressWarnings("unchecked")
+    public static <A> Sample<A> ofUniqueElements(SequencedCollection<@Nullable A> uniqueElementCollection) {
+        return Sample.wrap(Arrays.asList((A[]) uniqueElementCollection.toArray()));
+    }
+
+    /**
+     * Wraps the given collection directly: no copy, no duplicate check.
+     * The caller must guarantee both
+     * (a) it contains no duplicate members,
+     * and (b) the caller holds no other reference to it and will never mutate it again -
+     * this sample aliases it for its entire lifetime.
+     *
+     * @param alreadyOwnedAndDuplicateFree may contain nulls
+     * @param <A> the type of the sample's members
+     * @return never null
+     * @throws NullPointerException if alreadyOwnedAndDuplicateFree is null
+     * @throws IllegalArgumentException if alreadyOwnedAndDuplicateFree is empty
+     */
+    public static <A> Sample<A> wrap(SequencedCollection<@Nullable A> alreadyOwnedAndDuplicateFree) {
+        return new Sample<>(alreadyOwnedAndDuplicateFree);
+    }
+
+    private Sample(SequencedCollection<@Nullable A> memberCollection) {
+        this.memberCollection = memberCollection;
+        if (memberCollection.isEmpty()) {
             throw new IllegalArgumentException("The memberCollection (%s) of a sample must not be empty."
-                    .formatted(memberSet));
+                    .formatted(memberCollection));
         }
     }
 
@@ -66,7 +101,7 @@ public final class Sample<A>
      * @return the number of members; at least 1 for a drawn sample
      */
     public int size() {
-        return memberSet.size();
+        return memberCollection.size();
     }
 
     /**
@@ -74,7 +109,7 @@ public final class Sample<A>
      * @return true if the element is a member
      */
     public boolean contains(@Nullable A element) {
-        return memberSet.contains(element);
+        return memberCollection.contains(element);
     }
 
     /**
@@ -85,47 +120,62 @@ public final class Sample<A>
      *         such as a homogeneous pillar's current variable value.
      */
     public @Nullable A representative() {
-        // A SequencedSet is what makes "the same member on every call" true.
-        return memberSet.getFirst();
+        // memberSet is never mutated after construction, which is what makes
+        // "the same member on every call" true.
+        return memberCollection.getFirst();
     }
 
     public Sample<A> rebase(Lookup lookup) {
-        var rebasedSet = new LinkedHashSet<@Nullable A>();
-        for (var member : memberSet) {
-            rebasedSet.add(lookup.lookUpWorkingObject(member));
+        var rebasedCollection = memberCollection instanceof List<A> memberList ? new ArrayList<A>(memberList.size()) : // Maintain the efficiency.
+                new ScalingSequencedSet<A>(memberCollection.size());
+        for (var member : memberCollection) {
+            rebasedCollection.add(lookup.lookUpWorkingObject(member));
         }
-        return new Sample<>(rebasedSet);
+        return Sample.wrap(rebasedCollection);
     }
 
     /**
      *
-     * @return May allow mutation; the user must not change the set.
+     * @return The user must not mutate the returned collection,
+     *         even if the collection itself allows it.
      */
-    public SequencedSet<@Nullable A> getMemberSet() {
-        return memberSet;
+    public SequencedCollection<@Nullable A> memberCollection() {
+        return memberCollection;
     }
 
     /**
      *
-     * @return May allow mutation; the user must not use this to change the set.
+     * @return The user must not mutate the underlying collection,
+     *         even if the iterator itself allows it.
      */
     @Override
     public Iterator<@Nullable A> iterator() {
-        return memberSet.iterator();
+        return memberCollection.iterator();
     }
 
     @Override
     public boolean equals(@Nullable Object o) {
+        // memberSet is no longer always a real Set (it may be a duplicate-free List via wrap()),
+        // so equality can't delegate to memberSet.equals() -
+        // that would silently become order-sensitive.
+        // Mirrors AbstractSet.equals(): size check, then mutual containment.
         return o instanceof Sample<?> other &&
                 Objects.equals(hashCode(), other.hashCode()) && // Possibly prevents expensive equality checks.
-                Objects.equals(memberSet, other.memberSet);
+                memberCollection.size() == other.memberCollection.size() &&
+                other.memberCollection.containsAll(memberCollection);
     }
 
     @Override
     public int hashCode() {
         if (!hashCodeComputed) {
             hashCodeComputed = true;
-            hashCode = memberSet.hashCode();
+            // Mirrors AbstractSet.hashCode(): sum of member hash codes, order-independent,
+            // consistent regardless of whether memberSet is a Set or a duplicate-free List.
+            var sum = 0;
+            for (var member : memberCollection) {
+                sum += Objects.hashCode(member);
+            }
+            hashCode = sum;
         }
         return hashCode;
     }
@@ -133,7 +183,7 @@ public final class Sample<A>
     @Override
     public String toString() {
         return "Sample(%s)"
-                .formatted(memberSet);
+                .formatted(memberCollection);
     }
 
     public enum Decision {

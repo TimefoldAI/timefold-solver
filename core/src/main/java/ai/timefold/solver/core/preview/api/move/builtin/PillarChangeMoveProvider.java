@@ -87,7 +87,7 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var pillarDataset = MoveProviderUtil.assignedEntities(moveStreamFactory, variableMetaModel)
                 .groupBy((solutionView, entity) -> solutionView.getValue(variableMetaModel, entity),
-                        NeighborhoodsCollectors.collectAndThen(NeighborhoodsCollectors.toList(), Sample::of))
+                        NeighborhoodsCollectors.collectAndThen(NeighborhoodsCollectors.toList(), Sample::ofUniqueElements))
                 .map((solutionView, value, pillar) -> new PillarWithRange<>(pillar,
                         SampleValueRanges.of(pillar, variableMetaModel, solutionView)))
                 .asCachedDataset();

@@ -8,7 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.core.impl.util.ScalingOrderedSet;
+import ai.timefold.solver.core.impl.util.ScalingSequencedSet;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,13 +31,33 @@ class SampleTest {
     }
 
     @Test
-    void ofAdoptsASequencedSetInsteadOfCopyingIt() {
+    void ofAlwaysCopiesEvenASequencedSet() {
         var memberSet = new LinkedHashSet<>(List.of("a", "b"));
         var sample = Sample.of(memberSet);
         memberSet.add("c");
-        // A SequencedSet is adopted, not copied - later mutation of the caller's set leaks into the sample.
+        // of() always copies, regardless of the input's concrete type - no leak, unlike wrap().
+        assertThat(sample.size()).isEqualTo(2);
+        assertThat(sample.contains("c")).isFalse();
+    }
+
+    @Test
+    void wrapAdoptsInsteadOfCopying() {
+        var memberSet = new LinkedHashSet<>(List.of("a", "b"));
+        var sample = Sample.wrap(memberSet);
+        memberSet.add("c");
+        // wrap() adopts, not copies - later mutation of the caller's collection leaks into the sample.
         assertThat(sample.size()).isEqualTo(3);
         assertThat(sample.contains("c")).isTrue();
+    }
+
+    @Test
+    void wrapAcceptsAnArrayBackedList() {
+        var members = Arrays.asList("c", "a", "b");
+        var wrapped = Sample.wrap(members);
+        var built = Sample.of(List.of("a", "b", "c"));
+        assertThat(wrapped).isEqualTo(built);
+        assertThat(built).isEqualTo(wrapped);
+        assertThat(wrapped).hasSameHashCodeAs(built);
     }
 
     @Test
@@ -70,12 +90,12 @@ class SampleTest {
     }
 
     @Test
-    void ofAdoptsAScalingOrderedSetInsteadOfCopyingIt() {
-        var memberSet = new ScalingOrderedSet<String>(2);
+    void wrapAdoptsAScalingOrderedSetInsteadOfCopyingIt() {
+        var memberSet = new ScalingSequencedSet<String>(2);
         memberSet.addAll(List.of("a", "b"));
-        var sample = Sample.of(memberSet);
+        var sample = Sample.wrap(memberSet);
         memberSet.add("c");
-        // A SequencedSet is adopted, not copied - later mutation of the caller's set leaks into the sample.
+        // wrap() adopts, not copies - later mutation of the caller's set leaks into the sample.
         // SampleAssembler builds exactly this type, so adoption is what keeps the assembler's set out of a LinkedHashSet.
         assertThat(sample.size()).isEqualTo(3);
         assertThat(sample.contains("c")).isTrue();
@@ -84,7 +104,7 @@ class SampleTest {
 
     @Test
     void equalityHoldsAcrossSetImplementations() {
-        var memberSet = new ScalingOrderedSet<String>(3);
+        var memberSet = new ScalingSequencedSet<String>(3);
         memberSet.addAll(List.of("c", "a", "b"));
         var left = Sample.of(memberSet);
         var right = Sample.of(List.of("a", "b", "c"));
@@ -97,7 +117,7 @@ class SampleTest {
     @Test
     void equalityHoldsAcrossSetImplementationsAboveTheListThreshold() {
         var memberList = IntStream.range(0, 20).boxed().toList();
-        var memberSet = new ScalingOrderedSet<Integer>(20);
+        var memberSet = new ScalingSequencedSet<Integer>(20);
         memberSet.addAll(memberList.reversed());
         var left = Sample.of(memberSet);
         var right = Sample.of(memberList);

@@ -85,8 +85,7 @@ public final class PillarUnassignMoveProvider<Solution_, Entity_, Value_>
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         return MoveProviderUtil.assignedEntities(moveStreamFactory, variableMetaModel)
                 .groupBy((solutionView, entity) -> solutionView.getValue(variableMetaModel, entity),
-                        NeighborhoodsCollectors.collectAndThen(
-                                NeighborhoodsCollectors.<Solution_, Entity_> toList(), Sample::of))
+                        NeighborhoodsCollectors.collectAndThen(NeighborhoodsCollectors.toList(), Sample::ofUniqueElements))
                 .map((solutionView, value, pillar) -> pillar)
                 .asCachedDataset();
     }

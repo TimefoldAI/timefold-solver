@@ -90,8 +90,7 @@ public final class PillarSwapMoveProvider<Solution_, Entity_>
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var pillarDataset = moveStreamFactory.forEach(entityMetaModel.type(), false)
                 .groupBy((solutionView, entity) -> MoveProviderUtil.compositeKeyOf(entity, variableMetaModelList),
-                        NeighborhoodsCollectors.collectAndThen(
-                                NeighborhoodsCollectors.<Solution_, Entity_> toList(), Sample::of))
+                        NeighborhoodsCollectors.collectAndThen(NeighborhoodsCollectors.toList(), Sample::ofUniqueElements))
                 .map((solutionView, key, pillar) -> new PillarWithRanges<>(pillar,
                         MoveProviderUtil.rangesPerVariableOf(pillar, variableMetaModelList, solutionView)))
                 .asCachedDataset();
@@ -168,7 +167,10 @@ public final class PillarSwapMoveProvider<Solution_, Entity_>
             var candidateIterator = pillarInstance.iterator(random);
             var bailOutSize = pillarInstance.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
             return new FilteringIterator<>(candidateIterator,
-                    candidate -> !candidate.pillar().equals(leftEntry.pillar()) &&
+                    // Rows are cached and reused for as long as their group is unchanged (see
+                    // PillarWithRanges above), so two draws of the same pillar are the same object;
+                    // no need to compare pillar contents to detect a self-swap.
+                    candidate -> candidate != leftEntry &&
                             MoveProviderUtil.isValidSwap(solutionView, variableMetaModelList, leftEntry.pillar(),
                                     leftEntry.rangesPerVariable(), candidate.pillar(), candidate.rangesPerVariable()),
                     bailOutSize);

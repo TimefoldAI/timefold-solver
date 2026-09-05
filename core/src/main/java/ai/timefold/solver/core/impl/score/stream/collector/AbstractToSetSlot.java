@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.SequencedMap;
+import java.util.SequencedSet;
 
 import ai.timefold.solver.core.impl.util.MutableInt;
 
@@ -11,10 +11,10 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractToSetSlot<Mapped_> {
     public static final class State<Mapped_> {
-        private final Map<Mapped_, MutableInt> itemToCount = new LinkedHashMap<>();
+        private final SequencedMap<Mapped_, MutableInt> itemToCount = new LinkedHashMap<>();
 
-        public Set<Mapped_> result() {
-            return itemToCount.keySet();
+        public SequencedSet<Mapped_> result() {
+            return itemToCount.sequencedKeySet();
         }
     }
 
