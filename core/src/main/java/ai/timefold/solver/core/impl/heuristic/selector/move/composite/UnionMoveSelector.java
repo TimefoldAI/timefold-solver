@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -7,6 +8,7 @@ import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.impl.move.UniformRandomUnionMoveIterator;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -99,7 +101,8 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
             }
             return stream.iterator();
         } else if (selectorProbabilityWeightFactory == null) {
-            return new UniformRandomUnionMoveIterator<>(childMoveSelectorList, workingRandom);
+            return UniformRandomUnionMoveIterator.of(workingRandom, toMoveIteratorList(childMoveSelectorList),
+                    (iterator, workingRandom) -> iterator);
         } else {
             return new BiasedRandomUnionMoveIterator<>(childMoveSelectorList,
                     moveSelector -> {
@@ -116,6 +119,15 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
 
     private static <Solution_> Stream<Move<Solution_>> toStream(MoveSelector<Solution_> moveSelector) {
         return StreamSupport.stream(moveSelector.spliterator(), false);
+    }
+
+    private static <Solution_> List<Iterator<Move<Solution_>>>
+            toMoveIteratorList(List<MoveSelector<Solution_>> childMoveSelectorList) {
+        var list = new ArrayList<Iterator<Move<Solution_>>>(childMoveSelectorList.size());
+        for (var moveSelector : childMoveSelectorList) {
+            list.add(moveSelector.iterator());
+        }
+        return list;
     }
 
     @Override
