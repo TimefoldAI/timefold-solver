@@ -26,7 +26,7 @@
     <version.org.apache.logging.log4j>2.25.5</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
-    <version.org.freemarker>2.3.34</version.org.freemarker>
+    <version.org.freemarker>2.3.35</version.org.freemarker>
     <version.org.jspecify>1.0.1</version.org.jspecify>
     <version.org.junit.jupiter>6.0.3</version.org.junit.jupiter>
     <version.org.openrewrite.recipe>3.26.1</version.org.openrewrite.recipe>
