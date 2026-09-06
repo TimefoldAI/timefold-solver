@@ -12,6 +12,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaM
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -77,8 +78,8 @@ public interface SolutionView<Solution_> {
 
     /**
      * Checks if a given value is assigned in any {@link PlanningListVariable list planning variable}.
-     * A possibly more efficient variant of {@link #getPositionOf(PlanningListVariableMetaModel, Object)}, in case you don't
-     * need the actual position.
+     * A possibly more efficient variant of {@link #getPositionOf(PlanningListVariableMetaModel, Object)},
+     * in case you don't need the actual position.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param value The value to locate.
@@ -101,14 +102,27 @@ public interface SolutionView<Solution_> {
             Value_ value);
 
     /**
+     * Locates a given value in any {@link PlanningListVariable list planning variable}.
+     * A possibly more efficient variant of {@link #getPositionOf(PlanningListVariableMetaModel, Object)},
+     * in case you don't need the actual position.
+     *
+     * @param variableMetaModel Describes the variable whose value is to be read.
+     * @param value The value to locate.
+     * @return the entity whose list variable carries this value, or null if unassigned
+     */
+    <Entity_, Value_> @Nullable Entity_ getEntity(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ value);
+
+    /**
      * Reads the index of the first element of a {@link PlanningListVariable list planning variable} that is not pinned.
      * The pinned portion of a list variable, if any, is always a prefix: every index below the returned value is pinned, every
      * index at or above it is not.
      * <p>
      * <strong>Caveat:</strong> for an entity that is entirely immovable due to {@link PlanningPin}, this method returns
      * {@code 0} even though every element of its list is pinned; such an entity is excluded from the pinning-filtered
-     * enumeration methods on {@link ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory}, so a caller
-     * which only ever enumerates through those methods will never see this case.
+     * enumeration methods on {@link MoveStreamFactory},
+     * so a caller which only ever enumerates through those methods will never see this case.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param entity The entity whose variable is to be read.

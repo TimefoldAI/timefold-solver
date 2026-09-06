@@ -29,7 +29,6 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -68,7 +67,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public final <Entity_, Value_> void assignValueAndAdd(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
             Entity_ destinationEntity, int destinationIndex) {
-        if (!(getPositionOf(variableMetaModel, planningValue) instanceof UnassignedElement)) {
+        if (isAssigned(variableMetaModel, planningValue)) {
             throw new IllegalStateException("Cannot assign an already assigned value (%s).".formatted(planningValue));
         }
         var variableDescriptor =
@@ -90,7 +89,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
         for (var value : values) {
-            if (!(getPositionOf(variableMetaModel, value) instanceof UnassignedElement)) {
+            if (isAssigned(variableMetaModel, value)) {
                 throw new IllegalStateException("Cannot assign an already assigned value (%s).".formatted(value));
             }
         }
@@ -123,7 +122,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             return;
         }
 
-        if (!(getPositionOf(variableMetaModel, planningValue) instanceof UnassignedElement)) {
+        if (isAssigned(variableMetaModel, planningValue)) {
             throw new IllegalStateException("Cannot assign an already assigned value (%s).".formatted(planningValue));
         }
 
@@ -805,6 +804,14 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public <Entity_, Value_> ElementPosition
             getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return getPositionOf(backingScoreDirector, variableMetaModel, value);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public @Nullable <Entity_, Value_> Entity_
+            getEntity(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
+        return (Entity_) backingScoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
+                .getInverseSingleton(value);
     }
 
     @Override

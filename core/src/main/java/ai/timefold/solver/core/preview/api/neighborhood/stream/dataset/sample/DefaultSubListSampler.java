@@ -4,7 +4,6 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.TriangleElementFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
@@ -27,11 +26,11 @@ final class DefaultSubListSampler<Solution_, Entity_, Value_> implements SubList
     @Override
     @Nullable
     public Range<Entity_> byValue(SolutionView<Solution_> solutionView, Value_ seedValue) {
-        var position = solutionView.getPositionOf(variableMetaModel, seedValue);
-        if (!(position instanceof PositionInList assigned)) {
+        var entity = solutionView.getEntity(variableMetaModel, seedValue);
+        if (entity == null) {
             throw new IllegalArgumentException("The seedValue (%s) is not assigned.".formatted(seedValue));
         }
-        return byEntity(solutionView, assigned.entity());
+        return byEntity(solutionView, entity);
     }
 
     @Override
