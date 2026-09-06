@@ -30,8 +30,8 @@ final class PendingListChangeTracker {
             return;
         }
         if (singleEntity == null || singleEntity == entity) {
-            // Either the slot is free, or the same entity is re-opening a fresh bracket after its
-            // previous one was already resolved (or, defensively, left stale by an aborted move) -
+            // Either the slot is free, or the same entity is re-opening a fresh bracket
+            // after its previous one was already resolved (or, defensively, left stale by an aborted move) -
             // either way, this is not a second concurrent entity, so no escalation is needed.
             singleEntity = entity;
             singleAction = action;
@@ -63,9 +63,7 @@ final class PendingListChangeTracker {
     void clear() {
         singleEntity = null;
         singleAction = null;
-        if (overflowMap != null) {
-            overflowMap.clear();
-        }
+        overflowMap = null;
     }
 
 }

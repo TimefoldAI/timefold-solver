@@ -21,15 +21,6 @@ public final class SingletonIterator<T extends @Nullable Object>
         hasPrevious = true;
     }
 
-    public SingletonIterator(@Nullable T singleton, int index) {
-        this.singleton = singleton;
-        if (index < 0 || index > 1) {
-            throw new IllegalArgumentException("The index (" + index + ") is invalid.");
-        }
-        hasNext = (index == 0);
-        hasPrevious = !hasNext;
-    }
-
     @Override
     public boolean hasNext() {
         return hasNext;

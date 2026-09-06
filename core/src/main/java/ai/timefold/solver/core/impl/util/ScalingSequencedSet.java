@@ -208,8 +208,7 @@ public final class ScalingSequencedSet<E extends @Nullable Object>
     public Iterator<E> iterator() {
         return unmodifiableIterator(switch (tier) {
             case EMPTY -> Collections.<E> emptyIterator();
-            // Not List.of(), which rejects a null element.
-            case SINGLE -> Collections.singletonList(single).iterator();
+            case SINGLE -> new SingletonIterator<>(single);
             case LIST -> list.iterator();
             case SET -> set.iterator();
         });
@@ -317,7 +316,7 @@ public final class ScalingSequencedSet<E extends @Nullable Object>
         public Iterator<E> iterator() {
             return unmodifiableIterator(switch (tier) {
                 case EMPTY -> Collections.<E> emptyIterator();
-                case SINGLE -> Collections.singletonList(single).iterator();
+                case SINGLE -> new SingletonIterator<>(single);
                 case LIST -> list.reversed().iterator();
                 case SET -> set.reversed().iterator();
             });
