@@ -226,11 +226,6 @@ public final class TestRandom extends Random implements RandomSource {
     }
 
     @Override
-    public RandomGenerator factoryUsage() {
-        return this;
-    }
-
-    @Override
     public RandomGenerator acceptorUsage() {
         return this;
     }

@@ -173,7 +173,6 @@ class BoundedSplittableGeneratorTest {
 
     private static void assertBounded(DefaultRandomSource randomSource) {
         assertThat(randomSource.moveRandom().getDelegate()).isInstanceOf(BoundedSplittableGenerator.class);
-        assertThat(randomSource.factoryRandom().getDelegate()).isInstanceOf(BoundedSplittableGenerator.class);
         assertThat(randomSource.acceptorRandom().getDelegate()).isInstanceOf(BoundedSplittableGenerator.class);
     }
 

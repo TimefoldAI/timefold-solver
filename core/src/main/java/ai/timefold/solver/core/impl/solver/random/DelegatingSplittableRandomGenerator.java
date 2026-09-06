@@ -39,7 +39,7 @@ public final class DelegatingSplittableRandomGenerator implements RandomGenerato
         this(seed, DELEGATE_FACTORY.create(seed));
     }
 
-    public DelegatingSplittableRandomGenerator(long seed, RandomGenerator.SplittableGenerator delegate) {
+    DelegatingSplittableRandomGenerator(long seed, RandomGenerator.SplittableGenerator delegate) {
         // No entry point may step around the improved bounding.
         this.delegate = bounded(delegate);
         this.ownerThread = Thread.currentThread();

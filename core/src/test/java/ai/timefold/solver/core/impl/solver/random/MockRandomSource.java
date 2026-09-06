@@ -9,11 +9,6 @@ public record MockRandomSource(RandomGenerator source) implements RandomSource {
     }
 
     @Override
-    public RandomGenerator factoryUsage() {
-        return source;
-    }
-
-    @Override
     public RandomGenerator acceptorUsage() {
         return source;
     }

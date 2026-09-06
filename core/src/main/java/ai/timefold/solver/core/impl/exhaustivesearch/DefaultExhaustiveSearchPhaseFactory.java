@@ -5,6 +5,7 @@ import static ai.timefold.solver.core.config.heuristic.selector.common.Selection
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
@@ -19,7 +20,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.Cartesia
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
@@ -162,7 +162,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
             boolean scoreBounderEnabled, boolean isListVariable) {
         var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
         var entityClassName = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName();
-        var mimicSelectorId = ConfigUtils.addRandomSuffix(entityClassName, configPolicy.getRandom().factoryUsage());
+        var mimicSelectorId = entityClassName + "-" + UUID.randomUUID();
         configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
         var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector, isListVariable);
         MoveSelectorConfig<?> moveSelectorConfig = phaseConfig.getMoveSelectorConfig();

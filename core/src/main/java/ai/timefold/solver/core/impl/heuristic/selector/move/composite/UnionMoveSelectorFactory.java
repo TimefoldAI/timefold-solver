@@ -48,8 +48,7 @@ public class UnionMoveSelectorFactory<Solution_>
                     }
                     // Add a new configuration with Nearby Selection enabled
                     moveSelectorConfigList
-                            .add(nearbySelectorConfig.enableNearbySelection(configPolicy.getNearbyDistanceMeterClass(),
-                                    configPolicy.getRandom().factoryUsage()));
+                            .add(nearbySelectorConfig.enableNearbySelection(configPolicy.getNearbyDistanceMeterClass()));
 
                 }
             }

@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -626,15 +625,6 @@ public class ConfigUtils {
 
     public static @NonNull String abbreviate(@Nullable List<@Nullable String> list) {
         return abbreviate(list, 3);
-    }
-
-    public static String addRandomSuffix(String name, RandomGenerator random) {
-        var value = new StringBuilder(name);
-        value.append("-");
-        random.ints(97, 122) // ['a', 'z']
-                .limit(4) // 4 letters
-                .forEach(value::appendCodePoint);
-        return value.toString();
     }
 
     /**

@@ -22,7 +22,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ValueMimicRec
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
-import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
@@ -42,7 +41,6 @@ public class HeuristicConfigPolicy<Solution_> {
     private final boolean reinitializeVariableFilterEnabled;
     private final boolean unassignedValuesAllowed;
     private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-    private final RandomSource random;
 
     private final Map<String, EntityMimicRecorder<Solution_>> entityMimicRecorderMap = new HashMap<>();
     private final Map<String, SubListMimicRecorder<Solution_>> subListMimicRecorderMap = new HashMap<>();
@@ -63,7 +61,6 @@ public class HeuristicConfigPolicy<Solution_> {
         this.reinitializeVariableFilterEnabled = builder.reinitializeVariableFilterEnabled;
         this.unassignedValuesAllowed = builder.unassignedValuesAllowed;
         this.nearbyDistanceMeterClass = builder.nearbyDistanceMeterClass;
-        this.random = builder.random;
     }
 
     public EnvironmentMode getEnvironmentMode() {
@@ -118,10 +115,6 @@ public class HeuristicConfigPolicy<Solution_> {
         return nearbyDistanceMeterClass;
     }
 
-    public RandomSource getRandom() {
-        return random;
-    }
-
     // ************************************************************************
     // Builder methods
     // ************************************************************************
@@ -137,8 +130,7 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withInitializingScoreTrend(initializingScoreTrend)
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(classInstanceCache)
-                .withNearbyDistanceMeterClass(nearbyDistanceMeterClass)
-                .withRandom(random);
+                .withNearbyDistanceMeterClass(nearbyDistanceMeterClass);
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
@@ -290,7 +282,6 @@ public class HeuristicConfigPolicy<Solution_> {
         private boolean unassignedValuesAllowed = false;
 
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-        private RandomSource random;
 
         public Builder<Solution_> withPreviewFeatureSet(Set<PreviewFeature> previewFeatureSet) {
             this.previewFeatureSet = previewFeatureSet;
@@ -320,11 +311,6 @@ public class HeuristicConfigPolicy<Solution_> {
         public Builder<Solution_>
                 withNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
             this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
-            return this;
-        }
-
-        public Builder<Solution_> withRandom(RandomSource random) {
-            this.random = random;
             return this;
         }
 

@@ -20,7 +20,18 @@ public interface NearbyAutoConfigurationEnabled<Config_ extends MoveSelectorConf
      * @return new instance with the Nearby Selection settings properly configured
      */
     @NonNull
-    Config_ enableNearbySelection(@NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            @NonNull RandomGenerator random);
+    Config_ enableNearbySelection(@NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter);
+
+    /**
+     * @deprecated Use {@link #enableNearbySelection(Class)} instead.
+     *             Selector ids no longer come from a {@link RandomGenerator}.
+     * @return new instance with the Nearby Selection settings properly configured
+     */
+    @Deprecated(forRemoval = true, since = "2.x.0")
+    @NonNull
+    default Config_ enableNearbySelection(@NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull RandomGenerator random) {
+        return enableNearbySelection(distanceMeter);
+    }
 
 }
