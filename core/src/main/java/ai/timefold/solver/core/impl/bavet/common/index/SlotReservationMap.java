@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.Arrays;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -33,6 +35,13 @@ final class SlotReservationMap {
      * Keep this small: {@link #resolve(int)} scans the log, and it runs on every draw.
      */
     private static final int MAX_SPARSE_ENTRY_COUNT = 16;
+    /**
+     * {@link #sparseLog} starts at this size and doubles up to {@link #maxSparseEntryCount},
+     * instead of allocating the full {@link #maxSparseEntryCount} upfront:
+     * most maps built by {@link DefaultRetiringRandomIterator} log only a handful of reservations,
+     * so most of them never grow past this.
+     */
+    private static final int INITIAL_SPARSE_ENTRY_COUNT = 2;
     private static final int NOT_FOUND = -1;
     /**
      * {@link #toString()} renders no more reservations than this,
@@ -106,8 +115,7 @@ final class SlotReservationMap {
             release(slot); // The log holds only the slots that deviate from the identity default.
             return;
         }
-        var dense = denseArray;
-        if (dense == null) {
+        if (denseArray == null) {
             var log = sparseLog;
             if (log != null) {
                 // A retired slot stays in range, so the same slot can be reserved again;
@@ -120,8 +128,10 @@ final class SlotReservationMap {
             }
             if (sparseEntryCount < maxSparseEntryCount) {
                 if (log == null) {
-                    log = new int[maxSparseEntryCount * 2];
+                    log = new int[Math.min(INITIAL_SPARSE_ENTRY_COUNT, maxSparseEntryCount) * 2];
                     sparseLog = log;
+                } else if (sparseEntryCount * 2 == log.length) {
+                    log = growSparseLog(log);
                 }
                 var offset = sparseEntryCount * 2;
                 log[offset] = slot;
@@ -129,9 +139,11 @@ final class SlotReservationMap {
                 sparseEntryCount++;
                 return;
             }
-            dense = upgradeToDense();
+            denseArray = buildDenseArray();
+            sparseLog = null; // Let the log be collected; it is never read again.
+            sparseEntryCount = 0;
         }
-        dense[slot] = logicalIndex + 1;
+        denseArray[slot] = logicalIndex + 1;
     }
 
     /**
@@ -159,7 +171,7 @@ final class SlotReservationMap {
         sparseEntryCount--;
     }
 
-    private int[] upgradeToDense() {
+    private int[] buildDenseArray() {
         var dense = new int[slotCount];
         var log = sparseLog;
         if (log != null) { // Null when maxSparseEntryCount is zero, which reaches this method with no log at all.
@@ -168,10 +180,19 @@ final class SlotReservationMap {
                 dense[log[offset]] = log[offset + 1] + 1;
             }
         }
-        sparseLog = null; // Let the log be collected; it is never read again.
-        sparseEntryCount = 0;
-        denseArray = dense;
         return dense;
+    }
+
+    /**
+     * Doubles {@link #sparseLog}'s capacity, capped at {@link #maxSparseEntryCount}.
+     * Called only once the log is exactly full, so the cap is never exceeded here;
+     * the next entry past the cap goes to {@link #denseArray} instead.
+     */
+    private int[] growSparseLog(int[] log) {
+        var newEntryCount = Math.min(log.length * 2, maxSparseEntryCount * 2);
+        var grown = Arrays.copyOf(log, newEntryCount);
+        sparseLog = grown;
+        return grown;
     }
 
     /**

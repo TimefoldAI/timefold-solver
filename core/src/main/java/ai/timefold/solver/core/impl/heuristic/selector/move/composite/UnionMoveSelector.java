@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -13,6 +12,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A {@link CompositeMoveSelector} that unions 2 or more {@link MoveSelector}s.
  * <p>
@@ -22,11 +23,11 @@ import ai.timefold.solver.core.preview.api.move.Move;
  *
  * @see CompositeMoveSelector
  */
-public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution_> {
+public final class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution_> {
 
-    protected final SelectionProbabilityWeightFactory<Solution_, MoveSelector<Solution_>> selectorProbabilityWeightFactory;
+    private final SelectionProbabilityWeightFactory<Solution_, MoveSelector<Solution_>> selectorProbabilityWeightFactory;
 
-    protected ScoreDirector<Solution_> scoreDirector;
+    private ScoreDirector<Solution_> scoreDirector;
 
     public UnionMoveSelector(List<MoveSelector<Solution_>> childMoveSelectorList, boolean randomSelection) {
         this(childMoveSelectorList, randomSelection, null);
@@ -38,10 +39,9 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
         this.selectorProbabilityWeightFactory = selectorProbabilityWeightFactory;
         if (!randomSelection) {
             if (selectorProbabilityWeightFactory != null) {
-                throw new IllegalArgumentException("The selector (" + this
-                        + ") without randomSelection (" + randomSelection
-                        + ") cannot have a selectorProbabilityWeightFactory (" + selectorProbabilityWeightFactory
-                        + ").");
+                throw new IllegalArgumentException(
+                        "The selector (%s) without randomSelection cannot have a selectorProbabilityWeightFactory (%s)."
+                                .formatted(this, selectorProbabilityWeightFactory));
             }
         }
     }
@@ -69,7 +69,7 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
     @Override
     public boolean isNeverEnding() {
         if (randomSelection) {
-            for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
+            for (var moveSelector : childMoveSelectorList) {
                 if (moveSelector.isNeverEnding()) {
                     return true;
                 }
@@ -79,38 +79,38 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
         } else {
             // Only the last childMoveSelector can be neverEnding
             return !childMoveSelectorList.isEmpty()
-                    && childMoveSelectorList.get(childMoveSelectorList.size() - 1).isNeverEnding();
+                    && childMoveSelectorList.getLast().isNeverEnding();
         }
     }
 
     @Override
     public long getSize() {
-        long size = 0L;
-        for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
+        var size = 0L;
+        for (var moveSelector : childMoveSelectorList) {
             size += moveSelector.getSize();
         }
         return size;
     }
 
     @Override
-    public Iterator<Move<Solution_>> iterator() {
+    public @NonNull Iterator<Move<Solution_>> iterator() {
         if (!randomSelection) {
-            Stream<Move<Solution_>> stream = Stream.empty();
-            for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
+            var stream = Stream.<Move<Solution_>> empty();
+            for (var moveSelector : childMoveSelectorList) {
                 stream = Stream.concat(stream, toStream(moveSelector));
             }
             return stream.iterator();
         } else if (selectorProbabilityWeightFactory == null) {
-            return UniformRandomUnionMoveIterator.of(workingRandom, toMoveIteratorList(childMoveSelectorList),
-                    (iterator, workingRandom) -> iterator);
+            return UniformRandomUnionMoveIterator.of(workingRandom, childMoveSelectorList,
+                    (moveSelector, workingRandom) -> moveSelector.iterator());
         } else {
             return new BiasedRandomUnionMoveIterator<>(childMoveSelectorList,
                     moveSelector -> {
-                        double weight = selectorProbabilityWeightFactory.createProbabilityWeight(scoreDirector, moveSelector);
+                        var weight = selectorProbabilityWeightFactory.createProbabilityWeight(scoreDirector, moveSelector);
                         if (weight < 0.0) {
                             throw new IllegalStateException(
-                                    "The selectorProbabilityWeightFactory (" + selectorProbabilityWeightFactory
-                                            + ") returned a negative probabilityWeight (" + weight + ").");
+                                    "The selectorProbabilityWeightFactory (%s) returned a negative probabilityWeight (%f)."
+                                            .formatted(selectorProbabilityWeightFactory, weight));
                         }
                         return weight;
                     }, workingRandom);
@@ -121,18 +121,9 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
         return StreamSupport.stream(moveSelector.spliterator(), false);
     }
 
-    private static <Solution_> List<Iterator<Move<Solution_>>>
-            toMoveIteratorList(List<MoveSelector<Solution_>> childMoveSelectorList) {
-        var list = new ArrayList<Iterator<Move<Solution_>>>(childMoveSelectorList.size());
-        for (var moveSelector : childMoveSelectorList) {
-            list.add(moveSelector.iterator());
-        }
-        return list;
-    }
-
     @Override
     public String toString() {
-        return "Union(" + childMoveSelectorList + ")";
+        return "Union(%s)".formatted(childMoveSelectorList);
     }
 
 }
