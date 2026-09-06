@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.solver.random;
 
-import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
+import java.util.random.RandomGeneratorFactory;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 
@@ -18,20 +20,34 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public final class DelegatingSplittableRandomGenerator implements RandomGenerator {
+
+    /**
+     * {@code SplittableRandom} belongs to the legacy group of generators, next to {@code Random}.
+     * LXM replaces it, and the solver splits the generator
+     * per usage, per step, per child thread and per partition.
+     *
+     * @see <a href="https://openjdk.org/jeps/356">JEP 356: Enhanced Pseudo-Random Number Generators</a>
+     */
+    private static final RandomGeneratorFactory<RandomGenerator.SplittableGenerator> DELEGATE_FACTORY =
+            RandomGeneratorFactory.of("L64X128MixRandom");
+
     private RandomGenerator.SplittableGenerator delegate;
     private final Thread ownerThread;
     private final long seed;
 
     public DelegatingSplittableRandomGenerator(long seed) {
-        this.delegate = new SplittableRandom(seed);
+        this(seed, DELEGATE_FACTORY.create(seed));
+    }
+
+    public DelegatingSplittableRandomGenerator(long seed, RandomGenerator.SplittableGenerator delegate) {
+        // No entry point may step around the improved bounding.
+        this.delegate = bounded(delegate);
         this.ownerThread = Thread.currentThread();
         this.seed = seed;
     }
 
-    public DelegatingSplittableRandomGenerator(long seed, RandomGenerator.SplittableGenerator delegate) {
-        this.delegate = delegate;
-        this.ownerThread = Thread.currentThread();
-        this.seed = seed;
+    private static RandomGenerator.SplittableGenerator bounded(RandomGenerator.SplittableGenerator generator) {
+        return generator instanceof BoundedSplittableGenerator ? generator : new BoundedSplittableGenerator(generator);
     }
 
     private void assertIsOwnedByCurrentThread() {
@@ -58,7 +74,7 @@ public final class DelegatingSplittableRandomGenerator implements RandomGenerato
 
     public void setDelegate(RandomGenerator.SplittableGenerator delegate) {
         assertIsOwnedByCurrentThread();
-        this.delegate = delegate;
+        this.delegate = bounded(delegate);
     }
 
     // *****************************************
@@ -99,6 +115,36 @@ public final class DelegatingSplittableRandomGenerator implements RandomGenerato
     public long nextLong(long origin, long bound) {
         assertIsOwnedByCurrentThread();
         return delegate.nextLong(origin, bound);
+    }
+
+    // The JDK builds these streams on the unbounded nextInt()/nextLong(),
+    // which would step around both the bounded draw and the owner thread check.
+    // Going through this class's own bounded methods keeps both.
+
+    @Override
+    public IntStream ints(int origin, int bound) {
+        assertIsOwnedByCurrentThread();
+        return IntStream.generate(() -> nextInt(origin, bound));
+    }
+
+    @Override
+    public IntStream ints(long streamSize, int origin, int bound) {
+        assertIsOwnedByCurrentThread();
+        return LongStream.range(0L, streamSize)
+                .mapToInt(ignored -> nextInt(origin, bound));
+    }
+
+    @Override
+    public LongStream longs(long origin, long bound) {
+        assertIsOwnedByCurrentThread();
+        return LongStream.generate(() -> nextLong(origin, bound));
+    }
+
+    @Override
+    public LongStream longs(long streamSize, long origin, long bound) {
+        assertIsOwnedByCurrentThread();
+        return LongStream.range(0L, streamSize)
+                .map(ignored -> nextLong(origin, bound));
     }
 
     @Override
