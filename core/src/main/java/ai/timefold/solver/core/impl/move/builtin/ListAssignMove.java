@@ -26,7 +26,8 @@ public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMo
         this.planningValue = Objects.requireNonNull(planningValue);
         this.destinationEntity = Objects.requireNonNull(destinationEntity);
         if (destinationIndex < 0) {
-            throw new IllegalArgumentException("The destinationIndex (" + destinationIndex + ") must be greater than 0.");
+            throw new IllegalArgumentException(
+                    "The destinationIndex (%d) must be greater than or equal to 0.".formatted(destinationIndex));
         }
         this.destinationIndex = destinationIndex;
     }

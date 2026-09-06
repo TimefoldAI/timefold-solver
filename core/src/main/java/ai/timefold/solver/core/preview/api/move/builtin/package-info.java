@@ -8,9 +8,5 @@
  *
  * <p>
  * New instances of generic moves should be obtained via {@link Moves}.
- * Moves are designed for performance;
- * for that reason, they do not re-assert validity of inputs,
- * and will corrupt your solution if used incorrectly.
- * Check Javadoc of each move for the contract you are required to follow.
  */
 package ai.timefold.solver.core.preview.api.move.builtin;
