@@ -10,7 +10,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVa
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.move.builtin.MassChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.PillarChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset;
@@ -122,20 +121,6 @@ public final class MoveProviderUtil {
     }
 
     /**
-     * Every entity of the class, assigned or not.
-     * Unlike {@link #assignedEntities}, this deliberately admits unassigned entities:
-     * a {@code Mass*} sample drawn from it may contain them,
-     * and the move built from that sample assigns them as a side effect, crossing null upward.
-     * Used by {@link MassChangeMoveProvider} only when it is crossing null;
-     * otherwise it uses {@link #assignedEntityDataset} instead.
-     */
-    public static <Solution_, Entity_, Value_> UniDataset<Solution_, Entity_> allEntities(
-            MoveStreamFactory<Solution_> moveStreamFactory,
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
-    }
-
-    /**
      * Every entity currently assigned a non-null value, with no grouping -
      * unlike {@link #entitiesByAssignedValue}, members of one drawn sample need not share a value.
      */
@@ -143,45 +128,6 @@ public final class MoveProviderUtil {
             MoveStreamFactory<Solution_> moveStreamFactory,
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         return assignedEntities(moveStreamFactory, variableMetaModel).asCachedDataset();
-    }
-
-    /**
-     * @return the value every member of {@code sample} currently holds,
-     *         or {@code null} if any two members disagree,
-     *         or if {@code sample} is entirely unassigned.
-     *         Either answer is the correct {@code excludedValue} for {@link SampleValueRanges#findTarget}:
-     *         {@code null} is never itself a candidate destination,
-     *         so excluding "no shared value" excludes nothing.
-     */
-    public static <Solution_, Entity_, Value_> @Nullable Value_ sharedValueOf(Sample<Entity_> sample,
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, SolutionView<Solution_> solutionView) {
-        Value_ sharedValue = null;
-        var first = true;
-        for (var entity : sample) {
-            var value = solutionView.getValue(variableMetaModel, Objects.requireNonNull(entity));
-            if (first) {
-                sharedValue = value;
-                first = false;
-            } else if (!Objects.equals(sharedValue, value)) {
-                return null;
-            }
-        }
-        return sharedValue;
-    }
-
-    /**
-     * @return {@code true} if at least one member of {@code sample} currently holds a non-null value;
-     *         short-circuits on the first one. Used to keep a null destination from being offered for a sample
-     *         that is already entirely unassigned, which would otherwise be a no-op move.
-     */
-    public static <Solution_, Entity_, Value_> boolean anyAssigned(Sample<Entity_> sample,
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, SolutionView<Solution_> solutionView) {
-        for (var entity : sample) {
-            if (solutionView.getValue(variableMetaModel, Objects.requireNonNull(entity)) != null) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

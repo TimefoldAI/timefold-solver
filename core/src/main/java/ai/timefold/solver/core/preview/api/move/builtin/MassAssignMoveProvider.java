@@ -1,16 +1,26 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.move.builtin.SampleValueRanges;
+import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Draws {@link Sample}s, governed by a {@link Sampler}, out of the entities
@@ -68,8 +78,71 @@ public final class MassAssignMoveProvider<Solution_, Entity_, Value_>
         var unassignedEntityDataset = moveStreamFactory.forEach(variableMetaModel.entity().type(), false)
                 .filter((solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) == null)
                 .asCachedDataset();
-        return moveStreamFactory.buildMoveStream((session, random) -> new MassDestinationMoveIterator<>(session, random,
-                variableMetaModel, unassignedEntityDataset, sampler, false));
+        return moveStreamFactory.buildMoveStream((session, random) -> new MassAssignMoveIterator<>(session, random,
+                variableMetaModel, unassignedEntityDataset, sampler));
+    }
+
+    private static final class MassAssignMoveIterator<Solution_, Entity_, Value_>
+            implements Iterator<Move<Solution_>> {
+
+        private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
+        private final SolutionView<Solution_> solutionView;
+        private final RandomGenerator random;
+        private final Iterator<Sample<Entity_>> sampleIterator;
+
+        private @Nullable Move<Solution_> nextMove = null;
+        /**
+         * Remembers the last distinct ranges proven to have no legal destination,
+         * so that redrawing an equal-signature sample does not repeat the exhaustive proof on every failed draw.
+         */
+        private @Nullable SampleValueRanges<Value_> provenEmptyRanges = null;
+
+        MassAssignMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
+                PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+                UniDataset<Solution_, Entity_> sourceDataset, Sampler<Entity_> sampler) {
+            this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
+            this.random = Objects.requireNonNull(random);
+            this.solutionView = session.getSolutionView();
+            var sourceInstance = session.getInstance(sourceDataset);
+            this.sampleIterator = sourceInstance.samplingIterator(Objects.requireNonNull(sampler), random);
+        }
+
+        @Override
+        public boolean hasNext() {
+            var failedSampleDraws = 0;
+            while (nextMove == null && sampleIterator.hasNext() && failedSampleDraws < RetiringBiWalk.PROBE_ATTEMPT_COUNT) {
+                var sample = sampleIterator.next();
+                if (sample.size() < 2) {
+                    failedSampleDraws++;
+                    continue;
+                }
+                var ranges = SampleValueRanges.of(sample, variableMetaModel, solutionView);
+                if (Objects.equals(ranges, provenEmptyRanges)) {
+                    // Already proven empty for this exact signature; no need to search again.
+                    failedSampleDraws++;
+                    continue;
+                }
+                var targetValue = ranges.findTarget(random, null);
+                if (targetValue == null) {
+                    provenEmptyRanges = ranges;
+                    failedSampleDraws++;
+                    continue;
+                }
+                nextMove = Moves.massChange(variableMetaModel, sample, targetValue);
+            }
+            return nextMove != null;
+        }
+
+        @Override
+        public Move<Solution_> next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            var move = Objects.requireNonNull(nextMove);
+            nextMove = null;
+            return move;
+        }
+
     }
 
 }

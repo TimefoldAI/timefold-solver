@@ -135,10 +135,6 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
          * group changes), this latch is cheap to recompute, so caching it across steps isn't worth the extra bookkeeping.
          * Compared by {@code .pillar()}, not whole-record equality, since a record's auto-generated equals would also
          * compare {@code ranges} for no reason.
-         * <p>
-         * Also safe without the slice value in its key, unlike {@code MassDestinationMoveIterator}'s equivalent memo:
-         * {@link MoveProviderUtil#assignedEntities} groups entities by their assigned value,
-         * so a pillar's members determine its slice value, and an equal pillar therefore has an equal slice value too.
          */
         private boolean cachedPillarProvenEmpty = false;
 

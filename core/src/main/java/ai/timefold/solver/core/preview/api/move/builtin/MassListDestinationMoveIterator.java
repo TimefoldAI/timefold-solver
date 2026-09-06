@@ -32,8 +32,7 @@ import org.jspecify.annotations.Nullable;
  * the sampler can refuse a draw, or {@code sourceDataset} can be smaller than the sampler's minimum size -
  * and {@link #hasNext()} then simply ends too, with no hang,
  * since each call tries a fresh source.
- * It otherwise bounds itself with a flat {@link RetiringBiWalk#PROBE_ATTEMPT_COUNT} failed-draw budget,
- * matching {@code MassDestinationMoveIterator}.
+ * It otherwise bounds itself with a flat {@link RetiringBiWalk#PROBE_ATTEMPT_COUNT} failed-draw budget.
  * The destination search itself is a separate, pool-scaled budget,
  * matching {@code SubListChangeMoveProvider.SubListChangeMoveIterator.createRightIterator}.
  *
