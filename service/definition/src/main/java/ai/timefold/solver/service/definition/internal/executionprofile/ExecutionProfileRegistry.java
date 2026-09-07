@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.api.executionprofile;
+package ai.timefold.solver.service.definition.internal.executionprofile;
 
 import java.util.Collection;
 import java.util.Map;
@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+
+import ai.timefold.solver.service.definition.api.executionprofile.ExecutionProfile;
 
 /**
  * Discovers all {@link ExecutionProfile} implementations available on the classpath (as CDI beans) and exposes them by name.
