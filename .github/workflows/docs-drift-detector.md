@@ -31,8 +31,8 @@ on:
   # this repository is public and the diff is the agent's untrusted input.
   roles: [admin, maintainer]
   # Activation only reacts to events in this repository, so the built-in token
-  # is enough for it. Keep the app token for the parts that need to reach
-  # another repository or to write.
+  # covers it. Every other part of this workflow uses the same token: nothing
+  # here reaches another repository, so no other credential is configured.
   github-token: ${{ secrets.GITHUB_TOKEN }}
 concurrency:
   group: docs-drift-detector-${{ github.event.pull_request.number || github.event.inputs.pull_request_number || github.run_id }}
@@ -58,7 +58,14 @@ tools:
   # AsciiDoc edits go through the `edit` tool, so no unrestricted shell is
   # needed and `:*` on its own is deliberately absent.
   bash:
-    - "git:*"
+    - "git diff:*"
+    - "git log:*"
+    - "git show:*"
+    - "git rev-parse:*"
+    - "git status"
+    # Writes to `.git` only, never to a remote. Needed because the base of the
+    # triggering pull request is not always present in the workspace.
+    - "git fetch:*"
     - "grep:*"
     - "rg:*"
     - "find:*"
@@ -194,7 +201,9 @@ Do not flag these:
 - Javadoc wording that no page paraphrases.
 - A pull request that only changes docs, CI, or build files.
 
-If you cannot decide whether something is public surface, grep the docs for the symbol. No hit means it is internal. Skip it.
+If you cannot decide whether a **changed or removed** symbol is public surface, grep the docs for it. No hit means nothing describes it, so changing it cannot have made the docs stale. Skip it.
+
+That test does **not** apply to a symbol the pull request **adds**. There, the absence of any mention is the finding itself, per item 6 above. Judge a new symbol by its package and its visibility instead: public, in an `api/**`, `config/**` or `preview/api/**` package, or a new property key, means it belongs in the docs even though nothing mentions it yet.
 
 ## Step 4 — Pull the changed symbols out of the diff
 
