@@ -89,7 +89,6 @@
     <!-- Dependencies -->
     <!-- Keep in sync with the build-parent -->
     <!-- ************************************************************************ -->
-    <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
     <version.io.quarkus>3.39.2</version.io.quarkus>
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
@@ -137,7 +136,7 @@
       <dependency>
         <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-bom</artifactId>
-        <version>${version.ai.timefold.solver}</version>
+        <version>${revision}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -335,7 +334,7 @@
             <dependency>
               <groupId>ai.timefold.solver</groupId>
               <artifactId>timefold-solver-ide-config</artifactId>
-              <version>${version.ai.timefold.solver}</version>
+              <version>${revision}</version>
             </dependency>
           </dependencies>
           <executions>
@@ -385,7 +384,7 @@
                 <artifactItem>
                   <groupId>ai.timefold.solver.enterprise</groupId>
                   <artifactId>timefold-solver-enterprise-service-diagnostic-tools</artifactId>
-                  <version>${version.ai.timefold.solver}</version>
+                  <version>${revision}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
                   <!-- Quarkus container-image-jib copies files into the resulting image only from
@@ -495,7 +494,7 @@
           <dependency>
             <groupId>ai.timefold.solver.enterprise</groupId>
             <artifactId>timefold-solver-enterprise-bom</artifactId>
-            <version>${version.ai.timefold.solver}</version>
+            <version>${revision}</version>
             <type>pom</type>
             <scope>import</scope>
           </dependency>
@@ -843,7 +842,7 @@
                     <artifactItem>
                       <groupId>ai.timefold.solver</groupId>
                       <artifactId>timefold-solver-service-build-support</artifactId>
-                      <version>${version.ai.timefold.solver}</version>
+                      <version>${revision}</version>
                       <overWrite>true</overWrite>
                       <outputDirectory>${timefold.model.container.integration-tests.env-file-dir}</outputDirectory>
                       <includes>${timefold.model.container.integration-tests.env-file-name}</includes>
@@ -905,7 +904,7 @@
                     <artifactItem>
                       <groupId>ai.timefold.solver</groupId>
                       <artifactId>timefold-solver-service-build-support</artifactId>
-                      <version>${version.ai.timefold.solver}</version>
+                      <version>${revision}</version>
                       <overWrite>true</overWrite>
                       <outputDirectory>${timefold.model.container.integration-tests.env-file-dir}</outputDirectory>
                       <includes>${timefold.model.container.integration-tests.env-file-name}</includes>
