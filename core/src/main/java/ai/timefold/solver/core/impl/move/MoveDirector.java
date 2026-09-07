@@ -52,7 +52,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             // such as calculateScore().
             // Operations which need undo must go through the external score director,
             // which is recording in this case.
-            this.externalScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector, false);
+            this.externalScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector);
         } else {
             this.externalScoreDirector = scoreDirector;
         }

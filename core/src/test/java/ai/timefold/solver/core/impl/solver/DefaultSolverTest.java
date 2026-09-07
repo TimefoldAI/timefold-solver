@@ -1,29 +1,5 @@
 package ai.timefold.solver.core.impl.solver;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.fail;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.random.RandomGenerator;
-import java.util.stream.IntStream;
-
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.AnalyzableIncrementalScoreCalculator;
@@ -160,7 +136,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedv
 import ai.timefold.solver.core.testutil.BestScoreChangedEvent;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
-
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
@@ -174,6 +149,30 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 @ExtendWith(SoftAssertionsExtension.class)
 @Execution(ExecutionMode.CONCURRENT)
@@ -2724,9 +2723,10 @@ class DefaultSolverTest {
         @Override
         protected void execute(VariableDescriptorAwareScoreDirector<TestdataListSolution> scoreDirector) {
             var entity = scoreDirector.getWorkingSolution().getEntityList().getFirst();
-            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            var appendIndex = entity.getValueList().size();
+            scoreDirector.beforeListVariableChanged(entity, "valueList", appendIndex, appendIndex);
             entity.getValueList().add(new TestdataListValue("bad value"));
-            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+            scoreDirector.afterListVariableChanged(entity, "valueList", appendIndex, appendIndex + 1);
         }
     }
 

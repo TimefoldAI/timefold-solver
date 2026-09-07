@@ -2231,8 +2231,13 @@ class MoveDirectorTest {
                 ElementPosition.of(e2, 1));
         when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
         when(listVariableDescriptor.getFirstUnpinnedIndex(any())).thenReturn(0);
-        when(listVariableDescriptor.getListSize(any())).thenReturn(1);
-        when(listVariableDescriptor.getValue(any())).thenReturn(e1.getValueList(), e2.getValueList());
+        // Answer per entity, not per invocation order, and keep getListSize consistent with getValue -
+        // the real ListVariableDescriptor.getListSize(entity) IS getValue(entity).size(), and the
+        // recorder verifies that the reported range accounts for the list's actual length change.
+        when(listVariableDescriptor.getValue(any()))
+                .thenAnswer(invocation -> invocation.<TestdataListEntity> getArgument(0).getValueList());
+        when(listVariableDescriptor.getListSize(any()))
+                .thenAnswer(invocation -> invocation.<TestdataListEntity> getArgument(0).getValueList().size());
         // Ignore the nested phase but simulates v1 moving to e2
         when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRecreate(any()))
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);

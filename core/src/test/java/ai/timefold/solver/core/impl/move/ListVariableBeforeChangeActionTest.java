@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.move;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -25,31 +25,47 @@ class ListVariableBeforeChangeActionTest {
             TestdataListEntity.buildVariableDescriptorForValueList();
 
     @Test
-    void undoWithEmptyOldValueIsANoOp() {
+    void undoRestoresTheCapturedRangeAndNotifiesOnce() {
         var v0 = new TestdataListValue("0");
-        var entity = new TestdataListEntity("e", v0);
-        // fromIndex == toIndex == 1: a pure insert recorded nothing to restore.
-        var action = new ListVariableBeforeChangeAction<>(entity, List.of(), 1, 1, variableDescriptor);
+        var vNew = new TestdataListValue("new");
+        var entity = new TestdataListEntity("e", vNew);
+        var action = new ListVariableBeforeChangeAction<>(entity, List.of(v0), 0, 1, 1, variableDescriptor);
+        action.merge(1); // The matching after() call that would fire during recording.
 
         action.undo(scoreDirector);
 
         assertThat(entity.getValueList()).containsExactly(v0);
-        // The sibling ListVariableAfterChangeAction's undo already notified for this range;
-        // this action must not fire a redundant duplicate.
-        verifyNoInteractions(scoreDirector);
+        // One pair: before() over the mutated range, after() over the restored range.
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptor, entity, 0, 1);
     }
 
     @Test
-    void undoWithNonEmptyOldValueRestoresAndNotifies() {
-        var v0 = new TestdataListValue("0");
-        var v1 = new TestdataListValue("1");
-        var entity = new TestdataListEntity("e", v1);
-        var action = new ListVariableBeforeChangeAction<>(entity, List.of(v0), 0, 1, variableDescriptor);
+    void undoOfAPureInsertClearsWhatWasInserted() {
+        // fromIndex == toIndex: the bracket captured nothing, because the mutation only added.
+        var inserted = new TestdataListValue("inserted");
+        var entity = new TestdataListEntity("e", inserted);
+        var action = new ListVariableBeforeChangeAction<>(entity, List.<TestdataListValue> of(), 0, 0, 0,
+                variableDescriptor);
+        action.merge(1);
 
         action.undo(scoreDirector);
 
-        assertThat(entity.getValueList()).extracting(TestdataListValue::toString).containsExactly("0", "1");
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, entity, 0, 1);
+        assertThat(entity.getValueList()).isEmpty();
+        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+        verify(scoreDirector).afterListVariableChanged(variableDescriptor, entity, 0, 0);
+    }
+
+    @Test
+    void undoOfAnUnmergedActionFailsFast() {
+        // Never merged: nothing recorded how far the mutation reached, so undo cannot clear it.
+        var v0 = new TestdataListValue("0");
+        var entity = new TestdataListEntity("e", new TestdataListValue("new"));
+        var action = new ListVariableBeforeChangeAction<>(entity, List.of(v0), 0, 1, 1, variableDescriptor);
+
+        assertThatIllegalStateException()
+                .isThrownBy(() -> action.undo(scoreDirector))
+                .withMessageContaining("was never closed by its afterListVariableChanged");
     }
 
     @Test
@@ -57,7 +73,7 @@ class ListVariableBeforeChangeActionTest {
         var v0 = new TestdataListValue("0");
         var vNew = new TestdataListValue("new");
         var originalEntity = new TestdataListEntity("e", vNew);
-        var action = new ListVariableBeforeChangeAction<>(originalEntity, List.of(v0), 0, 1, variableDescriptor);
+        var action = new ListVariableBeforeChangeAction<>(originalEntity, List.of(v0), 0, 1, 1, variableDescriptor);
         action.merge(1); // Simulate the matching after() call that would fire during recording.
 
         // Rebase to genuinely different instances - not identity - so this test cannot pass merely
@@ -76,9 +92,7 @@ class ListVariableBeforeChangeActionTest {
         assertThat(rebasedEntity.getValueList()).hasSize(1);
         assertThat(rebasedEntity.getValueList().getFirst()).isSameAs(rebasedV0);
         // Both calls firing - not just afterListVariableChanged - proves the merged undo path ran.
-        // Before the fix, rebase() dropped the merged state, so the rebased copy fell through to
-        // the unmerged fallback (no beforeListVariableChanged call, and it would have blindly
-        // addAll'd oldValue without clearing rebasedVNew first, corrupting the list).
+        // If rebase() dropped the merged state, the rebased copy would instead fail fast.
         verify(rebasedScoreDirector).beforeListVariableChanged(variableDescriptor, rebasedEntity, 0, 1);
         verify(rebasedScoreDirector).afterListVariableChanged(variableDescriptor, rebasedEntity, 0, 1);
     }

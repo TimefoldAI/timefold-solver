@@ -1,24 +1,25 @@
 package ai.timefold.solver.core.impl.move;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
-
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * Covers the merge mechanism in {@link VariableChangeRecordingScoreDirector}:
@@ -28,6 +29,13 @@ import org.junit.jupiter.api.Test;
  * regardless of what sits between the two calls in recording order,
  * since real move implementations do not always call them back to back
  * (cross-entity swaps and k-opt batch several entities' befores, then several afters).
+ * <p>
+ * The merge only works on a well-formed bracket,
+ * so the recorder validates every event against the bracket it claims to belong to.
+ * The {@code failsFast} tests below cover those rules;
+ * each of them silently corrupted the list variable
+ * (or threw {@link IndexOutOfBoundsException} from deep inside undo)
+ * before the rules existed.
  */
 class VariableChangeRecordingScoreDirectorTest {
 
@@ -35,8 +43,12 @@ class VariableChangeRecordingScoreDirectorTest {
             TestdataListEntity.buildVariableDescriptorForValueList();
 
     @SuppressWarnings("unchecked")
-    private InnerScoreDirector<TestdataListSolution, ?> mockBacking() {
+    private static InnerScoreDirector<TestdataListSolution, SimpleScore> mockBacking() {
         return mock(InnerScoreDirector.class);
+    }
+
+    private static VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore> recorder() {
+        return new VariableChangeRecordingScoreDirector<>(mockBacking());
     }
 
     @Test
@@ -46,7 +58,7 @@ class VariableChangeRecordingScoreDirectorTest {
         var v2 = new TestdataListValue("2");
         var entity = new TestdataListEntity("e", v0, v1, v2);
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
 
         // Simulate a same-list change: v1 at index 1 is replaced by a new value, same range size.
         recorder.beforeListVariableChanged(variableDescriptor, entity, 1, 2);
@@ -70,7 +82,7 @@ class VariableChangeRecordingScoreDirectorTest {
         var entityA = new TestdataListEntity("a", v0);
         var entityB = new TestdataListEntity("b");
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
 
         // Remove v0 from A...
         recorder.beforeListVariableChanged(variableDescriptor, entityA, 0, 1);
@@ -104,7 +116,7 @@ class VariableChangeRecordingScoreDirectorTest {
         var entityL = new TestdataListEntity("l", vLeft);
         var entityR = new TestdataListEntity("r", vRight);
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
 
         recorder.beforeListVariableChanged(variableDescriptor, entityL, 0, 1);
         recorder.beforeListVariableChanged(variableDescriptor, entityR, 0, 1);
@@ -134,7 +146,7 @@ class VariableChangeRecordingScoreDirectorTest {
         var dest = new TestdataListEntity("dest", vDest);
         var src = new TestdataListEntity("src", vSrc);
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
 
         recorder.beforeListVariableChanged(variableDescriptor, dest, 0, 1);
         recorder.beforeListVariableChanged(variableDescriptor, src, 0, 1);
@@ -166,7 +178,7 @@ class VariableChangeRecordingScoreDirectorTest {
         var e2 = new TestdataListEntity("e2", v2);
         var e3 = new TestdataListEntity("e3", v3);
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
 
         recorder.beforeListVariableChanged(variableDescriptor, e1, 0, 1);
         recorder.beforeListVariableChanged(variableDescriptor, e2, 0, 1);
@@ -204,7 +216,7 @@ class VariableChangeRecordingScoreDirectorTest {
         var v3 = new TestdataListValue("3");
         var entity = new TestdataListEntity("e", v1, v2);
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
 
         // Bracket 1: remove v1.
         recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
@@ -230,38 +242,78 @@ class VariableChangeRecordingScoreDirectorTest {
     }
 
     @Test
-    void requiresIndexCacheTrue_mismatchedFromIndexStillThrows() {
-        var v0 = new TestdataListValue("0");
-        var entity = new TestdataListEntity("e", v0);
+    void sameEntitySequentialBracketsWithIdenticalIndexes_undoRestoresOriginal() {
+        // Two operations in one move whose brackets carry the exact same (fromIndex, toIndex).
+        // Nothing may cross-merge them: each has its own oldValue to restore.
+        var v0 = new TestdataListValue("v0");
+        var v1 = new TestdataListValue("v1");
+        var entity = new TestdataListEntity("e", v0, v1);
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, true);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
 
         recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> recorder.afterListVariableChanged(variableDescriptor, entity, 5, 1));
-    }
-
-    @Test
-    void requiresIndexCacheFalse_mergeStillWorksWithoutValidationCache() {
-        var v0 = new TestdataListValue("0");
-        var entity = new TestdataListEntity("e", v0);
-        var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
-
+        entity.getValueList().set(0, new TestdataListValue("x"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
         recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
-        var vNew = new TestdataListValue("new");
-        entity.getValueList().set(0, vNew);
+        entity.getValueList().set(0, new TestdataListValue("y"));
         recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
 
         clearInvocations(backing);
         recorder.undoChanges();
 
-        assertThat(entity.getValueList()).containsExactly(v0);
-        verify(backing, times(1)).beforeListVariableChanged(variableDescriptor, entity, 0, 1);
-        verify(backing, times(1)).afterListVariableChanged(variableDescriptor, entity, 0, 1);
-        verify(backing).updateShadowVariables();
-        verifyNoMoreInteractions(backing);
+        assertThat(entity.getValueList()).containsExactly(v0, v1);
+        verify(backing, times(2)).beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+        verify(backing, times(2)).afterListVariableChanged(variableDescriptor, entity, 0, 1);
+    }
+
+    @Test
+    void sameEntitySequentialOverlappingBrackets_undoRestoresOriginal() {
+        // The second bracket strictly contains the first one's range and shrinks it.
+        var v0 = new TestdataListValue("v0");
+        var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        var v3 = new TestdataListValue("v3");
+        var entity = new TestdataListEntity("e", v0, v1, v2, v3);
+        var recorder = recorder();
+        var list = entity.getValueList();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 1, 2);
+        list.set(1, new TestdataListValue("x"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 1, 2);
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 3);
+        list.subList(0, 3).clear();
+        list.addAll(0, List.of(new TestdataListValue("p"), new TestdataListValue("q")));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 2);
+
+        recorder.undoChanges();
+
+        assertThat(entity.getValueList()).containsExactly(v0, v1, v2, v3);
+    }
+
+    @Test
+    void sameEntitySequentialBracketsTouchingAtABoundary_undoRestoresOriginal() {
+        // Bracket 1 collapses [0, 2) to [0, 1); bracket 2 then starts at index 1 - the very index
+        // that shrink created. Undo has to unwind them in the right order or they overlap.
+        var v0 = new TestdataListValue("v0");
+        var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        var v3 = new TestdataListValue("v3");
+        var entity = new TestdataListEntity("e", v0, v1, v2, v3);
+        var recorder = recorder();
+        var list = entity.getValueList();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+        list.subList(0, 2).clear();
+        list.addFirst(new TestdataListValue("x"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 1, 3);
+        list.subList(1, 3).clear();
+        list.add(1, new TestdataListValue("y"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 1, 2);
+
+        recorder.undoChanges();
+
+        assertThat(entity.getValueList()).containsExactly(v0, v1, v2, v3);
     }
 
     @Test
@@ -271,7 +323,7 @@ class VariableChangeRecordingScoreDirectorTest {
         var v0 = new TestdataListValue("0");
         var entity = new TestdataListEntity("e", v0);
         var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, true);
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
         var nonDelegating = recorder.getNonDelegating();
 
         recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
@@ -292,75 +344,192 @@ class VariableChangeRecordingScoreDirectorTest {
     }
 
     @Test
-    void orphanedAfterWithNoBefore_fallsBackToStandaloneUndo() {
+    void getNonDelegating_twoEntitiesPendingAcrossInstances_bothStillMerge() {
+        // Ruin-recreate ruins several entities in one move: their befores queue up on the delegating
+        // instance (escalating the shared tracker to its overflow map) and only close, one by one,
+        // on the non-delegating copy after the nested phase has rebuilt the lists.
+        var vLeft = new TestdataListValue("left");
+        var vRight = new TestdataListValue("right");
+        var entityL = new TestdataListEntity("l", vLeft);
+        var entityR = new TestdataListEntity("r", vRight);
+        var backing = mockBacking();
+        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing);
+        var nonDelegating = recorder.getNonDelegating();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entityL, 0, 1);
+        recorder.beforeListVariableChanged(variableDescriptor, entityR, 0, 1);
+        entityL.getValueList().set(0, vRight);
+        entityR.getValueList().set(0, vLeft);
+        nonDelegating.afterListVariableChanged(variableDescriptor, entityL, 0, 1);
+        nonDelegating.afterListVariableChanged(variableDescriptor, entityR, 0, 1);
+
+        clearInvocations(backing);
+        recorder.undoChanges();
+
+        assertSoftly(softly -> {
+            softly.assertThat(entityL.getValueList()).containsExactly(vLeft);
+            softly.assertThat(entityR.getValueList()).containsExactly(vRight);
+        });
+        verify(backing, times(1)).beforeListVariableChanged(variableDescriptor, entityL, 0, 1);
+        verify(backing, times(1)).afterListVariableChanged(variableDescriptor, entityL, 0, 1);
+        verify(backing, times(1)).beforeListVariableChanged(variableDescriptor, entityR, 0, 1);
+        verify(backing, times(1)).afterListVariableChanged(variableDescriptor, entityR, 0, 1);
+    }
+
+    @Test
+    void createUndoMoveWhileABracketIsStillOpen_isRetroactivelyMerged() {
+        // createUndoMove() hands out the live change list, not a snapshot: the action inside the
+        // returned move is unmerged when it escapes and merged by the time it is replayed. This pins
+        // that aliasing down, since the split-recorder path (getNonDelegating()) relies on it.
+        var v0 = new TestdataListValue("0");
+        var entity = new TestdataListEntity("e", v0);
+        var recorder = recorder();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+        var undoMove = recorder.createUndoMove();
+        entity.getValueList().set(0, new TestdataListValue("x"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+
+        undoMove.execute(new MoveDirector<TestdataListSolution, SimpleScore>(mockBacking()));
+
+        assertThat(entity.getValueList()).containsExactly(v0);
+    }
+
+    @Test
+    void undoChangesReleasesThePendingTracker_soTheSameEntityCanOpenAFreshBracket() {
+        var v0 = new TestdataListValue("0");
+        var entity = new TestdataListEntity("e", v0);
+        var recorder = recorder();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+        entity.getValueList().set(0, new TestdataListValue("x"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+        recorder.undoChanges();
+
+        // A stale pending entry would make the next move's bracket for the same entity fail.
+        assertThatCode(() -> recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void secondBracketForAnOpenEntity_failsFast() {
+        // Two concurrently open brackets for one entity. Whichever after arrives first, the pairing
+        // is guesswork: previously the inner before evicted the outer one, and undo then either
+        // threw IndexOutOfBoundsException or silently grew the list from 4 elements to 7.
+        var v0 = new TestdataListValue("v0");
+        var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        var v3 = new TestdataListValue("v3");
+        var entity = new TestdataListEntity("e", v0, v1, v2, v3);
+        var recorder = recorder();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 4);
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> recorder.beforeListVariableChanged(variableDescriptor, entity, 1, 3))
+                .withMessageContaining("already has an open beforeListVariableChanged");
+    }
+
+    @Test
+    void orphanedAfterWithNoBefore_failsFast() {
         var v0 = new TestdataListValue("0");
         var v1 = new TestdataListValue("1");
         var entity = new TestdataListEntity("e", v0, v1);
-        var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = recorder();
 
         // No beforeListVariableChanged call at all for this entity.
-        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
-
-        clearInvocations(backing);
-        recorder.undoChanges();
-
-        // ListVariableAfterChangeAction.undo(): clears [0,1) and notifies (0,0).
-        assertThat(entity.getValueList()).containsExactly(v1);
-        verify(backing, times(1)).beforeListVariableChanged(variableDescriptor, entity, 0, 1);
-        verify(backing, times(1)).afterListVariableChanged(variableDescriptor, entity, 0, 0);
-        verify(backing).updateShadowVariables();
-        verifyNoMoreInteractions(backing);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1))
+                .withMessageContaining("has no matching beforeListVariableChanged");
     }
 
     @Test
-    void neverMergedBecauseNoAfterArrived_undoesExactlyLikeAnUnmergedBeforeAction() {
-        // Simulates an exception thrown between before and after: the pending before-action sits
-        // in the list unmerged when undoChanges() eventually runs.
-        var v0 = new TestdataListValue("0");
-        var entity = new TestdataListEntity("e", v0);
-        var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+    void duplicateAfterForAClosedBracket_failsFast() {
+        // A move (or a listener chain) notifying the same closed bracket twice. The second after used
+        // to be recorded as a standalone action, so undo cleared the range twice but restored it once,
+        // silently deleting an element.
+        var v0 = new TestdataListValue("v0");
+        var v1 = new TestdataListValue("v1");
+        var entity = new TestdataListEntity("e", v0, v1);
+        var recorder = recorder();
 
         recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
-        // No matching afterListVariableChanged call - as if an exception aborted the move here.
+        entity.getValueList().set(0, new TestdataListValue("x"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
 
-        clearInvocations(backing);
-        recorder.undoChanges();
-
-        // Unmerged undo: re-add oldValue, single notification with the ORIGINAL (fromIndex, toIndex).
-        assertThat(entity.getValueList()).containsExactly(v0, v0);
-        verify(backing, times(1)).afterListVariableChanged(variableDescriptor, entity, 0, 1);
-        verify(backing).updateShadowVariables();
-        verifyNoMoreInteractions(backing);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1))
+                .withMessageContaining("has no matching beforeListVariableChanged");
     }
 
     @Test
-    void undoChangesClearsThePendingTracker_soALaterOrphanedAfterDoesNotMatchAStaleEntry() {
+    void mismatchedAfterFromIndexThrows() {
         var v0 = new TestdataListValue("0");
         var entity = new TestdataListEntity("e", v0);
-        var backing = mockBacking();
-        var recorder = new VariableChangeRecordingScoreDirector<TestdataListSolution, SimpleScore>(backing, false);
+        var recorder = recorder();
 
-        // Move 1 aborts right after "before" fires; no matching "after" ever arrives - as if an
-        // exception terminated the move (EphemeralMoveDirector never calls close()/undoChanges()
-        // on that path in production; calling undoChanges() here directly stands in for whatever
-        // eventually resets this recording session). What matters is whether the pending entry
-        // survives that reset.
         recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
-        recorder.undoChanges();
 
-        // A later, unrelated bare "after" for the same entity (no "before" of its own - the rare
-        // orphan case) must not find and merge with move 1's stale pending entry.
-        entity.setValueList(new ArrayList<>(List.of(v0, v0)));
-        clearInvocations(backing);
-        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
-        recorder.undoChanges();
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> recorder.afterListVariableChanged(variableDescriptor, entity, 5, 1))
+                .withMessageContaining("must match the fromIndex of its beforeListVariableChanged counterpart");
+    }
 
-        // ListVariableAfterChangeAction's standalone undo fired - proving a fresh, standalone
-        // action was appended, not a silent (and destructive) merge into the discarded stale one.
-        verify(backing, times(1)).beforeListVariableChanged(variableDescriptor, entity, 0, 1);
-        verify(backing, times(1)).afterListVariableChanged(variableDescriptor, entity, 0, 0);
+    @Test
+    void getNonDelegating_driftedFromIndexAcrossInstances_failsFast() {
+        // Ruin-recreate derives both ends of the bracket from getFirstUnpinnedIndex(entity),
+        // recomputed after the nested phase has run. If the pinned prefix moved in between, the after
+        // call's fromIndex no longer matches the before call's - and the two calls land on different
+        // recorder instances, so the check has to survive the split.
+        var v0 = new TestdataListValue("v0");
+        var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        var entity = new TestdataListEntity("e", v0, v1, v2);
+        var recorder = recorder();
+        var nonDelegating = recorder.getNonDelegating();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 1, 3);
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> nonDelegating.afterListVariableChanged(variableDescriptor, entity, 2, 3))
+                .withMessageContaining("must match the fromIndex of its beforeListVariableChanged counterpart");
+    }
+
+    @Test
+    void afterUnderReportingTheLengthChange_failsFast() {
+        // The bracket declared [0, 2) and the mutation replaced those two elements with three, but the
+        // after call still reports [0, 2). Undo trusts that range: it clears [0, 2) and restores two
+        // elements, silently deleting v2. Nothing else in the event stream reveals this, so the
+        // recorder compares the list's actual length change against the reported one.
+        var v0 = new TestdataListValue("v0");
+        var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        var entity = new TestdataListEntity("e", v0, v1, v2);
+        var recorder = recorder();
+        var list = entity.getValueList();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+        list.subList(0, 2).clear();
+        list.addAll(0, List.of(new TestdataListValue("x"), new TestdataListValue("y"), new TestdataListValue("z")));
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> recorder.afterListVariableChanged(variableDescriptor, entity, 0, 2))
+                .withMessageContaining("actually changed length by");
+    }
+
+    @Test
+    void unclosedBracketAtUndoTime_failsFast() {
+        // A bracket left open - as if an exception aborted the move between before and after. The
+        // action cannot be undone: nothing recorded how far the mutation reached.
+        var v0 = new TestdataListValue("0");
+        var entity = new TestdataListEntity("e", v0);
+        var recorder = recorder();
+
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+
+        assertThatIllegalStateException()
+                .isThrownBy(recorder::undoChanges)
+                .withMessageContaining("was never closed by its afterListVariableChanged");
     }
 
 }

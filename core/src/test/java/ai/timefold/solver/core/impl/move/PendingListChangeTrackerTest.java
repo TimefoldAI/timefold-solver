@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.move;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.mock;
 
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -28,7 +29,7 @@ class PendingListChangeTrackerTest {
     }
 
     @Test
-    void sameEntityReopeningAFreshBracket_overwritesWithoutEscalating() {
+    void sameEntityReopeningAFreshBracket_doesNotEscalate() {
         var tracker = new PendingListChangeTracker();
         var entity = new TestdataListEntity("e", new TestdataListValue("v"));
         var action1 = mockAction();
@@ -36,7 +37,7 @@ class PendingListChangeTrackerTest {
 
         tracker.put(entity, action1);
         assertThat(tracker.remove(entity)).isSameAs(action1); // Bracket 1 resolved.
-        tracker.put(entity, action2); // Bracket 2 reopens the same entity.
+        tracker.put(entity, action2); // Bracket 2 reopens the same entity - sequential, so legal.
 
         // Still resolvable as a single slot - the previous, already-resolved bracket for the same
         // entity must not have forced an unnecessary escalation to the map.
@@ -56,6 +57,33 @@ class PendingListChangeTrackerTest {
 
         assertThat(tracker.remove(entityA)).isSameAs(actionA);
         assertThat(tracker.remove(entityB)).isSameAs(actionB);
+    }
+
+    @Test
+    void secondBracketWhileTheFirstIsStillPending_failsFast_singleSlot() {
+        // Two concurrently open brackets for one entity cannot be undone - the two ranges shift each
+        // other - and keeping only one of them silently corrupts the list variable instead.
+        var tracker = new PendingListChangeTracker();
+        var entity = new TestdataListEntity("e", new TestdataListValue("v"));
+        tracker.put(entity, mockAction());
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> tracker.put(entity, mockAction()))
+                .withMessageContaining("already has an open beforeListVariableChanged");
+    }
+
+    @Test
+    void secondBracketWhileTheFirstIsStillPending_failsFast_afterEscalation() {
+        // The overflow map is also one entry per entity, so it must reject the same thing.
+        var tracker = new PendingListChangeTracker();
+        var entityA = new TestdataListEntity("a", new TestdataListValue("v"));
+        var entityB = new TestdataListEntity("b", new TestdataListValue("v"));
+        tracker.put(entityA, mockAction());
+        tracker.put(entityB, mockAction()); // Escalates to the overflow map.
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> tracker.put(entityA, mockAction()))
+                .withMessageContaining("already has an open beforeListVariableChanged");
     }
 
     @Test
