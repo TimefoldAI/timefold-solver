@@ -34,7 +34,7 @@
     <version.ch.qos.logback>1.6.3</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
-    <version.io.quarkus>3.39.1</version.io.quarkus>
+    <version.io.quarkus>3.39.2</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.26.1</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
@@ -61,7 +61,7 @@
     <version.asciidoctor.plugin.pdf>2.3.23</version.asciidoctor.plugin.pdf>
     <version.assembly.plugin>3.8.0</version.assembly.plugin>
     <version.clean.plugin>3.5.0</version.clean.plugin>
-    <version.compiler.plugin>3.15.0</version.compiler.plugin>
+    <version.compiler.plugin>3.16.0</version.compiler.plugin>
     <version.dependency.plugin>3.11.0</version.dependency.plugin>
     <version.deploy.plugin>3.1.4</version.deploy.plugin>
     <version.exec.plugin>3.6.3</version.exec.plugin>
@@ -81,9 +81,9 @@
     <version.sonar.plugin>5.7.0.6970</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
     <version.spotless.plugin>3.10.1</version.spotless.plugin>
-    <version.surefire.plugin>3.5.6</version.surefire.plugin>
+    <version.surefire.plugin>3.5.6</version.surefire.plugin> <!-- 3.6.0 causes strange hangs in Quarkus-related tests. -->
     <version.versions.plugin>2.21.0</version.versions.plugin>
-    <version.git-commit-id.plugin>10.0.0</version.git-commit-id.plugin>
+    <version.git-commit-id.plugin>10.0.1</version.git-commit-id.plugin>
 
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in .mvn/maven-wrapper.properties -->
