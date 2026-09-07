@@ -36,7 +36,7 @@ public class EnvironmentVars {
     /**
      * Default value for {@link #ENV_TIMEFOLD_EXECUTION_PROFILE_DIR} when the variable is not set.
      */
-    public static final String DEFAULT_EXECUTION_PROFILE_DIR = "/tmp/timefold-diagnostics";
+    public static final String DEFAULT_EXECUTION_PROFILE_DIR = "/tmp/timefold-execution-artifacts";
 
     /**
      * Plan name that is being used to run the job
