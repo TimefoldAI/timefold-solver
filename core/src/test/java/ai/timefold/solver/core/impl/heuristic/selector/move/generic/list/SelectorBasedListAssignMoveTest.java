@@ -55,7 +55,7 @@ class SelectorBasedListAssignMoveTest {
         solution.setValueList(List.of(v1, v2, v3));
         when(innerScoreDirector.getWorkingSolution()).thenReturn(solution);
         moveDirector.executeTemporary(new SelectorBasedListAssignMove<>(variableDescriptor, v1, e1, 0),
-                __ -> {
+                (__, ___) -> {
                     assertThat(e1.getValueList()).containsExactly(v1);
                     verify(innerScoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 0);
                     verify(innerScoreDirector).beforeListVariableElementAssigned(variableDescriptor, v1);

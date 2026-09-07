@@ -106,9 +106,11 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
         var scoreDirector = stepScope.<Score_> getScoreDirector();
         var move = moveNode.getMove();
         if (!skipMoveExecution) {
-            var undoMove = scoreDirector.getMoveDirector()
-                    .executeTemporaryProducingUndoMove(move,
-                            score -> processMove(stepScope, moveNode, isSolutionComplete, score));
+            var undoMove = scoreDirector.getMoveDirector().executeTemporary(move,
+                    (score, undo) -> {
+                        processMove(stepScope, moveNode, isSolutionComplete, score);
+                        return undo;
+                    });
             moveNode.setUndoMove(undoMove);
         }
         var executionPoint = SolverLifecyclePoint.of(stepScope, moveNode.getTreeId());

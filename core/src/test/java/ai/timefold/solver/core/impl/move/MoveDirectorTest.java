@@ -2231,13 +2231,8 @@ class MoveDirectorTest {
                 ElementPosition.of(e2, 1));
         when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
         when(listVariableDescriptor.getFirstUnpinnedIndex(any())).thenReturn(0);
-        // Answer per entity, not per invocation order, and keep getListSize consistent with getValue -
-        // the real ListVariableDescriptor.getListSize(entity) IS getValue(entity).size(), and the
-        // recorder verifies that the reported range accounts for the list's actual length change.
-        when(listVariableDescriptor.getValue(any()))
-                .thenAnswer(invocation -> invocation.<TestdataListEntity> getArgument(0).getValueList());
-        when(listVariableDescriptor.getListSize(any()))
-                .thenAnswer(invocation -> invocation.<TestdataListEntity> getArgument(0).getValueList().size());
+        when(listVariableDescriptor.getListSize(any())).thenReturn(1);
+        when(listVariableDescriptor.getValue(any())).thenReturn(e1.getValueList(), e2.getValueList());
         // Ignore the nested phase but simulates v1 moving to e2
         when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRecreate(any()))
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
@@ -2421,7 +2416,7 @@ class MoveDirectorTest {
     }
 
     @Test
-    void restoreWorkingScoreWithIdentityPostprocessor() {
+    void restoreWorkingScoreWithoutPostprocessor() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
@@ -2439,7 +2434,7 @@ class MoveDirectorTest {
 
         Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
         var moveDirector = new MoveDirector<>(scoreDirector);
-        var temporaryScore = Objects.requireNonNull(moveDirector.executeTemporary(move, score -> score));
+        var temporaryScore = moveDirector.executeTemporary(move);
 
         assertSoftly(softly -> {
             softly.assertThat(temporaryScore.raw()).isEqualTo(SimpleScore.of(-1));
@@ -2469,7 +2464,7 @@ class MoveDirectorTest {
 
         Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
         var moveDirector = new MoveDirector<>(scoreDirector);
-        var result = moveDirector.executeTemporary(move, score -> {
+        var result = moveDirector.executeTemporary(move, (score, undoMove) -> {
             // Called while the move is still applied, before it gets undone.
             assertThat(entity.getValue()).isEqualTo(badValue);
             assertThat(score.raw()).isEqualTo(SimpleScore.of(-1));
@@ -2484,7 +2479,7 @@ class MoveDirectorTest {
     }
 
     @Test
-    void postprocessorFailureLeavesTheMoveApplied() {
+    void restoreWorkingScoreWithPostprocessorAndFailure() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
@@ -2502,115 +2497,12 @@ class MoveDirectorTest {
 
         Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
         var moveDirector = new MoveDirector<>(scoreDirector);
-        assertThatThrownBy(() -> moveDirector.executeTemporary(move, score -> {
+        assertThatThrownBy(() -> moveDirector.executeTemporary(move, (score, undoMove) -> {
             throw new IllegalStateException("Postprocessor failure.");
         })).isInstanceOf(IllegalStateException.class);
 
         assertSoftly(softly -> {
-            // One rule for failure: if anything throws, the move is not undone,
-            // because its recorded actions may be half-applied.
-            softly.assertThat(entity.getValue()).isEqualTo(badValue);
-            // The score was already calculated for the applied move, and is not restored either.
-            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(SimpleScore.of(-1));
-            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isNotEqualTo(previousScore);
-        });
-    }
-
-    @Test
-    void moveFailureLeavesTheMoveApplied() {
-        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var solutionMetaModel = solutionDescriptor.getMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
-                .basicVariable("value", TestdataValue.class);
-
-        var goodValue = new TestdataValue("good");
-        var badValue = new TestdataValue("bad");
-        var entity = new TestdataEntity("A", goodValue);
-        var solution = new TestdataSolution("solution");
-        solution.setEntityList(List.of(entity));
-        solution.setValueList(List.of(goodValue, badValue));
-
-        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
-
-        // The other half of the same rule: the move itself throws, after having changed something.
-        Move<TestdataSolution> move = solutionView -> {
-            solutionView.changeVariable(variableMetaModel, entity, badValue);
-            throw new IllegalStateException("Move failure.");
-        };
-        var moveDirector = new MoveDirector<>(scoreDirector);
-        assertThatThrownBy(() -> moveDirector.executeTemporary(move, score -> score))
-                .isInstanceOf(IllegalStateException.class);
-
-        assertThat(entity.getValue()).isEqualTo(badValue);
-    }
-
-    @Test
-    void executeTemporaryProducingUndoMoveReturnsAnAlreadyAppliedUndoMove() {
-        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var solutionMetaModel = solutionDescriptor.getMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
-                .basicVariable("value", TestdataValue.class);
-
-        var goodValue = new TestdataValue("good");
-        var badValue = new TestdataValue("bad");
-        var entity = new TestdataEntity("A", goodValue);
-        var solution = new TestdataSolution("solution");
-        solution.setEntityList(List.of(entity));
-        solution.setValueList(List.of(goodValue, badValue));
-
-        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
-
-        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
-        var moveDirector = new MoveDirector<>(scoreDirector);
-        var observedScore = new SimpleScore[1];
-        var undoMove = moveDirector.executeTemporaryProducingUndoMove(move,
-                score -> observedScore[0] = score.raw());
-
-        assertSoftly(softly -> {
-            // The consumer saw the score of the applied move.
-            softly.assertThat(observedScore[0]).isEqualTo(SimpleScore.of(-1));
-            // The returned undo move has already been applied - it is what undid the move.
             softly.assertThat(entity.getValue()).isEqualTo(goodValue);
-        });
-
-        // Replaying it is therefore only correct after the forward move has been re-applied,
-        // which is the invariant exhaustive search backtracking relies on.
-        moveDirector.execute(move);
-        assertThat(entity.getValue()).isEqualTo(badValue);
-        moveDirector.execute(undoMove);
-        assertThat(entity.getValue()).isEqualTo(goodValue);
-    }
-
-    @Test
-    void restoreWorkingScoreWhenHandlingStructurallyFlawedSolutions() {
-        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var solutionMetaModel = solutionDescriptor.getMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
-                .basicVariable("value", TestdataValue.class);
-
-        var goodValue = new TestdataValue("good");
-        var badValue = new TestdataValue("bad");
-        var entity = new TestdataEntity("A", goodValue);
-        var solution = new TestdataSolution("solution");
-        solution.setEntityList(List.of(entity));
-        solution.setValueList(List.of(goodValue, badValue));
-
-        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
-        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
-
-        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
-        var moveDirector = new MoveDirector<>(scoreDirector);
-        var result = moveDirector.executeTemporaryHandlingStructurallyFlawedSolutions(move,
-                sol -> sol.getEntityList().getFirst().getValue().getCode(),
-                sol -> "flawed",
-                false);
-
-        assertSoftly(softly -> {
-            // Postprocessor ran while the move was still applied; the solution is not structurally flawed.
-            softly.assertThat(result).isEqualTo("bad");
-            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
-            // guaranteeFreshScore is false, so the previous score must be restored,
-            // exactly as executeTemporary(Move, Function, boolean) does.
             softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
         });
     }

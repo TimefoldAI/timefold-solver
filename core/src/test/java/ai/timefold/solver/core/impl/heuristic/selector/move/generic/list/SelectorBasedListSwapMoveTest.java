@@ -92,7 +92,7 @@ class SelectorBasedListSwapMoveTest {
         // Swap Move 1: between two entities
         when(innerScoreDirector.getWorkingSolution()).thenReturn(solution);
         moveDirector.executeTemporary(new SelectorBasedListSwapMove<>(variableDescriptor, e1, 0, e2, 0),
-                __ -> {
+                (__, ___) -> {
                     assertThat(e1.getValueList()).containsExactly(v3, v2);
                     assertThat(e2.getValueList()).containsExactly(v1);
 

@@ -14,7 +14,7 @@ public interface RevertableScoreDirector<Solution_> extends VariableDescriptorAw
      * After that happens, any subsequent call to this method will result in a fresh move instance with only those
      * operations that happened after the latest call to {@link #undoChanges()}.
      * This is useful when the undo operation ever needs to be replayed manually; most use cases do not need this
-     * and should refer to {@link MoveDirector#executeTemporary(Move, MoveDirector.TemporaryScorePostprocessor)}.
+     * and should refer to {@link MoveDirector#executeTemporary(Move)}.
      */
     Move<Solution_> createUndoMove();
 
