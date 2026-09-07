@@ -45,3 +45,5 @@
 
 # To prevent GitHub to presume those timefold-solver-examples/data files are Objective-C++ code.
 *.mm linguist-language=Text
+
+.github/workflows/*.lock.yml linguist-generated=true
