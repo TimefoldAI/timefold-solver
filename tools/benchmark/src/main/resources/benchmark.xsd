@@ -728,6 +728,9 @@
         <xs:sequence>
                               
           
+          <xs:element minOccurs="0" name="environmentMode" type="tns:environmentMode"/>
+                              
+          
           <xs:element minOccurs="0" name="termination" type="tns:terminationConfig"/>
                             
         

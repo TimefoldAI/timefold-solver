@@ -85,8 +85,10 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
      *           so {@link #beforeVariableChanged(VariableMetaModel, Object)}
      *           and {@link #afterVariableChanged(VariableMetaModel, Object)}
      *           can short circuit.
+     *
+     * @return true if the update successful; false otherwise
      */
-    abstract void innerUpdateChanged();
+    abstract boolean innerUpdateChanged();
 
     /**
      * Called when any non-declarative source variable for the
@@ -97,10 +99,11 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     abstract void markChanged(GraphNode<Solution_> changed);
 
     @Override
-    public final void updateChanged() {
+    public final boolean updateChanged() {
         isUpdating = true;
-        innerUpdateChanged();
+        var success = innerUpdateChanged();
         isUpdating = false;
+        return success;
     }
 
     private BaseTopologicalOrderGraph.NodeTopologicalOrder[] buildNodeTopologicalOrderArray(BaseTopologicalOrderGraph graph,

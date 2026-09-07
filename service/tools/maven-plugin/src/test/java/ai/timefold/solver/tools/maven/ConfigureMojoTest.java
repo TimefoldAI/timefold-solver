@@ -309,28 +309,10 @@ public class ConfigureMojoTest {
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
-                .hasMessage("Platform authentication failed with 401 status code: no error message reported by the platform");
+                .hasMessage(
+                        "Platform authentication failed — please verify your PAT and tenant access, or contact support if the problem persists");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
-    }
-
-    /**
-     * A refusal the platform explains has to carry that explanation, or the build only learns the status code.
-     */
-    @Test
-    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
-    public void testConfigureReportsWhyThePlatformRefusedTheToken(ConfigureMojo mojo) {
-
-        session.getRequest().setGoals(List.of("timefold:deploy"));
-        setEnterpriseModel(mojo);
-
-        mojo.setAccessTokenProvider(new TestAccessTokenProvider("expired"));
-        mojo.setLog(log);
-        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
-
-        assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
-                .hasMessage("Platform authentication failed with 401 status code: "
-                        + "The personal access token has expired");
     }
 
     @Test

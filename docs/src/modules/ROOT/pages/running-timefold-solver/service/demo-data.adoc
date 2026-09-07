@@ -17,7 +17,7 @@ To provide consumers of your model with example datasets, implement the `DemoDat
 This interface requires you to implement 2 methods:
 
 - `demoMetaData()`: returns a list of metadata, listing all the different datasets available.
-- `generateDemoData(String demoDataId)`: generates the dataset with the given id, usually retrieved from the metadata.
+- `generateDemoData(String demoDataId)`: generates the dataset with the given id, usually retrieved from the metadata. This method returns a `DemoData` object wrapping a `ModelRequest`, whose `ModelInput_` type parameter must match the `ModelInput` implementation used by your REST API (see xref:./rest-api.adoc[REST API]).
 
 [WARNING]
 ====
@@ -136,6 +136,12 @@ class TimetableDemoDataGenerator : DemoDataGenerator {
 When implementing these generator methods, construct a `ModelRequest` to wrap the input.
 `ModelRequest` has two constructors: `ModelRequest(ModelInput_ modelInput)`, which defaults the configuration to `null`, and `ModelRequest(Configuration<ModelConfigurationOverrides_> configuration, ModelInput_ modelInput)`, if you also want to set a non-default configuration.
 There is no constructor that takes the model config overrides directly; overrides are wrapped in a `Configuration` object first.
+
+[NOTE]
+====
+If you xref:./rest-api.adoc#modelConverter[decouple your REST API classes from your solver domain] using a `ModelConvertor`, `ModelRequest` must wrap your `ModelInput` implementation, not the `SolverModel` (the `@PlanningSolution` class).
+Pay extra attention to returning the correct class here, since both may look similar but only the `ModelInput` implementation is valid.
+====
 
 With this interface implemented, Timefold Solver will automatically expose these methods as REST endpoints.
 These endpoints are *not* nested under your `ModelRest` resource path: they only share its version prefix.

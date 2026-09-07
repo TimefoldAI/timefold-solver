@@ -1,13 +1,11 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.Iterator;
-import java.util.Objects;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.AbstractGenericListMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -15,34 +13,28 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+import org.jspecify.annotations.NonNull;
+
+final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> valueSelector;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final CountSupplier minimumSelectedCountSupplier;
     private final CountSupplier maximumSelectedCountSupplier;
 
     private SolverScope<Solution_> solverScope;
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public ListRuinRecreateMoveSelector(IterableValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             CountSupplier minimumSelectedCountSupplier, CountSupplier maximumSelectedCountSupplier) {
-        super();
+        super(listVariableDescriptor);
         this.valueSelector = FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableStateSupply);
-        this.listVariableDescriptor = listVariableDescriptor;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.minimumSelectedCountSupplier = minimumSelectedCountSupplier;
         this.maximumSelectedCountSupplier = maximumSelectedCountSupplier;
 
         phaseLifecycleSupport.addEventListener(this.valueSelector);
-    }
-
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     @Override
@@ -64,22 +56,13 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     }
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        this.solverScope = solverScope;
-        this.listVariableStateSupply = solverScope.getScoreDirector()
-                .getSupplyManager()
-                .demand(listVariableDescriptor.getStateDemand());
+    public void phaseStarted(@NonNull AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        this.solverScope = phaseScope.getSolverScope();
     }
 
     @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        this.listVariableStateSupply = null;
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+    public void phaseEnded(@NonNull AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         this.solverScope = null;
     }

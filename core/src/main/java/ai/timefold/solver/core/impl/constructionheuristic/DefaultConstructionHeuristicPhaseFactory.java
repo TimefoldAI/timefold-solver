@@ -52,7 +52,9 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 constructionHeuristicType_.getDefaultEntitySorterManner());
         var valueSorterManner = Objects.requireNonNullElse(phaseConfig.getValueSorterManner(),
                 constructionHeuristicType_.getDefaultValueSorterManner());
+        var environmentMode = resolveEnvironmentMode(solverConfigPolicy);
         var phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
+                .withEnvironmentMode(environmentMode)
                 .withReinitializeVariableFilterEnabled(true)
                 .withUnassignedValuesAllowed(true)
                 .withEntitySorterManner(entitySorterManner)
@@ -70,9 +72,9 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
-                phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
+                phaseConfigPolicy.getEnvironmentMode(), phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination))
-                .enableAssertions(phaseConfigPolicy.getEnvironmentMode());
+                .enableAssertions();
     }
 
     @Override

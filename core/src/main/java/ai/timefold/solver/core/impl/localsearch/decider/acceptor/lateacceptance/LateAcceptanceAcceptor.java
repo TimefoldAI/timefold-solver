@@ -47,7 +47,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isStructurallyValidSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = (InnerScore) moveScope.getScore();
         var lateScore = scoreBuffer.getCurrent();
         if (moveScore.compareTo(lateScore) >= 0) {

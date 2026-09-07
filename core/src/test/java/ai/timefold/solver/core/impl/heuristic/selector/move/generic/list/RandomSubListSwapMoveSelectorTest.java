@@ -89,7 +89,8 @@ class RandomSubListSwapMoveSelectorTest {
                 9, 0,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount,
                 "{A[0+4]} <-> {A[0+4]}",
@@ -162,7 +163,8 @@ class RandomSubListSwapMoveSelectorTest {
                 3, 0, 1,
                 0, 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount * 2,
                 "{A[0+3]} <-reversing-> {B[1+1]}",
@@ -222,7 +224,8 @@ class RandomSubListSwapMoveSelectorTest {
                 4, 0,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount,
                 "{A[0+3]} <-> {A[0+3]}",
@@ -317,7 +320,8 @@ class RandomSubListSwapMoveSelectorTest {
                 1, 1,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount,
                 "{A[0+2]} <-> {A[0+2]}",
@@ -375,7 +379,8 @@ class RandomSubListSwapMoveSelectorTest {
                 0, 0, 0, 1, 0, 2, 0, 0,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, (long) subListCount * subListCount,
                 "{A[0+2]} <-> {A[0+2]}",

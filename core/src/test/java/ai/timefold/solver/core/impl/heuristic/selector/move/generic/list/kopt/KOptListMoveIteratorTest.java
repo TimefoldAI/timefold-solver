@@ -25,7 +25,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 import org.junit.jupiter.api.Test;
 
-public class KOptListMoveIteratorTest {
+class KOptListMoveIteratorTest {
 
     private static class KOptListMoveIteratorMockData {
         int minK;

@@ -1,8 +1,9 @@
 package ai.timefold.solver.core.impl.solver;
 
+import static ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory.decideConstraintMatchPolicy;
+
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -12,13 +13,14 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -33,7 +35,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
@@ -55,6 +56,29 @@ import org.slf4j.LoggerFactory;
 import io.micrometer.core.instrument.Tags;
 
 /**
+ * Builds {@link DefaultSolver} instances out of a {@link SolverConfig},
+ * and owns the state which is expensive to build and therefore shared by every solver it builds:
+ * the {@link SolutionDescriptor} and a single {@link ScoreDirectorFactory}.
+ * <p>
+ * The solver config has one environment mode, the global one,
+ * and each of its phases may override it with a stricter one.
+ * The score director factory is built once, for the global environment mode,
+ * and, when a phase runs in different environment mode,
+ * it is adapted into one which handles multiple environments.
+ * <p>
+ * That is also why a global environment mode has to exist at all,
+ * even for a config whose phases all override it.
+ * Some components depend on the score director factory
+ * while being decoupled from the solving life cycle,
+ * and therefore have no phase whose environment mode they could adopt;
+ * {@link SolverManager} and the integrations
+ * ({@code TimefoldSolverBeanFactory} injecting a {@link ConstraintMetaModel}, for instance)
+ * are such components.
+ * They all get the global environment mode.
+ * <p>
+ * Phases are free to override the environment mode, including all of them at once —
+ * the global environment mode still governs everything outside the phases.
+ *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see SolverFactory
  */
@@ -67,6 +91,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final Clock clock;
     private final SolverConfig solverConfig;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
+    private final EnvironmentMode globalEnvironmentMode;
     private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
     private final DomainAccessType domainAccessType;
 
@@ -77,10 +102,13 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     public DefaultSolverFactory(SolverConfig solverConfig, DomainAccessType domainAccessType) {
         this.domainAccessType = domainAccessType;
         this.clock = Objects.requireNonNullElse(solverConfig.getClock(), Clock.systemDefaultZone());
-        this.solverConfig = Objects.requireNonNull(solverConfig, "The solverConfig (" + solverConfig + ") cannot be null.");
+        this.solverConfig =
+                Objects.requireNonNull(solverConfig, "The solverConfig (%s) cannot be null.".formatted(solverConfig));
+        EnvironmentModeUtil.validate(solverConfig);
+        this.globalEnvironmentMode = EnvironmentModeUtil.resolve(solverConfig);
         this.solutionDescriptor = buildSolutionDescriptor();
-        // Caching score director factory as it potentially does expensive things.
-        this.scoreDirectorFactory = buildScoreDirectorFactory();
+        // Built once and shared by every solver this factory builds, as building one is expensive.
+        this.scoreDirectorFactory = buildScoreDirectorFactory(globalEnvironmentMode);
     }
 
     public Clock getClock() {
@@ -91,6 +119,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return solutionDescriptor;
     }
 
+    /**
+     * @return the factory built for the global environment mode
+     */
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
         return (ScoreDirectorFactory<Solution_, Score_>) scoreDirectorFactory;
@@ -105,36 +136,25 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var monitoringConfig = solverConfig.determineMetricConfig();
         solverScope.setMonitoringTags(Tags.empty());
         var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
-        var metricsRequiringConstraintMatchSet = Collections.<SolverMetric> emptyList();
         if (!solverMetricList.isEmpty()) {
             solverScope.setSolverMetricSet(EnumSet.copyOf(solverMetricList));
-            metricsRequiringConstraintMatchSet = solverScope.getSolverMetricSet().stream()
-                    .filter(SolverMetric::isMetricConstraintMatchBased)
-                    .filter(solverScope::isMetricEnabled)
-                    .toList();
         } else {
             solverScope.setSolverMetricSet(EnumSet.noneOf(SolverMetric.class));
         }
-
-        var environmentMode = solverConfig.determineEnvironmentMode();
-        var isStepAssertOrMore = environmentMode.isStepAssertOrMore();
-        var constraintMatchEnabled = !metricsRequiringConstraintMatchSet.isEmpty() || isStepAssertOrMore;
+        var isStepAssertOrMore = globalEnvironmentMode.isStepAssertOrMore();
+        var constraintMatchEnabled = solverScope.isAnyMetricConstraintMatchBased() || isStepAssertOrMore;
         if (constraintMatchEnabled && !isStepAssertOrMore) {
             LOGGER.info(
                     "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
-                    metricsRequiringConstraintMatchSet);
+                    solverMetricList.stream().filter(SolverMetric::isMetricConstraintMatchBased).toList());
         }
-        var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+        var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(globalEnvironmentMode)
                 .withLookUpEnabled(true) // Custom phases and problem changes may rely on lookups.
-                .withConstraintMatchPolicy(
-                        constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)
+                .withConstraintMatchPolicy(decideConstraintMatchPolicy(solverScope, globalEnvironmentMode))
                 .build();
-        solverScope.setScoreDirector(castScoreDirector);
-        solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));
-
+        solverScope.setScoreDirector(scoreDirector);
+        solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(scoreDirector));
         var moveThreadCount = resolveMoveThreadCount(true);
-        var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
-        var randomFactory = buildRandomSupplier(environmentMode);
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
@@ -147,9 +167,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             }
         }
 
+        var randomFactory = buildRandomSupplier(globalEnvironmentMode);
         var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
                 .withPreviewFeatureSet(previewFeaturesEnabled)
-                .withEnvironmentMode(environmentMode)
+                .withEnvironmentMode(globalEnvironmentMode)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
@@ -161,10 +182,12 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
+        var bestSolutionRecaller =
+                BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(globalEnvironmentMode);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
-        return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
-                (UniversalTermination<Solution_>) termination, phaseList, solverScope,
+        return new DefaultSolver<>(globalEnvironmentMode, scoreDirectorFactory, randomFactory, bestSolutionRecaller,
+                basicPlumbingTermination, (UniversalTermination<Solution_>) termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
@@ -182,7 +205,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride solverConfigOverride) {
         var terminationConfig = Objects.requireNonNullElseGet(solverConfigOverride.getTerminationConfig(),
                 () -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));
-        return TerminationFactory.<Solution_> create(terminationConfig)
+        return TerminationFactory.<Solution_> create(Objects.requireNonNull(terminationConfig))
                 .buildTermination(configPolicy, basicPlumbingTermination);
     }
 
@@ -205,22 +228,20 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 solverConfig.getEntityClassList());
     }
 
-    private <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory() {
-        var environmentMode = solverConfig.determineEnvironmentMode();
-        var scoreDirectorFactoryConfig_ =
-                Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(), ScoreDirectorFactoryConfig::new);
-        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<Solution_, Score_>(scoreDirectorFactoryConfig_);
+    private <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_>
+            buildScoreDirectorFactory(EnvironmentMode environmentMode) {
+        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<Solution_, Score_>(solverConfig);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(environmentMode, solutionDescriptor);
     }
 
-    public Supplier<RandomSource> buildRandomSupplier(EnvironmentMode environmentMode_) {
-        var randomSeed_ = solverConfig.getRandomSeed();
-        if (randomSeed_ == null && environmentMode_ != EnvironmentMode.NON_REPRODUCIBLE) {
-            randomSeed_ = DEFAULT_RANDOM_SEED;
-        } else if (randomSeed_ == null) {
-            randomSeed_ = RandomGenerator.getDefault().nextLong();
+    Supplier<RandomSource> buildRandomSupplier(EnvironmentMode environmentMode) {
+        var randomSeed = solverConfig.getRandomSeed();
+        if (randomSeed == null && environmentMode != EnvironmentMode.NON_REPRODUCIBLE) {
+            randomSeed = DEFAULT_RANDOM_SEED;
+        } else if (randomSeed == null) {
+            randomSeed = RandomGenerator.getDefault().nextLong();
         }
-        return DefaultRandomSource.seededSupplier(randomSeed_);
+        return DefaultRandomSource.seededSupplier(randomSeed);
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,

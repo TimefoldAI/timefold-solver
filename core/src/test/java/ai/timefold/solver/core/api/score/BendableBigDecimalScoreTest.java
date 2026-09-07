@@ -61,6 +61,10 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
     void parseScore() {
         assertThat(scoreDefinitionHSS.parseScore("[-147]hard/[-258/-369]soft")).isEqualTo(scoreDefinitionHSS.createScore(
                 BigDecimal.valueOf(-147), BigDecimal.valueOf(-258), BigDecimal.valueOf(-369)));
+        assertThat(scoreDefinitionHSS.parseScore("-1structural/[-147]hard/[-258/-369]soft")).isEqualTo(
+                new BendableBigDecimalScore(-1L,
+                        new BigDecimal[] { BigDecimal.valueOf(-147) },
+                        new BigDecimal[] { BigDecimal.valueOf(-258), BigDecimal.valueOf(-369) }));
     }
 
     @Test
@@ -77,6 +81,10 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
         assertThat(scoreDefinitionHSS.createScore(
                 BigDecimal.valueOf(-147), BigDecimal.valueOf(-258), BigDecimal.valueOf(-369)).toShortString())
                 .isEqualTo("[-147]hard/[-258/-369]soft");
+        assertThat(new BendableBigDecimalScore(-1L,
+                new BigDecimal[] { BigDecimal.valueOf(-147) },
+                new BigDecimal[] { BigDecimal.valueOf(-258), BigDecimal.valueOf(-369) }).toShortString())
+                .isEqualTo("-1structural/[-147]hard/[-258/-369]soft");
     }
 
     @Test
@@ -91,11 +99,17 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
                 BigDecimal.valueOf(-147), BigDecimal.valueOf(-258), BigDecimal.valueOf(-369)))
                 .hasToString("[-147/-258]hard/[-369]soft");
         assertThat(new BendableBigDecimalScoreDefinition(0, 0).createScore()).hasToString("[]hard/[]soft");
+        assertThat(new BendableBigDecimalScore(-1L,
+                new BigDecimal[] { BigDecimal.valueOf(-147) },
+                new BigDecimal[] { BigDecimal.valueOf(-258), BigDecimal.valueOf(-369) }))
+                .hasToString("-1structural/[-147]hard/[-258/-369]soft");
     }
 
     @Test
     void parseScoreIllegalArgument() {
         assertThatIllegalArgumentException().isThrownBy(() -> scoreDefinitionHSS.parseScore("-147"));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> scoreDefinitionHSS.parseScore("-1structural/[-147]hard/[-258]soft"));
     }
 
     @Test
@@ -109,7 +123,8 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
 
     @Test
     void feasibleHSS() {
-        assertScoreNotFeasible(scoreDefinitionHSS.createScore(MINUS_FIVE, MINUS_300, MINUS_4000));
+        assertScoreNotFeasible(scoreDefinitionHSS.createScore(MINUS_FIVE, MINUS_300, MINUS_4000),
+                new BendableBigDecimalScore(-1L, new BigDecimal[] { ZERO }, new BigDecimal[] { MINUS_300, MINUS_4000 }));
         assertScoreFeasible(scoreDefinitionHSS.createScore(ZERO, MINUS_300, MINUS_4000),
                 scoreDefinitionHSS.createScore(TWO, MINUS_300, MINUS_4000));
     }
@@ -176,16 +191,24 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
                 scoreDefinitionHSS.createScore(new BigDecimal("-10"), new BigDecimal("-200"), new BigDecimal("-3000")),
                 scoreDefinitionHSS.createScore(new BigDecimal("-10.000"), new BigDecimal("-200.000"),
                         new BigDecimal("-3000.000")));
+        PlannerAssert.assertObjectsAreEqual(
+                new BendableBigDecimalScore(-1L, new BigDecimal[] { new BigDecimal("-10") },
+                        new BigDecimal[] { new BigDecimal("-200"), new BigDecimal("-3000") }),
+                new BendableBigDecimalScore(-1L, new BigDecimal[] { new BigDecimal("-10") },
+                        new BigDecimal[] { new BigDecimal("-200"), new BigDecimal("-3000") }));
         PlannerAssert.assertObjectsAreNotEqual(
                 scoreDefinitionHSS.createScore(new BigDecimal("-10"), new BigDecimal("-200"), new BigDecimal("-3000")),
                 scoreDefinitionHSS.createScore(new BigDecimal("-30"), new BigDecimal("-200"), new BigDecimal("-3000")),
                 scoreDefinitionHSS.createScore(new BigDecimal("-10"), new BigDecimal("-400"), new BigDecimal("-3000")),
-                scoreDefinitionHSS.createScore(new BigDecimal("-10"), new BigDecimal("-400"), new BigDecimal("-5000")));
+                scoreDefinitionHSS.createScore(new BigDecimal("-10"), new BigDecimal("-400"), new BigDecimal("-5000")),
+                new BendableBigDecimalScore(-1L, new BigDecimal[] { new BigDecimal("-10") },
+                        new BigDecimal[] { new BigDecimal("-200"), new BigDecimal("-3000") }));
     }
 
     @Test
     void compareToHSS() {
         PlannerAssert.assertCompareToOrder(
+                new BendableBigDecimalScore(-1L, new BigDecimal[] { MINUS_20 }, new BigDecimal[] { MIN_INTEGER, MIN_INTEGER }),
                 scoreDefinitionHSS.createScore(MINUS_20, MIN_INTEGER, MIN_INTEGER),
                 scoreDefinitionHSS.createScore(MINUS_20, MIN_INTEGER, MINUS_20),
                 scoreDefinitionHSS.createScore(MINUS_20, MIN_INTEGER, ONE),

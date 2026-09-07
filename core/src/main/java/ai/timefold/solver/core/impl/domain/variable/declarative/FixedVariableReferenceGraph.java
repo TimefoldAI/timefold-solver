@@ -1,10 +1,14 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Spliterators;
 import java.util.function.IntFunction;
 import java.util.stream.StreamSupport;
+
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 
 import org.jspecify.annotations.NonNull;
 
@@ -74,13 +78,13 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
-    void innerUpdateChanged() {
+    boolean innerUpdateChanged() {
         BitSet visited;
         if (!changeTracker.isEmpty()) {
             visited = new BitSet(nodeList.size());
             visited.set(changeTracker.peek().nodeId());
         } else {
-            return;
+            return true;
         }
 
         // NOTE: This assumes the user did not add any fixed loops to
@@ -104,5 +108,11 @@ public final class FixedVariableReferenceGraph<Solution_>
             }
         }
         isChanged.clear();
+        return true;
+    }
+
+    @Override
+    public List<VariableLoop> getVariableLoops() {
+        return Collections.emptyList();
     }
 }

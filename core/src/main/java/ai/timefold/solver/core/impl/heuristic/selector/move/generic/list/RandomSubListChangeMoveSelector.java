@@ -4,10 +4,10 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.AbstractGenericMoveSelector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public class RandomSubListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public class RandomSubListChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
 
     private final SubListSelector<Solution_> subListSelector;
     private final DestinationSelector<Solution_> destinationSelector;

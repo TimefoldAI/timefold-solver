@@ -52,7 +52,7 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isStructurallyValidSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var phaseScope = moveScope.getStepScope().getPhaseScope();
         // Guaranteed local search; no need for InnerScore.
         Score lastStepScore = phaseScope.getLastCompletedStepScope().getScore().raw();

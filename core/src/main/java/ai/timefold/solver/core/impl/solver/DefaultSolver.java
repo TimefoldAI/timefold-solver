@@ -39,23 +39,21 @@ import io.micrometer.core.instrument.Tags;
 @NullMarked
 public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
-    protected final EnvironmentMode environmentMode;
-    protected final Supplier<RandomSource> randomFactory;
-    protected final BasicPlumbingTermination<Solution_> basicPlumbingTermination;
-    protected final AtomicBoolean solving = new AtomicBoolean(false);
-    protected final SolverScope<Solution_> solverScope;
+    private final Supplier<RandomSource> randomFactory;
+    private final BasicPlumbingTermination<Solution_> basicPlumbingTermination;
+    private final AtomicBoolean solving = new AtomicBoolean(false);
+    private final SolverScope<Solution_> solverScope;
     private final String moveThreadCountDescription;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public DefaultSolver(EnvironmentMode environmentMode, Supplier<RandomSource> randomFactory,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, BasicPlumbingTermination<Solution_> basicPlumbingTermination,
-            UniversalTermination<Solution_> termination, List<Phase<Solution_>> phaseList,
-            SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
-        super(bestSolutionRecaller, termination, phaseList);
-        this.environmentMode = environmentMode;
+    public DefaultSolver(EnvironmentMode globalEnvironmentMode, ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory,
+            Supplier<RandomSource> randomFactory, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            BasicPlumbingTermination<Solution_> basicPlumbingTermination, UniversalTermination<Solution_> termination,
+            List<Phase<Solution_>> phaseList, SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
+        super(globalEnvironmentMode, scoreDirectorFactory, bestSolutionRecaller, termination, phaseList);
         this.randomFactory = randomFactory;
         this.basicPlumbingTermination = basicPlumbingTermination;
         this.solverScope = solverScope;
@@ -63,16 +61,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         this.moveThreadCountDescription = moveThreadCountDescription;
     }
 
-    public EnvironmentMode getEnvironmentMode() {
-        return environmentMode;
-    }
-
     public RandomSource getRandomSource() {
         return randomFactory.get();
-    }
-
-    public ScoreDirectorFactory<Solution_, ?> getScoreDirectorFactory() {
-        return solverScope.getScoreDirector().getScoreDirectorFactory();
     }
 
     public SolverScope<Solution_> getSolverScope() {
@@ -205,16 +195,15 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         // Update the best solution, since problem's shadows and score were updated
         bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
                 EventProducerId.solvingStarted());
-
-        LOGGER.info("Solving {}: time spent ({}), best score ({}), "
-                + "environment mode ({}), move thread count ({}), random ({}).",
-                (startingSolverCount == 1 ? "started" : "restarted"),
-                solverScope.calculateTimeMillisSpentUpToNow(),
-                solverScope.getBestScore().raw(),
-                environmentMode.name(),
-                moveThreadCountDescription,
-                randomFactory);
         if (LOGGER.isInfoEnabled()) { // Formatting is expensive here.
+            LOGGER.info("Solving {}: time spent ({}), best score ({}), "
+                    + "default environment mode ({}), move thread count ({}), random ({}).",
+                    (startingSolverCount == 1 ? "started" : "restarted"),
+                    solverScope.calculateTimeMillisSpentUpToNow(),
+                    solverScope.getBestScore().raw(),
+                    globalEnvironmentMode.name(),
+                    moveThreadCountDescription,
+                    randomFactory);
             var problemSizeStatistics = solverScope.getProblemSizeStatistics();
             LOGGER.info(
                     "Problem scale: genuine entity count ({}), genuine variable count ({}), approximate value count ({}), approximate problem scale ({}).",
@@ -319,10 +308,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 solverScope.getBestScore().raw(),
                 solverScope.getMoveEvaluationSpeed(),
                 phaseList.size(),
-                environmentMode.name(),
+                globalEnvironmentMode.name(),
                 moveThreadCountDescription);
-        // Must be kept open for doProblemFactChange
-        solverScope.getScoreDirector().close();
         solving.set(false);
     }
 
@@ -331,10 +318,14 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         if (!restartSolver) {
             return false;
         } else {
+            // The score director is created and closed during the phase events.
+            // This check occurs after all phases have been completed,
+            // which means the score director is already closed.
+            // As a result,
+            // we need to recreate the score director to apply any real-time changes to the problem.
+            prepareForProblemChanges(solverScope);
             var problemChangeQueue = basicPlumbingTermination
                     .startProblemChangesProcessing();
-            solverScope.setWorkingSolutionFromBestSolution();
-
             var stepIndex = 0;
             var problemChange = problemChangeQueue.poll();
             while (problemChange != null) {

@@ -52,8 +52,7 @@ abstract class AbstractInverseEntityFilteringValueSelector<Solution_>
         super.phaseStarted(phaseScope);
         ListVariableDescriptor<Solution_> variableDescriptor =
                 (ListVariableDescriptor<Solution_>) childValueSelector.getVariableDescriptor();
-        listVariableStateSupply = phaseScope.getScoreDirector().getSupplyManager()
-                .demand(variableDescriptor.getStateDemand());
+        listVariableStateSupply = phaseScope.getScoreDirector().getListVariableStateSupply(variableDescriptor);
     }
 
     @Override

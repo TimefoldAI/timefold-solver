@@ -18,8 +18,10 @@ public class DefaultPartitionedSearchPhaseFactory<Solution_>
     public PartitionedSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
+        var environmentMode = resolveEnvironmentMode(solverConfigPolicy);
+        var solverConfigPolicyUpdated = solverConfigPolicy.copyConfigPolicy(environmentMode);
         return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.PARTITIONED_SEARCH)
-                .buildPartitionedSearch(phaseIndex, phaseConfig, solverConfigPolicy, solverTermination,
+                .buildPartitionedSearch(phaseIndex, phaseConfig, solverConfigPolicyUpdated, solverTermination,
                         this::buildPhaseTermination);
     }
 

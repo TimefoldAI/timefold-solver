@@ -16,6 +16,12 @@ class SimpleScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTest 
         assertSerializeAndDeserialize(score, new TestSimpleScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new SimpleScore(-1L, 1234L);
+        assertSerializeAndDeserialize(score, new TestSimpleScoreWrapper(score));
+    }
+
     public static class TestSimpleScoreWrapper
             extends AbstractScoreJacksonRoundTripTest.TestScoreWrapper<SimpleScore> {
 

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public class ChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public class ChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
 
     protected final EntitySelector<Solution_> entitySelector;
     protected final ValueSelector<Solution_> valueSelector;

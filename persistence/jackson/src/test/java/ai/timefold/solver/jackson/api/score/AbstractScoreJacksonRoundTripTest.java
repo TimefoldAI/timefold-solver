@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.fail;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.jackson.api.AbstractJacksonRoundTripTest;
 
+import org.jspecify.annotations.Nullable;
+
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -15,8 +17,9 @@ public abstract class AbstractScoreJacksonRoundTripTest extends AbstractJacksonR
     // Helper methods
     // ************************************************************************
 
+    @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>, W extends TestScoreWrapper<Score_>> void
-            assertSerializeAndDeserialize(Score_ expectedScore, W input) {
+            assertSerializeAndDeserialize(@Nullable Score_ expectedScore, W input) {
         String jsonString;
         W output;
         try {

@@ -8,14 +8,11 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.ConcatenatingIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.MappingIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -34,17 +31,14 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solution_>
+public final class ElementDestinationSelector<Solution_> extends AbstractListMoveSelector<Solution_>
         implements DestinationSelector<Solution_> {
 
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final IterableValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
     private final boolean isExhaustiveSearch;
-
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public ElementDestinationSelector(EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
             boolean randomSelection) {
@@ -54,7 +48,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     public ElementDestinationSelector(EntitySelector<Solution_> entitySelector,
             IterableValueSelector<Solution_> replayingValueSelector, IterableValueSelector<Solution_> valueSelector,
             boolean randomSelection, boolean isExhaustiveSearch) {
-        this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
+        super((ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor());
         this.entitySelector = entitySelector;
         var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
         this.replayingValueSelector = replayingValueSelector;
@@ -63,11 +57,6 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         this.isExhaustiveSearch = isExhaustiveSearch;
         phaseLifecycleSupport.addEventListener(this.entitySelector);
         phaseLifecycleSupport.addEventListener(this.valueSelector);
-    }
-
-    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
-        return Objects.requireNonNull(listVariableStateSupply,
-                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     private IterableValueSelector<Solution_> filterUnassignedValues(
@@ -90,19 +79,6 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
          * we can keep the correct probabilities throughout.
          */
         return FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableStateSupply);
-    }
-
-    @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        var supplyManager = solverScope.getScoreDirector().getSupplyManager();
-        listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        listVariableStateSupply = null;
     }
 
     @Override

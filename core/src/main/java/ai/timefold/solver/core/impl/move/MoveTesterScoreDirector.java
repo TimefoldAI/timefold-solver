@@ -5,6 +5,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -26,7 +27,7 @@ final class MoveTesterScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public InnerScore<Score_> calculateScore() {
+    public InnerScore<Score_> innerCalculateScore() {
         return InnerScore.fullyAssigned(scoreDirectorFactory.getScoreDefinition().getZeroScore());
     }
 
@@ -44,8 +45,9 @@ final class MoveTesterScoreDirector<Solution_, Score_ extends Score<Score_>>
     static final class Builder<Solution_, Score_ extends Score<Score_>> extends
             AbstractScoreDirectorBuilder<Solution_, Score_, MoveTesterScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
-        public Builder(MoveTesterScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
-            super(scoreDirectorFactory);
+        public Builder(MoveTesterScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+                EnvironmentMode environmentMode) {
+            super(scoreDirectorFactory, environmentMode);
         }
 
         @Override

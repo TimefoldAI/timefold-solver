@@ -3,19 +3,25 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.IntFunction;
+
+import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 
 import org.jspecify.annotations.NonNull;
 
 final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableReferenceGraph<Solution_, BitSet> {
     // These structures are mutable.
     private final AffectedEntitiesUpdater<Solution_> affectedEntitiesUpdater;
+    private final boolean ignoreInconsistentSolutions;
 
     public DefaultVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
-            IntFunction<TopologicalOrderGraph> graphCreator) {
+            IntFunction<TopologicalOrderGraph> graphCreator,
+            boolean ignoreInconsistentSolutions) {
         super(outerGraph, graphCreator);
-
+        this.ignoreInconsistentSolutions = ignoreInconsistentSolutions;
         var entityToVariableReferenceMap = new IdentityHashMap<Object, List<GraphNode<Solution_>>>();
         for (var instance : nodeList) {
             if (instance.groupEntityIds() == null) {
@@ -35,7 +41,8 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         affectedEntitiesUpdater =
                 new AffectedEntitiesUpdater<>(graph, nodeList, nodeTopologicalOrders,
                         entityToVariableReferenceMap::get,
-                        outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier);
+                        outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier,
+                        ignoreInconsistentSolutions);
     }
 
     @Override
@@ -49,19 +56,43 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    void innerUpdateChanged() {
+    boolean innerUpdateChanged() {
         if (changeTracker.isEmpty()) {
-            return;
+            return true;
         }
-        graph.commitChanges(changeTracker);
-        affectedEntitiesUpdater.accept(changeTracker);
+        if (graph.commitChanges(changeTracker) && ignoreInconsistentSolutions) {
+            return false;
+        } else {
+            affectedEntitiesUpdater.accept(changeTracker);
+            return true;
+        }
     }
 
     /**
-     * See {@link ConsistencyTracker#setUnknownConsistencyFromEntityShadowVariablesInconsistent}
+     * See {@link ConsistencyTracker#setUnknownConsistencyValues}
      */
     public void setUnknownInconsistencyValues() {
         graph.commitChanges(changeTracker);
         affectedEntitiesUpdater.setUnknownInconsistencyValues();
+    }
+
+    @Override
+    public List<VariableLoop> getVariableLoops() {
+        var out = new ArrayList<VariableLoop>();
+        var graphTrackingInconsistentEntities = new DefaultTopologicalOrderGraph(this.nodeTopologicalOrders.length);
+        graph.forEachEdge(graphTrackingInconsistentEntities::addEdge);
+        graphTrackingInconsistentEntities.commitChanges(new BitSet());
+        var loopedComponentList = graphTrackingInconsistentEntities.getLoopedComponentList();
+        for (var loopedComponent : loopedComponentList) {
+            var entityVariablePairs = LinkedHashSet.<EntityVariablePair> newLinkedHashSet(loopedComponent.size());
+            for (var nodeId : loopedComponent) {
+                var node = this.nodeList.get(nodeId);
+                for (var variable : node.variableReferences()) {
+                    entityVariablePairs.add(new EntityVariablePair(node.entity(), variable.id().name()));
+                }
+            }
+            out.add(new VariableLoop(entityVariablePairs));
+        }
+        return out;
     }
 }

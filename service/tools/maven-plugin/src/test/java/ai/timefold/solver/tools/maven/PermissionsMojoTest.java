@@ -114,7 +114,8 @@ class PermissionsMojoTest {
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
 
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoExecutionException.class)
-                .hasMessage("Platform authentication failed with 401 status code: no error message reported by the platform");
+                .hasMessage(
+                        "Platform authentication failed — please verify your PAT and tenant access, or contact support if the problem persists");
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }

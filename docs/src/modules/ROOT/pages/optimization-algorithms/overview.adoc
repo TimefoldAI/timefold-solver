@@ -879,6 +879,13 @@ As defined above, but the executed move is immediately undone.
 The provided `Function` is executed while the move is still applied,
 so that the user can perform arbitrary calculations on the working solution with the move applied.
 The return value of the provided `Function` is returned by this method.
+`Object executeTemporarilyHandlingStructurallyFlawedSolutions(Move, Function, Function)`::
+As `executeTemporarily(Move, Function)`, but the executed move is allowed to result in a
+xref:constraints-and-score/overview.adoc#structuralScore[structurally flawed] solution.
+If the temporarily modified solution is structurally flawed,
+the second provided `Function` is executed with it instead of the first one.
+`executeTemporarilyAndCalculateScoreHandlingStructurallyFlawedSolutions(Move, Function, Function)`
+is the counterpart that guarantees a fresh score at the end of the method's invocation.
 `boolean isPhaseTerminated()`::
 Returns `true` if the `PhaseCommand` should terminate.
 `Object lookUpWorkingObject(Object externalObject)`::
@@ -891,6 +898,16 @@ Any change on the planning entities in a `PhaseCommand` must be done through the
 to avoid corrupting the `Solver`.
 For performance reasons, these methods will not compute a fresh score before it finishes.
 If you want a fresh score computed, these methods have counterparts, `executeAndCalculateScore` and `executeTemporarilyAndCalculateScore`.
+
+If a `Move` causes the working solution to become
+xref:constraints-and-score/overview.adoc#structuralScore[structurally flawed],
+the `execute`, `executeAndCalculateScore`, `executeTemporarily` and `executeTemporarilyAndCalculateScore` methods
+fail fast and throw an `IllegalArgumentException`.
+If a `PhaseCommand` leaves the working solution structurally flawed when it returns,
+the `Solver` throws an `IllegalStateException`.
+To inspect a structurally flawed solution instead of failing fast,
+use the `executeTemporarilyHandlingStructurallyFlawedSolutions` or
+`executeTemporarilyAndCalculateScoreHandlingStructurallyFlawedSolutions` methods described above.
 
 Long-running commands may want to periodically check `isPhaseTerminated` and when it returns `true`,
 terminate the command by returning.

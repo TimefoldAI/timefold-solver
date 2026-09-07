@@ -140,7 +140,8 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 .add(consumer);
     }
 
-    public VariableReferenceGraph build(IntFunction<TopologicalOrderGraph> graphCreator) {
+    public VariableReferenceGraph build(IntFunction<TopologicalOrderGraph> graphCreator,
+            boolean ignoreInconsistentSolutions) {
         assertNoFixedLoops();
         if (nodeList.isEmpty()) {
             return EmptyVariableReferenceGraph.INSTANCE;
@@ -148,7 +149,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         if (isGraphFixed) {
             return new FixedVariableReferenceGraph<>(this, graphCreator);
         }
-        return new DefaultVariableReferenceGraph<>(this, graphCreator);
+        return new DefaultVariableReferenceGraph<>(this, graphCreator, ignoreInconsistentSolutions);
     }
 
     public @NonNull GraphNode<Solution_> lookupOrError(VariableMetaModel<?, ?, ?> variableId, Object entity) {

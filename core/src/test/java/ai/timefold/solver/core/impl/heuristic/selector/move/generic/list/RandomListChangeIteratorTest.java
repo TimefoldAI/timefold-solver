@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntitySelector;
@@ -46,7 +47,9 @@ class RandomListChangeIteratorTest {
         var destinationSelector = new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true);
 
         var random = new TestRandom(3, 0, 1);
-        solvingStarted(destinationSelector, scoreDirector, random);
+        var solverScope = solvingStarted(destinationSelector, scoreDirector, random);
+        phaseStarted(destinationSelector, solverScope);
+
         var randomListChangeIterator = new RandomListChangeIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 sourceValueSelector,
