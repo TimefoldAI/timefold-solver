@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.move;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-
-import java.util.List;
 
 /**
  * Records what a list variable range looked like before a change, so undo can restore it.

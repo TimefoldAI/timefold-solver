@@ -1,5 +1,10 @@
 package ai.timefold.solver.core.impl.move;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -12,13 +17,9 @@ import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 import ai.timefold.solver.core.preview.api.move.Move;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 @NullMarked
 public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extends Score<Score_>>
@@ -43,7 +44,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     }
 
     private VariableChangeRecordingScoreDirector(@Nullable InnerScoreDirector<Solution_, Score_> backingScoreDirector,
-                                                 List<ChangeAction<Solution_>> variableChangeList, PendingListChangeTracker pendingListChangeTracker) {
+            List<ChangeAction<Solution_>> variableChangeList, PendingListChangeTracker pendingListChangeTracker) {
         this.backingScoreDirector = backingScoreDirector;
         this.variableChangeList = variableChangeList;
         this.pendingListChangeTracker = pendingListChangeTracker;
@@ -91,11 +92,13 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     private void resetVariableChangeList() {
         if (variableChangesEscaped) {
-            // We need to reallocate the list, as createUndoMove() may hold a reference to it.
+            // createUndoMove() handed this very list to a Move,
+            // so clearing it would empty that move instead.
+            // Drop the reference and let it be reallocated.
             variableChangeList = null;
             variableChangesEscaped = false;
         } else {
-            variableChangeList.clear(); // Do not reallocate the list on the hot path.
+            variableChangeList.clear();
         }
     }
 
@@ -117,7 +120,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-                                          int toIndex) {
+            int toIndex) {
         var list = variableDescriptor.getValue(entity);
         var action = new ListVariableBeforeChangeAction<>(entity,
                 List.copyOf(list.subList(fromIndex, toIndex)), fromIndex, toIndex, list.size(),
@@ -132,7 +135,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-                                         int toIndex) {
+            int toIndex) {
         // The tracker is shared with getNonDelegating()'s copy, so a pair split across the two still matches.
         var pendingBeforeAction = pendingListChangeTracker.remove(entity);
         if (pendingBeforeAction == null) {
@@ -153,10 +156,11 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
              * // afterListVariableChanged(2, 3)
              * // Undo restores oldValue at index 2 instead of index 0.
              */
-            throw new IllegalArgumentException("""
-                    The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
-                    Maybe check implementation of your %s."""
-                    .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
+            throw new IllegalArgumentException(
+                    """
+                            The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
+                            Maybe check implementation of your %s."""
+                            .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
         }
         // The reported range must account for every element the mutation added or removed;
         // undo clears exactly [fromIndex, toIndex) before restoring,

@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.move;
 
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Tracks, per entity, the {@link ListVariableBeforeChangeAction}
@@ -57,7 +57,8 @@ final class PendingListChangeTracker {
         singleAction = null;
     }
 
-    private static IllegalArgumentException bracketAlreadyOpen(Object entity, ListVariableBeforeChangeAction<?, ?, ?> openAction, ListVariableBeforeChangeAction<?, ?, ?> newAction) {
+    private static IllegalArgumentException bracketAlreadyOpen(Object entity,
+            ListVariableBeforeChangeAction<?, ?, ?> openAction, ListVariableBeforeChangeAction<?, ?, ?> newAction) {
         return new IllegalArgumentException("""
                 The entity (%s) already has an open beforeListVariableChanged (%d, %d), \
                 so another beforeListVariableChanged (%d, %d) for it must not be opened.

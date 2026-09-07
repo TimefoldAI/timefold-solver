@@ -1,5 +1,14 @@
 package ai.timefold.solver.core.impl.move;
 
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Stream;
+
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -12,17 +21,9 @@ import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListEntityW
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListValueWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListWithShadowHistoryConstraintProvider;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 /**
  * Drives every {@link MoveDirector} list operation whose bracket shape puts the undo merge under pressure -
