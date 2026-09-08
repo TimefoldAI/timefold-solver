@@ -14,9 +14,8 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
@@ -25,11 +24,9 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         var list = getValue(entity);
         return list.contains(element);
     };
-    private final BiNeighborhoodsPredicate<Solution_, Object, Object> entityContainsPinnedValuePredicate =
-            (solutionView, value, entity) -> {
-                var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
-                return moveDirector.isPinned(this, value);
-            };
+    private final UniNeighborhoodsPredicate<Solution_, Object> valueMovablePredicate =
+            (solutionView, value) -> value == null
+                    || !solutionView.isPinned(this.<Object, Object> getVariableMetaModel(), value);
 
     private boolean allowsUnassignedValues = true;
 
@@ -48,8 +45,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     @SuppressWarnings("unchecked")
-    public <A, B> BiNeighborhoodsPredicate<Solution_, A, B> getEntityContainsPinnedValuePredicate() {
-        return (BiNeighborhoodsPredicate<Solution_, A, B>) entityContainsPinnedValuePredicate;
+    public <A> UniNeighborhoodsPredicate<Solution_, A> getValueMovablePredicate() {
+        return (UniNeighborhoodsPredicate<Solution_, A>) valueMovablePredicate;
     }
 
     public boolean allowsUnassignedValues() {

@@ -1,0 +1,115 @@
+[#upgradeToLatest2]
+= Upgrade Timefold Solver to the latest version
+:doctype: book
+:sectnums:
+:icons: font
+
+As Timefold Solver 2.x continues developing,
+we occasionally have to bring changes to our APIs.
+We will not break backwards compatibility during the lifetime of Timefold Solver 2.x, and that means your current code will not break.
+But we still want you to upgrade to the new APIs easily and quickly.
+We provide this upgrade recipe for users who choose to keep up to date with the latest and greatest in the solver space.
+
+Many of the upgrade steps can be applied automatically using our migration tooling,
+but some manual changes may still be required.
+This upgrade recipe is intended to help you navigate those changes and upgrade your codebase with confidence.
+
+[#upgradeBeforeYouStart]
+== Before you start
+
+Throughout this document, we assume that you are upgrading from the latest available version of the 1.x line.
+Make sure to first upgrade to the 2.x version and only then follow this recipe.
+
+Please refer to
+link:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-to-latest-version[upgrade recipe for Timefold Solver 1.x] or even
+link:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[upgrade recipe for OptaPlanner] if you go way back.
+
+[#automaticUpgradeToLatest]
+== Automatic upgrade to latest Timefold Solver
+
+For many of the upgrade steps mentioned later,
+we provide a migration tool that can automatically apply those changes to Java files and Maven POMs.
+This tool is based on OpenRewrite and can be run as a Maven or Gradle plugin.
+To run the tool, execute the following command in your project directory:
+
+[tabs]
+====
+Maven::
++
+--
+[source,shell,subs=attributes+]
+----
+mvn org.openrewrite.maven:rewrite-maven-plugin:{rewrite-maven-plugin-version}:run -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+----
+--
+
+Gradle::
++
+--
+[source,shell,subs=attributes+]
+----
+curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{timefold-solver-version}/tools/migration/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
+----
+--
+====
+
+include::framework-version-warning.adoc[leveloffset=+1]
+
+Having done that, you can check the local changes and commit them.
+
+For the time being, Kotlin users need to follow the upgrade recipe and apply the steps manually.
+
+=== Summary of automated changes
+
+The following includes a summary of all changes automated in the OpenRewrite recipe, for reference.
+They include both upgrades to address deprecations,
+and upgrades to preview features, where we are allowed to break backwards compatibility.
+
+==== Neighborhoods API package and class renames
+
+As the Neighborhoods API develops in its preview status,
+we are tweaking names of components.
+Specifically:
+
+- Sampling streams were renamed to picking streams.
+
+[#manualUpgradeLatest]
+== Manual upgrade recipe
+
+In addition to the automated changes listed above, there are some changes that require manual intervention.
+Every upgrade note indicates how likely your code will be affected by that change:
+
+- icon:exclamation-triangle[role=red,set=fas] *Major*: Likely to affect your code.
+- icon:info-circle[role=yellow,set=fas] *Minor*: Less likely to affect your code, especially if you've been upgrading Timefold Solver regularly, paying attention to new deprecations.
+- icon:eye[set=far] *Recommended*: We think this won't affect you, but we're listing this just to be safe.
+
+The upgrade recipe often lists the changes as they apply to Java code.
+We kindly ask Kotlin users to translate the changes accordingly.
+
+=== Conceptual changes
+
+These changes are most likely to require you to change your code in a non-mechanical way,
+and they can only be automated partially, if at all.
+
+icon:eye[set=far] Deprecation of `@ShadowVariableInconsistent`
+[%collapsible%open]
+====
+The solver can optionally increase the performance of shadow variable processing on dense variable graphs, in exchange for the user removing the `@ShadowVariableInconsistent` from their domain model. See the xref:upgrading-timefold-solver/migration-guides/shadow-variables-inconsistent-to-structural-score.adoc[detailed migration guide].
+====
+
+'''
+
+[#previewFeatureUpgrade]
+== Changes to preview features
+
+The API of preview features is not yet entirely stable,
+and changes based on user feedback can be expected.
+This section lists all such changes,
+so that users of preview features can adapt.
+All feedback is much appreciated!
+
+=== Timefold Solver 2.7.0 hides move implementations
+
+The concrete `Move` implementations of the Neighborhoods API (such as `ChangeMove` and `ListChangeMove`) are no longer public.
+Build moves through the `Moves` factory class instead;
+see xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsBuiltInMoves[built-in moves] for the replacement.

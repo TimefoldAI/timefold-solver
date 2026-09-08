@@ -333,7 +333,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        for (var handler : handlerList) {
+        for (var i = 0; i < handlerList.size(); i++) { // Avoid iterator allocations on the hot path.
+            var handler = handlerList.get(i);
             handler.beforeVariableChanged(scoreDirector, entity);
         }
         if (shadowVariableSession != null) {
@@ -344,7 +345,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        for (var handler : handlerList) {
+        for (var i = 0; i < handlerList.size(); i++) { // Avoid iterator allocations on the hot path.
+            var handler = handlerList.get(i);
             handler.afterVariableChanged(scoreDirector, entity);
         }
         if (shadowVariableSession != null) {
@@ -369,7 +371,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        for (var handler : listVariableChangeHandlerList) {
+        for (var i = 0; i < listVariableChangeHandlerList.size(); i++) { // Avoid iterator allocations on the hot path.
+            var handler = listVariableChangeHandlerList.get(i);
             handler.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
         }
         if (shadowVariableSession != null) {
@@ -380,7 +383,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        for (var handler : listVariableChangeHandlerList) {
+        for (var i = 0; i < listVariableChangeHandlerList.size(); i++) { // Avoid iterator allocations on the hot path.
+            var handler = listVariableChangeHandlerList.get(i);
             handler.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
         }
         if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) { // Only necessary if there is a cascade.
