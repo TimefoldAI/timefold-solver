@@ -63,14 +63,12 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void undoChanges() {
-        var changeList = getVariableChangeList();
-        var changeCount = changeList.size();
-        if (changeCount == 0) {
+        var changeList = variableChangeList;
+        if (changeList == null || changeList.isEmpty()) {
             return;
         }
-        var listIterator = changeList.listIterator(changeCount);
-        while (listIterator.hasPrevious()) { // Iterate in reverse.
-            var changeAction = listIterator.previous();
+        for (var i = changeList.size() - 1; i >= 0; i--) { // Avoid iterator creation on the hot path.
+            var changeAction = changeList.get(i);
             changeAction.undo(backingScoreDirector);
         }
         Objects.requireNonNull(backingScoreDirector).updateShadowVariables();
@@ -161,6 +159,12 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
                             The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
                             Maybe check implementation of your %s."""
                             .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
+        } else if (toIndex < fromIndex) {
+            throw new IllegalArgumentException("""
+                    The afterListVariableChanged (%d, %d) of entity (%s) has toIndex (%d) smaller than fromIndex (%d).
+                    Maybe check implementation of your %s."""
+                    .formatted(fromIndex, toIndex, entity, toIndex, fromIndex,
+                            AbstractSelectorBasedMove.class.getSimpleName()));
         }
         // The reported range must account for every element the mutation added or removed;
         // undo clears exactly [fromIndex, toIndex) before restoring,
