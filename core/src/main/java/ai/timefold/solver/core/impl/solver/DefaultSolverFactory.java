@@ -38,6 +38,7 @@ import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverTags;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
@@ -52,8 +53,6 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.micrometer.core.instrument.Tags;
 
 /**
  * Builds {@link DefaultSolver} instances out of a {@link SolverConfig},
@@ -134,7 +133,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
         var solverScope = new SolverScope<Solution_>(clock);
         var monitoringConfig = solverConfig.determineMetricConfig();
-        solverScope.setMonitoringTags(Tags.empty());
+        solverScope.setMonitoringTags(SolverTags.withoutProblemId().asTags());
         var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
         if (!solverMetricList.isEmpty()) {
             solverScope.setSolverMetricSet(EnumSet.copyOf(solverMetricList));

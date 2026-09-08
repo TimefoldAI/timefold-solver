@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -42,6 +41,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBase
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverTags;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -100,32 +100,32 @@ class SolverMetricsIT extends AbstractMeterTest {
                                         null,
                                         Meter.Type.COUNTER),
                                 new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE));
@@ -141,6 +141,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         // make it return the average, and the solver holds
         // onto the solver scope, meaning it won't automatically
         // be deregistered.
+        // Prometheus requires the tag set to be constant, so everything except global meters gets a problem id
         assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
                 .containsExactlyInAnyOrder(
                         new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
@@ -164,7 +165,6 @@ class SolverMetricsIT extends AbstractMeterTest {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        solver.setMonitorTagMap(Map.of("tag.key", "tag.value"));
         meterRegistry.publish();
         assertThat(meterRegistry.getMeters().stream().map(Meter::getId)).isEmpty();
 
@@ -176,6 +176,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         var latch = new CountDownLatch(1);
         solver.addEventListener(event -> {
             if (!updatedTime.get()) {
+                // Prometheus requires the tag set to be constant, so everything except global meters gets a problem id
                 assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
                         .containsExactlyInAnyOrder(
                                 new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
@@ -189,32 +190,32 @@ class SolverMetricsIT extends AbstractMeterTest {
                                         null,
                                         Meter.Type.COUNTER),
                                 new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", "null"),
                                         null,
                                         null,
                                         Meter.Type.GAUGE));
@@ -255,7 +256,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+        ((DefaultSolver<TestdataSolution>) solver).setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
@@ -400,7 +401,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solver = solverFactory.buildSolver();
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+                .setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         meterRegistry.publish();
         var solution = new TestdataHardSoftScoreSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("none"), new TestdataValue("reward")));
@@ -503,7 +504,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solver = solverFactory.buildSolver();
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+                .setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         var step = new AtomicInteger(-1);
 
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
@@ -583,7 +584,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+        ((DefaultSolver<TestdataSolution>) solver).setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
