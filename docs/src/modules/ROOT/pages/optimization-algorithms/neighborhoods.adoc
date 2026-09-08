@@ -297,10 +297,10 @@ One value in a list variable::
 Insert a value into a xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list variable] at a given position,
 remove it from its current position, move it to another position, or swap the positions of two values.
 The positions involved may belong to different entities.
-A block of values in a list variable::
-Move a contiguous block of values to another position, optionally reversing the order of the block,
-swap two such blocks, unassign a whole block at once,
-or reverse a block in place, which is the classic route-improvement move.
+A range in a list variable::
+Move a contiguous block of values to another position, optionally reversing the order of the range,
+swap two such ranges, unassign a whole range at once,
+or reverse a range in place, which is the classic route-improvement move.
 
 A `Range` identifies a contiguous block of one entity's list variable by its start and end position.
 Pass a `Range` to `Moves` whenever a move acts on a block of values instead of a single value.
@@ -314,8 +314,8 @@ see <<neighborhoodsMoveProviders,built-in move providers>>.
 IMPORTANT: The runtime performance of `Move` implementations is of the utmost importance.
 Moves are on the solver hot path, and any time wasted there will directly result in
 suboptimal solver performance.
-For this reason, built-in `Move` implementations generally do not validate their input arguments
-and, unlike the rest of the solver, do not fail fast.
+For this reason, built-in `Move` implementations generally do not validate their input arguments and,
+unlike the rest of the solver, do not fail fast.
 In other words, a built-in move will break value ranges, or create inconsistent solutions, if told to.
 It is the responsibility of the <<neighborhoodsMoveProviders,move provider>> not to generate such moves.
 

@@ -120,7 +120,7 @@ public final class Sample<A extends @Nullable Object>
      *         such as a homogeneous pillar's current variable value.
      */
     public @Nullable A representative() {
-        // memberSet is never mutated after construction, which is what makes
+        // memberCollection is never mutated after construction, which is what makes
         // "the same member on every call" true.
         return memberCollection.getFirst();
     }
@@ -155,8 +155,8 @@ public final class Sample<A extends @Nullable Object>
 
     @Override
     public boolean equals(@Nullable Object o) {
-        // memberSet is no longer always a real Set (it may be a duplicate-free List via wrap()),
-        // so equality can't delegate to memberSet.equals() -
+        // memberCollection is no longer always a real Set (it may be a duplicate-free List via wrap()),
+        // so equality can't delegate to memberCollection.equals() -
         // that would silently become order-sensitive.
         // Mirrors AbstractSet.equals(): size check, then mutual containment.
         return o instanceof Sample<?> other &&
@@ -170,7 +170,7 @@ public final class Sample<A extends @Nullable Object>
         if (!hashCodeComputed) {
             hashCodeComputed = true;
             // Mirrors AbstractSet.hashCode(): sum of member hash codes, order-independent,
-            // consistent regardless of whether memberSet is a Set or a duplicate-free List.
+            // consistent regardless of whether memberCollection is a Set or a duplicate-free List.
             var sum = 0;
             for (var member : memberCollection) {
                 sum += Objects.hashCode(member);

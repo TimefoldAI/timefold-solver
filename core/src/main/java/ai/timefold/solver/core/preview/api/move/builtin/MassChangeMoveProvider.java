@@ -213,9 +213,8 @@ public final class MassChangeMoveProvider<Solution_, Entity_, Value_>
                 }
                 var sharedValue = sharedValueOf(sample, variableMetaModel, solutionView);
                 var ranges = SampleValueRanges.of(sample, variableMetaModel, solutionView);
-                var provenEmptyForThisSignature =
-                        Objects.equals(ranges, provenEmptyRanges) &&
-                                Objects.equals(sharedValue, valueWithNoLegalDestination);
+                var provenEmptyForThisSignature = Objects.equals(sharedValue, valueWithNoLegalDestination) &&
+                        Objects.equals(ranges, provenEmptyRanges);
                 // A sample whose non-null intersection is empty (or already proven so)
                 // still has a legal null destination (unassign), as long as it holds at least one entity to unassign.
                 // Tried before the latch-based skip below, and also taken whenever the latch is already set.
