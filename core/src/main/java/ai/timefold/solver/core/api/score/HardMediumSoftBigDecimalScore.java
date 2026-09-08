@@ -6,7 +6,6 @@ import static ai.timefold.solver.core.impl.score.ScoreUtil.SOFT_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -117,33 +116,20 @@ public record HardMediumSoftBigDecimalScore(long structuralScore, BigDecimal har
 
     @Override
     public HardMediumSoftBigDecimalScore multiply(double multiplicand) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
-        // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
-        return of(hardScore.multiply(multiplicandBigDecimal).setScale(hardScore.scale(), RoundingMode.FLOOR),
-                mediumScore.multiply(multiplicandBigDecimal).setScale(mediumScore.scale(), RoundingMode.FLOOR),
-                softScore.multiply(multiplicandBigDecimal).setScale(softScore.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.multiply(hardScore, multiplicand), ScoreUtil.multiply(mediumScore, multiplicand),
+                ScoreUtil.multiply(softScore, multiplicand));
     }
 
     @Override
     public HardMediumSoftBigDecimalScore divide(double divisor) {
-        var divisorBigDecimal = BigDecimal.valueOf(divisor);
-        // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
-        return of(hardScore.divide(divisorBigDecimal, hardScore.scale(), RoundingMode.FLOOR),
-                mediumScore.divide(divisorBigDecimal, mediumScore.scale(), RoundingMode.FLOOR),
-                softScore.divide(divisorBigDecimal, softScore.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.divide(hardScore, divisor), ScoreUtil.divide(mediumScore, divisor),
+                ScoreUtil.divide(softScore, divisor));
     }
 
     @Override
     public HardMediumSoftBigDecimalScore power(double exponent) {
-        var exponentBigDecimal = BigDecimal.valueOf(exponent);
-        // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
-        // TODO FIXME remove .intValue() so non-integer exponents produce correct results
-        //  None of the normal Java libraries support BigDecimal.pow(BigDecimal)
-        return of(hardScore.pow(exponentBigDecimal.intValue()).setScale(hardScore.scale(), RoundingMode.FLOOR),
-                mediumScore.pow(exponentBigDecimal.intValue()).setScale(mediumScore.scale(), RoundingMode.FLOOR),
-                softScore.pow(exponentBigDecimal.intValue()).setScale(softScore.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.power(hardScore, exponent), ScoreUtil.power(mediumScore, exponent),
+                ScoreUtil.power(softScore, exponent));
     }
 
     @Override

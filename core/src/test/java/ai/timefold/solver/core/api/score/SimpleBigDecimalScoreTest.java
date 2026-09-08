@@ -94,6 +94,24 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     }
 
     @Test
+    void multiplyClampsNegativeScale() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1E+2")).multiply(1.5))
+                .isEqualTo(SimpleBigDecimalScore.of(new BigDecimal("150")));
+    }
+
+    @Test
+    void divideClampsNegativeScale() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1E+2")).divide(2.0))
+                .isEqualTo(SimpleBigDecimalScore.of(new BigDecimal("50")));
+    }
+
+    @Test
+    void powerClampsNegativeScale() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1E+2")).power(0.0))
+                .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.ONE));
+    }
+
+    @Test
     void negate() {
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("5.0")).negate())
                 .isEqualTo(SimpleBigDecimalScore.of(new BigDecimal("-5.0")));

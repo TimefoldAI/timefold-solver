@@ -3,7 +3,6 @@ package ai.timefold.solver.core.api.score;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
@@ -57,31 +56,17 @@ public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) impl
 
     @Override
     public SimpleBigDecimalScore multiply(double multiplicand) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
-        // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
-        return of(score.multiply(multiplicandBigDecimal).setScale(score.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.multiply(score, multiplicand));
     }
 
     @Override
     public SimpleBigDecimalScore divide(double divisor) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var divisorBigDecimal = BigDecimal.valueOf(divisor);
-        // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
-        return of(score.divide(divisorBigDecimal, score.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.divide(score, divisor));
     }
 
     @Override
     public SimpleBigDecimalScore power(double exponent) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var exponentBigDecimal = BigDecimal.valueOf(exponent);
-        // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
-        // TODO FIXME remove .intValue() so non-integer exponents produce correct results
-        // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
-        return of(score.pow(exponentBigDecimal.intValue()).setScale(score.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.power(score, exponent));
     }
 
     @Override

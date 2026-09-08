@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.ScoreUtil;
 
 /**
  * Abstract superclass for {@link ScoreDefinition}.
@@ -42,7 +43,7 @@ public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>>
     }
 
     protected static BigDecimal divide(BigDecimal dividend, BigDecimal divisor) {
-        return dividend.divide(divisor, dividend.scale() - divisor.scale(), RoundingMode.FLOOR);
+        return dividend.divide(divisor, ScoreUtil.nonNegativeScale(dividend.scale() - divisor.scale()), RoundingMode.FLOOR);
     }
 
     /**

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
@@ -228,7 +229,8 @@ public final class ScoreUtil {
      * A shared constant has scale 0, and zero keeps its meaning at every scale,
      * because zero multiplied or divided stays zero.
      * Every other value must keep the scale that the caller supplied, because {@code multiply()},
-     * {@code divide()} and {@code power()} take the scale of their result from the scale of the input.
+     * {@code divide()} and {@code power()} take the scale of their result from the scale of the input,
+     * clamped to never go below 0 (see {@link #nonNegativeScale}).
      * If {@code SimpleBigDecimalScore.of(new BigDecimal("1.0"))} returned the shared {@code ONE}, which has scale 0,
      * then {@code multiply(1.2)} would give 1 instead of 1.2.
      *
@@ -284,6 +286,61 @@ public final class ScoreUtil {
      */
     public static int hashCodeIgnoringScale(BigDecimal value) {
         return value.stripTrailingZeros().hashCode();
+    }
+
+    /**
+     * Clamps a FLOOR-rounding target scale so it is never coarser than whole units (never below 0),
+     * whatever BigDecimal scale arithmetic derived it from —
+     * a single operand's own scale, or a difference between two operands' scales.
+     * <p>
+     * A negative target scale means "round to the nearest ten, hundred, ..."
+     * Combined with FLOOR rounding, that can erase most or all of an otherwise exact computation:
+     * 150 floored to the nearest hundred is 100,
+     * and a derived divide-scale of -3 turns an exact quotient of 5 into 0.
+     * Clamping at 0 removes that failure mode without changing anything for the common case,
+     * where the derived scale is already 0 or higher.
+     *
+     * @return {@code scale}, or 0 if {@code scale} is negative
+     */
+    public static int nonNegativeScale(int scale) {
+        return Math.max(scale, 0);
+    }
+
+    /**
+     * Multiplies a {@link BigDecimal} score level by a double multiplicand,
+     * per the {@link Score#multiply(double)} contract:
+     * the multiplicand's own (unspecified) scale must not affect the result,
+     * and rounding, when needed, is {@link RoundingMode#FLOOR}.
+     * <p>
+     * The target scale is {@link #nonNegativeScale}, not {@code base.scale()} directly —
+     * see there for why.
+     * If {@code base} is 100 with scale -2
+     * (a value expressed coarser than whole units, e.g. {@code new BigDecimal("1E+2")}),
+     * this gives 150 for a multiplicand of 1.5;
+     * flooring onto {@code base}'s own scale would have given 100 instead.
+     */
+    public static BigDecimal multiply(BigDecimal base, double multiplicand) {
+        var raw = base.multiply(BigDecimal.valueOf(multiplicand));
+        return raw.setScale(nonNegativeScale(base.scale()), RoundingMode.FLOOR);
+    }
+
+    /**
+     * Divides a {@link BigDecimal} score level by a double divisor.
+     * See {@link #multiply(BigDecimal, double)} for the scale-flooring rationale.
+     */
+    public static BigDecimal divide(BigDecimal base, double divisor) {
+        return base.divide(BigDecimal.valueOf(divisor), nonNegativeScale(base.scale()), RoundingMode.FLOOR);
+    }
+
+    /**
+     * Raises a {@link BigDecimal} score level to a double exponent.
+     * See {@link #multiply(BigDecimal, double)} for the scale-flooring rationale.
+     */
+    public static BigDecimal power(BigDecimal base, double exponent) {
+        // TODO FIXME remove .intValue() so non-integer exponents produce correct results
+        //      None of the normal Java libraries support BigDecimal.pow(BigDecimal)
+        var raw = base.pow(BigDecimal.valueOf(exponent).intValue());
+        return raw.setScale(nonNegativeScale(base.scale()), RoundingMode.FLOOR);
     }
 
     private ScoreUtil() {
