@@ -151,7 +151,7 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
             return false;
         }
         for (var hardScore : hardScores) {
-            if (hardScore.compareTo(BigDecimal.ZERO) < 0) {
+            if (ScoreUtil.isNegative(hardScore)) {
                 return false;
             }
         }
@@ -294,12 +294,12 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
                 return false;
             }
             for (var i = 0; i < hardScores.length; i++) {
-                if (!hardScores[i].stripTrailingZeros().equals(other.hardScore(i).stripTrailingZeros())) {
+                if (!ScoreUtil.equalsIgnoringScale(hardScores[i], other.hardScore(i))) {
                     return false;
                 }
             }
             for (var i = 0; i < softScores.length; i++) {
-                if (!softScores[i].stripTrailingZeros().equals(other.softScore(i).stripTrailingZeros())) {
+                if (!ScoreUtil.equalsIgnoringScale(softScores[i], other.softScore(i))) {
                     return false;
                 }
             }
@@ -312,10 +312,10 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
     public int hashCode() {
         var hash = Long.hashCode(structuralScore);
         for (var hardScore : hardScores) {
-            hash = 31 * hash + hardScore.stripTrailingZeros().hashCode();
+            hash = 31 * hash + ScoreUtil.hashCodeIgnoringScale(hardScore);
         }
         for (var softScore : softScores) {
-            hash = 31 * hash + softScore.stripTrailingZeros().hashCode();
+            hash = 31 * hash + ScoreUtil.hashCodeIgnoringScale(softScore);
         }
         return hash;
     }
@@ -343,7 +343,7 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
 
     @Override
     public String toShortString() {
-        return ScoreUtil.buildBendableShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0);
+        return ScoreUtil.buildBendableShortString(this, ScoreUtil.BIG_DECIMAL_NOT_ZERO);
     }
 
     @Override

@@ -52,14 +52,8 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
 
     public static HardSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal softScore) {
         // Optimization for frequently seen values.
-        if (hardScore.signum() == 0) {
-            if (softScore.signum() == 0) {
-                return ZERO;
-            } else if (Objects.equals(softScore, BigDecimal.ONE)) {
-                return ONE_SOFT;
-            }
-        } else if (Objects.equals(hardScore, BigDecimal.ONE) && softScore.signum() == 0) {
-            return ONE_HARD;
+        if (ScoreUtil.isZero(hardScore) && ScoreUtil.isZero(softScore)) {
+            return ZERO;
         }
         // Every other case is constructed.
         return new HardSoftBigDecimalScore(hardScore, softScore);
@@ -67,10 +61,8 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
 
     public static HardSoftBigDecimalScore ofHard(BigDecimal hardScore) {
         // Optimization for frequently seen values.
-        if (hardScore.signum() == 0) {
+        if (ScoreUtil.isZero(hardScore)) {
             return ZERO;
-        } else if (Objects.equals(hardScore, BigDecimal.ONE)) {
-            return ONE_HARD;
         }
         // Every other case is constructed.
         return new HardSoftBigDecimalScore(hardScore, BigDecimal.ZERO);
@@ -78,10 +70,8 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
 
     public static HardSoftBigDecimalScore ofSoft(BigDecimal softScore) {
         // Optimization for frequently seen values.
-        if (softScore.signum() == 0) {
+        if (ScoreUtil.isZero(softScore)) {
             return ZERO;
-        } else if (Objects.equals(softScore, BigDecimal.ONE)) {
-            return ONE_SOFT;
         }
         // Every other case is constructed.
         return new HardSoftBigDecimalScore(BigDecimal.ZERO, softScore);
@@ -89,7 +79,7 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
 
     @Override
     public boolean isFeasible() {
-        return structuralScore >= 0 && hardScore.signum() >= 0;
+        return structuralScore >= 0 && !ScoreUtil.isNegative(hardScore);
     }
 
     @Override
@@ -131,7 +121,7 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
         var exponentBigDecimal = BigDecimal.valueOf(exponent);
         // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
         // TODO FIXME remove .intValue() so non-integer exponents produce correct results
-        // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
+        //  None of the normal Java libraries support BigDecimal.pow(BigDecimal)
         return of(hardScore.pow(exponentBigDecimal.intValue()).setScale(hardScore.scale(), RoundingMode.FLOOR),
                 softScore.pow(exponentBigDecimal.intValue()).setScale(softScore.scale(), RoundingMode.FLOOR));
     }
@@ -155,15 +145,16 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
     public boolean equals(Object o) {
         if (o instanceof HardSoftBigDecimalScore(var otherStructuralScore, var otherHardScore, var otherSoftScore)) {
             return structuralScore == otherStructuralScore
-                    && hardScore.stripTrailingZeros().equals(otherHardScore.stripTrailingZeros())
-                    && softScore.stripTrailingZeros().equals(otherSoftScore.stripTrailingZeros());
+                    && ScoreUtil.equalsIgnoringScale(hardScore, otherHardScore)
+                    && ScoreUtil.equalsIgnoringScale(softScore, otherSoftScore);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(structuralScore, hardScore.stripTrailingZeros(), softScore.stripTrailingZeros());
+        return Objects.hash(structuralScore, ScoreUtil.hashCodeIgnoringScale(hardScore),
+                ScoreUtil.hashCodeIgnoringScale(softScore));
     }
 
     @Override
@@ -181,7 +172,7 @@ public record HardSoftBigDecimalScore(long structuralScore, BigDecimal hardScore
 
     @Override
     public String toShortString() {
-        return ScoreUtil.buildShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0, HARD_LABEL, SOFT_LABEL);
+        return ScoreUtil.buildShortString(this, ScoreUtil.BIG_DECIMAL_NOT_ZERO, HARD_LABEL, SOFT_LABEL);
     }
 
     @Override

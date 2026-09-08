@@ -39,13 +39,10 @@ public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) impl
     }
 
     public static SimpleBigDecimalScore of(BigDecimal score) {
-        if (score.signum() == 0) {
+        if (ScoreUtil.isZero(score)) {
             return ZERO;
-        } else if (score.equals(BigDecimal.ONE)) {
-            return ONE;
-        } else {
-            return new SimpleBigDecimalScore(score);
         }
+        return new SimpleBigDecimalScore(score);
     }
 
     @Override
@@ -111,14 +108,14 @@ public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) impl
     public boolean equals(Object o) {
         if (o instanceof SimpleBigDecimalScore(var otherStructuralScore, var otherScore)) {
             return structuralScore == otherStructuralScore
-                    && score.stripTrailingZeros().equals(otherScore.stripTrailingZeros());
+                    && ScoreUtil.equalsIgnoringScale(score, otherScore);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(structuralScore) ^ score.stripTrailingZeros().hashCode();
+        return Long.hashCode(structuralScore) ^ ScoreUtil.hashCodeIgnoringScale(score);
     }
 
     @Override
@@ -131,7 +128,7 @@ public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) impl
 
     @Override
     public String toShortString() {
-        return ScoreUtil.buildShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0, "");
+        return ScoreUtil.buildShortString(this, ScoreUtil.BIG_DECIMAL_NOT_ZERO, "");
     }
 
     @Override

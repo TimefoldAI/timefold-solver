@@ -23,6 +23,18 @@ class HardMediumSoftBigDecimalScoreTest extends AbstractScoreTest {
     }
 
     @Test
+    void ofKeepsScaleOfNonZeroLevel() {
+        assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("1.0"), BigDecimal.ZERO, BigDecimal.ZERO)
+                .hardScore().scale()).isEqualTo(1);
+    }
+
+    @Test
+    void ofKeepsScaleOfNegativeLevel() {
+        assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("-1.0"), BigDecimal.ZERO, BigDecimal.ZERO)
+                .hardScore().scale()).isEqualTo(1);
+    }
+
+    @Test
     void parseScore() {
         assertThat(HardMediumSoftBigDecimalScore.parseScore("-147.2hard/-3.2medium/-258.3soft")).isEqualTo(
                 HardMediumSoftBigDecimalScore.of(new BigDecimal("-147.2"), new BigDecimal("-3.2"), new BigDecimal("-258.3")));

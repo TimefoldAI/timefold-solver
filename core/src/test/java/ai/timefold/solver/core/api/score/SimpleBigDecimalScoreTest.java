@@ -20,6 +20,11 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     }
 
     @Test
+    void ofKeepsScaleOfNonZeroLevel() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1.0")).score().scale()).isEqualTo(1);
+    }
+
+    @Test
     void toShortString() {
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.0")).toShortString()).isEqualTo("0");
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("-147.2")).toShortString()).isEqualTo("-147.2");
