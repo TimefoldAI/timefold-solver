@@ -20,7 +20,7 @@ https://docs.timefold.ai/field-service-routing/latest/introduction[Check out our
 
 == What you will build
 
-You will build a REST application that optimizes a Vehicle Route Problem (VRP):
+You will build a REST application that optimizes a https://timefold.ai/vehicle-routing-problem[Vehicle Routing Problem] (VRP):
 
 image::quickstart/vehicle-routing/vehicleRouteScreenshot.png[]
 
