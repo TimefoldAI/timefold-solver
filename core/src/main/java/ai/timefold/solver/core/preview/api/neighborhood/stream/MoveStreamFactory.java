@@ -14,7 +14,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.UniSamplingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.picking.UniPickingStream;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -45,8 +45,7 @@ public interface MoveStreamFactory<Solution_> {
      * @return A stream containing a tuple for each of the entities as described above.
      * @see PlanningPin An annotation to mark the entire entity as pinned.
      * @see PlanningPinToIndex An annotation to specify only a portion of {@link PlanningListVariable} is pinned.
-     * @see #forEachUnfiltered(Class, boolean) Specialized method exists to automatically include pinned entities as
-     *      well.
+     * @see #forEachUnfiltered(Class, boolean) Specialized method exists to automatically include pinned entities as well.
      */
     <A> UniEnumeratingStream<Solution_, A> forEach(Class<A> sourceClass, boolean includeNull);
 
@@ -63,8 +62,9 @@ public interface MoveStreamFactory<Solution_> {
     /**
      * Enumerate all values assigned to any entity's {@link PlanningListVariable}.
      * Unlike {@link #forEachAssignedValue(PlanningListVariableMetaModel)}, this will include pinned values.
-     * You can use {@link SolutionView#getPositionOf(PlanningListVariableMetaModel, Object)}
-     * later downstream to get the position of the value in an entity's list variable, if needed.
+     * You can use {@link SolutionView#getPositionOf(PlanningListVariableMetaModel, Object)} later downstream to get the
+     * position of the value in an entity's list variable,
+     * if needed.
      *
      * @param variableMetaModel the meta model of the list variable to enumerate
      * @return enumerating stream with all values as defined above
@@ -77,8 +77,9 @@ public interface MoveStreamFactory<Solution_> {
     /**
      * Enumerate all values assigned to any entity's {@link PlanningListVariable}.
      * This will not include any pinned positions or fully pinned entities.
-     * You can use {@link SolutionView#getPositionOf(PlanningListVariableMetaModel, Object)}
-     * later downstream to get the position of the value in an entity's list variable, if needed.
+     * You can use {@link SolutionView#getPositionOf(PlanningListVariableMetaModel, Object)} later downstream to get the
+     * position of the value in an entity's list variable,
+     * if needed.
      *
      * @param variableMetaModel the meta model of the list variable to enumerate
      * @return enumerating stream with all values as defined above
@@ -123,11 +124,12 @@ public interface MoveStreamFactory<Solution_> {
     <Entity_, Value_> UniEnumeratingStream<Solution_, ElementPosition>
             forEachDestinationIncludingUnassigned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
-    <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream);
+    <A> UniPickingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream);
 
     /**
-     * Terminal operation for datasets {@link UniEnumeratingStream#asCachedDataset() cached} from streams
-     * started on this factory, parallel to {@link UniSamplingStream#asMove}.
+     * Terminal operation for datasets {@link UniEnumeratingStream#asCachedDataset() cached} from streams started on this
+     * factory,
+     * parallel to {@link UniPickingStream#asMove}.
      * The move order of the given provider's iterator is never part of the API contract.
      */
     MoveStream<Solution_> buildMoveStream(MoveIteratorProvider<Solution_> iteratorProvider);

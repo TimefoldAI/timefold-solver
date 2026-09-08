@@ -577,6 +577,17 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
 
     @Override
     @TestTemplate
+    public void differentPaddingFunctionConcat() {
+        var uniStream = constraintFactory.forEach(TestdataEntity.class);
+        Function<TestdataEntity, TestdataEntity> paddingA = a -> a;
+        Function<TestdataEntity, TestdataEntity> paddingB = a -> null;
+
+        assertThat(baseStream.concat(uniStream, paddingA))
+                .isNotSameAs(baseStream.concat(uniStream, paddingB));
+    }
+
+    @Override
+    @TestTemplate
     public void sameDataPrecompute() {
         BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
         Assertions.assertThat((BiConstraintStream<?, ?>) constraintFactory.precompute(
