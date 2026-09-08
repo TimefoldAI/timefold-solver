@@ -3,28 +3,26 @@ package ai.timefold.solver.service.definition.internal.executionprofile;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
-import ai.timefold.solver.service.definition.api.executionprofile.ExecutionProfile;
+import java.util.stream.StreamSupport;
 
 /**
- * Discovers all {@link ExecutionProfile} implementations available on the classpath (as CDI beans) and exposes them by name.
- * Consumers inject this registry rather than referencing individual profiles, so the set of profiles is extensible without
- * touching call sites.
+ * Discovers all {@link ExecutionProfile} implementations available on the classpath via {@link ServiceLoader} and exposes
+ * them by name. Consumers use this registry rather than referencing individual profiles, so the set of profiles is
+ * extensible without touching call sites.
  */
-@ApplicationScoped
-public class ExecutionProfileRegistry {
+public final class ExecutionProfileRegistry {
 
     private final Map<String, ExecutionProfile> profilesByName;
 
-    @Inject
-    public ExecutionProfileRegistry(Instance<ExecutionProfile> profiles) {
-        this.profilesByName = profiles.stream()
+    public ExecutionProfileRegistry() {
+        this(ServiceLoader.load(ExecutionProfile.class));
+    }
+
+    ExecutionProfileRegistry(Iterable<ExecutionProfile> profiles) {
+        this.profilesByName = StreamSupport.stream(profiles.spliterator(), false)
                 .collect(Collectors.toUnmodifiableMap(ExecutionProfile::name, Function.identity()));
     }
 
