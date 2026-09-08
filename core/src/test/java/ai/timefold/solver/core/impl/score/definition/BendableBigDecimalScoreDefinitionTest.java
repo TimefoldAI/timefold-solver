@@ -108,4 +108,13 @@ class BendableBigDecimalScoreDefinitionTest {
                 .isEqualTo(scoreDefinition.createScore(BigDecimal.ZERO, BigDecimal.ONE));
     }
 
+    @Test
+    void divideBySanitizedDivisorClampsNegativeScale() {
+        var scoreDefinition = new BendableBigDecimalScoreDefinition(1, 1);
+        var dividend = scoreDefinition.createScore(new BigDecimal("1E+1"), BigDecimal.TEN);
+        var divisor = scoreDefinition.createScore(new BigDecimal("2.00"), BigDecimal.valueOf(2));
+        assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, divisor))
+                .isEqualTo(scoreDefinition.createScore(BigDecimal.valueOf(5), BigDecimal.valueOf(5)));
+    }
+
 }
