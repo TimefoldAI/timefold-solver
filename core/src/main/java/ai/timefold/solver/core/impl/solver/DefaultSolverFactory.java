@@ -133,7 +133,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
         var solverScope = new SolverScope<Solution_>(clock);
         var monitoringConfig = solverConfig.determineMetricConfig();
-        solverScope.setMonitoringTags(SolverTags.withoutProblemId().asTags());
+        solverScope.setMonitoringTags(SolverTags.withoutProblemId(clock).asTags());
         var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
         if (!solverMetricList.isEmpty()) {
             solverScope.setSolverMetricSet(EnumSet.copyOf(solverMetricList));
