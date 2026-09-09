@@ -50,7 +50,7 @@ final class PendingListChangeTracker {
         }
         // A second, distinct entity opened a bracket while the first is still pending: escalate.
         var map = new IdentityHashMap<Object, ListVariableBeforeChangeAction<?, ?, ?>>(4);
-        map.put(singleEntity, singleAction);
+        map.put(singleEntity, Objects.requireNonNull(singleAction));
         map.put(entity, action);
         overflowMap = map;
         singleEntity = null;

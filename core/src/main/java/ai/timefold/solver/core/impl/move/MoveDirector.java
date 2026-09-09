@@ -712,8 +712,10 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * Replaying it is therefore only correct after {@code move} has been re-applied,
      * which is what {@code restoreWorkingSolution} does by composing the stored undo moves
      * with the forward moves that descend the tree.
-     * Replaying it without that re-application throws {@link IndexOutOfBoundsException}
-     * from inside the merged list variable undo.
+     * Replaying it without that re-application corrupts the working solution:
+     * for a list variable, the merged undo indices no longer match the list and this throws
+     * {@link IndexOutOfBoundsException}; for a basic variable, it silently restores the wrong value
+     * instead of throwing.
      *
      * @return the undo move for {@code move}, already applied
      */

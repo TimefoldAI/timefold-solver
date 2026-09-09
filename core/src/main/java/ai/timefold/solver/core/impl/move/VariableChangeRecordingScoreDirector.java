@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.move;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,7 +57,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         // the reference is replaced; that way, the move does not actually share the list with anyone,
         // and copying of its contents can be avoided.
         variableChangesEscaped = true;
-        return new RecordedUndoMove<>(variableChangeList == null ? Collections.emptyList() : variableChangeList);
+        return new RecordedUndoMove<>(getVariableChangeList());
     }
 
     @Override
