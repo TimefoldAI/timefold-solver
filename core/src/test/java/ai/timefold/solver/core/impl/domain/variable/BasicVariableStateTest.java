@@ -23,7 +23,7 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class ExternalizedBasicVariableStateTest {
+class BasicVariableStateTest {
 
     @Test
     void externalizedMode() {
@@ -36,7 +36,7 @@ class ExternalizedBasicVariableStateTest {
                         .getShadowVariableDescriptor("entities");
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        var supply = new ExternalizedBasicVariableState<>(entityDescriptor.getGenuineVariableDescriptor("value"),
+        var supply = new BasicVariableState<>(entityDescriptor.getGenuineVariableDescriptor("value"),
                 notifier);
         supply.externalize(entitiesVariableDescriptor);
 
@@ -71,7 +71,7 @@ class ExternalizedBasicVariableStateTest {
         var scoreDirector = mock(InnerScoreDirector.class);
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        var supply = new ExternalizedBasicVariableState<>(variableDescriptor, notifier);
+        var supply = new BasicVariableState<>(variableDescriptor, notifier);
 
         var val1 = new TestdataValue("1");
         var val2 = new TestdataValue("2");
@@ -124,7 +124,7 @@ class ExternalizedBasicVariableStateTest {
                         .getShadowVariableDescriptor("entities");
         @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
-        var supply = new ExternalizedBasicVariableState<>(entityDescriptor.getGenuineVariableDescriptor("value"),
+        var supply = new BasicVariableState<>(entityDescriptor.getGenuineVariableDescriptor("value"),
                 notifier);
         supply.externalize(entitiesVariableDescriptor);
 

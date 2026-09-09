@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.domain.variable.SolverVariableSupport;
+import ai.timefold.solver.core.impl.domain.variable.VariableSupport;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
@@ -178,7 +178,7 @@ final class CorruptionAnalyzer<Solution_, Score_ extends Score<Score_>> {
     @SuppressWarnings("unchecked")
     public String analyzeShadowVariables(boolean predicted) {
         var violationMessage =
-                ((SolverVariableSupport<Solution_>) scoreDirector.getSupplyManager()).createShadowVariablesViolationMessage();
+                ((VariableSupport<Solution_>) scoreDirector.getSupplyManager()).createShadowVariablesViolationMessage();
         var workingLabel = predicted ? "working" : "corrupted";
         if (violationMessage == null) {
             return """

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -21,20 +20,14 @@ public record ChangedVariableNotifier<Solution_>(BiConsumer<VariableDescriptor<S
             },
             null);
 
-    public CollectionInverseVariableState getCollectionInverseVariableSupply(VariableMetaModel<?, ?, ?> variableMetaModel) {
+    public CollectionInverseVariableState getCollectionInverseVariableState(VariableMetaModel<?, ?, ?> variableMetaModel) {
         if (innerScoreDirector == null) {
-            return new CollectionInverseVariableState() {
-                @Override
-                public <Entity_> Collection<Entity_> getInverseCollection(Object planningValue) {
-                    return Collections.emptyList();
-                }
-            };
-        } else {
-            var solutionDescriptor = innerScoreDirector.getSolutionDescriptor();
-            var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(variableMetaModel.entity().type())
-                    .getVariableDescriptor(variableMetaModel.name());
-            return innerScoreDirector.getBasicVariableState(variableDescriptor);
+            return CollectionInverseVariableState.EMPTY;
         }
+        var solutionDescriptor = innerScoreDirector.getSolutionDescriptor();
+        var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(variableMetaModel.entity().type())
+                .getVariableDescriptor(variableMetaModel.name());
+        return Objects.requireNonNull(innerScoreDirector.getBasicVariableState(variableDescriptor));
     }
 
     public @Nullable Solution_ getWorkingSolution() {
