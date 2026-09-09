@@ -7,7 +7,6 @@ import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -40,7 +39,7 @@ public final class BigDecimalValueRange extends AbstractValueRange<BigDecimal> {
         this.from = from;
         this.to = to;
         this.incrementUnit = incrementUnit;
-        int scale = from.scale();
+        var scale = from.scale();
         if (scale != to.scale()) {
             throw new IllegalArgumentException("The " + getClass().getSimpleName()
                     + " cannot have a to (" + to + ") scale (" + to.scale()
@@ -109,7 +108,7 @@ public final class BigDecimalValueRange extends AbstractValueRange<BigDecimal> {
             if (upcoming.compareTo(to) >= 0) {
                 throw new NoSuchElementException();
             }
-            BigDecimal next = upcoming;
+            var next = upcoming;
             upcoming = upcoming.add(incrementUnit);
             return next;
         }
@@ -140,7 +139,7 @@ public final class BigDecimalValueRange extends AbstractValueRange<BigDecimal> {
             if (size <= 0L) {
                 throw new NoSuchElementException();
             }
-            long index = RandomUtils.nextLong(workingRandom, size);
+            var index = workingRandom.nextLong(size);
             return incrementUnit.multiply(BigDecimal.valueOf(index)).add(from);
         }
 

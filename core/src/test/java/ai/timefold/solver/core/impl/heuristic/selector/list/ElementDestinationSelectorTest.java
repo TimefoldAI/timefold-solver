@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Random;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -416,9 +415,12 @@ class ElementDestinationSelectorTest {
 
         var solverScope = new SolverScope<TestdataAllowsUnassignedValuesListSolution>();
         solverScope.setScoreDirector(scoreDirector);
-        // This needs to use a real Random instance, otherwise the test never covers the situation where
-        // the random value of 1 needs to be produced to get to the entity.
-        solverScope.setWorkingRandom(new MockRandomSource(new Random(0)));
+        // The entity selector is random selection over a single entity, so it never reports
+        // hasNext() == false; only random == 0 routes to the unassigned destination.
+        // Draw 1 (1): entity-vs-unassigned decision in ElementPositionRandomIterator, picks the entity.
+        // Draw 2 (0): the entity selector's own random draw of its only entity (index 0).
+        // Draw 3 (0): entity-vs-unassigned decision on the next call, picks the unassigned destination.
+        solverScope.setWorkingRandom(new MockRandomSource(new TestRandom(1L, 0L, 0L)));
         var entitySelector = new FromSolutionEntitySelector<>(
                 solutionDescriptor.findEntityDescriptorOrFail(TestdataAllowsUnassignedValuesListEntity.class),
                 SelectionCacheType.PHASE, true);
