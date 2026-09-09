@@ -594,7 +594,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             var parentIndex = parentVariableList.size() - 1;
                             var parentVariable = parentVariableList.get(parentIndex).variableMetaModel();
                             var inverseSupply = graphDescriptor.variableReferenceGraphBuilder().changedVariableNotifier
-                                    .getCollectionInverseVariableSupply(parentVariable);
+                                    .getCollectionInverseVariableState(parentVariable);
 
                             if (parentIsOnRootEntity) {
                                 inverseFunction = (Function) inverseSupply::getInverseCollection;

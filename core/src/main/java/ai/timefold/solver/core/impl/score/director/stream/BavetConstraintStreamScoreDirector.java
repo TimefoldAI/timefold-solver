@@ -69,14 +69,14 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         var solutionDescriptor = getSolutionDescriptor();
         var entityList = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entityList::add);
-        shadowVariableSupport.setConsistencyTracker(ConsistencyTracker.frozen(
+        variableSupport.setConsistencyTracker(ConsistencyTracker.frozen(
                 getSolutionDescriptor(),
                 entityList.toArray()));
     }
 
     @Override
     public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
-        session = scoreDirectorFactory.newSession(workingSolution, shadowVariableSupport.getConsistencyTracker(),
+        session = scoreDirectorFactory.newSession(workingSolution, variableSupport.getConsistencyTracker(),
                 constraintMatchPolicy, derived);
         super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, session::insert);
     }
@@ -90,7 +90,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public InnerScore<Score_> innerCalculateScore() {
-        shadowVariableSupport.assertShadowVariablesAreUpToDate();
+        variableSupport.assertShadowVariablesAreUpToDate();
         var score = session.calculateScore();
         setCalculatedScore(score);
         return new InnerScore<>(score, -getWorkingInitScore());
@@ -149,7 +149,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-                                         int toIndex) {
+            int toIndex) {
         session.update(entity);
         super.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
@@ -217,7 +217,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
             AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
         public Builder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-                       EnvironmentMode environmentMode) {
+                EnvironmentMode environmentMode) {
             super(scoreDirectorFactory, environmentMode);
         }
 

@@ -55,7 +55,7 @@ import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedValue;
 
 import org.junit.jupiter.api.Test;
 
-class SolverVariableSupportTest {
+class VariableSupportTest {
 
     private static class MockTopologicalOrderGraph extends DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         Object[] nodeToEntities;
@@ -119,7 +119,7 @@ class SolverVariableSupportTest {
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
 
         AtomicReference<MockTopologicalOrderGraph> graphReference = new AtomicReference<>(null);
-        SolverVariableSupport<TestdataConcurrentSolution> solverVariableSupport;
+        VariableSupport<TestdataConcurrentSolution> variableSupport;
 
         var vehicle1 = new TestdataConcurrentEntity("1");
         var vehicle2 = new TestdataConcurrentEntity("2");
@@ -156,15 +156,15 @@ class SolverVariableSupportTest {
         solution.setValues(List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC));
         valueRangeManager.reset(solution);
 
-        solverVariableSupport =
-                new SolverVariableSupport<>(scoreDirector, size -> {
+        variableSupport =
+                new VariableSupport<>(scoreDirector, size -> {
                     var out = spy(new MockTopologicalOrderGraph(size));
                     graphReference.set(out);
                     return out;
                 });
-        solverVariableSupport.linkShadowVariables();
+        variableSupport.linkShadowVariables();
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        solverVariableSupport.resetWorkingSolution();
+        variableSupport.resetWorkingSolution();
 
         var graph = graphReference.get();
 
@@ -220,10 +220,10 @@ class SolverVariableSupportTest {
                 solutionDescriptor.getEntityDescriptorStrict(TestdataConcurrentValue.class)
                         .getShadowVariableDescriptor("entity");
 
-        solverVariableSupport.beforeVariableChanged(previousElementDescriptor, visitB1);
-        solverVariableSupport.beforeVariableChanged(previousElementDescriptor, visitC);
-        solverVariableSupport.beforeVariableChanged(vehicleDescriptor, visitB1);
-        solverVariableSupport.beforeVariableChanged(vehicleDescriptor, visitC);
+        variableSupport.beforeVariableChanged(previousElementDescriptor, visitB1);
+        variableSupport.beforeVariableChanged(previousElementDescriptor, visitC);
+        variableSupport.beforeVariableChanged(vehicleDescriptor, visitB1);
+        variableSupport.beforeVariableChanged(vehicleDescriptor, visitC);
 
         verifyRemoveEdge.accept(serviceFinishTime, visitA1, serviceReadyTime, visitB1);
         verifyRemoveEdge.accept(serviceFinishTime, visitB1, serviceReadyTime, visitC);
@@ -242,20 +242,20 @@ class SolverVariableSupportTest {
         // Edges are added only when shadow variables are updated,
         // since we require ListVariableState to be up-to-date
         visitC.setPreviousValue(visitA1);
-        solverVariableSupport.afterVariableChanged(previousElementDescriptor, visitC);
+        variableSupport.afterVariableChanged(previousElementDescriptor, visitC);
         visitC.setEntity(vehicle1);
-        solverVariableSupport.afterVariableChanged(vehicleDescriptor, visitC);
+        variableSupport.afterVariableChanged(vehicleDescriptor, visitC);
         visitB1.setPreviousValue(null);
-        solverVariableSupport.afterVariableChanged(previousElementDescriptor, visitB1);
+        variableSupport.afterVariableChanged(previousElementDescriptor, visitB1);
 
         // The declarative shadow variable session update is still pending: score calculation would be unreliable.
-        assertThatThrownBy(solverVariableSupport::assertShadowVariablesAreUpToDate)
+        assertThatThrownBy(variableSupport::assertShadowVariablesAreUpToDate)
                 .isInstanceOf(IllegalStateException.class);
 
-        solverVariableSupport.updateShadowVariables();
+        variableSupport.updateShadowVariables();
 
         // Triggering flushed the pending declarative update: shadow variables are up to date again.
-        solverVariableSupport.assertShadowVariablesAreUpToDate();
+        variableSupport.assertShadowVariablesAreUpToDate();
 
         verifyAddEdge.accept(serviceFinishTime, visitA1, serviceReadyTime, visitC);
         verify(graph, times(expectedAddCount.get())).addEdge(any(), any(), any(), any());
@@ -266,7 +266,7 @@ class SolverVariableSupportTest {
     void basicVariableChangeIsDispatchedEagerly() {
         var scoreDirector = basicScoreDirectorMock(TestdataSolution.buildSolutionDescriptor());
         var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
-        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
         solverVariableSupport.linkShadowVariables();
 
         var basicVariableState = solverVariableSupport.getBasicVariableState(variableDescriptor);
@@ -297,7 +297,7 @@ class SolverVariableSupportTest {
     @Test
     void repeatedBasicVariableChangeOnSameEntityBeforeUpdateIsDispatchedCorrectly() {
         var scoreDirector = basicScoreDirectorMock(TestdataSolution.buildSolutionDescriptor());
-        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
         solverVariableSupport.linkShadowVariables();
 
         var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
@@ -351,7 +351,7 @@ class SolverVariableSupportTest {
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
         var solverVariableSupport =
-                new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+                new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
         solverVariableSupport.linkShadowVariables();
         solverVariableSupport.resetWorkingSolution();
         var listVariableState = solverVariableSupport.getListVariableState(variableDescriptor);
@@ -370,7 +370,7 @@ class SolverVariableSupportTest {
     void basicVariableStateIsCreatedOncePerVariable() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
-        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
         solverVariableSupport.linkShadowVariables();
         var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataEntity.class)
                 .getGenuineVariableDescriptor("value");
@@ -387,7 +387,7 @@ class SolverVariableSupportTest {
     void listVariableStateIsCreatedOncePerVariable() {
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
-        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
         solverVariableSupport.linkShadowVariables();
         var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
 
@@ -523,7 +523,7 @@ class SolverVariableSupportTest {
     void listVariableStateIsFoundWhenAnotherHandlerIsRegisteredFirst() {
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
-        var solverVariableSupport = new SolverVariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
         var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
 
         // A tracker shares the list variable change notification list with the state,

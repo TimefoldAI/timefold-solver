@@ -828,7 +828,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     public <Entity_, Value_> boolean isAssigned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value) {
-        return backingScoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel)).isAssigned(value);
+        return backingScoreDirector.getListVariableState(extractVariableDescriptor(variableMetaModel)).isAssigned(value);
     }
 
     @Override
@@ -841,7 +841,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     public @Nullable <Entity_, Value_> Entity_
             getEntity(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
-        return (Entity_) backingScoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
+        return (Entity_) backingScoreDirector.getListVariableState(extractVariableDescriptor(variableMetaModel))
                 .getInverseSingleton(value);
     }
 

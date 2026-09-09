@@ -15,7 +15,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.SubPillarConfigPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.SolverVariableSupport;
+import ai.timefold.solver.core.impl.domain.variable.VariableSupport;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -102,7 +102,7 @@ class DefaultPillarSelectorTest {
         SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(solutionDescriptor).when(scoreDirector).getSolutionDescriptor();
-        doReturn(SolverVariableSupport.create(scoreDirector)).when(scoreDirector).getSupplyManager();
+        doReturn(VariableSupport.create(scoreDirector)).when(scoreDirector).getSupplyManager();
 
         SolverScope<TestdataSolution> solverScope = PlannerTestUtils.mockSolverScope();
         doReturn(scoreDirector).when(solverScope).getScoreDirector();

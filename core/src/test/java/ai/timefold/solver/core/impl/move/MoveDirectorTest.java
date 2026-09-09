@@ -2107,10 +2107,10 @@ class MoveDirectorTest {
             var entityC = new TestdataListEntity("C", c1);
 
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
-            var supplyMock = mock(ListVariableStateSupply.class);
-            when(supplyMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
-            when(supplyMock.getElementPosition(b1)).thenReturn(ElementPosition.of(entityB, 0));
-            when(mockScoreDirector.getListVariableStateSupply(any())).thenReturn(supplyMock);
+            var stateMock = mock(ListVariableState.class);
+            when(stateMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
+            when(stateMock.getElementPosition(b1)).thenReturn(ElementPosition.of(entityB, 0));
+            when(mockScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(stateMock);
             var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
 
             // Gather a2 (from A) and b1 (from B) to the front of C - two source entities, one destination.
@@ -2163,10 +2163,10 @@ class MoveDirectorTest {
             var entityA = new TestdataListEntity("A", a1, a2, a3, a4);
 
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
-            var supplyMock = mock(ListVariableStateSupply.class);
-            when(supplyMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
-            when(supplyMock.getElementPosition(a4)).thenReturn(ElementPosition.of(entityA, 3));
-            when(mockScoreDirector.getListVariableStateSupply(any())).thenReturn(supplyMock);
+            var stateMock = mock(ListVariableState.class);
+            when(stateMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
+            when(stateMock.getElementPosition(a4)).thenReturn(ElementPosition.of(entityA, 3));
+            when(mockScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(stateMock);
             var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
 
             // a2 and a4 both come from A - this must collapse into ONE bracket for A, not two, with a3 surviving
