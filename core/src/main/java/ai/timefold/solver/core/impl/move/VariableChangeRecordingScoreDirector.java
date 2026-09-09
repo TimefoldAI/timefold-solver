@@ -89,7 +89,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     private void resetVariableChangeList() {
         if (variableChangesEscaped) {
-            // createUndoMove() handed this very list to a Move,
+            // the list was handed to a move by createUndoMove(),
             // so clearing it would empty that move instead.
             // Drop the reference and let it be reallocated.
             variableChangeList = null;
@@ -180,7 +180,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
                     .formatted(fromIndex, toIndex, entity, reportedLengthDelta, actualLengthDelta,
                             AbstractSelectorBasedMove.class.getSimpleName()));
         }
-        // merge() mutates pendingBeforeAction in place;
+        // pendingBeforeAction mutated in place by merge();
         // nothing needs to happen with it afterward here,
         // because it is the SAME instance already sitting in variableChangeList
         // (added in beforeListVariableChanged(), which put it in both variableChangeList and this tracker).
