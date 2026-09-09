@@ -10,7 +10,6 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -107,7 +106,7 @@ final class BiRandomMoveIterator<Solution_, A, B>
         if (weight >= bound) {
             return true; // Structural no-op: no indexing joiner narrows the right side at all.
         }
-        return RandomUtils.nextDouble(workingRandom, bound) < weight;
+        return workingRandom.nextDouble(bound) < weight;
     }
 
     @Override
