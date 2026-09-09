@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * and therefore only a single iteration to update all the information.
  *
  * <p>
- * If a particular shadow variable is connected,
+ * If a particular shadow variable is externalized,
  * it means that there is a field on an entity holding the value of the shadow variable.
  * In this case, we will attempt to use that value.
  * Otherwise, we will keep an internal track of all the possible shadow variables
@@ -31,13 +31,12 @@ import org.jspecify.annotations.Nullable;
  * and use values from this internal representation.
  *
  * @param <Solution_>
- * @see ListVariableProcessor The logic of switching between internal and externalized shadow variables.
- * @see ExternalizedListVariableState The external representation of these shadow variables,
+ * @see ListVariableState The logic of switching between internal and externalized shadow variables.
+ * @see DefaultListVariableState The default implementation for these shadow variables,
  *      which doesn't care whether the variable is internal or externalized.
  */
 @NullMarked
-public interface ListVariableState<Solution_, Entity_, Element_>
-        extends ListVariableChangeHandler<Solution_> {
+public interface ListVariableState<Solution_, Entity_, Element_> extends ListVariableChangeHandler<Solution_> {
 
     void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 

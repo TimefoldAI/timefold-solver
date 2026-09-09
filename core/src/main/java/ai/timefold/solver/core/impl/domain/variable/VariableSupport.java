@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
@@ -46,10 +48,10 @@ import org.jspecify.annotations.Nullable;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public final class SolverVariableSupport<Solution_> implements SupplyManager {
+public final class VariableSupport<Solution_> implements SupplyManager {
 
-    public static <Solution_> SolverVariableSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        return new SolverVariableSupport<>(scoreDirector,
+    public static <Solution_> VariableSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        return new VariableSupport<>(scoreDirector,
                 TimefoldSolverEnterpriseService.loadOrDefault(
                         service -> size -> service.buildTopologyGraph(size,
                                 scoreDirector.ignoreInconsistentSolutions()),
@@ -70,7 +72,7 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
      * {@link ListVariableTracker trackers};
      * it therefore says nothing about whether this state exists or where it sits.
      */
-    private @Nullable ExternalizedListVariableState<Solution_> listVariableState;
+    private @Nullable DefaultListVariableState<Solution_> listVariableState;
     private final List<ListVariableChange> listVariableChangeList;
     private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
@@ -89,7 +91,7 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
     private ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
 
     @SuppressWarnings("unchecked")
-    SolverVariableSupport(InnerScoreDirector<Solution_, ?> scoreDirector,
+    VariableSupport(InnerScoreDirector<Solution_, ?> scoreDirector,
             IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
 
@@ -126,20 +128,20 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
                 .flatMap(Collection::stream)
-                .forEach(variableDescriptor -> linkShadowVariable(scoreDirector, variableDescriptor));
+                .forEach(this::linkShadowVariable);
     }
 
     // All information about elements in all shadow variables is tracked in a centralized place.
     // Therefore, all list-related shadow variables need to be connected to that centralized place.
     // Shadow variables which are not related to a list variable are processed normally.
     // Cascading, declarative, and inconsistent shadow variables are routed elsewhere and need no wiring here.
-    private void linkShadowVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ShadowVariableDescriptor<Solution_> descriptor) {
-        var listVariableState = getListVariableState(listVariableDescriptor);
+    private void linkShadowVariable(ShadowVariableDescriptor<Solution_> descriptor) {
+        var currentListVariableState = getListVariableState(listVariableDescriptor);
         if (descriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
             if (inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor() instanceof ListVariableDescriptor<?>) {
-                if (listVariableState != null) {
-                    processShadowVariableDescriptorWithListVariable(inverseRelationShadowVariableDescriptor, listVariableState);
+                if (currentListVariableState != null) {
+                    processShadowVariableDescriptorWithListVariable(inverseRelationShadowVariableDescriptor,
+                            currentListVariableState);
                 }
             } else {
                 if (inverseRelationShadowVariableDescriptor.isSingleton()) {
@@ -154,17 +156,17 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
                         Objects.requireNonNull(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor()));
                 basicVariableState.externalize(inverseRelationShadowVariableDescriptor);
             }
-        } else if (listVariableState != null) {
+        } else if (currentListVariableState != null) {
             switch (descriptor) {
                 // When multiple variable types are used,
                 // the shadow variable process needs to account for each variable
                 // and process them according to their types.
                 case IndexShadowVariableDescriptor<Solution_> d ->
-                    processShadowVariableDescriptorWithListVariable(d, listVariableState);
+                    processShadowVariableDescriptorWithListVariable(d, currentListVariableState);
                 case PreviousElementShadowVariableDescriptor<Solution_> d ->
-                    processShadowVariableDescriptorWithListVariable(d, listVariableState);
+                    processShadowVariableDescriptorWithListVariable(d, currentListVariableState);
                 case NextElementShadowVariableDescriptor<Solution_> d ->
-                    processShadowVariableDescriptorWithListVariable(d, listVariableState);
+                    processShadowVariableDescriptorWithListVariable(d, currentListVariableState);
                 case DeclarativeShadowVariableDescriptor<Solution_> ignored -> {
                     // Needs no handling here.
                 }
@@ -193,7 +195,7 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
             return null;
         }
         if (listVariableState == null) { // The list state has not been loaded yet.
-            listVariableState = new ExternalizedListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
+            listVariableState = new DefaultListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
             listVariableChangeHandlerList.add(listVariableState); // Still notified alongside the trackers.
             resetWorkingSolutionIfSet(() -> listVariableState.resetWorkingSolution(scoreDirector));
         }
@@ -202,7 +204,8 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
 
     public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
         var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        for (var handler : handlerList) {
+        for (var i = 0; i < handlerList.size(); i++) {
+            var handler = handlerList.get(i);
             // The handler list is already specific to this variable descriptor;
             // matching on the descriptor itself is a safety net in case that ever stops holding.
             if (handler instanceof BasicVariableState<Solution_> basicVariableState
@@ -212,7 +215,7 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
         }
         // The state has not been loaded yet; there must only ever be one per variable,
         // as it is the single source of truth for the inverse relation of that variable.
-        var basicVariableState = new ExternalizedBasicVariableState<>(variableDescriptor, getStateChangeNotifier());
+        var basicVariableState = new BasicVariableState<>(variableDescriptor, getStateChangeNotifier());
         resetWorkingSolutionIfSet(() -> basicVariableState.resetWorkingSolution(scoreDirector));
         registerBasicVariableChangeHandler(basicVariableState);
         return basicVariableState;
@@ -430,8 +433,9 @@ public final class SolverVariableSupport<Solution_> implements SupplyManager {
         }
     }
 
-    public InnerScoreDirector<Solution_, ?> getScoreDirector() {
-        return scoreDirector;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {
+        return (InnerScoreDirector<Solution_, Score_>) scoreDirector;
     }
 
     public boolean updateShadowVariables() {

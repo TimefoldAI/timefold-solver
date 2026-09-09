@@ -15,7 +15,7 @@ import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.Testda
 import org.junit.jupiter.api.Test;
 
 /**
- * Covers the map-mode-only path of {@link ChangedVariableNotifier#getCollectionInverseVariableSupply}:
+ * Covers the map-mode-only path of {@link ChangedVariableNotifier#getCollectionInverseVariableState}:
  * the "group" basic variable of {@link TestdataBasicInverseEntity} has no
  * {@code @InverseRelationShadowVariable} declared anywhere, so the declarative "ownerCode" shadow
  * (sourced from "group.owner") can only be kept correct if the framework tracks "which entities
