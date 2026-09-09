@@ -397,6 +397,26 @@ class VariableChangeRecordingScoreDirectorTest {
     }
 
     @Test
+    void createUndoMoveBeforeAnyChangeIsRecorded_stillSeesLaterChanges() {
+        // createUndoMove() must hand out a reference to the live change list even when nothing has
+        // been recorded yet and the list has not even been allocated. Otherwise a change recorded
+        // after the undo move was created goes into a list the move never sees, and the move
+        // silently undoes nothing.
+        var v0 = new TestdataListValue("0");
+        var entity = new TestdataListEntity("e", v0);
+        var recorder = recorder();
+
+        var undoMove = recorder.createUndoMove(); // Nothing recorded yet: the list is still null.
+        recorder.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+        entity.getValueList().set(0, new TestdataListValue("x"));
+        recorder.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+
+        undoMove.execute(new MoveDirector<TestdataListSolution, SimpleScore>(mockBacking()));
+
+        assertThat(entity.getValueList()).containsExactly(v0);
+    }
+
+    @Test
     void undoChangesReleasesThePendingTracker_soTheSameEntityCanOpenAFreshBracket() {
         var v0 = new TestdataListValue("0");
         var entity = new TestdataListEntity("e", v0);
