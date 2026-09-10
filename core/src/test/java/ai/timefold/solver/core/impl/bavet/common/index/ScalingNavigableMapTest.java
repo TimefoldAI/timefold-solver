@@ -149,7 +149,7 @@ class ScalingNavigableMapTest {
         assertThat(map.isArrayBased()).isFalse();
         assertThat(map.size()).isEqualTo(keyCount);
         assertThat(ascendingKeys(map)).isSorted();
-        assertThat(descendingKeys(map)).isSortedAccordingTo((a, b) -> b - a);
+        assertThat(descendingKeys(map)).isSortedAccordingTo((a, b) -> Integer.compare(b, a));
     }
 
     @Test

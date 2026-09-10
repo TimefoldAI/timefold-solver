@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.util.TriangleElementFactory;
+import ai.timefold.solver.core.impl.util.TriangularNumbers;
 
 import org.jspecify.annotations.NonNull;
 

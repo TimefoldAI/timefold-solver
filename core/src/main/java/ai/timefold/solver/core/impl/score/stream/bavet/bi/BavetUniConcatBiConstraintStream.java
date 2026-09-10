@@ -98,12 +98,13 @@ public final class BavetUniConcatBiConstraintStream<Solution_, A, B> extends Bav
          * Therefore we need to check bridge parents to see where this concat node comes from.
          */
         return Objects.equals(leftParent.getParent(), other.leftParent.getParent())
-                && Objects.equals(rightParent.getParent(), other.rightParent.getParent());
+                && Objects.equals(rightParent.getParent(), other.rightParent.getParent())
+                && Objects.equals(paddingFunction, other.paddingFunction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(leftParent.getParent(), rightParent.getParent());
+        return Objects.hash(leftParent.getParent(), rightParent.getParent(), paddingFunction);
     }
 
     @Override

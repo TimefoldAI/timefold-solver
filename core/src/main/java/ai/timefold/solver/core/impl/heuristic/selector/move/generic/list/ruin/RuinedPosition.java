@@ -4,6 +4,6 @@ record RuinedPosition(Object ruinedValue, int index) implements Comparable<Ruine
 
     @Override
     public int compareTo(RuinedPosition other) {
-        return index - other.index;
+        return Integer.compare(index, other.index);
     }
 }

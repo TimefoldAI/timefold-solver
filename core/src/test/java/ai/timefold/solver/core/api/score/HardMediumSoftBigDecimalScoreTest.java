@@ -23,6 +23,18 @@ class HardMediumSoftBigDecimalScoreTest extends AbstractScoreTest {
     }
 
     @Test
+    void ofKeepsScaleOfNonZeroLevel() {
+        assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("1.0"), BigDecimal.ZERO, BigDecimal.ZERO)
+                .hardScore().scale()).isEqualTo(1);
+    }
+
+    @Test
+    void ofKeepsScaleOfNegativeLevel() {
+        assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("-1.0"), BigDecimal.ZERO, BigDecimal.ZERO)
+                .hardScore().scale()).isEqualTo(1);
+    }
+
+    @Test
     void parseScore() {
         assertThat(HardMediumSoftBigDecimalScore.parseScore("-147.2hard/-3.2medium/-258.3soft")).isEqualTo(
                 HardMediumSoftBigDecimalScore.of(new BigDecimal("-147.2"), new BigDecimal("-3.2"), new BigDecimal("-258.3")));
@@ -139,6 +151,27 @@ class HardMediumSoftBigDecimalScoreTest extends AbstractScoreTest {
     }
 
     @Test
+    void multiplyClampsNegativeScale() {
+        assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("1E+2"), BigDecimal.ZERO, new BigDecimal("5.0"))
+                .multiply(1.5))
+                .isEqualTo(HardMediumSoftBigDecimalScore.of(new BigDecimal("150"), BigDecimal.ZERO, new BigDecimal("7.5")));
+    }
+
+    @Test
+    void divideClampsNegativeScale() {
+        assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("1E+2"), BigDecimal.ZERO, new BigDecimal("5.0"))
+                .divide(2.0))
+                .isEqualTo(HardMediumSoftBigDecimalScore.of(new BigDecimal("50"), BigDecimal.ZERO, new BigDecimal("2.5")));
+    }
+
+    @Test
+    void powerClampsNegativeScale() {
+        assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("1E+2"), BigDecimal.ZERO, new BigDecimal("5.0"))
+                .power(0.0))
+                .isEqualTo(HardMediumSoftBigDecimalScore.of(BigDecimal.ONE, BigDecimal.ONE, new BigDecimal("1.0")));
+    }
+
+    @Test
     void negate() {
         assertThat(HardMediumSoftBigDecimalScore.of(new BigDecimal("4.0"), new BigDecimal("25.0"), new BigDecimal("-5.0"))
                 .negate())
@@ -172,12 +205,12 @@ class HardMediumSoftBigDecimalScoreTest extends AbstractScoreTest {
 
     @Test
     void zero() {
-        HardMediumSoftBigDecimalScore manualZero =
+        var manualZero =
                 HardMediumSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(manualZero.zero()).isEqualTo(manualZero);
             softly.assertThat(manualZero.isZero()).isTrue();
-            HardMediumSoftBigDecimalScore manualOne =
+            var manualOne =
                     HardMediumSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE);
             softly.assertThat(manualOne.isZero()).isFalse();
         });

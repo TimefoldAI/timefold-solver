@@ -70,7 +70,8 @@ final class ListVariableState<Solution_> {
         }
 
         // If the elements have any shadows, set them to null if no entity has their values
-        // We do not want to do this eagerly, since shadow variable update events are not triggered.
+        // We do not want to do this eagerly,
+        // since shadow variable update events are not triggered.
         var shouldUnassignElements =
                 !scoreDirector.expectShadowVariablesInCorrectState() && (externalizedIndexProcessor != null ||
                         externalizedInverseProcessor != null ||
@@ -116,7 +117,7 @@ final class ListVariableState<Solution_> {
         }
     }
 
-    public void addElement(Object entity, List<Object> elements, Object element, int index) {
+    private void addElement(Object entity, List<Object> elements, Object element, int index) {
         if (requiresPositionMap) {
             var oldPosition = elementPositionMap.put(element, new MutablePosition(entity, index));
             if (oldPosition != null) {
@@ -141,8 +142,12 @@ final class ListVariableState<Solution_> {
                     externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index) || elementUpdateSent;
         }
         unassignedCount--;
-        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
-        if (!elementUpdateSent) {
+        // Trigger the notifier only if some piece of state is not externalized
+        // and could therefore have changed without any shadow variable update event to report it.
+        // If every piece of state is externalized (!requiresPositionMap)
+        // and none of it fired an event,
+        // nothing actually changed.
+        if (!elementUpdateSent && requiresPositionMap) {
             notifier.accept(element);
         }
     }
@@ -170,7 +175,10 @@ final class ListVariableState<Solution_> {
             elementUpdateSent = externalizedNextElementProcessor.unsetElement(scoreDirector, element) || elementUpdateSent;
         }
         unassignedCount++;
-        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
+        // Unlike addElement()/changeElement(), this does not also guard on requiresPositionMap:
+        // externalizedIndexProcessor is non-null whenever requiresPositionMap is false,
+        // and it always fires on this index-to-null transition, so elementUpdateSent is already true
+        // and the notifier is never spuriously triggered here.
         if (!elementUpdateSent) {
             notifier.accept(element);
         }
@@ -186,7 +194,8 @@ final class ListVariableState<Solution_> {
         if (difference.entityChanged && externalizedInverseProcessor != null) {
             elementUpdateSent = externalizedInverseProcessor.changeElement(scoreDirector, entity, element) || elementUpdateSent;
         }
-        // Next and previous still might have changed, even if the index and entity did not.
+        // Next and previous still might have changed,
+        // even if the index and entity did not.
         // Those are based on what happened elsewhere in the list.
         if (externalizedPreviousElementProcessor != null) {
             elementUpdateSent = externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index)
@@ -196,8 +205,12 @@ final class ListVariableState<Solution_> {
             elementUpdateSent =
                     externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index) || elementUpdateSent;
         }
-        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
-        if (!elementUpdateSent) {
+        // Trigger the notifier only if some piece of state is not externalized
+        // and could therefore have changed without any shadow variable update event to report it.
+        // If every piece of state is externalized (!requiresPositionMap)
+        // and none of it fired an event,
+        // nothing actually changed.
+        if (!elementUpdateSent && requiresPositionMap) {
             notifier.accept(element);
         }
         return difference.anythingChanged;
@@ -245,6 +258,14 @@ final class ListVariableState<Solution_> {
         }
     }
 
+    public boolean isElementAssigned(Object planningValue) {
+        if (requiresPositionMap) {
+            return elementPositionMap.containsKey(planningValue);
+        } else { // At this point, all shadows are externalized.
+            return externalizedInverseProcessor.getInverseSingleton(planningValue) != null;
+        }
+    }
+
     public ElementPosition getElementPosition(Object planningValue) {
         if (requiresPositionMap) {
             var mutablePosition = elementPositionMap.get(planningValue);
@@ -252,12 +273,43 @@ final class ListVariableState<Solution_> {
                 return ElementPosition.unassigned();
             }
             return mutablePosition.getPosition();
-        } else { // At this point, both inverse and index are externalized.
+        } else { // At this point, all shadows are externalized.
             var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
             if (inverse == null) {
                 return ElementPosition.unassigned();
             }
             return ElementPosition.of(inverse, externalizedIndexProcessor.getIndex(planningValue));
+        }
+    }
+
+    /**
+     * Answers the same question as
+     * {@code getElementPosition(planningValue) instanceof PositionInList p && descriptor.isElementPinned(solution,
+     * p.entity(), p.index())},
+     * without building the {@link ElementPosition}.
+     * The pinning test only needs the entity and the index,
+     * and this class already holds both,
+     * so materializing a position for it allocates once per call on a path walked per candidate value.
+     *
+     * @param workingSolution the solution the pinning question is asked about
+     * @param planningValue the element to test
+     * @return false if the element is unassigned, as an unassigned element is never pinned
+     */
+    public boolean isElementPinned(Solution_ workingSolution, Object planningValue) {
+        if (requiresPositionMap) {
+            var mutablePosition = elementPositionMap.get(planningValue);
+            if (mutablePosition == null) { // Unassigned.
+                return false;
+            }
+            return sourceVariableDescriptor.isElementPinned(workingSolution, mutablePosition.getEntity(),
+                    mutablePosition.getIndex());
+        } else { // At this point, all shadows are externalized.
+            var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
+            if (inverse == null) { // Unassigned.
+                return false;
+            }
+            return sourceVariableDescriptor.isElementPinned(workingSolution, inverse,
+                    externalizedIndexProcessor.getIndex(planningValue));
         }
     }
 
@@ -340,7 +392,8 @@ final class ListVariableState<Solution_> {
 
     /**
      * This class is used to avoid creating a new {@link PositionInList} object every time we need to return a position.
-     * The actual value is held in a map and can be updated without doing a put() operation, which is more efficient.
+     * The actual value is held in a map and can be updated without doing a put() operation,
+     * which is more efficient.
      * The {@link PositionInList} object is only created when it is actually requested,
      * and stored until the next time the mutable state is updated and therefore the cache invalidated.
      */

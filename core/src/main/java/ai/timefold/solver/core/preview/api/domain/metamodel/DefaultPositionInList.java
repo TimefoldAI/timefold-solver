@@ -3,6 +3,8 @@ package ai.timefold.solver.core.preview.api.domain.metamodel;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -49,5 +51,10 @@ record DefaultPositionInList(Object entity, int index) implements PositionInList
     @Override
     public int compareTo(PositionInList other) {
         return Integer.compare(index, other.index());
+    }
+
+    @Override
+    public PositionInList rebase(Lookup lookup) {
+        return ElementPosition.of(lookup.lookUpNonNullWorkingObject(entity), index);
     }
 }

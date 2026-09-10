@@ -6,6 +6,6 @@ public interface TestSortableObject extends Comparable<TestSortableObject> {
 
     @Override
     default int compareTo(TestSortableObject o) {
-        return getComparatorValue() - o.getComparatorValue();
+        return Integer.compare(getComparatorValue(), o.getComparatorValue());
     }
 }

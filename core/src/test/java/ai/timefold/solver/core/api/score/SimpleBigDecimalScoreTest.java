@@ -20,6 +20,11 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     }
 
     @Test
+    void ofKeepsScaleOfNonZeroLevel() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1.0")).score().scale()).isEqualTo(1);
+    }
+
+    @Test
     void toShortString() {
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("0.0")).toShortString()).isEqualTo("0");
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("-147.2")).toShortString()).isEqualTo("-147.2");
@@ -86,6 +91,24 @@ class SimpleBigDecimalScoreTest extends AbstractScoreTest {
     void power() {
         assertThat(SimpleBigDecimalScore.of(new BigDecimal("5.0")).power(2.0))
                 .isEqualTo(SimpleBigDecimalScore.of(new BigDecimal("25.0")));
+    }
+
+    @Test
+    void multiplyClampsNegativeScale() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1E+2")).multiply(1.5))
+                .isEqualTo(SimpleBigDecimalScore.of(new BigDecimal("150")));
+    }
+
+    @Test
+    void divideClampsNegativeScale() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1E+2")).divide(2.0))
+                .isEqualTo(SimpleBigDecimalScore.of(new BigDecimal("50")));
+    }
+
+    @Test
+    void powerClampsNegativeScale() {
+        assertThat(SimpleBigDecimalScore.of(new BigDecimal("1E+2")).power(0.0))
+                .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.ONE));
     }
 
     @Test

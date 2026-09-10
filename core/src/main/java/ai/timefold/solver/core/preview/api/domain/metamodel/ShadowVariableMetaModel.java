@@ -19,8 +19,7 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize the API.
- * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
+ * Please direct your feedback to <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
  * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  *
  * @param <Solution_> the solution type
@@ -31,4 +30,6 @@ import org.jspecify.annotations.NullMarked;
 public non-sealed interface ShadowVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_> {
 
+    @Override
+    PlanningEntityMetaModel<Solution_, Entity_> entity();
 }
