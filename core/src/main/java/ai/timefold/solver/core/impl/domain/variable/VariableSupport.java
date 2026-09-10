@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -33,6 +34,7 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShad
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.violation.BasicVariableTracker;
 import ai.timefold.solver.core.impl.domain.variable.violation.ListVariableTracker;
 import ai.timefold.solver.core.impl.domain.variable.violation.ShadowVariablesAssert;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -62,27 +64,21 @@ public final class VariableSupport<Solution_> implements SupplyManager {
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
 
+    // The single source of truth for the basic variable' state and trackers, created at the first request per variable.
+    // Indexed by [{@link EntityDescriptor#getOrdinal()}][{@link VariableDescriptor#getOrdinal()}].
+    private final List<BasicVariableChangeHandler<Solution_>>[][] basicVariableChangeHandlerArray;
     private final @Nullable ListVariableDescriptor<Solution_> listVariableDescriptor;
-    /**
-     * The single source of truth for the list variable's shadow variables,
-     * created on first request.
-     * Held in a field of its own,
-     * rather than looked up in {@link #listVariableChangeHandlerList},
-     * because that list is a notification fan-out which also carries
-     * {@link ListVariableTracker trackers};
-     * it therefore says nothing about whether this state exists or where it sits.
-     */
-    private @Nullable DefaultListVariableState<Solution_> listVariableState;
+    // The single source of truth for the list variable state, created at first request.
+    private @Nullable ListVariableState<Solution_, ?, ?> listVariableState;
+    // The single source of truth for the list variable tracker, created at first request.
+    private @Nullable ListVariableTracker<Solution_> listVariableTracker;
+    // The current list of variable change handlers
+    private final List<ListVariableChangeHandler<Solution_>> listVariableChangeHandlerList;
+
     private final List<ListVariableChange> listVariableChangeList;
     private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
     private final IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator;
-
-    /**
-     * Indexed by [{@link EntityDescriptor#getOrdinal()}][{@link VariableDescriptor#getOrdinal()}].
-     */
-    private final List<BasicVariableChangeHandler<Solution_>>[][] basicVariableChangeHandlerArray;
-    private final List<ListVariableChangeHandler<Solution_>> listVariableChangeHandlerList;
 
     private boolean dirty = false;
     private boolean updateSuccessful = true;
@@ -183,44 +179,6 @@ public final class VariableSupport<Solution_> implements SupplyManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public @Nullable <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
-            getListVariableState(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
-        if (targetVariableDescriptor != listVariableDescriptor) {
-            throw new IllegalStateException(
-                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
-                            .formatted(targetVariableDescriptor, listVariableDescriptor));
-        }
-        if (targetVariableDescriptor == null) {
-            return null;
-        }
-        if (listVariableState == null) { // The list state has not been loaded yet.
-            listVariableState = new DefaultListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
-            listVariableChangeHandlerList.add(listVariableState); // Still notified alongside the trackers.
-            resetWorkingSolutionIfSet(() -> listVariableState.resetWorkingSolution(scoreDirector));
-        }
-        return (ListVariableState<Solution_, Entity_, Value_>) listVariableState;
-    }
-
-    public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
-        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        for (var i = 0; i < handlerList.size(); i++) {
-            var handler = handlerList.get(i);
-            // The handler list is already specific to this variable descriptor;
-            // matching on the descriptor itself is a safety net in case that ever stops holding.
-            if (handler instanceof BasicVariableState<Solution_> basicVariableState
-                    && basicVariableState.getSourceVariableDescriptor() == variableDescriptor) {
-                return basicVariableState;
-            }
-        }
-        // The state has not been loaded yet; there must only ever be one per variable,
-        // as it is the single source of truth for the inverse relation of that variable.
-        var basicVariableState = new BasicVariableState<>(variableDescriptor, getStateChangeNotifier());
-        resetWorkingSolutionIfSet(() -> basicVariableState.resetWorkingSolution(scoreDirector));
-        registerBasicVariableChangeHandler(basicVariableState);
-        return basicVariableState;
-    }
-
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
             ListVariableState<Solution_, Object, Object> listVariableState) {
         switch (shadowVariableDescriptor) {
@@ -261,36 +219,6 @@ public final class VariableSupport<Solution_> implements SupplyManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Supply createSupply(Demand<?> demand) {
-        var supply = demand.createExternalizedSupply(this);
-        if (supply instanceof ListVariableTracker<?> tracker) {
-            var listVariableTracker = (ListVariableTracker<Solution_>) tracker;
-            resetWorkingSolutionIfSet(() -> listVariableTracker.resetWorkingSolution(scoreDirector));
-            listVariableChangeHandlerList.add(listVariableTracker);
-        }
-        return supply;
-    }
-
-    private void resetWorkingSolutionIfSet(Runnable resetWorkingSolution) {
-        // An external ScoreDirector can be created before the working solution is set.
-        if (scoreDirector.getWorkingSolution() != null) {
-            resetWorkingSolution.run();
-        }
-    }
-
-    private void registerBasicVariableChangeHandler(BasicVariableChangeHandler<Solution_> handler) {
-        var variableDescriptor = handler.getSourceVariableDescriptor();
-        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        handlerList.add(handler);
-    }
-
-    private List<BasicVariableChangeHandler<Solution_>>
-            getBasicVariableChangeHandlerList(VariableDescriptor<Solution_> variableDescriptor) {
-        return basicVariableChangeHandlerArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor
-                .getOrdinal()];
-    }
-
     @Override
     public <Supply_ extends Supply> boolean cancel(Demand<Supply_> demand) {
         var supplyWithDemandCount = supplyMap.get(demand);
@@ -304,6 +232,117 @@ public final class VariableSupport<Solution_> implements SupplyManager {
                     new SupplyWithDemandCount(supplyWithDemandCount.supply, supplyWithDemandCount.demandCount - 1L));
         }
         return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Supply createSupply(Demand<?> demand) {
+        return demand.createExternalizedSupply(this);
+    }
+
+    public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
+        BasicVariableState<Solution_> state =
+                findBasicHandler(variableDescriptor, handler -> handler instanceof BasicVariableState<Solution_> handlerState
+                        && handlerState.getSourceVariableDescriptor() == variableDescriptor);
+        if (state != null) {
+            return state;
+        }
+        // The state has not been loaded yet; there must only ever be one per variable,
+        // as it is the single source of truth for the inverse relation of that variable.
+        var basicVariableState = new BasicVariableState<>(variableDescriptor, getStateChangeNotifier());
+        registerBasicVariableChangeHandler(basicVariableState, true);
+        return basicVariableState;
+    }
+
+    public BasicVariableTracker<Solution_> getBasicVariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
+        BasicVariableTracker<Solution_> tracker =
+                findBasicHandler(variableDescriptor, handler -> handler instanceof BasicVariableTracker<Solution_> handleTracker
+                        && handleTracker.getSourceVariableDescriptor() == variableDescriptor);
+        if (tracker != null) {
+            return tracker;
+        }
+        // The tracker has not been loaded yet; there must only ever be one per variable
+        var basicVariableTracker = new BasicVariableTracker<>(variableDescriptor);
+        registerBasicVariableChangeHandler(basicVariableTracker, true);
+        return basicVariableTracker;
+    }
+
+    @SuppressWarnings("unchecked")
+    public @Nullable <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
+        if (targetVariableDescriptor != listVariableDescriptor) {
+            throw new IllegalStateException(
+                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
+                            .formatted(targetVariableDescriptor, listVariableDescriptor));
+        }
+        if (targetVariableDescriptor == null) {
+            return null;
+        }
+        if (listVariableState == null) { // The list state has not been loaded yet.
+            listVariableState = new DefaultListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
+            registerListVariableHandler(listVariableState);
+        }
+        return (ListVariableState<Solution_, Entity_, Value_>) listVariableState;
+    }
+
+    public @Nullable ListVariableTracker<Solution_>
+            getListVariableTracker(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
+        if (targetVariableDescriptor != listVariableDescriptor) {
+            throw new IllegalStateException(
+                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
+                            .formatted(targetVariableDescriptor, listVariableDescriptor));
+        }
+        if (targetVariableDescriptor == null) {
+            return null;
+        }
+        if (listVariableTracker == null) {
+            listVariableTracker = new ListVariableTracker<>(listVariableDescriptor);
+            registerListVariableHandler(listVariableTracker);
+        }
+        return listVariableTracker;
+    }
+
+    private void resetWorkingSolutionIfSet(Runnable resetWorkingSolution) {
+        // An external ScoreDirector can be created before the working solution is set.
+        if (scoreDirector.getWorkingSolution() != null) {
+            resetWorkingSolution.run();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private <Type_ extends BasicVariableChangeHandler<Solution_>> Type_ findBasicHandler(
+            VariableDescriptor<Solution_> variableDescriptor, Predicate<BasicVariableChangeHandler<Solution_>> checkFunction) {
+        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
+        for (var i = 0; i < handlerList.size(); i++) {
+            var handler = handlerList.get(i);
+            // The handler list is already specific to this variable descriptor,
+            // matching on the descriptor itself is a safety net in case that ever stops holding.
+            if (checkFunction.test(handler)) {
+                return (Type_) handler;
+            }
+        }
+        return null;
+    }
+
+    private void registerListVariableHandler(ListVariableChangeHandler<Solution_> handler) {
+        listVariableChangeHandlerList.add(handler);
+        resetWorkingSolutionIfSet(() -> handler.resetWorkingSolution(scoreDirector));
+    }
+
+    private void registerBasicVariableChangeHandler(BasicVariableChangeHandler<Solution_> handler,
+            boolean resetWorkingSolution) {
+        if (resetWorkingSolution) {
+            resetWorkingSolutionIfSet(() -> handler.resetWorkingSolution(scoreDirector));
+        }
+        var variableDescriptor = handler.getSourceVariableDescriptor();
+        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
+        handlerList.add(handler);
+    }
+
+    private List<BasicVariableChangeHandler<Solution_>>
+            getBasicVariableChangeHandlerList(VariableDescriptor<Solution_> variableDescriptor) {
+        return basicVariableChangeHandlerArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor
+                .getOrdinal()];
     }
 
     @Override

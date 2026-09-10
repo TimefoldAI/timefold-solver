@@ -3,9 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.inverserelation;
 import java.util.Collection;
 import java.util.Collections;
 
-import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
-
-public interface CollectionInverseVariableState extends Supply {
+public interface CollectionInverseVariableState {
 
     CollectionInverseVariableState EMPTY = new CollectionInverseVariableState() {
         @Override

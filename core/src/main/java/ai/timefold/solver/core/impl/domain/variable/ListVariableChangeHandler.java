@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
@@ -14,7 +13,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public interface ListVariableChangeHandler<Solution_> extends Supply {
+public interface ListVariableChangeHandler<Solution_> {
 
     VariableDescriptor<Solution_> getSourceVariableDescriptor();
 

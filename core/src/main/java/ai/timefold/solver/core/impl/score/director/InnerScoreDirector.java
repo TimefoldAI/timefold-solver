@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.api.score.Score;
@@ -18,6 +19,8 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.violation.BasicVariableTracker;
+import ai.timefold.solver.core.impl.domain.variable.violation.ListVariableTracker;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
@@ -241,10 +244,44 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     ValueRangeManager<Solution_> getValueRangeManager();
 
+    /**
+     * Returns the {@link BasicVariableState}, the single source of truth for the inverse relation
+     * of the given basic {@link PlanningVariable}.
+     *
+     * @param variableDescriptor never null, must not describe a {@link PlanningListVariable}
+     * @return never null
+     */
+    BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor);
+
+    /**
+     * Returns the {@link BasicVariableTracker} used to detect missing or incorrect variable
+     * listener notifications for the given basic {@link PlanningVariable}.
+     * Used by {@link EnvironmentMode#TRACKED_FULL_ASSERT}.
+     *
+     * @param variableDescriptor never null, must not describe a {@link PlanningListVariable}
+     * @return never null
+     */
+    BasicVariableTracker<Solution_> getBasicVariableTracker(VariableDescriptor<Solution_> variableDescriptor);
+
+    /**
+     * Returns the {@link ListVariableState}, the single source of truth for all information
+     * about elements inside the given {@link PlanningListVariable}, including its shadow variables.
+     *
+     * @param variableDescriptor never null
+     * @return never null
+     */
     <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
             getListVariableState(ListVariableDescriptor<Solution_> variableDescriptor);
 
-    BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor);
+    /**
+     * Returns the {@link ListVariableTracker} used to detect missing or incorrect variable
+     * listener notifications for the given {@link PlanningListVariable}.
+     * Used by {@link EnvironmentMode#TRACKED_FULL_ASSERT}.
+     *
+     * @param variableDescriptor never null
+     * @return never null
+     */
+    ListVariableTracker<Solution_> getListVariableTracker(ListVariableDescriptor<Solution_> variableDescriptor);
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
 

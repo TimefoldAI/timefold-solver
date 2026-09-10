@@ -7,8 +7,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeHandler;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
@@ -17,8 +15,7 @@ import org.jspecify.annotations.NullMarked;
  * Tracks variable change events for a given {@link PlanningListVariable}.
  */
 @NullMarked
-public class ListVariableTracker<Solution_>
-        implements ListVariableChangeHandler<Solution_> {
+public class ListVariableTracker<Solution_> implements ListVariableChangeHandler<Solution_> {
 
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
@@ -77,26 +74,8 @@ public class ListVariableTracker<Solution_>
         return out;
     }
 
-    public TrackerDemand demand() {
-        return new TrackerDemand();
-    }
-
     @Override
     public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
         // Do nothing
-    }
-
-    /**
-     * In order for the {@link ListVariableTracker} to be registered for shadow variable update events,
-     * it needs to be passed to the {@link InnerScoreDirector#getSupplyManager()}, which requires a {@link Demand}.
-     * <p>
-     * Unlike most other {@link Demand}s, there will only be one instance of
-     * {@link ListVariableTracker} in the {@link InnerScoreDirector} for each list variable.
-     */
-    public class TrackerDemand implements Demand<ListVariableTracker<Solution_>> {
-        @Override
-        public ListVariableTracker<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
-            return ListVariableTracker.this;
-        }
     }
 }

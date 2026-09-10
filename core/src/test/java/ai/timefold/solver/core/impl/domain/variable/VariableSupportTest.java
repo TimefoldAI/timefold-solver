@@ -27,7 +27,6 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.GraphNode;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.violation.ListVariableTracker;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.NeighborhoodNotifier;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -266,10 +265,10 @@ class VariableSupportTest {
     void basicVariableChangeIsDispatchedEagerly() {
         var scoreDirector = basicScoreDirectorMock(TestdataSolution.buildSolutionDescriptor());
         var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
-        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        solverVariableSupport.linkShadowVariables();
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
 
-        var basicVariableState = solverVariableSupport.getBasicVariableState(variableDescriptor);
+        var basicVariableState = variableSupport.getBasicVariableState(variableDescriptor);
 
         var val1 = new TestdataValue("1");
         var val2 = new TestdataValue("2");
@@ -280,15 +279,15 @@ class VariableSupportTest {
         solution.setValueList(List.of(val1, val2));
 
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        solverVariableSupport.resetWorkingSolution();
+        variableSupport.resetWorkingSolution();
 
         assertThat(basicVariableState.getInverseCollection(val1)).containsExactly(a);
         assertThat((Collection<?>) basicVariableState.getInverseCollection(val2)).isEmpty();
 
         // Before/after, with no call to updateShadowVariables() in between.
-        solverVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        variableSupport.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val2);
-        solverVariableSupport.afterVariableChanged(variableDescriptor, a);
+        variableSupport.afterVariableChanged(variableDescriptor, a);
 
         assertThat((Collection<?>) basicVariableState.getInverseCollection(val1)).isEmpty();
         assertThat(basicVariableState.getInverseCollection(val2)).containsExactly(a);
@@ -297,11 +296,11 @@ class VariableSupportTest {
     @Test
     void repeatedBasicVariableChangeOnSameEntityBeforeUpdateIsDispatchedCorrectly() {
         var scoreDirector = basicScoreDirectorMock(TestdataSolution.buildSolutionDescriptor());
-        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        solverVariableSupport.linkShadowVariables();
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
 
         var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
-        var basicVariableState = solverVariableSupport.getBasicVariableState(variableDescriptor);
+        var basicVariableState = variableSupport.getBasicVariableState(variableDescriptor);
 
         var val1 = new TestdataValue("1");
         var val2 = new TestdataValue("2");
@@ -313,20 +312,20 @@ class VariableSupportTest {
         solution.setValueList(List.of(val1, val2, val3));
 
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        solverVariableSupport.resetWorkingSolution();
+        variableSupport.resetWorkingSolution();
 
         assertThat(basicVariableState.getInverseCollection(val1)).containsExactly(a);
         assertThat((Collection<?>) basicVariableState.getInverseCollection(val2)).isEmpty();
         assertThat((Collection<?>) basicVariableState.getInverseCollection(val3)).isEmpty();
 
         // Two changes to the same entity back-to-back, with no call to updateShadowVariables() in between.
-        solverVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        variableSupport.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val2);
-        solverVariableSupport.afterVariableChanged(variableDescriptor, a);
+        variableSupport.afterVariableChanged(variableDescriptor, a);
 
-        solverVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        variableSupport.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val3);
-        solverVariableSupport.afterVariableChanged(variableDescriptor, a);
+        variableSupport.afterVariableChanged(variableDescriptor, a);
 
         assertThat((Collection<?>) basicVariableState.getInverseCollection(val1)).isEmpty();
         assertThat((Collection<?>) basicVariableState.getInverseCollection(val2)).isEmpty();
@@ -350,18 +349,18 @@ class VariableSupportTest {
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        var solverVariableSupport =
+        var variableSupport =
                 new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        solverVariableSupport.linkShadowVariables();
-        solverVariableSupport.resetWorkingSolution();
-        var listVariableState = solverVariableSupport.getListVariableState(variableDescriptor);
+        variableSupport.linkShadowVariables();
+        variableSupport.resetWorkingSolution();
+        var listVariableState = variableSupport.getListVariableState(variableDescriptor);
 
         assertThat(listVariableState.isAssigned(v2)).isFalse();
 
         // Before/after, with no call to updateShadowVariables() in between.
-        solverVariableSupport.beforeListVariableChanged(variableDescriptor, e1, 1, 2);
+        variableSupport.beforeListVariableChanged(variableDescriptor, e1, 1, 2);
         e1.getValueList().add(v2);
-        solverVariableSupport.afterListVariableChanged(variableDescriptor, e1, 1, 2);
+        variableSupport.afterListVariableChanged(variableDescriptor, e1, 1, 2);
 
         assertThat(listVariableState.isAssigned(v2)).isTrue();
     }
@@ -370,31 +369,31 @@ class VariableSupportTest {
     void basicVariableStateIsCreatedOncePerVariable() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
-        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        solverVariableSupport.linkShadowVariables();
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
         var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataEntity.class)
                 .getGenuineVariableDescriptor("value");
 
         // The state is the single source of truth for the variable's inverse relation;
         // every caller must get the same instance, or they observe different inverse collections
         // and each extra instance is another handler notified on every variable change.
-        var basicVariableState = solverVariableSupport.getBasicVariableState(variableDescriptor);
-        assertThat(solverVariableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
-        assertThat(solverVariableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+        var basicVariableState = variableSupport.getBasicVariableState(variableDescriptor);
+        assertThat(variableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+        assertThat(variableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
     }
 
     @Test
     void listVariableStateIsCreatedOncePerVariable() {
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
-        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
-        solverVariableSupport.linkShadowVariables();
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
         var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
 
-        var listVariableState = solverVariableSupport.getListVariableState(variableDescriptor);
+        var listVariableState = variableSupport.getListVariableState(variableDescriptor);
         assertThat(listVariableState).isNotNull();
-        assertThat(solverVariableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
-        assertThat(solverVariableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
+        assertThat(variableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
+        assertThat(variableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
     }
 
     @Test
@@ -523,20 +522,19 @@ class VariableSupportTest {
     void listVariableStateIsFoundWhenAnotherHandlerIsRegisteredFirst() {
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
-        var solverVariableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
         var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
 
         // A tracker shares the list variable change notification list with the state,
         // and tracking environment modes demand one.
         // Registering it first must not stop the state from being created, nor be mistaken for the state.
-        var listVariableTracker = new ListVariableTracker<>(variableDescriptor);
-        solverVariableSupport.demand(listVariableTracker.demand());
+        var listVariableTracker = variableSupport.getListVariableTracker(variableDescriptor);
 
-        var listVariableState = solverVariableSupport.getListVariableState(variableDescriptor);
+        var listVariableState = variableSupport.getListVariableState(variableDescriptor);
         assertThat(listVariableState).isNotNull();
         assertThat(listVariableState).isNotSameAs(listVariableTracker);
         assertThat(listVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
-        assertThat(solverVariableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
+        assertThat(variableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
     }
 
     private static <Solution_> InnerScoreDirector<Solution_, ?> basicScoreDirectorMock(

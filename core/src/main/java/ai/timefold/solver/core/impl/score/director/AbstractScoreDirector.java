@@ -29,6 +29,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.violation.BasicVariableTracker;
+import ai.timefold.solver.core.impl.domain.variable.violation.ListVariableTracker;
 import ai.timefold.solver.core.impl.domain.variable.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
@@ -136,7 +138,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         //  In {@link EnvironmentMode#TRACKED_FULL_ASSERT}, the snapshots are compared when corruption is detected,
         //  allowing us to report exactly what variables are different.
         this.solutionTracker = environmentMode.isTracking()
-                ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
+                ? new SolutionTracker<>(getSolutionDescriptor(), this)
                 : null;
         this.valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         setAllChangesWillBeUndoneBeforeStepEnds(false); // Make sure the notifier is correctly initialized.
@@ -176,14 +178,24 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
+        return Objects.requireNonNull(variableSupport.getBasicVariableState(variableDescriptor));
+    }
+
+    @Override
+    public BasicVariableTracker<Solution_> getBasicVariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
+        return Objects.requireNonNull(variableSupport.getBasicVariableTracker(variableDescriptor));
+    }
+
+    @Override
     public <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
             getListVariableState(ListVariableDescriptor<Solution_> variableDescriptor) {
         return Objects.requireNonNull(variableSupport.getListVariableState(variableDescriptor));
     }
 
     @Override
-    public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
-        return Objects.requireNonNull(variableSupport.getBasicVariableState(variableDescriptor));
+    public ListVariableTracker<Solution_> getListVariableTracker(ListVariableDescriptor<Solution_> variableDescriptor) {
+        return Objects.requireNonNull(variableSupport.getListVariableTracker(variableDescriptor));
     }
 
     @Override

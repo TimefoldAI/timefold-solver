@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public final class SolutionTracker<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -24,22 +24,19 @@ public final class SolutionTracker<Solution_> {
     VariableSnapshotTotal<Solution_> undoFromScratchVariables;
     VariableSnapshotTotal<Solution_> beforeFromScratchVariables;
 
-    public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor,
-            SupplyManager supplyManager) {
+    public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor, InnerScoreDirector<Solution_, ?> scoreDirector) {
         this.solutionDescriptor = solutionDescriptor;
         basicVariableTrackers = new ArrayList<>();
         listVariableTrackers = new ArrayList<>();
         for (var entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
             for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
                 if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                    listVariableTrackers.add(new ListVariableTracker<>(listVariableDescriptor));
+                    listVariableTrackers.add(scoreDirector.getListVariableTracker(listVariableDescriptor));
                 } else {
-                    basicVariableTrackers.add(new BasicVariableTracker<>(variableDescriptor));
+                    basicVariableTrackers.add(scoreDirector.getBasicVariableTracker(variableDescriptor));
                 }
             }
         }
-        basicVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
-        listVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
     }
 
     public Solution_ getBeforeMoveSolution() {
