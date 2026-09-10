@@ -1,12 +1,14 @@
 package ai.timefold.solver.core.impl.domain.variable.violation;
 
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.VariableSupport;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -86,8 +88,8 @@ public class SolutionTrackerTest {
     @Test
     void testBuildScoreCorruptionMessage() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var supplyManager = Mockito.mock(SupplyManager.class);
-        var tracker = new SolutionTracker<>(solutionDescriptor, supplyManager);
+        var scoreDirector = mockScoreDirector(solutionDescriptor);
+        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
@@ -127,15 +129,16 @@ public class SolutionTrackerTest {
     @Test
     void testBuildScoreCorruptionMessageGoodShadowVariables() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var supplyManager = Mockito.mock(SupplyManager.class);
+        var scoreDirector = mockScoreDirector(solutionDescriptor);
+        var variableSupport = VariableSupport.create(scoreDirector);
         var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
-        Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
-            var demand = invocation.getArgument(0, Demand.class);
-            var supply = demand.createExternalizedSupply(supplyManager);
-            variableTrackers.add((BasicVariableTracker<?>) supply);
-            return supply;
-        });
-        var tracker = new SolutionTracker<>(solutionDescriptor, supplyManager);
+        Mockito.doAnswer(invocation -> {
+            var variableDescriptor = invocation.getArgument(0, VariableDescriptor.class);
+            var variableTracker = variableSupport.getBasicVariableTracker(variableDescriptor);
+            variableTrackers.add(variableTracker);
+            return variableTracker;
+        }).when(scoreDirector).getBasicVariableTracker(any(VariableDescriptor.class));
+        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
@@ -194,16 +197,16 @@ public class SolutionTrackerTest {
     @Test
     void testBuildScoreCorruptionMessageGoodForwardShadowVariables() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var supplyManager = Mockito.mock(SupplyManager.class);
+        var scoreDirector = mockScoreDirector(solutionDescriptor);
+        var variableSupport = VariableSupport.create(scoreDirector);
         var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
-        Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
-            var demand = invocation.getArgument(0, Demand.class);
-            var supply = demand.createExternalizedSupply(supplyManager);
-            variableTrackers.add((BasicVariableTracker<?>) supply);
-            return supply;
-        });
-        SolutionTracker<TestdataSolution> tracker = new SolutionTracker<>(solutionDescriptor,
-                supplyManager);
+        Mockito.doAnswer(invocation -> {
+            var variableDescriptor = invocation.getArgument(0, VariableDescriptor.class);
+            var variableTracker = variableSupport.getBasicVariableTracker(variableDescriptor);
+            variableTrackers.add(variableTracker);
+            return variableTracker;
+        }).when(scoreDirector).getBasicVariableTracker(any(VariableDescriptor.class));
+        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
@@ -254,16 +257,16 @@ public class SolutionTrackerTest {
     @Test
     void testBuildScoreCorruptionMessageGoodUndoShadowVariables() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var supplyManager = Mockito.mock(SupplyManager.class);
+        var scoreDirector = mockScoreDirector(solutionDescriptor);
+        var variableSupport = VariableSupport.create(scoreDirector);
         var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
-        Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
-            Demand<?> demand = invocation.getArgument(0, Demand.class);
-            var supply = demand.createExternalizedSupply(supplyManager);
-            variableTrackers.add((BasicVariableTracker<?>) supply);
-            return supply;
-        });
-        var tracker = new SolutionTracker<>(solutionDescriptor,
-                supplyManager);
+        Mockito.doAnswer(invocation -> {
+            var variableDescriptor = invocation.getArgument(0, VariableDescriptor.class);
+            var variableTracker = variableSupport.getBasicVariableTracker(variableDescriptor);
+            variableTrackers.add(variableTracker);
+            return variableTracker;
+        }).when(scoreDirector).getBasicVariableTracker(any(VariableDescriptor.class));
+        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);

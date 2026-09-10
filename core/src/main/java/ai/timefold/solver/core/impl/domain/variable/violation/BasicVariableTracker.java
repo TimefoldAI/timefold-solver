@@ -6,9 +6,6 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeHandler;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NonNull;
@@ -16,8 +13,7 @@ import org.jspecify.annotations.NonNull;
 /**
  * Tracks variable change events for a given genuine or shadow variable, except {@link PlanningListVariable}.
  */
-public class BasicVariableTracker<Solution_>
-        implements BasicVariableChangeHandler<Solution_>, Supply {
+public class BasicVariableTracker<Solution_> implements BasicVariableChangeHandler<Solution_> {
     private final VariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
@@ -69,23 +65,5 @@ public class BasicVariableTracker<Solution_>
         beforeVariableChangedEntityList.clear();
         afterVariableChangedEntityList.clear();
         return out;
-    }
-
-    public TrackerDemand demand() {
-        return new TrackerDemand();
-    }
-
-    /**
-     * In order for the {@link BasicVariableTracker} to be registered for shadow variable update events,
-     * it needs to be passed to the {@link InnerScoreDirector#getSupplyManager()}, which requires a {@link Demand}.
-     * <p>
-     * Unlike most other {@link Demand}s, there will only be one instance of
-     * {@link BasicVariableTracker} in the {@link InnerScoreDirector} for each variable.
-     */
-    public class TrackerDemand implements Demand<BasicVariableTracker<Solution_>> {
-        @Override
-        public BasicVariableTracker<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
-            return BasicVariableTracker.this;
-        }
     }
 }
