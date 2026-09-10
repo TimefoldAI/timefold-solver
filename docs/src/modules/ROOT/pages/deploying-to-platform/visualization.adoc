@@ -21,8 +21,7 @@ The contract described here, including iframe sizing, refresh behavior, asset pa
 The UI itself is the same set of static files described in xref:running-timefold-solver/service/visualization.adoc[], placed under `src/main/resources/META-INF/resources`.
 Once deployed, the platform repackages and serves these files under a `ui/` prefix, so the entry point the platform loads must be exactly `ui/index.html`.
 
-Asset paths under this prefix are single-segment only today: `ui/main.js` is servable, but `ui/assets/main.js` is not.
-Flatten your build output into a single directory, without subfolders.
+Asset references in `ui/index.html` must be relative (for example `./assets/main.js`), not root-relative (`/assets/main.js`): the UI isn't served from the domain root, so an absolute path resolves against the platform's own root instead of the `ui/` prefix.
 
 [#_iframe_embedding]
 == How the platform embeds the UI
