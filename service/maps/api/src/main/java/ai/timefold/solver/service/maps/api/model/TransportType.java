@@ -10,7 +10,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 @Schema(description = "The type of transport used (car, bike, ... ) supported by Timefold.")
 public enum TransportType {
 
-    CAR("car");
+    CAR("car"),
+    BICYCLE("bike"),
+    FOOT("foot");
 
     private final String value;
 

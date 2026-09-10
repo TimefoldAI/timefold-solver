@@ -1,8 +1,6 @@
 package ai.timefold.solver.service.maps.api.model;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.ToIntFunction;
 
 import jakarta.validation.constraints.Max;
@@ -52,19 +50,23 @@ public class Location {
     @JsonIgnore
     private ToIntFunction<OffsetDateTime> timeframeIndexResolver;
 
+    // Number of transport modes; used to size the per-mode arrays below.
+    private static final int MODE_COUNT = TransportType.values().length;
+
     // Non-default transport types only. The default mode ({@link TransportType#CAR}) continues to use the scalar/
     // timeframe fields above so its lookups keep the IndexableDistanceMatrix index-cache fast path.
+    // Indexed by {@link TransportType#ordinal()} for fast hot-path lookups; allocated lazily on first non-default set.
     @JsonIgnore
-    private Map<TransportType, DistanceMatrix> travelTimeMatrixByMode;
+    private DistanceMatrix[] travelTimeMatrixByMode;
 
     @JsonIgnore
-    private Map<TransportType, DistanceMatrix> distanceMatrixByMode;
+    private DistanceMatrix[] distanceMatrixByMode;
 
     @JsonIgnore
-    private Map<TransportType, DistanceMatrix[]> travelTimesByTimeframeByMode;
+    private DistanceMatrix[][] travelTimesByTimeframeByMode;
 
     @JsonIgnore
-    private Map<TransportType, DistanceMatrix[]> distancesByTimeframeByMode;
+    private DistanceMatrix[][] distancesByTimeframeByMode;
 
     public Location() {
     }
@@ -142,9 +144,9 @@ public class Location {
             return;
         }
         if (travelTimeMatrixByMode == null) {
-            travelTimeMatrixByMode = new HashMap<>();
+            travelTimeMatrixByMode = new DistanceMatrix[MODE_COUNT];
         }
-        travelTimeMatrixByMode.put(transportType, travelTimeMatrix);
+        travelTimeMatrixByMode[transportType.ordinal()] = travelTimeMatrix;
     }
 
     public void setDistanceMatrix(TransportType transportType, DistanceMatrix distanceMatrix) {
@@ -153,9 +155,9 @@ public class Location {
             return;
         }
         if (distanceMatrixByMode == null) {
-            distanceMatrixByMode = new HashMap<>();
+            distanceMatrixByMode = new DistanceMatrix[MODE_COUNT];
         }
-        distanceMatrixByMode.put(transportType, distanceMatrix);
+        distanceMatrixByMode[transportType.ordinal()] = distanceMatrix;
     }
 
     public void setTravelTimeMatrices(TransportType transportType, DistanceMatrix[] travelTimesByTimeframe,
@@ -165,9 +167,9 @@ public class Location {
             return;
         }
         if (travelTimesByTimeframeByMode == null) {
-            travelTimesByTimeframeByMode = new HashMap<>();
+            travelTimesByTimeframeByMode = new DistanceMatrix[MODE_COUNT][];
         }
-        travelTimesByTimeframeByMode.put(transportType, travelTimesByTimeframe);
+        travelTimesByTimeframeByMode[transportType.ordinal()] = travelTimesByTimeframe;
         this.timeframeIndexResolver = indexResolver;
     }
 
@@ -178,9 +180,9 @@ public class Location {
             return;
         }
         if (distancesByTimeframeByMode == null) {
-            distancesByTimeframeByMode = new HashMap<>();
+            distancesByTimeframeByMode = new DistanceMatrix[MODE_COUNT][];
         }
-        distancesByTimeframeByMode.put(transportType, distancesByTimeframe);
+        distancesByTimeframeByMode[transportType.ordinal()] = distancesByTimeframe;
         this.timeframeIndexResolver = indexResolver;
     }
 
@@ -332,7 +334,7 @@ public class Location {
      * @throws IllegalStateException When no distance matrix is configured for the given transport type.
      */
     public TravelDistance getDistanceTo(Location location, TransportType transportType) {
-        DistanceMatrix matrix = distanceMatrixForMode(transportType);
+        var matrix = distanceMatrixForMode(transportType);
         return TravelDistance.of(lookup(matrix, location, transportType, "distance", null));
     }
 
@@ -349,7 +351,7 @@ public class Location {
      * @throws IllegalStateException When no distance matrix is configured for the given transport type.
      */
     public TravelDistance getDistanceTo(Location location, OffsetDateTime departureTime, TransportType transportType) {
-        DistanceMatrix matrix = distanceMatrixForMode(transportType, departureTime);
+        var matrix = distanceMatrixForMode(transportType, departureTime);
         return TravelDistance.of(lookup(matrix, location, transportType, "distance", departureTime));
     }
 
@@ -408,14 +410,14 @@ public class Location {
     }
 
     private static boolean isDefaultMode(TransportType transportType) {
-        return transportType == null || TransportType.CAR.equals(transportType);
+        return transportType == null || TransportType.CAR == transportType;
     }
 
     private DistanceMatrix travelTimeMatrixForMode(TransportType transportType) {
         if (isDefaultMode(transportType)) {
             return travelTimeMatrix;
         }
-        return travelTimeMatrixByMode == null ? null : travelTimeMatrixByMode.get(transportType);
+        return travelTimeMatrixByMode == null ? null : travelTimeMatrixByMode[transportType.ordinal()];
     }
 
     private DistanceMatrix travelTimeMatrixForMode(TransportType transportType, OffsetDateTime departureTime) {
@@ -426,18 +428,18 @@ public class Location {
         }
         DistanceMatrix[] byTimeframe = travelTimesByTimeframeByMode == null
                 ? null
-                : travelTimesByTimeframeByMode.get(transportType);
+                : travelTimesByTimeframeByMode[transportType.ordinal()];
         if (byTimeframe != null && timeframeIndexResolver != null) {
             return resolveTimeframeMatrix(byTimeframe, departureTime, "travel time");
         }
-        return travelTimeMatrixByMode == null ? null : travelTimeMatrixByMode.get(transportType);
+        return travelTimeMatrixByMode == null ? null : travelTimeMatrixByMode[transportType.ordinal()];
     }
 
     private DistanceMatrix distanceMatrixForMode(TransportType transportType) {
         if (isDefaultMode(transportType)) {
             return distanceMatrix;
         }
-        return distanceMatrixByMode == null ? null : distanceMatrixByMode.get(transportType);
+        return distanceMatrixByMode == null ? null : distanceMatrixByMode[transportType.ordinal()];
     }
 
     private DistanceMatrix distanceMatrixForMode(TransportType transportType, OffsetDateTime departureTime) {
@@ -448,11 +450,11 @@ public class Location {
         }
         DistanceMatrix[] byTimeframe = distancesByTimeframeByMode == null
                 ? null
-                : distancesByTimeframeByMode.get(transportType);
+                : distancesByTimeframeByMode[transportType.ordinal()];
         if (byTimeframe != null && timeframeIndexResolver != null) {
             return resolveTimeframeMatrix(byTimeframe, departureTime, "distance");
         }
-        return distanceMatrixByMode == null ? null : distanceMatrixByMode.get(transportType);
+        return distanceMatrixByMode == null ? null : distanceMatrixByMode[transportType.ordinal()];
     }
 
     private long lookup(DistanceMatrix matrix, Location to, TransportType transportType, String what,

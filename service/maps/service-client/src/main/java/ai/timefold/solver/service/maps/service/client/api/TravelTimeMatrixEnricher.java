@@ -60,8 +60,8 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         // mode is treated as primary and is the one whose map metadata (locations-not-in-map, resolved location) is
         // propagated to the solver model.
         List<TransportType> transportTypes = optionsSupplier.getTransportTypes();
-        for (int i = 0; i < transportTypes.size(); i++) {
-            TransportType transportType = transportTypes.get(i);
+        for (var i = 0; i < transportTypes.size(); i++) {
+            var transportType = transportTypes.get(i);
             boolean primary = i == 0;
             if (useTraffic) {
                 enrichAllTimeframes(solverModel, transportType, primary);
