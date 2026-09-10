@@ -493,7 +493,7 @@ class VariableChangeRecordingScoreDirectorTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> recorder.afterListVariableChanged(variableDescriptor, entity, 5, 1))
-                .withMessageContaining("must match the fromIndex of its beforeListVariableChanged counterpart");
+                .withMessageContaining("must match its beforeListVariableChanged counterpart");
     }
 
     @Test
@@ -513,7 +513,7 @@ class VariableChangeRecordingScoreDirectorTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> nonDelegating.afterListVariableChanged(variableDescriptor, entity, 2, 3))
-                .withMessageContaining("must match the fromIndex of its beforeListVariableChanged counterpart");
+                .withMessageContaining("must match its beforeListVariableChanged counterpart");
     }
 
     @Test

@@ -682,8 +682,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * then undoes the move and restores the previous working score.
      * <p>
      * If either the move or the postprocessor throws, the move is <strong>not</strong> undone;
-     * the move's recorded actions may be half-applied,
-     * and every caller of this method treats such a failure as fatal.
+     * callers of this method should treat all exceptions thrown by this method as fatal.
      *
      * @return whatever {@code postprocessor} returns
      */
@@ -706,16 +705,10 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * As defined by {@link #executeTemporary(Move, TemporaryScorePostprocessor)},
      * but it also returns the undo move for {@code move}.
      * <p>
-     * Exists for exhaustive search backtracking; nothing else needs an undo move.
      * The returned move <strong>has already been applied</strong> by the time this method returns -
      * it is what undid {@code move}.
-     * Replaying it is therefore only correct after {@code move} has been re-applied,
-     * which is what {@code restoreWorkingSolution} does by composing the stored undo moves
-     * with the forward moves that descend the tree.
-     * Replaying it without that re-application corrupts the working solution:
-     * for a list variable, the merged undo indices no longer match the list and this throws
-     * {@link IndexOutOfBoundsException}; for a basic variable, it silently restores the wrong value
-     * instead of throwing.
+     * Replaying it is therefore only correct after {@code move} has been re-applied.
+     * Replaying it without that re-application corrupts the working solution.
      *
      * @return the undo move for {@code move}, already applied
      */

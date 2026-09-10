@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
  * Records what a list variable range looked like before a change, so undo can restore it.
  * <p>
  * {@link VariableChangeRecordingScoreDirector} records this on {@code beforeListVariableChanged} and
- * completes it with {@link #merge(int)} on the matching {@code afterListVariableChanged},
+ * completes it with {@link #setToIndex(int)} on the matching {@code afterListVariableChanged},
  * so the pair becomes a single undo step:
  * undo fires one {@code afterListVariableChanged} notification instead of two,
  * the second of which would only redo the shadow-variable re-indexing the first one already did,
@@ -81,10 +81,10 @@ final class ListVariableBeforeChangeAction<Solution_, Entity_, Value_> implement
      * Called by {@link VariableChangeRecordingScoreDirector#afterListVariableChanged}
      * once that call has been validated against this bracket.
      *
-     * @param mutatedToIndex the {@code toIndex} of that {@code afterListVariableChanged} call
+     * @param toIndex the {@code toIndex} of that {@code afterListVariableChanged} call
      */
-    void merge(int mutatedToIndex) {
-        this.mutatedToIndex = mutatedToIndex;
+    void setToIndex(int toIndex) {
+        this.mutatedToIndex = toIndex;
     }
 
     @Override

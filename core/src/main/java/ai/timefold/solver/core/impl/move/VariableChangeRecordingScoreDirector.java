@@ -122,7 +122,8 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         var action = new ListVariableBeforeChangeAction<>(entity,
                 List.copyOf(list.subList(fromIndex, toIndex)), fromIndex, toIndex, list.size(),
                 variableDescriptor);
-        // Rejects a second bracket for an entity whose previous one is still open.
+        // pendingListChangeTracker will fail fast if a second beforeListVariableChanged call on the same entity
+        // occurs before a corresponding afterListVariableChanged call.
         pendingListChangeTracker.put(entity, action);
         getVariableChangeList().add(action);
         if (backingScoreDirector != null) {
@@ -153,11 +154,10 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
              * // afterListVariableChanged(2, 3)
              * // Undo restores oldValue at index 2 instead of index 0.
              */
-            throw new IllegalArgumentException(
-                    """
-                            The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
-                            Maybe check implementation of your %s."""
-                            .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
+            throw new IllegalArgumentException("""
+                    The fromIndex of afterListVariableChanged (%d) must match its beforeListVariableChanged counterpart (%d).
+                    Maybe check implementation of your %s."""
+                    .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
         } else if (toIndex < fromIndex) {
             throw new IllegalArgumentException("""
                     The afterListVariableChanged (%d, %d) of entity (%s) has toIndex (%d) smaller than fromIndex (%d).
@@ -185,7 +185,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         // because it is the SAME instance already sitting in variableChangeList
         // (added in beforeListVariableChanged(), which put it in both variableChangeList and this tracker).
         // undoChanges() will later read that mutation directly off the list.
-        pendingBeforeAction.merge(toIndex);
+        pendingBeforeAction.setToIndex(toIndex);
         if (backingScoreDirector != null) {
             backingScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }

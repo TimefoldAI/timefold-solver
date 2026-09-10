@@ -12,12 +12,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -42,6 +44,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -58,6 +61,10 @@ import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIn
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldEntity;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldSolution;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
@@ -2583,35 +2590,41 @@ class MoveDirectorTest {
 
     @Test
     void restoreWorkingScoreWhenHandlingStructurallyFlawedSolutions() {
-        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
-                .basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
 
-        var goodValue = new TestdataValue("good");
-        var badValue = new TestdataValue("bad");
-        var entity = new TestdataEntity("A", goodValue);
-        var solution = new TestdataSolution("solution");
-        solution.setEntityList(List.of(entity));
-        solution.setValueList(List.of(goodValue, badValue));
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        b2.setDependencies(List.of(b1));
+        // b1 before b2 satisfies the dependency; this solution is not structurally flawed.
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
 
-        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
-        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+        var previousScore = solutionDescriptor.<HardSoftScore> getScore(solution);
 
-        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        // Swapping the two values makes b2 (which depends on b1) precede b1, creating a dependency cycle.
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
         var moveDirector = new MoveDirector<>(scoreDirector);
         var result = moveDirector.executeTemporaryHandlingStructurallyFlawedSolutions(move,
-                sol -> sol.getEntityList().getFirst().getValue().getCode(),
+                sol -> "not flawed",
                 sol -> "flawed",
                 false);
 
         assertSoftly(softly -> {
-            // Postprocessor ran while the move was still applied; the solution is not structurally flawed.
-            softly.assertThat(result).isEqualTo("bad");
-            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            // The move made the solution structurally flawed, so the flawed-solution processor ran instead.
+            softly.assertThat(result).isEqualTo("flawed");
+            softly.assertThat(e1.getValues()).containsExactly(b1, b2);
             // guaranteeFreshScore is false, so the previous score must be restored,
             // exactly as executeTemporary(Move, Function, boolean) does.
-            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+            softly.assertThat(solutionDescriptor.<HardSoftScore> getScore(solution)).isEqualTo(previousScore);
         });
     }
 
