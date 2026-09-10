@@ -2265,7 +2265,7 @@ class MoveDirectorTest {
         assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
             if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                 return beforeChangeAction.entity() == e1 && beforeChangeAction.fromIndex() == 0
-                        && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                        && beforeChangeAction.originalToIndex() == 1 && beforeChangeAction.oldValue().size() == 1
                         && beforeChangeAction.oldValue().getFirst().equals(v1);
             }
             return false;
@@ -2275,7 +2275,7 @@ class MoveDirectorTest {
         assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
             if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                 return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
-                        && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                        && beforeChangeAction.originalToIndex() == 1 && beforeChangeAction.oldValue().size() == 1
                         && beforeChangeAction.oldValue().getFirst().equals(v2);
             }
             return false;

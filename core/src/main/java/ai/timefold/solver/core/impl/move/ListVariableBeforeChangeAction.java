@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
  * Records what a list variable range looked like before a change, so undo can restore it.
  * <p>
  * {@link VariableChangeRecordingScoreDirector} records this on {@code beforeListVariableChanged} and
- * completes it with {@link #setToIndex(int)} on the matching {@code afterListVariableChanged},
+ * completes it with {@link #updateToIndex(int)} on the matching {@code afterListVariableChanged},
  * so the pair becomes a single undo step:
  * undo fires one {@code afterListVariableChanged} notification instead of two,
  * the second of which would only redo the shadow-variable re-indexing the first one already did,
@@ -40,7 +40,7 @@ final class ListVariableBeforeChangeAction<Solution_, Entity_, Value_> implement
      * the current, post-mutation end of the range that undo must clear before restoring {@link #oldValue} -
      * or {@code -1} while the bracket is still open.
      */
-    private int mutatedToIndex = -1;
+    private int updatedToIndex = -1;
 
     ListVariableBeforeChangeAction(Entity_ entity, List<Value_> oldValue, int fromIndex, int toIndex,
             int originalListSize, ListVariableDescriptor<Solution_> variableDescriptor) {
@@ -64,7 +64,7 @@ final class ListVariableBeforeChangeAction<Solution_, Entity_, Value_> implement
         return fromIndex;
     }
 
-    int toIndex() {
+    int originalToIndex() {
         return toIndex;
     }
 
@@ -83,21 +83,21 @@ final class ListVariableBeforeChangeAction<Solution_, Entity_, Value_> implement
      *
      * @param toIndex the {@code toIndex} of that {@code afterListVariableChanged} call
      */
-    void setToIndex(int toIndex) {
-        this.mutatedToIndex = toIndex;
+    void updateToIndex(int toIndex) {
+        this.updatedToIndex = toIndex;
     }
 
     @Override
     public void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
-        if (mutatedToIndex < 0) {
+        if (updatedToIndex < 0) {
             throw new IllegalStateException(
                     "Impossible state: the beforeListVariableChanged (%d, %d) of entity (%s) was never closed by its afterListVariableChanged."
                             .formatted(fromIndex, toIndex, entity));
         }
-        // before() over the current (mutated) range, after() over the restored range.
-        scoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, mutatedToIndex);
+        // before() over the current (updated) range, after() over the restored range.
+        scoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, updatedToIndex);
         var list = variableDescriptor.getValue(entity);
-        list.subList(fromIndex, mutatedToIndex).clear();
+        list.subList(fromIndex, updatedToIndex).clear();
         list.addAll(fromIndex, oldValue);
         scoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
@@ -108,7 +108,7 @@ final class ListVariableBeforeChangeAction<Solution_, Entity_, Value_> implement
         var rebased = new ListVariableBeforeChangeAction<>(lookup.lookUpWorkingObject(entity), rebasedValueList,
                 fromIndex, toIndex, originalListSize, variableDescriptor);
         // Otherwise the rebased copy would undo as if its bracket were still open.
-        rebased.mutatedToIndex = mutatedToIndex;
+        rebased.updatedToIndex = updatedToIndex;
         return rebased;
     }
 

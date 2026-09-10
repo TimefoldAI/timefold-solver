@@ -64,8 +64,8 @@ final class PendingListChangeTracker {
                 so another beforeListVariableChanged (%d, %d) for it must not be opened.
                 Maybe close each beforeListVariableChanged with its afterListVariableChanged \
                 before changing the same entity again."""
-                .formatted(entity, openAction.fromIndex(), openAction.toIndex(),
-                        newAction.fromIndex(), newAction.toIndex()));
+                .formatted(entity, openAction.fromIndex(), openAction.originalToIndex(),
+                        newAction.fromIndex(), newAction.originalToIndex()));
     }
 
     @Nullable

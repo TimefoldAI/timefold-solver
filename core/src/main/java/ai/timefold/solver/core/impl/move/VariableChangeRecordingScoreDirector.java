@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.SelectorBasedListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
@@ -140,7 +139,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
             throw new IllegalArgumentException("""
                     The afterListVariableChanged (%d, %d) of entity (%s) has no matching beforeListVariableChanged.
                     Maybe check implementation of your %s."""
-                    .formatted(fromIndex, toIndex, entity, AbstractSelectorBasedMove.class.getSimpleName()));
+                    .formatted(fromIndex, toIndex, entity, Move.class.getSimpleName()));
         }
         var requiredFromIndex = pendingBeforeAction.fromIndex();
         if (requiredFromIndex != fromIndex) {
@@ -157,35 +156,33 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
             throw new IllegalArgumentException("""
                     The fromIndex of afterListVariableChanged (%d) must match its beforeListVariableChanged counterpart (%d).
                     Maybe check implementation of your %s."""
-                    .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
+                    .formatted(fromIndex, requiredFromIndex, Move.class.getSimpleName()));
         } else if (toIndex < fromIndex) {
             throw new IllegalArgumentException("""
                     The afterListVariableChanged (%d, %d) of entity (%s) has toIndex (%d) smaller than fromIndex (%d).
                     Maybe check implementation of your %s."""
-                    .formatted(fromIndex, toIndex, entity, toIndex, fromIndex,
-                            AbstractSelectorBasedMove.class.getSimpleName()));
+                    .formatted(fromIndex, toIndex, entity, toIndex, fromIndex, Move.class.getSimpleName()));
         }
         // The reported range must account for every element the mutation added or removed;
         // undo clears exactly [fromIndex, toIndex) before restoring,
         // so a range that is too short leaves elements behind
         // and one that is too long deletes elements that were never captured.
         var actualLengthDelta = variableDescriptor.getValue(entity).size() - pendingBeforeAction.originalListSize();
-        var reportedLengthDelta = toIndex - pendingBeforeAction.toIndex();
+        var reportedLengthDelta = toIndex - pendingBeforeAction.originalToIndex();
         if (actualLengthDelta != reportedLengthDelta) {
             throw new IllegalArgumentException("""
                     The afterListVariableChanged (%d, %d) of entity (%s) reports a length change of (%d), \
                     but its list variable actually changed length by (%d).
                     Maybe check implementation of your %s; \
                     its beforeListVariableChanged/afterListVariableChanged range must cover everything it changed."""
-                    .formatted(fromIndex, toIndex, entity, reportedLengthDelta, actualLengthDelta,
-                            AbstractSelectorBasedMove.class.getSimpleName()));
+                    .formatted(fromIndex, toIndex, entity, reportedLengthDelta, actualLengthDelta, Move.class.getSimpleName()));
         }
         // pendingBeforeAction mutated in place by merge();
         // nothing needs to happen with it afterward here,
         // because it is the SAME instance already sitting in variableChangeList
         // (added in beforeListVariableChanged(), which put it in both variableChangeList and this tracker).
         // undoChanges() will later read that mutation directly off the list.
-        pendingBeforeAction.setToIndex(toIndex);
+        pendingBeforeAction.updateToIndex(toIndex);
         if (backingScoreDirector != null) {
             backingScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }

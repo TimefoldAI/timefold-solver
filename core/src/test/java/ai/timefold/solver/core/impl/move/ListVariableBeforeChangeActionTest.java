@@ -30,7 +30,7 @@ class ListVariableBeforeChangeActionTest {
         var vNew = new TestdataListValue("new");
         var entity = new TestdataListEntity("e", vNew);
         var action = new ListVariableBeforeChangeAction<>(entity, List.of(v0), 0, 1, 1, variableDescriptor);
-        action.setToIndex(1); // The matching after() call that would fire during recording.
+        action.updateToIndex(1); // The matching after() call that would fire during recording.
 
         action.undo(scoreDirector);
 
@@ -47,7 +47,7 @@ class ListVariableBeforeChangeActionTest {
         var entity = new TestdataListEntity("e", inserted);
         var action = new ListVariableBeforeChangeAction<>(entity, List.<TestdataListValue> of(), 0, 0, 0,
                 variableDescriptor);
-        action.setToIndex(1);
+        action.updateToIndex(1);
 
         action.undo(scoreDirector);
 
@@ -74,7 +74,7 @@ class ListVariableBeforeChangeActionTest {
         var vNew = new TestdataListValue("new");
         var originalEntity = new TestdataListEntity("e", vNew);
         var action = new ListVariableBeforeChangeAction<>(originalEntity, List.of(v0), 0, 1, 1, variableDescriptor);
-        action.setToIndex(1); // Simulate the matching after() call that would fire during recording.
+        action.updateToIndex(1); // Simulate the matching after() call that would fire during recording.
 
         // Rebase to genuinely different instances - not identity - so this test cannot pass merely
         // because rebase() happened to leave everything pointing at the original objects.
