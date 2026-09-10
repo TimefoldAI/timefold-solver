@@ -710,6 +710,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * Replaying it is therefore only correct after {@code move} has been re-applied.
      * Replaying it without that re-application corrupts the working solution.
      * If either {@code move} or {@code scoreConsumer} throws, the move is not undone and the working score is not restored.
+     * 
      * @return the undo move for {@code move}, already applied
      */
     public final Move<Solution_> executeTemporaryProducingUndoMove(Move<Solution_> move,
