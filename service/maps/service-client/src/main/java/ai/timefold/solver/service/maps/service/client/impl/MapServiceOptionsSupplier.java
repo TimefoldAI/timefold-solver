@@ -57,26 +57,27 @@ public class MapServiceOptionsSupplier {
     }
 
     public String getOptions() {
-        return getOptions(Optional.empty());
+        return getOptions((String) null);
     }
 
-    public String getOptions(Optional<String> locationSetName) {
+    public String getOptions(String locationSetName) {
         // Legacy single-mode callers get the primary transport type.
         return getOptions(locationSetName, transportTypes.get(0));
     }
 
     public String getOptions(TransportType transportType) {
-        return getOptions(Optional.empty(), transportType);
+        return getOptions((String) null, transportType);
     }
 
-    public String getOptions(Optional<String> locationSetName, TransportType transportType) {
+    public String getOptions(String locationSetName, TransportType transportType) {
         String providerOption = provider.map(MapServiceOptions::getProviderOption).orElse("");
         String locationOption = location.map(MapServiceOptions::getLocationOption).orElse("");
         String modelOption = model.map(MapServiceOptions::getModelOption).orElse("");
         String modelVersionOption = modelVersion.map(MapServiceOptions::getModelVersionOption).orElse("");
         String modelResourceOption = modelResource.map(MapServiceOptions::getModelResourceOption).orElse("");
         String tenantIdOption = tenantId.map(MapServiceOptions::getTenantIdOption).orElse("");
-        String locationSetNameOption = locationSetName.map(MapServiceOptions::getLocationSetNameOption).orElse("");
+        String locationSetNameOption =
+                locationSetName == null ? "" : MapServiceOptions.getLocationSetNameOption(locationSetName);
         String maxDistanceFromRoadOption = maxDistanceFromRoad.map(MapServiceOptions::getMaxDistanceFromRoadOption).orElse("");
         String transportTypeOption = transportType == null
                 ? ""

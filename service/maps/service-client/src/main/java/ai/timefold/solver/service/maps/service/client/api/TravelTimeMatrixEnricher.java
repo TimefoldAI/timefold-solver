@@ -79,7 +79,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         try {
             travelTimeAndDistance =
                     mapService.getTravelTimeAndDistance(locations,
-                            optionsSupplier.getOptions(solverModel.getLocationSetName(), transportType));
+                            optionsSupplier.getOptions(solverModel.getLocationSetName().orElse(null), transportType));
         } catch (TimefoldRuntimeException e) {
             throw e;
         } catch (Exception e) {
