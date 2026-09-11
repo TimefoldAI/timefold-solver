@@ -13,7 +13,13 @@ import java.util.Map;
 public interface ExecutionProfile {
 
     /**
-     * Stable identifier of the profile, used in APIs and permissions. Must be unique across all implementations.
+     * Stable, unique identifier of the profile.
+     */
+    String id();
+
+    /**
+     * Human readable name of the profile, for display in user interfaces. Unlike {@link #id()} this is not a stable key:
+     * it may be changed or localized without breaking existing references.
      */
     String name();
 

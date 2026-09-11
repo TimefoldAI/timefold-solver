@@ -10,27 +10,27 @@ import java.util.stream.StreamSupport;
 
 /**
  * Discovers all {@link ExecutionProfile} implementations available on the classpath via {@link ServiceLoader} and exposes
- * them by name. Consumers use this registry rather than referencing individual profiles, so the set of profiles is
- * extensible without touching call sites.
+ * them by their stable {@link ExecutionProfile#id() id}. Consumers use this registry rather than referencing individual
+ * profiles, so the set of profiles is extensible without touching call sites.
  */
 public final class ExecutionProfileRegistry {
 
-    private final Map<String, ExecutionProfile> profilesByName;
+    private final Map<String, ExecutionProfile> profilesById;
 
     public ExecutionProfileRegistry() {
         this(ServiceLoader.load(ExecutionProfile.class));
     }
 
     ExecutionProfileRegistry(Iterable<ExecutionProfile> profiles) {
-        this.profilesByName = StreamSupport.stream(profiles.spliterator(), false)
-                .collect(Collectors.toUnmodifiableMap(ExecutionProfile::name, Function.identity()));
+        this.profilesById = StreamSupport.stream(profiles.spliterator(), false)
+                .collect(Collectors.toUnmodifiableMap(ExecutionProfile::id, Function.identity()));
     }
 
     public Collection<ExecutionProfile> all() {
-        return profilesByName.values();
+        return profilesById.values();
     }
 
-    public Optional<ExecutionProfile> findByName(String name) {
-        return Optional.ofNullable(profilesByName.get(name));
+    public Optional<ExecutionProfile> findById(String id) {
+        return Optional.ofNullable(profilesById.get(id));
     }
 }
