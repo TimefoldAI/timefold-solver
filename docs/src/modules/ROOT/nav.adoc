@@ -52,12 +52,6 @@
 ** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle routing (guide)]
 ** https://github.com/TimefoldAI/timefold-quickstarts[More examples on GitHub^]
 
-.Deploy to Timefold Platform
-* xref:deploying-to-platform/introduction.adoc[Overview]
-* xref:deploying-to-platform/guide.adoc[Guide]
-* xref:deploying-to-platform/model-metadata.adoc[leveloffset=+1]
-* xref:deploying-to-platform/metrics.adoc[leveloffset=+1]
-
 * Optimization algorithms
 ** xref:optimization-algorithms/overview.adoc[Overview]
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
@@ -69,6 +63,13 @@
 ** Custom Moves
 *** xref:optimization-algorithms/custom-moves.adoc[Move definition]
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
+
+
+.Deploy to Timefold Platform
+* xref:deploying-to-platform/introduction.adoc[Overview]
+* xref:deploying-to-platform/guide.adoc[Guide]
+* xref:deploying-to-platform/model-metadata.adoc[leveloffset=+1]
+* xref:deploying-to-platform/metrics.adoc[leveloffset=+1]
 
 .Upgrading
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
