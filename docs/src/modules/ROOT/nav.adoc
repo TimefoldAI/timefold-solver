@@ -30,7 +30,7 @@
 *** xref:running-timefold-solver/service/demo-data.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/exposing-metrics.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/consumer-guide.adoc[Service consumer guide]
-*
+
 ** xref:running-timefold-solver/library/library-integration.adoc[As a library]
 *** xref:running-timefold-solver/library/configuration.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/library/constraint-overrides.adoc[Constraint weights]
@@ -72,7 +72,7 @@
 * Upgrading
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
-** https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[Upgrading from OptaPlanner]
+** xref:upgrading-timefold-solver/upgrade-from-optaplanner.adoc[leveloffset=+1]
 * Migration guides
 ** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
