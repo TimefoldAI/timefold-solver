@@ -97,6 +97,22 @@ icon:eye[set=far] Deprecation of `@ShadowVariableInconsistent`
 The solver can optionally increase the performance of shadow variable processing on dense variable graphs, in exchange for the user removing the `@ShadowVariableInconsistent` from their domain model. See the xref:upgrading-timefold-solver/migration-guides/shadow-variables-inconsistent-to-structural-score.adoc[detailed migration guide].
 ====
 
+icon:eye[set=far] Custom moves must declare exactly the list variable range they change
+[%collapsible%open]
+====
+A custom move that changes a list variable must bracket that change with `beforeListVariableChanged(entity, variableName, fromIndex, toIndex)` and a matching `afterListVariableChanged(...)`.
+The solver now verifies each such pair, and throws `IllegalArgumentException` if:
+
+- a second `beforeListVariableChanged` opens for an entity whose previous one has not been closed yet,
+- an `afterListVariableChanged` has no matching `beforeListVariableChanged`, or one arrives twice,
+- the two calls disagree on `fromIndex`,
+- the reported range does not account for every element the move added or removed.
+
+Previously the solver accepted these and silently corrupted the solution when the move was undone.
+If your move now fails, make its range cover everything it changes.
+For example, appending one element to the end of a list is `beforeListVariableChanged(entity, "valueList", size, size)` followed by `afterListVariableChanged(entity, "valueList", size, size + 1)`.
+====
+
 '''
 
 [#previewFeatureUpgrade]

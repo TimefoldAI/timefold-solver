@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 public sealed interface ChangeAction<Solution_>
-        permits ListVariableAfterAssignmentAction, ListVariableAfterChangeAction, ListVariableAfterUnassignmentAction,
+        permits ListVariableAfterAssignmentAction, ListVariableAfterUnassignmentAction,
         ListVariableBeforeAssignmentAction, ListVariableBeforeChangeAction, ListVariableBeforeUnassignmentAction,
         UpdateShadowVariablesAction, VariableChangeAction {
 
