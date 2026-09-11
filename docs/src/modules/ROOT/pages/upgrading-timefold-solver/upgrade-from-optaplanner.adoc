@@ -14,7 +14,7 @@ Upgrading from OptaPlanner to Timefold Solver only takes two minutes.
 Run the command below to upgrade your java, build and other code automatically.
 
 NOTE: The script below upgrades your OptaPlanner project to the latest Timefold Solver version, which is {timefold-solver-version}.
-This is a significant jump and might require additional migrations. Do check out our other guide for more details on how to the xref:upgrading-timefold-solver/upgrade-from-v1.adoc[upgrade to 2.x range.]
+This is a significant jump and might require additional migrations. Check out our other guide for more details on how to upgrade to the xref:upgrading-timefold-solver/upgrade-from-v1.adoc[2.x range].
 
 [tabs]
 ====
@@ -32,7 +32,7 @@ Gradle::
 --
 [source,shell,subs=attributes+]
 ----
-curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{timefold-solver-version}/migration/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
+curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{timefold-solver-version}/tools/migration/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
 ----
 --
 ====
@@ -53,11 +53,11 @@ please link:https://timefold.ai/blog/migrating-score-drl-to-constraint-streams[u
 Timefold Solver 1.x is backward compatible with OptaPlanner 8.x,
 except for the following changes:
 
-* Minimum Java 21 and 25 are also supported.
+* Java 17 is the minimum, and Java 21 and 25 are also supported.
 * The Maven/Gradle GAVs changed:
 ** The groupId changed from `org.optaplanner` to `ai.timefold.solver`.
 ** The artifactIds changed from `optaplanner-\*` to `timefold-solver-*`.
-** ArtifactIds containing `peristence-` changed from `optaplanner-persistence-\*` to `timefold-solver-*`.
+** ArtifactIds containing `persistence-` changed from `optaplanner-persistence-\*` to `timefold-solver-*`.
 *** For example, `optaplanner-persistence-jackson` changed to `timefold-solver-jackson`.
 * The import statements changed accordingly:
 ** `import org.optaplanner...;` changed to `import ai.timefold.solver...;`.
