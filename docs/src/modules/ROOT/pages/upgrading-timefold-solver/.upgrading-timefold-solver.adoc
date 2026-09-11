@@ -6,4 +6,3 @@
 
 include::overview.adoc[leveloffset=+1]
 include::upgrade-from-v1.adoc[leveloffset=+1]
-include::backwards-compatibility.adoc[leveloffset=+1]
