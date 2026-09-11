@@ -177,7 +177,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
                     its beforeListVariableChanged/afterListVariableChanged range must cover everything it changed."""
                     .formatted(fromIndex, toIndex, entity, reportedLengthDelta, actualLengthDelta, Move.class.getSimpleName()));
         }
-        // pendingBeforeAction mutated in place by merge();
+        // pendingBeforeAction mutated in place by updateToIndex();
         // nothing needs to happen with it afterward here,
         // because it is the SAME instance already sitting in variableChangeList
         // (added in beforeListVariableChanged(), which put it in both variableChangeList and this tracker).
