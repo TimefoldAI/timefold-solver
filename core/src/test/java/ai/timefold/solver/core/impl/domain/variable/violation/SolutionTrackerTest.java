@@ -2,23 +2,19 @@ package ai.timefold.solver.core.impl.domain.variable.violation;
 
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.VariableSupport;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-public class SolutionTrackerTest {
+class SolutionTrackerTest {
 
     @Test
-    public void testFormatList() {
-        assertThat(SolutionTracker.formatList(List.of())).isEqualTo("");
+    void testFormatList() {
+        assertThat(SolutionTracker.formatList(List.of())).isEmpty();
         assertThat(SolutionTracker.formatList(List.of("item 1", "item 2", "item 3")))
                 .isEqualTo(
                         """
@@ -89,7 +85,8 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessage() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var scoreDirector = mockScoreDirector(solutionDescriptor);
-        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
+        var variableSupport = VariableSupport.create(scoreDirector);
+        var tracker = new SolutionTracker<>(solutionDescriptor, variableSupport);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
@@ -131,14 +128,8 @@ public class SolutionTrackerTest {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var scoreDirector = mockScoreDirector(solutionDescriptor);
         var variableSupport = VariableSupport.create(scoreDirector);
-        var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
-        Mockito.doAnswer(invocation -> {
-            var variableDescriptor = invocation.getArgument(0, VariableDescriptor.class);
-            var variableTracker = variableSupport.getBasicVariableTracker(variableDescriptor);
-            variableTrackers.add(variableTracker);
-            return variableTracker;
-        }).when(scoreDirector).getBasicVariableTracker(any(VariableDescriptor.class));
-        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
+        var tracker = new SolutionTracker<>(solutionDescriptor, variableSupport);
+        var variableTrackers = tracker.getBasicVariableTrackers();
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
@@ -199,14 +190,8 @@ public class SolutionTrackerTest {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var scoreDirector = mockScoreDirector(solutionDescriptor);
         var variableSupport = VariableSupport.create(scoreDirector);
-        var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
-        Mockito.doAnswer(invocation -> {
-            var variableDescriptor = invocation.getArgument(0, VariableDescriptor.class);
-            var variableTracker = variableSupport.getBasicVariableTracker(variableDescriptor);
-            variableTrackers.add(variableTracker);
-            return variableTracker;
-        }).when(scoreDirector).getBasicVariableTracker(any(VariableDescriptor.class));
-        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
+        var tracker = new SolutionTracker<>(solutionDescriptor, variableSupport);
+        var variableTrackers = tracker.getBasicVariableTrackers();
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
@@ -259,14 +244,8 @@ public class SolutionTrackerTest {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var scoreDirector = mockScoreDirector(solutionDescriptor);
         var variableSupport = VariableSupport.create(scoreDirector);
-        var variableTrackers = new ArrayList<BasicVariableTracker<?>>();
-        Mockito.doAnswer(invocation -> {
-            var variableDescriptor = invocation.getArgument(0, VariableDescriptor.class);
-            var variableTracker = variableSupport.getBasicVariableTracker(variableDescriptor);
-            variableTrackers.add(variableTracker);
-            return variableTracker;
-        }).when(scoreDirector).getBasicVariableTracker(any(VariableDescriptor.class));
-        var tracker = new SolutionTracker<>(solutionDescriptor, scoreDirector);
+        var tracker = new SolutionTracker<>(solutionDescriptor, variableSupport);
+        var variableTrackers = tracker.getBasicVariableTrackers();
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);

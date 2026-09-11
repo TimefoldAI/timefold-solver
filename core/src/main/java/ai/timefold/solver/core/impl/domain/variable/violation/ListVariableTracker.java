@@ -15,7 +15,7 @@ import org.jspecify.annotations.NullMarked;
  * Tracks variable change events for a given {@link PlanningListVariable}.
  */
 @NullMarked
-public class ListVariableTracker<Solution_> implements ListVariableChangeHandler<Solution_> {
+public final class ListVariableTracker<Solution_> implements ListVariableChangeHandler<Solution_> {
 
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;

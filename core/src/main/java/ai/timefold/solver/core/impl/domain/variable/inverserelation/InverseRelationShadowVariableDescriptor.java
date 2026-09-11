@@ -123,12 +123,4 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         }
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
-    public boolean isSingleton() {
-        return singleton;
-    }
-
 }
