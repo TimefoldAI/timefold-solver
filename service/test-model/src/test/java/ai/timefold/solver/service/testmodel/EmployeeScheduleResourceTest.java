@@ -12,6 +12,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -30,9 +31,11 @@ import jakarta.ws.rs.core.MediaType;
 import ai.timefold.solver.core.api.score.HardMediumSoftScore;
 import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.api.SolvingStatus;
+import ai.timefold.solver.service.definition.api.domain.Configuration;
 import ai.timefold.solver.service.definition.api.domain.Metadata;
 import ai.timefold.solver.service.definition.api.domain.ModelRequest;
 import ai.timefold.solver.service.definition.api.domain.ModelResponse;
+import ai.timefold.solver.service.definition.api.domain.RunConfiguration;
 import ai.timefold.solver.service.definition.api.rest.OperationOnPost;
 import ai.timefold.solver.service.definition.api.validation.IssueCode;
 import ai.timefold.solver.service.definition.api.validation.IssueSeverity;
@@ -62,6 +65,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -87,6 +94,9 @@ public class EmployeeScheduleResourceTest {
     @Inject
     @Connector("smallrye-in-memory")
     InMemoryConnector connector;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     InMemorySink<InitSolutionEvent> initSolutionSink;
     InMemorySink<BestSolutionEvent> bestSolutionSink;
@@ -330,6 +340,55 @@ public class EmployeeScheduleResourceTest {
             softly.assertThat(issueType.severity()).isEqualTo(IssueSeverity.ERROR);
             softly.assertThat(issueType.metadata()).hasSize(1).containsExactly(ShiftEndBeforeStartIssue.ISSUE_MESSAGE);
         });
+    }
+
+    @Test
+    void postAcceptsCustomRunOptions() {
+        RunConfiguration runConfiguration =
+                new RunConfiguration(null, null, null, Set.of("options-e2e"), Map.of("customOption", "customValue"));
+        ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides> modelRequest =
+                new ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides>(createInputEmployeeSchedule())
+                        .withConfiguration(Configuration.<EmptyModelConfigOverrides> empty().withRun(runConfiguration));
+
+        // Options are hidden from the OpenAPI schema, so the generated JSON schema must not forbid them.
+        given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(modelRequest)
+                .when()
+                .post("/schedules?operation=" + OperationOnPost.NONE.name())
+                .then()
+                .log().ifError()
+                .statusCode(202);
+
+        // Await the dataset so the asynchronous computation cannot leak into the next test.
+        await()
+                .atMost(TEST_AWAIT_TIMEOUT_DURATION)
+                .pollInterval(TEST_POLL_INTERVAL_MILLIS)
+                .until(() -> !datasetComputedSink.received().isEmpty());
+    }
+
+    @Test
+    void postRejectsUnknownRunConfigurationProperty() throws Exception {
+        ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides> modelRequest =
+                new ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides>(createInputEmployeeSchedule())
+                        .withConfiguration(Configuration.<EmptyModelConfigOverrides> empty()
+                                .withRun(new RunConfiguration("unknown-property-e2e")));
+
+        ObjectNode body = objectMapper.valueToTree(modelRequest);
+        JsonNode runNode = body.path(ModelRequest.ModelRequestAttribute.CONFIG.value()).path("run");
+        assertThat(runNode.isObject()).as("run configuration should be serialized as an object").isTrue();
+        ((ObjectNode) runNode).put("notARealOption", "boom");
+
+        // Permitting unknown properties in the schema must not weaken the strict Jackson mapping.
+        given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(objectMapper.writeValueAsString(body))
+                .when()
+                .post("/schedules?operation=" + OperationOnPost.NONE.name())
+                .then()
+                .statusCode(400);
     }
 
     private static EmployeeSchedule awaitFeasiblyAssigned(Metadata<HardMediumSoftScore> metadata) {
