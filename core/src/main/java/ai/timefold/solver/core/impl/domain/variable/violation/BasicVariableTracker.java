@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 /**
  * Tracks variable change events for a given genuine or shadow variable, except {@link PlanningListVariable}.
  */
-public class BasicVariableTracker<Solution_> implements BasicVariableChangeHandler<Solution_> {
+public final class BasicVariableTracker<Solution_> implements BasicVariableChangeHandler<Solution_> {
     private final VariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
