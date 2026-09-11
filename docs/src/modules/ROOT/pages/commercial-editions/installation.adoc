@@ -31,7 +31,7 @@ After obtaining your license file you can introduce it to your project by one of
 Take care that the file name matches exactly, including letter case and the lines containing "BEGIN CERTIFICATE" and "END CERTIFICATE".
 ====
 
-* Store the license's PEM string (the contents of the license file) in the `TIMEFOLD_LICENSE` environment variable, e.g. with the `export TIMEFOLD_LICENSE='$(cat ./path/to/timefold-license.pem)'`.
+* Store the license's PEM string (the contents of the license file) in the `TIMEFOLD_LICENSE` environment variable, e.g. with the `export TIMEFOLD_LICENSE="$(cat ./path/to/timefold-license.pem)"`.
 * Store the absolute path to the file in `TIMEFOLD_LICENSE_PATH` environment variable.
 * Name the file `timefold-license.pem` and place it in the user's home directory.
 * Name the file `timefold-license.pem` and place it in the root of your application classpath.
