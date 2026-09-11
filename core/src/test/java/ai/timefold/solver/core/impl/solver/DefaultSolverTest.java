@@ -1658,9 +1658,18 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1",
-                "a1");
-        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2", "a2");
+        // The solver stops at the first feasible solution, so which concurrent pair takes which index is
+        // arbitrary. That the pairs line up across both entities is the property under test, together with
+        // the score, which changes if a declarative shadow goes stale.
+        var firstValues = solution.getEntities().getFirst().getValues();
+        var secondValues = solution.getEntities().get(1).getValues();
+        assertThat(firstValues).hasSize(2);
+        assertThat(secondValues).hasSize(2);
+        for (var index = 0; index < firstValues.size(); index++) {
+            assertThat(firstValues.get(index).getConcurrentValueGroup())
+                    .as("The values at index %d must belong to the same concurrent group.", index)
+                    .contains(secondValues.get(index));
+        }
 
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
     }

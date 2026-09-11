@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.random.RandomGenerator;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
@@ -160,17 +159,16 @@ public final class UnionMoveSelectorConfig
 
     @Override
     public @NonNull UnionMoveSelectorConfig enableNearbySelection(
-            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            @NonNull RandomGenerator random) {
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
         var updatedMoveSelectorList = new LinkedList<MoveSelectorConfig>();
         for (var selectorConfig : moveSelectorConfigList) {
             if (selectorConfig instanceof NearbyAutoConfigurationEnabled<?> nearbySelectorConfig) {
                 if (UnionMoveSelectorConfig.class.isAssignableFrom(nearbySelectorConfig.getClass())) {
-                    updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
+                    updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter));
                 } else {
                     updatedMoveSelectorList.add((MoveSelectorConfig) selectorConfig.copyConfig());
-                    updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter, random));
+                    updatedMoveSelectorList.add(nearbySelectorConfig.enableNearbySelection(distanceMeter));
                 }
             } else {
                 updatedMoveSelectorList.add((MoveSelectorConfig<?>) selectorConfig.copyConfig());

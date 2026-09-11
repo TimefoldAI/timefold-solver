@@ -89,15 +89,26 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                 firstElementPosition.index(), secondElementPosition.index());
     }
 
-    @SuppressWarnings("unchecked")
     private Iterator<Node_> getValuesOnSelectedEntitiesIterator(Node_[] pickedValues) {
         var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
-        return (Iterator<Node_>) workingRandom.ints(0, entityOrderInfo.entities().length)
-                .mapToObj(index -> {
-                    var entity = entityOrderInfo.entities()[index];
-                    return listVariableDescriptor.getRandomUnpinnedElement(entity, workingRandom);
-                })
-                .iterator();
+        var entities = entityOrderInfo.entities();
+        // An IntStream would step around the bounded draw in BoundedSplittableGenerator,
+        // and it would allocate on every move.
+        return new Iterator<>() {
+
+            @Override
+            public boolean hasNext() {
+                return true; // The caller stops when it has enough values.
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Node_ next() {
+                var entity = entities[workingRandom.nextInt(entities.length)];
+                return (Node_) listVariableDescriptor.getRandomUnpinnedElement(entity, workingRandom);
+            }
+
+        };
     }
 
     @SuppressWarnings("unchecked")

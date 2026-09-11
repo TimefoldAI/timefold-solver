@@ -41,13 +41,6 @@ public interface RandomSource {
     RandomGenerator moveIteratorUsage();
 
     /**
-     * Used by factories before solving starts.
-     *
-     * @return A {@link RandomGenerator} exclusively used by factories.
-     */
-    RandomGenerator factoryUsage();
-
-    /**
      * Used by {@link Acceptor} and other components inbetween move generation.
      *
      * @return A {@link RandomGenerator} exclusively used by acceptors.

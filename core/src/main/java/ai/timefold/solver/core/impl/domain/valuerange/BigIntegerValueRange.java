@@ -6,7 +6,6 @@ import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -92,7 +91,7 @@ public final class BigIntegerValueRange extends AbstractValueRange<BigInteger> {
             if (upcoming.compareTo(to) >= 0) {
                 throw new NoSuchElementException();
             }
-            BigInteger next = upcoming;
+            var next = upcoming;
             upcoming = upcoming.add(incrementUnit);
             return next;
         }
@@ -123,7 +122,7 @@ public final class BigIntegerValueRange extends AbstractValueRange<BigInteger> {
             if (size <= 0L) {
                 throw new NoSuchElementException();
             }
-            long index = RandomUtils.nextLong(workingRandom, size);
+            var index = workingRandom.nextLong(size);
             return incrementUnit.multiply(BigInteger.valueOf(index)).add(from);
         }
 

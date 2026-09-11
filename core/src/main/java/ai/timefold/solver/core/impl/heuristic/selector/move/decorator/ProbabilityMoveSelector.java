@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -91,7 +90,7 @@ public class ProbabilityMoveSelector<Solution_> extends AbstractMoveSelector<Sol
 
             @Override
             public Move<Solution_> next() {
-                double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
+                double randomOffset = workingRandom.nextDouble(probabilityWeightTotal);
                 // entry is never null because randomOffset < probabilityWeightTotal
                 return cachedMoveMap.floorEntry(randomOffset)
                         .getValue();

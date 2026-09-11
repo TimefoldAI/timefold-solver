@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 
+import org.opentest4j.AssertionFailedError;
+
 /**
  * On the later JDKs, it is no longer possible to mock {@link Random} to return custom sequences.
  * Therefore we introduce this class to allow for that use case.
@@ -66,6 +68,12 @@ public final class TestRandom extends Random implements RandomSource {
                     "The code being tested is requesting more random values than expected.");
         }
         return toReturn[returnCount - 1];
+    }
+
+    @Override
+    public long nextLong(long bound) {
+        lastRequestedIntBound = (int) bound;
+        return getNextValue().longValue();
     }
 
     @Override
@@ -200,7 +208,7 @@ public final class TestRandom extends Random implements RandomSource {
 
     public void reset(boolean... toReturn) {
         this.toReturn = new BigDecimal[toReturn.length];
-        for (int i = 0; i < toReturn.length; i++) {
+        for (var i = 0; i < toReturn.length; i++) {
             this.toReturn[i] = toReturn[i] ? BigDecimal.ONE : BigDecimal.ZERO;
         }
         this.returnCount = 0;
@@ -211,7 +219,7 @@ public final class TestRandom extends Random implements RandomSource {
      * If not, throws; otherwise resets the last known bound.
      *
      * @param bound
-     * @throws org.opentest4j.AssertionFailedError when bound not matching
+     * @throws AssertionFailedError when bound not matching
      */
     public void assertIntBoundJustRequested(int bound) {
         assertThat(lastRequestedIntBound)
@@ -222,11 +230,6 @@ public final class TestRandom extends Random implements RandomSource {
 
     @Override
     public RandomGenerator moveIteratorUsage() {
-        return this;
-    }
-
-    @Override
-    public RandomGenerator factoryUsage() {
         return this;
     }
 

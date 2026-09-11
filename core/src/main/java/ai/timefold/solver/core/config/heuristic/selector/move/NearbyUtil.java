@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.heuristic.selector.move;
 
-import java.util.random.RandomGenerator;
+import java.util.UUID;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
@@ -11,7 +11,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListC
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.jspecify.annotations.NonNull;
@@ -19,20 +18,19 @@ import org.jspecify.annotations.NonNull;
 public final class NearbyUtil {
 
     public static @NonNull ChangeMoveSelectorConfig enable(@NonNull ChangeMoveSelectorConfig changeMoveSelectorConfig,
-            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull RandomGenerator random) {
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
         var nearbyConfig = changeMoveSelectorConfig.copyConfig();
-        var entityConfig = configureEntitySelector(nearbyConfig.getEntitySelectorConfig(), random);
+        var entityConfig = configureEntitySelector(nearbyConfig.getEntitySelectorConfig());
         var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), entityConfig.getId(), distanceMeter);
         return nearbyConfig.withEntitySelectorConfig(entityConfig)
                 .withValueSelectorConfig(valueConfig);
     }
 
-    private static EntitySelectorConfig configureEntitySelector(EntitySelectorConfig entitySelectorConfig,
-            RandomGenerator random) {
+    private static EntitySelectorConfig configureEntitySelector(EntitySelectorConfig entitySelectorConfig) {
         if (entitySelectorConfig == null) {
             entitySelectorConfig = new EntitySelectorConfig();
         }
-        var entitySelectorId = ConfigUtils.addRandomSuffix("entitySelector", random);
+        var entitySelectorId = "entitySelector-" + UUID.randomUUID();
         entitySelectorConfig.withId(entitySelectorId);
         return entitySelectorConfig;
     }
@@ -65,9 +63,9 @@ public final class NearbyUtil {
     }
 
     public static @NonNull SwapMoveSelectorConfig enable(@NonNull SwapMoveSelectorConfig swapMoveSelectorConfig,
-            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull RandomGenerator random) {
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
         var nearbyConfig = swapMoveSelectorConfig.copyConfig();
-        var entityConfig = configureEntitySelector(nearbyConfig.getEntitySelectorConfig(), random);
+        var entityConfig = configureEntitySelector(nearbyConfig.getEntitySelectorConfig());
         var secondaryConfig = nearbyConfig.getSecondaryEntitySelectorConfig();
         if (secondaryConfig == null) {
             secondaryConfig = new EntitySelectorConfig();
@@ -79,9 +77,9 @@ public final class NearbyUtil {
 
     public static @NonNull ListChangeMoveSelectorConfig enable(
             @NonNull ListChangeMoveSelectorConfig listChangeMoveSelectorConfig,
-            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull RandomGenerator random) {
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
         var nearbyConfig = listChangeMoveSelectorConfig.copyConfig();
-        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), random);
+        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig());
         var destinationConfig = nearbyConfig.getDestinationSelectorConfig();
         if (destinationConfig == null) {
             destinationConfig = new DestinationSelectorConfig();
@@ -115,19 +113,19 @@ public final class NearbyUtil {
                 .withDestinationSelectorConfig(destinationConfig);
     }
 
-    private static ValueSelectorConfig configureValueSelector(ValueSelectorConfig valueSelectorConfig, RandomGenerator random) {
+    private static ValueSelectorConfig configureValueSelector(ValueSelectorConfig valueSelectorConfig) {
         if (valueSelectorConfig == null) {
             valueSelectorConfig = new ValueSelectorConfig();
         }
-        var valueSelectorId = ConfigUtils.addRandomSuffix("valueSelector", random);
+        var valueSelectorId = "valueSelector-" + UUID.randomUUID();
         valueSelectorConfig.withId(valueSelectorId);
         return valueSelectorConfig;
     }
 
     public static @NonNull ListSwapMoveSelectorConfig enable(@NonNull ListSwapMoveSelectorConfig listSwapMoveSelectorConfig,
-            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull RandomGenerator random) {
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
         var nearbyConfig = listSwapMoveSelectorConfig.copyConfig();
-        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), random);
+        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig());
         var secondaryConfig =
                 configureSecondaryValueSelector(nearbyConfig.getSecondaryValueSelectorConfig(), valueConfig, distanceMeter);
         return nearbyConfig.withValueSelectorConfig(valueConfig)
@@ -145,9 +143,9 @@ public final class NearbyUtil {
     }
 
     public static @NonNull KOptListMoveSelectorConfig enable(@NonNull KOptListMoveSelectorConfig kOptListMoveSelectorConfig,
-            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull RandomGenerator random) {
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter) {
         var nearbyConfig = kOptListMoveSelectorConfig.copyConfig();
-        var originConfig = configureValueSelector(nearbyConfig.getOriginSelectorConfig(), random);
+        var originConfig = configureValueSelector(nearbyConfig.getOriginSelectorConfig());
         var valueConfig = configureSecondaryValueSelector(nearbyConfig.getValueSelectorConfig(), originConfig, distanceMeter);
         return nearbyConfig.withOriginSelectorConfig(originConfig)
                 .withValueSelectorConfig(valueConfig);

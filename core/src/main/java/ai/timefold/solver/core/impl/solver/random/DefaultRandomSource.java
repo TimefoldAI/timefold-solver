@@ -6,7 +6,6 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 
 public record DefaultRandomSource(DelegatingSplittableRandomGenerator moveRandom,
-        DelegatingSplittableRandomGenerator factoryRandom,
         DelegatingSplittableRandomGenerator acceptorRandom) implements RandomSource {
     /**
      * Return a supplier of {@link DefaultRandomSource} with the specified
@@ -34,16 +33,14 @@ public record DefaultRandomSource(DelegatingSplittableRandomGenerator moveRandom
 
     public static DefaultRandomSource seeded(long seed) {
         var moveRandom = new DelegatingSplittableRandomGenerator(seed);
-        var factoryRandom = new DelegatingSplittableRandomGenerator(seed, moveRandom.split());
         var acceptorRandom = new DelegatingSplittableRandomGenerator(seed, moveRandom.split());
-        return new DefaultRandomSource(moveRandom, factoryRandom, acceptorRandom);
+        return new DefaultRandomSource(moveRandom, acceptorRandom);
     }
 
     public DefaultRandomSource split() {
         var newMoveRandom = new DelegatingSplittableRandomGenerator(moveRandom.getSeed(), moveRandom.split());
-        var newFactoryRandom = new DelegatingSplittableRandomGenerator(moveRandom.getSeed(), newMoveRandom.split());
         var newAcceptorRandom = new DelegatingSplittableRandomGenerator(moveRandom.getSeed(), newMoveRandom.split());
-        return new DefaultRandomSource(newMoveRandom, newFactoryRandom, newAcceptorRandom);
+        return new DefaultRandomSource(newMoveRandom, newAcceptorRandom);
     }
 
     public RandomGenerator.SplittableGenerator saveState() {
@@ -52,18 +49,12 @@ public record DefaultRandomSource(DelegatingSplittableRandomGenerator moveRandom
 
     public void restoreState(RandomGenerator.SplittableGenerator newSourceRandom) {
         moveRandom.setDelegate(newSourceRandom);
-        factoryRandom.setDelegate(newSourceRandom.split());
         acceptorRandom.setDelegate(newSourceRandom.split());
     }
 
     @Override
     public RandomGenerator moveIteratorUsage() {
         return moveRandom;
-    }
-
-    @Override
-    public RandomGenerator factoryUsage() {
-        return factoryRandom;
     }
 
     @Override

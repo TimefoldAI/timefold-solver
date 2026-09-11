@@ -9,7 +9,6 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.NullAllowingValueRange;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
@@ -171,7 +170,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      */
     public boolean rollNull(RandomGenerator random) {
         var size = Math.min(unwrappedSize(smallestRange), MAX_SAFE_RANGE_SIZE);
-        return RandomUtils.nextLong(random, size + 1L) == 0L;
+        return random.nextLong(size + 1L) == 0L;
     }
 
     /**

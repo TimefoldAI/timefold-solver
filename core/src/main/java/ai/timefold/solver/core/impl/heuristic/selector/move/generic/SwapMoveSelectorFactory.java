@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.SequencedCollection;
+import java.util.UUID;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -12,7 +13,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMov
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -51,7 +51,7 @@ public class SwapMoveSelectorFactory<Solution_>
             if (entitySelectorConfig.getId() == null && entitySelectorConfig.getMimicSelectorRef() == null) {
                 var entityName = Objects.requireNonNull(entityDescriptor.getEntityClass().getSimpleName());
                 // We set the id to make sure the value selector will use the mimic recorder
-                entityRecorderId = ConfigUtils.addRandomSuffix(entityName, configPolicy.getRandom().factoryUsage());
+                entityRecorderId = entityName + "-" + UUID.randomUUID();
                 entitySelectorConfig.setId(entityRecorderId);
             } else {
                 entityRecorderId = entitySelectorConfig.getId() != null ? entitySelectorConfig.getId()

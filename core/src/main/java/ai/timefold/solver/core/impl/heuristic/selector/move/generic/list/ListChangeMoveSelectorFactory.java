@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -13,7 +14,6 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -83,7 +83,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
             if (mimicSelectorConfig.getMimicSelectorRef() == null && mimicSelectorConfig.getId() == null) {
                 var variableName = Objects.requireNonNull(mimicSelectorConfig.getVariableName());
                 // We set the id to make sure the value selector will use the mimic recorder
-                entityValueRangeRecorderId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom().factoryUsage());
+                entityValueRangeRecorderId = variableName + "-" + UUID.randomUUID();
                 mimicSelectorConfig.setId(entityValueRangeRecorderId);
             } else {
                 entityValueRangeRecorderId =

@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -54,8 +53,8 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
             throw new IllegalArgumentException("The " + getClass().getSimpleName()
                     + " cannot have a from (" + from + ") which is strictly higher than its to (" + to + ").");
         }
-        long space = from.until(to, incrementUnitType);
-        Temporal expectedTo = from.plus(space, incrementUnitType);
+        var space = from.until(to, incrementUnitType);
+        var expectedTo = from.plus(space, incrementUnitType);
         if (!to.equals(expectedTo)) {
             // Temporal.until() rounds down, but it needs to round up, to be consistent with Temporal.plus()
             space++;
@@ -113,7 +112,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
         if (value.compareTo(from) < 0 || value.compareTo(to) >= 0) {
             return false;
         }
-        long fromSpace = from.until(value, incrementUnitType);
+        var fromSpace = from.until(value, incrementUnitType);
         if (value.equals(from.plus(fromSpace + 1, incrementUnitType))) {
             // Temporal.until() rounds down, but it needs to round up, to be consistent with Temporal.plus()
             fromSpace++;
@@ -145,7 +144,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
             }
 
             // Do not use upcoming += incrementUnitAmount because 31-JAN + 1 month + 1 month returns 28-MAR
-            Temporal_ next = get(index);
+            var next = get(index);
             index++;
             return next;
         }
@@ -172,7 +171,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
 
         @Override
         public @Nullable Temporal_ next() {
-            long index = RandomUtils.nextLong(workingRandom, size);
+            var index = workingRandom.nextLong(size);
             return get(index);
         }
 

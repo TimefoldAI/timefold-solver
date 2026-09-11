@@ -14,7 +14,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLife
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class ProbabilityEntitySelector<Solution_>
@@ -99,7 +98,7 @@ public final class ProbabilityEntitySelector<Solution_>
 
             @Override
             public Object next() {
-                double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
+                double randomOffset = workingRandom.nextDouble(probabilityWeightTotal);
                 // entry is never null because randomOffset < probabilityWeightTotal
                 return cachedEntityMap.floorEntry(randomOffset)
                         .getValue();

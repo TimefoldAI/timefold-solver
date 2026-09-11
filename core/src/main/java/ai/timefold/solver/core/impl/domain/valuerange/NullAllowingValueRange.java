@@ -6,7 +6,6 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -112,7 +111,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
 
         @Override
         public @Nullable T next() {
-            return get(RandomUtils.nextLong(workingRandom, size));
+            return get(workingRandom.nextLong(size));
         }
 
     }

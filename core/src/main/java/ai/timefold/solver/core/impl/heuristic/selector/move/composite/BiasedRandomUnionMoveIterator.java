@@ -11,7 +11,6 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<Move<Solution_>> {
@@ -48,7 +47,7 @@ final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<M
     @Override
     public Move<Solution_> next() {
         refreshMoveIteratorMap();
-        double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
+        double randomOffset = workingRandom.nextDouble(probabilityWeightTotal);
         Map.Entry<Double, Iterator<Move<Solution_>>> entry = moveIteratorMap.floorEntry(randomOffset);
         // The entry is never null because randomOffset < probabilityWeightTotal
         Iterator<Move<Solution_>> moveIterator = entry.getValue();
