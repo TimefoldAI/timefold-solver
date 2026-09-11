@@ -39,7 +39,7 @@ public final class BasicVariableState<Solution_>
     @Nullable
     private Map<Object, Set> inverseEntitySetMap;
 
-    public BasicVariableState(VariableDescriptor<Solution_> sourceVariableDescriptor, Consumer<Object> notifier) {
+    BasicVariableState(VariableDescriptor<Solution_> sourceVariableDescriptor, Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
         this.notifier = notifier;
     }

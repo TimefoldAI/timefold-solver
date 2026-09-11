@@ -31,7 +31,6 @@ import org.jspecify.annotations.Nullable;
  * and use values from this internal representation.
  *
  * @param <Solution_>
- * @see ListVariableState The logic of switching between internal and externalized shadow variables.
  * @see DefaultListVariableState The default implementation for these shadow variables,
  *      which doesn't care whether the variable is internal or externalized.
  */
