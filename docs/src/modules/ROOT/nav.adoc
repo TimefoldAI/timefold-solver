@@ -58,14 +58,17 @@
 * xref:deploying-to-platform/model-metadata.adoc[leveloffset=+1]
 * xref:deploying-to-platform/metrics.adoc[leveloffset=+1]
 
-.Optimization algorithms
-* xref:optimization-algorithms/overview.adoc[Overview]
-* xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
-* xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
-* xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
-* Custom moves
-** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
+* Optimization algorithms
+** xref:optimization-algorithms/overview.adoc[Overview]
+** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
+** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
+** xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
+
+* Moves
 ** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
+** Custom Moves
+*** xref:optimization-algorithms/custom-moves.adoc[Move definition]
+*** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 
 .Upgrading
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
