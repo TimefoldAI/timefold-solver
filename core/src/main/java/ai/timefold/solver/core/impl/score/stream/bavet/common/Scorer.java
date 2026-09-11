@@ -78,6 +78,10 @@ public final class Scorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_
         }
     }
 
+    public void setNodeIds(long[] scorerNodeIds) {
+        weightedScoreImpacter.getContext().setInvolvedNodeIds(scorerNodeIds);
+    }
+
     public ConstraintRef getConstraintRef() {
         var context = weightedScoreImpacter.getContext();
         return context.getConstraint().getConstraintRef();
@@ -94,5 +98,4 @@ public final class Scorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_
                 .formatted(getClass().getSimpleName(), context.getConstraint().getConstraintRef(),
                         context.getConstraintWeight());
     }
-
 }

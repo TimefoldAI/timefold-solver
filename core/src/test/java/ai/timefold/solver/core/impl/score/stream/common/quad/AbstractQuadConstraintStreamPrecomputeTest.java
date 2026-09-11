@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.quad;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -186,9 +188,27 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
                 (entity, value, entityGroup, valueGroup) -> new Quadruple<>(value, entityGroup, valueGroup, entity));
     }
 
+    record ExpectedQuad<A, B, C, D>(A a, B b, C c, D d, Object... indicted) {
+        ExpectedQuad<A, B, C, D> withIndictedObject(Object indictedObject) {
+            for (var obj : indicted) {
+                if (obj == indictedObject) {
+                    return this;
+                }
+            }
+            var newIndicted = Arrays.copyOf(indicted, indicted.length + 1);
+            newIndicted[indicted.length] = indictedObject;
+            return new ExpectedQuad<>(a, b, c, d, newIndicted);
+        }
+    }
+
+    <A, B, C, D> ExpectedQuad<A, B, C, D> expected(A a, B b, C c, D d, Object... indicted) {
+        return new ExpectedQuad<>(a, b, c, d, indicted);
+    }
+
     private <A, B, C, D> void assertPrecompute(TestdataLavishSolution solution,
-            List<Quadruple<A, B, C, D>> expectedValues,
+            List<ExpectedQuad<A, B, C, D>> expectedValues,
             Function<PrecomputeFactory, QuadConstraintStream<A, B, C, D>> entityStreamSupplier) {
+        expectedValues = new ArrayList<>(expectedValues);
         var scoreDirector =
                 buildScoreDirector(factory -> factory.precompute(entityStreamSupplier)
                         .ifExists(TestdataLavishEntity.class)
@@ -203,11 +223,16 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
             scoreDirector.beforeVariableChanged(entity, "value");
             entity.setValue(solution.getFirstValue());
             scoreDirector.afterVariableChanged(entity, "value");
+            var listIterator = expectedValues.listIterator();
+            while (listIterator.hasNext()) {
+                var expected = listIterator.next();
+                listIterator.set(expected.withIndictedObject(entity));
+            }
         }
 
         assertScore(scoreDirector, expectedValues.stream()
-                .map(quad -> new Object[] { quad.a(), quad.b(), quad.c(), quad.d() })
-                .map(AbstractConstraintStreamTest::assertMatch)
+                .map(expected -> assertMatch(expected.a, expected.b, expected.c, expected.d)
+                        .withIndictedObjects(expected.indicted))
                 .toArray(AssertableMatch[]::new));
     }
 
@@ -224,7 +249,7 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Quadruple<>(entityWithGroup, value, value, value)),
+        assertPrecompute(solution, List.of(expected(entityWithGroup, value, value, value, entityWithGroup, value, entityGroup)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -247,7 +272,7 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Quadruple<>(entityWithoutGroup, value, value, value)),
+        assertPrecompute(solution, List.of(expected(entityWithoutGroup, value, value, value, entityWithoutGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -270,7 +295,7 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Quadruple<>(entityGroup, 1L, 1L, 1L)),
+        assertPrecompute(solution, List.of(expected(entityGroup, 1L, 1L, 1L)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() != null)
                         .groupBy(TestdataLavishEntity::getEntityGroup,
@@ -292,8 +317,9 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Quadruple<>(entityWithoutGroup, value, value, value),
-                new Quadruple<>(entityWithGroup, value, value, value)),
+        assertPrecompute(solution, List.of(
+                expected(entityWithoutGroup, value, value, value, entityWithoutGroup, value),
+                expected(entityWithGroup, value, value, value, entityWithGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .groupBy(ConstraintCollectors.toList())
                         .flattenLast(entityList -> entityList)
@@ -318,8 +344,9 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Quadruple<>(new ValueHolder(1), value, value, value),
-                new Quadruple<>(new ValueHolder(2), value, value, value)),
+        assertPrecompute(solution, List.of(
+                expected(new ValueHolder(1), value, value, value, entity1, value),
+                expected(new ValueHolder(2), value, value, value, entity2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .groupBy(ConstraintCollectors.toList())
                         .flattenLast(entityList -> entityList
@@ -346,8 +373,8 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Quadruple<>(entityGroup, value, value, value),
-                new Quadruple<>(entityGroup, value, value, value)),
+        assertPrecompute(solution, List.of(expected(entityGroup, value, value, value, entityWithGroup1, value),
+                expected(entityGroup, value, value, value, entityWithGroup2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -373,8 +400,8 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         solution.getValueList().add(value);
 
         assertPrecompute(solution,
-                List.of(new Quadruple<>(entityWithoutGroup, value, value, value),
-                        new Quadruple<>(entityWithGroup, value, value, value)),
+                List.of(expected(entityWithoutGroup, value, value, value, entityWithoutGroup, value),
+                        expected(entityWithGroup, value, value, value, entityWithGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -403,7 +430,8 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Quadruple<>(entityGroup, value, value, value)),
+        assertPrecompute(solution,
+                List.of(expected(entityGroup, value, value, value, entityWithGroup1, entityWithGroup2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -432,9 +460,9 @@ public abstract class AbstractQuadConstraintStreamPrecomputeTest extends Abstrac
         solution.getValueList().add(value);
 
         assertPrecompute(solution, List.of(
-                new Quadruple<>(entityWithGroup1, value, value, value),
-                new Quadruple<>(entityWithGroup2, value, value, value),
-                new Quadruple<>(entityWithoutGroup, null, null, null)),
+                expected(entityWithGroup1, value, value, value, entityWithGroup1, value),
+                expected(entityWithGroup2, value, value, value, entityWithGroup2, value),
+                expected(entityWithoutGroup, null, null, null, entityWithoutGroup)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)

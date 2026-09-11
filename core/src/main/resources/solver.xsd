@@ -1464,6 +1464,8 @@
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
             
       <xs:enumeration value="NEIGHBORHOODS"/>
+            
+      <xs:enumeration value="SOLVE_WITH_INDICTMENTS"/>
           
     </xs:restriction>
       

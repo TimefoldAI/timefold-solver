@@ -30,6 +30,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
 
     public <Solution_> BavetPrecomputeBuildHelper(
             BavetAbstractConstraintStream<Solution_> recordingPrecomputeConstraintStream,
+            boolean indictmentsEnabled,
             Set<Class<?>> entityClassSet) {
         if (recordingPrecomputeConstraintStream.getRetrievalSemantics() != RetrievalSemantics.PRECOMPUTE) {
             throw new IllegalStateException(
@@ -63,7 +64,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
         var buildHelper = new ConstraintNodeBuildHelper<>(new ConsistencyTracker<>(), streamSet,
                 AbstractScoreInliner.buildScoreInliner(new SimpleScoreDefinition(), Collections.emptyMap(),
                         ConstraintMatchPolicy.DISABLED),
-                null);
+                indictmentsEnabled, null);
 
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(streamSet, buildHelper,

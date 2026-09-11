@@ -24,6 +24,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     private final Set<Stream_> activeStreamSet;
     private final Map<AbstractNode, Stream_> nodeCreatorMap;
+    private final Map<Stream_, AbstractNode> streamToCreatedNodeMap;
     private final Map<Stream_, TupleLifecycle<? extends Tuple>> tupleLifecycleMap;
     private final Map<Stream_, Integer> storeIndexMap;
 
@@ -34,6 +35,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         this.activeStreamSet = activeStreamSet;
         int activeStreamSetSize = activeStreamSet.size();
         this.nodeCreatorMap = HashMap.newHashMap(Math.max(16, activeStreamSetSize));
+        this.streamToCreatedNodeMap = HashMap.newHashMap(Math.max(16, activeStreamSetSize));
         this.tupleLifecycleMap = HashMap.newHashMap(Math.max(16, activeStreamSetSize));
         this.storeIndexMap = HashMap.newHashMap(Math.max(16, activeStreamSetSize / 2));
         this.reversedNodeList = new ArrayList<>(activeStreamSetSize);
@@ -51,6 +53,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         reversedNodeList.add(node);
         node.addLocationSet(creator.getLocationSet());
         nodeCreatorMap.put(node, creator);
+        streamToCreatedNodeMap.put(creator, node);
         if (!(node instanceof AbstractRootNode<?>)) {
             if (parent == null) {
                 throw new IllegalStateException("Impossible state: The node (%s) has no parent (%s).".formatted(node, parent));
@@ -63,6 +66,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         reversedNodeList.add(node);
         node.addLocationSet(creator.getLocationSet());
         nodeCreatorMap.put(node, creator);
+        streamToCreatedNodeMap.put(creator, node);
         putInsertUpdateRetract(leftParent, TupleLifecycle.ofLeft((LeftTupleLifecycle<? extends Tuple>) node));
         putInsertUpdateRetract(rightParent, TupleLifecycle.ofRight((RightTupleLifecycle<? extends Tuple>) node));
     }
@@ -141,6 +145,24 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     public Stream_ getNodeCreatingStream(AbstractNode node) {
         return nodeCreatorMap.get(node);
+    }
+
+    public List<AbstractNode> getParentNodeList(Stream_ stream) {
+        var out = new ArrayList<AbstractNode>();
+        while (stream != null) {
+            var node = streamToCreatedNodeMap.get(stream);
+            if (node != null) {
+                out.add(node);
+            }
+            if (stream instanceof BavetStreamBinaryOperation<?> binaryOperation) {
+                out.addAll(getParentNodeList((Stream_) binaryOperation.getLeftParent()));
+                out.addAll(getParentNodeList((Stream_) binaryOperation.getRightParent()));
+                return out;
+            } else {
+                stream = stream.getParent();
+            }
+        }
+        return out;
     }
 
     public AbstractNode findParentNode(Stream_ childNodeCreator) {
