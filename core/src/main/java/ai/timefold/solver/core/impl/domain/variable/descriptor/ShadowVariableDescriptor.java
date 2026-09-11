@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 
 import org.jspecify.annotations.Nullable;
 
@@ -45,11 +44,6 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
      * @return never null, the classes responsible for updating this shadow variable
      */
     public abstract Collection<Class<?>> getUpdaterClasses();
-
-    /**
-     * @return never null
-     */
-    public abstract Demand<?> getProvidedDemand();
 
     // ************************************************************************
     // Extraction methods

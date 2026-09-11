@@ -14,11 +14,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class ExternalizedListVariableStateSupply<Solution_>
-        implements ListVariableStateSupply<Solution_, Object, Object> {
+final class DefaultListVariableState<Solution_> implements ListVariableState<Solution_, Object, Object> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
-    private final ListVariableState<Solution_> listVariableState;
+    private final ListVariableStateCarrier<Solution_> stateCarrier;
 
     private boolean previousExternalized = false;
     private boolean nextExternalized = false;
@@ -26,47 +25,46 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Nullable
     private Solution_ workingSolution;
 
-    public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
+    public DefaultListVariableState(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
             Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
-        this.listVariableState = new ListVariableState<>(sourceVariableDescriptor,
-                notifier);
+        this.stateCarrier = new ListVariableStateCarrier<>(sourceVariableDescriptor, notifier);
     }
 
     @Override
     public void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        stateCarrier.linkShadowVariable(shadowVariableDescriptor);
     }
 
     @Override
     public void externalize(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        stateCarrier.linkShadowVariable(shadowVariableDescriptor);
     }
 
     @Override
     public void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        stateCarrier.linkShadowVariable(shadowVariableDescriptor);
         previousExternalized = true;
     }
 
     @Override
     public void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkShadowVariable(shadowVariableDescriptor);
+        stateCarrier.linkShadowVariable(shadowVariableDescriptor);
         nextExternalized = true;
     }
 
     @Override
     public int getIndexOrFail(Object planningValue) {
-        var index = listVariableState.getIndex(planningValue);
+        var index = stateCarrier.getIndex(planningValue);
         if (index < 0) {
-            throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
+            throw new IllegalStateException("The element (%s) is not assigned to any list variable.".formatted(planningValue));
         }
         return index;
     }
 
     @Override
     public int getIndexOrElse(Object planningValue, int defaultValue) {
-        var index = listVariableState.getIndex(planningValue);
+        var index = stateCarrier.getIndex(planningValue);
         if (index < 0) {
             return defaultValue;
         }
@@ -78,7 +76,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         workingSolution = scoreDirector.getWorkingSolution();
 
         // Will run over all entities and unmark all present elements as unassigned.
-        listVariableState.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
+        stateCarrier.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
                 .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
     }
 
@@ -100,7 +98,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
         var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
         for (var index = firstChangeIndex; index < elementCount; index++) {
-            var positionsDiffer = listVariableState.changeElement(entity, assignedElements, index);
+            var positionsDiffer = stateCarrier.changeElement(entity, assignedElements, index);
             if (!positionsDiffer && index >= lastChangeIndex) {
                 // Position is unchanged and we are past the part of the list that changed.
                 // We can terminate the loop prematurely.
@@ -111,22 +109,22 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
-        listVariableState.unassignElement(unassignedElement);
+        stateCarrier.unassignElement(unassignedElement);
     }
 
     @Override
     public ElementPosition getElementPosition(Object planningValue) {
-        return listVariableState.getElementPosition(planningValue);
+        return stateCarrier.getElementPosition(planningValue);
     }
 
     @Override
     public @Nullable Object getInverseSingleton(Object planningValue) {
-        return listVariableState.getInverseSingleton(planningValue);
+        return stateCarrier.getInverseSingleton(planningValue);
     }
 
     @Override
     public boolean isAssigned(Object element) {
-        return listVariableState.isElementAssigned(element);
+        return stateCarrier.isElementAssigned(element);
     }
 
     @Override
@@ -136,22 +134,22 @@ final class ExternalizedListVariableStateSupply<Solution_>
         }
         // Deliberately not via getElementPosition(): the pinning test needs only the entity and the index,
         // and building an ElementPosition for them allocates once per candidate value.
-        return listVariableState.isElementPinned(Objects.requireNonNull(workingSolution), element);
+        return stateCarrier.isElementPinned(Objects.requireNonNull(workingSolution), element);
     }
 
     @Override
     public int getUnassignedCount() {
-        return listVariableState.getUnassignedCount();
+        return stateCarrier.getUnassignedCount();
     }
 
     @Override
     public @Nullable Object getPreviousElement(Object element) {
-        return listVariableState.getPreviousElement(element);
+        return stateCarrier.getPreviousElement(element);
     }
 
     @Override
     public @Nullable Object getNextElement(Object element) {
-        return listVariableState.getNextElement(element);
+        return stateCarrier.getNextElement(element);
     }
 
     @Override
@@ -161,7 +159,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" + sourceVariableDescriptor.getVariableName() + ")";
+        return "%s(%s)".formatted(getClass().getSimpleName(), sourceVariableDescriptor.getVariableName());
     }
 
 }

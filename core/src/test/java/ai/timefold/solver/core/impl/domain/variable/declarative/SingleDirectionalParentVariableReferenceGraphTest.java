@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingEntity;
 import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingSolution;
@@ -33,39 +33,39 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         assertThat(graphStructureAndDirection.structure()).isEqualTo(GraphStructure.SINGLE_DIRECTIONAL_PARENT);
 
         var scoreDirector = Mockito.mock(InnerScoreDirector.class);
-        var listStateSupply = Mockito.mock(ListVariableStateSupply.class);
-        Mockito.when(scoreDirector.getListVariableStateSupply(Mockito.any()))
-                .thenReturn(listStateSupply);
+        var listVariableState = Mockito.mock(ListVariableState.class);
+        Mockito.when(scoreDirector.getListVariableState(Mockito.any()))
+                .thenReturn(listVariableState);
 
         value1.setEntity(entity1);
         value1.setPrevious(null);
-        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value1)).thenReturn(null);
-        Mockito.when(listStateSupply.getInverseSingleton(value1)).thenReturn(entity1);
+        Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity1);
 
         value2.setEntity(entity2);
         value2.setPrevious(null);
-        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value2)).thenReturn(value3);
-        Mockito.when(listStateSupply.getInverseSingleton(value2)).thenReturn(entity2);
+        Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value2)).thenReturn(value3);
+        Mockito.when(listVariableState.getInverseSingleton(value2)).thenReturn(entity2);
 
         value3.setEntity(entity2);
         value3.setPrevious(value2);
-        Mockito.doReturn(1).when(listStateSupply).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value3)).thenReturn(value4);
-        Mockito.when(listStateSupply.getInverseSingleton(value3)).thenReturn(entity2);
+        Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(value4);
+        Mockito.when(listVariableState.getInverseSingleton(value3)).thenReturn(entity2);
 
         value4.setEntity(entity2);
         value4.setPrevious(value3);
-        Mockito.doReturn(2).when(listStateSupply).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value4)).thenReturn(null);
-        Mockito.when(listStateSupply.getInverseSingleton(value4)).thenReturn(entity2);
+        Mockito.doReturn(2).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity2);
 
         value5.setEntity(null);
         value5.setPrevious(null);
-        Mockito.doReturn(-1).when(listStateSupply).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value5)).thenReturn(null);
-        Mockito.when(listStateSupply.getInverseSingleton(value5)).thenReturn(null);
+        Mockito.doReturn(-1).when(listVariableState).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value5)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value5)).thenReturn(null);
 
         var values = List.of(value1, value2, value3, value4, value5);
 
@@ -83,32 +83,32 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         assertThat(value5.getCount()).isNull();
 
         values.forEach(TestdataCountingValue::reset);
-        Mockito.reset(listStateSupply);
+        Mockito.reset(listVariableState);
 
         value2.setPrevious(value3);
         value3.setPrevious(value5);
         value5.setEntity(entity2);
         value4.setPrevious(value2);
 
-        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value1)).thenReturn(null);
-        Mockito.when(listStateSupply.getInverseSingleton(value1)).thenReturn(entity1);
+        Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity1);
 
-        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value5)).thenReturn(value3);
-        Mockito.when(listStateSupply.getInverseSingleton(value5)).thenReturn(entity2);
+        Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value5)).thenReturn(value3);
+        Mockito.when(listVariableState.getInverseSingleton(value5)).thenReturn(entity2);
 
-        Mockito.doReturn(1).when(listStateSupply).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value3)).thenReturn(value2);
-        Mockito.when(listStateSupply.getInverseSingleton(value3)).thenReturn(entity2);
+        Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(value2);
+        Mockito.when(listVariableState.getInverseSingleton(value3)).thenReturn(entity2);
 
-        Mockito.doReturn(2).when(listStateSupply).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value2)).thenReturn(value4);
-        Mockito.when(listStateSupply.getInverseSingleton(value2)).thenReturn(entity2);
+        Mockito.doReturn(2).when(listVariableState).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value2)).thenReturn(value4);
+        Mockito.when(listVariableState.getInverseSingleton(value2)).thenReturn(entity2);
 
-        Mockito.doReturn(3).when(listStateSupply).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(value4)).thenReturn(null);
-        Mockito.when(listStateSupply.getInverseSingleton(value4)).thenReturn(entity2);
+        Mockito.doReturn(3).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity2);
 
         var previousVariableMetamodel =
                 solutionDescriptor.getMetaModel().entity(TestdataCountingValue.class).variable("previous");

@@ -50,7 +50,7 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
             boolean randomSelection, boolean isExhaustiveSearch) {
         super((ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor());
         this.entitySelector = entitySelector;
-        var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
+        var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableState);
         this.replayingValueSelector = replayingValueSelector;
         this.valueSelector = listVariableDescriptor.allowsUnassignedValues() ? filterUnassignedValues(selector) : selector;
         this.randomSelection = randomSelection;
@@ -78,7 +78,7 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
          * and always add one option to unassign at the end,
          * we can keep the correct probabilities throughout.
          */
-        return FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableStateSupply);
+        return FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableState);
     }
 
     @Override
@@ -100,9 +100,9 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
 
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
             var totalValueSize = valueSelector.getSize()
-                    - (allowsUnassignedValues ? listVariableStateSupply.getUnassignedCount() : 0);
+                    - (allowsUnassignedValues ? listVariableState.getUnassignedCount() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
-            return new ElementPositionRandomIterator<>(listVariableStateSupply, entitySelector,
+            return new ElementPositionRandomIterator<>(listVariableState, entitySelector,
                     replayingValueSelector != null ? replayingValueSelector.iterator() : null, valueSelector, workingRandom,
                     totalSize, allowsUnassignedValues, allowsUnassignedValues && totalValueSize > 0);
         } else {
@@ -122,7 +122,7 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
                 // Value selector guarantees only unpinned values.
                 var valueIterator = new MappingIterator<>(valueSelector.iterator(),
                         v -> {
-                            var pos = listVariableStateSupply.getElementPosition(v).ensureAssigned();
+                            var pos = listVariableState.getElementPosition(v).ensureAssigned();
                             return ElementPosition.of(pos.entity(), pos.index() + 1);
                         });
                 if (listVariableDescriptor.allowsUnassignedValues()) {

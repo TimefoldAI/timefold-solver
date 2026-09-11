@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.selector.common.TestdataObjectSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ManualValueMimicRecorder;
@@ -72,9 +72,9 @@ class FilteringValueRangeSelectorTest {
         doReturn(ValueRangeManager.of(TestdataListEntityProvidingSolution.buildSolutionDescriptor(), solution))
                 .when(scoreDirector)
                 .getValueRangeManager();
-        var listVariableSupply = mock(ListVariableStateSupply.class);
-        doReturn(listVariableSupply).when(scoreDirector).getListVariableStateSupply(any());
-        doReturn(TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList()).when(listVariableSupply)
+        var listVariableState = mock(ListVariableState.class);
+        doReturn(listVariableState).when(scoreDirector).getListVariableState(any());
+        doReturn(TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList()).when(listVariableState)
                 .getSourceVariableDescriptor();
         valueSelector.solvingStarted(solverScope);
 

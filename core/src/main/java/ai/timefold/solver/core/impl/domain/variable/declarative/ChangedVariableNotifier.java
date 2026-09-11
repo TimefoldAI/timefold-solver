@@ -1,11 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.Collections;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
-import ai.timefold.solver.core.impl.domain.variable.BasicVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableSupply;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
@@ -21,15 +20,14 @@ public record ChangedVariableNotifier<Solution_>(BiConsumer<VariableDescriptor<S
             },
             null);
 
-    public CollectionInverseVariableSupply getCollectionInverseVariableSupply(VariableMetaModel<?, ?, ?> variableMetaModel) {
+    public CollectionInverseVariableState getCollectionInverseVariableState(VariableMetaModel<?, ?, ?> variableMetaModel) {
         if (innerScoreDirector == null) {
-            return entity -> Collections.emptyList();
-        } else {
-            var solutionDescriptor = innerScoreDirector.getSolutionDescriptor();
-            var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(variableMetaModel.entity().type())
-                    .getVariableDescriptor(variableMetaModel.name());
-            return innerScoreDirector.getSupplyManager().demand(new BasicVariableStateDemand<>(variableDescriptor));
+            return CollectionInverseVariableState.EMPTY;
         }
+        var solutionDescriptor = innerScoreDirector.getSolutionDescriptor();
+        var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(variableMetaModel.entity().type())
+                .getVariableDescriptor(variableMetaModel.name());
+        return Objects.requireNonNull(innerScoreDirector.getBasicVariableState(variableDescriptor));
     }
 
     public @Nullable Solution_ getWorkingSolution() {
