@@ -2,7 +2,7 @@ package ai.timefold.solver.service.definition.api;
 
 public enum ModelMaturityLevel {
 
-    Example,
+    Template,
     Experimental,
     Preview,
     Stable,
