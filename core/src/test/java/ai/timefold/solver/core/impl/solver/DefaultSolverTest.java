@@ -2893,9 +2893,9 @@ class DefaultSolverTest {
         // Three phases: CH, LS1 and LS2
         assertThat(statesAfterEachPhase).hasSize(3);
         /*
-          The score director owns a single state for its entire lifetime.
-          A phase borrows it in phaseStarted() and drops its reference in phaseEnded()
-          no phase may acquire a state of its own.
+         * The score director owns a single state for its entire lifetime.
+         * A phase borrows it in phaseStarted() and drops its reference in phaseEnded()
+         * no phase may acquire a state of its own.
          */
         var firstState = statesAfterEachPhase.get(0);
         assertThat(statesAfterEachPhase).allSatisfy(state -> assertThat(state).isSameAs(firstState));
