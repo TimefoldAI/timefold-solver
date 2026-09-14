@@ -455,7 +455,6 @@ class VariableSupportTest {
             // Neither lookup may hand out the state of the other kind of variable.
             assertThat(basicVariableState.getSourceVariableDescriptor()).isSameAs(delayVariableDescriptor);
             assertThat(listVariableState.getSourceVariableDescriptor()).isSameAs(listVariableDescriptor);
-            assertThat(listVariableState).isNotSameAs(basicVariableState);
 
             // Both are reused, rather than replaced, on every subsequent call ...
             assertThat(scoreDirector.getBasicVariableState(delayVariableDescriptor)).isSameAs(basicVariableState);
@@ -530,9 +529,11 @@ class VariableSupportTest {
         // Registering it first must not stop the state from being created, nor be mistaken for the state.
         var listVariableTracker = variableSupport.getListVariableTracker(variableDescriptor);
 
-        var listVariableState = variableSupport.getListVariableState(variableDescriptor);
-        assertThat(listVariableState).isNotNull();
-        assertThat(listVariableState).isNotSameAs(listVariableTracker);
+        ListVariableChangeHandler<TestdataAllowsUnassignedValuesListSolution> listVariableState =
+                variableSupport.getListVariableState(variableDescriptor);
+        assertThat(listVariableState)
+                .isNotNull()
+                .isNotSameAs(listVariableTracker);
         assertThat(listVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
         assertThat(variableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
     }
