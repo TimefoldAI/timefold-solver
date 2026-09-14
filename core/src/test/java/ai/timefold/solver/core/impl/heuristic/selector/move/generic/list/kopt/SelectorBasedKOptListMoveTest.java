@@ -5,6 +5,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,7 +29,6 @@ import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class SelectorBasedKOptListMoveTest {
 
@@ -166,7 +166,7 @@ class SelectorBasedKOptListMoveTest {
                         { v6, destinationV6 },
                         { e1, destinationE1 },
                 });
-        var listVariableState = Mockito.mock(ListVariableState.class);
+        var listVariableState = mock(ListVariableState.class);
         when(destinationScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
         when(listVariableState.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);
 
@@ -213,7 +213,7 @@ class SelectorBasedKOptListMoveTest {
                         { e1, destinationE1 },
                         { e2, destinationE2 },
                 });
-        var listVariableState = Mockito.mock(ListVariableState.class);
+        var listVariableState = mock(ListVariableState.class);
 
         when(destinationScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
         when(listVariableState.getInverseSingleton(destinationE1.getValueList().get(0))).thenReturn(destinationE1);

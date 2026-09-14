@@ -27,7 +27,7 @@ public record ChangedVariableNotifier<Solution_>(BiConsumer<VariableDescriptor<S
         var solutionDescriptor = innerScoreDirector.getSolutionDescriptor();
         var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(variableMetaModel.entity().type())
                 .getVariableDescriptor(variableMetaModel.name());
-        return Objects.requireNonNull(innerScoreDirector.getBasicVariableState(variableDescriptor));
+        return innerScoreDirector.getBasicVariableState(Objects.requireNonNull(variableDescriptor));
     }
 
     public @Nullable Solution_ getWorkingSolution() {
