@@ -75,7 +75,8 @@ final class NodeTopologicalOrderQueue {
             return;
         }
         queued.set(nodeId);
-        var index = size++;
+        var index = size;
+        size++;
         nodeIds[index] = nodeId;
         orders[index] = graph.getTopologicalOrder(nodeId);
         siftUp(index);
@@ -92,7 +93,8 @@ final class NodeTopologicalOrderQueue {
         }
         var polledNodeId = nodeIds[0];
         queued.clear(polledNodeId);
-        var lastIndex = --size;
+        size--;
+        var lastIndex = size;
         if (lastIndex > 0) {
             nodeIds[0] = nodeIds[lastIndex];
             orders[0] = orders[lastIndex];
