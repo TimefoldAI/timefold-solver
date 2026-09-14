@@ -1,6 +1,5 @@
 package ai.timefold.solver.service.definition.internal.executionprofile;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,21 +24,14 @@ public interface ExecutionProfile {
     String description();
 
     /**
-     * The inputs this profile accepts. Acts as a whitelist: the platform validates submitted values against these and
-     * rejects anything not declared. Defaults to no parameters (a fixed profile that takes no input).
+     * Reads the values this profile cares about from the run's options (as supplied via
+     * {@code RunConfiguration.options}), applying defaults, generating values for absent inputs, and validating them.
+     * The profile picks out only the keys it recognizes and ignores the rest, since the options map is shared with other
+     * run configuration. Called once at submit time; the returned values are persisted with the run so it stays
+     * reproducible. Defaults to no parameters.
      */
-    default List<ExecutionProfileParameter> parameters() {
-        return List.of();
-    }
-
-    /**
-     * Turns the caller-supplied inputs (already validated against {@link #parameters()}) into the concrete parameter values
-     * to use for this run - applying defaults and generating values for absent parameters where applicable. Called once at
-     * submit time; the result is persisted with the run so it stays reproducible. Defaults to returning the inputs
-     * unchanged.
-     */
-    default Map<String, String> resolveParameters(Map<String, String> inputs) {
-        return inputs;
+    default Map<String, String> resolveParameters(Map<String, String> options) {
+        return Map.of();
     }
 
     /**

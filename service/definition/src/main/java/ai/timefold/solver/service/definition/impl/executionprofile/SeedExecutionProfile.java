@@ -1,11 +1,9 @@
 package ai.timefold.solver.service.definition.impl.executionprofile;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import ai.timefold.solver.service.definition.internal.executionprofile.ExecutionProfile;
-import ai.timefold.solver.service.definition.internal.executionprofile.ExecutionProfileParameter;
 
 /**
  * Runs the solver with a fixed random seed, making a run reproducible.
@@ -44,17 +42,17 @@ public final class SeedExecutionProfile implements ExecutionProfile {
     }
 
     @Override
-    public List<ExecutionProfileParameter> parameters() {
-        return List.of(new ExecutionProfileParameter(PARAMETER_SEED,
-                "Random seed to solve with. When omitted, a random seed is generated and recorded.",
-                ExecutionProfileParameter.Type.LONG, false));
-    }
-
-    @Override
-    public Map<String, String> resolveParameters(Map<String, String> inputs) {
-        String seed = inputs.get(PARAMETER_SEED);
+    public Map<String, String> resolveParameters(Map<String, String> options) {
+        String seed = options == null ? null : options.get(PARAMETER_SEED);
         if (seed == null) {
-            seed = Long.toString(ThreadLocalRandom.current().nextLong());
+            return Map.of(PARAMETER_SEED, Long.toString(ThreadLocalRandom.current().nextLong()));
+        }
+        try {
+            Long.parseLong(seed);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    "Execution profile '" + id() + "' requires option '" + PARAMETER_SEED + "' to be a long, but was: "
+                            + seed);
         }
         return Map.of(PARAMETER_SEED, seed);
     }
