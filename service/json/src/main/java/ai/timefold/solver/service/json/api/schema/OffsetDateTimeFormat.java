@@ -1,5 +1,6 @@
 package ai.timefold.solver.service.json.api.schema;
 
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 
 import com.networknt.schema.format.AbstractFormat;
@@ -21,7 +22,7 @@ public class OffsetDateTimeFormat extends AbstractFormat {
     @Override
     public boolean matches(String value) {
         try {
-            java.time.OffsetDateTime.parse(value);
+            OffsetDateTime.parse(value);
             return true;
         } catch (DateTimeParseException e) {
             return false;
