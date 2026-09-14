@@ -108,7 +108,7 @@
     <version.jib-layer-filter-extension-maven>0.3.0</version.jib-layer-filter-extension-maven>
     <version.openapi-diff.plugin>2.1.7</version.openapi-diff.plugin>
     <version.openapi-generator.plugin>7.25.0</version.openapi-generator.plugin>
-    <version.spotless.plugin>3.10.1</version.spotless.plugin>
+    <version.spotless.plugin>3.10.2</version.spotless.plugin>
     <version.surefire.plugin>3.6.0</version.surefire.plugin>
 
     <!-- ************************************************************************ -->
