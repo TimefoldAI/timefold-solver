@@ -4,7 +4,7 @@
     "configuration": {
       "elements": {
         "include": [
-          "class ai\\.timefold\\.solver\\.service\\.maps\\.api.*"
+          "class ai\\.timefold\\.solver\\.service\\.json\\.api.*"
         ]
       }
     }
