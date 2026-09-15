@@ -226,7 +226,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         finalistPodium.phaseStarted(phaseScope);
 
-        // Have two moves, scores [-1, -1, 3] and [0, -2, -1]
+        // Have two moves, scores [flawed, -1, -1, 3] and [flawed, 0, -2, -1]
         var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         finalistPodium.stepStarted(stepScope0);
         var moveScope0 = buildMoveScope(stepScope0, -1, -1, -3, true);
@@ -234,7 +234,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
         var moveScope1 = buildMoveScope(stepScope0, 0, -2, -1, true);
         finalistPodium.addMove(moveScope1);
 
-        // The better is picked
+        // The list is empty as the moves are structurally flawed
         assertThat(finalistPodium.getFinalistList()).isEmpty();
     }
 
