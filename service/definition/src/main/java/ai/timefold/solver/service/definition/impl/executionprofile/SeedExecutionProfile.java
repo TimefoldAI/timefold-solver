@@ -7,10 +7,10 @@ import ai.timefold.solver.service.definition.internal.executionprofile.Execution
 /**
  * Runs the solver with a fixed random seed, making a run reproducible.
  * <p>
- * The seed is taken from the optional {@code seed} run option. When it is not supplied, the profile contributes nothing and
- * the solver uses its own default randomness - the profile never invents a seed. A supplied seed is applied by mapping it to
- * the Timefold Quarkus property {@code quarkus.timefold.solver.random-seed} (via its environment-variable form), which the
- * solver pod applies to its {@code SolverConfig} at startup.
+ * The seed is taken from the required {@code seed} run option; selecting this profile without supplying it is rejected. The
+ * profile never invents a seed. The supplied seed is applied by mapping it to the Timefold Quarkus property
+ * {@code quarkus.timefold.solver.random-seed} (via its environment-variable form), which the solver pod applies to its
+ * {@code SolverConfig} at startup.
  */
 public final class SeedExecutionProfile implements ExecutionProfile {
 
@@ -44,7 +44,8 @@ public final class SeedExecutionProfile implements ExecutionProfile {
     public Map<String, String> toEnvironment(Map<String, String> options) {
         String seed = options == null ? null : options.get(PARAMETER_SEED);
         if (seed == null) {
-            return Map.of();
+            throw new IllegalArgumentException(
+                    "Execution profile '" + id() + "' requires the '" + PARAMETER_SEED + "' option to be supplied.");
         }
         try {
             Long.parseLong(seed);

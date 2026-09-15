@@ -25,9 +25,10 @@ class SeedExecutionProfileTest {
     }
 
     @Test
-    void emitsNoEnvironmentWhenSeedAbsent() {
-        // No seed supplied: the profile contributes nothing (it never invents a seed).
-        assertThat(profile.toEnvironment(Map.of())).isEmpty();
+    void failsWhenSeedMissing() {
+        // Selecting the seed profile without supplying a seed is an error - the profile never invents one.
+        assertThatThrownBy(() -> profile.toEnvironment(Map.of()))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
