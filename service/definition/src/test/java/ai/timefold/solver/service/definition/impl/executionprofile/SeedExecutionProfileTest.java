@@ -1,6 +1,7 @@
 package ai.timefold.solver.service.definition.impl.executionprofile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Map;
@@ -24,7 +25,8 @@ class SeedExecutionProfileTest {
         Map<String, String> resolved = profile.resolveParameters(Map.of());
         assertThat(resolved).containsOnlyKeys(SeedExecutionProfile.PARAMETER_SEED);
         // The generated seed is recorded and is a valid long.
-        assertThat(Long.parseLong(resolved.get(SeedExecutionProfile.PARAMETER_SEED))).isNotNull();
+        assertThatCode(() -> Long.parseLong(resolved.get(SeedExecutionProfile.PARAMETER_SEED)))
+                .doesNotThrowAnyException();
         assertThat(profile.toEnvironment(resolved))
                 .containsOnlyKeys(SeedExecutionProfile.ENV_QUARKUS_RANDOM_SEED);
     }
@@ -39,7 +41,8 @@ class SeedExecutionProfileTest {
 
     @Test
     void rejectsNonLongSeed() {
-        assertThatThrownBy(() -> profile.resolveParameters(Map.of(SeedExecutionProfile.PARAMETER_SEED, "not-a-number")))
+        Map<String, String> options = Map.of(SeedExecutionProfile.PARAMETER_SEED, "not-a-number");
+        assertThatThrownBy(() -> profile.resolveParameters(options))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
