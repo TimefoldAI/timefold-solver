@@ -4,7 +4,6 @@ import java.util.BitSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.PriorityQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -15,30 +14,27 @@ final class AffectedEntitiesUpdater<Solution_>
     // From WorkingReferenceGraph.
     private final BaseTopologicalOrderGraph graph;
     private final List<GraphNode<Solution_>> nodeList; // Immutable.
-    private final BaseTopologicalOrderGraph.NodeTopologicalOrder[] nodeTopologicalOrders; // Immutable
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 
     // Internal state; expensive to create, therefore we reuse.
     private final LoopedTracker loopedTracker;
     private final BitSet visited;
     private final boolean ignoreInconsistentSolutions;
-    private final PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> changeQueue;
+    private final NodeTopologicalOrderQueue changeQueue;
     private boolean consistencyProcessed;
 
     AffectedEntitiesUpdater(BaseTopologicalOrderGraph graph, List<GraphNode<Solution_>> nodeList,
-            BaseTopologicalOrderGraph.NodeTopologicalOrder[] nodeTopologicalOrders,
             Function<Object, List<GraphNode<Solution_>>> entityToContainingNode,
             int entityCount, ChangedVariableNotifier<Solution_> changedVariableNotifier,
             boolean ignoreInconsistentSolutions) {
         this.graph = graph;
         this.nodeList = nodeList;
-        this.nodeTopologicalOrders = nodeTopologicalOrders;
         this.changedVariableNotifier = changedVariableNotifier;
         var instanceCount = nodeList.size();
         this.loopedTracker = new LoopedTracker(instanceCount,
                 createNodeToEntityNodes(entityCount, nodeList, entityToContainingNode));
         this.visited = new BitSet(instanceCount);
-        this.changeQueue = new PriorityQueue<>(instanceCount);
+        this.changeQueue = new NodeTopologicalOrderQueue(graph, instanceCount);
         this.ignoreInconsistentSolutions = ignoreInconsistentSolutions;
         this.consistencyProcessed = false;
     }
@@ -82,10 +78,8 @@ final class AffectedEntitiesUpdater<Solution_>
         initializeChangeQueue(changed);
 
         while (!changeQueue.isEmpty()) {
-            var nextNode = changeQueue.poll().nodeId();
-            if (visited.get(nextNode)) {
-                continue;
-            }
+            // The queue holds each node at most once, so a polled node is never one that was already visited.
+            var nextNode = changeQueue.poll();
             visited.set(nextNode);
             var shadowVariable = nodeList.get(nextNode);
             var isChanged = updateEntityShadowVariables(shadowVariable, graph.isLooped(loopedTracker, nextNode));
@@ -95,7 +89,7 @@ final class AffectedEntitiesUpdater<Solution_>
                 while (iterator.hasNext()) {
                     var nextNodeForwardEdge = iterator.nextInt();
                     if (!visited.get(nextNodeForwardEdge)) {
-                        changeQueue.add(nodeTopologicalOrders[nextNodeForwardEdge]);
+                        changeQueue.offer(nextNodeForwardEdge);
                     }
                 }
             }
@@ -119,7 +113,7 @@ final class AffectedEntitiesUpdater<Solution_>
         // This should never happen, since arrays in Java are limited
         // to slightly less than Integer.MAX_VALUE.
         for (var i = changed.nextSetBit(0); i >= 0; i = changed.nextSetBit(i + 1)) {
-            changeQueue.add(nodeTopologicalOrders[i]);
+            changeQueue.offer(i);
             if (i == Integer.MAX_VALUE) {
                 break; // or (i+1) would overflow
             }
