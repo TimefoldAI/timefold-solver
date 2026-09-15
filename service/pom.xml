@@ -19,6 +19,9 @@
   <properties>
     <!-- TODO Quarkus is riddled with duplicate classes, see https://github.com/quarkusio/quarkus/issues/9834 -->
     <enforcer.failOnDuplicatedClasses>false</enforcer.failOnDuplicatedClasses>
+
+    <!-- Override the old version for Revapi check as solver-service has been introduced later. -->
+    <revapi.oldTimefoldVersion>2.6.0</revapi.oldTimefoldVersion>
   </properties>
 
   <modules>
