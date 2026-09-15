@@ -1168,7 +1168,8 @@ class DefaultSolverTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMultiVarSolution.class, TestdataMultiVarEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
-                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
 
         var problem = TestdataMultiVarSolution.generateUninitializedSolution(2, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))

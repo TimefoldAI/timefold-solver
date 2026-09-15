@@ -120,7 +120,7 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
 
     public void linkShadowVariables() {
         if (listVariableDescriptor != null) {
-            getListVariableState(listVariableDescriptor);
+            getListVariableState(listVariableDescriptor, false);
         }
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
@@ -133,7 +133,7 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
     // Shadow variables which are not related to a list variable are processed normally.
     // Cascading, declarative, and inconsistent shadow variables are routed elsewhere and need no wiring here.
     private void linkShadowVariable(ShadowVariableDescriptor<Solution_> descriptor) {
-        var currentListVariableState = getListVariableState(listVariableDescriptor);
+        var currentListVariableState = getListVariableState(listVariableDescriptor, false);
         if (descriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
             if (inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor() instanceof ListVariableDescriptor<?>) {
                 if (currentListVariableState != null) {
@@ -142,7 +142,7 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
                 }
             } else {
                 var basicVariableState = getBasicVariableState(
-                        Objects.requireNonNull(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor()));
+                        Objects.requireNonNull(inverseRelationShadowVariableDescriptor.getSourceVariableDescriptor()), false);
                 basicVariableState.externalize(inverseRelationShadowVariableDescriptor);
             }
         } else if (currentListVariableState != null) {
@@ -227,111 +227,6 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
         return true;
     }
 
-    public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
-        BasicVariableState<Solution_> state =
-                findBasicHandler(variableDescriptor, handler -> handler instanceof BasicVariableState<Solution_> handlerState
-                        && handlerState.getSourceVariableDescriptor() == variableDescriptor);
-        if (state != null) {
-            return state;
-        }
-        // The state has not been loaded yet; there must only ever be one per variable,
-        // as it is the single source of truth for the inverse relation of that variable.
-        var basicVariableState = new BasicVariableState<>(variableDescriptor, getStateChangeNotifier());
-        registerBasicVariableChangeHandler(basicVariableState);
-        return basicVariableState;
-    }
-
-    @Override
-    public BasicVariableTracker<Solution_> getBasicVariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
-        BasicVariableTracker<Solution_> tracker =
-                findBasicHandler(variableDescriptor, handler -> handler instanceof BasicVariableTracker<Solution_> handleTracker
-                        && handleTracker.getSourceVariableDescriptor() == variableDescriptor);
-        if (tracker != null) {
-            return tracker;
-        }
-        // The tracker has not been loaded yet; there must only ever be one per variable
-        var basicVariableTracker = new BasicVariableTracker<>(variableDescriptor);
-        registerBasicVariableChangeHandler(basicVariableTracker);
-        return basicVariableTracker;
-    }
-
-    @SuppressWarnings("unchecked")
-    public @Nullable <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
-            getListVariableState(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
-        if (targetVariableDescriptor != listVariableDescriptor) {
-            throw new IllegalStateException(
-                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
-                            .formatted(targetVariableDescriptor, listVariableDescriptor));
-        }
-        if (targetVariableDescriptor == null) {
-            return null;
-        }
-        if (listVariableState == null) { // The list state has not been loaded yet.
-            listVariableState = new DefaultListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
-            registerListVariableHandler(listVariableState);
-        }
-        return (ListVariableState<Solution_, Entity_, Value_>) listVariableState;
-    }
-
-    @Override
-    public @Nullable ListVariableTracker<Solution_>
-            getListVariableTracker(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
-        if (targetVariableDescriptor != listVariableDescriptor) {
-            throw new IllegalStateException(
-                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
-                            .formatted(targetVariableDescriptor, listVariableDescriptor));
-        }
-        if (targetVariableDescriptor == null) {
-            return null;
-        }
-        if (listVariableTracker == null) {
-            listVariableTracker = new ListVariableTracker<>(listVariableDescriptor);
-            registerListVariableHandler(listVariableTracker);
-        }
-        return listVariableTracker;
-    }
-
-    private void resetWorkingSolutionIfSet(Runnable resetWorkingSolution) {
-        // An external ScoreDirector can be created before the working solution is set.
-        if (scoreDirector.getWorkingSolution() != null) {
-            resetWorkingSolution.run();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private <Type_ extends BasicVariableChangeHandler<Solution_>> Type_ findBasicHandler(
-            VariableDescriptor<Solution_> variableDescriptor, Predicate<BasicVariableChangeHandler<Solution_>> checkFunction) {
-        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        for (var i = 0; i < handlerList.size(); i++) {
-            var handler = handlerList.get(i);
-            // The handler list is already specific to this variable descriptor,
-            // matching on the descriptor itself is a safety net in case that ever stops holding.
-            if (checkFunction.test(handler)) {
-                return (Type_) handler;
-            }
-        }
-        return null;
-    }
-
-    private void registerListVariableHandler(ListVariableChangeHandler<Solution_> handler) {
-        listVariableChangeHandlerList.add(handler);
-        resetWorkingSolutionIfSet(() -> handler.resetWorkingSolution(scoreDirector));
-    }
-
-    private void registerBasicVariableChangeHandler(BasicVariableChangeHandler<Solution_> handler) {
-        resetWorkingSolutionIfSet(() -> handler.resetWorkingSolution(scoreDirector));
-        var variableDescriptor = handler.getSourceVariableDescriptor();
-        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
-        handlerList.add(handler);
-    }
-
-    private List<BasicVariableChangeHandler<Solution_>>
-            getBasicVariableChangeHandlerList(VariableDescriptor<Solution_> variableDescriptor) {
-        return basicVariableChangeHandlerArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor
-                .getOrdinal()];
-    }
-
     @Override
     public <Supply_ extends Supply> long getActiveCount(Demand<Supply_> demand) {
         var supplyAndDemandCounter = supplyMap.get(demand);
@@ -351,8 +246,145 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
     }
 
     // ************************************************************************
+    // List variable methods
+    // ************************************************************************
+
+    public @Nullable <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
+        return getListVariableState(targetVariableDescriptor, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    private @Nullable <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor, boolean reset) {
+        if (targetVariableDescriptor != listVariableDescriptor) {
+            throw new IllegalStateException(
+                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
+                            .formatted(targetVariableDescriptor, listVariableDescriptor));
+        }
+        if (targetVariableDescriptor == null) {
+            return null;
+        }
+        if (listVariableState == null) { // The list state has not been loaded yet.
+            listVariableState = new DefaultListVariableState<>(targetVariableDescriptor, getStateChangeNotifier());
+            registerListVariableHandler(listVariableState, reset);
+        }
+        return (ListVariableState<Solution_, Entity_, Value_>) listVariableState;
+    }
+
+    @Override
+    public @Nullable ListVariableTracker<Solution_>
+            getListVariableTracker(@Nullable ListVariableDescriptor<Solution_> targetVariableDescriptor) {
+        if (targetVariableDescriptor != listVariableDescriptor) {
+            throw new IllegalStateException(
+                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
+                            .formatted(targetVariableDescriptor, listVariableDescriptor));
+        }
+        if (targetVariableDescriptor == null) {
+            return null;
+        }
+        if (listVariableTracker == null) {
+            listVariableTracker = new ListVariableTracker<>(listVariableDescriptor);
+            registerListVariableHandler(listVariableTracker, true);
+        }
+        return listVariableTracker;
+    }
+
+    private void registerListVariableHandler(ListVariableChangeHandler<Solution_> handler, boolean reset) {
+        if (reset) {
+            resetWorkingSolutionIfSet(() -> handler.resetWorkingSolution(scoreDirector));
+        }
+        listVariableChangeHandlerList.add(handler);
+    }
+
+    // ************************************************************************
+    // Basic variable methods
+    // ************************************************************************
+
+    public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
+        return getBasicVariableState(variableDescriptor, true);
+    }
+
+    private BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor,
+            boolean reset) {
+        BasicVariableState<Solution_> state =
+                findBasicHandler(variableDescriptor, handler -> handler instanceof BasicVariableState<Solution_> handlerState
+                        && handlerState.getSourceVariableDescriptor() == variableDescriptor);
+        if (state != null) {
+            return state;
+        }
+        // The state has not been loaded yet; there must only ever be one per variable,
+        // as it is the single source of truth for the inverse relation of that variable.
+        var basicVariableState = new BasicVariableState<>(variableDescriptor, getStateChangeNotifier());
+        registerBasicVariableChangeHandler(basicVariableState, reset);
+        return basicVariableState;
+    }
+
+    @Override
+    public BasicVariableTracker<Solution_> getBasicVariableTracker(VariableDescriptor<Solution_> variableDescriptor) {
+        BasicVariableTracker<Solution_> tracker =
+                findBasicHandler(variableDescriptor, handler -> handler instanceof BasicVariableTracker<Solution_> handleTracker
+                        && handleTracker.getSourceVariableDescriptor() == variableDescriptor);
+        if (tracker != null) {
+            return tracker;
+        }
+        // The tracker has not been loaded yet; there must only ever be one per variable
+        var basicVariableTracker = new BasicVariableTracker<>(variableDescriptor);
+        registerBasicVariableChangeHandler(basicVariableTracker, true);
+        return basicVariableTracker;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private <Type_ extends BasicVariableChangeHandler<Solution_>> Type_ findBasicHandler(
+            VariableDescriptor<Solution_> variableDescriptor, Predicate<BasicVariableChangeHandler<Solution_>> checkFunction) {
+        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
+        if (handlerList.isEmpty()) {
+            return null;
+        }
+        var firstHandler = handlerList.getFirst();
+        if (checkFunction.test(firstHandler)) {
+            return (Type_) firstHandler;
+        }
+        if (handlerList.size() == 1) {
+            return null;
+        }
+        var secondHandler = handlerList.get(1);
+        if (checkFunction.test(secondHandler)) {
+            return (Type_) secondHandler;
+        }
+        return null;
+    }
+
+    private List<BasicVariableChangeHandler<Solution_>>
+            getBasicVariableChangeHandlerList(VariableDescriptor<Solution_> variableDescriptor) {
+        return basicVariableChangeHandlerArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor
+                .getOrdinal()];
+    }
+
+    private void registerBasicVariableChangeHandler(BasicVariableChangeHandler<Solution_> handler, boolean reset) {
+        if (reset) {
+            resetWorkingSolutionIfSet(() -> handler.resetWorkingSolution(scoreDirector));
+        }
+        var variableDescriptor = handler.getSourceVariableDescriptor();
+        var handlerList = getBasicVariableChangeHandlerList(variableDescriptor);
+        if (handlerList.size() >= 2) {
+            throw new IllegalStateException(
+                    "Impossible state: a basic variable cannot have more than two handlers assigned to it.");
+        }
+        handlerList.add(handler);
+    }
+
+    // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
+
+    private void resetWorkingSolutionIfSet(Runnable resetWorkingSolution) {
+        // An external ScoreDirector can be created before the working solution is set.
+        if (scoreDirector.getWorkingSolution() != null) {
+            resetWorkingSolution.run();
+        }
+    }
 
     public void resetWorkingSolution() {
         for (var handler : listVariableChangeHandlerList) {

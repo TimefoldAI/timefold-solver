@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -27,6 +28,7 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.GraphNode;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.violation.BasicVariableTracker;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.NeighborhoodNotifier;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -48,6 +50,9 @@ import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.Testda
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseGroup;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseOwner;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseSolution;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationValue;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedSolution;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedValue;
@@ -536,6 +541,212 @@ class VariableSupportTest {
                 .isNotSameAs(listVariableTracker);
         assertThat(listVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
         assertThat(variableSupport.getListVariableState(variableDescriptor)).isSameAs(listVariableState);
+    }
+
+    @Test
+    void basicVariableTrackerIsFoundWhenStateIsRegisteredFirst() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
+        var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataEntity.class)
+                .getGenuineVariableDescriptor("value");
+
+        // The state and the tracker share the same per-variable handler list,
+        // and tracking environment modes demand a tracker on top of the state.
+        // Whichever is registered first must neither hide the other, nor be mistaken for it.
+        BasicVariableChangeHandler<TestdataSolution> basicVariableState =
+                variableSupport.getBasicVariableState(variableDescriptor);
+        BasicVariableChangeHandler<TestdataSolution> basicVariableTracker =
+                variableSupport.getBasicVariableTracker(variableDescriptor);
+
+        assertThat(basicVariableTracker).isNotSameAs(basicVariableState);
+        assertThat(basicVariableTracker.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+        assertThat(basicVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+
+        // Neither lookup may create a second instance once both exist.
+        assertThat(variableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+        assertThat(variableSupport.getBasicVariableTracker(variableDescriptor)).isSameAs(basicVariableTracker);
+    }
+
+    @Test
+    void basicVariableStateIsFoundWhenTrackerIsRegisteredFirst() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
+        var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataEntity.class)
+                .getGenuineVariableDescriptor("value");
+
+        // The mirror image of basicVariableTrackerIsFoundWhenStateIsRegisteredFirst():
+        // a domain without an inverse relation shadow variable registers no state while linking,
+        // so in a tracking environment mode the tracker is the first handler of the variable.
+        BasicVariableChangeHandler<TestdataSolution> basicVariableTracker =
+                variableSupport.getBasicVariableTracker(variableDescriptor);
+        BasicVariableChangeHandler<TestdataSolution> basicVariableState =
+                variableSupport.getBasicVariableState(variableDescriptor);
+
+        assertThat(basicVariableState).isNotSameAs(basicVariableTracker);
+        assertThat(basicVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+        assertThat(basicVariableTracker.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+
+        assertThat(variableSupport.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+        assertThat(variableSupport.getBasicVariableTracker(variableDescriptor)).isSameAs(basicVariableTracker);
+    }
+
+    @Test
+    void basicVariableStatesAndTrackersAreKeptPerVariable() {
+        // One entity with three basic variables; the two-handler limit is per variable, not per entity.
+        var solutionDescriptor = TestdataMultiVarSolution.buildSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataMultiVarEntity.class);
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
+
+        var variableDescriptorList = List.copyOf(entityDescriptor.getDeclaredVariableDescriptors());
+        assertThat(variableDescriptorList).hasSize(3);
+
+        var stateList = new ArrayList<BasicVariableState<TestdataMultiVarSolution>>();
+        var trackerList = new ArrayList<BasicVariableTracker<TestdataMultiVarSolution>>();
+        for (var variableDescriptor : variableDescriptorList) {
+            // Deliberately state first for one variable and tracker first for the next,
+            // as the order in which the two handlers of a variable are requested is not fixed.
+            if (stateList.size() % 2 == 0) {
+                stateList.add(variableSupport.getBasicVariableState(variableDescriptor));
+                trackerList.add(variableSupport.getBasicVariableTracker(variableDescriptor));
+            } else {
+                trackerList.add(variableSupport.getBasicVariableTracker(variableDescriptor));
+                stateList.add(variableSupport.getBasicVariableState(variableDescriptor));
+            }
+        }
+
+        for (var i = 0; i < stateList.size(); i++) {
+            var variableDescriptor = variableDescriptorList.get(i);
+            var state = stateList.get(i);
+            var tracker = trackerList.get(i);
+            assertThat(state.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+            assertThat(tracker.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+            // Each variable keeps its own pair, and every later lookup finds that same pair.
+            assertThat(variableSupport.getBasicVariableState(variableDescriptor)).isSameAs(state);
+            assertThat(variableSupport.getBasicVariableTracker(variableDescriptor)).isSameAs(tracker);
+        }
+        assertThat(stateList).doesNotHaveDuplicates();
+        assertThat(trackerList).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void basicVariableStateAndTrackerCoexistInTrackingEnvironmentMode() {
+        // The end-to-end version of basicVariableTrackerIsFoundWhenStateIsRegisteredFirst():
+        // linkShadowVariables() creates the state of the variable behind the inverse relation shadow variable,
+        // and a tracking environment mode then builds a SolutionTracker,
+        // which asks for a tracker of every basic variable right after.
+        var solutionDescriptor = TestdataInverseRelationSolution.buildSolutionDescriptor();
+        var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataInverseRelationEntity.class)
+                .getGenuineVariableDescriptor("value");
+
+        var value1 = new TestdataInverseRelationValue("v1");
+        var value2 = new TestdataInverseRelationValue("v2");
+        var entity = new TestdataInverseRelationEntity("e1", value1);
+        var solution = new TestdataInverseRelationSolution("s1");
+        solution.setValueList(List.of(value1, value2));
+        solution.setEntityList(List.of(entity));
+
+        try (var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor, s -> SimpleScore.ZERO,
+                EnvironmentMode.TRACKED_FULL_ASSERT).buildScoreDirector()) {
+            scoreDirector.setWorkingSolution(solution);
+
+            var basicVariableState = scoreDirector.getBasicVariableState(variableDescriptor);
+            assertThat(basicVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+            // The state is the externalized inverse relation, and the tracker did not displace it.
+            assertThat(basicVariableState.<TestdataInverseRelationEntity> getInverseCollection(value1))
+                    .containsExactly(entity);
+            assertThat((Collection<?>) basicVariableState.getInverseCollection(value2)).isEmpty();
+            assertThat(scoreDirector.getBasicVariableState(variableDescriptor)).isSameAs(basicVariableState);
+        }
+    }
+
+    @Test
+    void basicVariableStateRequestedAfterWorkingSolutionIsSetIsInitializedImmediately() {
+        // A state can be requested long after the working solution was set, for instance by a supply of a phase.
+        // Such a state must be caught up with the working solution as it is registered,
+        // or it hands out an empty inverse relation.
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataEntity.class)
+                .getGenuineVariableDescriptor("value");
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var entity = new TestdataEntity("e1", value1);
+        var solution = new TestdataSolution("s1");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(value1, value2));
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
+
+        // No resetWorkingSolution() in between.
+        var basicVariableState = variableSupport.getBasicVariableState(variableDescriptor);
+        assertThat(basicVariableState.getInverseCollection(value1)).containsExactly(entity);
+        assertThat((Collection<?>) basicVariableState.getInverseCollection(value2)).isEmpty();
+    }
+
+    @Test
+    void listVariableStateRequestedAfterWorkingSolutionIsSetIsInitializedImmediately() {
+        var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
+        var solutionDescriptor = variableDescriptor.getEntityDescriptor().getSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+
+        var v1 = new TestdataAllowsUnassignedValuesListValue("v1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("v2");
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(e1));
+        solution.setValueList(List.of(v1, v2));
+        when(scoreDirector.getValueRangeManager()).thenReturn(ValueRangeManager.of(solutionDescriptor, solution));
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+
+        // The state is registered on demand, with no linkShadowVariables() and no resetWorkingSolution() in between.
+        var listVariableState = variableSupport.getListVariableState(variableDescriptor);
+        assertThat(listVariableState).isNotNull();
+        assertThat(listVariableState.isAssigned(v1)).isTrue();
+        assertThat(listVariableState.isAssigned(v2)).isFalse();
+    }
+
+    @Test
+    void linkShadowVariablesDoesNotReadTheWorkingSolution() {
+        // Linking happens while the score director is still being constructed.
+        // The handlers it creates are caught up by the resetWorkingSolution() of the first setWorkingSolution(),
+        // so linking must not read the working solution itself;
+        // an external score director may well have one set by the time it is rebuilt.
+        var solutionDescriptor = TestdataInverseRelationSolution.buildSolutionDescriptor();
+        var scoreDirector = basicScoreDirectorMock(solutionDescriptor);
+        var variableDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataInverseRelationEntity.class)
+                .getGenuineVariableDescriptor("value");
+
+        var value1 = new TestdataInverseRelationValue("v1");
+        var entity = new TestdataInverseRelationEntity("e1", value1);
+        var solution = new TestdataInverseRelationSolution("s1");
+        solution.setValueList(List.of(value1));
+        solution.setEntityList(List.of(entity));
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+
+        var variableSupport = new VariableSupport<>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        variableSupport.linkShadowVariables();
+
+        // The state of the variable behind the inverse relation shadow variable was created while linking ...
+        var basicVariableState = variableSupport.getBasicVariableState(variableDescriptor);
+        assertThat(basicVariableState.getSourceVariableDescriptor()).isSameAs(variableDescriptor);
+        // ... without the working solution having been touched.
+        verify(scoreDirector, never()).getWorkingSolution();
+
+        // The reset which follows in setWorkingSolution() is what fills the state.
+        variableSupport.resetWorkingSolution();
+        assertThat(basicVariableState.<TestdataInverseRelationEntity> getInverseCollection(value1))
+                .containsExactly(entity);
     }
 
     private static <Solution_> InnerScoreDirector<Solution_, ?> basicScoreDirectorMock(
