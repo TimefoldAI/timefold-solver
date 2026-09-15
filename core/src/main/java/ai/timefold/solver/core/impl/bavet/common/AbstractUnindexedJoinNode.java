@@ -45,7 +45,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             // instead of computing it now,
             // at whatever layer the parent that produced leftTuple happens to be in.
             // See AbstractJoinNode's pendingLeft/pendingRight javadoc.
-            enqueuePendingLeft(leftTuple);
+            crossMatchLeft(leftTuple);
             return;
         }
         // Non-filtering: reads the opposite side eagerly, with no per-read staleness check needed
@@ -65,7 +65,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             return;
         }
         if (isFiltering) {
-            enqueuePendingLeft(leftTuple);
+            crossMatchLeft(leftTuple);
         } else {
             innerUpdateLeft(leftTuple, rightTupleList::forEach);
         }
@@ -94,7 +94,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
         rightTuple.setStore(inputStoreIndexRightOutTupleList, rightOutTupleListBuilder.get());
         if (isFiltering) {
             // See the mirror comment in insertLeft.
-            enqueuePendingRight(rightTuple);
+            crossMatchRight(rightTuple);
             return;
         }
         for (var leftTuple = leftTupleList.first(); leftTuple != null; leftTuple = leftTupleList.next(leftTuple)) {
@@ -110,7 +110,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends Tuple, Right_
             return;
         }
         if (isFiltering) {
-            enqueuePendingRight(rightTuple);
+            crossMatchRight(rightTuple);
         } else {
             innerUpdateRight(rightTuple, leftTupleList::forEach);
         }
