@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.solver;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -18,6 +17,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverTags;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -27,7 +27,6 @@ import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 import org.jspecify.annotations.NullMarked;
 
 import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
 
 /**
  * Default implementation for {@link Solver}.
@@ -130,11 +129,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return basicPlumbingTermination.isEveryProblemChangeProcessed();
     }
 
-    public void setMonitorTagMap(Map<String, String> monitorTagMap) {
-        var monitoringTags = Objects.requireNonNullElse(monitorTagMap, Collections.<String, String> emptyMap())
-                .entrySet().stream().map(entry -> Tags.of(entry.getKey(), entry.getValue()))
-                .reduce(Tags.empty(), Tags::and);
-        solverScope.setMonitoringTags(monitoringTags);
+    public void setMonitorTags(SolverTags solverTags) {
+        solverScope.setMonitoringTags(solverTags.asTags());
     }
 
     // ************************************************************************

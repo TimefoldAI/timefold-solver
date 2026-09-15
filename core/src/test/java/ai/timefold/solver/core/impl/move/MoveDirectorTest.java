@@ -12,12 +12,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -42,6 +44,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -58,6 +61,10 @@ import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIn
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldEntity;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldSolution;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
@@ -2231,8 +2238,13 @@ class MoveDirectorTest {
                 ElementPosition.of(e2, 1));
         when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
         when(listVariableDescriptor.getFirstUnpinnedIndex(any())).thenReturn(0);
-        when(listVariableDescriptor.getListSize(any())).thenReturn(1);
-        when(listVariableDescriptor.getValue(any())).thenReturn(e1.getValueList(), e2.getValueList());
+        // Answer per entity, not per invocation order, and keep getListSize consistent with getValue -
+        // the real ListVariableDescriptor.getListSize(entity) IS getValue(entity).size(), and the
+        // recorder verifies that the reported range accounts for the list's actual length change.
+        when(listVariableDescriptor.getValue(any()))
+                .thenAnswer(invocation -> invocation.<TestdataListEntity> getArgument(0).getValueList());
+        when(listVariableDescriptor.getListSize(any()))
+                .thenAnswer(invocation -> invocation.<TestdataListEntity> getArgument(0).getValueList().size());
         // Ignore the nested phase but simulates v1 moving to e2
         when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRecreate(any()))
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
@@ -2253,7 +2265,7 @@ class MoveDirectorTest {
         assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
             if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                 return beforeChangeAction.entity() == e1 && beforeChangeAction.fromIndex() == 0
-                        && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                        && beforeChangeAction.originalToIndex() == 1 && beforeChangeAction.oldValue().size() == 1
                         && beforeChangeAction.oldValue().getFirst().equals(v1);
             }
             return false;
@@ -2263,7 +2275,7 @@ class MoveDirectorTest {
         assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
             if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                 return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
-                        && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                        && beforeChangeAction.originalToIndex() == 1 && beforeChangeAction.oldValue().size() == 1
                         && beforeChangeAction.oldValue().getFirst().equals(v2);
             }
             return false;
@@ -2416,7 +2428,7 @@ class MoveDirectorTest {
     }
 
     @Test
-    void restoreWorkingScoreWithoutPostprocessor() {
+    void restoreWorkingScoreWithIdentityPostprocessor() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
@@ -2434,7 +2446,7 @@ class MoveDirectorTest {
 
         Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
         var moveDirector = new MoveDirector<>(scoreDirector);
-        var temporaryScore = moveDirector.executeTemporary(move);
+        var temporaryScore = Objects.requireNonNull(moveDirector.executeTemporary(move, score -> score));
 
         assertSoftly(softly -> {
             softly.assertThat(temporaryScore.raw()).isEqualTo(SimpleScore.of(-1));
@@ -2464,7 +2476,7 @@ class MoveDirectorTest {
 
         Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
         var moveDirector = new MoveDirector<>(scoreDirector);
-        var result = moveDirector.executeTemporary(move, (score, undoMove) -> {
+        var result = moveDirector.executeTemporary(move, score -> {
             // Called while the move is still applied, before it gets undone.
             assertThat(entity.getValue()).isEqualTo(badValue);
             assertThat(score.raw()).isEqualTo(SimpleScore.of(-1));
@@ -2479,7 +2491,7 @@ class MoveDirectorTest {
     }
 
     @Test
-    void restoreWorkingScoreWithPostprocessorAndFailure() {
+    void postprocessorFailureLeavesTheMoveApplied() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
@@ -2497,13 +2509,122 @@ class MoveDirectorTest {
 
         Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
         var moveDirector = new MoveDirector<>(scoreDirector);
-        assertThatThrownBy(() -> moveDirector.executeTemporary(move, (score, undoMove) -> {
+        assertThatThrownBy(() -> moveDirector.executeTemporary(move, score -> {
             throw new IllegalStateException("Postprocessor failure.");
         })).isInstanceOf(IllegalStateException.class);
 
         assertSoftly(softly -> {
+            // One rule for failure: if anything throws, the move is not undone,
+            // because its recorded actions may be half-applied.
+            softly.assertThat(entity.getValue()).isEqualTo(badValue);
+            // The score was already calculated for the applied move, and is not restored either.
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(SimpleScore.of(-1));
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isNotEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void moveFailureLeavesTheMoveApplied() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+
+        // The other half of the same rule: the move itself throws, after having changed something.
+        Move<TestdataSolution> move = solutionView -> {
+            solutionView.changeVariable(variableMetaModel, entity, badValue);
+            throw new IllegalStateException("Move failure.");
+        };
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        assertThatThrownBy(() -> moveDirector.executeTemporary(move, score -> score))
+                .isInstanceOf(IllegalStateException.class);
+
+        assertThat(entity.getValue()).isEqualTo(badValue);
+    }
+
+    @Test
+    void executeTemporaryProducingUndoMoveReturnsAnAlreadyAppliedUndoMove() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var observedScore = new SimpleScore[1];
+        var undoMove = moveDirector.executeTemporaryProducingUndoMove(move,
+                score -> observedScore[0] = score.raw());
+
+        assertSoftly(softly -> {
+            // The consumer saw the score of the applied move.
+            softly.assertThat(observedScore[0]).isEqualTo(SimpleScore.of(-1));
+            // The returned undo move has already been applied - it is what undid the move.
             softly.assertThat(entity.getValue()).isEqualTo(goodValue);
-            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+
+        // Replaying it is therefore only correct after the forward move has been re-applied,
+        // which is the invariant exhaustive search backtracking relies on.
+        moveDirector.execute(move);
+        assertThat(entity.getValue()).isEqualTo(badValue);
+        moveDirector.execute(undoMove);
+        assertThat(entity.getValue()).isEqualTo(goodValue);
+    }
+
+    @Test
+    void restoreWorkingScoreWhenHandlingStructurallyFlawedSolutions() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        b2.setDependencies(List.of(b1));
+        // b1 before b2 satisfies the dependency; this solution is not structurally flawed.
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+        var previousScore = solutionDescriptor.<HardSoftScore> getScore(solution);
+
+        // Swapping the two values makes b2 (which depends on b1) precede b1, creating a dependency cycle.
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var result = moveDirector.executeTemporaryHandlingStructurallyFlawedSolutions(move,
+                sol -> "not flawed",
+                sol -> "flawed",
+                false);
+
+        assertSoftly(softly -> {
+            // The move made the solution structurally flawed, so the flawed-solution processor ran instead.
+            softly.assertThat(result).isEqualTo("flawed");
+            softly.assertThat(e1.getValues()).containsExactly(b1, b2);
+            // guaranteeFreshScore is false, so the previous score must be restored,
+            // exactly as executeTemporary(Move, Function, boolean) does.
+            softly.assertThat(solutionDescriptor.<HardSoftScore> getScore(solution)).isEqualTo(previousScore);
         });
     }
 

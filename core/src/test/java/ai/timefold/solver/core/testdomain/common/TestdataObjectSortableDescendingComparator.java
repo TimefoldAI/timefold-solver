@@ -12,7 +12,7 @@ public class TestdataObjectSortableDescendingComparator implements Comparator<Te
     @Override
     public int compare(TestdataObject o1, TestdataObject o2) {
         // Descending order
-        return extractCode(o2.getCode()) - extractCode(o1.getCode());
+        return Integer.compare(extractCode(o2.getCode()), extractCode(o1.getCode()));
     }
 
     public static int extractCode(String code) {

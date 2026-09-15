@@ -2724,9 +2724,10 @@ class DefaultSolverTest {
         @Override
         protected void execute(VariableDescriptorAwareScoreDirector<TestdataListSolution> scoreDirector) {
             var entity = scoreDirector.getWorkingSolution().getEntityList().getFirst();
-            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            var appendIndex = entity.getValueList().size();
+            scoreDirector.beforeListVariableChanged(entity, "valueList", appendIndex, appendIndex);
             entity.getValueList().add(new TestdataListValue("bad value"));
-            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+            scoreDirector.afterListVariableChanged(entity, "valueList", appendIndex, appendIndex + 1);
         }
     }
 

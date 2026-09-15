@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
@@ -52,7 +52,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             // such as calculateScore().
             // Operations which need undo must go through the external score director,
             // which is recording in this case.
-            this.externalScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector, false);
+            this.externalScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector);
         } else {
             this.externalScoreDirector = scoreDirector;
         }
@@ -676,32 +676,57 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         externalScoreDirector.updateShadowVariables();
     }
 
-    public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
+    /**
+     * Executes {@code move} temporarily,
+     * hands its score to {@code postprocessor} while the move is still applied,
+     * then undoes the move and restores the previous working score.
+     * <p>
+     * If either the move or the postprocessor throws, the move is <strong>not</strong> undone;
+     * callers of this method should treat all exceptions thrown by this method as fatal.
+     *
+     * @return whatever {@code postprocessor} returns
+     */
+    public final @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
+            TemporaryScorePostprocessor<Score_, Result_> postprocessor) {
         var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
         var workingSolution = backingScoreDirector.getWorkingSolution();
         var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
         var score = backingScoreDirector.calculateScore();
+        var result = postprocessor.apply(score);
         ephemeralMoveDirector.close(); // This undoes the move.
         // Restore the previous working score
         solutionDescriptor.setScore(workingSolution, previousScore);
-        return score;
+        return result;
     }
 
-    public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
-            TemporaryMovePostprocessor<Solution_, Score_, @Nullable Result_> postprocessor) {
+    /**
+     * As defined by {@link #executeTemporary(Move, TemporaryScorePostprocessor)},
+     * but it also returns the undo move for {@code move}.
+     * <p>
+     * The returned move <strong>has already been applied</strong> by the time this method returns -
+     * it is what undid {@code move}.
+     * Replaying it is therefore only correct after {@code move} has been re-applied.
+     * Replaying it without that re-application corrupts the working solution.
+     * If either {@code move} or {@code scoreConsumer} throws, the move is not undone and the working score is not restored.
+     * 
+     * @return the undo move for {@code move}, already applied
+     */
+    public final Move<Solution_> executeTemporaryProducingUndoMove(Move<Solution_> move,
+            Consumer<InnerScore<Score_>> scoreConsumer) {
         var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
         var workingSolution = backingScoreDirector.getWorkingSolution();
         var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
-        try (var ephemeralMoveDirector = ephemeral()) {
-            ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
-            var score = backingScoreDirector.calculateScore();
-            return postprocessor.apply(score, ephemeralMoveDirector.createUndoMove());
-        } finally {
-            // Restore the previous working score
-            solutionDescriptor.setScore(workingSolution, previousScore);
-        }
+        var ephemeralMoveDirector = ephemeral();
+        ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
+        scoreConsumer.accept(backingScoreDirector.calculateScore());
+        // After the consumer, so that a live undo move never reaches caller code.
+        var undoMove = ephemeralMoveDirector.createUndoMove();
+        ephemeralMoveDirector.close(); // This undoes the move.
+        // Restore the previous working score
+        solutionDescriptor.setScore(workingSolution, previousScore);
+        return undoMove;
     }
 
     public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
@@ -727,6 +752,9 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             Function<Solution_, @Nullable Result_> postprocessor,
             Function<Solution_, @Nullable Result_> flawedSolutionProcessor,
             boolean guaranteeFreshScore) {
+        var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
+        var workingSolution = backingScoreDirector.getWorkingSolution();
+        var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
         var score = backingScoreDirector.calculateScore();
@@ -739,6 +767,9 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         ephemeralMoveDirector.close(); // This undoes the move.
         if (guaranteeFreshScore) {
             backingScoreDirector.calculateScore();
+        } else {
+            // Restore the previous working score
+            solutionDescriptor.setScore(workingSolution, previousScore);
         }
         return result;
     }
@@ -864,6 +895,17 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     /**
      * Moves that are to be undone later need to be run with the instance returned by this method.
      * To undo the move, remember to call {@link EphemeralMoveDirector#close()}.
+     * <p>
+     * Each call returns a fresh recorder over the backing score director, never a nested one.
+     * A nested <i>temporary</i> move is therefore safe:
+     * it records into its own recorder and is fully undone before control returns,
+     * so the outer recorder not seeing it changes nothing.
+     * A nested <i>permanent</i> {@link #execute(Move)} is not:
+     * the outer recorder does not see it either,
+     * and its changes consequently survive the outer undo.
+     * A move which runs a nested phase must re-record whatever that phase kept;
+     * see {@code SelectorBasedListRuinRecreateMove} and
+     * {@link VariableChangeRecordingScoreDirector#getNonDelegating()}.
      *
      * @return never null
      */
@@ -879,15 +921,13 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     /**
      * Allows for reading data produced by a temporary move, before it is undone.
      * The score argument represents the score after executing the move on the solution.
-     * The move argument represents the undo move for that move.
      *
-     * @param <Solution_> type of the solution
      * @param <Score_> score of the move
      * @param <Result_> user-defined return type of the function
      */
     @FunctionalInterface
-    public interface TemporaryMovePostprocessor<Solution_, Score_ extends Score<Score_>, Result_>
-            extends BiFunction<InnerScore<Score_>, Move<Solution_>, @Nullable Result_> {
+    public interface TemporaryScorePostprocessor<Score_ extends Score<Score_>, Result_>
+            extends Function<InnerScore<Score_>, @Nullable Result_> {
 
     }
 
