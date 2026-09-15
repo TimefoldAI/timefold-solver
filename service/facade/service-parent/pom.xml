@@ -201,6 +201,11 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-maven-plugin</artifactId>
+          <version>${revision}</version>
+        </plugin>
+        <plugin>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>
           <version>${version.io.quarkus}</version>
