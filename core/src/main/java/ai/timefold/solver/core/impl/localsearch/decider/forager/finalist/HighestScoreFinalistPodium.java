@@ -26,6 +26,9 @@ public final class HighestScoreFinalistPodium<Solution_> extends AbstractFinalis
         if (finalistIsAccepted && !accepted) {
             return;
         }
+        if (moveScope.getScore().isStructurallyFlawed()) {
+            return;
+        }
         if (accepted && !finalistIsAccepted) {
             finalistIsAccepted = true;
             finalistScore = null;

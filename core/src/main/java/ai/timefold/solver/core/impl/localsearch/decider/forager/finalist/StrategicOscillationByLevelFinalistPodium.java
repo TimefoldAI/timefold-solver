@@ -44,6 +44,9 @@ public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends 
         if (finalistIsAccepted && !accepted) {
             return;
         }
+        if (moveScope.getScore().isStructurallyFlawed()) {
+            return;
+        }
         if (accepted && !finalistIsAccepted) {
             finalistIsAccepted = true;
             finalistScore = null;
