@@ -14,14 +14,14 @@ import org.jspecify.annotations.NullMarked;
  * <b>The topological order is read once, when a node enters the queue, and is then held in {@link #orders}.</b>
  * {@code NodeTopologicalOrder.compareTo} instead reads it through the {@link BaseTopologicalOrderGraph} interface
  * twice per comparison, which costs an interface dispatch and, in some implementations, more than an array read -
- * and a sift makes {@code O(log n)} comparisons.
+ * and one upheap or downheap makes {@code O(log n)} comparisons.
  * Caching is sound because the order of a node cannot change while nodes sit in the queue:
  * {@link TopologicalOrderGraph#commitChanges(BitSet)} has already run by then, and nothing the consumer of this
  * queue does between {@link #offer} and {@link #poll} touches the graph's edges.
  * <p>
  * <b>A node already in the queue is not queued again.</b>
  * The caller of the {@code PriorityQueue} could enqueue one node once per incoming edge and drop the duplicates
- * when they came back out, so the heap held - and sifted - entries it would go on to discard.
+ * when they came back out, so the heap held - and re-ordered - entries it would go on to discard.
  * Skipping them on the way in changes nothing about which nodes are processed, or in which order,
  * and bounds the queue at one entry per node, so the backing arrays never have to grow.
  * <p>
@@ -45,7 +45,8 @@ final class NodeTopologicalOrderQueue {
     private final int[] nodeIds;
     /**
      * The topological order of the node in the matching slot of {@link #nodeIds},
-     * as it was when that node entered the queue. Sifting compares these ints and never calls back into the graph.
+     * as it was when that node entered the queue. {@link #upheap} and {@link #downheap} compare these ints
+     * and never call back into the graph.
      */
     private final int[] orders;
     /**
@@ -82,7 +83,7 @@ final class NodeTopologicalOrderQueue {
         size++;
         nodeIds[index] = nodeId;
         orders[index] = graph.getTopologicalOrder(nodeId);
-        siftUp(index);
+        upheap(index);
     }
 
     /**
@@ -101,12 +102,18 @@ final class NodeTopologicalOrderQueue {
         if (lastIndex > 0) {
             nodeIds[0] = nodeIds[lastIndex];
             orders[0] = orders[lastIndex];
-            siftDown(0);
+            downheap(0);
         }
         return polledNodeId;
     }
 
-    private void siftUp(int startIndex) {
+    /**
+     * Moves the node at {@code startIndex} towards the root, until its parent comes before it.
+     * This is {@code java.util.PriorityQueue.siftUpComparable}, specialised to {@code int}.
+     * Note that other libraries give the name the opposite sense: CPython's {@code heapq._siftdown}
+     * is this method, because Floyd named the routine after the elements that move the other way.
+     */
+    private void upheap(int startIndex) {
         // The node does not move one slot at a time. Parents move down into the hole at index,
         // and the node goes into the last hole when the loop ends.
         var index = startIndex;
@@ -126,7 +133,12 @@ final class NodeTopologicalOrderQueue {
         orders[index] = order;
     }
 
-    private void siftDown(int startIndex) {
+    /**
+     * Moves the node at {@code startIndex} towards the leaves, until it comes before both of its children.
+     * This is {@code java.util.PriorityQueue.siftDownComparable}, specialised to {@code int}.
+     * See {@link #upheap} on the name.
+     */
+    private void downheap(int startIndex) {
         // Children move up into the hole at index, and the node goes into the last hole when the loop ends.
         var index = startIndex;
         var nodeId = nodeIds[index];
