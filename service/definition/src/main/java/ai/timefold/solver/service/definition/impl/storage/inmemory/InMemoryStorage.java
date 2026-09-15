@@ -2,6 +2,7 @@ package ai.timefold.solver.service.definition.impl.storage.inmemory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +116,19 @@ public abstract class InMemoryStorage<ModelOutput_ extends ModelOutput> implemen
     }
 
     @Override
+    public void storeSubModelStream(StorageAddress options, String id, SubModelKind kind, InputStream input) {
+        if (input == null) {
+            return;
+        }
+        try {
+            resources.put(id + "_" + kind.id(), input.readAllBytes());
+        } catch (IOException e) {
+            throw new TimefoldRuntimeException(ErrorCodes.STORAGE_UNABLE_TO_WRITE,
+                    "Unable to store sub model (" + kind + ") to the storage for id " + id, e);
+        }
+    }
+
+    @Override
     public void updateSubModel(StorageAddress options, String id, SubModelKind subModelKind, Object subModel) {
         if (subModel == null) {
             return;
@@ -132,7 +146,7 @@ public abstract class InMemoryStorage<ModelOutput_ extends ModelOutput> implemen
         Object subModel = resources.get(id + "_" + subModelKind.id());
         if (subModel != null) {
             try {
-                byte[] content = mapper.writeValueAsBytes(subModel);
+                byte[] content = subModel instanceof byte[] raw ? raw : mapper.writeValueAsBytes(subModel);
                 output.write(compress(content));
 
             } catch (IOException e) {
