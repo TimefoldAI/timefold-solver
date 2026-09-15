@@ -4,11 +4,6 @@ import java.util.Map;
 
 /**
  * A named, predefined runtime configuration a run can be started with.
- * <p>
- * Execution profiles describe how a run executes (diagnostics, logging, profiling, ...). This is an internal contract:
- * model developers are not expected to implement or reference it. Implementations are provided by the solver service and
- * the platform, and are discovered via {@link java.util.ServiceLoader}, so adding a new profile does not require editing
- * any central registry. A run may activate several profiles at once.
  */
 public interface ExecutionProfile {
 
@@ -29,11 +24,13 @@ public interface ExecutionProfile {
     String description();
 
     /**
-     * Additional configuration contributed by this profile, applied to the run's environment - each entry is injected as
-     * an environment variable into the solver pod. Keys must be valid environment-variable names. When multiple profiles
-     * are activated and define the same key, the resulting value is unspecified. Defaults to no extra configuration.
+     * Reads the values this profile recognizes from the run's options (as supplied via {@code RunConfiguration.options}),
+     * validates them, and maps them to environment variables injected into the solver pod. The profile picks out only the
+     * keys it recognizes and ignores the rest, since the options map is shared with other run configuration. It must not
+     * invent values the caller did not supply. Keys must be valid environment-variable names. When multiple profiles are
+     * activated and define the same key, the resulting value is unspecified. Defaults to no environment variables.
      */
-    default Map<String, String> properties() {
+    default Map<String, String> toEnvironment(Map<String, String> options) {
         return Map.of();
     }
 }
