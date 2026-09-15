@@ -38,11 +38,37 @@ public interface DeferredSettleAware {
     void prepareForSettle();
 
     /**
-     * Whether the node can ever have pending work for {@link #prepareForSettle()} to drain;
-     * {@code true} for a filtering node, {@code false} for a non-filtering one,
-     * which never enqueues anything and would otherwise pay a wasted virtual call every layer,
-     * every settle round.
+     * Whether the node can ever have pending work for {@link #prepareForSettle()} to drain.
+     * Only a filtering node whose two inputs are at least two layers apart can:
+     * a non-filtering node never dereferences a fact through a user predicate,
+     * and a filtering node whose inputs are at most one layer apart cannot observe a stale tuple
+     * that still reports itself as active, so both read the opposite side eagerly instead.
+     * <p>
+     * Requires {@link #setInputLayerDelta(long)} to have run.
      */
     boolean canDeferWork();
+
+    /**
+     * The absolute difference between the layers of this node's two input parents,
+     * which decides whether a stale read is possible here at all;
+     * see {@link #canDeferWork()}.
+     * Called exactly once per node, while the node network is being layered,
+     * before any tuple reaches the node.
+     */
+    void setInputLayerDelta(long inputLayerDelta);
+
+    /**
+     * Turns deferral off for the duration of a session preload
+     * ({@link AbstractBavetNodeNetwork#settle()} filling an empty network for the first time),
+     * where every tuple arrives exactly once as an insert
+     * and therefore no stale read is possible regardless of layer distance.
+     * The node is allowed to change the return of {@link #canDeferWork()}.
+     */
+    void preloadStarted();
+
+    /**
+     * The inverse of {@link #preloadStarted()}.
+     */
+    void preloadEnded();
 
 }

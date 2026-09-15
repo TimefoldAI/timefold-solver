@@ -39,9 +39,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     protected final Supplier<TupleList<OutTuple_>> rightOutTupleListBuilder;
 
     /**
-     * Filtering joins defer their cross-match computation (the opposite-side walk)
+     * A filtering join whose two inputs are far enough apart (see {@link #canDeferWork()})
+     * defers its cross-match computation (the opposite-side walk)
      * from "whenever a parent propagates in" to this node's own layer turn (see {@link #prepareForSettle()}),
      * closing the stale-activity race at its root instead of guarding against it per read.
+     * The others read the opposite side on the spot,
+     * where the per-read {@code isActive()} guards are enough.
      * Non-filtering joins never dereference a fact through a user predicate,
      * so a stale-but-"active" read can't corrupt anything there (confirmed by dedicated regression tests);
      * these fields stay {@code null}/{@code -1} and cost nothing for them.
@@ -63,6 +66,15 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     private final int pendingRightMarkerIndex;
     protected final @Nullable TupleList<LeftTuple_> pendingLeft;
     protected final @Nullable TupleList<UniTuple<Right_>> pendingRight;
+
+    private long inputLayerDelta = -1;
+    private boolean preloadingActive;
+    /**
+     * Whether {@link #crossMatchLeft}/{@link #crossMatchRight} actually defer,
+     * as opposed to reading the opposite side on the spot;
+     * precomputed because their callers sit on hot insert and update paths.
+     */
+    private boolean deferCrossMatch;
 
     protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             InOutTupleStorePositionTracker tupleStorePositionTracker) {
@@ -100,22 +112,29 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     /**
-     * Enqueues {@code leftTuple} for cross-match reconciliation at this node's own layer turn,
-     * unless it is already awaiting one.
+     * Runs {@code leftTuple}'s cross-match (the opposite-side walk).
+     * When {@link #deferCrossMatch} says a stale read is possible here,
+     * the walk is enqueued for this node's own layer turn instead of running now,
+     * unless the tuple is already awaiting one;
+     * otherwise it runs on the spot, guarded per read by {@link Tuple#getState()} checks.
      * Only called from filtering code paths.
      */
-    protected final void enqueuePendingLeft(LeftTuple_ leftTuple) {
-        if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
+    protected final void crossMatchLeft(LeftTuple_ leftTuple) {
+        if (!deferCrossMatch) {
+            reconcilePendingLeft(leftTuple);
+        } else if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
             leftTuple.setStore(pendingLeftMarkerIndex, Boolean.TRUE);
             pendingLeft.add(leftTuple);
         }
     }
 
     /**
-     * The mirror image of {@link #enqueuePendingLeft}.
+     * The mirror image of {@link #crossMatchLeft}.
      */
-    protected final void enqueuePendingRight(UniTuple<Right_> rightTuple) {
-        if (rightTuple.getStore(pendingRightMarkerIndex) == null) {
+    protected final void crossMatchRight(UniTuple<Right_> rightTuple) {
+        if (!deferCrossMatch) {
+            reconcilePendingRight(rightTuple);
+        } else if (rightTuple.getStore(pendingRightMarkerIndex) == null) {
             rightTuple.setStore(pendingRightMarkerIndex, Boolean.TRUE);
             pendingRight.add(rightTuple);
         }
@@ -145,8 +164,45 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     @Override
+    public final void setInputLayerDelta(long inputLayerDelta) {
+        this.inputLayerDelta = inputLayerDelta;
+        recomputeDeferCrossMatch();
+    }
+
+    @Override
+    public void preloadStarted() {
+        if (preloadingActive) {
+            throw new IllegalStateException("Impossible state: node (%s) is already preloading.".formatted(this));
+        } else {
+            this.preloadingActive = true;
+            recomputeDeferCrossMatch();
+        }
+    }
+
+    @Override
+    public void preloadEnded() {
+        if (!preloadingActive) {
+            throw new IllegalStateException("Impossible state: node (%s) is not preloading.".formatted(this));
+        } else {
+            this.preloadingActive = false;
+            recomputeDeferCrossMatch();
+        }
+    }
+
+    private void recomputeDeferCrossMatch() {
+        this.deferCrossMatch = canDeferWork() && !preloadingActive;
+    }
+
+    @Override
     public final boolean canDeferWork() {
-        return isFiltering;
+        if (isFiltering && inputLayerDelta < 0) {
+            throw new IllegalStateException("Impossible state: the input layer delta of node (%s) was never set."
+                    .formatted(this));
+        }
+        // A filtering node whose inputs are at most one layer apart can only ever read a tuple
+        // that has already been told it is doomed, which the per-read isActive() guards catch.
+        // Two or more layers apart, the doom may not have propagated that far yet; only then is deferral needed.
+        return isFiltering && inputLayerDelta >= 2;
     }
 
     @Override
@@ -197,7 +253,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     /**
      * Only ever called from the non-filtering path
-     * (filtering joins enqueue and defer to {@link #reconcilePendingLeft}/{@link #reconcilePendingRight} instead),
+     * (filtering joins route through {@link #crossMatchLeft}/{@link #crossMatchRight} instead),
      * where {@code testFiltering(...)} is never even consulted;
      * see {@link #testFiltering}'s callers.
      */
@@ -227,9 +283,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
-            // This only ever runs from reconcilePendingLeft, at this node's own layer turn,
-            // after every ancestor on both sides has completed its retract/update/insert turn for this round;
-            // leftTuple can no longer be stale here, so no per-read staleness check is needed.
+            if (!leftTuple.getState().isActive()) {
+                // See insertOutTupleIfActiveFiltered(...): the out-tuple must be retracted anyway,
+                // so any further update to it is pointless.
+                // Unreachable when this runs from reconcilePendingLeft, at this node's own layer turn.
+                return;
+            }
             // Every out-tuple's partner is guaranteed to be swept below,
             // because retracts and key-moves unlink out-tuples synchronously;
             // a stale mark can therefore only ever be version-mismatched.
@@ -259,9 +318,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        // This only ever runs from reconcilePendingLeft, at this node's own layer turn,
-        // after every ancestor on both sides has completed its retract/update/insert turn for this round;
-        // rightTuple can no longer be stale here, so no per-read staleness check is needed.
+        if (!rightTuple.getState().isActive()) {
+            // The mirror image of processOutTupleUpdateLeft(...): here the right tuple is the retracting one.
+            // Leaving its mark set is harmless, as getMark() only ever returns a mark of the matching version.
+            return;
+        }
         TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
     }
@@ -319,6 +380,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 doUpdateOutTuple(outTuple);
             }
         } else {
+            if (!rightTuple.getState().isActive()) {
+                // The mirror image of innerUpdateLeft(...): here the right tuple is the retracting one,
+                // and its out-tuples are about to be retracted regardless of what the predicate now says.
+                return;
+            }
             var version = ++markVersion;
             for (var outTuple = outTupleListRight.first(); outTuple != null; outTuple = outTupleListRight.next(outTuple)) {
                 TupleList<OutTuple_> outTupleListLeft = outTuple.getStore(outputStoreIndexLeftOutTupleList);
@@ -329,9 +395,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     private void processOutTupleUpdateLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
-        // This only ever runs from reconcilePendingRight, at this node's own layer turn,
-        // after every ancestor on both sides has completed its retract/update/insert turn for this round;
-        // leftTuple can no longer be stale here, so no per-read staleness check is needed.
+        if (!leftTuple.getState().isActive()) {
+            // See insertOutTupleIfActiveFiltered(...): the out-tuple must be retracted anyway,
+            // so any further update to it is pointless.
+            // Unreachable when this runs from reconcilePendingRight, at this node's own layer turn.
+            return;
+        }
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         processOutTupleUpdateRight(leftTuple, rightTuple, outTupleListLeft.getMark(version));
     }
