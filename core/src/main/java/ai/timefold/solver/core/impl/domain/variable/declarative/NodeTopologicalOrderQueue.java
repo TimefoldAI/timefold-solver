@@ -25,9 +25,12 @@ import org.jspecify.annotations.NullMarked;
  * Skipping them on the way in changes nothing about which nodes are processed, or in which order,
  * and bounds the queue at one entry per node, so the backing arrays never have to grow.
  * <p>
- * Ties are broken arbitrarily, as they are by a {@link java.util.PriorityQueue}. Two nodes share a topological order
- * only when neither is a predecessor of the other, so neither one's update can feed the other's, and the order in
- * which the two are processed does not affect the outcome.
+ * Ties are broken arbitrarily, as they are by a {@link java.util.PriorityQueue}.
+ * Two nodes that are not looped share a topological order only when neither is a predecessor of the other,
+ * so neither one's update can feed the other's. A looped node can tie with its own predecessor, because
+ * {@link BaseTopologicalOrderGraph#getTopologicalOrder(int)} orders a predecessor pair only when neither
+ * node is looped. That is safe here: the consumer gives a looped node a null value instead of one computed
+ * from its predecessors, so the order in which looped nodes come out does not affect the outcome either.
  * <p>
  * This class is not thread safe.
  */
