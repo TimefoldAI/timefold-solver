@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -20,6 +22,7 @@ final class UniversalTuple<A, B, C, D>
     private @Nullable B b;
     private @Nullable C c;
     private @Nullable D d;
+    private IndictmentSource indictmentSource = IndictmentSource.DISABLED;
     private TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
 
     UniversalTuple(int storeSize, int cardinality) {
@@ -93,6 +96,16 @@ final class UniversalTuple<A, B, C, D>
         Value_ value = getStore(index);
         setStore(index, null);
         return value;
+    }
+
+    @Override
+    public IndictmentSource getIndictmentSource() {
+        return indictmentSource;
+    }
+
+    @Override
+    public void setIndictmentSource(IndictmentSource indictmentSource) {
+        this.indictmentSource = indictmentSource;
     }
 
     @Override
