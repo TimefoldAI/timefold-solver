@@ -24,22 +24,13 @@ public interface ExecutionProfile {
     String description();
 
     /**
-     * Reads the values this profile cares about from the run's options (as supplied via
-     * {@code RunConfiguration.options}), applying defaults, generating values for absent inputs, and validating them.
-     * The profile picks out only the keys it recognizes and ignores the rest, since the options map is shared with other
-     * run configuration. Called once at submit time; the returned values are persisted with the run so it stays
-     * reproducible. Defaults to no parameters.
+     * Reads the values this profile recognizes from the run's options (as supplied via {@code RunConfiguration.options}),
+     * validates them, and maps them to environment variables injected into the solver pod. The profile picks out only the
+     * keys it recognizes and ignores the rest, since the options map is shared with other run configuration. It must not
+     * invent values the caller did not supply. Keys must be valid environment-variable names. When multiple profiles are
+     * activated and define the same key, the resulting value is unspecified. Defaults to no environment variables.
      */
-    default Map<String, String> resolveParameters(Map<String, String> options) {
-        return Map.of();
-    }
-
-    /**
-     * Maps the resolved parameter values (from {@link #resolveParameters(Map)}) to environment variables injected into the
-     * solver pod. Keys must be valid environment-variable names. When multiple profiles are activated and define the same
-     * key, the resulting value is unspecified. Defaults to no environment variables.
-     */
-    default Map<String, String> toEnvironment(Map<String, String> resolvedParameters) {
+    default Map<String, String> toEnvironment(Map<String, String> options) {
         return Map.of();
     }
 }

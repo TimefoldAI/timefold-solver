@@ -1,17 +1,16 @@
 package ai.timefold.solver.service.definition.impl.executionprofile;
 
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 import ai.timefold.solver.service.definition.internal.executionprofile.ExecutionProfile;
 
 /**
  * Runs the solver with a fixed random seed, making a run reproducible.
  * <p>
- * The seed is an optional {@code seed} parameter; when it is not supplied, a random seed is generated and persisted with
- * the run so the exact seed used can be read back and replayed. The seed is applied by mapping it to the Timefold Quarkus
- * property {@code quarkus.timefold.solver.random-seed} (via its environment-variable form), which the solver pod applies to
- * its {@code SolverConfig} at startup.
+ * The seed is taken from the optional {@code seed} run option. When it is not supplied, the profile contributes nothing and
+ * the solver uses its own default randomness - the profile never invents a seed. A supplied seed is applied by mapping it to
+ * the Timefold Quarkus property {@code quarkus.timefold.solver.random-seed} (via its environment-variable form), which the
+ * solver pod applies to its {@code SolverConfig} at startup.
  */
 public final class SeedExecutionProfile implements ExecutionProfile {
 
@@ -38,14 +37,14 @@ public final class SeedExecutionProfile implements ExecutionProfile {
     @Override
     public String description() {
         return "Runs the solver with a fixed random seed for reproducible results. "
-                + "A random seed is generated and recorded when none is supplied.";
+                + "The seed must be supplied as the 'seed' run option.";
     }
 
     @Override
-    public Map<String, String> resolveParameters(Map<String, String> options) {
+    public Map<String, String> toEnvironment(Map<String, String> options) {
         String seed = options == null ? null : options.get(PARAMETER_SEED);
         if (seed == null) {
-            return Map.of(PARAMETER_SEED, Long.toString(ThreadLocalRandom.current().nextLong()));
+            return Map.of();
         }
         try {
             Long.parseLong(seed);
@@ -53,15 +52,6 @@ public final class SeedExecutionProfile implements ExecutionProfile {
             throw new IllegalArgumentException(
                     "Execution profile '" + id() + "' requires option '" + PARAMETER_SEED + "' to be a long, but was: "
                             + seed);
-        }
-        return Map.of(PARAMETER_SEED, seed);
-    }
-
-    @Override
-    public Map<String, String> toEnvironment(Map<String, String> resolvedParameters) {
-        String seed = resolvedParameters.get(PARAMETER_SEED);
-        if (seed == null) {
-            return Map.of();
         }
         return Map.of(ENV_QUARKUS_RANDOM_SEED, seed);
     }
