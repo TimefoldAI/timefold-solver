@@ -101,7 +101,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced leftTuple happens to be in.
             // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
-            enqueuePendingLeft(leftTuple);
+            crossMatchLeft(leftTuple);
         }
     }
 
@@ -137,7 +137,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
                 clearLeftTrackerList(leftTuple);
                 counter.countRight = 0;
-                enqueuePendingLeft(leftTuple);
+                crossMatchLeft(leftTuple);
             }
         } else {
             // sameBucket: equal prefix unchanged ⇒ keep & reuse the cached bucket (no top lookup, no drop/recreate).
@@ -148,7 +148,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             leftTuple.setStore(inputStoreIndexLeftCounterEntry,
                     putLeftCounter(leftTuple, newCompositeKey, counter, sameBucket));
             if (isFiltering) {
-                enqueuePendingLeft(leftTuple);
+                crossMatchLeft(leftTuple);
             } else {
                 counter.countRight = rightSize(leftTuple, newCompositeKey);
                 updateCounterLeft(counter);
@@ -212,7 +212,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced rightTuple happens to be in.
             // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
-            enqueuePendingRight(rightTuple);
+            crossMatchRight(rightTuple);
         }
     }
 
@@ -231,7 +231,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 // Eager own-side cleanup, then defer the re-walk of the opposite side.
                 // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
                 clearRightTrackerList(rightTuple);
-                enqueuePendingRight(rightTuple);
+                crossMatchRight(rightTuple);
             }
         } else {
             // sameBucket: equal prefix unchanged ⇒ keep & reuse the cached bucket (no top lookup, no drop/recreate).

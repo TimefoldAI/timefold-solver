@@ -421,6 +421,170 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     /**
+     * The last join's deeper input is a {@code map}, which never defers,
+     * so the rule does not add its extra layer -
+     * yet that map's own ancestor is a deferring join.
+     * Layers here: the deferring join is 3 (inputs 0 and 2), the map above it 4, the shallow input 3,
+     * so the last join is delta 1 and reads eagerly.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictBehindMappedDeferringJoinUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        // Inputs two layers apart, so this join defers.
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        // A single-input node between the deferring join and its consumer.
+                                        .map((a, b) -> a)
+                                        // Inputs one layer apart, so this join reads eagerly,
+                                        // and its deeper input is the map rather than the deferring join.
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v)
+                                                .map(v -> v)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1),
+                    assertMatch(value1, value1),
+                    assertMatch(value1, value2),
+                    assertMatch(value1, value2),
+                    assertMatch(value2, value1),
+                    assertMatch(value2, value1),
+                    assertMatch(value2, value2),
+                    assertMatch(value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2));
+        }
+    }
+
+    /**
+     * Pins the layer shape that {@code AbstractNodeBuildHelper}'s "deeper parent settles late" rule exists for:
+     * the last join's two inputs are only one layer apart (so the layer distance alone would let it read
+     * eagerly), but its deeper input is itself a filtering join that defers. That parent only decides which
+     * of its out-tuples the predicate dooms in its own {@code prepareForSettle()}, one layer after an
+     * ordinary parent would have retracted them.
+     * <p>
+     * This test passes with and without that rule, so it is shape coverage, not a reproducer: here the
+     * unassignment reaches the deferring join as a retract and as a composite-key change, both of which
+     * retract its out-tuples eagerly and mark them non-active in time. The rule guards the remaining case,
+     * where a deferring parent's own predicate flips on a plain update; no test in this suite constructs it.
+     */
+    @TestTemplate
+    public void filteringJoinNullConflictBehindDeferringJoinUnassignOne() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().getFirst();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                        // Two layers apart, so this join defers.
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v)
+                                                .map(v -> v),
+                                                equal(TestdataAllowsUnassignedValuesListValue::getEntity,
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        // One layer apart, but the deeper input is the deferring join above.
+                                        .join(factory.forEach(TestdataAllowsUnassignedValuesListValue.class)
+                                                .map(v -> v)
+                                                .map(v -> v),
+                                                equal((a, b) -> a.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((a, b, c) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    Objects.requireNonNull(c.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1, value2));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value2);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value1, value1, value1),
+                    assertMatch(value1, value1, value2),
+                    assertMatch(value1, value2, value1),
+                    assertMatch(value1, value2, value2),
+                    assertMatch(value2, value1, value1),
+                    assertMatch(value2, value1, value2),
+                    assertMatch(value2, value2, value1),
+                    assertMatch(value2, value2, value2));
+
+            // Unassign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 2);
+            entity.getValueList().remove(value1);
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(value2, value2, value2));
+        }
+    }
+
+    /**
      * Like {@link #filteringJoinNullConflictRightQuadJoinUnassignOne()}, but the last join carries no
      * filtering predicate. Non-filtering joins never dereference a fact through a user predicate --
      * {@code AbstractJoinNode#insertOutTupleIfActiveFiltered} skips {@code testFiltering} entirely for

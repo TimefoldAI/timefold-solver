@@ -35,12 +35,15 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     private final DynamicPropagationQueue<LeftTuple_, ExistsCounter<LeftTuple_>> propagationQueue;
 
     /**
-     * Filtering ifExists/ifNotExists nodes defer their cross-match computation
-     * (the opposite-side read)
+     * A filtering ifExists/ifNotExists node whose two inputs are far enough apart
+     * (see {@link #canDeferWork()})
+     * defers its cross-match computation (the opposite-side read)
      * from "whenever a parent propagates in" to this node's own layer turn
      * (see {@link #prepareForSettle()}),
      * closing the stale-activity race at its root instead of guarding against it per read;
      * the same mechanism {@code AbstractJoinNode} uses for filtering joins.
+     * The others read the opposite side on the spot,
+     * where the per-read {@code isActive()} guards are enough.
      * Non-filtering ifExists/ifNotExists never dereferences a fact through a user predicate
      * (it only counts index members),
      * so a stale-but-"active" read there can't corrupt anything;
@@ -74,6 +77,15 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     protected final @Nullable TupleList<LeftTuple_> pendingLeft;
     protected final @Nullable TupleList<UniTuple<Right_>> pendingRight;
 
+    private long inputLayerDelta = -1;
+    private boolean preloadingActive;
+    /**
+     * Whether {@link #crossMatchLeft}/{@link #crossMatchRight} actually defer,
+     * as opposed to reading the opposite side on the spot;
+     * precomputed because their callers sit on hot insert and update paths.
+     */
+    private boolean deferCrossMatch;
+
     protected AbstractIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             InTupleStorePositionTracker tupleStorePositionTracker) {
         super(nextNodesTupleLifecycle);
@@ -100,22 +112,29 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     /**
-     * Enqueues {@code leftTuple} for cross-match reconciliation at this node's own layer turn,
-     * unless it is already awaiting one.
+     * Runs {@code leftTuple}'s cross-match (the opposite-side walk).
+     * When {@link #deferCrossMatch} says a stale read is possible here,
+     * the walk is enqueued for this node's own layer turn instead of running now,
+     * unless the tuple is already awaiting one;
+     * otherwise it runs on the spot, guarded per read by {@link Tuple#getState()} checks.
      * Only called from filtering code paths.
      */
-    protected final void enqueuePendingLeft(LeftTuple_ leftTuple) {
-        if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
+    protected final void crossMatchLeft(LeftTuple_ leftTuple) {
+        if (!deferCrossMatch) {
+            reconcilePendingLeft(leftTuple);
+        } else if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
             leftTuple.setStore(pendingLeftMarkerIndex, Boolean.TRUE);
             pendingLeft.add(leftTuple);
         }
     }
 
     /**
-     * The mirror image of {@link #enqueuePendingLeft}.
+     * The mirror image of {@link #crossMatchLeft}.
      */
-    protected final void enqueuePendingRight(UniTuple<Right_> rightTuple) {
-        if (rightTuple.getStore(pendingRightMarkerIndex) == null) {
+    protected final void crossMatchRight(UniTuple<Right_> rightTuple) {
+        if (!deferCrossMatch) {
+            reconcilePendingRight(rightTuple);
+        } else if (rightTuple.getStore(pendingRightMarkerIndex) == null) {
             rightTuple.setStore(pendingRightMarkerIndex, Boolean.TRUE);
             pendingRight.add(rightTuple);
         }
@@ -158,8 +177,45 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     @Override
+    public final void setInputLayerDelta(long inputLayerDelta) {
+        this.inputLayerDelta = inputLayerDelta;
+        recomputeDeferCrossMatch();
+    }
+
+    @Override
+    public void preloadStarted() {
+        if (preloadingActive) {
+            throw new IllegalStateException("Impossible state: node (%s) is already preloading.".formatted(this));
+        } else {
+            this.preloadingActive = true;
+            recomputeDeferCrossMatch();
+        }
+    }
+
+    @Override
+    public void preloadEnded() {
+        if (!preloadingActive) {
+            throw new IllegalStateException("Impossible state: node (%s) is not preloading.".formatted(this));
+        } else {
+            this.preloadingActive = false;
+            recomputeDeferCrossMatch();
+        }
+    }
+
+    private void recomputeDeferCrossMatch() {
+        this.deferCrossMatch = canDeferWork() && !preloadingActive;
+    }
+
+    @Override
     public final boolean canDeferWork() {
-        return isFiltering;
+        if (isFiltering && inputLayerDelta < 0) {
+            throw new IllegalStateException("Impossible state: the input layer delta of node (%s) was never set."
+                    .formatted(this));
+        }
+        // A filtering node whose inputs are at most one layer apart can only ever read a tuple
+        // that has already been told it is doomed, which the per-read isActive() guards catch.
+        // Two or more layers apart, the doom may not have propagated that far yet; only then is deferral needed.
+        return isFiltering && inputLayerDelta >= 2;
     }
 
     @Override
@@ -358,9 +414,14 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
-        // This only ever runs from reconcilePendingLeft, at this node's own layer turn,
-        // after every ancestor on both sides has completed its retract/update/insert turn for this round;
-        // rightTuple can no longer be stale here, so no per-read staleness check is needed.
+        if (!rightTuple.getState().isActive()) {
+            // The mirror image of updateCounterRight(...): here the right tuple is the retracting one,
+            // which happens when the right input's node sits in a higher layer than the left input's,
+            // so the left's inserts and updates are delivered before the right's retracts are.
+            // Skipping is safe, as the pending retract will not have a tracker to clear for this pair.
+            // Unreachable when this runs from reconcilePendingLeft, at this node's own layer turn.
+            return;
+        }
         if (testFiltering(counter.leftTuple, rightTuple)) {
             counter.countRight++;
             var tracker = new FilteringTracker<>(counter, rightTuple);
@@ -408,11 +469,24 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             // is what makes this safe rather than merely an optimisation that happens to hold.
             return;
         }
-        // This only ever runs from reconcilePendingRight, at this node's own layer turn,
-        // after every ancestor on both sides has completed its retract/update/insert turn for this round;
-        // leftTuple can no longer be stale here
-        // (the pending-left skip above already handles the one case where leftTuple's own reconcile hasn't run yet this round),
-        // so no per-read staleness check is needed.
+        if (!leftTuple.getState().isActive()) {
+            // Assume the following scenario:
+            // - The operation is of two entities of the same type, both filtering out unassigned.
+            // - One entity became unassigned, so the outTuple is getting retracted.
+            // - The entity whose existence is being asserted is still assigned and is being updated.
+            //
+            // This means the filter would be called with (unassignedEntity, assignedEntity),
+            // which breaks the expectation that the filter is only called on two assigned entities
+            // and requires adding null checks to the filter for something that should intuitively be impossible.
+            // We avoid this situation as it is clear that the outTuple must be retracted anyway,
+            // and therefore any further updates to it are pointless.
+            //
+            // The left tuple can be inactive here because its node sits in a higher layer than the right's:
+            // the right's inserts and updates are delivered before the left's retracts are.
+            // The mirror case is possible too, see updateCounterLeft(...).
+            // Unreachable when this runs from reconcilePendingRight, at this node's own layer turn.
+            return;
+        }
         if (testFiltering(leftTuple, rightTuple)) {
             incrementCounterRight(counter);
             var tracker = new FilteringTracker<>(counter, rightTuple);
