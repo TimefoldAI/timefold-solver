@@ -13,8 +13,8 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * <b>The topological order is read once, when a node enters the queue, and is then held in {@link #orders}.</b>
  * {@code NodeTopologicalOrder.compareTo} instead reads it through the {@link BaseTopologicalOrderGraph} interface
- * twice per comparison, which costs an interface dispatch plus, for the union-find backed implementations,
- * a walk to the component representative - and a sift touches {@code O(log n)} comparisons.
+ * twice per comparison, which costs an interface dispatch and, in some implementations, more than an array read -
+ * and a sift makes {@code O(log n)} comparisons.
  * Caching is sound because the order of a node cannot change while nodes sit in the queue:
  * {@link TopologicalOrderGraph#commitChanges(BitSet)} has already run by then, and nothing the consumer of this
  * queue does between {@link #offer} and {@link #poll} touches the graph's edges.
@@ -104,6 +104,8 @@ final class NodeTopologicalOrderQueue {
     }
 
     private void siftUp(int startIndex) {
+        // The node does not move one slot at a time. Parents move down into the hole at index,
+        // and the node goes into the last hole when the loop ends.
         var index = startIndex;
         var nodeId = nodeIds[index];
         var order = orders[index];
@@ -112,6 +114,7 @@ final class NodeTopologicalOrderQueue {
             if (orders[parentIndex] <= order) {
                 break;
             }
+            // The parent comes later than the node, so move the parent down into the hole.
             nodeIds[index] = nodeIds[parentIndex];
             orders[index] = orders[parentIndex];
             index = parentIndex;
@@ -121,6 +124,7 @@ final class NodeTopologicalOrderQueue {
     }
 
     private void siftDown(int startIndex) {
+        // Children move up into the hole at index, and the node goes into the last hole when the loop ends.
         var index = startIndex;
         var nodeId = nodeIds[index];
         var order = orders[index];
@@ -129,22 +133,18 @@ final class NodeTopologicalOrderQueue {
             var childIndex = (index << 1) + 1;
             var rightIndex = childIndex + 1;
             if (rightIndex < size && orders[rightIndex] < orders[childIndex]) {
-                childIndex = rightIndex;
+                childIndex = rightIndex; // Of the two children, keep the one that comes first.
             }
             if (order <= orders[childIndex]) {
                 break;
             }
+            // The node comes later than that child, so move the child up into the hole.
             nodeIds[index] = nodeIds[childIndex];
             orders[index] = orders[childIndex];
             index = childIndex;
         }
         nodeIds[index] = nodeId;
         orders[index] = order;
-    }
-
-    @Override
-    public String toString() {
-        return "size = " + size;
     }
 
 }

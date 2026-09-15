@@ -65,6 +65,19 @@ class NodeTopologicalOrderQueueTest {
         assertThat(drain(queue)).containsExactly(3, 1, 2, 0);
     }
 
+    /**
+     * The queue holds the nodes that were offered, not every node of the graph.
+     */
+    @Test
+    void drainsOnlyTheNodesThatWereOffered() {
+        var queue = new NodeTopologicalOrderQueue(graphWithOrders(0, 10, 20, 30, 40), 5);
+
+        queue.offer(1);
+        queue.offer(3);
+
+        assertThat(drain(queue)).containsExactly(1, 3);
+    }
+
     @Test
     void offeringANodeAlreadyInTheQueueDoesNothing() {
         var queue = new NodeTopologicalOrderQueue(graphWithOrders(5, 1, 9), 3);
