@@ -28,6 +28,7 @@
 
 *** xref:running-timefold-solver/service/demo-data.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/exposing-metrics.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/visualization.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/consumer-guide.adoc[Service consumer guide]
 
 ** xref:running-timefold-solver/library/library-integration.adoc[As a library]
@@ -46,6 +47,7 @@
 ** xref:deploying-to-platform/guide.adoc[Guide]
 ** xref:deploying-to-platform/model-metadata.adoc[leveloffset=+1]
 ** xref:deploying-to-platform/metrics.adoc[leveloffset=+1]
+** xref:deploying-to-platform/visualization.adoc[leveloffset=+1]
 
 * Optimization algorithms
 ** xref:optimization-algorithms/overview.adoc[Overview]
