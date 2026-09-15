@@ -1,0 +1,31 @@
+[
+  {
+    "extension": "revapi.differences",
+    "configuration": {
+      "differences": [
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "parameter void ai.timefold.solver.service.definition.api.ModelInputPatch::<init>(ai.timefold.solver.service.definition.api.ModelInputPatchOp, java.lang.String, ===com.fasterxml.jackson.databind.JsonNode===)",
+          "new": "parameter void ai.timefold.solver.service.definition.api.ModelInputPatch::<init>(ai.timefold.solver.service.definition.api.ModelInputPatchOp, java.lang.String, ===com.fasterxml.jackson.databind.JsonNode===)",
+          "annotationType": "org.eclipse.microprofile.openapi.annotations.media.Schema",
+          "attribute": "additionalProperties",
+          "oldValue": "org.eclipse.microprofile.openapi.annotations.media.Schema$True.class",
+          "newValue": "org.eclipse.microprofile.openapi.annotations.media.Schema.True.class",
+          "justification": "False positive on MacOS"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "method com.fasterxml.jackson.databind.JsonNode ai.timefold.solver.service.definition.api.ModelInputPatch::value()",
+          "new": "method com.fasterxml.jackson.databind.JsonNode ai.timefold.solver.service.definition.api.ModelInputPatch::value()",
+          "annotationType": "org.eclipse.microprofile.openapi.annotations.media.Schema",
+          "attribute": "additionalProperties",
+          "oldValue": "org.eclipse.microprofile.openapi.annotations.media.Schema$True.class",
+          "newValue": "org.eclipse.microprofile.openapi.annotations.media.Schema.True.class",
+          "justification": "False positive on MacOS"
+        }
+      ]
+    }
+  }
+]
