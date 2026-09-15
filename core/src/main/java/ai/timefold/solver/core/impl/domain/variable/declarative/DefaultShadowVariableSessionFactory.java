@@ -269,17 +269,19 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             InnerScoreDirector<Solution_, ?> scoreDirector, ParentVariableType parentVariableType) {
         return switch (parentVariableType) {
             case PREVIOUS -> {
-                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
-                yield new TopologicalSorter(listStateSupply::getNextElement,
-                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0)),
-                        listStateSupply::getInverseSingleton);
+                var listVariableState = scoreDirector
+                        .getListVariableState(Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor()));
+                yield new TopologicalSorter(listVariableState::getNextElement,
+                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0)),
+                        listVariableState::getInverseSingleton);
             }
             case NEXT -> {
-                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
-                yield new TopologicalSorter(listStateSupply::getPreviousElement,
-                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0))
+                var listVariableState = scoreDirector
+                        .getListVariableState(Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor()));
+                yield new TopologicalSorter(listVariableState::getPreviousElement,
+                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0))
                                 .reversed(),
-                        listStateSupply::getInverseSingleton);
+                        listVariableState::getInverseSingleton);
             }
             default -> throw new IllegalStateException(
                     "Impossible state: expected parentVariableType to be previous or next but was %s."
@@ -593,7 +595,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             var parentIndex = parentVariableList.size() - 1;
                             var parentVariable = parentVariableList.get(parentIndex).variableMetaModel();
                             var inverseSupply = graphDescriptor.variableReferenceGraphBuilder().changedVariableNotifier
-                                    .getCollectionInverseVariableSupply(parentVariable);
+                                    .getCollectionInverseVariableState(parentVariable);
 
                             if (parentIsOnRootEntity) {
                                 inverseFunction = (Function) inverseSupply::getInverseCollection;

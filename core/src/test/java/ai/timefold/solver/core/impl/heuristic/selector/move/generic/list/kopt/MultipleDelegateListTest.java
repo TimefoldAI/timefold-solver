@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
@@ -38,7 +38,7 @@ public class MultipleDelegateListTest {
 
         when(listVariableDescriptor.getEntityDescriptor()).thenReturn(entityDescriptor);
 
-        ListVariableStateSupply<Object, Object, Object> listVariableStateSupply = mock(ListVariableStateSupply.class);
+        ListVariableState<Object, Object, Object> listVariableState = mock(ListVariableState.class);
         doAnswer(invocation -> {
             String value = invocation.getArgument(0);
             return switch (value) {
@@ -50,16 +50,16 @@ public class MultipleDelegateListTest {
                 case "f" -> ElementPosition.of("e3", 0);
                 default -> ElementPosition.unassigned();
             };
-        }).when(listVariableStateSupply).getElementPosition(anyString());
-        when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
+        }).when(listVariableState).getElementPosition(anyString());
+        when(listVariableState.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
 
         List<String> expectedOrder = List.of("a", "b", "c", "d", "e", "f");
         for (int i = 0; i < expectedOrder.size(); i++) {
-            assertThat(combined.getIndexOfValue(listVariableStateSupply, expectedOrder.get(i)))
+            assertThat(combined.getIndexOfValue(listVariableState, expectedOrder.get(i)))
                     .isEqualTo(i);
         }
 
-        assertThatCode(() -> combined.getIndexOfValue(listVariableStateSupply, "g"))
+        assertThatCode(() -> combined.getIndexOfValue(listVariableState, "g"))
                 .hasMessage("Value (g) is not contained in any entity list");
     }
 

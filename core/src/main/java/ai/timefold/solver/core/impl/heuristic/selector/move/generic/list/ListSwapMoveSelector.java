@@ -18,9 +18,9 @@ public final class ListSwapMoveSelector<Solution_> extends AbstractGenericListMo
             IterableValueSelector<Solution_> rightValueSelector, boolean randomSelection) {
         super((ListVariableDescriptor<Solution_>) leftValueSelector.getVariableDescriptor());
         this.leftValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, this::getListVariableStateSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, this::getListVariableState);
         this.rightValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, this::getListVariableStateSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, this::getListVariableState);
         this.randomSelection = randomSelection;
 
         phaseLifecycleSupport.addEventListener(this.leftValueSelector);
@@ -30,9 +30,9 @@ public final class ListSwapMoveSelector<Solution_> extends AbstractGenericListMo
     @Override
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
-            return new RandomListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector);
+            return new RandomListSwapIterator<>(listVariableState, leftValueSelector, rightValueSelector);
         } else {
-            return new OriginalListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector);
+            return new OriginalListSwapIterator<>(listVariableState, leftValueSelector, rightValueSelector);
         }
     }
 

@@ -40,7 +40,7 @@ class OriginalListChangeIteratorTest {
         IterableValueSelector<TestdataListSolution> valueSelector =
                 mockIterableValueSelector(listVariableDescriptor, values.toArray());
         OriginalListChangeIterator<TestdataListSolution> listChangeIterator = new OriginalListChangeIterator<>(
-                scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
+                scoreDirector.getListVariableState(listVariableDescriptor),
                 valueSelector,
                 new ElementDestinationSelector<>(mockEntitySelector(entities.toArray(TestdataListEntity[]::new)), valueSelector,
                         false));
