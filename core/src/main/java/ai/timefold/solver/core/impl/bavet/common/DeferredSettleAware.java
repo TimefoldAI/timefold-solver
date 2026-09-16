@@ -16,11 +16,10 @@ import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
  * avoids that trap entirely,
  * and costs nothing for the (overwhelming majority of) nodes that don't implement it.
  * <p>
- * Implemented by two-input nodes that defer their filtering cross-match computation
- * (the opposite-side read) to their own layer,
- * instead of computing it eagerly whenever a parent propagates into them:
- * {@code AbstractJoinNode} and {@code AbstractIfExistsNode}.
- * Both implement it unconditionally (filtering or not),
+ * Implemented by {@code AbstractCrossMatchNode}, the shared parent of the two-input nodes that
+ * cross-match a left tuple against a right tuple through a user predicate
+ * ({@code AbstractJoinNode} and {@code AbstractIfExistsNode}).
+ * It implements this unconditionally (filtering or not),
  * so {@link #canDeferWork()} is what actually distinguishes an instance with pending work
  * from one that never enqueues anything.
  */

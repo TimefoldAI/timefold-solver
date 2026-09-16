@@ -23,12 +23,10 @@ import org.jspecify.annotations.Nullable;
  * @param <Right_>
  */
 public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTuple_ extends Tuple>
-        extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>>
-        implements DeferredSettleAware {
+        extends AbstractCrossMatchNode<LeftTuple_, Right_> {
 
     protected final int inputStoreIndexLeftOutTupleList;
     protected final int inputStoreIndexRightOutTupleList;
-    protected final boolean isFiltering;
     private final int outputStoreIndexLeftOutTupleList;
     private final int outputStoreIndexRightOutTupleList;
     protected final OutTupleStorePositionTracker outputStoreSizeTracker;
@@ -38,50 +36,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     protected final Supplier<TupleList<OutTuple_>> leftOutTupleListBuilder;
     protected final Supplier<TupleList<OutTuple_>> rightOutTupleListBuilder;
 
-    /**
-     * A filtering join whose two inputs are far enough apart (see {@link #canDeferWork()})
-     * defers its cross-match computation (the opposite-side walk)
-     * from "whenever a parent propagates in" to this node's own layer turn (see {@link #prepareForSettle()}),
-     * closing the stale-activity race at its root instead of guarding against it per read.
-     * The others read the opposite side on the spot,
-     * where the per-read {@code isActive()} guards are enough.
-     * Non-filtering joins never dereference a fact through a user predicate,
-     * so a stale-but-"active" read can't corrupt anything there (confirmed by dedicated regression tests);
-     * these fields stay {@code null}/{@code -1} and cost nothing for them.
-     * <p>
-     * {@code pendingLeft}/{@code pendingRight} hold tuples whose cross-match is due;
-     * the marker slots exist purely to make enqueueing idempotent (a tuple already awaiting its turn isn't re-added).
-     * Both lists are drained, left before right, in {@link #prepareForSettle()},
-     * calling {@link #reconcilePendingLeft(Tuple)}/{@link #reconcilePendingRight(UniTuple)}.
-     * That logic already treats "no existing out-tuple for this pair" as "insert if the predicate passes",
-     * so it doubles as the insert path too:
-     * whichever side's tuple is reconciled *second* always sees the *first* side's just-created out-tuple
-     * (since {@link #insertOutTuple} links it into both sides' out-tuple lists immediately),
-     * and correctly treats it as an existing match instead of creating a duplicate.
-     * The two sides are therefore never both examined at once;
-     * consistently draining left before right merely fixes
-     * which side's view is "first" without affecting anything's correctness.
-     */
-    private final int pendingLeftMarkerIndex;
-    private final int pendingRightMarkerIndex;
-    protected final @Nullable TupleList<LeftTuple_> pendingLeft;
-    protected final @Nullable TupleList<UniTuple<Right_>> pendingRight;
-
-    private long settleDistance = -1;
-    private boolean preloadingActive;
-    /**
-     * Whether {@link #crossMatchLeft}/{@link #crossMatchRight} actually defer,
-     * as opposed to reading the opposite side on the spot;
-     * precomputed because their callers sit on hot insert and update paths.
-     */
-    private boolean deferCrossMatch;
-
     protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             InOutTupleStorePositionTracker tupleStorePositionTracker) {
-        super(nextNodesTupleLifecycle);
+        super(nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker, false);
         this.inputStoreIndexLeftOutTupleList = tupleStorePositionTracker.reserveNextLeft();
         this.inputStoreIndexRightOutTupleList = tupleStorePositionTracker.reserveNextRight();
-        this.isFiltering = isFiltering;
         this.outputStoreIndexLeftOutTupleList = tupleStorePositionTracker.reserveNextOut();
         this.outputStoreIndexRightOutTupleList = tupleStorePositionTracker.reserveNextOut();
         this.outputStoreSizeTracker = tupleStorePositionTracker;
@@ -93,131 +52,6 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         var outputStoreIndexRightOutNext = tupleStorePositionTracker.reserveNextOut();
         this.leftOutTupleListBuilder = () -> new TupleList<>(outputStoreIndexLeftOutPrev, outputStoreIndexLeftOutNext);
         this.rightOutTupleListBuilder = () -> new TupleList<>(outputStoreIndexRightOutPrev, outputStoreIndexRightOutNext);
-
-        if (isFiltering) {
-            this.pendingLeftMarkerIndex = tupleStorePositionTracker.reserveNextLeft();
-            var pendingLeftPrev = tupleStorePositionTracker.reserveNextLeft();
-            var pendingLeftNext = tupleStorePositionTracker.reserveNextLeft();
-            this.pendingLeft = new TupleList<>(pendingLeftPrev, pendingLeftNext);
-            this.pendingRightMarkerIndex = tupleStorePositionTracker.reserveNextRight();
-            var pendingRightPrev = tupleStorePositionTracker.reserveNextRight();
-            var pendingRightNext = tupleStorePositionTracker.reserveNextRight();
-            this.pendingRight = new TupleList<>(pendingRightPrev, pendingRightNext);
-        } else {
-            this.pendingLeftMarkerIndex = -1;
-            this.pendingLeft = null;
-            this.pendingRightMarkerIndex = -1;
-            this.pendingRight = null;
-        }
-    }
-
-    /**
-     * Runs {@code leftTuple}'s cross-match (the opposite-side walk).
-     * When {@link #deferCrossMatch} says a stale read is possible here,
-     * the walk is enqueued for this node's own layer turn instead of running now,
-     * unless the tuple is already awaiting one;
-     * otherwise it runs on the spot, guarded per read by {@link Tuple#getState()} checks.
-     * Only called from filtering code paths.
-     */
-    protected final void crossMatchLeft(LeftTuple_ leftTuple) {
-        if (!deferCrossMatch) {
-            reconcilePendingLeft(leftTuple);
-        } else if (leftTuple.getStore(pendingLeftMarkerIndex) == null) {
-            leftTuple.setStore(pendingLeftMarkerIndex, Boolean.TRUE);
-            pendingLeft.add(leftTuple);
-        }
-    }
-
-    /**
-     * The mirror image of {@link #crossMatchLeft}.
-     */
-    protected final void crossMatchRight(UniTuple<Right_> rightTuple) {
-        if (!deferCrossMatch) {
-            reconcilePendingRight(rightTuple);
-        } else if (rightTuple.getStore(pendingRightMarkerIndex) == null) {
-            rightTuple.setStore(pendingRightMarkerIndex, Boolean.TRUE);
-            pendingRight.add(rightTuple);
-        }
-    }
-
-    /**
-     * Removes {@code leftTuple} from the pending queue, if it is on it:
-     * a tuple can be retracted in the same round it was enqueued, before its turn to reconcile ever comes.
-     * Must run before the tuple's own store entries (composite key, out-tuple list, ...) are cleared,
-     * since a still-pending entry left dangling would be read by {@link #prepareForSettle()} after those are gone.
-     */
-    protected final void clearPendingLeft(LeftTuple_ leftTuple) {
-        if (pendingLeft != null && leftTuple.getStore(pendingLeftMarkerIndex) != null) {
-            leftTuple.setStore(pendingLeftMarkerIndex, null);
-            pendingLeft.remove(leftTuple);
-        }
-    }
-
-    /**
-     * The mirror image of {@link #clearPendingLeft}.
-     */
-    protected final void clearPendingRight(UniTuple<Right_> rightTuple) {
-        if (pendingRight != null && rightTuple.getStore(pendingRightMarkerIndex) != null) {
-            rightTuple.setStore(pendingRightMarkerIndex, null);
-            pendingRight.remove(rightTuple);
-        }
-    }
-
-    @Override
-    public final void setSettleDistance(long settleDistance) {
-        this.settleDistance = settleDistance;
-        recomputeDeferCrossMatch();
-    }
-
-    @Override
-    public void preloadStarted() {
-        if (preloadingActive) {
-            throw new IllegalStateException("Impossible state: node (%s) is already preloading.".formatted(this));
-        } else {
-            this.preloadingActive = true;
-            recomputeDeferCrossMatch();
-        }
-    }
-
-    @Override
-    public void preloadEnded() {
-        if (!preloadingActive) {
-            throw new IllegalStateException("Impossible state: node (%s) is not preloading.".formatted(this));
-        } else {
-            this.preloadingActive = false;
-            recomputeDeferCrossMatch();
-        }
-    }
-
-    private void recomputeDeferCrossMatch() {
-        this.deferCrossMatch = canDeferWork() && !preloadingActive;
-    }
-
-    @Override
-    public final boolean canDeferWork() {
-        if (isFiltering && settleDistance < 0) {
-            throw new IllegalStateException("Impossible state: the settle distance of node (%s) was never set."
-                    .formatted(this));
-        }
-        // A filtering node whose inputs are closer than MIN_DEFER_DISTANCE can only ever read a tuple
-        // that has already been told it is doomed, which the per-read isActive() guards catch.
-        // Further apart, the doom may not have propagated that far yet; only then is deferral needed.
-        return isFiltering && settleDistance >= MIN_DEFER_DISTANCE;
-    }
-
-    @Override
-    public final void prepareForSettle() {
-        if (pendingLeft == null) { // Non-filtering: nothing was ever enqueued.
-            return;
-        }
-        pendingLeft.clear(leftTuple -> {
-            leftTuple.setStore(pendingLeftMarkerIndex, null);
-            reconcilePendingLeft(leftTuple);
-        });
-        pendingRight.clear(rightTuple -> {
-            rightTuple.setStore(pendingRightMarkerIndex, null);
-            reconcilePendingRight(rightTuple);
-        });
     }
 
     /**
@@ -231,11 +65,13 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
      * Implemented by each subclass because only it knows how to walk the opposite side
      * (indexed: the shared index/bucket; unindexed: the plain tuple list).
      */
+    @Override
     protected abstract void reconcilePendingLeft(LeftTuple_ leftTuple);
 
     /**
      * The mirror image of {@link #reconcilePendingLeft}.
      */
+    @Override
     protected abstract void reconcilePendingRight(UniTuple<Right_> rightTuple);
 
     @Override

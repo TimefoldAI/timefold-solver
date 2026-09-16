@@ -50,7 +50,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         } else {
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced leftTuple happens to be in.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
             crossMatchLeft(leftTuple);
         }
     }
@@ -70,7 +70,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             updateUnchangedCounterLeft(counter);
         } else {
             // Eager own-side cleanup, then defer the re-walk of the opposite side.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
             clearLeftTrackerList(leftTuple);
             counter.countRight = 0;
             crossMatchLeft(leftTuple);
@@ -105,7 +105,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         } else {
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced rightTuple happens to be in.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
             crossMatchRight(rightTuple);
         }
     }
@@ -120,7 +120,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         if (isFiltering) {
             // Eager own-side cleanup, then defer the re-walk of the opposite side.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
             clearRightTrackerList(rightTuple);
             crossMatchRight(rightTuple);
         }

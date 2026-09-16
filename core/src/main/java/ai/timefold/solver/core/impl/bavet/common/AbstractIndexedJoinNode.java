@@ -154,7 +154,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // Defer the cross-match (the opposite-side read) to this node's own layer turn
             // instead of computing it now,
             // at whatever layer the parent that produced leftTuple happens to be in.
-            // See AbstractJoinNode's pendingLeft/pendingRight javadoc.
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
             crossMatchLeft(leftTuple);
             return;
         }
