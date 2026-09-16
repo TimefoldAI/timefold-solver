@@ -27,7 +27,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -167,9 +167,9 @@ class MoveDirectorTest {
         assertThat(actualValue1).isEqualTo(expectedValue1);
 
         var expectedLocation = ElementPosition.of(entity, 1);
-        var supplyMock = mock(ListVariableStateSupply.class);
-        when(supplyMock.getElementPosition(expectedValue2)).thenReturn(expectedLocation);
-        when(mockScoreDirector.getListVariableStateSupply(any())).thenReturn(supplyMock);
+        var state = mock(ListVariableState.class);
+        when(state.getElementPosition(expectedValue2)).thenReturn(expectedLocation);
+        when(mockScoreDirector.getListVariableState(any())).thenReturn(state);
         var actualPosition = moveDirector.getPositionOf(variableMetaModel, expectedValue2);
         assertThat(actualPosition).isEqualTo(expectedLocation);
     }
@@ -2107,10 +2107,10 @@ class MoveDirectorTest {
             var entityC = new TestdataListEntity("C", c1);
 
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
-            var supplyMock = mock(ListVariableStateSupply.class);
-            when(supplyMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
-            when(supplyMock.getElementPosition(b1)).thenReturn(ElementPosition.of(entityB, 0));
-            when(mockScoreDirector.getListVariableStateSupply(any())).thenReturn(supplyMock);
+            var stateMock = mock(ListVariableState.class);
+            when(stateMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
+            when(stateMock.getElementPosition(b1)).thenReturn(ElementPosition.of(entityB, 0));
+            when(mockScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(stateMock);
             var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
 
             // Gather a2 (from A) and b1 (from B) to the front of C - two source entities, one destination.
@@ -2163,10 +2163,10 @@ class MoveDirectorTest {
             var entityA = new TestdataListEntity("A", a1, a2, a3, a4);
 
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
-            var supplyMock = mock(ListVariableStateSupply.class);
-            when(supplyMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
-            when(supplyMock.getElementPosition(a4)).thenReturn(ElementPosition.of(entityA, 3));
-            when(mockScoreDirector.getListVariableStateSupply(any())).thenReturn(supplyMock);
+            var stateMock = mock(ListVariableState.class);
+            when(stateMock.getElementPosition(a2)).thenReturn(ElementPosition.of(entityA, 1));
+            when(stateMock.getElementPosition(a4)).thenReturn(ElementPosition.of(entityA, 3));
+            when(mockScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(stateMock);
             var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
 
             // a2 and a4 both come from A - this must collapse into ONE bracket for A, not two, with a3 surviving
@@ -2212,7 +2212,7 @@ class MoveDirectorTest {
     void undoNestedPhaseMove() {
         var innerScoreDirector = (InnerScoreDirector<TestdataListSolution, SimpleScore>) mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<>(innerScoreDirector);
-        var listVariableStateSupply = mock(ListVariableStateSupply.class);
+        var listVariableState = mock(ListVariableState.class);
         var listVariableDescriptor = mock(ListVariableDescriptor.class);
         var supplyManager = mock(SupplyManager.class);
         var ruinRecreateConstructionHeuristicPhaseBuilder = mock(RuinRecreateConstructionHeuristicPhaseBuilder.class);
@@ -2231,12 +2231,12 @@ class MoveDirectorTest {
         when(innerScoreDirector.getWorkingSolution()).thenReturn(s1);
         when(innerScoreDirector.isDerived()).thenReturn(false);
         when(innerScoreDirector.getSupplyManager()).thenReturn(supplyManager);
-        when(supplyManager.demand(any())).thenReturn(listVariableStateSupply);
+        when(innerScoreDirector.getListVariableState(any(ListVariableDescriptor.class))).thenReturn(listVariableState);
         // 1 - v1 is on e1 list
         // 2 - v1 moves to e2 list
-        when(listVariableStateSupply.getElementPosition(any())).thenReturn(ElementPosition.of(e1, 0),
+        when(listVariableState.getElementPosition(any())).thenReturn(ElementPosition.of(e1, 0),
                 ElementPosition.of(e2, 1));
-        when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
+        when(listVariableState.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
         when(listVariableDescriptor.getFirstUnpinnedIndex(any())).thenReturn(0);
         // Answer per entity, not per invocation order, and keep getListSize consistent with getValue -
         // the real ListVariableDescriptor.getListSize(entity) IS getValue(entity).size(), and the

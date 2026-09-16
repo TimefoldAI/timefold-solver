@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
@@ -21,7 +21,7 @@ public final class ListChangeMoveSelector<Solution_> extends AbstractGenericList
             DestinationSelector<Solution_> destinationSelector, boolean randomSelection) {
         super((ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor());
         this.sourceValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, this::getListVariableStateSupply);
+                filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, this::getListVariableState);
         this.destinationSelector = destinationSelector;
         this.randomSelection = randomSelection;
         phaseLifecycleSupport.addEventListener(this.sourceValueSelector);
@@ -30,7 +30,7 @@ public final class ListChangeMoveSelector<Solution_> extends AbstractGenericList
 
     public static <Solution_> IterableValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
             IterableValueSelector<Solution_> sourceValueSelector,
-            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
+            Supplier<ListVariableState<Solution_, Object, Object>> listVariableStateSupplier) {
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supportsPinning = listVariableDescriptor.supportsPinning();
         if (!supportsPinning) {
@@ -39,8 +39,8 @@ public final class ListChangeMoveSelector<Solution_> extends AbstractGenericList
         }
         return (IterableValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
                 (scoreDirector, selection) -> {
-                    var listVariableStateSupply = listVariableStateSupplier.get();
-                    var elementPosition = listVariableStateSupply.getElementPosition(selection);
+                    var listVariableState = listVariableStateSupplier.get();
+                    var elementPosition = listVariableState.getElementPosition(selection);
                     if (elementPosition instanceof UnassignedElement) {
                         return true;
                     }
@@ -60,12 +60,12 @@ public final class ListChangeMoveSelector<Solution_> extends AbstractGenericList
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
             return new RandomListChangeIterator<>(
-                    listVariableStateSupply,
+                    listVariableState,
                     sourceValueSelector,
                     destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
-                    listVariableStateSupply,
+                    listVariableState,
                     sourceValueSelector,
                     destinationSelector);
         }
