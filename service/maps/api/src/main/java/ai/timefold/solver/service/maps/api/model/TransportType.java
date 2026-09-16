@@ -7,11 +7,11 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-@Schema(description = "The type of transport used (car, bike, ... ) supported by Timefold.")
+@Schema(description = "The type of transport used (car, bicycle, ... ).")
 public enum TransportType {
 
     CAR("car"),
-    BICYCLE("bike"),
+    BICYCLE("bicycle"),
     FOOT("foot");
 
     private final String value;
