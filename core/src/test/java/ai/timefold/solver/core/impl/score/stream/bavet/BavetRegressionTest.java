@@ -240,7 +240,9 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.setWorkingSolution(solution);
             // Both entities hold value1, so every left tuple has a match.
             if (exists) {
-                assertScore(scoreDirector, assertMatch(entityA), assertMatch(entityB));
+                assertScore(scoreDirector,
+                        assertMatch(entityA).withIndictedObjects(entityA, entityB),
+                        assertMatch(entityB).withIndictedObjects(entityA, entityB));
             } else {
                 assertScore(scoreDirector);
             }
@@ -250,7 +252,9 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             entityA.setValue(value2);
             scoreDirector.afterVariableChanged(entityA, TestdataLavishEntity.VALUE_FIELD);
             if (exists) {
-                assertScore(scoreDirector, assertMatch(entityA), assertMatch(entityB));
+                assertScore(scoreDirector,
+                        assertMatch(entityA).withIndictedObjects(entityA, entityB),
+                        assertMatch(entityB));
             } else {
                 assertScore(scoreDirector);
             }
@@ -263,7 +267,9 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             if (exists) {
                 assertScore(scoreDirector);
             } else {
-                assertScore(scoreDirector, assertMatch(entityA), assertMatch(entityB));
+                assertScore(scoreDirector,
+                        assertMatch(entityA),
+                        assertMatch(entityB));
             }
             assertScoreMatchesFromScratch(scoreDirector, solution, constraintProvider);
         }
@@ -2115,8 +2121,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1),
-                    assertMatch(value2));
+                    assertMatch(value1)
+                            .withIndictedObjects(value1, value2),
+                    assertMatch(value2)
+                            .withIndictedObjects(value1, value2));
 
             // Unassign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -2248,8 +2256,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1, value1, value1),
-                    assertMatch(value2, value2, value2));
+                    assertMatch(value1, value1, value1)
+                            .withIndictedObjects(value1, value2),
+                    assertMatch(value2, value2, value2)
+                            .withIndictedObjects(value1, value2));
 
             // Unassign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -2378,8 +2388,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
 
             assertScore(scoreDirector,
-                    assertMatch(value1),
-                    assertMatch(value2));
+                    assertMatch(value1)
+                            .withIndictedObjects(value1, value2),
+                    assertMatch(value2)
+                            .withIndictedObjects(value1, value2));
 
             // Unassign and check result.
             var variableDescriptor = scoreDirector.getSolutionDescriptor()
@@ -2528,8 +2540,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             assignAllTo(scoreDirector, entity2, values2);
 
             assertScore(scoreDirector,
-                    assertMatch(entity1),
-                    assertMatch(entity2));
+                    assertMatch(entity1)
+                            .withIndictedObjects(entity1.getValueList().toArray()),
+                    assertMatch(entity2)
+                            .withIndictedObjects(entity2.getValueList().toArray()));
 
             // Unassign one of entity1's five contributors; its group still has four and survives,
             // and entity2's group must be left entirely alone.
@@ -2543,8 +2557,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
             scoreDirector.afterListVariableElementUnassigned(variableDescriptor, valueToUnassign);
 
             assertScore(scoreDirector,
-                    assertMatch(entity1),
-                    assertMatch(entity2));
+                    assertMatch(entity1)
+                            .withIndictedObjects(entity1.getValueList().toArray()),
+                    assertMatch(entity2)
+                            .withIndictedObjects(entity2.getValueList().toArray()));
         }
     }
 
