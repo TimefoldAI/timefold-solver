@@ -26,10 +26,11 @@ jobs:
     permissions:
       contents: read
     strategy:
+      fail-fast: false # A broken JDK must not cancel the others.
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest ]
-        java-version: [ 25 ] # Latest LTS if not Ubuntu
-        include:
+        java-version: [ 25, 27 ] # Current LTS and latest JDK; replace 27 on each JDK release.
+        include: # Compile target and minimum runtime; Linux only.
           - os: ubuntu-latest
             java-version: 21
           - os: ubuntu-24.04-arm
@@ -85,10 +86,11 @@ jobs:
     permissions:
       contents: read
     strategy:
+      fail-fast: false # A broken JDK must not cancel the others.
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm ] # Windows doesn't work, Mac is not a deploy OS.
         module: ["spring-integration", "quarkus-integration"]
-        java-version: [ 25 ] # We only test Quarkus with the latest native image.
+        java-version: [ 25, 27 ] # Current LTS and latest JDK; replace 27 on each JDK release.
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v7
