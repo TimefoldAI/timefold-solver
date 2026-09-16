@@ -5,7 +5,13 @@
       "elements": {
         "include": [
           "class ai\\.timefold\\.solver\\.service\\.json\\.api.*",
-          "class ai\\.timefold\\.solver\\.service\\.json\\.internal.*"
+          "interface ai\\.timefold\\.solver\\.service\\.json\\.api.*",
+          "@interface ai\\.timefold\\.solver\\.service\\.json\\.api.*",
+          "enum ai\\.timefold\\.solver\\.service\\.json\\.api.*",
+          "class ai\\.timefold\\.solver\\.service\\.json\\.internal.*",
+          "interface ai\\.timefold\\.solver\\.service\\.json\\.internal.*",
+          "@interface ai\\.timefold\\.solver\\.service\\.json\\.internal.*",
+          "enum ai\\.timefold\\.solver\\.service\\.json\\.internal.*"
         ]
       }
     }

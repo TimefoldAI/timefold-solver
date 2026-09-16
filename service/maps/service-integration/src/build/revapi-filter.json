@@ -5,7 +5,13 @@
       "elements": {
         "include": [
           "class ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.api.*",
-          "class ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.internal.*"
+          "interface ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.api.*",
+          "@interface ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.api.*",
+          "enum ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.api.*",
+          "class ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.internal.*",
+          "interface ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.internal.*",
+          "@interface ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.internal.*",
+          "enum ai\\.timefold\\.solver\\.service\\.maps\\.service\\.integration\\.internal.*"
         ]
       }
     }
