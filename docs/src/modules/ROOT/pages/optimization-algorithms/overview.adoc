@@ -844,12 +844,9 @@ Run a custom optimization algorithm between phases or before the first phase to 
 You will still want to reuse the score calculation.
 For example, to implement a custom Construction Heuristic without implementing an entire `Phase`.
 
-[NOTE]
-====
-Most of the time, a custom solver phase is not worth the investment of development time.
+NOTE: Most of the time, a custom solver phase is not worth the investment of development time.
 xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics] are configurable and support partially initialized solutions too.
 You can use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak them.
-====
 
 The `PhaseCommand` interface appears as follows:
 
@@ -871,7 +868,7 @@ This must not be directly modified, as that would corrupt the `Solver`.
 Executes a `Move` on the working solution.
 This is the only way to change the working solution without corrupting the `Solver`.
 Users can either provide a custom `Move` implementation,
-or choose from the `Move` implementations xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsBuiltInMoves[provided out-of-the-box].
+or build one using the xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsBuiltInMoves[built-in `Moves` factory].
 `getSolutionMetaModel()` method of `PhaseCommandContext` can be used to get the `SolutionMetaModel` of the working solution,
 which will help with creating these `Move` instances.
 `Object executeTemporarily(Move, Function)`::

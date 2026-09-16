@@ -9,8 +9,10 @@ import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.ListAssignMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.ListChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.ListSwapMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.ListTailSwapMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.ListUnassignMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.SwapMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.TwoOptListMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.UnassignMoveProvider;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -58,7 +60,8 @@ class DefaultNeighborhoodProviderTest {
                 .defineNeighborhood(builder);
         assertThat(neighborhood.getMoveProviderList())
                 .map(c -> (Class) c.getClass())
-                .containsExactly(ListChangeMoveProvider.class, ListSwapMoveProvider.class);
+                .containsExactly(ListChangeMoveProvider.class, ListSwapMoveProvider.class,
+                        TwoOptListMoveProvider.class, ListTailSwapMoveProvider.class);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -72,6 +75,7 @@ class DefaultNeighborhoodProviderTest {
         assertThat(neighborhood.getMoveProviderList())
                 .map(c -> (Class) c.getClass())
                 .containsExactly(ListChangeMoveProvider.class, ListSwapMoveProvider.class,
+                        TwoOptListMoveProvider.class, ListTailSwapMoveProvider.class,
                         ListAssignMoveProvider.class, ListUnassignMoveProvider.class);
     }
 

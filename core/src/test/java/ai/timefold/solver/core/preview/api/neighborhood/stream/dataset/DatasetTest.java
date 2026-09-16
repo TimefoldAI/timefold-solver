@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset;
 
+import static ai.timefold.solver.core.testutil.NeighborhoodTestUtils.createSession;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -9,12 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSession;
-import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
@@ -28,24 +25,10 @@ import org.junit.jupiter.api.Test;
 @NullMarked
 class DatasetTest {
 
-    private static DefaultMoveStreamFactory<TestdataSolution> factory() {
-        return new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
-    }
-
-    private static DefaultNeighborhoodSession<TestdataSolution> createSession(
-            DefaultMoveStreamFactory<TestdataSolution> moveStreamFactory, TestdataSolution solution) {
-        var scoreDirector = new EasyScoreDirectorFactory<>(moveStreamFactory.getSolutionDescriptor(),
-                s -> SimpleScore.ZERO, EnvironmentMode.PHASE_ASSERT).buildScoreDirector();
-        scoreDirector.setWorkingSolution(solution);
-        var session = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
-        moveStreamFactory.getSolutionDescriptor().visitAll(solution, session::insert);
-        session.settle();
-        return session;
-    }
-
     @Test
     void asCachedDatasetUni_sizeAndIteratorsVisitEveryElementExactlyOnce() {
-        var moveStreamFactory = factory();
+        var moveStreamFactory =
+                new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var entityDataset = moveStreamFactory.forEach(TestdataEntity.class, false).asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 3); // 2 values, 3 entities.
@@ -65,7 +48,8 @@ class DatasetTest {
 
     @Test
     void asCachedDatasetUni_randomIteratorNeverEndsAndCanRepeat() {
-        var moveStreamFactory = factory();
+        var moveStreamFactory =
+                new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var entityDataset = moveStreamFactory.forEach(TestdataEntity.class, false).asCachedDataset();
 
         var solution = TestdataSolution.generateSolution(2, 2); // 2 values, 2 entities.
@@ -93,7 +77,8 @@ class DatasetTest {
 
     @Test
     void asCachedDatasetSameStreamTwice_sharesOneDataset() {
-        var moveStreamFactory = factory();
+        var moveStreamFactory =
+                new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var stream = moveStreamFactory.forEach(TestdataEntity.class, false);
 
         assertThat(stream.asCachedDataset()).isEqualTo(stream.asCachedDataset());
@@ -101,7 +86,8 @@ class DatasetTest {
 
     @Test
     void cachedAndJustInTimeJoin_agreeOnEveryRow() {
-        var moveStreamFactory = factory();
+        var moveStreamFactory =
+                new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var entityStream = moveStreamFactory.forEach(TestdataEntity.class, false);
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         BiNeighborhoodsJoiner<TestdataEntity, TestdataValue> joiner =
@@ -130,7 +116,8 @@ class DatasetTest {
 
     @Test
     void cachedJoin_perALookupOnSkewedBucketsAlwaysFindsItsMatch() {
-        var moveStreamFactory = factory();
+        var moveStreamFactory =
+                new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var rareEntity = new TestdataEntity("rare");
         var commonEntity = new TestdataEntity("common");
         var valueList = new ArrayList<TestdataValue>();
@@ -177,7 +164,8 @@ class DatasetTest {
 
     @Test
     void cachedJoin_lessThanProducesPairsOrderedLeftBeforeRight() {
-        var moveStreamFactory = factory();
+        var moveStreamFactory =
+                new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         var joiner = NeighborhoodsJoiners.lessThan(TestdataValue::getCode);
         var cachedDataset = valueStream.join(valueStream, joiner).asCachedDataset();
@@ -195,7 +183,8 @@ class DatasetTest {
 
     @Test
     void justInTimeJoin_lessThanProducesPairsOrderedLeftBeforeRight() {
-        var moveStreamFactory = factory();
+        var moveStreamFactory =
+                new DefaultMoveStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var valueStream = moveStreamFactory.forEach(TestdataValue.class, false);
         var joiner = NeighborhoodsJoiners.lessThan(TestdataValue::getCode);
         var valueDataset = valueStream.asCachedDataset();

@@ -37,6 +37,9 @@ class DefaultPhaseCommandContextTest {
         move = mock(Move.class);
         scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        // The real InnerScoreDirector never returns null here, and executeTemporary* needs it
+        // to read and restore the working solution's score around the temporary move.
+        when(scoreDirector.getSolutionDescriptor()).thenReturn(TestdataSolution.buildSolutionDescriptor());
 
         commandContext = new DefaultPhaseCommandContext<>(new MoveDirector<>(scoreDirector), () -> false);
 

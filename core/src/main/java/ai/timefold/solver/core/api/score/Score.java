@@ -50,7 +50,9 @@ public sealed interface Score<Score_ extends Score<Score_>>
      * When rounding is needed, it should be floored (as defined by {@link Math#floor(double)}).
      * <p>
      * If the implementation has a scale/precision, then the unspecified scale/precision of the double multiplicand
-     * should have no impact on the returned scale/precision.
+     * should have no impact on the returned scale/precision,
+     * and the returned scale/precision is never coarser than 0 (whole units),
+     * even if this Score's own scale/precision is coarser than that.
      *
      * @param multiplicand value to be multiplied by this Score.
      * @return this * multiplicand
@@ -62,7 +64,9 @@ public sealed interface Score<Score_ extends Score<Score_>>
      * When rounding is needed, it should be floored (as defined by {@link Math#floor(double)}).
      * <p>
      * If the implementation has a scale/precision, then the unspecified scale/precision of the double divisor
-     * should have no impact on the returned scale/precision.
+     * should have no impact on the returned scale/precision,
+     * and the returned scale/precision is never coarser than 0 (whole units),
+     * even if this Score's own scale/precision is coarser than that.
      *
      * @param divisor value by which this Score is to be divided
      * @return this / divisor
@@ -74,7 +78,9 @@ public sealed interface Score<Score_ extends Score<Score_>>
      * When rounding is needed, it should be floored (as defined by {@link Math#floor(double)}).
      * <p>
      * If the implementation has a scale/precision, then the unspecified scale/precision of the double exponent
-     * should have no impact on the returned scale/precision.
+     * should have no impact on the returned scale/precision,
+     * and the returned scale/precision is never coarser than 0 (whole units),
+     * even if this Score's own scale/precision is coarser than that.
      *
      * @param exponent value by which this Score is to be powered
      * @return this ^ exponent

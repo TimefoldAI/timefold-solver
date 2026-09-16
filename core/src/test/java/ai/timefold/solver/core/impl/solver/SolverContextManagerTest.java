@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -52,7 +53,7 @@ class SolverContextManagerTest {
     }
 
     private SolverContextManager<TestdataSolution, SimpleScore> buildManager(EnvironmentMode... phaseEnvironmentModes) {
-        var phaseList = new java.util.ArrayList<Phase<TestdataSolution>>();
+        var phaseList = new ArrayList<Phase<TestdataSolution>>();
         for (var environmentMode : phaseEnvironmentModes) {
             Phase<TestdataSolution> phase = mock(Phase.class);
             when(phase.getEnvironmentMode()).thenReturn(environmentMode);

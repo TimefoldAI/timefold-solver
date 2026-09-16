@@ -3,7 +3,6 @@ package ai.timefold.solver.core.api.score;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
@@ -151,7 +150,7 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
             return false;
         }
         for (var hardScore : hardScores) {
-            if (hardScore.compareTo(BigDecimal.ZERO) < 0) {
+            if (ScoreUtil.isNegative(hardScore)) {
                 return false;
             }
         }
@@ -192,16 +191,11 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
     public BendableBigDecimalScore multiply(double multiplicand) {
         var newHardScores = new BigDecimal[hardScores.length];
         var newSoftScores = new BigDecimal[softScores.length];
-        var bigDecimalMultiplicand = BigDecimal.valueOf(multiplicand);
         for (var i = 0; i < newHardScores.length; i++) {
-            // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
-            newHardScores[i] = hardScores[i].multiply(bigDecimalMultiplicand).setScale(hardScores[i].scale(),
-                    RoundingMode.FLOOR);
+            newHardScores[i] = ScoreUtil.multiply(hardScores[i], multiplicand);
         }
         for (var i = 0; i < newSoftScores.length; i++) {
-            // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
-            newSoftScores[i] = softScores[i].multiply(bigDecimalMultiplicand).setScale(softScores[i].scale(),
-                    RoundingMode.FLOOR);
+            newSoftScores[i] = ScoreUtil.multiply(softScores[i], multiplicand);
         }
         return new BendableBigDecimalScore(
                 newHardScores, newSoftScores);
@@ -211,14 +205,11 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
     public BendableBigDecimalScore divide(double divisor) {
         var newHardScores = new BigDecimal[hardScores.length];
         var newSoftScores = new BigDecimal[softScores.length];
-        var bigDecimalDivisor = BigDecimal.valueOf(divisor);
         for (var i = 0; i < newHardScores.length; i++) {
-            var hardScore = hardScores[i];
-            newHardScores[i] = hardScore.divide(bigDecimalDivisor, hardScore.scale(), RoundingMode.FLOOR);
+            newHardScores[i] = ScoreUtil.divide(hardScores[i], divisor);
         }
         for (var i = 0; i < newSoftScores.length; i++) {
-            var softScore = softScores[i];
-            newSoftScores[i] = softScore.divide(bigDecimalDivisor, softScore.scale(), RoundingMode.FLOOR);
+            newSoftScores[i] = ScoreUtil.divide(softScores[i], divisor);
         }
         return new BendableBigDecimalScore(
                 newHardScores, newSoftScores);
@@ -228,17 +219,11 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
     public BendableBigDecimalScore power(double exponent) {
         var newHardScores = new BigDecimal[hardScores.length];
         var newSoftScores = new BigDecimal[softScores.length];
-        var actualExponent = BigDecimal.valueOf(exponent);
-        // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
-        // TODO FIXME remove .intValue() so non-integer exponents produce correct results
-        // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
         for (var i = 0; i < newHardScores.length; i++) {
-            var hardScore = hardScores[i];
-            newHardScores[i] = hardScore.pow(actualExponent.intValue()).setScale(hardScore.scale(), RoundingMode.FLOOR);
+            newHardScores[i] = ScoreUtil.power(hardScores[i], exponent);
         }
         for (var i = 0; i < newSoftScores.length; i++) {
-            var softScore = softScores[i];
-            newSoftScores[i] = softScore.pow(actualExponent.intValue()).setScale(softScore.scale(), RoundingMode.FLOOR);
+            newSoftScores[i] = ScoreUtil.power(softScores[i], exponent);
         }
         return new BendableBigDecimalScore(
                 newHardScores, newSoftScores);
@@ -294,12 +279,12 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
                 return false;
             }
             for (var i = 0; i < hardScores.length; i++) {
-                if (!hardScores[i].stripTrailingZeros().equals(other.hardScore(i).stripTrailingZeros())) {
+                if (!ScoreUtil.equalsIgnoringScale(hardScores[i], other.hardScore(i))) {
                     return false;
                 }
             }
             for (var i = 0; i < softScores.length; i++) {
-                if (!softScores[i].stripTrailingZeros().equals(other.softScore(i).stripTrailingZeros())) {
+                if (!ScoreUtil.equalsIgnoringScale(softScores[i], other.softScore(i))) {
                     return false;
                 }
             }
@@ -312,10 +297,10 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
     public int hashCode() {
         var hash = Long.hashCode(structuralScore);
         for (var hardScore : hardScores) {
-            hash = 31 * hash + hardScore.stripTrailingZeros().hashCode();
+            hash = 31 * hash + ScoreUtil.hashCodeIgnoringScale(hardScore);
         }
         for (var softScore : softScores) {
-            hash = 31 * hash + softScore.stripTrailingZeros().hashCode();
+            hash = 31 * hash + ScoreUtil.hashCodeIgnoringScale(softScore);
         }
         return hash;
     }
@@ -343,7 +328,7 @@ public record BendableBigDecimalScore(long structuralScore, BigDecimal[] hardSco
 
     @Override
     public String toShortString() {
-        return ScoreUtil.buildBendableShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0);
+        return ScoreUtil.buildBendableShortString(this, ScoreUtil.BIG_DECIMAL_NOT_ZERO);
     }
 
     @Override

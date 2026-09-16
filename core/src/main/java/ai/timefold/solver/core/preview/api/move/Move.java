@@ -16,20 +16,26 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
- * in the working {@link PlanningSolution}.
+ * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s in the working
+ * {@link PlanningSolution}.
  * <p>
  * Usually the move holds a direct reference to each {@link PlanningEntity} of the {@link PlanningSolution}
  * which it will change when {@link #execute(MutableSolutionView)} is called.
  * It is recommended for the moves to not touch shadow variables,
  * the solver will update shadow variables after move execution is complete.
- * If the move has to touch shadow variables, it is responsible for updating them
- * consistently across the entire dependency graph.
+ * If the move has to touch shadow variables,
+ * it is responsible for updating them consistently across the entire dependency graph.
  * <p>
- * A move must implement {@link Object#equals(Object)} and {@link Object#hashCode()}
- * in a way which can distinguish individual move instances from each other
+ * A move must implement {@link Object#equals(Object)} and {@link Object#hashCode()} in a way
+ * which can distinguish individual move instances from each other
  * and only marks moves as equal if they result in the exact same solution.
  * This is used by several features, such as tabu search and {@link NeighborhoodTester}.
+ * <p>
+ * Moves are created and executed often,
+ * which means their runtime performance is critical to the overall performance of the solver.
+ * Treat their methods as you would treat any other code on the hot path -
+ * avoid any work that does not need doing, especially expensive validation.
+ * Prefer doing that work during move selection, not during move execution.
  *
  * @param <Solution_>
  * @see MoveTester How to test {@link Move}s.
@@ -49,19 +55,20 @@ public interface Move<Solution_> {
     void execute(MutableSolutionView<Solution_> solutionView);
 
     /**
-     * Rebases a move from an origin working solution
-     * to another destination working solution which is usually on another {@link Thread}.
+     * Rebases a move from an origin working solution to another destination working solution
+     * which is usually on another {@link Thread}.
      * It is necessary for multithreaded solving to function.
      * <p>
-     * The new move returned by this method translates the entities and problem facts
-     * to the destination {@link PlanningSolution} of the destination.
-     * That destination {@link PlanningSolution} is a deep planning clone (or an even deeper clone)
-     * of the origin {@link PlanningSolution} that this move has been generated from.
+     * The new move returned by this method translates the entities and problem facts to the destination
+     * {@link PlanningSolution} of the destination.
+     * That destination {@link PlanningSolution} is a deep planning clone (or an even deeper clone) of the origin
+     * {@link PlanningSolution}
+     * that this move has been generated from.
      * <p>
      * That new move does the exact same change as this move,
      * resulting in the same {@link PlanningSolution} state,
-     * presuming that destination {@link PlanningSolution} was in the same state
-     * as the original {@link PlanningSolution} to begin with.
+     * presuming that destination {@link PlanningSolution} was in the same state as the original {@link PlanningSolution} to
+     * begin with.
      * <p>
      * An implementation of this method typically iterates through every entity and fact instance in this move,
      * translates each one to the destination with {@link Lookup#lookUpWorkingObject(Object)}

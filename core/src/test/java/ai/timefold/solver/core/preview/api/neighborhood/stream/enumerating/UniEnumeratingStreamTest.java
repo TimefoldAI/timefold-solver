@@ -563,6 +563,69 @@ class UniEnumeratingStreamTest {
     }
 
     // ************************************************************************
+    // concat
+    // ************************************************************************
+
+    @Test
+    void concat_uniUni() {
+        var factory = factory();
+        // generateSolution(2 values, 4 entities): e0→v0, e1→v1, e2→v0, e3→v1
+        var v0Stream = entityStream(factory)
+                .filter((view, entity) -> entity.getValue().getCode().equals("Generated Value 0"));
+        var v1Stream = entityStream(factory)
+                .filter((view, entity) -> entity.getValue().getCode().equals("Generated Value 1"));
+        var concatStream = (AbstractUniEnumeratingStream<TestdataSolution, TestdataEntity>) v0Stream.concat(v1Stream);
+        var dataset = concatStream.asCachedDataset();
+
+        var solution = TestdataSolution.generateSolution(2, 4);
+        var session = createSession(factory, solution);
+        var instance = getInstance(session, dataset);
+
+        var e0 = solution.getEntityList().get(0);
+        var e1 = solution.getEntityList().get(1);
+        var e2 = solution.getEntityList().get(2);
+        var e3 = solution.getEntityList().get(3);
+
+        assertThat(instance.iterator()).toIterable().map(UniTuple::getA)
+                .containsExactlyInAnyOrder(e0, e1, e2, e3);
+
+        // Reassign e1 from v1 to v0 → e1 leaves the right side, joins the left side.
+        var v0 = solution.getValueList().getFirst();
+        e1.setValue(v0);
+        session.update(e1);
+        session.settle();
+
+        assertThat(instance.iterator()).toIterable().map(UniTuple::getA)
+                .containsExactlyInAnyOrder(e0, e1, e2, e3);
+
+        // Retract e3, the only remaining row on the right side.
+        session.retract(e3);
+        session.settle();
+
+        assertThat(instance.iterator()).toIterable().map(UniTuple::getA)
+                .containsExactlyInAnyOrder(e0, e1, e2);
+    }
+
+    @Test
+    void concat_selfProducesDuplicates() { // Concat is a true multiset union, unlike join or groupBy.
+        var factory = factory();
+        var entityStream = entityStream(factory);
+        var concatStream = (AbstractUniEnumeratingStream<TestdataSolution, TestdataEntity>) entityStream
+                .concat(entityStream);
+        var dataset = concatStream.asCachedDataset();
+
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var session = createSession(factory, solution);
+        var instance = getInstance(session, dataset);
+
+        var e0 = solution.getEntityList().get(0);
+        var e1 = solution.getEntityList().get(1);
+
+        assertThat(instance.iterator()).toIterable().map(UniTuple::getA)
+                .containsExactlyInAnyOrder(e0, e0, e1, e1);
+    }
+
+    // ************************************************************************
     // groupBy
     // ************************************************************************
 

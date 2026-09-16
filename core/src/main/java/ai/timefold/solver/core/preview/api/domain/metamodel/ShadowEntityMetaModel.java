@@ -16,15 +16,15 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize the API.
- * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
+ * Please direct your feedback to <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
  * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  *
  * @param <Solution_> The solution type.
  * @param <Entity_> The entity type.
  */
 @NullMarked
-public non-sealed interface ShadowEntityMetaModel<Solution_, Entity_> extends PlanningEntityMetaModel<Solution_, Entity_> {
+public non-sealed interface ShadowEntityMetaModel<Solution_, Entity_>
+        extends PlanningEntityMetaModel<Solution_, Entity_> {
 
     /**
      * Returns the shadow variables declared by the entity.
@@ -39,16 +39,10 @@ public non-sealed interface ShadowEntityMetaModel<Solution_, Entity_> extends Pl
      *
      * @return A variable declared by the entity.
      */
-    @SuppressWarnings("unchecked")
     @Override
     default <Value_> ShadowVariableMetaModel<Solution_, Entity_, Value_> variable(String variableName) {
-        for (var variableMetaModel : variables()) {
-            if (variableMetaModel.name().equals(variableName)) {
-                return (ShadowVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel;
-            }
-        }
-        throw new IllegalArgumentException(
-                "The variableName (%s) does not exist in the variables (%s).".formatted(variableName, variables()));
+        return (ShadowVariableMetaModel<Solution_, Entity_, Value_>) PlanningEntityMetaModel.super.<Value_> variable(
+                variableName);
     }
 
     /**
@@ -57,22 +51,11 @@ public non-sealed interface ShadowEntityMetaModel<Solution_, Entity_> extends Pl
      *
      * @return A variable declared by the entity.
      */
-    @SuppressWarnings("unchecked")
     @Override
     default <Value_> ShadowVariableMetaModel<Solution_, Entity_, Value_> variable(String variableName,
             Class<Value_> variableClass) {
-        for (var variableMetaModel : variables()) {
-            if (variableMetaModel.name().equals(variableName)) {
-                if (!variableClass.isAssignableFrom(variableMetaModel.type())) {
-                    throw new IllegalArgumentException(
-                            "The variableName (%s) exists among variables (%s) but is not of type (%s).".formatted(variableName,
-                                    variables(), variableClass.getCanonicalName()));
-                }
-                return (ShadowVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel;
-            }
-        }
-        throw new IllegalArgumentException(
-                "The variableName (%s) does not exist in the variables (%s).".formatted(variableName, variables()));
+        return (ShadowVariableMetaModel<Solution_, Entity_, Value_>) PlanningEntityMetaModel.super.variable(variableName,
+                variableClass);
     }
 
 }

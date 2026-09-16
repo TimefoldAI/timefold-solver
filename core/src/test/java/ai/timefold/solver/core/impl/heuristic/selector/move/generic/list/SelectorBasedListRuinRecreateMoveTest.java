@@ -179,7 +179,7 @@ class SelectorBasedListRuinRecreateMoveTest {
                 new LinkedHashSet<>(Set.of(entityA)), 0L);
 
         // Execute the move and immediately undo it, exactly like local search does to evaluate a candidate move.
-        scoreDirector.getMoveDirector().executeTemporary(move);
+        scoreDirector.getMoveDirector().executeTemporary(move, score -> score);
 
         assertThat(entityA.getValueList()).containsExactly(aPin, special1, special2, special3);
         assertThat(entityB.getValueList()).containsExactly(bPin);

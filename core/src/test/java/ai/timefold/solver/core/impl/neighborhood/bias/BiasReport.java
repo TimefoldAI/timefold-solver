@@ -16,19 +16,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tallies {@code sampleCount} independent draws into categories, then asserts a statistical
- * property of the resulting distribution: uniform, weighted by an explicit share per category
- * ({@link #assertWithinSigma(double)}), or a deliberately non-uniform ratio between two categories
- * ({@link #assertShareRatioAtLeast}). Every assertion logs the reached numbers at INFO before
- * asserting, and repeats them in the failure message via AssertJ's {@code as(...)}, so the actual
- * margin against the bound is never silently discarded on a pass; see
- * {@link AbstractBiasIT#SIGMA_LIMIT}'s javadoc for why the bound is a sigma count, not a
- * hand-picked percentage.
+ * Tallies {@code sampleCount} independent draws into categories,
+ * then asserts a statistical property of the resulting distribution:
+ * uniform, weighted by an explicit share per category ({@link #assertWithinSigma(double)}),
+ * or a deliberately non-uniform ratio between two categories ({@link #assertShareRatioAtLeast}).
+ * Every assertion logs the reached numbers at INFO before asserting,
+ * and repeats them in the failure message via AssertJ's {@code as(...)},
+ * so the actual margin against the bound is never silently discarded on a pass;
+ * see {@link AbstractBiasIT#SIGMA_LIMIT}'s javadoc for why the bound is a sigma count, not a hand-picked percentage.
  *
- * @param <Category_> what a single draw is classified into (a bucket, an entity code, a whole
- *        draw order, ...)
+ * @param <Category_> what a single draw is classified into (a bucket, an entity code, a whole draw order, ...)
  */
-final class BiasReport<Category_> {
+public final class BiasReport<Category_> {
 
     private static final Logger LOG = LoggerFactory.getLogger(BiasReport.class);
     private static final int MAX_DETAIL_ROW_COUNT = 32;
@@ -44,7 +43,7 @@ final class BiasReport<Category_> {
         this.countByCategory = Objects.requireNonNull(countByCategory);
     }
 
-    static <Category_> BiasReport<Category_> tally(String label, int sampleCount, IntFunction<Category_> sampler) {
+    public static <Category_> BiasReport<Category_> tally(String label, int sampleCount, IntFunction<Category_> sampler) {
         var countByCategory = new HashMap<Category_, Long>();
         for (var i = 0; i < sampleCount; i++) {
             countByCategory.merge(sampler.apply(i), 1L, Long::sum);
@@ -54,10 +53,10 @@ final class BiasReport<Category_> {
 
     /**
      * Every category in {@code expectedCategoryCollection} is expected in equal share
-     * ({@code 1 / expectedCategoryCollection.size()}). A category absent from the collection is
-     * ignored by {@link #assertWithinSigma(double)}, even if it was drawn.
+     * ({@code 1 / expectedCategoryCollection.size()}).
+     * A category absent from the collection is ignored by {@link #assertWithinSigma(double)}, even if it was drawn.
      */
-    BiasReport<Category_> expectUniform(Collection<Category_> expectedCategoryCollection) {
+    public BiasReport<Category_> expectUniform(Collection<Category_> expectedCategoryCollection) {
         var share = 1.0 / expectedCategoryCollection.size();
         var freshExpectedShareByCategory = new HashMap<Category_, Double>();
         for (var category : expectedCategoryCollection) {
@@ -68,9 +67,9 @@ final class BiasReport<Category_> {
     }
 
     /**
-     * As {@link #expectUniform}, but each category's expected share is given explicitly instead of
-     * assumed equal. Shares need not sum to 1 (a fixture may deliberately omit an unreachable
-     * category); they are used only to compute each category's own expected count and sigma.
+     * As {@link #expectUniform}, but each category's expected share is given explicitly instead of assumed equal.
+     * Shares need not sum to 1 (a fixture may deliberately omit an unreachable category);
+     * they are used only to compute each category's own expected count and sigma.
      */
     BiasReport<Category_> expectWeights(Map<Category_, Double> expectedShareByCategory) {
         this.expectedShareByCategory = Map.copyOf(expectedShareByCategory);
@@ -78,12 +77,12 @@ final class BiasReport<Category_> {
     }
 
     /**
-     * Asserts every expected category was actually drawn, then that no category's observed count
-     * deviates from its expected count by more than {@code sigmaLimit} standard deviations of
-     * binomial sampling noise. Requires {@link #expectUniform} or {@link #expectWeights} to have
-     * been called first.
+     * Asserts every expected category was actually drawn,
+     * then that no category's observed count deviates from its expected count by more than {@code sigmaLimit} standard
+     * deviations of binomial sampling noise.
+     * Requires {@link #expectUniform} or {@link #expectWeights} to have been called first.
      */
-    void assertWithinSigma(double sigmaLimit) {
+    public void assertWithinSigma(double sigmaLimit) {
         assertThat(expectedShareByCategory)
                 .as("call expectUniform() or expectWeights() before assertWithinSigma()")
                 .isNotEmpty();
@@ -100,10 +99,9 @@ final class BiasReport<Category_> {
     }
 
     /**
-     * For a deliberately non-uniform fixture (no {@code expect*} call needed): asserts that
-     * {@code smallCategory}'s per-member rate is at least {@code minRatio} times
-     * {@code largeCategory}'s, where a category's rate is its observed count divided by the given
-     * member count (e.g. its bucket size).
+     * For a deliberately non-uniform fixture (no {@code expect*} call needed):
+     * asserts that {@code smallCategory}'s per-member rate is at least {@code minRatio} times {@code largeCategory}'s,
+     * where a category's rate is its observed count divided by the given member count (e.g. its bucket size).
      */
     void assertShareRatioAtLeast(Category_ smallCategory, int smallCategorySize, Category_ largeCategory,
             int largeCategorySize, double minRatio) {

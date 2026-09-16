@@ -102,12 +102,14 @@ public final class BavetUniConcatTriConstraintStream<Solution_, A, B, C>
          * Therefore we need to check bridge parents to see where this concat node comes from.
          */
         return Objects.equals(leftParent.getParent(), other.leftParent.getParent())
-                && Objects.equals(rightParent.getParent(), other.rightParent.getParent());
+                && Objects.equals(rightParent.getParent(), other.rightParent.getParent())
+                && Objects.equals(paddingFunctionB, other.paddingFunctionB)
+                && Objects.equals(paddingFunctionC, other.paddingFunctionC);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(leftParent.getParent(), rightParent.getParent());
+        return Objects.hash(leftParent.getParent(), rightParent.getParent(), paddingFunctionB, paddingFunctionC);
     }
 
     @Override

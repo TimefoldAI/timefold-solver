@@ -43,6 +43,8 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
     private static final BigDecimal MINUS_5000 = BigDecimal.valueOf(-5000);
     private static final BigDecimal MINUS_8000 = BigDecimal.valueOf(-8000);
     private static final BigDecimal MIN_INTEGER = BigDecimal.valueOf(Integer.MIN_VALUE);
+    private static final BigDecimal COARSE_HUNDRED = new BigDecimal("1E+2");
+    private static final BigDecimal FIVE_POINT_ZERO = new BigDecimal("5.0");
 
     private final BendableBigDecimalScoreDefinition scoreDefinitionHSS = new BendableBigDecimalScoreDefinition(1, 2);
     private final BendableBigDecimalScoreDefinition scoreDefinitionHHSSS = new BendableBigDecimalScoreDefinition(2, 3);
@@ -114,7 +116,7 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
 
     @Test
     void getHardOrSoftScore() {
-        BendableBigDecimalScore initializedScore = scoreDefinitionHSS.createScore(BigDecimal.valueOf(-5),
+        var initializedScore = scoreDefinitionHSS.createScore(BigDecimal.valueOf(-5),
                 BigDecimal.valueOf(-10), BigDecimal.valueOf(-200));
         assertThat(initializedScore.hardOrSoftScore(0)).isEqualTo(BigDecimal.valueOf(-5));
         assertThat(initializedScore.hardOrSoftScore(1)).isEqualTo(BigDecimal.valueOf(-10));
@@ -175,11 +177,11 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
 
     @Test
     void zero() {
-        BendableBigDecimalScore manualZero = BendableBigDecimalScore.zero(0, 1);
+        var manualZero = BendableBigDecimalScore.zero(0, 1);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(manualZero.zero()).isEqualTo(manualZero);
             softly.assertThat(manualZero.isZero()).isTrue();
-            BendableBigDecimalScore manualOne = BendableBigDecimalScore.ofSoft(0, 1, 0, BigDecimal.ONE);
+            var manualOne = BendableBigDecimalScore.ofSoft(0, 1, 0, BigDecimal.ONE);
             softly.assertThat(manualOne.isZero()).isFalse();
         });
     }
@@ -261,6 +263,24 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
                 .isEqualTo(scoreDefinitionHHSSS.createScore(FOUR, MINUS_FIVE, FOUR, ZERO, ZERO));
         assertThat(scoreDefinitionHHSSS.createScore(PLUS_24, MINUS_24, PLUS_24, ZERO, ZERO).divide(5.0))
                 .isEqualTo(scoreDefinitionHHSSS.createScore(FOUR, MINUS_FIVE, FOUR, ZERO, ZERO));
+    }
+
+    @Test
+    void multiplyClampsNegativeScale() {
+        assertThat(scoreDefinitionHHSSS.createScore(COARSE_HUNDRED, FIVE_POINT_ZERO, ZERO, ZERO, ZERO).multiply(1.5))
+                .isEqualTo(scoreDefinitionHHSSS.createScore(new BigDecimal("150"), new BigDecimal("7.5"), ZERO, ZERO, ZERO));
+    }
+
+    @Test
+    void divideClampsNegativeScale() {
+        assertThat(scoreDefinitionHHSSS.createScore(COARSE_HUNDRED, FIVE_POINT_ZERO, ZERO, ZERO, ZERO).divide(2.0))
+                .isEqualTo(scoreDefinitionHHSSS.createScore(new BigDecimal("50"), new BigDecimal("2.5"), ZERO, ZERO, ZERO));
+    }
+
+    @Test
+    void powerClampsNegativeScale() {
+        assertThat(scoreDefinitionHHSSS.createScore(COARSE_HUNDRED, FIVE_POINT_ZERO, ZERO, ZERO, ZERO).power(0.0))
+                .isEqualTo(scoreDefinitionHHSSS.createScore(ONE, new BigDecimal("1.0"), ONE, ONE, ONE));
     }
 
     @Test

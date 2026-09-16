@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.util.TriangleElementFactory;
+import ai.timefold.solver.core.impl.util.TriangularNumbers;
 
 import org.jspecify.annotations.NonNull;
 
@@ -28,7 +30,7 @@ public final class RandomSubListSelector<Solution_> extends AbstractListMoveSele
             int minimumSubListSize, int maximumSubListSize) {
         super((ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor());
         this.entitySelector = entitySelector;
-        this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
+        this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableState);
         if (minimumSubListSize < 1) {
             throw new IllegalArgumentException("The minimumSubListSize (%d) must be greater than 0."
                     .formatted(minimumSubListSize));
@@ -134,7 +136,7 @@ public final class RandomSubListSelector<Solution_> extends AbstractListMoveSele
                 // Using valueSelector instead of entitySelector is fairer
                 // because entities with bigger list variables will be selected more often.
                 var value = valueIterator.next();
-                sourceEntity = listVariableStateSupply.getInverseSingleton(value);
+                sourceEntity = listVariableState.getInverseSingleton(value);
                 if (sourceEntity == null) { // Ignore values which are unassigned.
                     continue;
                 }

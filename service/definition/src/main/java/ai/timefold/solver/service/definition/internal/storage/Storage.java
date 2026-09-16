@@ -1,5 +1,6 @@
 package ai.timefold.solver.service.definition.internal.storage;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -272,6 +273,31 @@ public interface Storage<ModelOutput_> {
      * @param subModel the sub resource to be stored
      */
     void storeSubModel(StorageAddress options, String id, SubModelKind subModelKind, Object subModel);
+
+    /**
+     * Stores a sub resource verbatim from a binary stream in the default location of the underlying data store, without any
+     * marshalling. Use this (rather than {@link #storeSubModel}) for binary payloads such as archives, so that the bytes can be
+     * retrieved unchanged through {@link #getSubModelStream}.
+     *
+     * @param id unique identifier of the data set
+     * @param subModelKind kind of the sub resource e.g. execution profile artifacts
+     * @param input the binary content to be stored; the caller is responsible for closing it
+     */
+    default void storeSubModelStream(String id, SubModelKind subModelKind, InputStream input) {
+        storeSubModelStream(null, id, subModelKind, input);
+    }
+
+    /**
+     * Stores a sub resource verbatim from a binary stream in the location defined by <code>StorageOptions</code>, without any
+     * marshalling. Use this (rather than {@link #storeSubModel}) for binary payloads such as archives, so that the bytes can be
+     * retrieved unchanged through {@link #getSubModelStream}.
+     *
+     * @param options storage option to apply during the operation
+     * @param id unique identifier of the data set
+     * @param subModelKind kind of the sub resource e.g. execution profile artifacts
+     * @param input the binary content to be stored; the caller is responsible for closing it
+     */
+    void storeSubModelStream(StorageAddress options, String id, SubModelKind subModelKind, InputStream input);
 
     /**
      * Stores sub resource associated with given data set given by identifier in the default location of the underlying data

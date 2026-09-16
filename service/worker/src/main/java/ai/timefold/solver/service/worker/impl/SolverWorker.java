@@ -621,8 +621,9 @@ public class SolverWorker {
 
     private SolverModel createSolverModel(ModelInput modelInput, ModelConfig modelConfig, ModelOutput modelOutput) {
         try {
+            var safeModelConfig = modelConfig == null ? ModelConfig.empty() : modelConfig;
             var solverModel =
-                    modelConvertor.toSolverModel(modelInput, modelConfig, Optional.ofNullable(modelOutput));
+                    modelConvertor.toSolverModel(modelInput, safeModelConfig, Optional.ofNullable(modelOutput));
             return enrichModel(solverModel);
         } catch (TimefoldRuntimeException e) {
             throw e;

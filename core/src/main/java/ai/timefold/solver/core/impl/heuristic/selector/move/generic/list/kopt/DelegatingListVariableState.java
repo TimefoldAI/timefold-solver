@@ -1,0 +1,120 @@
+package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
+
+import java.util.function.ToIntFunction;
+
+import ai.timefold.solver.core.impl.domain.variable.IndexShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+record DelegatingListVariableState<Solution_>(ListVariableState<Solution_, Object, Object> delegate,
+        ToIntFunction<Object> indexFunction) implements ListVariableState<Solution_, Object, Object> {
+
+    @Override
+    public void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        delegate.externalize(shadowVariableDescriptor);
+    }
+
+    @Override
+    public void externalize(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        delegate.externalize(shadowVariableDescriptor);
+    }
+
+    @Override
+    public void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        delegate.externalize(shadowVariableDescriptor);
+    }
+
+    @Override
+    public void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        delegate.externalize(shadowVariableDescriptor);
+    }
+
+    @Override
+    public int getIndexOrFail(Object planningValue) {
+        var index = indexFunction.applyAsInt(planningValue);
+        if (index < 0) {
+            throw new IllegalStateException("The element (%s) is not assigned to any list variable.".formatted(planningValue));
+        }
+        return index;
+    }
+
+    @Override
+    public int getIndexOrElse(Object planningValue, int defaultValue) {
+        var index = indexFunction.applyAsInt(planningValue);
+        if (index < 0) {
+            return defaultValue;
+        }
+        return index;
+    }
+
+    @Override
+    public @Nullable Object getInverseSingleton(Object planningValue) {
+        return delegate.getInverseSingleton(planningValue);
+    }
+
+    @Override
+    public ListVariableDescriptor<Solution_> getSourceVariableDescriptor() {
+        return delegate.getSourceVariableDescriptor();
+    }
+
+    @Override
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isAssigned(Object queryCompositeKey) {
+        return delegate.isAssigned(queryCompositeKey);
+    }
+
+    @Override
+    public boolean isPinned(Object queryCompositeKey) {
+        return delegate.isPinned(queryCompositeKey);
+    }
+
+    @Override
+    public ElementPosition getElementPosition(Object value) {
+        return delegate.getElementPosition(value);
+    }
+
+    @Override
+    public int getUnassignedCount() {
+        return delegate.getUnassignedCount();
+    }
+
+    @Override
+    public @Nullable Object getPreviousElement(Object queryCompositeKey) {
+        return delegate.getPreviousElement(queryCompositeKey);
+    }
+
+    @Override
+    public @Nullable Object getNextElement(Object queryCompositeKey) {
+        return delegate.getNextElement(queryCompositeKey);
+    }
+
+    @Override
+    public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
+        delegate.afterListElementUnassigned(scoreDirector, unassignedElement);
+    }
+
+    @Override
+    public void beforeListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
+            int toIndex) {
+        delegate.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
+    }
+
+    @Override
+    public void afterListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
+            int toIndex) {
+        delegate.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
+    }
+}

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
 
+import java.util.function.Function;
+
 import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
@@ -21,6 +23,19 @@ public interface BiEnumeratingStream<Solution_, A, B> extends EnumeratingStream 
      */
     BiEnumeratingStream<Solution_, A, B> filter(BiNeighborhoodsPredicate<Solution_, A, B> filter);
 
+    /**
+     * As defined by {@link UniEnumeratingStream#concat(UniEnumeratingStream)}.
+     */
+    BiEnumeratingStream<Solution_, A, B> concat(BiEnumeratingStream<Solution_, A, B> otherStream);
+
+    /**
+     * As defined by {@link #concat(BiEnumeratingStream)},
+     * except {@code otherStream} only has a single fact per tuple;
+     * {@code paddingFunction} derives the missing second fact from the first.
+     */
+    BiEnumeratingStream<Solution_, A, B> concat(UniEnumeratingStream<Solution_, A> otherStream,
+            Function<A, B> paddingFunction);
+
     // ************************************************************************
     // Operations with duplicate tuple possibility
     // ************************************************************************
@@ -38,22 +53,19 @@ public interface BiEnumeratingStream<Solution_, A, B> extends EnumeratingStream 
             BiNeighborhoodsMapper<Solution_, A, B, ResultB_> mappingB);
 
     /**
-     * As defined by {@link UniEnumeratingStream#groupBy(UniNeighborhoodsMapper)},
-     * only for {@link BiEnumeratingStream} sources.
+     * As defined by {@link UniEnumeratingStream#groupBy(UniNeighborhoodsMapper)}, only for {@link BiEnumeratingStream} sources.
      */
     <GroupKey_> UniEnumeratingStream<Solution_, GroupKey_> groupBy(BiNeighborhoodsMapper<Solution_, A, B, GroupKey_> key);
 
     /**
-     * As defined by
-     * {@link UniEnumeratingStream#groupBy(UniNeighborhoodsCollector)},
-     * only for {@link BiEnumeratingStream} sources.
+     * As defined by {@link UniEnumeratingStream#groupBy(UniNeighborhoodsCollector)}, only for {@link BiEnumeratingStream}
+     * sources.
      */
     <Result_> UniEnumeratingStream<Solution_, Result_> groupBy(BiNeighborhoodsCollector<Solution_, A, B, ?, Result_> collector);
 
     /**
-     * As defined by
-     * {@link UniEnumeratingStream#groupBy(UniNeighborhoodsMapper, UniNeighborhoodsCollector)},
-     * only for {@link BiEnumeratingStream} sources.
+     * As defined by {@link UniEnumeratingStream#groupBy(UniNeighborhoodsMapper, UniNeighborhoodsCollector)}, only for
+     * {@link BiEnumeratingStream} sources.
      */
     <GroupKey_, Result_> BiEnumeratingStream<Solution_, GroupKey_, Result_> groupBy(
             BiNeighborhoodsMapper<Solution_, A, B, GroupKey_> key,
@@ -65,14 +77,17 @@ public interface BiEnumeratingStream<Solution_, A, B> extends EnumeratingStream 
     BiEnumeratingStream<Solution_, A, B> distinct();
 
     /**
-     * Terminal operation: materializes this stream as a {@link BiDataset},
-     * kept up to date in memory as the working solution changes.
-     * Use this to consume the dataset from a custom {@link MoveIteratorProvider},
-     * as opposed to being consumed by {@link MoveStreamFactory#pick(UniEnumeratingStream)}
-     * Resolve the returned handle against a {@link MoveIteratorSession}
-     * inside {@link MoveStreamFactory#buildMoveStream(MoveIteratorProvider)}.
+     * Terminal operation: materializes this stream as a {@link BiDataset}, kept up to date in memory as the working solution
+     * changes.
+     * Use this to consume the dataset from a custom {@link MoveIteratorProvider}, as opposed to being consumed by
+     * {@link MoveStreamFactory#pick(UniEnumeratingStream)}
+     * Resolve the returned handle against a {@link MoveIteratorSession} inside
+     * {@link MoveStreamFactory#buildMoveStream(MoveIteratorProvider)}.
      * <p>
      * Repeated calls on the same stream return an equal handle, and the rows are materialized only once.
+     *
+     * @return Any operations called on the returned instance will not be cached.
+     *         This method creates the boundary the in-memory caching from the just-in-time computations.
      */
     BiDataset<Solution_, A, B> asCachedDataset();
 

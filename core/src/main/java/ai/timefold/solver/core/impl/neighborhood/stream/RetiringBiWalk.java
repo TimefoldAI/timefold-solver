@@ -87,15 +87,22 @@ public interface RetiringBiWalk<L, R> {
             if (!walk.acceptLeft(left)) {
                 continue;
             }
-            for (var attempt = 0; attempt < PROBE_ATTEMPT_COUNT; attempt++) {
-                var rightIterator = walk.createRightIterator(left);
-                if (rightIterator.hasNext()) {
-                    walk.accept(left, rightIterator.next());
-                    return true;
-                }
+            if (probeAndAccept(left, walk)) {
+                return true;
             }
             walk.onExhausted(left);
             leftIterator.retire();
+        }
+        return false;
+    }
+
+    private static <L, R> boolean probeAndAccept(L left, RetiringBiWalk<L, R> walk) {
+        for (var attempt = 0; attempt < PROBE_ATTEMPT_COUNT; attempt++) {
+            var rightIterator = walk.createRightIterator(left);
+            if (rightIterator.hasNext()) {
+                walk.accept(left, rightIterator.next());
+                return true;
+            }
         }
         return false;
     }

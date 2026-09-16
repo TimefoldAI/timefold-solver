@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
-import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.nthTriangle;
+import static ai.timefold.solver.core.impl.util.TriangularNumbers.nthTriangle;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.listSize;
@@ -539,8 +539,9 @@ class RandomSubListSwapMoveSelectorTest {
         moveSelector.phaseEnded(phaseScope);
         moveSelector.solvingEnded(solverScope);
 
-        // The invocation counts are multiplied for the entity selector because it is used by both left and right
-        // subList selectors and each registers the entity selector to its phaseLifecycleSupport.
+        // The invocation counts are multiplied for the entity selector
+        // because it is used by both left and right subList selectors
+        // and each registers the entity selector to its phaseLifecycleSupport.
         verifyPhaseLifecycle(entitySelector, 2, 2, 4);
         verifyPhaseLifecycle(leftValueSelector, 1, 1, 2);
         verifyPhaseLifecycle(rightValueSelector, 1, 1, 2);

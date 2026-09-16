@@ -6,7 +6,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 
@@ -35,6 +37,17 @@ public final class DefaultUniDatasetInstance<Solution_, A> implements UniDataset
     @Override
     public Iterator<@Nullable A> exhaustiveIterator(RandomGenerator random) {
         return new FactIterator<>(delegate.exhaustiveIterator(random));
+    }
+
+    /**
+     * Exposed for pillar move iterators,
+     * which need to retire a dead left value through {@link RetiringBiWalk}.
+     * Not part of {@link UniDatasetInstance}:
+     * it returns an impl type this dataset instance happens to wrap,
+     * and every pillar provider already downcasts to this class regardless.
+     */
+    public RetiringRandomIterator<A> retiringRandomIterator(RandomGenerator random) {
+        return RetiringRandomIterator.mapping(delegate.retiringRandomIterator(random), UniTuple::getA);
     }
 
     /**

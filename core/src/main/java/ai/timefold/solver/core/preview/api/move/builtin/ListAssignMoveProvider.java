@@ -15,11 +15,12 @@ import org.jspecify.annotations.NullMarked;
  * Assigns each unassigned value to a position in some entity's list variable.
  * Only generates moves where the value is in range for the destination entity.
  * <p>
- * For moving an already-assigned value to a different position, see {@link ListChangeMoveProvider}.
- * For removing an already-assigned value from its position (unassigning), see {@code ListUnassignMoveProvider}.
- * <p>
  * Requires that the variable {@link PlanningListVariableMetaModel#allowsUnassignedValues() allows unassigned values};
  * otherwise the constructor throws {@link IllegalArgumentException}.
+ *
+ * @see ListChangeMoveProvider Moving an already-assigned value to a different position.
+ * @see ListUnassignMoveProvider Removing an already-assigned value from its position.
+ * @see MassListAssignMoveProvider A set of unassigned values drawn together.
  */
 @NullMarked
 public final class ListAssignMoveProvider<Solution_, Entity_, Value_>

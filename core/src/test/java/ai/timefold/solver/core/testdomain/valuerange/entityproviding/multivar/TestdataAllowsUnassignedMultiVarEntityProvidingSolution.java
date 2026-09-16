@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -21,6 +22,10 @@ public class TestdataAllowsUnassignedMultiVarEntityProvidingSolution extends Tes
     public static SolutionDescriptor<TestdataAllowsUnassignedMultiVarEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.class,
                 TestdataAllowsUnassignedMultiVarEntityProvidingEntity.class);
+    }
+
+    public static PlanningSolutionMetaModel<TestdataAllowsUnassignedMultiVarEntityProvidingSolution> buildMetaModel() {
+        return buildSolutionDescriptor().getMetaModel();
     }
 
     public static TestdataAllowsUnassignedMultiVarEntityProvidingSolution generateSolution() {
