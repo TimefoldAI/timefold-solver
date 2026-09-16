@@ -71,15 +71,16 @@ public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSe
 
     @Override
     public void addMove(LocalSearchMoveScope<Solution_> moveScope) {
-        selectedMoveCount++;
         moveScope.getStepScope().getPhaseScope().addMoveEvaluationCount(moveScope.getMove(), 1);
+        if (moveScope.getScore().isStructurallyFlawed()) {
+            return;
+        }
+        selectedMoveCount++;
         if (moveScope.getAccepted()) {
             acceptedMoveCount++;
             checkPickEarly(moveScope);
         }
-        if (!moveScope.getScore().isStructurallyFlawed()) {
-            finalistPodium.addMove(moveScope);
-        }
+        finalistPodium.addMove(moveScope);
     }
 
     private <Score_ extends Score<Score_>> void checkPickEarly(LocalSearchMoveScope<Solution_> moveScope) {

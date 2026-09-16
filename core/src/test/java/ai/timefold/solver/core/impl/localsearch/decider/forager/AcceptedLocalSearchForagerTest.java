@@ -228,6 +228,7 @@ class AcceptedLocalSearchForagerTest {
         assertThat(forager.pickMove(stepScope))
                 .withFailMessage("The forager picked a rejected, structurally flawed move as the step.")
                 .isNull();
+        assertThat(stepScope.getSelectedMoveCount()).isZero();
     }
 
     private static LocalSearchPhaseScope<TestdataSolution> createPhaseScope() {
