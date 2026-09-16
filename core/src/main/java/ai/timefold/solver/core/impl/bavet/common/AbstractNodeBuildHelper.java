@@ -213,17 +213,17 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
                 var leftLayerIndex = leftParentNode.getLayerIndex();
                 var rightLayerIndex = rightParentNode.getLayerIndex();
                 if (twoInputNode instanceof DeferredSettleAware deferredSettleAware) {
-                    // How far apart the two inputs are decides whether this node can ever read a stale tuple.
-                    // A deferring parent settles one layer later than an ordinary one:
+                    // How far apart the two inputs settle decides whether this node can ever read a stale tuple.
+                    // A deferring parent settles one step later than an ordinary one:
                     // it only decides which of its out-tuples the predicate dooms in its own prepareForSettle(),
                     // rather than retracting them as soon as its own parent tells it to.
-                    // Count that as one more layer of distance.
+                    // Count that as one more step of settle distance.
                     // Parents are laid out before their children, so the parent's own answer is already final here.
                     var deeperParentNode = leftLayerIndex >= rightLayerIndex ? leftParentNode : rightParentNode;
                     var deeperParentSettlesLate = leftLayerIndex != rightLayerIndex
                             && deeperParentNode instanceof DeferredSettleAware deeperParent
                             && deeperParent.canDeferWork();
-                    deferredSettleAware.setInputLayerDelta(
+                    deferredSettleAware.setSettleDistance(
                             Math.abs(leftLayerIndex - rightLayerIndex) + (deeperParentSettlesLate ? 1 : 0));
                 }
                 yield Math.max(leftLayerIndex, rightLayerIndex) + 1;

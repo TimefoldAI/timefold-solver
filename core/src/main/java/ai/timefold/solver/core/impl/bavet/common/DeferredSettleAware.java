@@ -27,6 +27,14 @@ import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 public interface DeferredSettleAware {
 
     /**
+     * The smallest settle distance at which a stale read is possible,
+     * and therefore the smallest at which {@link #canDeferWork()} returns true.
+     * Below it, a filtering node can only ever read a tuple that has already been told it is doomed,
+     * which the per-read {@code isActive()} guards catch.
+     */
+    long MIN_DEFER_DISTANCE = 2;
+
+    /**
      * Runs once per {@link AbstractBavetNodeNetwork#settle()} round,
      * for this node's own layer,
      * before any node in that layer begins its retract/update/insert phases.
@@ -39,29 +47,33 @@ public interface DeferredSettleAware {
 
     /**
      * Whether the node can ever have pending work for {@link #prepareForSettle()} to drain.
-     * Only a filtering node whose two inputs are at least two layers apart can:
+     * Only a filtering node whose inputs are at least {@link #MIN_DEFER_DISTANCE} settlement steps apart can:
      * a non-filtering node never dereferences a fact through a user predicate,
-     * and a filtering node whose inputs are at most one layer apart cannot observe a stale tuple
+     * and a filtering node whose inputs are closer than that cannot observe a stale tuple
      * that still reports itself as active, so both read the opposite side eagerly instead.
      * <p>
-     * Requires {@link #setInputLayerDelta(long)} to have run.
+     * Requires {@link #setSettleDistance(long)} to have run.
      */
     boolean canDeferWork();
 
     /**
-     * The absolute difference between the layers of this node's two input parents,
-     * which decides whether a stale read is possible here at all;
+     * How many settlement steps apart this node's two inputs are:
+     * the absolute difference between their layers,
+     * plus one when the deeper parent is itself a deferring node
+     * (it dooms its out-tuples in its own {@link #prepareForSettle()},
+     * one step later than an ordinary parent retracts them).
+     * This is what decides whether a stale read is possible here at all;
      * see {@link #canDeferWork()}.
      * Called exactly once per node, while the node network is being layered,
      * before any tuple reaches the node.
      */
-    void setInputLayerDelta(long inputLayerDelta);
+    void setSettleDistance(long settleDistance);
 
     /**
      * Turns deferral off for the duration of a session preload
      * ({@link AbstractBavetNodeNetwork#settle()} filling an empty network for the first time),
      * where every tuple arrives exactly once as an insert
-     * and therefore no stale read is possible regardless of layer distance.
+     * and therefore no stale read is possible regardless of settle distance.
      * The node is allowed to change the return of {@link #canDeferWork()}.
      */
     void preloadStarted();

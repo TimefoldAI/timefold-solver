@@ -67,7 +67,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     protected final @Nullable TupleList<LeftTuple_> pendingLeft;
     protected final @Nullable TupleList<UniTuple<Right_>> pendingRight;
 
-    private long inputLayerDelta = -1;
+    private long settleDistance = -1;
     private boolean preloadingActive;
     /**
      * Whether {@link #crossMatchLeft}/{@link #crossMatchRight} actually defer,
@@ -164,8 +164,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     @Override
-    public final void setInputLayerDelta(long inputLayerDelta) {
-        this.inputLayerDelta = inputLayerDelta;
+    public final void setSettleDistance(long settleDistance) {
+        this.settleDistance = settleDistance;
         recomputeDeferCrossMatch();
     }
 
@@ -195,14 +195,14 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     @Override
     public final boolean canDeferWork() {
-        if (isFiltering && inputLayerDelta < 0) {
-            throw new IllegalStateException("Impossible state: the input layer delta of node (%s) was never set."
+        if (isFiltering && settleDistance < 0) {
+            throw new IllegalStateException("Impossible state: the settle distance of node (%s) was never set."
                     .formatted(this));
         }
-        // A filtering node whose inputs are at most one layer apart can only ever read a tuple
+        // A filtering node whose inputs are closer than MIN_DEFER_DISTANCE can only ever read a tuple
         // that has already been told it is doomed, which the per-read isActive() guards catch.
-        // Two or more layers apart, the doom may not have propagated that far yet; only then is deferral needed.
-        return isFiltering && inputLayerDelta >= 2;
+        // Further apart, the doom may not have propagated that far yet; only then is deferral needed.
+        return isFiltering && settleDistance >= MIN_DEFER_DISTANCE;
     }
 
     @Override

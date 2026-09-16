@@ -10,7 +10,10 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
+import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
@@ -20,6 +23,9 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
 
@@ -29,6 +35,284 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     public BavetRegressionTest(ConstraintMatchPolicy constraintMatchPolicy) {
         super(new BavetConstraintStreamImplSupport(constraintMatchPolicy));
+    }
+
+    /**
+     * The plain-update predicate flip that {@code AbstractNodeBuildHelper}'s "deeper parent settles late" rule
+     * exists for, and that no other test in this suite constructs.
+     * <p>
+     * The join key is {@link TestdataLavishEntity#getEntityGroup()}, which is not a planning variable,
+     * so flipping the value changes neither the composite key nor {@code forEach} membership
+     * (both values are non-null, so the entity never leaves the filtered forEach node).
+     * What reaches the deferring join is therefore a plain update, not a retract and not a key change -
+     * the two shapes that let {@code filteringJoinNullConflictBehindDeferringJoinUnassignOne} pass
+     * with and without the rule.
+     * <p>
+     * The last join's inputs are one layer apart, so without the rule it reads the opposite side eagerly.
+     * Its shallow input sits in a layer below the deferring join,
+     * and therefore propagates into it while the deferring join's out-tuples are still unreconciled:
+     * they report themselves active even though their predicate no longer holds.
+     * The downstream predicate asserts that it never observes one.
+     */
+    @TestTemplate
+    void filteringJoinPredicateFlipBehindDeferringJoin() {
+        assertPredicateFlipBehindDeferringJoin(true);
+    }
+
+    /**
+     * {@link #filteringJoinPredicateFlipBehindDeferringJoin()} without the {@code equal} joiner,
+     * so both joins are unindexed and take {@code AbstractUnindexedJoinNode}'s cross-match path.
+     */
+    @TestTemplate
+    void filteringJoinPredicateFlipBehindDeferringJoinUnindexed() {
+        assertPredicateFlipBehindDeferringJoin(false);
+    }
+
+    private void assertPredicateFlipBehindDeferringJoin(boolean indexed) {
+        var solution = buildFlipSolution();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+        var entityA = solution.getEntityList().get(0);
+        var entityB = solution.getEntityList().get(1);
+
+        ConstraintProvider constraintProvider = factory -> {
+            var deferringJoin = factory.forEach(TestdataLavishEntity.class)
+                    // Inputs two layers apart, so this join defers its cross-match.
+                    .join(factory.forEach(TestdataLavishEntity.class)
+                            .map(e -> e)
+                            .map(e -> e),
+                            indexed
+                                    ? new BiJoiner[] {
+                                            equal(TestdataLavishEntity::getEntityGroup,
+                                                    TestdataLavishEntity::getEntityGroup),
+                                            filtering((TestdataLavishEntity a, TestdataLavishEntity b) -> a
+                                                    .getValue() == value1) }
+                                    : new BiJoiner[] {
+                                            filtering((TestdataLavishEntity a, TestdataLavishEntity b) -> a
+                                                    .getValue() == value1) });
+            return new Constraint[] {
+                    // Inputs one layer apart, but the deeper input is the deferring join above.
+                    deferringJoin.join(factory.forEach(TestdataLavishEntity.class)
+                            .map(e -> e)
+                            .map(e -> e),
+                            indexed
+                                    ? new TriJoiner[] {
+                                            equal((TestdataLavishEntity a, TestdataLavishEntity b) -> a.getEntityGroup(),
+                                                    TestdataLavishEntity::getEntityGroup),
+                                            filtering((TestdataLavishEntity a, TestdataLavishEntity b,
+                                                    TestdataLavishEntity c) -> assertNotStale(a, value1)) }
+                                    : new TriJoiner[] {
+                                            filtering((TestdataLavishEntity a, TestdataLavishEntity b,
+                                                    TestdataLavishEntity c) -> assertNotStale(a, value1)) })
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint(TEST_CONSTRAINT_ID)
+            };
+        };
+
+        try (InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataLavishSolution.buildSolutionDescriptor(), constraintProvider)) {
+            scoreDirector.setWorkingSolution(solution);
+            // Both entities hold value1, so the deferring join keeps all four pairs
+            // and each pairs with both entities downstream.
+            assertScore(scoreDirector,
+                    assertMatch(entityA, entityA, entityA), assertMatch(entityA, entityA, entityB),
+                    assertMatch(entityA, entityB, entityA), assertMatch(entityA, entityB, entityB),
+                    assertMatch(entityB, entityA, entityA), assertMatch(entityB, entityA, entityB),
+                    assertMatch(entityB, entityB, entityA), assertMatch(entityB, entityB, entityB));
+
+            // The flip: a plain variable change between two non-null values.
+            scoreDirector.beforeVariableChanged(entityA, TestdataLavishEntity.VALUE_FIELD);
+            entityA.setValue(value2);
+            scoreDirector.afterVariableChanged(entityA, TestdataLavishEntity.VALUE_FIELD);
+
+            // The deferring join's predicate no longer holds for entityA on the left.
+            assertScore(scoreDirector,
+                    assertMatch(entityB, entityA, entityA), assertMatch(entityB, entityA, entityB),
+                    assertMatch(entityB, entityB, entityA), assertMatch(entityB, entityB, entityB));
+            assertScoreMatchesFromScratch(scoreDirector, solution, constraintProvider);
+        }
+    }
+
+    /**
+     * Probes the shape the "deeper parent settles late" rule deliberately declines to protect:
+     * a {@code map} sits between the deferring join and its consumer,
+     * so the consumer's deeper input is the map rather than the deferring join
+     * and no extra layer of distance is added.
+     * If a plain-update flip can make the consumer observe an unreconciled tuple here,
+     * the rule is incomplete and the map needs to carry its ancestor's late-settle status.
+     */
+    @TestTemplate
+    void filteringJoinPredicateFlipBehindMappedDeferringJoin() {
+        var solution = buildFlipSolution();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+        var entityA = solution.getEntityList().get(0);
+        var entityB = solution.getEntityList().get(1);
+
+        ConstraintProvider constraintProvider = factory -> new Constraint[] {
+                factory.forEach(TestdataLavishEntity.class)
+                        // Inputs two layers apart, so this join defers.
+                        .join(factory.forEach(TestdataLavishEntity.class)
+                                .map(e -> e)
+                                .map(e -> e),
+                                equal(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getEntityGroup),
+                                filtering((a, b) -> a.getValue() == value1))
+                        // A single-input node between the deferring join and its consumer.
+                        .map((a, b) -> a)
+                        // The deeper input is now the map, which never defers, so the rule adds nothing.
+                        .join(factory.forEach(TestdataLavishEntity.class)
+                                .map(e -> e)
+                                .map(e -> e)
+                                .map(e -> e),
+                                equal(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getEntityGroup),
+                                filtering((a, b) -> assertNotStale(a, value1)))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID)
+        };
+
+        try (InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataLavishSolution.buildSolutionDescriptor(), constraintProvider)) {
+            scoreDirector.setWorkingSolution(solution);
+            assertScore(scoreDirector,
+                    assertMatch(entityA, entityA), assertMatch(entityA, entityB),
+                    assertMatch(entityA, entityA), assertMatch(entityA, entityB),
+                    assertMatch(entityB, entityA), assertMatch(entityB, entityB),
+                    assertMatch(entityB, entityA), assertMatch(entityB, entityB));
+
+            scoreDirector.beforeVariableChanged(entityA, TestdataLavishEntity.VALUE_FIELD);
+            entityA.setValue(value2);
+            scoreDirector.afterVariableChanged(entityA, TestdataLavishEntity.VALUE_FIELD);
+
+            assertScore(scoreDirector,
+                    assertMatch(entityB, entityA), assertMatch(entityB, entityB),
+                    assertMatch(entityB, entityA), assertMatch(entityB, entityB));
+            assertScoreMatchesFromScratch(scoreDirector, solution, constraintProvider);
+        }
+    }
+
+    /**
+     * The {@code ifExists} counterpart: the node's two inputs are two layers apart, so it defers,
+     * and a plain-update flip of its filtering predicate must still be reconciled before it propagates.
+     * {@code AbstractIfExistsNode} received the same deferral treatment as the join,
+     * so it needs the same coverage.
+     */
+    @TestTemplate
+    void filteringIfExistsPredicateFlipWhenDeferring() {
+        assertIfExistsPredicateFlipWhenDeferring(true);
+    }
+
+    /**
+     * {@link #filteringIfExistsPredicateFlipWhenDeferring()} inverted:
+     * {@code ifNotExists} counts the same matches and negates the answer,
+     * so a missed reconciliation shows up as the complement.
+     */
+    @TestTemplate
+    void filteringIfNotExistsPredicateFlipWhenDeferring() {
+        assertIfExistsPredicateFlipWhenDeferring(false);
+    }
+
+    private void assertIfExistsPredicateFlipWhenDeferring(boolean exists) {
+        var solution = buildFlipSolution();
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+        var entityA = solution.getEntityList().get(0);
+        var entityB = solution.getEntityList().get(1);
+
+        ConstraintProvider constraintProvider = factory -> {
+            // Two maps put the left input two layers above the right, so the node defers.
+            var left = factory.forEach(TestdataLavishEntity.class)
+                    .map(e -> e)
+                    .map(e -> e);
+            var joiners = new BiJoiner[] {
+                    equal(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getEntityGroup),
+                    filtering((TestdataLavishEntity a, TestdataLavishEntity b) -> b.getValue() == value1) };
+            var filtered = exists
+                    ? left.ifExists(TestdataLavishEntity.class, joiners)
+                    : left.ifNotExists(TestdataLavishEntity.class, joiners);
+            return new Constraint[] {
+                    filtered.penalize(SimpleScore.ONE).asConstraint(TEST_CONSTRAINT_ID)
+            };
+        };
+
+        try (InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataLavishSolution.buildSolutionDescriptor(), constraintProvider)) {
+            scoreDirector.setWorkingSolution(solution);
+            // Both entities hold value1, so every left tuple has a match.
+            if (exists) {
+                assertScore(scoreDirector, assertMatch(entityA), assertMatch(entityB));
+            } else {
+                assertScore(scoreDirector);
+            }
+
+            // The flip: entityA stops matching, but entityB still does, so every left tuple keeps a match.
+            scoreDirector.beforeVariableChanged(entityA, TestdataLavishEntity.VALUE_FIELD);
+            entityA.setValue(value2);
+            scoreDirector.afterVariableChanged(entityA, TestdataLavishEntity.VALUE_FIELD);
+            if (exists) {
+                assertScore(scoreDirector, assertMatch(entityA), assertMatch(entityB));
+            } else {
+                assertScore(scoreDirector);
+            }
+            assertScoreMatchesFromScratch(scoreDirector, solution, constraintProvider);
+
+            // Flip the last matching entity too, so every counter drops to zero.
+            scoreDirector.beforeVariableChanged(entityB, TestdataLavishEntity.VALUE_FIELD);
+            entityB.setValue(value2);
+            scoreDirector.afterVariableChanged(entityB, TestdataLavishEntity.VALUE_FIELD);
+            if (exists) {
+                assertScore(scoreDirector);
+            } else {
+                assertScore(scoreDirector, assertMatch(entityA), assertMatch(entityB));
+            }
+            assertScoreMatchesFromScratch(scoreDirector, solution, constraintProvider);
+        }
+    }
+
+    /**
+     * Two entities in one group, holding the first of two values.
+     * The entity group is not a planning variable, so it is a join key that a value flip cannot disturb.
+     */
+    private static TestdataLavishSolution buildFlipSolution() {
+        var solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
+        var valueGroup = solution.getFirstValueGroup();
+        var value1 = new TestdataLavishValue("MyValue 1", valueGroup);
+        var value2 = new TestdataLavishValue("MyValue 2", valueGroup);
+        solution.getValueList().addAll(List.of(value1, value2));
+        var entityGroup = solution.getFirstEntityGroup();
+        solution.getEntityList().addAll(List.of(
+                new TestdataLavishEntity("MyEntity A", entityGroup, value1),
+                new TestdataLavishEntity("MyEntity B", entityGroup, value1)));
+        return solution;
+    }
+
+    /**
+     * The deferring join upstream only emits pairs whose left entity still holds {@code expectedValue}.
+     * Seeing any other one means its out-tuple was read before it had been reconciled.
+     */
+    private static boolean assertNotStale(TestdataLavishEntity entity, TestdataLavishValue expectedValue) {
+        if (entity.getValue() != expectedValue) {
+            throw new IllegalStateException(
+                    "Impossible state: the entity (%s) was read behind a deferring join even though its predicate no longer holds."
+                            .formatted(entity));
+        }
+        return true;
+    }
+
+    /**
+     * {@link #assertScore} only compares the incremental session against hand-written matches;
+     * under {@link ai.timefold.solver.core.config.solver.EnvironmentMode#PHASE_ASSERT}
+     * nothing recalculates from scratch.
+     * A wrong expectation could therefore hide a stale read, so compare against a fresh session too.
+     */
+    private <Solution_> void assertScoreMatchesFromScratch(InnerScoreDirector<Solution_, SimpleScore> scoreDirector,
+            Solution_ solution, ConstraintProvider constraintProvider) {
+        try (InnerScoreDirector<Solution_, SimpleScore> fromScratch =
+                buildScoreDirector(scoreDirector.getSolutionDescriptor(), constraintProvider)) {
+            fromScratch.setWorkingSolution(solution);
+            assertThat(scoreDirector.calculateScore())
+                    .as("The incrementally calculated score differs from the score calculated from scratch.")
+                    .isEqualTo(fromScratch.calculateScore());
+        }
     }
 
     @TestTemplate
@@ -425,7 +709,9 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * so the rule does not add its extra layer -
      * yet that map's own ancestor is a deferring join.
      * Layers here: the deferring join is 3 (inputs 0 and 2), the map above it 4, the shallow input 3,
-     * so the last join is delta 1 and reads eagerly.
+     * so the last join is settle distance 1 and reads eagerly.
+     * That eager read does reach a doomed tuple, but the per-read {@code isActive()} guards catch it;
+     * see {@link #filteringJoinPredicateFlipBehindMappedDeferringJoin()}, which pins exactly that.
      */
     @TestTemplate
     public void filteringJoinNullConflictBehindMappedDeferringJoinUnassignOne() {
@@ -510,8 +796,9 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * <p>
      * This test passes with and without that rule, so it is shape coverage, not a reproducer: here the
      * unassignment reaches the deferring join as a retract and as a composite-key change, both of which
-     * retract its out-tuples eagerly and mark them non-active in time. The rule guards the remaining case,
-     * where a deferring parent's own predicate flips on a plain update; no test in this suite constructs it.
+     * retract its out-tuples eagerly and mark them non-active in time. The remaining case the rule guards,
+     * where a deferring parent's own predicate flips on a plain update, is reproduced by
+     * {@link #filteringJoinPredicateFlipBehindDeferringJoin()}.
      */
     @TestTemplate
     public void filteringJoinNullConflictBehindDeferringJoinUnassignOne() {
