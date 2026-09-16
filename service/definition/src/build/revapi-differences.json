@@ -24,6 +24,12 @@
           "oldValue": "org.eclipse.microprofile.openapi.annotations.media.Schema$True.class",
           "newValue": "org.eclipse.microprofile.openapi.annotations.media.Schema.True.class",
           "justification": "False positive on MacOS"
+        },
+        {
+          "ignore": true,
+          "code": "java.field.removed",
+          "old": "field ai.timefold.solver.service.definition.api.ModelMaturityLevel.Example",
+          "justification": "Renamed to Template"
         }
       ]
     }
