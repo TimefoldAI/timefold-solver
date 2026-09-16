@@ -77,7 +77,9 @@ public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSe
             acceptedMoveCount++;
             checkPickEarly(moveScope);
         }
-        finalistPodium.addMove(moveScope);
+        if (!moveScope.getScore().isStructurallyFlawed()) {
+            finalistPodium.addMove(moveScope);
+        }
     }
 
     private <Score_ extends Score<Score_>> void checkPickEarly(LocalSearchMoveScope<Solution_> moveScope) {
