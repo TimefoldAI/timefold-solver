@@ -39,7 +39,7 @@ public final class FixedVariableReferenceGraph<Solution_>
                     .intStream(() -> Spliterators.spliterator(graph.nodeForwardEdges(finalNode), 0, 0),
                             0, false)
                     .toArray();
-            changeTracker.add(nodeTopologicalOrders[node]);
+            markChanged(nodeList.get(node));
             var variableReference = nodeList.get(node).variableReferences().get(0);
             var entityConsistencyState = variableReference.entityConsistencyState();
             if (variableReference.groupEntities() != null) {
@@ -79,22 +79,10 @@ public final class FixedVariableReferenceGraph<Solution_>
 
     @Override
     boolean innerUpdateChanged() {
-        if (changeTracker.isEmpty()) {
-            return true;
-        }
-
-        // The nodes are polled in topological order, so every node an update can reach is polled
-        // after it: updating each node once is enough, however many times it was queued.
-        var updated = new BitSet(nodeList.size());
-
         // NOTE: This assumes the user did not add any fixed loops to
         // their graph (i.e. have two variables ALWAYS depend on one-another).
         while (!changeTracker.isEmpty()) {
             var changedNodeId = changeTracker.poll().nodeId();
-            if (updated.get(changedNodeId)) {
-                continue;
-            }
-            updated.set(changedNodeId);
             var entityVariable = nodeList.get(changedNodeId);
             var entity = entityVariable.entity();
             var shadowVariableReferences = entityVariable.variableReferences();
@@ -102,7 +90,11 @@ public final class FixedVariableReferenceGraph<Solution_>
                 var isVariableChanged = shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
                 if (isVariableChanged) {
                     for (var nextNode : cachedComponentForwardEdges[changedNodeId]) {
-                        if (!updated.get(nextNode)) {
+                        // isChanged stays set until the pass ends, so a queued node is never re-added.
+                        // Polling follows topological order over an acyclic graph, so a polled node
+                        // can't become reachable again.
+                        if (!isChanged.get(nextNode)) {
+                            isChanged.set(nextNode);
                             changeTracker.add(nodeTopologicalOrders[nextNode]);
                         }
                     }
