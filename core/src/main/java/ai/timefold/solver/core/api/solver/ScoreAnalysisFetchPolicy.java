@@ -12,13 +12,15 @@ public enum ScoreAnalysisFetchPolicy {
 
     /**
      * {@link ScoreAnalysis} is fully initialized.
-     * All included {@link ConstraintAnalysis} objects include full {@link ConstraintAnalysis#matches() match analysis}.
+     * All included {@link ConstraintAnalysis} objects include full {@link ConstraintAnalysis#matches() match analysis},
+     * and {@link ScoreAnalysis#indictmentAnalyses()} will be populated.
      */
     FETCH_ALL,
     /**
      * {@link ConstraintAnalysis} included in {@link ScoreAnalysis}
      * provides neither {@link ConstraintAnalysis#matches() match analysis}
      * nor {@link ConstraintAnalysis#matchCount() match count}.
+     * Additionally, {@link ScoreAnalysis#indictmentAnalyses()} will be empty.
      * This is useful for performance reasons when the match analysis is not needed.
      */
     FETCH_SHALLOW,
@@ -26,6 +28,7 @@ public enum ScoreAnalysisFetchPolicy {
      * {@link ConstraintAnalysis} included in {@link ScoreAnalysis}
      * does not provide {@link ConstraintAnalysis#matches() match analysis},
      * but does provide {@link ConstraintAnalysis#matchCount() match count}.
+     * Additionally, {@link ScoreAnalysis#indictmentAnalyses()} will be empty.
      * This is useful when there are too many matches to send over the wire
      * or meaningfully present to users.
      */
