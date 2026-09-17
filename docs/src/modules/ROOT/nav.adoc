@@ -25,6 +25,7 @@
 *** xref:running-timefold-solver/service/rest-api.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/model-config-overrides.adoc[Model configuration overrides]
 *** xref:running-timefold-solver/service/model-enrichment.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/map-service.adoc[leveloffset=+1]
 
 *** xref:running-timefold-solver/service/demo-data.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/exposing-metrics.adoc[leveloffset=+1]
