@@ -20,6 +20,7 @@ public interface Indictable {
     /**
      * An identifier that uniquely identifies the type returned by
      * {@link #getIndictedObject()}.
+     * 
      * @return a string that can be used to identify the class of {@link #getIndictedObject()}
      */
     String getIndictedTypeId();
@@ -27,6 +28,7 @@ public interface Indictable {
     /**
      * Optional method. It is used to calculate the {@link IndictmentAnalysis#indictee()}
      * when this object is indicted. If not implemented, it will return this object.
+     * 
      * @return the object that {@link IndictmentAnalysis#indictee()} should return
      */
     default Object getIndictedObject() {
