@@ -53,8 +53,8 @@ final class BavetScoringUniConstraintStream<Solution_, A>
     private UniScoreImpacter<A> buildScoreImpacter(ConstraintMatchPolicy constraintMatchPolicy) {
         return switch (constraintMatchPolicy) {
             case DISABLED -> scoreImpact::impactNaked;
-            case ENABLED, ENABLED_WITHOUT_INDICTMENTS -> scoreImpact::impactFull;
-            case ENABLED_WITHOUT_JUSTIFICATIONS, ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS ->
+            case ENABLED -> scoreImpact::impactFull;
+            case ENABLED_WITHOUT_JUSTIFICATIONS ->
                 scoreImpact::impactWithoutJustification;
         };
     }
