@@ -1,0 +1,45 @@
+[
+  {
+    "extension": "revapi.differences",
+    "configuration": {
+      "differences": [
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "parameter void ai.timefold.solver.service.definition.api.ModelInputPatch::<init>(ai.timefold.solver.service.definition.api.ModelInputPatchOp, java.lang.String, ===com.fasterxml.jackson.databind.JsonNode===)",
+          "new": "parameter void ai.timefold.solver.service.definition.api.ModelInputPatch::<init>(ai.timefold.solver.service.definition.api.ModelInputPatchOp, java.lang.String, ===com.fasterxml.jackson.databind.JsonNode===)",
+          "annotationType": "org.eclipse.microprofile.openapi.annotations.media.Schema",
+          "attribute": "additionalProperties",
+          "oldValue": "org.eclipse.microprofile.openapi.annotations.media.Schema$True.class",
+          "newValue": "org.eclipse.microprofile.openapi.annotations.media.Schema.True.class",
+          "justification": "False positive on MacOS"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "method com.fasterxml.jackson.databind.JsonNode ai.timefold.solver.service.definition.api.ModelInputPatch::value()",
+          "new": "method com.fasterxml.jackson.databind.JsonNode ai.timefold.solver.service.definition.api.ModelInputPatch::value()",
+          "annotationType": "org.eclipse.microprofile.openapi.annotations.media.Schema",
+          "attribute": "additionalProperties",
+          "oldValue": "org.eclipse.microprofile.openapi.annotations.media.Schema$True.class",
+          "newValue": "org.eclipse.microprofile.openapi.annotations.media.Schema.True.class",
+          "justification": "False positive on MacOS"
+        },
+        {
+          "ignore": true,
+          "code": "java.field.removed",
+          "old": "field ai.timefold.solver.service.definition.api.ModelMaturityLevel.Example",
+          "justification": "Renamed to Template"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "interface ai.timefold.solver.service.definition.api.ModelConvertor<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>, ModelInput_ extends ai.timefold.solver.service.definition.api.ModelInput, ModelConfigurationOverrides_ extends ai.timefold.solver.service.definition.api.ModelConfigOverrides, SolverModel_ extends ai.timefold.solver.service.definition.api.SolverModel<Score_>, ModelOutput_ extends ai.timefold.solver.service.definition.api.ModelOutput>",
+          "new": "interface ai.timefold.solver.service.definition.api.ModelConvertor<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>, ModelInput_ extends ai.timefold.solver.service.definition.api.ModelInput, ModelConfigurationOverrides_ extends ai.timefold.solver.service.definition.api.ModelConfigOverrides, SolverModel_ extends ai.timefold.solver.service.definition.api.SolverModel<Score_>, ModelOutput_ extends ai.timefold.solver.service.definition.api.ModelOutput>",
+          "annotationType": "org.jspecify.annotations.NullMarked",
+          "justification": "Documents existing nullability contract; not a behavioral or binary-incompatible change."
+        }
+      ]
+    }
+  }
+]

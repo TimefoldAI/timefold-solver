@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
@@ -81,7 +81,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     private Object replayedValue = null;
     private long valuesSize;
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private ListVariableState<Solution_, Object, Object> listVariableState;
     private ReachableValues<Object, Object> reachableValues;
 
     private final boolean checkSourceAndDestination;
@@ -110,12 +110,12 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        this.listVariableStateSupply = phaseScope.getSolverScope().getScoreDirector().getListVariableStateSupply(
-                (ListVariableDescriptor<Solution_>) nonReplayingValueSelector.getVariableDescriptor());
+        this.listVariableState = phaseScope.getSolverScope().getScoreDirector()
+                .getListVariableState((ListVariableDescriptor<Solution_>) nonReplayingValueSelector.getVariableDescriptor());
         this.nonReplayingValueSelector.phaseStarted(phaseScope);
         this.replayingValueSelector.phaseStarted(phaseScope);
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
-                .getReachableValues(listVariableStateSupply.getSourceVariableDescriptor(), selectionSorter);
+                .getReachableValues(listVariableState.getSourceVariableDescriptor(), selectionSorter);
         valuesSize = reachableValues.getSize();
     }
 
@@ -126,7 +126,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         this.replayingValueSelector.phaseEnded(phaseScope);
         this.replayedValue = null;
         this.reachableValues = null;
-        this.listVariableStateSupply = null;
+        this.listVariableState = null;
     }
 
     // ************************************************************************
@@ -187,18 +187,18 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            return new RandomFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues,
-                    listVariableStateSupply, workingRandom, checkSourceAndDestination);
+            return new RandomFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues, listVariableState,
+                    workingRandom, checkSourceAndDestination);
         } else {
-            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues,
-                    listVariableStateSupply, checkSourceAndDestination);
+            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues, listVariableState,
+                    checkSourceAndDestination);
         }
     }
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
-        return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues,
-                listVariableStateSupply, checkSourceAndDestination);
+        return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues, listVariableState,
+                checkSourceAndDestination);
     }
 
     @Override
@@ -217,7 +217,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     @NullMarked
     private abstract class AbstractFilteringValueRangeIterator<Entity_, Value_> implements Iterator<Value_> {
         private final Supplier<Value_> upcomingValueSupplier;
-        private final ListVariableStateSupply<Solution_, Entity_, Value_> listVariableStateSupply;
+        private final ListVariableState<Solution_, Entity_, Value_> listVariableState;
         private final ReachableValues<Entity_, Value_> reachableValues;
         private final boolean checkSourceAndDestination;
         private boolean initialized = false;
@@ -231,11 +231,10 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
         AbstractFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
                 ReachableValues<Entity_, Value_> reachableValues,
-                ListVariableStateSupply<Solution_, Entity_, Value_> listVariableStateSupply,
-                boolean checkSourceAndDestination) {
+                ListVariableState<Solution_, Entity_, Value_> listVariableState, boolean checkSourceAndDestination) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
-            this.listVariableStateSupply = listVariableStateSupply;
+            this.listVariableState = listVariableState;
             this.checkSourceAndDestination = checkSourceAndDestination;
         }
 
@@ -281,7 +280,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             currentUpcomingValueList = null;
             if (checkSourceAndDestination) {
                 // Load the current assigned entity of the selected value
-                var position = listVariableStateSupply.getElementPosition(currentUpcomingValue);
+                var position = listVariableState.getElementPosition(currentUpcomingValue);
                 if (position instanceof PositionInList positionInList) {
                     currentUpcomingEntity = positionInList.entity();
                 }
@@ -307,7 +306,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
         boolean isReachable(Value_ destinationValue) {
             Entity_ destinationEntity = null;
-            var assignedDestinationPosition = listVariableStateSupply.getElementPosition(destinationValue);
+            var assignedDestinationPosition = listVariableState.getElementPosition(destinationValue);
             if (assignedDestinationPosition instanceof PositionInList elementPosition) {
                 destinationEntity = elementPosition.entity();
             }
@@ -328,9 +327,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
         private OriginalFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
                 ReachableValues<Entity_, Value_> reachableValues,
-                ListVariableStateSupply<Solution_, Entity_, Value_> listVariableStateSupply,
-                boolean checkSourceAndDestination) {
-            super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
+                ListVariableState<Solution_, Entity_, Value_> listVariableState, boolean checkSourceAndDestination) {
+            super(upcomingValueSupplier, reachableValues, listVariableState, checkSourceAndDestination);
         }
 
         @Override
@@ -381,9 +379,9 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
         private RandomFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
                 ReachableValues<Entity_, Value_> reachableValues,
-                ListVariableStateSupply<Solution_, Entity_, Value_> listVariableStateSupply, RandomGenerator workingRandom,
+                ListVariableState<Solution_, Entity_, Value_> listVariableState, RandomGenerator workingRandom,
                 boolean checkSourceAndDestination) {
-            super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
+            super(upcomingValueSupplier, reachableValues, listVariableState, checkSourceAndDestination);
             this.workingRandom = workingRandom;
         }
 

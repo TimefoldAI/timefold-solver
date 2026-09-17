@@ -828,7 +828,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     public <Entity_, Value_> boolean isAssigned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value) {
-        return backingScoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel)).isAssigned(value);
+        return backingScoreDirector.getListVariableState(extractVariableDescriptor(variableMetaModel)).isAssigned(value);
     }
 
     @Override
@@ -841,7 +841,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     public @Nullable <Entity_, Value_> Entity_
             getEntity(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
-        return (Entity_) backingScoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
+        return (Entity_) backingScoreDirector.getListVariableState(extractVariableDescriptor(variableMetaModel))
                 .getInverseSingleton(value);
     }
 
@@ -860,7 +860,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableDescriptor, Value_ value) {
-        return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(listVariableDescriptor))
+        return scoreDirector.getListVariableState(extractVariableDescriptor(listVariableDescriptor))
                 .getElementPosition(value);
     }
 
@@ -874,7 +874,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         if (value == null) {
             return false; // Null is never pinned.
         }
-        return backingScoreDirector.getListVariableStateSupply(listVariableDescriptor).isPinned(value);
+        return backingScoreDirector.getListVariableState(listVariableDescriptor).isPinned(value);
     }
 
     @Override

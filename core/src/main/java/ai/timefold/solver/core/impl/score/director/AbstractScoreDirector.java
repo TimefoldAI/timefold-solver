@@ -22,8 +22,9 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.common.LookupManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.ShadowVariableSupport;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableState;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
+import ai.timefold.solver.core.impl.domain.variable.VariableSupport;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -79,7 +80,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private boolean expectShadowVariablesInCorrectState;
     private final boolean ignoreInconsistentSolutions;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
-    protected final ShadowVariableSupport<Solution_> shadowVariableSupport;
+    protected final VariableSupport<Solution_> variableSupport;
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
     /**
      * Must never be shared between score directors,
@@ -89,7 +90,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * and operations which do not perform moves do not require them.
      */
     private final ValueRangeManager<Solution_> valueRangeManager;
-    private final @Nullable ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply; // Null when no list variable.
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
 
     private long workingEntityListRevision = 0L;
@@ -120,25 +120,23 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         // We set the shadow variable support,
         // which will be necessary for obtaining the change notifier
-        this.shadowVariableSupport = ShadowVariableSupport.create(this);
-        // When using a list variable,
-        // we ensure that the listVariableStateSupply is initialized,
-        // as it will serve as the single source of truth for all other classes.
+        this.variableSupport = VariableSupport.create(this);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        if (listVariableDescriptor == null) {
-            this.listVariableStateSupply = null;
-        } else {
-            this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
+        if (listVariableDescriptor != null) {
+            // When using a list variable,
+            // we ensure that the list variable state is initialized,
+            // as it will serve as the single source of truth for all other classes.
+            this.variableSupport.getListVariableState(listVariableDescriptor);
         }
         // We can now initialize the shadow variables since all the necessary resources have been allocated
-        this.shadowVariableSupport.linkShadowVariables();
+        this.variableSupport.linkShadowVariables();
         //  When it's true,
         //  a snapshot of the solution is created during the evaluation of moves,
         //  allowing for certain assertions.
         //  In {@link EnvironmentMode#TRACKED_FULL_ASSERT}, the snapshots are compared when corruption is detected,
         //  allowing us to report exactly what variables are different.
         this.solutionTracker = environmentMode.isTracking()
-                ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
+                ? new SolutionTracker<>(getSolutionDescriptor(), variableSupport)
                 : null;
         this.valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         setAllChangesWillBeUndoneBeforeStepEnds(false); // Make sure the notifier is correctly initialized.
@@ -178,16 +176,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
-            getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
-        var originalListVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
-        if (variableDescriptor != originalListVariableDescriptor) {
-            throw new IllegalStateException(
-                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
-                            .formatted(variableDescriptor, originalListVariableDescriptor));
-        }
-        return Objects.requireNonNull((ListVariableStateSupply<Solution_, Entity_, Value_>) listVariableStateSupply);
+    public BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor) {
+        return Objects.requireNonNull(variableSupport.getBasicVariableState(variableDescriptor));
+    }
+
+    @Override
+    public <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(ListVariableDescriptor<Solution_> variableDescriptor) {
+        return Objects.requireNonNull(variableSupport.getListVariableState(variableDescriptor));
     }
 
     @Override
@@ -243,7 +239,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public SupplyManager getSupplyManager() {
-        return shadowVariableSupport;
+        return variableSupport;
     }
 
     @Override
@@ -338,7 +334,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         assertInitScoreZeroOrLess();
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
 
-        shadowVariableSupport.resetWorkingSolution();
+        variableSupport.resetWorkingSolution();
         if (moveRepository != null) {
             moveRepository.initialize(new SessionContext<>(this));
         }
@@ -368,7 +364,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     public List<VariableLoop> computeVariableLoops() {
-        return shadowVariableSupport.getVariableLoops();
+        return variableSupport.getVariableLoops();
     }
 
     public void unassignInconsistentEntities() {
@@ -377,13 +373,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         for (var inconsistentCycle : inconsistentCycles) {
             inconsistentEntities.addAll(inconsistentCycle.entitySet());
         }
-        if (listVariableStateSupply != null) {
-            var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-            var listElementClass = listVariableStateSupply.getSourceVariableDescriptor().getElementType();
+        var listVariableDescriptor = this.scoreDirectorFactory.getSolutionDescriptor().getListVariableDescriptor();
+        if (listVariableDescriptor != null) {
+            var listVariableState = Objects.requireNonNull(variableSupport.getListVariableState(listVariableDescriptor));
+            var listElementClass = listVariableDescriptor.getElementType();
             for (var inconsistentEntity : inconsistentEntities) {
                 if (listElementClass.isInstance(inconsistentEntity)) {
-                    var inverse = Objects.requireNonNull(listVariableStateSupply.getInverseSingleton(inconsistentEntity));
-                    int index = listVariableStateSupply.getIndexOrFail(inconsistentEntity);
+                    var inverse = Objects.requireNonNull(listVariableState.getInverseSingleton(inconsistentEntity));
+                    int index = listVariableState.getIndexOrFail(inconsistentEntity);
 
                     if (listVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), inverse, index)) {
                         throw new IllegalStateException("""
@@ -519,7 +516,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void updateShadowVariables() {
-        lastVariableUpdateSuccessful = shadowVariableSupport.updateShadowVariables();
+        lastVariableUpdateSuccessful = variableSupport.updateShadowVariables();
     }
 
     @Override
@@ -534,12 +531,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * causing constraints reliant on these variables to be inaccurately evaluated.
      */
     protected void clearPendingShadowVariableUpdates() {
-        shadowVariableSupport.clearPendingShadowVariableUpdates();
+        variableSupport.clearPendingShadowVariableUpdates();
     }
 
     @Override
     public void forceUpdateShadowVariables() {
-        lastVariableUpdateSuccessful = shadowVariableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
+        lastVariableUpdateSuccessful = variableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
     }
 
     protected void setCalculatedScore(Score_ score) {
@@ -583,10 +580,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lookUpEnabled) {
             lookUpManager.reset();
         }
-        if (listVariableStateSupply != null) {
-            getSupplyManager().cancel(listVariableStateSupply.getSourceVariableDescriptor().getStateDemand());
-        }
-        shadowVariableSupport.close();
+        variableSupport.close();
     }
 
     // ************************************************************************
@@ -622,7 +616,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             workingInitScore++;
         }
         assertInitScoreZeroOrLess();
-        shadowVariableSupport.beforeVariableChanged(variableDescriptor, entity);
+        variableSupport.beforeVariableChanged(variableDescriptor, entity);
     }
 
     @Override
@@ -630,7 +624,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (variableDescriptor.isGenuineAndUninitialized(entity)) {
             workingInitScore--;
         }
-        shadowVariableSupport.afterVariableChanged(variableDescriptor, entity);
+        variableSupport.afterVariableChanged(variableDescriptor, entity);
         neighborhoodsElementUpdateNotifier.accept(entity);
         if (isStepAssertOrMore) {
             assertValueRangeForBasicVariables(entity);
@@ -660,7 +654,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (!variableDescriptor.allowsUnassignedValues()) { // Unassigned elements don't count towards the initScore here.
             workingInitScore--;
         }
-        shadowVariableSupport.afterElementUnassigned(variableDescriptor, element);
+        variableSupport.afterElementUnassigned(variableDescriptor, element);
         neighborhoodsElementUpdateNotifier.accept(element);
     }
 
@@ -677,13 +671,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                             Maybe you are using an improperly implemented custom move?"""
                             .formatted(variableDescriptor, entity, fromIndex, toIndex));
         }
-        shadowVariableSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        variableSupport.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        shadowVariableSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        variableSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         neighborhoodsElementUpdateNotifier.accept(entity);
         if (isStepAssertOrMore) {
             var valueList = variableDescriptor.getValue(entity).subList(fromIndex, toIndex);
@@ -729,7 +723,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lookUpEnabled) {
             lookUpManager.addWorkingObject(problemFact);
         }
-        shadowVariableSupport.resetWorkingSolution(); // TODO do not nuke the shadow variable state
+        variableSupport.resetWorkingSolution(); // TODO do not nuke the shadow variable state
         // Notify the move repository of the change, allowing an update to move generating.
         if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
             neighborhoodsBasedMoveRepository.insert(problemFact);
@@ -746,7 +740,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (isConstraintConfiguration(problemFactOrEntity)) {
             setWorkingSolution(workingSolution); // Nuke everything and recalculate, constraint weights have changed.
         } else {
-            shadowVariableSupport.resetWorkingSolution(); // TODO do not nuke the shadow variable state
+            variableSupport.resetWorkingSolution(); // TODO do not nuke the shadow variable state
             neighborhoodsElementUpdateNotifier.accept(problemFactOrEntity);
         }
     }
@@ -765,7 +759,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(problemFact);
         }
-        shadowVariableSupport.resetWorkingSolution(); // TODO do not nuke the shadow variable state
+        variableSupport.resetWorkingSolution(); // TODO do not nuke the shadow variable state
         // Notify the move repository of the change, allowing an update to move generating.
         if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
             neighborhoodsBasedMoveRepository.retract(problemFact);
@@ -825,7 +819,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void assertShadowVariablesAreNotStale(InnerScore<Score_> expectedWorkingScore, Object completedAction) {
-        var violationMessage = shadowVariableSupport.createShadowVariablesViolationMessage();
+        var violationMessage = variableSupport.createShadowVariablesViolationMessage();
         if (violationMessage != null) {
             throw new VariableCorruptionException("""
                     %s corruption after completedAction (%s):
@@ -907,13 +901,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             // We cannot set all shadow variables to null, since some shadow variable updaters
             // may expect them to be non-null.
             // Instead, we just simulate a change to all genuine variables.
-            shadowVariableSupport.forceUpdateAllShadowVariables(workingSolution);
+            variableSupport.forceUpdateAllShadowVariables(workingSolution);
             solutionTracker.setUndoFromScratchSolution(workingSolution);
 
             // Also calculate from scratch for the before solution, since it might
             // have been corrupted but was only detected now
             solutionTracker.restoreBeforeSolution();
-            shadowVariableSupport.forceUpdateAllShadowVariables(workingSolution);
+            variableSupport.forceUpdateAllShadowVariables(workingSolution);
             solutionTracker.setBeforeFromScratchSolution(workingSolution);
 
             corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
