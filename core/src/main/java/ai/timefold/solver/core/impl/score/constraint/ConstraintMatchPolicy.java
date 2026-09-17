@@ -12,11 +12,8 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public enum ConstraintMatchPolicy {
-
     DISABLED(false, false, false),
-    ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS(true, false, false),
-    ENABLED_WITHOUT_JUSTIFICATIONS(true, false, true),
-    ENABLED_WITHOUT_INDICTMENTS(true, true, false),
+    ENABLED_WITHOUT_JUSTIFICATIONS(true, false, false),
     ENABLED(true, true, true);
 
     /**
@@ -24,14 +21,14 @@ public enum ConstraintMatchPolicy {
      * the policy should match whatever policy was used for score analysis.
      * For example, if the fetch policy specifies that only match counts are necessary and not matches themselves
      * ({@link ScoreAnalysisFetchPolicy#FETCH_MATCH_COUNT}),
-     * we can configure the solver to not produce justifications ({@link #ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS}).
+     * we can configure the solver to not produce justifications ({@link #ENABLED_WITHOUT_JUSTIFICATIONS}).
      *
      * @param scoreAnalysisFetchPolicy
      * @return Match policy best suited for the given fetch policy.
      */
     public static ConstraintMatchPolicy match(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
         return switch (scoreAnalysisFetchPolicy) {
-            case FETCH_MATCH_COUNT, FETCH_SHALLOW -> ENABLED_WITHOUT_JUSTIFICATIONS_AND_INDICTMENTS;
+            case FETCH_MATCH_COUNT, FETCH_SHALLOW -> ENABLED_WITHOUT_JUSTIFICATIONS;
             case FETCH_ALL -> ENABLED;
         };
     }
