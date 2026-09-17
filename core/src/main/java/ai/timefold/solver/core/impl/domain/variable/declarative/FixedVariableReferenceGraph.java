@@ -79,30 +79,28 @@ public final class FixedVariableReferenceGraph<Solution_>
 
     @Override
     boolean innerUpdateChanged() {
-        BitSet visited;
-        if (!changeTracker.isEmpty()) {
-            visited = new BitSet(nodeList.size());
-            visited.set(changeTracker.peek().nodeId());
-        } else {
-            return true;
-        }
+        // The nodes are polled in topological order, so every node an update can reach is polled
+        // after it: updating each node once is enough, however many times it was queued.
+        var updated = new BitSet(nodeList.size());
 
         // NOTE: This assumes the user did not add any fixed loops to
         // their graph (i.e. have two variables ALWAYS depend on one-another).
         while (!changeTracker.isEmpty()) {
-            var changedNode = changeTracker.poll();
-            var entityVariable = nodeList.get(changedNode.nodeId());
+            var changedNodeId = changeTracker.poll().nodeId();
+            if (updated.get(changedNodeId)) {
+                continue;
+            }
+            updated.set(changedNodeId);
+            var entityVariable = nodeList.get(changedNodeId);
             var entity = entityVariable.entity();
             var shadowVariableReferences = entityVariable.variableReferences();
             for (var shadowVariableReference : shadowVariableReferences) {
                 var isVariableChanged = shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
                 if (isVariableChanged) {
-                    for (var nextNode : cachedComponentForwardEdges[changedNode.nodeId()]) {
-                        if (visited.get(nextNode)) {
-                            continue;
+                    for (var nextNode : cachedComponentForwardEdges[changedNodeId]) {
+                        if (!updated.get(nextNode)) {
+                            changeTracker.add(nodeTopologicalOrders[nextNode]);
                         }
-                        visited.set(nextNode);
-                        changeTracker.add(nodeTopologicalOrders[nextNode]);
                     }
                 }
             }
