@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.diamond;
+package ai.timefold.solver.core.testdomain.shadow.shared_source;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -7,15 +7,15 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
- * The shadow variables form a diamond: {@code value} feeds both {@code duration} and {@code endTime},
- * and {@code duration} feeds {@code endTime} as well.
- * Since no source crosses an entity boundary, the variable reference graph is fixed.
+ * {@code duration} and {@code endTime} both source from {@code value}, and {@code endTime} also
+ * sources from {@code duration}. Since no source crosses an entity boundary, the variable
+ * reference graph is fixed.
  */
 @PlanningEntity
-public class TestdataDiamondEntity extends TestdataObject {
+public class TestdataSharedSourceEntity extends TestdataObject {
 
     @PlanningVariable
-    TestdataDiamondValue value;
+    TestdataSharedSourceValue value;
 
     @ShadowVariable(supplierName = "durationSupplier")
     Integer duration;
@@ -23,18 +23,18 @@ public class TestdataDiamondEntity extends TestdataObject {
     @ShadowVariable(supplierName = "endTimeSupplier")
     Integer endTime;
 
-    public TestdataDiamondEntity() {
+    public TestdataSharedSourceEntity() {
     }
 
-    public TestdataDiamondEntity(String code) {
+    public TestdataSharedSourceEntity(String code) {
         super(code);
     }
 
-    public TestdataDiamondValue getValue() {
+    public TestdataSharedSourceValue getValue() {
         return value;
     }
 
-    public void setValue(TestdataDiamondValue value) {
+    public void setValue(TestdataSharedSourceValue value) {
         this.value = value;
     }
 

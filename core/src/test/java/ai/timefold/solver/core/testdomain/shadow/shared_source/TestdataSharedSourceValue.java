@@ -1,16 +1,16 @@
-package ai.timefold.solver.core.testdomain.shadow.diamond;
+package ai.timefold.solver.core.testdomain.shadow.shared_source;
 
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-public class TestdataDiamondValue extends TestdataObject {
+public class TestdataSharedSourceValue extends TestdataObject {
 
     int startTime;
     int duration;
 
-    public TestdataDiamondValue() {
+    public TestdataSharedSourceValue() {
     }
 
-    public TestdataDiamondValue(String code, int startTime, int duration) {
+    public TestdataSharedSourceValue(String code, int startTime, int duration) {
         super(code);
         this.startTime = startTime;
         this.duration = duration;

@@ -7,25 +7,25 @@ import java.util.List;
 
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
-import ai.timefold.solver.core.testdomain.shadow.diamond.TestdataDiamondEntity;
-import ai.timefold.solver.core.testdomain.shadow.diamond.TestdataDiamondSolution;
-import ai.timefold.solver.core.testdomain.shadow.diamond.TestdataDiamondValue;
+import ai.timefold.solver.core.testdomain.shadow.shared_source.TestdataSharedSourceEntity;
+import ai.timefold.solver.core.testdomain.shadow.shared_source.TestdataSharedSourceSolution;
+import ai.timefold.solver.core.testdomain.shadow.shared_source.TestdataSharedSourceValue;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class DiamondShadowVariableTest {
+class SharedSourceShadowVariableTest {
 
     @Test
     void testUpdateOnce() {
-        var entity = Mockito.spy(new TestdataDiamondEntity("A"));
-        var value = new TestdataDiamondValue("1", 10, 5);
+        var entity = Mockito.spy(new TestdataSharedSourceEntity("A"));
+        var value = new TestdataSharedSourceValue("1", 10, 5);
 
-        var solution = new TestdataDiamondSolution("Solution", List.of(entity), List.of(value));
+        var solution = new TestdataSharedSourceSolution("Solution", List.of(entity), List.of(value));
 
-        var solutionMetaModel = TestdataDiamondSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataDiamondEntity.class)
-                .basicVariable("value", TestdataDiamondValue.class);
+        var solutionMetaModel = TestdataSharedSourceSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataSharedSourceEntity.class)
+                .basicVariable("value", TestdataSharedSourceValue.class);
         var context = MoveTester.build(solutionMetaModel)
                 .using(solution);
 

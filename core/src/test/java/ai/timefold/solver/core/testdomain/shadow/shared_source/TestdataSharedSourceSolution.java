@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.diamond;
+package ai.timefold.solver.core.testdomain.shadow.shared_source;
 
 import java.util.List;
 
@@ -12,47 +12,49 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMeta
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningSolution
-public class TestdataDiamondSolution extends TestdataObject {
+public class TestdataSharedSourceSolution extends TestdataObject {
 
-    public static SolutionDescriptor<TestdataDiamondSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataDiamondSolution.class, TestdataDiamondEntity.class);
+    public static SolutionDescriptor<TestdataSharedSourceSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataSharedSourceSolution.class,
+                TestdataSharedSourceEntity.class);
     }
 
-    public static PlanningSolutionMetaModel<TestdataDiamondSolution> buildMetaModel() {
+    public static PlanningSolutionMetaModel<TestdataSharedSourceSolution> buildMetaModel() {
         return buildSolutionDescriptor().getMetaModel();
     }
 
     @PlanningEntityCollectionProperty
-    List<TestdataDiamondEntity> entities;
+    List<TestdataSharedSourceEntity> entities;
 
     @ValueRangeProvider
-    List<TestdataDiamondValue> values;
+    List<TestdataSharedSourceValue> values;
 
     @PlanningScore
     SimpleScore score;
 
-    public TestdataDiamondSolution() {
+    public TestdataSharedSourceSolution() {
     }
 
-    public TestdataDiamondSolution(String code, List<TestdataDiamondEntity> entities, List<TestdataDiamondValue> values) {
+    public TestdataSharedSourceSolution(String code, List<TestdataSharedSourceEntity> entities,
+            List<TestdataSharedSourceValue> values) {
         super(code);
         this.entities = entities;
         this.values = values;
     }
 
-    public List<TestdataDiamondEntity> getEntities() {
+    public List<TestdataSharedSourceEntity> getEntities() {
         return entities;
     }
 
-    public void setEntities(List<TestdataDiamondEntity> entities) {
+    public void setEntities(List<TestdataSharedSourceEntity> entities) {
         this.entities = entities;
     }
 
-    public List<TestdataDiamondValue> getValues() {
+    public List<TestdataSharedSourceValue> getValues() {
         return values;
     }
 
-    public void setValues(List<TestdataDiamondValue> values) {
+    public void setValues(List<TestdataSharedSourceValue> values) {
         this.values = values;
     }
 
