@@ -79,6 +79,10 @@ public final class FixedVariableReferenceGraph<Solution_>
 
     @Override
     boolean innerUpdateChanged() {
+        if (changeTracker.isEmpty()) {
+            return true;
+        }
+
         // The nodes are polled in topological order, so every node an update can reach is polled
         // after it: updating each node once is enough, however many times it was queued.
         var updated = new BitSet(nodeList.size());
