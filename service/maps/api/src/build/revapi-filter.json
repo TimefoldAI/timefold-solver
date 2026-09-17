@@ -4,7 +4,10 @@
     "configuration": {
       "elements": {
         "include": [
-          "class ai\\.timefold\\.solver\\.service\\.maps\\.api.*"
+          "class ai\\.timefold\\.solver\\.service\\.maps\\.api.*",
+          "interface ai\\.timefold\\.solver\\.service\\.maps\\.api.*",
+          "@interface ai\\.timefold\\.solver\\.service\\.maps\\.api.*",
+          "enum ai\\.timefold\\.solver\\.service\\.maps\\.api.*"
         ]
       }
     }

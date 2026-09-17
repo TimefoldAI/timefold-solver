@@ -5,7 +5,13 @@
       "elements": {
         "include": [
           "class ai\\.timefold\\.solver\\.core\\.api.*",
-          "class ai\\.timefold\\.solver\\.core\\.config.*"
+          "interface ai\\.timefold\\.solver\\.core\\.api.*",
+          "@interface ai\\.timefold\\.solver\\.core\\.api.*",
+          "enum ai\\.timefold\\.solver\\.core\\.api.*",
+          "class ai\\.timefold\\.solver\\.core\\.config.*",
+          "interface ai\\.timefold\\.solver\\.core\\.config.*",
+          "@interface ai\\.timefold\\.solver\\.core\\.config.*",
+          "enum ai\\.timefold\\.solver\\.core\\.config.*"
         ],
         "exclude": [
           "method .* ai\\.timefold\\.solver\\.core\\.config.*::(?!(set|get)).*",
