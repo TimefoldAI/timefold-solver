@@ -158,6 +158,12 @@
           "code": "java.method.addedToInterface",
           "new": "method <Result_> Result_ ai.timefold.solver.core.api.solver.phase.PhaseCommandContext<Solution_>::executeTemporarilyAndCalculateScore(ai.timefold.solver.core.preview.api.move.Move<Solution_>, java.util.function.Function<Solution_, Result_>, java.util.function.Function<Solution_, Result_>)",
           "justification": "PhaseCommandContext is only ever supplied by the solver to PhaseCommand.changeWorkingSolution(context); it is not implemented by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method java.util.List<ai.timefold.solver.core.api.score.analysis.IndictmentAnalysis<Score_>> ai.timefold.solver.core.api.score.analysis.ScoreAnalysis<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::indictmentAnalyses()",
+          "justification": "Add support for Indictments in ScoreAnalysis; it is not implemented by user code."
         }
       ]
     }
