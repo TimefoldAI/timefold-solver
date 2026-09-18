@@ -218,27 +218,31 @@ final class DashboardRenderer {
     }
 
     /**
-     * Compresses {@code values} down to at most {@code targetSize} entries by averaging
-     * contiguous, fixed-width groups from the front (the last group may be smaller). Returns
+     * Compresses {@code values} down to exactly {@code targetSize} entries by averaging
+     * proportional slices, so the result always fills the full requested width — never fewer
+     * entries, even when {@code values} only just barely exceeds {@code targetSize}. Returns
      * {@code values} unchanged if it already fits. Shared between rendering (compress to the
      * current terminal width) and {@link SolverDashboard}'s history bookkeeping (compress to stay
      * within its retention cap while still spanning the whole run).
      * <p>
-     * Deliberately NOT a proportional "size/targetSize" split, whose every group boundary shifts
-     * as {@code values} grows — reslicing already-settled history on every call even though its
-     * data never changed, which visibly jumps around on a live-updating chart. A fixed group width
-     * only changes (growing new groups, or occasionally widening by one) at the rare moments
-     * {@code values.size()} crosses a multiple of the current width; existing groups are otherwise
-     * untouched by new data arriving.
+     * A fixed-width chunking scheme (grouping every {@code ceil(size / targetSize)} raw samples)
+     * was tried instead, to keep already-computed groups from reshuffling as more data streams in.
+     * It does not work here: an integer group width can only take values 1, 2, 3, ... and jumps
+     * straight from 1 to 2 the moment {@code values.size()} first exceeds {@code targetSize} by
+     * even one sample — instantly halving the visible bucket count right as the sparkline first
+     * fills the terminal. Proportional slicing has no such cliff. Its own downside (bucket
+     * boundaries shift slightly as {@code values} grows) is far less visible now that
+     * {@link SolverDashboard} samples once per repaint (a slow, steady cadence) rather than once
+     * per solver step (bursty and fast), which was the original reason to move away from it.
      */
     static List<Double> downsample(List<Double> values, int targetSize) {
         if (values.size() <= targetSize) {
             return values;
         }
-        var groupWidth = (values.size() + targetSize - 1) / targetSize; // ceil(size / targetSize)
-        var downsampled = new ArrayList<Double>();
-        for (var start = 0; start < values.size(); start += groupWidth) {
-            var end = Math.min(start + groupWidth, values.size());
+        var downsampled = new ArrayList<Double>(targetSize);
+        for (var bucket = 0; bucket < targetSize; bucket++) {
+            var start = bucket * values.size() / targetSize;
+            var end = Math.max(start + 1, (bucket + 1) * values.size() / targetSize);
             var sum = 0.0;
             for (var i = start; i < end; i++) {
                 sum += values.get(i);

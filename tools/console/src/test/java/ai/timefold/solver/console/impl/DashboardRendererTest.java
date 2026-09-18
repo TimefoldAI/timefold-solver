@@ -118,20 +118,19 @@ class DashboardRendererTest {
     }
 
     @Test
-    void downsampleKeepsAlreadyComputedGroupsStableAsMoreDataArrives() {
-        var original = new ArrayList<Double>();
-        for (var i = 0; i < 100; i++) {
-            original.add((double) i); // a distinct ramp: any reshuffling would change these values
+    void downsampleNeverProducesFewerThanTheFullTargetWidth() {
+        // Regression: an integer "group width" of ceil(size / target) jumps straight from 1 to 2
+        // the moment size first exceeds target by even one sample, instantly halving the bucket
+        // count right as the sparkline first fills the terminal. Proportional slicing always
+        // produces exactly `target` buckets instead, for every size from 1 up through well past it.
+        var target = 20;
+        for (var size = 1; size <= 50; size++) {
+            var values = new ArrayList<Double>();
+            for (var i = 0; i < size; i++) {
+                values.add((double) i);
+            }
+            assertThat(DashboardRenderer.downsample(values, target)).hasSize(Math.min(size, target));
         }
-        var grown = new ArrayList<>(original);
-        for (var i = 0; i < 10; i++) {
-            grown.add(999.0); // new data, appended after the untouched prefix
-        }
-        var beforeGrowth = DashboardRenderer.downsample(original, 14);
-        var afterGrowth = DashboardRenderer.downsample(grown, 14);
-        // A proportional "size/target" split reslices every group as the list grows, changing these
-        // even though the underlying data behind them never did. Fixed-width grouping does not.
-        assertThat(afterGrowth.subList(0, 10)).isEqualTo(beforeGrowth.subList(0, 10));
     }
 
     @Test
