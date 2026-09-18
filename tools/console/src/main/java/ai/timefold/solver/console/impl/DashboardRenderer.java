@@ -26,18 +26,34 @@ final class DashboardRenderer {
         var contentWidth = frameWidth - 4; // "│ " + content + " │"
 
         var body = new ArrayList<String>();
-        var phaseLine = snapshot.phaseName() == null ? "Waiting to start..." : "Phase  " + snapshot.phaseName();
+        var phaseLine = snapshot.phaseName() == null ? "Waiting to start..." : "Phase: " + snapshot.phaseName();
         body.add(content(phaseLine, "[q] to stop", contentWidth));
-        body.add(content("Best   " + snapshot.bestScoreText(), "", contentWidth));
-        body.add(content("Step   " + snapshot.stepScoreText(), "", contentWidth));
+        body.add(content("Best: " + snapshot.bestScoreText(), "", contentWidth));
+        body.add(content("Step: " + snapshot.stepScoreText(), "", contentWidth));
         body.add(content(sparkline(snapshot.bestScoreHistory(), Math.max(1, contentWidth - SPARKLINE_LABEL.length()))
                 + SPARKLINE_LABEL, "", contentWidth));
-        body.add(twoColumns("Steps", format(snapshot.stepIndex() + 1), "Speed",
-                format(snapshot.moveEvaluationSpeed()) + "/s", contentWidth));
-        body.add(twoColumns("Moves eval", format(snapshot.moveEvaluationCount()), "Accepted",
-                snapshot.acceptedPercentText(), contentWidth));
-        body.add(twoColumns("Score calc", format(snapshot.scoreCalculationCount()), "Calc speed",
-                format(snapshot.scoreCalculationSpeed()) + "/s", contentWidth));
+
+        // Both columns' labels and values are padded to the wider of the two rows, so "Speed:" and
+        // "Accepted:" (and their values) start at the same column in both rows regardless of which
+        // one happens to be longer on a given frame.
+        var stepsText = format(snapshot.stepIndex() + 1);
+        var movesEvalText = format(snapshot.moveEvaluationCount());
+        var leftLabelWidth = Math.max("Steps:".length(), "Moves eval:".length());
+        var leftValueWidth = Math.max(stepsText.length(), movesEvalText.length());
+
+        var speedText = format(snapshot.moveEvaluationSpeed()) + "/s";
+        var acceptedText = snapshot.acceptedPercentText();
+        var rightLabelWidth = Math.max("Speed:".length(), "Accepted:".length());
+        var rightValueWidth = Math.max(speedText.length(), acceptedText.length());
+
+        body.add(content(
+                statColumn("Steps:", stepsText, leftLabelWidth, leftValueWidth),
+                statColumn("Speed:", speedText, rightLabelWidth, rightValueWidth),
+                contentWidth));
+        body.add(content(
+                statColumn("Moves eval:", movesEvalText, leftLabelWidth, leftValueWidth),
+                statColumn("Accepted:", acceptedText, rightLabelWidth, rightValueWidth),
+                contentWidth));
 
         // Borders, the problem size line and body always fit; phase history gets whatever is left
         // of the height budget, dropping the oldest lines first.
@@ -76,14 +92,22 @@ final class DashboardRenderer {
 
     private static String problemSizeLine(DashboardSnapshot snapshot, int contentWidth) {
         var text = snapshot.approximateProblemScaleText() == null
-                ? "Problem  Waiting to start..." // mirrors the phaseLine placeholder wording above
-                : "Problem  %s entities, %s variables, %s values, scale %s".formatted(
+                ? "Problem: Waiting to start..." // mirrors the phaseLine placeholder wording above
+                : "Problem: %s entities, %s variables, %s values, scale %s".formatted(
                         format(snapshot.entityCount()), format(snapshot.variableCount()),
                         format(snapshot.approximateValueCount()), snapshot.approximateProblemScaleText());
         return content(text, "", contentWidth);
     }
 
     private static String content(String left, String right, int contentWidth) {
+        return borderedLine("│", left, right, contentWidth);
+    }
+
+    private static String doubleContent(String left, String right, int contentWidth) {
+        return borderedLine("║", left, right, contentWidth);
+    }
+
+    private static String borderedLine(String vertical, String left, String right, int contentWidth) {
         var text = right.isEmpty() ? left
                 : left + " ".repeat(Math.max(1, contentWidth - left.length() - right.length())) + right;
         if (text.length() > contentWidth) {
@@ -91,13 +115,24 @@ final class DashboardRenderer {
         } else {
             text = text + " ".repeat(contentWidth - text.length());
         }
-        return "│ " + text + " │";
+        return vertical + " " + text + " " + vertical;
     }
 
-    private static String twoColumns(String label1, String value1, String label2, String value2, int contentWidth) {
-        var left = "%-10s %s".formatted(label1, value1);
-        var right = "%-10s %s".formatted(label2, value2);
-        return content(left, right, contentWidth);
+    private static String centerText(String text, int width) {
+        if (text.length() >= width) {
+            return text.substring(0, width);
+        }
+        var totalPad = width - text.length();
+        var leftPad = totalPad / 2;
+        return " ".repeat(leftPad) + text + " ".repeat(totalPad - leftPad);
+    }
+
+    private static String statColumn(String label, String value, int labelWidth, int valueWidth) {
+        return padRight(label, labelWidth) + " " + padRight(value, valueWidth);
+    }
+
+    private static String padRight(String text, int width) {
+        return text.length() >= width ? text : text + " ".repeat(width - text.length());
     }
 
     private static String topBorder(int frameWidth, String timeText, String identification) {
@@ -118,6 +153,43 @@ final class DashboardRenderer {
 
     private static String separator(int frameWidth) {
         return "├" + "─".repeat(Math.max(0, frameWidth - 2)) + "┤";
+    }
+
+    /**
+     * Renders the one-shot report printed after the live dashboard closes: a double-line box,
+     * visually distinct from the live dashboard's single-line box, since it reports on a finished
+     * run rather than an ongoing one.
+     */
+    static List<String> renderFinalSummary(FinalSummary summary, int width) {
+        var frameWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
+        var contentWidth = frameWidth - 4;
+
+        var lines = new ArrayList<String>();
+        lines.add(doubleTopBorder(frameWidth));
+        lines.add(doubleContent(centerText(summary.title(), contentWidth), "", contentWidth));
+        lines.add(doubleSeparator(frameWidth));
+        lines.add(doubleContent("  Final Score:", summary.finalScoreText(), contentWidth));
+        lines.add(doubleContent("  Steps:", format(summary.steps()), contentWidth));
+        lines.add(doubleContent("  Solve Time:", formatElapsed(summary.solveTimeMillis()), contentWidth));
+        lines.add(doubleContent("  Moves Evaluated:", format(summary.movesEvaluated()), contentWidth));
+        lines.add(doubleContent("  Moves/s:", format(summary.movesEvaluationSpeed()), contentWidth));
+        lines.add(doubleContent("  Moves Accepted:", format(summary.movesAccepted()), contentWidth));
+        lines.add(doubleContent("  Acceptance:", summary.acceptanceText(), contentWidth));
+        lines.add(doubleContent("  Score Calcs:", format(summary.scoreCalculationCount()), contentWidth));
+        lines.add(doubleBottomBorder(frameWidth));
+        return center(lines, frameWidth, width);
+    }
+
+    private static String doubleTopBorder(int frameWidth) {
+        return "╔" + "═".repeat(Math.max(0, frameWidth - 2)) + "╗";
+    }
+
+    private static String doubleBottomBorder(int frameWidth) {
+        return "╚" + "═".repeat(Math.max(0, frameWidth - 2)) + "╝";
+    }
+
+    private static String doubleSeparator(int frameWidth) {
+        return "╠" + "═".repeat(Math.max(0, frameWidth - 2)) + "╣";
     }
 
     private static String sparkline(List<Double> history, int width) {

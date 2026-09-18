@@ -16,8 +16,6 @@ record DashboardSnapshot(
         String acceptedPercentText,
         long moveEvaluationSpeed,
         long moveEvaluationCount,
-        long scoreCalculationCount,
-        long scoreCalculationSpeed,
         long entityCount,
         long variableCount,
         long approximateValueCount,

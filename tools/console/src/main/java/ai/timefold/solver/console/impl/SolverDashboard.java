@@ -60,6 +60,13 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     private final ArrayDeque<Double> bestScoreHistory = new ArrayDeque<>();
     private final List<String> finishedPhaseLines = Collections.synchronizedList(new ArrayList<>());
 
+    // Written and read only from the solving thread (accumulated in stepEnded()/phaseEnded(),
+    // read once in stop() right after solver.solve() returns on that same thread): no volatile
+    // or synchronization needed, unlike the fields above that the repaint thread also reads.
+    private long totalSteps;
+    private long totalAcceptedMoveCount;
+    private long totalSelectedMoveCount;
+
     private Terminal terminal;
     private PrintStream originalOut;
     private PrintStream originalErr;
@@ -112,6 +119,8 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         running = false;
         repaintThread.interrupt();
         keyThread.interrupt();
+        var summary = buildFinalSummary();
+        var terminalWidth = terminal.getSize().getColumns();
         if (quitRequested) {
             // The dashboard box would otherwise linger above the summary printed below.
             var writer = terminal.writer();
@@ -124,13 +133,36 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         closeTerminalQuietly();
         // Printed after output is restored and the terminal is closed, so it reaches the real console.
         System.out.println();
-        System.out.println("Solved: " + finalScoreText());
+        for (var line : DashboardRenderer.renderFinalSummary(summary, terminalWidth)) {
+            System.out.println(line);
+        }
+        System.out.println();
         System.out.println("Log written to " + logFile.toAbsolutePath());
     }
 
     private String finalScoreText() {
         var bestScore = solverScope.getBestScore();
         return bestScore == null ? "n/a" : bestScore.raw().toString();
+    }
+
+    private FinalSummary buildFinalSummary() {
+        var bestScore = solverScope.getBestScore();
+        var title = bestScore == null ? "NO SOLUTION FOUND"
+                : bestScore.isFullyAssigned() && bestScore.raw().isFeasible() ? "FEASIBLE SOLUTION FOUND"
+                        : "INFEASIBLE SOLUTION FOUND";
+        var acceptanceText = totalSelectedMoveCount == 0L
+                ? "n/a"
+                : "%.1f %%".formatted(100.0 * totalAcceptedMoveCount / totalSelectedMoveCount);
+        return new FinalSummary(
+                title,
+                finalScoreText(),
+                totalSteps,
+                solverScope.getTimeMillisSpent(),
+                solverScope.getMoveEvaluationCount(),
+                solverScope.getMoveEvaluationSpeed(),
+                totalAcceptedMoveCount,
+                acceptanceText,
+                solverScope.getScoreCalculationCount());
     }
 
     // ************************************************************************
@@ -151,6 +183,13 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         if (stepScope instanceof LocalSearchStepScope<Solution_> localSearchStepScope) {
             var accepted = localSearchStepScope.getAcceptedMoveCount();
             var selected = localSearchStepScope.getSelectedMoveCount();
+            if (accepted != null && selected != null) {
+                // Construction heuristic steps have a selected count but no acceptor, so no accepted
+                // count; only local search steps have both. Summing selected-without-accepted moves
+                // into these running totals would understate the final acceptance percentage.
+                totalAcceptedMoveCount += accepted;
+                totalSelectedMoveCount += selected;
+            }
             acceptedPercentText = (accepted == null || selected == null || selected == 0L)
                     ? "—"
                     : "%.1f %%".formatted(100.0 * accepted / selected);
@@ -161,6 +200,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        totalSteps += phaseScope.getNextStepIndex(); // Steps are re-indexed from 0 per phase.
         // ponytail: phaseScope.endingSystemTimeMillis is not set yet when this listener fires
         // (DefaultLocalSearchPhase.phaseEnded() fires listeners before calling phaseScope.endingNow()),
         // so getPhaseMoveEvaluationSpeed()/getPhaseTimeMillisSpent() would NPE here. Compute the speed
@@ -277,8 +317,6 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
                 acceptedPercentText,
                 solverScope.getMoveEvaluationSpeed(),
                 solverScope.getMoveEvaluationCount(),
-                solverScope.getScoreCalculationCount(),
-                solverScope.getScoreCalculationSpeed(),
                 problemSizeStatistics == null ? 0L : problemSizeStatistics.entityCount(),
                 problemSizeStatistics == null ? 0L : problemSizeStatistics.variableCount(),
                 problemSizeStatistics == null ? 0L : problemSizeStatistics.approximateValueCount(),

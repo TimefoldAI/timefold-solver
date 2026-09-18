@@ -15,7 +15,11 @@ class DashboardRendererTest {
     private static DashboardSnapshot snapshot(String acceptedPercentText, List<Double> history, List<String> phaseLines) {
         return new DashboardSnapshot(
                 83_000L, "Local Search", 4811L, "-12hard/-340soft", "-12hard/-352soft", acceptedPercentText,
-                9210L, 1_200_000L, 1_400_000L, 45_000L, 300L, 3L, 1_000_000L, "2.8 × 10^41", history, phaseLines);
+                9210L, 1_200_000L, 300L, 3L, 1_000_000L, "2.8 × 10^41", history, phaseLines);
+    }
+
+    private static FinalSummary finalSummary(String title) {
+        return new FinalSummary(title, "0hard/15soft", 104_864L, 84_760L, 104_864L, 456_000L, 12_456L, "11.9 %", 104_864L);
     }
 
     @Test
@@ -59,6 +63,17 @@ class DashboardRendererTest {
         var expectedLeftPad = " ".repeat((200 - 120) / 2);
         assertThat(lines).allSatisfy(line -> assertThat(line).hasSize(120 + expectedLeftPad.length()));
         assertThat(lines.getFirst()).startsWith(expectedLeftPad + "┌");
+    }
+
+    @Test
+    void twoColumnStatsAlignAcrossRowsRegardlessOfValueLength() {
+        // The fixture's Steps/Moves eval and Speed/Accepted values are deliberately different
+        // lengths from each other (e.g. "4,812" vs "1,200,000"), which used to shift the second
+        // column's starting position between the two rows.
+        var lines = DashboardRenderer.render(snapshot("38.1 %", List.of(1.0), List.of()), 120, 20, IDENTIFICATION);
+        var stepsLine = lines.stream().filter(line -> line.contains("Steps:")).findFirst().orElseThrow();
+        var movesEvalLine = lines.stream().filter(line -> line.contains("Moves eval:")).findFirst().orElseThrow();
+        assertThat(stepsLine.indexOf("Speed:")).isEqualTo(movesEvalLine.indexOf("Accepted:"));
     }
 
     @Test
@@ -201,9 +216,55 @@ class DashboardRendererTest {
     void problemSizeLineShowsPlaceholderBeforeItIsKnown() {
         var snapshotBeforeSolvingStarted = new DashboardSnapshot(
                 0L, null, -1L, "n/a", "n/a", "—",
-                0L, 0L, 0L, 0L, 0L, 0L, 0L, null, List.of(), List.of());
+                0L, 0L, 0L, 0L, 0L, null, List.of(), List.of());
         var lines = DashboardRenderer.render(snapshotBeforeSolvingStarted, 60, 20, IDENTIFICATION);
         assertThat(lines.get(1)).contains("Waiting to start...");
+    }
+
+    @Test
+    void finalSummaryHasDoubleLineCorners() {
+        var lines = DashboardRenderer.renderFinalSummary(finalSummary("FEASIBLE SOLUTION FOUND"), 80);
+        assertThat(lines.getFirst()).startsWith("╔").endsWith("╗");
+        assertThat(lines.getLast()).startsWith("╚").endsWith("╝");
+    }
+
+    @Test
+    void finalSummaryTitleIsCentered() {
+        var title = "FEASIBLE SOLUTION FOUND";
+        var lines = DashboardRenderer.renderFinalSummary(finalSummary(title), 80);
+        var titleLine = lines.get(1);
+        assertThat(titleLine).contains(title);
+        var titleStart = titleLine.indexOf(title);
+        var titleEnd = titleStart + title.length();
+        var leadingSpaces = titleStart - 2; // after the "║ " border prefix
+        var trailingSpaces = titleLine.length() - 2 - titleEnd; // before the " ║" border suffix
+        assertThat(Math.abs(leadingSpaces - trailingSpaces)).isLessThanOrEqualTo(1);
+    }
+
+    @Test
+    void finalSummaryShowsAllStatsAndOmitsUnavailableOnes() {
+        var lines = DashboardRenderer.renderFinalSummary(finalSummary("FEASIBLE SOLUTION FOUND"), 80);
+        var text = String.join("\n", lines);
+        assertThat(text).contains("Final Score:", "0hard/15soft");
+        assertThat(text).contains("Steps:", "104,864");
+        assertThat(text).contains("Solve Time:");
+        assertThat(text).contains("Moves Evaluated:");
+        assertThat(text).contains("Moves/s:", "456,000");
+        assertThat(text).contains("Moves Accepted:", "12,456");
+        assertThat(text).contains("Acceptance:", "11.9 %");
+        assertThat(text).contains("Score Calcs:");
+        // No "moves generated" or "generation/evaluation time" split: neither exists as a real,
+        // distinct metric in the solver, so they are not fabricated here.
+        assertThat(text).doesNotContainIgnoringCase("generated");
+        assertThat(text).doesNotContainIgnoringCase("generation time");
+        assertThat(text).doesNotContainIgnoringCase("evaluation time");
+    }
+
+    @Test
+    void finalSummaryCapsWidthAt120AndCentersOnWideTerminals() {
+        var lines = DashboardRenderer.renderFinalSummary(finalSummary("FEASIBLE SOLUTION FOUND"), 200);
+        var expectedLeftPad = (200 - 120) / 2;
+        assertThat(lines).allSatisfy(line -> assertThat(line).hasSize(120 + expectedLeftPad));
     }
 
 }
