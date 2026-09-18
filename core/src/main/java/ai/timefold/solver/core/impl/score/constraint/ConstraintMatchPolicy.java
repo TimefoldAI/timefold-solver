@@ -12,10 +12,9 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public enum ConstraintMatchPolicy {
-
-    DISABLED(false, false),
-    ENABLED_WITHOUT_JUSTIFICATIONS(true, false),
-    ENABLED(true, true);
+    DISABLED(false, false, false),
+    ENABLED_WITHOUT_JUSTIFICATIONS(true, false, false),
+    ENABLED(true, true, true);
 
     /**
      * To achieve the most performance out of the underlying solver,
@@ -36,10 +35,12 @@ public enum ConstraintMatchPolicy {
 
     private final boolean enabled;
     private final boolean justificationEnabled;
+    private final boolean indictmentsEnabled;
 
-    ConstraintMatchPolicy(boolean enabled, boolean justificationEnabled) {
+    ConstraintMatchPolicy(boolean enabled, boolean justificationEnabled, boolean indictmentsEnabled) {
         this.enabled = enabled;
         this.justificationEnabled = justificationEnabled;
+        this.indictmentsEnabled = indictmentsEnabled;
     }
 
     public boolean isEnabled() {
@@ -50,4 +51,7 @@ public enum ConstraintMatchPolicy {
         return justificationEnabled;
     }
 
+    public boolean isIndictmentsEnabled() {
+        return indictmentsEnabled;
+    }
 }

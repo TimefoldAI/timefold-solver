@@ -55,7 +55,8 @@ final class BavetScoringQuadConstraintStream<Solution_, A, B, C, D>
         return switch (constraintMatchPolicy) {
             case DISABLED -> scoreImpact::impactNaked;
             case ENABLED -> scoreImpact::impactFull;
-            case ENABLED_WITHOUT_JUSTIFICATIONS -> scoreImpact::impactWithoutJustification;
+            case ENABLED_WITHOUT_JUSTIFICATIONS ->
+                scoreImpact::impactWithoutJustification;
         };
     }
 
