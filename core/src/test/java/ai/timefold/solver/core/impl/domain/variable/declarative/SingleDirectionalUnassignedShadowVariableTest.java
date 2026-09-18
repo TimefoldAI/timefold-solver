@@ -15,19 +15,26 @@ import ai.timefold.solver.core.testdomain.shadow.single_directional_unassign.Tes
 import org.junit.jupiter.api.Test;
 
 /**
- * Mimics, with custom moves, what a ruin and recreate move does when it ruins more than one visit:
- * {@code SelectorBasedListRuinRecreateMove} removes its whole ruined batch under a single
- * before/after bracket and calls {@code updateShadowVariables()} once, before its nested
- * construction heuristic reinserts any of them in later, separate passes - so the ruin pass always
- * has 2+ elements unassigned at once whenever it ruins 2 or more, regardless of how many of them a
- * later pass goes on to recreate.
+ * Uses two built-in moves, not custom ones, to mimic what a ruin and recreate move does when it
+ * ruins more than one visit: {@code SelectorBasedListRuinRecreateMove} removes its whole ruined
+ * batch under a single before/after bracket and calls {@code updateShadowVariables()} once, before
+ * its nested construction heuristic reinserts any of them in later, separate passes - so the ruin
+ * pass always has 2+ elements unassigned at once whenever it ruins 2 or more, regardless of how many
+ * of them a later pass goes on to recreate.
+ * <p>
+ * The ruin below, {@code Moves.unassign(variableMetaModel, Range)}, is a {@code SubListUnassignMove}
+ * - the same move class {@code SubListUnassignMoveProvider} draws from a real neighborhood, and that
+ * {@code SubListChangeMoveProvider} also produces whenever its {@code crossingNull} targets an
+ * unassigned destination. Both exist precisely so ordinary local search can unassign a whole
+ * contiguous span in one move; this test only skips drawing one at random and picks the span
+ * directly, to pin an exact, reproducible before/after state.
  * <p>
  * A single-element {@code Moves.unassign(variableMetaModel, PositionInList)} does not reproduce
  * this: {@code MoveDirector} triggers its own {@code updateShadowVariables()} pass after every
  * individual primitive call, so composing two of them still runs two separate passes, each with
  * only one element unassigned - never two at once. Only a primitive that unassigns several elements
- * under one before/after bracket, such as the range-based {@code Moves.unassign(variableMetaModel,
- * Range)} used below, reproduces the batching a real ruin does.
+ * under one before/after bracket, such as the range-based move used below, reproduces the batching a
+ * real ruin does.
  */
 class SingleDirectionalUnassignedShadowVariableTest {
 
