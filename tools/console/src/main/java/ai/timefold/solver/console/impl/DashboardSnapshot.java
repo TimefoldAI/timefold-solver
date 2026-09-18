@@ -17,8 +17,12 @@ record DashboardSnapshot(
         long moveEvaluationSpeed,
         long moveEvaluationCount,
         long scoreCalculationCount,
+        long scoreCalculationSpeed,
         long entityCount,
-        List<Long> bestScoreHistory,
+        long variableCount,
+        long approximateValueCount,
+        String approximateProblemScaleText, // null until known, mirrors phaseName's null convention
+        List<Double> bestScoreHistory,
         List<String> finishedPhaseLines) {
 
 }

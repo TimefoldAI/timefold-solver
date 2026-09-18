@@ -36,6 +36,10 @@ import org.jline.terminal.TerminalBuilder;
 public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdapter<Solution_> {
 
     private static final String TIMEFOLD_LOGGER_NAME = "ai.timefold.solver";
+    // One sample per repaint (REPAINT_PERIOD_MILLIS), so this is ~50 seconds of full-resolution
+    // history before the first halving; halved back down to this (not dropped) once doubled, so
+    // the sparkline always spans the whole run. Storage transiently ranges up to 2x this between
+    // halvings.
     private static final int SPARKLINE_HISTORY_LIMIT = 200;
     private static final int PHASE_HISTORY_LIMIT = 50;
     private static final long REPAINT_PERIOD_MILLIS = 250L;
@@ -53,7 +57,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     // in the two spots that reset it. Promote to a constant if a third caller shows up.
     private volatile String acceptedPercentText = "—";
 
-    private final ArrayDeque<Long> bestScoreHistory = new ArrayDeque<>();
+    private final ArrayDeque<Double> bestScoreHistory = new ArrayDeque<>();
     private final List<String> finishedPhaseLines = Collections.synchronizedList(new ArrayList<>());
 
     private Terminal terminal;
@@ -153,12 +157,6 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         } else {
             acceptedPercentText = "—";
         }
-        synchronized (bestScoreHistory) {
-            bestScoreHistory.addLast(solverScope.getBestScore().raw().structuralScore());
-            while (bestScoreHistory.size() > SPARKLINE_HISTORY_LIMIT) {
-                bestScoreHistory.removeFirst();
-            }
-        }
     }
 
     @Override
@@ -216,6 +214,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     }
 
     private void repaint() {
+        recordBestScoreSample();
         var snapshot = buildSnapshot();
         var size = terminal.getSize();
         var lines = DashboardRenderer.render(snapshot, size.getColumns(), size.getRows(), IDENTIFICATION);
@@ -227,8 +226,37 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         writer.flush();
     }
 
+    /**
+     * Samples once per repaint (a fixed wall-clock cadence, {@value #REPAINT_PERIOD_MILLIS} ms)
+     * rather than once per step, so the sparkline's length always reflects elapsed time, not step
+     * count: a phase doing thousands of fast steps per second no longer dominates the chart while a
+     * phase doing a handful of slow steps per second is squeezed to almost nothing, even though both
+     * took the same real time. Sampling unconditionally (not only on improvement) means a genuine
+     * plateau still advances the chart as flat, instead of the timeline silently skipping over it.
+     */
+    private void recordBestScoreSample() {
+        var bestScore = solverScope.getBestScore();
+        if (bestScore == null) {
+            return; // Solving hasn't started yet.
+        }
+        synchronized (bestScoreHistory) {
+            var levels = bestScore.raw().toLevelDoubles();
+            bestScoreHistory.addLast(levels[levels.length - 1]);
+            if (bestScoreHistory.size() >= 2 * SPARKLINE_HISTORY_LIMIT) {
+                // Halve only once the history has grown to exactly double the limit, so every bucket
+                // merges exactly 2:1 with no rounding remainder. Squeezing down by 1 every single step
+                // instead (a barely-over-capacity "201 into 200" downsample) always lands its one
+                // uneven bucket at the tail, turning the newest bucket into a decaying exponential
+                // moving average that stops responding to new data while older buckets never change.
+                var compacted = DashboardRenderer.downsample(List.copyOf(bestScoreHistory), SPARKLINE_HISTORY_LIMIT);
+                bestScoreHistory.clear();
+                bestScoreHistory.addAll(compacted);
+            }
+        }
+    }
+
     private DashboardSnapshot buildSnapshot() {
-        List<Long> historySnapshot;
+        List<Double> historySnapshot;
         synchronized (bestScoreHistory) {
             historySnapshot = List.copyOf(bestScoreHistory);
         }
@@ -250,7 +278,11 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
                 solverScope.getMoveEvaluationSpeed(),
                 solverScope.getMoveEvaluationCount(),
                 solverScope.getScoreCalculationCount(),
+                solverScope.getScoreCalculationSpeed(),
                 problemSizeStatistics == null ? 0L : problemSizeStatistics.entityCount(),
+                problemSizeStatistics == null ? 0L : problemSizeStatistics.variableCount(),
+                problemSizeStatistics == null ? 0L : problemSizeStatistics.approximateValueCount(),
+                problemSizeStatistics == null ? null : problemSizeStatistics.approximateProblemScaleAsFormattedString(),
                 historySnapshot,
                 phaseLinesSnapshot);
     }
