@@ -128,4 +128,93 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         assertThat(value5.getCount()).isZero();
     }
 
+    @Test
+    void elementsUnassignedInTheSamePassAreAllUpdated() {
+        var solutionDescriptor = TestdataCountingSolution.buildSolutionDescriptor();
+        var entity = new TestdataCountingEntity("e1");
+
+        var value1 = new TestdataCountingValue("v1");
+        var value2 = new TestdataCountingValue("v2");
+        var value3 = new TestdataCountingValue("v3");
+
+        var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor,
+                entity, value1, value2, value3);
+        assertThat(graphStructureAndDirection.structure()).isEqualTo(GraphStructure.SINGLE_DIRECTIONAL_PARENT);
+
+        var scoreDirector = Mockito.mock(InnerScoreDirector.class);
+        var listVariableState = Mockito.mock(ListVariableState.class);
+        Mockito.when(scoreDirector.getListVariableState(Mockito.any()))
+                .thenReturn(listVariableState);
+
+        // The entity's list variable is [value1, value2, value3].
+        value1.setEntity(entity);
+        value1.setPrevious(null);
+        Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(value2);
+        Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity);
+
+        value2.setEntity(entity);
+        value2.setPrevious(value1);
+        Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value2)).thenReturn(value3);
+        Mockito.when(listVariableState.getInverseSingleton(value2)).thenReturn(entity);
+
+        value3.setEntity(entity);
+        value3.setPrevious(value2);
+        Mockito.doReturn(2).when(listVariableState).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value3)).thenReturn(entity);
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        var graph = DefaultShadowVariableSessionFactory.buildSingleDirectionalParentGraph(
+                new DefaultShadowVariableSessionFactory.GraphDescriptor<>(
+                        solutionDescriptor, ChangedVariableNotifier.of(scoreDirector),
+                        entity, value1, value2, value3),
+                graphStructureAndDirection);
+
+        assertThat(value1.getCount()).isZero();
+        assertThat(value2.getCount()).isOne();
+        assertThat(value3.getCount()).isEqualTo(2);
+
+        List.of(value1, value2, value3).forEach(TestdataCountingValue::reset);
+        Mockito.reset(listVariableState);
+
+        // A single move unassigns both value2 and value3, leaving the entity's list variable as [value1].
+        value2.setEntity(null);
+        value2.setPrevious(null);
+        value3.setEntity(null);
+        value3.setPrevious(null);
+
+        Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity);
+
+        // An unassigned element has no index, so getIndexOrElse gives back its default,
+        // no next element, and no inverse entity.
+        for (var unassignedValue : List.of(value2, value3)) {
+            Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(unassignedValue), Mockito.anyInt());
+            Mockito.when(listVariableState.getNextElement(unassignedValue)).thenReturn(null);
+            Mockito.when(listVariableState.getInverseSingleton(unassignedValue)).thenReturn(null);
+        }
+
+        var metaModel = solutionDescriptor.getMetaModel().entity(TestdataCountingValue.class);
+        var previousVariableMetamodel = metaModel.variable("previous");
+        var entityVariableMetamodel = metaModel.variable("entity");
+
+        // Both of an unassigned element's parent variables change, so each element is recorded twice.
+        // TestdataCountingValue.countSupplier fails the test if that makes it update twice.
+        graph.afterVariableChanged(entityVariableMetamodel, value2);
+        graph.afterVariableChanged(previousVariableMetamodel, value2);
+        graph.afterVariableChanged(entityVariableMetamodel, value3);
+        graph.afterVariableChanged(previousVariableMetamodel, value3);
+
+        graph.updateChanged();
+
+        // An unassigned element has no count; it is in no list for its supplier to count along.
+        assertThat(value2.getCount()).isNull();
+        assertThat(value3.getCount()).isNull();
+        // value1 is still the first element of the list, so its count is unchanged.
+        assertThat(value1.getCount()).isZero();
+    }
+
 }

@@ -86,7 +86,13 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         isUpdating = true;
         changedEntities.sort(topologicalOrderComparator);
         for (var changedEntity : changedEntities) {
-            var key = keyFunction.apply(changedEntity);
+            var entityKey = keyFunction.apply(changedEntity);
+            // An unassigned element is in no chain, so it stands as its own key: no other element's
+            // walk can reach it, and its own walk covers nothing but itself.
+            // Leaving it under the null key of the entity it lacks would pool every unassigned
+            // element into one key, and they all share a topological order, so the guard below
+            // would skip all but the first one processed.
+            var key = entityKey != null ? entityKey : changedEntity;
             var lastProcessed = keyToLastProcessedObject.get(key);
             if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
                 lastProcessed = updateChanged(changedEntity);
