@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -39,6 +40,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     private static final int PHASE_HISTORY_LIMIT = 50;
     private static final long REPAINT_PERIOD_MILLIS = 250L;
     private static final String CLEAR_SCREEN = "\033[H\033[2J"; // move cursor home, clear screen
+    private static final String IDENTIFICATION = TimefoldSolverEnterpriseService.identifySolverVersion();
 
     private final Path logFile;
 
@@ -216,7 +218,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     private void repaint() {
         var snapshot = buildSnapshot();
         var size = terminal.getSize();
-        var lines = DashboardRenderer.render(snapshot, size.getColumns(), size.getRows());
+        var lines = DashboardRenderer.render(snapshot, size.getColumns(), size.getRows(), IDENTIFICATION);
         var writer = terminal.writer();
         writer.print(CLEAR_SCREEN);
         for (var line : lines) {

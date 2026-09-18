@@ -15,11 +15,12 @@ final class DashboardRenderer {
             { '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█' };
     private static final int MIN_WIDTH = 40;
     private static final int MAX_WIDTH = 120;
+    private static final int MIN_TITLE_LENGTH = "Timefold".length();
 
     private DashboardRenderer() {
     }
 
-    static List<String> render(DashboardSnapshot snapshot, int width, int height) {
+    static List<String> render(DashboardSnapshot snapshot, int width, int height, String identification) {
         var frameWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
         var contentWidth = frameWidth - 4; // "│ " + content + " │"
 
@@ -46,7 +47,7 @@ final class DashboardRenderer {
         var visibleHistory = history.subList(history.size() - shown, history.size());
 
         var lines = new ArrayList<String>();
-        lines.add(topBorder(frameWidth, formatElapsed(snapshot.elapsedMillis())));
+        lines.add(topBorder(frameWidth, formatElapsed(snapshot.elapsedMillis()), identification));
         for (var historyLine : visibleHistory) {
             lines.add(content(historyLine, "", contentWidth));
         }
@@ -88,9 +89,14 @@ final class DashboardRenderer {
         return content(left, right, contentWidth);
     }
 
-    private static String topBorder(int frameWidth, String timeText) {
-        var title = " Timefold Solver ";
+    private static String topBorder(int frameWidth, String timeText, String identification) {
         var rightLabel = " " + timeText + " ";
+        // -2 corners, -1 minimum dash, -2 title's own padding spaces.
+        var maxTitleTextLength = Math.max(MIN_TITLE_LENGTH, frameWidth - 5 - rightLabel.length());
+        var titleText = identification.length() > maxTitleTextLength
+                ? identification.substring(0, maxTitleTextLength)
+                : identification;
+        var title = " " + titleText + " ";
         var dashCount = Math.max(1, frameWidth - 2 - title.length() - rightLabel.length());
         return "┌" + title + "─".repeat(dashCount) + rightLabel + "┐";
     }
