@@ -124,6 +124,61 @@ class DefaultListVariableStateTest {
                 .isInstanceOf(IllegalStateException.class);
     }
 
+    @Test
+    void getInverseSingletonAgreesWithGetElementPosition() {
+        var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        var state = new DefaultListVariableState<>(variableDescriptor, notifier);
+
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(new ArrayList<>(List.of(e1)));
+        solution.setValueList(List.of(v1, v2));
+        resetOn(state, variableDescriptor, solution);
+
+        var v1Entity = state.getElementPosition(v1).ensureAssigned().entity();
+        assertSoftly(softly -> {
+            softly.assertThat(state.getInverseSingleton(v1)).isEqualTo(e1);
+            softly.assertThat(v1Entity).isEqualTo(e1);
+            softly.assertThat(state.getInverseSingleton(v2)).isNull();
+            softly.assertThat(state.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
+        });
+    }
+
+    @Test
+    void getInverseSingletonAgreesWithGetElementPositionWhenInverseIsExternalized() {
+        // Only the inverse relation is externalized; index/previous/next stay internal so
+        // requiresPositionMap stays true. getElementPosition then reads the position map while
+        // getInverseSingleton reads the externalized shadow field directly - two different stores
+        // that must still agree.
+        var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        var state = new DefaultListVariableState<>(variableDescriptor, notifier);
+        state.externalize(variableDescriptor.getInverseRelationShadowVariableDescriptor());
+
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(new ArrayList<>(List.of(e1)));
+        solution.setValueList(List.of(v1, v2));
+        resetOn(state, variableDescriptor, solution);
+
+        var v1Entity = state.getElementPosition(v1).ensureAssigned().entity();
+        assertSoftly(softly -> {
+            softly.assertThat(state.getInverseSingleton(v1)).isEqualTo(e1);
+            softly.assertThat(v1Entity).isEqualTo(e1);
+            softly.assertThat(state.getInverseSingleton(v2)).isNull();
+            softly.assertThat(state.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
+        });
+    }
+
     /**
      * Replicates {@code VariableSupport.linkShadowVariables()}'s wiring by hand: finds whichever of the four list shadow
      * variable descriptors are declared on the value class and externalizes them.
