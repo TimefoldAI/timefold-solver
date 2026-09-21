@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,6 +16,7 @@ import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
+import ai.timefold.solver.service.maps.api.model.TransportType;
 import ai.timefold.solver.service.maps.api.model.travel.TravelDistance;
 import ai.timefold.solver.service.maps.api.model.travel.TravelTime;
 import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
@@ -34,7 +36,7 @@ class TravelTimeMatrixEnricherTrafficTest {
     private final MapServiceOptionsSupplier optionsSupplier = new MapServiceOptionsSupplier(
             Optional.empty(), Optional.empty(), Optional.of(1000.0),
             Optional.empty(), Optional.empty(), Optional.empty(),
-            Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty());
 
     @Test
     void regularModelUsesSingleMatrix() {
@@ -145,6 +147,77 @@ class TravelTimeMatrixEnricherTrafficTest {
                 .hasMessageContaining("Error getting travel time and distances");
     }
 
+    @Test
+    void autoSelectFetchesOneMatrixPerDatasetTransportType() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        StubMapService stub = new StubMapService(null,
+                new TravelTimeAndDistanceWithMetadata(
+                        new TravelTimeAndDistance(matrixOf(l1, l2, 75L), matrixOf(l1, l2, 750L)), List.of()));
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, autoSelectOptionsSupplier(null), new MapEnrichmentContext(), false);
+
+        enricher.enrich(new StubLocationsModel(List.of(l1, l2), List.of(TransportType.BICYCLE, TransportType.CAR)));
+
+        // One round-trip per transport type used by the dataset, car first because it is the primary one.
+        assertThat(stub.singleInvocationCount.get()).isEqualTo(2);
+        assertThat(stub.singleInvocationOptions)
+                .containsExactly("transportType:car", "transportType:bicycle");
+    }
+
+    @Test
+    void autoSelectWithoutDatasetTransportTypesFallsBackToTheDefaultOne() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        StubMapService stub = new StubMapService(null,
+                new TravelTimeAndDistanceWithMetadata(
+                        new TravelTimeAndDistance(matrixOf(l1, l2, 75L), matrixOf(l1, l2, 750L)), List.of()));
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, autoSelectOptionsSupplier(null), new MapEnrichmentContext(), false);
+
+        enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
+
+        assertThat(stub.singleInvocationOptions).containsExactly("transportType:car");
+    }
+
+    @Test
+    void autoSelectRejectsTransportTypeNotAllowed() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(new StubMapService(null, null),
+                autoSelectOptionsSupplier("car,foot"), new MapEnrichmentContext(), false);
+        StubLocationsModel model = new StubLocationsModel(List.of(l1, l2), List.of(TransportType.BICYCLE));
+
+        assertThatThrownBy(() -> enricher.enrich(model))
+                .isInstanceOf(TimefoldRuntimeException.class)
+                .hasMessageContaining("bicycle")
+                .hasMessageContaining("car, foot");
+    }
+
+    @Test
+    void fixedTransportTypeRejectsDatasetUsingAnotherTransportType() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(new StubMapService(null, null),
+                optionsSupplierOf("car", null), new MapEnrichmentContext(), false);
+        StubLocationsModel model = new StubLocationsModel(List.of(l1, l2), List.of(TransportType.CAR, TransportType.FOOT));
+
+        assertThatThrownBy(() -> enricher.enrich(model))
+                .isInstanceOf(TimefoldRuntimeException.class)
+                .hasMessageContaining("foot")
+                .hasMessageContaining("auto-select");
+    }
+
+    private static MapServiceOptionsSupplier autoSelectOptionsSupplier(String allowedTransportTypes) {
+        return optionsSupplierOf("auto-select", allowedTransportTypes);
+    }
+
+    private static MapServiceOptionsSupplier optionsSupplierOf(String transportType, String allowedTransportTypes) {
+        return new MapServiceOptionsSupplier(Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.ofNullable(transportType), Optional.ofNullable(allowedTransportTypes));
+    }
+
     private static DistanceMatrix matrixOf(Location from, Location to, long value) {
         DistanceMatrix matrix = DistanceMatrix.getInstance(2);
         matrix.put(from, to, value);
@@ -158,6 +231,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         private final TravelTimeAndDistanceWithMetadata singleResult;
         private final AtomicInteger byTimeframeInvocationCount = new AtomicInteger(0);
         private final AtomicInteger singleInvocationCount = new AtomicInteger(0);
+        private final List<String> singleInvocationOptions = new ArrayList<>();
         private List<Location> lastLocations;
 
         StubMapService(TravelTimesByTimeframeWithMetadata byTimeframeResult,
@@ -169,6 +243,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         @Override
         public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
             singleInvocationCount.incrementAndGet();
+            singleInvocationOptions.add(options);
             if (singleResult == null) {
                 throw new UnsupportedOperationException("single matrix result not configured");
             }
@@ -224,10 +299,21 @@ class TravelTimeMatrixEnricherTrafficTest {
     private static class StubLocationsModel implements LocationsAwareSolverModel<HardSoftScore> {
 
         private final List<Location> locations;
+        private final List<TransportType> transportTypes;
         private List<Location> notInMap;
 
         StubLocationsModel(List<Location> locations) {
+            this(locations, List.of());
+        }
+
+        StubLocationsModel(List<Location> locations, List<TransportType> transportTypes) {
             this.locations = locations;
+            this.transportTypes = transportTypes;
+        }
+
+        @Override
+        public List<TransportType> getTransportTypes() {
+            return transportTypes;
         }
 
         @Override

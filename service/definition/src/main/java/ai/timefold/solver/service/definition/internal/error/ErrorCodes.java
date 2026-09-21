@@ -27,6 +27,7 @@ public class ErrorCodes {
     public static final String MAP_SERVICE_CLIENT_CONVERT_DISTANCE_RESPONSE_ERROR = PREFIX + "60014";
     public static final String MAP_SERVICE_CLIENT_REQUEST_ERROR = PREFIX + "60015";
     public static final String MAP_SERVICE_LOCATION_NOT_IN_MAP_ERROR = PREFIX + "60017";
+    public static final String MAP_SERVICE_TRANSPORT_TYPE_NOT_ALLOWED = PREFIX + "60018";
     public static final String MAP_SERVICE_UNKNOWN = PREFIX + "60099";
 
     // Solver related error codes - starts with 7...

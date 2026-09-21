@@ -3,6 +3,8 @@ package ai.timefold.solver.service.maps.service.client.api;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -59,7 +61,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         // One map-service round-trip per transport type; each mode resolves to its own OSRM instance. The first
         // mode is treated as primary and is the one whose map metadata (locations-not-in-map, resolved location) is
         // propagated to the solver model.
-        List<TransportType> transportTypes = optionsSupplier.getTransportTypes();
+        List<TransportType> transportTypes = resolveTransportTypes(solverModel);
         for (var i = 0; i < transportTypes.size(); i++) {
             var transportType = transportTypes.get(i);
             boolean primary = i == 0;
@@ -148,5 +150,55 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         }
 
         return locationList;
+    }
+
+    /**
+     * Decides which transport types travel times are fetched for, and rejects the dataset when it uses a transport
+     * type this deployment is not allowed to route with.
+     */
+    private List<TransportType> resolveTransportTypes(LocationsAwareSolverModel<?> solverModel) {
+        List<TransportType> datasetTransportTypes = solverModel.getTransportTypes().stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted() // Deterministic order; CAR, when used, comes first and is therefore the primary one.
+                .toList();
+        if (!optionsSupplier.isAutoSelectTransportType()) {
+            TransportType configuredTransportType = optionsSupplier.getTransportType();
+            failIfNotAllowed(List.of(configuredTransportType));
+            List<TransportType> unsupported = datasetTransportTypes.stream()
+                    .filter(transportType -> transportType != configuredTransportType)
+                    .toList();
+            if (!unsupported.isEmpty()) {
+                throw new MapServiceIllegalArgumentException(ErrorCodes.MAP_SERVICE_TRANSPORT_TYPE_NOT_ALLOWED,
+                        ("The dataset uses transport type(s) (%s) other than the configured transport type (%s). "
+                                + "Configure the transport type (%s) to route a single dataset with several transport types.")
+                                .formatted(join(unsupported), configuredTransportType, TransportType.AUTO_SELECT),
+                        false);
+            }
+            return List.of(configuredTransportType);
+        }
+        if (datasetTransportTypes.isEmpty()) {
+            return List.of(optionsSupplier.getDefaultTransportType());
+        }
+        failIfNotAllowed(datasetTransportTypes);
+        return datasetTransportTypes;
+    }
+
+    private void failIfNotAllowed(List<TransportType> transportTypes) {
+        List<TransportType> notAllowed = transportTypes.stream()
+                .filter(transportType -> !optionsSupplier.isAllowed(transportType))
+                .toList();
+        if (notAllowed.isEmpty()) {
+            return;
+        }
+        List<TransportType> allowed = optionsSupplier.getAllowedTransportTypes();
+        throw new MapServiceIllegalArgumentException(ErrorCodes.MAP_SERVICE_TRANSPORT_TYPE_NOT_ALLOWED,
+                "The transport type(s) (%s) are not allowed; the allowed transport types are (%s)."
+                        .formatted(join(notAllowed), join(allowed.isEmpty() ? TransportType.ROUTING_PROFILES : allowed)),
+                false);
+    }
+
+    private static String join(List<TransportType> transportTypes) {
+        return transportTypes.stream().map(TransportType::value).collect(Collectors.joining(", "));
     }
 }

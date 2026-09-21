@@ -30,7 +30,9 @@ public class MapServiceOptionsSupplier {
 
     private final Optional<Double> maxDistanceFromRoad;
 
-    private final List<TransportType> transportTypes;
+    private final TransportType transportType;
+
+    private final List<TransportType> allowedTransportTypes;
 
     public MapServiceOptionsSupplier(
             @ConfigProperty(name = "timefold.platform.map-service.provider") Optional<String> provider,
@@ -41,7 +43,9 @@ public class MapServiceOptionsSupplier {
             @ConfigProperty(name = "timefold.model.api-version") Optional<String> modelVersion,
             @ConfigProperty(name = "timefold.model.rest-resource") Optional<String> modelResource,
             @ConfigProperty(name = "timefold.platform.tenant-id") Optional<String> tenantId,
-            @ConfigProperty(name = "timefold.platform.map-service.transport-type") Optional<String> transportType) {
+            @ConfigProperty(name = "timefold.platform.map-service.transport-type") Optional<String> transportType,
+            @ConfigProperty(
+                    name = "timefold.platform.map-service.allowed-transport-types") Optional<String> allowedTransportTypes) {
         this.provider = provider;
         this.location = location;
         this.model = model;
@@ -49,11 +53,34 @@ public class MapServiceOptionsSupplier {
         this.modelResource = modelResource;
         this.tenantId = tenantId;
         this.maxDistanceFromRoad = maxDistanceFromRoad;
-        this.transportTypes = resolveTransportTypes(transportType);
+        this.transportType = resolveTransportType(transportType);
+        this.allowedTransportTypes = resolveAllowedTransportTypes(allowedTransportTypes);
     }
 
-    public List<TransportType> getTransportTypes() {
-        return transportTypes;
+    public TransportType getTransportType() {
+        return transportType;
+    }
+
+    public boolean isAutoSelectTransportType() {
+        return transportType.isAutoSelect();
+    }
+
+    public List<TransportType> getAllowedTransportTypes() {
+        return allowedTransportTypes;
+    }
+
+    public boolean isAllowed(TransportType transportType) {
+        if (transportType == null || transportType.isAutoSelect()) {
+            return false;
+        }
+        return allowedTransportTypes.isEmpty() || allowedTransportTypes.contains(transportType);
+    }
+
+    public TransportType getDefaultTransportType() {
+        if (isAllowed(TransportType.CAR)) {
+            return TransportType.CAR;
+        }
+        return allowedTransportTypes.getFirst();
     }
 
     public String getOptions() {
@@ -61,8 +88,7 @@ public class MapServiceOptionsSupplier {
     }
 
     public String getOptions(String locationSetName) {
-        // Legacy single-mode callers get the primary transport type.
-        return getOptions(locationSetName, transportTypes.get(0));
+        return getOptions(locationSetName, isAutoSelectTransportType() ? getDefaultTransportType() : transportType);
     }
 
     public String getOptions(TransportType transportType) {
@@ -79,7 +105,7 @@ public class MapServiceOptionsSupplier {
         String locationSetNameOption =
                 locationSetName == null ? "" : MapServiceOptions.getLocationSetNameOption(locationSetName);
         String maxDistanceFromRoadOption = maxDistanceFromRoad.map(MapServiceOptions::getMaxDistanceFromRoadOption).orElse("");
-        String transportTypeOption = transportType == null
+        String transportTypeOption = transportType == null || transportType.isAutoSelect()
                 ? ""
                 : MapServiceOptions.getTransportTypeOption(transportType.value());
         String options = Stream
@@ -91,16 +117,29 @@ public class MapServiceOptionsSupplier {
         return options.isEmpty() ? "" : options;
     }
 
-    private static List<TransportType> resolveTransportTypes(Optional<String> transportType) {
+    private static TransportType resolveTransportType(Optional<String> transportType) {
         return transportType
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(TransportType::of)
+                .orElse(TransportType.CAR);
+    }
+
+    private static List<TransportType> resolveAllowedTransportTypes(Optional<String> allowedTransportTypes) {
+        List<TransportType> allowed = allowedTransportTypes
                 .map(value -> Arrays.stream(value.split(","))
                         .map(String::trim)
                         .filter(part -> !part.isEmpty())
                         .map(TransportType::of)
                         .distinct()
                         .toList())
-                .filter(list -> !list.isEmpty())
-                .orElseGet(() -> List.of(TransportType.CAR));
+                .orElseGet(List::of);
+        if (allowed.stream().anyMatch(TransportType::isAutoSelect)) {
+            throw new IllegalArgumentException(
+                    "The transport type (%s) cannot be part of the allowed transport types (%s); it is not a routing profile."
+                            .formatted(TransportType.AUTO_SELECT, allowed));
+        }
+        return allowed;
     }
 
 }
