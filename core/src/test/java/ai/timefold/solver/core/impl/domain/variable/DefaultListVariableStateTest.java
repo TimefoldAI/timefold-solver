@@ -179,6 +179,66 @@ class DefaultListVariableStateTest {
         });
     }
 
+    @Test
+    void getInverseSingletonPreservesExternalizedInverseOnFirstResetEvenWhenShadowsAreExpectedCorrect() {
+        // Mirrors AbstractConstraintAssertion.ensureInitialized(): a caller builds a brand new,
+        // never-before-initialized director and calls setWorkingSolutionWithoutUpdatingShadows()
+        // directly, with shadow fields it set by hand on values it never assigned into any entity's
+        // list (v2's inverse points at e1, but v2 is not in e1's value list). That caller documents
+        // that it trusts exactly what it set; this carrier must not "correct" it on a first reset.
+        var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        var state = new DefaultListVariableState<>(variableDescriptor, notifier);
+        state.externalize(variableDescriptor.getInverseRelationShadowVariableDescriptor());
+
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+        v2.setEntity(e1); // Hand-set by the caller, deliberately not mirrored into e1's value list.
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(new ArrayList<>(List.of(e1)));
+        solution.setValueList(List.of(v1, v2));
+        resetOn(state, variableDescriptor, solution, true);
+
+        assertSoftly(softly -> {
+            softly.assertThat(state.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
+            softly.assertThat(state.getInverseSingleton(v2)).isEqualTo(e1);
+        });
+    }
+
+    @Test
+    void getInverseSingletonClearsStaleExternalizedInverseOnSubsequentResetEvenWhenShadowsAreExpectedCorrect() {
+        // Reproduces what a problem-change reset (afterProblemFactAdded/Removed/PropertyChanged)
+        // leaves behind on an ALREADY-INITIALIZED director: v1 was validly assigned to e1 by an
+        // ordinary reset (mirroring solve start), then a later reset finds it missing from e1's
+        // value list (as afterProblemFactRemoved's rescan would) while its externalized inverse
+        // field still points at e1, with expectShadowVariablesInCorrectState() true throughout.
+        // getElementPosition rebuilds its position map from scratch regardless and reports v1
+        // unassigned; getInverseSingleton must agree, not return the stale entity.
+        var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        var state = new DefaultListVariableState<>(variableDescriptor, notifier);
+        state.externalize(variableDescriptor.getInverseRelationShadowVariableDescriptor());
+
+        var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1);
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(new ArrayList<>(List.of(e1)));
+        solution.setValueList(List.of(v1));
+        resetOn(state, variableDescriptor, solution, false); // First reset: mirrors solve start.
+
+        e1.setValueList(new ArrayList<>()); // v1 no longer in e1's value list...
+        // ...but its externalized inverse field is untouched here, exactly like a problem-change
+        // path that never runs the solver's normal per-move shadow update for this removal.
+        resetOn(state, variableDescriptor, solution, true); // Second reset: mirrors a problem change.
+
+        assertSoftly(softly -> {
+            softly.assertThat(state.getElementPosition(v1)).isEqualTo(ElementPosition.unassigned());
+            softly.assertThat(state.getInverseSingleton(v1)).isNull();
+        });
+    }
+
     /**
      * Replicates {@code VariableSupport.linkShadowVariables()}'s wiring by hand: finds whichever of the four list shadow
      * variable descriptors are declared on the value class and externalizes them.
@@ -335,12 +395,25 @@ class DefaultListVariableStateTest {
      */
     private static <Solution_> InnerScoreDirector<Solution_, ?> resetOn(DefaultListVariableState<Solution_> state,
             ListVariableDescriptor<Solution_> variableDescriptor, Solution_ solution) {
+        return resetOn(state, variableDescriptor, solution, false);
+    }
+
+    /**
+     * As {@link #resetOn(DefaultListVariableState, ListVariableDescriptor, Object)},
+     * but with control over {@link InnerScoreDirector#expectShadowVariablesInCorrectState()} -
+     * true simulates a problem-change reset (shadows asserted already correct),
+     * false simulates a fresh solve start (shadows rebuilt from scratch).
+     */
+    private static <Solution_> InnerScoreDirector<Solution_, ?> resetOn(DefaultListVariableState<Solution_> state,
+            ListVariableDescriptor<Solution_> variableDescriptor, Solution_ solution,
+            boolean expectShadowVariablesInCorrectState) {
         @SuppressWarnings("unchecked")
         var scoreDirector = (InnerScoreDirector<Solution_, ?>) mock(InnerScoreDirector.class);
         var valueRangeManager =
                 ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
         when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        when(scoreDirector.expectShadowVariablesInCorrectState()).thenReturn(expectShadowVariablesInCorrectState);
         state.resetWorkingSolution(scoreDirector);
         return scoreDirector;
     }
