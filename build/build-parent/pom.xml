@@ -70,7 +70,7 @@
     <version.jacoco.plugin>0.8.15</version.jacoco.plugin>
     <version.jandex.plugin>3.6.0</version.jandex.plugin>
     <version.jar.plugin>3.5.1</version.jar.plugin>
-    <version.jaxb2.plugin>4.1.0</version.jaxb2.plugin>
+    <version.jaxb2.plugin>4.2.0</version.jaxb2.plugin>
     <version.maven-plugin.plugin>3.16.0</version.maven-plugin.plugin>
     <version.maven-plugin.plugin-testing>3.5.1</version.maven-plugin.plugin-testing>
     <version.native.plugin>1.1.13</version.native.plugin>
