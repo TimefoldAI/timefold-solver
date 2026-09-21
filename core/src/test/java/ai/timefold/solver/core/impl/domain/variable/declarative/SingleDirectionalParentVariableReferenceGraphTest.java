@@ -136,9 +136,10 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         var value1 = new TestdataCountingValue("v1");
         var value2 = new TestdataCountingValue("v2");
         var value3 = new TestdataCountingValue("v3");
+        var value4 = new TestdataCountingValue("v4");
 
         var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor,
-                entity, value1, value2, value3);
+                entity, value1, value2, value3, value4);
         assertThat(graphStructureAndDirection.structure()).isEqualTo(GraphStructure.SINGLE_DIRECTIONAL_PARENT);
 
         var scoreDirector = Mockito.mock(InnerScoreDirector.class);
@@ -146,7 +147,7 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         Mockito.when(scoreDirector.getListVariableState(Mockito.any()))
                 .thenReturn(listVariableState);
 
-        // The entity's list variable is [value1, value2, value3].
+        // The entity's list variable is [value1, value2, value3, value4].
         value1.setEntity(entity);
         value1.setPrevious(null);
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
@@ -162,32 +163,44 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         value3.setEntity(entity);
         value3.setPrevious(value2);
         Mockito.doReturn(2).when(listVariableState).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(null);
+        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(value4);
         Mockito.when(listVariableState.getInverseSingleton(value3)).thenReturn(entity);
+
+        value4.setEntity(entity);
+        value4.setPrevious(value3);
+        Mockito.doReturn(3).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity);
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         var graph = DefaultShadowVariableSessionFactory.buildSingleDirectionalParentGraph(
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(
                         solutionDescriptor, ChangedVariableNotifier.of(scoreDirector),
-                        entity, value1, value2, value3),
+                        entity, value1, value2, value3, value4),
                 graphStructureAndDirection);
 
         assertThat(value1.getCount()).isZero();
         assertThat(value2.getCount()).isOne();
         assertThat(value3.getCount()).isEqualTo(2);
+        assertThat(value4.getCount()).isEqualTo(3);
 
-        List.of(value1, value2, value3).forEach(TestdataCountingValue::reset);
+        List.of(value1, value2, value3, value4).forEach(TestdataCountingValue::reset);
         Mockito.reset(listVariableState);
 
-        // A single move unassigns both value2 and value3, leaving the entity's list variable as [value1].
+        // Unassigns value2 and value3 in one move, leaving [value1, value4] - value4 now follows value1.
         value2.setEntity(null);
         value2.setPrevious(null);
         value3.setEntity(null);
         value3.setPrevious(null);
+        value4.setPrevious(value1);
 
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(null);
+        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(value4);
         Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity);
+
+        Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
+        Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity);
 
         // An unassigned element has no index, so getIndexOrElse gives back its default,
         // no next element, and no inverse entity.
@@ -201,12 +214,16 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         var previousVariableMetamodel = metaModel.variable("previous");
         var entityVariableMetamodel = metaModel.variable("entity");
 
-        // Both of an unassigned element's parent variables change, so each element is recorded twice.
-        // TestdataCountingValue.countSupplier fails the test if that makes it update twice.
+        // A real unassign fires afterListVariableElementUnassigned, which changes both parent
+        // variables; countSupplier fails if it's called twice for the same element.
+        scoreDirector.afterListVariableElementUnassigned(entity, "values", value2);
         graph.afterVariableChanged(entityVariableMetamodel, value2);
         graph.afterVariableChanged(previousVariableMetamodel, value2);
+        scoreDirector.afterListVariableElementUnassigned(entity, "values", value3);
         graph.afterVariableChanged(entityVariableMetamodel, value3);
         graph.afterVariableChanged(previousVariableMetamodel, value3);
+        // value4's previous changed too: from value3 to value1.
+        graph.afterVariableChanged(previousVariableMetamodel, value4);
 
         graph.updateChanged();
 
@@ -215,6 +232,8 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         assertThat(value3.getCount()).isNull();
         // value1 is still the first element of the list, so its count is unchanged.
         assertThat(value1.getCount()).isZero();
+        // value4 now follows value1, so its count drops from the stale 3 to 1.
+        assertThat(value4.getCount()).isEqualTo(1);
     }
 
 }

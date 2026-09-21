@@ -25,6 +25,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     private final List<Object> changedEntities;
     private final Class<?> monitoredEntityClass;
     private final Map<Object, Object> keyToLastProcessedObject;
+    private final Set<Object> processedUnassignedEntitySet;
     private final boolean canTerminateEarly;
     private boolean isUpdating;
 
@@ -41,6 +42,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         monitoredSourceVariableSet = new HashSet<>();
         changedEntities = new ArrayList<>();
         keyToLastProcessedObject = new IdentityHashMap<>();
+        processedUnassignedEntitySet = Collections.newSetFromMap(new IdentityHashMap<>());
         isUpdating = false;
 
         this.canTerminateEarly = canTerminateEarly;
@@ -86,21 +88,25 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         isUpdating = true;
         changedEntities.sort(topologicalOrderComparator);
         for (var changedEntity : changedEntities) {
-            var entityKey = keyFunction.apply(changedEntity);
-            // entityKey is null for an unassigned element. Using the element itself as the key
-            // instead keeps unassigned elements apart: sharing the null key would pool them all
-            // together, and since they also compare equal, the guard below would treat the first
-            // one walked as already covering the rest.
-            var key = entityKey != null ? entityKey : changedEntity;
-            var lastProcessed = keyToLastProcessedObject.get(key);
-            if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
-                lastProcessed = updateChanged(changedEntity);
-                keyToLastProcessedObject.put(key, lastProcessed);
+            var key = keyFunction.apply(changedEntity);
+            if (key == null) {
+                // Unassigned: no chain key, so a shared null key would wrongly pool every
+                // unassigned element together. Track by identity instead.
+                if (processedUnassignedEntitySet.add(changedEntity)) {
+                    updateChanged(changedEntity);
+                }
+            } else {
+                var lastProcessed = keyToLastProcessedObject.get(key);
+                if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
+                    lastProcessed = updateChanged(changedEntity);
+                    keyToLastProcessedObject.put(key, lastProcessed);
+                }
             }
         }
         isUpdating = false;
         changedEntities.clear();
         keyToLastProcessedObject.clear();
+        processedUnassignedEntitySet.clear();
         return true;
     }
 
