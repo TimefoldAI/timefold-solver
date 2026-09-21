@@ -63,10 +63,10 @@
     <version.clean.plugin>3.5.0</version.clean.plugin>
     <version.compiler.plugin>3.16.0</version.compiler.plugin>
     <version.dependency.plugin>3.11.0</version.dependency.plugin>
-    <version.deploy.plugin>3.1.4</version.deploy.plugin>
+    <version.deploy.plugin>3.2.0</version.deploy.plugin>
     <version.exec.plugin>3.6.4</version.exec.plugin>
     <version.enforcer.plugin>3.6.3</version.enforcer.plugin>
-    <version.install.plugin>3.1.4</version.install.plugin>
+    <version.install.plugin>3.2.0</version.install.plugin>
     <version.jacoco.plugin>0.8.15</version.jacoco.plugin>
     <version.jandex.plugin>3.6.0</version.jandex.plugin>
     <version.jar.plugin>3.5.1</version.jar.plugin>
@@ -82,7 +82,7 @@
     <version.source.plugin>3.4.0</version.source.plugin>
     <version.spotless.plugin>3.10.2</version.spotless.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin> <!-- 3.6.0 causes strange hangs in Quarkus-related tests. -->
-    <version.versions.plugin>2.21.0</version.versions.plugin>
+    <version.versions.plugin>2.22.0</version.versions.plugin>
     <version.git-commit-id.plugin>10.0.1</version.git-commit-id.plugin>
 
     <!-- Plugin configuration properties -->
