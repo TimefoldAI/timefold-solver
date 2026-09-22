@@ -23,6 +23,8 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Renders a live terminal dashboard while a solver runs, driven by phase/step lifecycle events.
@@ -39,6 +41,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     private static final long REPAINT_PERIOD_MILLIS = 250L;
     private static final String CLEAR_SCREEN = "\033[H\033[2J"; // move cursor home, clear screen
     private static final String IDENTIFICATION = TimefoldSolverEnterpriseService.identifySolverVersion();
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolverDashboard.class);
 
     private final Path logFile;
     private final Solver<Solution_> solver;
@@ -78,7 +81,12 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     // Lifecycle, called by SolverConsole
     // ************************************************************************
 
-    public void start() {
+    /**
+     * @return false if no interactive terminal is available (piped, redirected, or non-interactive output); logs
+     *         why and leaves this dashboard entirely unstarted (no output redirect, no threads) so the caller can
+     *         solve plainly instead
+     */
+    public boolean start() {
         try {
             terminal = TerminalBuilder.builder().build();
         } catch (IOException e) {
@@ -86,8 +94,11 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         }
         if (terminal.getType().startsWith(Terminal.TYPE_DUMB)) {
             closeTerminalQuietly();
-            throw new IllegalStateException("SolverConsole requires an interactive terminal; it cannot render to a piped, "
-                    + "redirected or non-interactive output. Run it directly in a terminal.");
+            terminal = null;
+            // Necessary sysout - logging may be redirected to a file, leading to blank console.
+            System.out.println(
+                    "SolverConsole dashboard disabled: no interactive terminal available (piped, redirected, or non-interactive output).");
+            return false;
         }
         try {
             redirectOutput();
@@ -104,6 +115,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
             keyThread = new Thread(this::keyLoop, "solver-console-key");
             keyThread.setDaemon(true);
             keyThread.start();
+            return true;
         } catch (RuntimeException | Error e) {
             // Nothing acquired above may outlive a failed start(), or it leaks for the rest of the JVM's life.
             running = false;
@@ -175,7 +187,6 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         phaseName = phaseScope.getPhaseId().simpleProducerName();
         stepIndex = -1L;
         stepScoreText = "n/a";
-        acceptedPercentText = "—";
     }
 
     @Override
@@ -195,11 +206,10 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
                 totalAcceptedMoveCount += accepted;
                 totalSelectedMoveCount += selected;
             }
-            acceptedPercentText = (accepted == null || selected == null || selected == 0L) ? "—"
-                    : String.format("%.1f %%", 100.0 * accepted / selected);
-        } else {
-            acceptedPercentText = "—";
         }
+        // Cumulative across the whole run; step-based swings wildly step to step, the running total doesn't.
+        acceptedPercentText = totalSelectedMoveCount == 0L ? "—"
+                : String.format("%.1f %%", 100.0 * totalAcceptedMoveCount / totalSelectedMoveCount);
     }
 
     @Override
@@ -361,6 +371,9 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         } catch (ReflectiveOperationException e) {
             return false; // Quarkus is present but its LaunchMode API changed shape; don't block on a best-effort check.
         }
+        LOGGER.warn("SolverConsole dashboard disabled under `quarkus:dev`: its raw-mode stdin hotkey handler would "
+                + "conflict with dev mode's own. Solving without it; run the built application instead "
+                + "(`java -jar target/quarkus-app/quarkus-run.jar`) to see the dashboard.");
         return true;
     }
 

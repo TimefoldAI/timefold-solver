@@ -12,22 +12,22 @@ import ai.timefold.solver.core.impl.solver.DefaultSolver;
  * as a drop-in replacement for calling {@link SolverFactory#buildSolver()} and
  * {@link Solver#solve(Object)} directly.
  * <p>
- * Redirects {@link System#out} and {@link System#err} to a log file for the duration of the call.
+ * If an interactive terminal is available, it redirects {@link System#out} and {@link System#err} to a log file
+ * for the duration of the call.
  * A logging backend that caches its output stream at construction
  * (some Logback or Log4j2 console appenders)
  * is not covered;
  * lower {@code ai.timefold.solver}'s level in that config instead.
  * <p>
- * Requires a real interactive terminal; fails fast otherwise.
- * Under {@code quarkus:dev}, the dashboard is skipped instead (a message is logged)
- * and the problem is solved plainly,
- * since dev mode's own raw-mode stdin hotkey handler would otherwise conflict with the dashboard's.
+ * If an interactive terminal is not available,
+ * the dashboard is skipped instead (a message is logged) and the problem is solved plainly,
+ * with no output redirect.
  * <p>
  * Not safe to call concurrently from multiple threads in the same JVM.
  */
 public final class SolverConsole {
 
-    private static final String DEFAULT_LOG_FILE_NAME = "timefold-console.log";
+    private static final String DEFAULT_LOG_FILE_NAME = "timefold-console.out";
 
     private SolverConsole() {
     }
@@ -53,8 +53,10 @@ public final class SolverConsole {
             return solver.solve(problem);
         }
         var dashboard = new SolverDashboard<>(logFile, solver, solver.getSolverScope());
+        if (!dashboard.start()) {
+            return solver.solve(problem);
+        }
         solver.addPhaseLifecycleListener(dashboard);
-        dashboard.start();
         var solved = false;
         try {
             var solution = solver.solve(problem);
