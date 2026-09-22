@@ -10,15 +10,18 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jline.terminal.Terminal;
@@ -47,9 +50,9 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     private static final String IDENTIFICATION = TimefoldSolverEnterpriseService.identifySolverVersion();
 
     private final Path logFile;
+    private final Solver<Solution_> solver;
+    private final SolverScope<Solution_> solverScope;
 
-    private volatile Solver<Solution_> solver;
-    private volatile SolverScope<Solution_> solverScope;
     private volatile String phaseName;
     private volatile long stepIndex = -1L;
     private volatile String stepScoreText = "n/a";
@@ -57,7 +60,12 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     // in the two spots that reset it. Promote to a constant if a third caller shows up.
     private volatile String acceptedPercentText = "—";
 
-    private final ArrayDeque<Double> bestScoreHistory = new ArrayDeque<>();
+    // Labels and per-level history are populated lazily on the first non-null best score, since the
+    // score definition (and therefore the level count) isn't known before solving starts. Both are
+    // only ever touched from inside paintFrame(), itself only ever invoked while holding this
+    // dashboard's own monitor (see repaint()/stop()), so no separate lock is needed here.
+    private List<String> scoreLevelLabels;
+    private final List<ArrayDeque<Double>> bestScoreHistoryPerLevel = new ArrayList<>();
     private final List<String> finishedPhaseLines = Collections.synchronizedList(new ArrayList<>());
 
     // Written and read only from the solving thread (accumulated in stepEnded()/phaseEnded(),
@@ -76,17 +84,17 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     private volatile boolean running;
     private volatile boolean quitRequested;
 
-    public SolverDashboard(Path logFile) {
+    public SolverDashboard(Path logFile, Solver<Solution_> solver, SolverScope<Solution_> solverScope) {
         this.logFile = logFile;
+        this.solver = solver;
+        this.solverScope = solverScope;
     }
 
     // ************************************************************************
     // Lifecycle, called by SolverConsole
     // ************************************************************************
 
-    public void start(Solver<Solution_> solver, SolverScope<Solution_> solverScope) {
-        this.solver = solver;
-        this.solverScope = solverScope;
+    public void start() {
         failFastUnderQuarkusDevMode();
         try {
             terminal = TerminalBuilder.builder().build();
@@ -99,42 +107,65 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
                     "SolverConsole requires an interactive terminal; it cannot render to a piped, "
                             + "redirected or non-interactive output. Run it directly in a terminal.");
         }
-        redirectOutput();
-        running = true;
         try {
-            terminal.enterRawMode();
-        } catch (UnsupportedOperationException ignored) {
-            // Best effort; the 'q' quit key then only works after pressing Enter too.
+            redirectOutput();
+            running = true;
+            try {
+                terminal.enterRawMode();
+            } catch (UnsupportedOperationException ignored) {
+                // Best effort; the 'q' quit key then only works after pressing Enter too.
+            }
+            terminal.handle(Terminal.Signal.WINCH, signal -> repaint());
+            repaintThread = new Thread(this::repaintLoop, "solver-console-repaint");
+            repaintThread.setDaemon(true);
+            repaintThread.start();
+            keyThread = new Thread(this::keyLoop, "solver-console-key");
+            keyThread.setDaemon(true);
+            keyThread.start();
+        } catch (RuntimeException | Error e) {
+            // Nothing acquired above (the redirected output, the raw terminal mode, the threads) may
+            // outlive a failed start(): each would otherwise leak for the rest of the JVM's life.
+            running = false;
+            restoreOutput();
+            closeTerminalQuietly();
+            throw e;
         }
-        terminal.handle(Terminal.Signal.WINCH, signal -> repaint());
-        repaintThread = new Thread(this::repaintLoop, "solver-console-repaint");
-        repaintThread.setDaemon(true);
-        repaintThread.start();
-        keyThread = new Thread(this::keyLoop, "solver-console-key");
-        keyThread.setDaemon(true);
-        keyThread.start();
     }
 
-    public void stop() {
-        running = false;
-        repaintThread.interrupt();
-        keyThread.interrupt();
-        var summary = buildFinalSummary();
-        var terminalWidth = terminal.getSize().getColumns();
-        if (quitRequested) {
-            // The dashboard box would otherwise linger above the summary printed below.
-            var writer = terminal.writer();
-            writer.print(CLEAR_SCREEN);
-            writer.flush();
-        } else {
-            repaint();
+    /**
+     * @param solved false if {@code solver.solve()} threw rather than returning; skips the final
+     *        summary box, since the solver scope it would report on may be left inconsistent
+     */
+    public void stop(boolean solved) {
+        int terminalWidth;
+        // Also entered by repaint() (the repaint thread and the WINCH resize handler): serializes
+        // every terminal write and guarantees none of them can still be in flight once this method
+        // closes the terminal below.
+        synchronized (this) {
+            running = false;
+            repaintThread.interrupt();
+            keyThread.interrupt();
+            terminalWidth = terminal.getSize().getColumns();
+            if (quitRequested) {
+                // The dashboard box would otherwise linger above the summary printed below.
+                var writer = terminal.writer();
+                writer.print(CLEAR_SCREEN);
+                writer.flush();
+            } else {
+                paintFrame();
+            }
+            restoreOutput();
+            closeTerminalQuietly();
         }
-        restoreOutput();
-        closeTerminalQuietly();
         // Printed after output is restored and the terminal is closed, so it reaches the real console.
         System.out.println();
-        for (var line : DashboardRenderer.renderFinalSummary(summary, terminalWidth)) {
-            System.out.println(line);
+        if (solved) {
+            var summary = buildFinalSummary();
+            for (var line : DashboardRenderer.renderFinalSummary(summary, terminalWidth)) {
+                System.out.println(line);
+            }
+        } else {
+            System.out.println("Solving did not complete; see the log for details.");
         }
         System.out.println();
         System.out.println("Log written to " + logFile.toAbsolutePath());
@@ -145,14 +176,14 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         return bestScore == null ? "n/a" : bestScore.raw().toString();
     }
 
-    private FinalSummary buildFinalSummary() {
+    FinalSummary buildFinalSummary() {
         var bestScore = solverScope.getBestScore();
         var title = bestScore == null ? "NO SOLUTION FOUND"
                 : bestScore.isFullyAssigned() && bestScore.raw().isFeasible() ? "FEASIBLE SOLUTION FOUND"
                         : "INFEASIBLE SOLUTION FOUND";
         var acceptanceText = totalSelectedMoveCount == 0L
                 ? "n/a"
-                : "%.1f %%".formatted(100.0 * totalAcceptedMoveCount / totalSelectedMoveCount);
+                : String.format(Locale.US, "%.1f %%", 100.0 * totalAcceptedMoveCount / totalSelectedMoveCount);
         return new FinalSummary(
                 title,
                 finalScoreText(),
@@ -173,13 +204,20 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         phaseName = phaseScope.getPhaseId().simpleProducerName();
         stepIndex = -1L;
+        stepScoreText = "n/a";
         acceptedPercentText = "—";
     }
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         stepIndex = stepScope.getStepIndex();
-        stepScoreText = stepScope.getScore().raw().toString();
+        // AbstractStepScope.score stays unset for exhaustive search (its score lives on the
+        // expanding node instead) and for any custom phase; fall back to n/a rather than NPE.
+        InnerScore<?> stepScore = stepScope.getScore();
+        if (stepScore == null && stepScope instanceof ExhaustiveSearchStepScope<Solution_> exhaustiveStepScope) {
+            stepScore = exhaustiveStepScope.getStartingStepScore();
+        }
+        stepScoreText = stepScore == null ? "n/a" : stepScore.raw().toString();
         if (stepScope instanceof LocalSearchStepScope<Solution_> localSearchStepScope) {
             var accepted = localSearchStepScope.getAcceptedMoveCount();
             var selected = localSearchStepScope.getSelectedMoveCount();
@@ -192,7 +230,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
             }
             acceptedPercentText = (accepted == null || selected == null || selected == 0L)
                     ? "—"
-                    : "%.1f %%".formatted(100.0 * accepted / selected);
+                    : String.format(Locale.US, "%.1f %%", 100.0 * accepted / selected);
         } else {
             acceptedPercentText = "—";
         }
@@ -208,7 +246,7 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         var phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
         var phaseMoveEvaluationSpeed = phaseScope.getPhaseMoveEvaluationCount() * 1000L
                 / (phaseTimeMillisSpent == 0L ? 1L : phaseTimeMillisSpent);
-        var line = "%s  %s ended: %d steps, %,d/s, score %s".formatted(
+        var line = String.format(Locale.US, "%s  %s ended: %d steps, %,d/s, score %s",
                 DashboardRenderer.formatElapsed(phaseScope.calculateSolverTimeMillisSpentUpToNow()),
                 phaseScope.getPhaseId().simpleProducerName(),
                 phaseScope.getNextStepIndex(),
@@ -253,7 +291,20 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
         }
     }
 
-    private void repaint() {
+    // Synchronized so the repaint thread, the WINCH resize handler and stop()'s own final frame can
+    // never write to the terminal concurrently or after stop() has closed it: the running check runs
+    // under the same lock stop() takes before closing, so a call arriving after stop() started is
+    // guaranteed to see running == false and return without touching the terminal.
+    // ponytail: one lock, four frames a second; revisit if the repaint cadence ever needs to be
+    // much higher.
+    private synchronized void repaint() {
+        if (!running) {
+            return;
+        }
+        paintFrame();
+    }
+
+    private void paintFrame() {
         recordBestScoreSample();
         var snapshot = buildSnapshot();
         var size = terminal.getSize();
@@ -274,31 +325,56 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
      * took the same real time. Sampling unconditionally (not only on improvement) means a genuine
      * plateau still advances the chart as flat, instead of the timeline silently skipping over it.
      */
-    private void recordBestScoreSample() {
+    void recordBestScoreSample() {
         var bestScore = solverScope.getBestScore();
         if (bestScore == null) {
             return; // Solving hasn't started yet.
         }
-        synchronized (bestScoreHistory) {
-            var levels = bestScore.raw().toLevelDoubles();
-            bestScoreHistory.addLast(levels[levels.length - 1]);
-            if (bestScoreHistory.size() >= 2 * SPARKLINE_HISTORY_LIMIT) {
+        var levels = bestScore.raw().toLevelDoubles();
+        if (scoreLevelLabels == null) {
+            // The score definition (and therefore the level count) isn't known before solving starts,
+            // so both are populated here, on the first sample, rather than in the constructor.
+            scoreLevelLabels = buildScoreLevelLabels(levels.length);
+            for (var i = 0; i < levels.length; i++) {
+                bestScoreHistoryPerLevel.add(new ArrayDeque<>());
+            }
+        }
+        for (var i = 0; i < levels.length; i++) {
+            var history = bestScoreHistoryPerLevel.get(i);
+            history.addLast(levels[i]);
+            if (history.size() >= 2 * SPARKLINE_HISTORY_LIMIT) {
                 // Halve only once the history has grown to exactly double the limit, so every bucket
                 // merges exactly 2:1 with no rounding remainder. Squeezing down by 1 every single step
                 // instead (a barely-over-capacity "201 into 200" downsample) always lands its one
                 // uneven bucket at the tail, turning the newest bucket into a decaying exponential
                 // moving average that stops responding to new data while older buckets never change.
-                var compacted = DashboardRenderer.downsample(List.copyOf(bestScoreHistory), SPARKLINE_HISTORY_LIMIT);
-                bestScoreHistory.clear();
-                bestScoreHistory.addAll(compacted);
+                var compacted = DashboardRenderer.downsample(List.copyOf(history), SPARKLINE_HISTORY_LIMIT);
+                history.clear();
+                history.addAll(compacted);
             }
         }
     }
 
-    private DashboardSnapshot buildSnapshot() {
-        List<Double> historySnapshot;
-        synchronized (bestScoreHistory) {
-            historySnapshot = List.copyOf(bestScoreHistory);
+    /**
+     * Indexed the same way as {@link #bestScoreHistoryPerLevel}, one label per score level (e.g.
+     * {@code hard}, {@code medium}, {@code soft}), the same way {@code ProblemBenchmarkResult} in
+     * {@code tools/benchmark} labels score levels in its own reports.
+     */
+    private List<String> buildScoreLevelLabels(int levelCount) {
+        var rawLabels = solverScope.getScoreDefinition().getLevelLabels();
+        var labels = new ArrayList<String>(levelCount);
+        for (var rawLabel : rawLabels) {
+            labels.add(rawLabel.endsWith(" score") ? rawLabel.substring(0, rawLabel.length() - " score".length())
+                    : rawLabel);
+        }
+        return List.copyOf(labels);
+    }
+
+    DashboardSnapshot buildSnapshot() {
+        var levelLabelsSnapshot = scoreLevelLabels == null ? List.<String> of() : scoreLevelLabels;
+        var historySnapshot = new ArrayList<List<Double>>(bestScoreHistoryPerLevel.size());
+        for (var history : bestScoreHistoryPerLevel) {
+            historySnapshot.add(List.copyOf(history));
         }
         List<String> phaseLinesSnapshot;
         synchronized (finishedPhaseLines) {
@@ -321,7 +397,8 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
                 problemSizeStatistics == null ? 0L : problemSizeStatistics.variableCount(),
                 problemSizeStatistics == null ? 0L : problemSizeStatistics.approximateValueCount(),
                 problemSizeStatistics == null ? null : problemSizeStatistics.approximateProblemScaleAsFormattedString(),
-                historySnapshot,
+                levelLabelsSnapshot,
+                List.copyOf(historySnapshot),
                 phaseLinesSnapshot);
     }
 
@@ -347,15 +424,18 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     }
 
     private void redirectOutput() {
-        originalOut = System.out;
-        originalErr = System.err;
+        // Opened before anything is assigned, so a failure here leaves originalOut null and
+        // restoreOutput() a no-op instead of closing the real System.out it never actually replaced.
+        PrintStream logStream;
         try {
-            var logStream = new PrintStream(new FileOutputStream(logFile.toFile()), true, StandardCharsets.UTF_8);
-            System.setOut(logStream);
-            System.setErr(logStream);
+            logStream = new PrintStream(new FileOutputStream(logFile.toFile()), true, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not open the SolverConsole log file (%s).".formatted(logFile), e);
         }
+        originalOut = System.out;
+        originalErr = System.err;
+        System.setOut(logStream);
+        System.setErr(logStream);
         var timefoldLogger = Logger.getLogger(TIMEFOLD_LOGGER_NAME);
         originalJulLevel = timefoldLogger.getLevel();
         timefoldLogger.setLevel(Level.OFF);
@@ -367,8 +447,8 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
             System.setOut(originalOut);
             System.setErr(originalErr);
             redirected.close();
+            Logger.getLogger(TIMEFOLD_LOGGER_NAME).setLevel(originalJulLevel);
         }
-        Logger.getLogger(TIMEFOLD_LOGGER_NAME).setLevel(originalJulLevel);
     }
 
     private void closeTerminalQuietly() {

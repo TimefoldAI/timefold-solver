@@ -30,8 +30,7 @@ final class DashboardRenderer {
         body.add(content(phaseLine, "[q] to stop", contentWidth));
         body.add(content("Best: " + snapshot.bestScoreText(), "", contentWidth));
         body.add(content("Step: " + snapshot.stepScoreText(), "", contentWidth));
-        body.add(content(sparkline(snapshot.bestScoreHistory(), Math.max(1, contentWidth - SPARKLINE_LABEL.length()))
-                + SPARKLINE_LABEL, "", contentWidth));
+        body.addAll(sparklineRows(snapshot.scoreLevelLabels(), snapshot.bestScoreHistoryByLevel(), contentWidth));
 
         // Both columns' labels and values are padded to the wider of the two rows, so "Speed:" and
         // "Accepted:" (and their values) start at the same column in both rows regardless of which
@@ -46,17 +45,27 @@ final class DashboardRenderer {
         var rightLabelWidth = Math.max("Speed:".length(), "Accepted:".length());
         var rightValueWidth = Math.max(speedText.length(), acceptedText.length());
 
-        body.add(content(
-                statColumn("Steps:", stepsText, leftLabelWidth, leftValueWidth),
-                statColumn("Speed:", speedText, rightLabelWidth, rightValueWidth),
-                contentWidth));
-        body.add(content(
-                statColumn("Moves eval:", movesEvalText, leftLabelWidth, leftValueWidth),
-                statColumn("Accepted:", acceptedText, rightLabelWidth, rightValueWidth),
-                contentWidth));
+        var stepsColumn = statColumn("Steps:", stepsText, leftLabelWidth, leftValueWidth);
+        var movesEvalColumn = statColumn("Moves eval:", movesEvalText, leftLabelWidth, leftValueWidth);
+        var speedColumn = statColumn("Speed:", speedText, rightLabelWidth, rightValueWidth);
+        var acceptedColumn = statColumn("Accepted:", acceptedText, rightLabelWidth, rightValueWidth);
+        // borderedLine() only guarantees a single space between the two columns, so anything wider
+        // than contentWidth minus that one space gets silently cut mid-value; both rows share the
+        // same column widths, so checking one row covers both.
+        if (stepsColumn.length() + 1 + speedColumn.length() <= contentWidth) {
+            body.add(content(stepsColumn, speedColumn, contentWidth));
+            body.add(content(movesEvalColumn, acceptedColumn, contentWidth));
+        } else {
+            body.add(content(stepsColumn, "", contentWidth));
+            body.add(content(speedColumn, "", contentWidth));
+            body.add(content(movesEvalColumn, "", contentWidth));
+            body.add(content(acceptedColumn, "", contentWidth));
+        }
 
-        // Borders, the problem size line and body always fit; phase history gets whatever is left
-        // of the height budget, dropping the oldest lines first.
+        // Borders and the problem size line always fit; the body can grow past the terminal height
+        // with enough score levels or a narrow terminal (the stat rows stack to four), so phase
+        // history gets whatever is left of the height budget, dropping the oldest lines first, and
+        // can itself shrink to nothing.
         var alwaysPresent = 3 /* top border + problem size line + bottom border */ + body.size();
         var historyBudget = Math.max(0, height - alwaysPresent - 1 /* separator, reserved only if shown */);
         var history = snapshot.finishedPhaseLines();
@@ -88,6 +97,30 @@ final class DashboardRenderer {
             centered.add(pad + line);
         }
         return centered;
+    }
+
+    /**
+     * One sparkline row per score level (e.g. {@code hard} and {@code soft}), each labelled and
+     * indented to the widest label, plus one caption row underneath indented to the bars. Plotting
+     * the levels separately, rather than only the softest one, keeps a hard-constraint repair paid
+     * for with a soft-score cost from reading as a regression: each level's own row only ever moves
+     * the direction that level's score actually moved.
+     */
+    private static List<String> sparklineRows(List<String> levelLabels, List<List<Double>> historyByLevel,
+            int contentWidth) {
+        if (levelLabels.isEmpty()) {
+            return List.of(content(sparkline(List.of(), Math.max(1, contentWidth - SPARKLINE_LABEL.length()))
+                    + SPARKLINE_LABEL, "", contentWidth));
+        }
+        var labelWidth = levelLabels.stream().mapToInt(String::length).max().orElseThrow();
+        var barWidth = Math.max(1, contentWidth - labelWidth - 2);
+        var rows = new ArrayList<String>(levelLabels.size() + 1);
+        for (var i = 0; i < levelLabels.size(); i++) {
+            var bars = sparkline(historyByLevel.get(i), barWidth);
+            rows.add(content(padRight(levelLabels.get(i), labelWidth) + "  " + bars, "", contentWidth));
+        }
+        rows.add(content(" ".repeat(labelWidth + 2) + "best score over time", "", contentWidth));
+        return rows;
     }
 
     private static String problemSizeLine(DashboardSnapshot snapshot, int contentWidth) {

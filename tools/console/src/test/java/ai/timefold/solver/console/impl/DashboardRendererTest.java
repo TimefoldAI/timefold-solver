@@ -12,10 +12,15 @@ class DashboardRendererTest {
 
     private static final String IDENTIFICATION = "Timefold Solver Community Edition v1.2.3";
 
+    // Wraps the given history as a single, unlabelled score level (the SimpleScore case), which is
+    // enough for every test in this file that isn't specifically about the per-level sparkline rows.
     private static DashboardSnapshot snapshot(String acceptedPercentText, List<Double> history, List<String> phaseLines) {
         return new DashboardSnapshot(
                 83_000L, "Local Search", 4811L, "-12hard/-340soft", "-12hard/-352soft", acceptedPercentText,
-                9210L, 1_200_000L, 300L, 3L, 1_000_000L, "2.8 × 10^41", history, phaseLines);
+                9210L, 1_200_000L, 300L, 3L, 1_000_000L, "2.8 × 10^41",
+                history.isEmpty() ? List.of() : List.of("score"),
+                history.isEmpty() ? List.of() : List.of(history),
+                phaseLines);
     }
 
     private static FinalSummary finalSummary(String title) {
@@ -143,8 +148,9 @@ class DashboardRendererTest {
             history.add(100.0);
         }
         var lines = DashboardRenderer.render(snapshot("38.1 %", history, List.of()), 40, 20, IDENTIFICATION);
-        var sparklineLine = lines.stream().filter(line -> line.contains("best score over time")).findFirst().orElseThrow();
-        var sparklineChars = sparklineLine.substring(2, sparklineLine.indexOf("  best score over time"));
+        var sparklineLine = lines.stream().filter(line -> line.contains("score  ")).findFirst().orElseThrow();
+        var barsStart = sparklineLine.indexOf("score  ") + "score  ".length();
+        var sparklineChars = sparklineLine.substring(barsStart, sparklineLine.length() - 2); // trims the " │" border
         // Fixed-width grouping doesn't always fill every column (the group width is rounded up),
         // so trailing columns may be blank padding rather than a real, low-valued bar; strip that
         // before comparing so the assertion is about the real data, not incidental padding.
@@ -170,8 +176,9 @@ class DashboardRendererTest {
             }
         }
         var lines = DashboardRenderer.render(snapshot("38.1 %", history, List.of()), 40, 20, IDENTIFICATION);
-        var sparklineLine = lines.stream().filter(line -> line.contains("best score over time")).findFirst().orElseThrow();
-        var sparklineChars = sparklineLine.substring(2, sparklineLine.indexOf("  best score over time"));
+        var sparklineLine = lines.stream().filter(line -> line.contains("score  ")).findFirst().orElseThrow();
+        var barsStart = sparklineLine.indexOf("score  ") + "score  ".length();
+        var sparklineChars = sparklineLine.substring(barsStart, sparklineLine.length() - 2); // trims the " │" border
         // Normalizing against the raw history's min/max (10_000 vs 500) would dwarf this entire
         // 500-1100 ramp into a single flat level; normalizing against the displayed values doesn't.
         assertThat(sparklineChars.chars().distinct().count()).isGreaterThan(1);
@@ -215,9 +222,41 @@ class DashboardRendererTest {
     void problemSizeLineShowsPlaceholderBeforeItIsKnown() {
         var snapshotBeforeSolvingStarted = new DashboardSnapshot(
                 0L, null, -1L, "n/a", "n/a", "—",
-                0L, 0L, 0L, 0L, 0L, null, List.of(), List.of());
+                0L, 0L, 0L, 0L, 0L, null, List.of(), List.of(), List.of());
         var lines = DashboardRenderer.render(snapshotBeforeSolvingStarted, 60, 20, IDENTIFICATION);
         assertThat(lines.get(1)).contains("Waiting to start...");
+    }
+
+    @Test
+    void oneSparklineRowPerScoreLevel() {
+        var snapshot = new DashboardSnapshot(
+                83_000L, "Local Search", 4811L, "-12hard/-340soft", "-12hard/-352soft", "38.1 %",
+                9210L, 1_200_000L, 300L, 3L, 1_000_000L, "2.8 × 10^41",
+                List.of("hard", "soft"), List.of(List.of(1.0, 2.0, 3.0), List.of(10.0, 5.0, 1.0)), List.of());
+        var lines = DashboardRenderer.render(snapshot, 60, 20, IDENTIFICATION);
+        var hardLine = lines.stream().filter(line -> line.contains("hard  ")).findFirst().orElseThrow();
+        var softLine = lines.stream().filter(line -> line.contains("soft  ")).findFirst().orElseThrow();
+        // A hard-constraint repair paid for with a soft-score cost must not read as a single
+        // collapsing line: each level gets its own row, driven by its own history.
+        assertThat(hardLine).isNotEqualTo(softLine);
+        assertThat(lines).anySatisfy(line -> assertThat(line).contains("best score over time"));
+    }
+
+    @Test
+    void narrowTerminalStacksStatRowsInsteadOfTruncatingValues() {
+        // At MIN_WIDTH (40 columns, 36 of content), these values need 45 columns combined into the
+        // two default side-by-side columns; stacking into four single-column rows must keep every
+        // value intact instead of silently cutting one off mid-digit.
+        var snapshot = new DashboardSnapshot(
+                83_000L, "Local Search", 5_234_788L, "-12hard/-340soft", "-12hard/-352soft", "38.1 %",
+                812_345L, 1_200_000_000L, 300L, 3L, 1_000_000L, "2.8 × 10^41",
+                List.of(), List.of(), List.of());
+        var lines = DashboardRenderer.render(snapshot, 40, 20, IDENTIFICATION);
+        assertThat(lines).allSatisfy(line -> assertThat(line).hasSize(40));
+        assertThat(lines).anySatisfy(line -> assertThat(line).contains("5,234,789"));
+        assertThat(lines).anySatisfy(line -> assertThat(line).contains("1,200,000,000"));
+        assertThat(lines).anySatisfy(line -> assertThat(line).contains("812,345/s"));
+        assertThat(lines).anySatisfy(line -> assertThat(line).contains("38.1 %"));
     }
 
     @Test

@@ -21,6 +21,12 @@ import ai.timefold.solver.core.impl.solver.DefaultSolver;
  * Requires a real interactive terminal; fails fast otherwise, including under {@code quarkus:dev}
  * (whose own raw-mode stdin hotkey handler would otherwise conflict with the dashboard's).
  * <p>
+ * Under {@link ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig
+ * partitioned search}, only the top-level solver is observed: the construction heuristic and local
+ * search work happens in separate child solvers this dashboard has no access to, so step statistics
+ * stay coarse (one update per partition, rather than per step) and the accepted move percentage
+ * never populates.
+ * <p>
  * Not safe to call concurrently from multiple threads in the same JVM.
  */
 public final class SolverConsole {
@@ -56,13 +62,16 @@ public final class SolverConsole {
         // step/phase-level data (impl-only, no compatibility guarantee). Fallback if this ever
         // breaks: SolverManager + SolverJob + withBestSolutionEventConsumer, minus step-level data.
         var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
-        var dashboard = new SolverDashboard<Solution_>(logFile);
+        var dashboard = new SolverDashboard<Solution_>(logFile, solver, solver.getSolverScope());
         solver.addPhaseLifecycleListener(dashboard);
-        dashboard.start(solver, solver.getSolverScope());
+        dashboard.start();
+        var solved = false;
         try {
-            return solver.solve(problem);
+            var solution = solver.solve(problem);
+            solved = true;
+            return solution;
         } finally {
-            dashboard.stop();
+            dashboard.stop(solved);
         }
     }
 

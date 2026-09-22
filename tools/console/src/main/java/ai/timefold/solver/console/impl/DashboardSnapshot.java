@@ -20,7 +20,8 @@ record DashboardSnapshot(
         long variableCount,
         long approximateValueCount,
         String approximateProblemScaleText, // null until known, mirrors phaseName's null convention
-        List<Double> bestScoreHistory,
+        List<String> scoreLevelLabels, // one per entry of bestScoreHistoryByLevel; empty until known
+        List<List<Double>> bestScoreHistoryByLevel,
         List<String> finishedPhaseLines) {
 
 }

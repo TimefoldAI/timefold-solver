@@ -114,6 +114,8 @@ module ai.timefold.solver.core {
             to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.benchmark,
             ai.timefold.solver.quarkus, ai.timefold.solver.quarkus.jackson,
             ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.exhaustivesearch.scope
+            to ai.timefold.solver.console;
     exports ai.timefold.solver.core.impl.heuristic.move
             to ai.timefold.solver.benchmark, ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.heuristic.selector to ai.timefold.solver.jackson, ai.timefold.solver.benchmark,
@@ -149,7 +151,7 @@ module ai.timefold.solver.core {
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.definition
             to ai.timefold.solver.benchmark,
-            ai.timefold.solver.enterprise.core;
+            ai.timefold.solver.enterprise.core, ai.timefold.solver.console;
     exports ai.timefold.solver.core.impl.score.director.easy to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.common
