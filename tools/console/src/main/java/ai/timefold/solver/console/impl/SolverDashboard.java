@@ -10,6 +10,10 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
@@ -42,6 +46,10 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
     private static final String CLEAR_SCREEN = "\033[H\033[2J"; // move cursor home, clear screen
     private static final String IDENTIFICATION = TimefoldSolverEnterpriseService.identifySolverVersion();
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverDashboard.class);
+    // Generous margin over how long real terminal detection ever takes (milliseconds),
+    // so a hang in the platform's own terminal probing (observed on Windows)
+    // degrades the same way a dumb terminal already does.
+    private static final long TERMINAL_PROBE_TIMEOUT_SECONDS = 5L;
 
     private final Path logFile;
     private final Solver<Solution_> solver;
@@ -87,12 +95,8 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
      *         solve plainly instead
      */
     public boolean start() {
-        try {
-            terminal = TerminalBuilder.builder().build();
-        } catch (IOException e) {
-            throw new UncheckedIOException("Could not open a terminal for the SolverConsole dashboard.", e);
-        }
-        if (terminal.getType().startsWith(Terminal.TYPE_DUMB)) {
+        terminal = tryBuildTerminal();
+        if (terminal == null || terminal.getType().startsWith(Terminal.TYPE_DUMB)) {
             closeTerminalQuietly();
             terminal = null;
             // Necessary sysout - logging may be redirected to a file, leading to blank console.
@@ -397,6 +401,48 @@ public final class SolverDashboard<Solution_> extends PhaseLifecycleListenerAdap
             System.setOut(originalOut);
             System.setErr(originalErr);
             redirected.close();
+        }
+    }
+
+    /**
+     * @return null if opening a terminal doesn't complete within {@value #TERMINAL_PROBE_TIMEOUT_SECONDS}s
+     */
+    private static Terminal tryBuildTerminal() {
+        var future = new CompletableFuture<Terminal>();
+        // A daemon thread: if the probe itself is stuck (rather than merely slow),
+        // it must not keep the JVM alive,
+        // nor must this method wait on it any longer than the timeout below.
+        var probeThread = new Thread(() -> {
+            try {
+                future.complete(TerminalBuilder.builder().build());
+            } catch (Throwable e) {
+                future.completeExceptionally(e);
+            }
+        }, "solver-console-terminal-probe");
+        probeThread.setDaemon(true);
+        probeThread.start();
+        try {
+            return future.get(TERMINAL_PROBE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            // If the probe does eventually complete, close what it opened instead of leaking it.
+            future.whenComplete((lateTerminal, ignored) -> {
+                if (lateTerminal != null) {
+                    try {
+                        lateTerminal.close();
+                    } catch (IOException ignoredClose) {
+                        // Best effort.
+                    }
+                }
+            });
+            return null;
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof IOException ioException) {
+                throw new UncheckedIOException("Could not open a terminal for the SolverConsole dashboard.", ioException);
+            }
+            throw new IllegalStateException("Could not open a terminal for the SolverConsole dashboard.", e.getCause());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while opening a terminal for the SolverConsole dashboard.", e);
         }
     }
 
