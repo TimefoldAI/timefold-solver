@@ -158,11 +158,6 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             } else {
                 doInsertCounter(counter);
             }
-        } else {
-            // count != 0, so only propagate if we are in an `ifExists`
-            if (shouldExist) {
-                doUpdateCounter(counter);
-            }
         } // Else do not even propagate an update
     }
 

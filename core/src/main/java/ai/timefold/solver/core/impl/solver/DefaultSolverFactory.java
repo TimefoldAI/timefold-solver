@@ -143,8 +143,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var isStepAssertOrMore = globalEnvironmentMode.isStepAssertOrMore();
         var constraintMatchEnabled = solverScope.isAnyMetricConstraintMatchBased() || isStepAssertOrMore;
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
-        var indictmentsEnabled =
-                previewFeaturesEnabled != null && previewFeaturesEnabled.contains(PreviewFeature.SOLVE_WITH_INDICTMENTS);
         if (constraintMatchEnabled && !isStepAssertOrMore) {
             LOGGER.info(
                     "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
