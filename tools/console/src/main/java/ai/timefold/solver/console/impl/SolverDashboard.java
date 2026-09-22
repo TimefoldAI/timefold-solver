@@ -1,5 +1,19 @@
 package ai.timefold.solver.console.impl;
 
+import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -14,21 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
-import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
-import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScore;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Renders a live terminal dashboard while a solver runs, driven by phase/step lifecycle events.
