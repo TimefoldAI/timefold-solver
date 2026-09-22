@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.solver.change.MockProblemChangeDirector;
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
@@ -39,7 +41,6 @@ class DefaultListVariableStateTest {
     @Test
     void initializeRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
 
@@ -75,7 +76,6 @@ class DefaultListVariableStateTest {
     @Test
     void assignRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
 
@@ -127,7 +127,6 @@ class DefaultListVariableStateTest {
     @Test
     void getInverseSingletonAgreesWithGetElementPosition() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
 
@@ -156,7 +155,6 @@ class DefaultListVariableStateTest {
         // getInverseSingleton reads the externalized shadow field directly - two different stores
         // that must still agree.
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         state.externalize(variableDescriptor.getInverseRelationShadowVariableDescriptor());
@@ -181,11 +179,9 @@ class DefaultListVariableStateTest {
 
     @Test
     void getInverseSingletonPreservesExternalizedInverseOnFirstResetEvenWhenShadowsAreExpectedCorrect() {
-        // Mirrors AbstractConstraintAssertion.ensureInitialized(): a caller builds a brand new,
-        // never-before-initialized director and calls setWorkingSolutionWithoutUpdatingShadows()
-        // directly, with shadow fields it set by hand on values it never assigned into any entity's
-        // list (v2's inverse points at e1, but v2 is not in e1's value list). That caller documents
-        // that it trusts exactly what it set; this carrier must not "correct" it on a first reset.
+        // Mirrors AbstractConstraintAssertion.ensureInitialized():
+        // manually set shadow fields on unassigned values (v2 not in e1's value list)
+        // must be preserved on the first reset rather than corrected.
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
@@ -209,13 +205,7 @@ class DefaultListVariableStateTest {
 
     @Test
     void getInverseSingletonClearsStaleExternalizedInverseOnSubsequentResetEvenWhenShadowsAreExpectedCorrect() {
-        // Reproduces what a problem-change reset (afterProblemFactAdded/Removed/PropertyChanged)
-        // leaves behind on an ALREADY-INITIALIZED director: v1 was validly assigned to e1 by an
-        // ordinary reset (mirroring solve start), then a later reset finds it missing from e1's
-        // value list (as afterProblemFactRemoved's rescan would) while its externalized inverse
-        // field still points at e1, with expectShadowVariablesInCorrectState() true throughout.
-        // getElementPosition rebuilds its position map from scratch regardless and reports v1
-        // unassigned; getInverseSingleton must agree, not return the stale entity.
+        // MockProblemChangeDirector.updateShadowVariables() is a no-op, so v1's stale inverse field stays.
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
@@ -228,9 +218,10 @@ class DefaultListVariableStateTest {
         solution.setValueList(List.of(v1));
         resetOn(state, variableDescriptor, solution, false); // First reset: mirrors solve start.
 
-        e1.setValueList(new ArrayList<>()); // v1 no longer in e1's value list...
-        // ...but its externalized inverse field is untouched here, exactly like a problem-change
-        // path that never runs the solver's normal per-move shadow update for this removal.
+        ProblemChange<TestdataAllowsUnassignedValuesListSolution> removeV1 =
+                (workingSolution, problemChangeDirector) -> problemChangeDirector.changeVariable(e1, "valueList",
+                        entity -> entity.getValueList().remove(v1));
+        removeV1.doChange(solution, new MockProblemChangeDirector());
         resetOn(state, variableDescriptor, solution, true); // Second reset: mirrors a problem change.
 
         assertSoftly(softly -> {
@@ -267,12 +258,9 @@ class DefaultListVariableStateTest {
 
     @Test
     void changeElementDoesNotRenotifyUnchangedElementWhenAllFourVariablesAreExternalized() {
-        // TestdataAllowsUnassignedValuesListValue declares index, inverse, previous and next, so once
-        // all four are externalized, requiresPositionMap is false: every piece of position state has a
-        // shadow variable event to report it, and the notifier fallback must not fire for an element
-        // nothing changed on.
+        // With all four shadow variables externalized (requiresPositionMap is false),
+        // the notifier fallback must not fire for unchanged elements.
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         externalizeDeclaredShadowVariables(state, variableDescriptor);
@@ -314,12 +302,9 @@ class DefaultListVariableStateTest {
 
     @Test
     void addElementDoesNotNotifyAlreadyConsistentElementWhenAllFourVariablesAreExternalized() {
-        // Same rationale as changeElementDoesNotRenotifyUnchangedElementWhenAllFourVariablesAreExternalized,
-        // but for initialize()'s addElement() rescan: if the shadows already hold the values this rescan
-        // would compute anyway (e.g. re-initializing an already-consistent solution), and all four variables
-        // are externalized, nothing changed and the notifier fallback must not fire.
+        // When all four shadow variables are externalized and already consistent upon initialization,
+        // no state changes occur and the notifier fallback must not fire.
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         externalizeDeclaredShadowVariables(state, variableDescriptor);
@@ -357,12 +342,9 @@ class DefaultListVariableStateTest {
 
     @Test
     void changeElementStillNotifiesUnchangedElementWhenNotAllVariablesAreExternalized() {
-        // TestdataListValue declares only index and inverse - there is no previous/next shadow
-        // variable to externalize at all, so requiresPositionMap stays true: the notifier remains the
-        // only signal for state that has no shadow variable to report it, and must keep firing even
-        // when nothing else changed.
+        // TestdataListValue lacks previous/next shadows, keeping requiresPositionMap true;
+        // the notifier remains the fallback signal and must fire even when unchanged.
         var variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var supply = new DefaultListVariableState<>(variableDescriptor, notifier);
         externalizeDeclaredShadowVariables(supply, variableDescriptor);
@@ -407,7 +389,6 @@ class DefaultListVariableStateTest {
     private static <Solution_> InnerScoreDirector<Solution_, ?> resetOn(DefaultListVariableState<Solution_> state,
             ListVariableDescriptor<Solution_> variableDescriptor, Solution_ solution,
             boolean expectShadowVariablesInCorrectState) {
-        @SuppressWarnings("unchecked")
         var scoreDirector = (InnerScoreDirector<Solution_, ?>) mock(InnerScoreDirector.class);
         var valueRangeManager =
                 ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
@@ -421,7 +402,6 @@ class DefaultListVariableStateTest {
     @Test
     void isPinnedFollowsThePinIndexBoundary() {
         var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         var v1 = new TestdataPinnedWithIndexListValue("1");
@@ -445,7 +425,6 @@ class DefaultListVariableStateTest {
     @Test
     void isPinnedIsTrueForEveryElementOfAFullyPinnedEntity() {
         var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         var v1 = new TestdataPinnedWithIndexListValue("1");
@@ -469,7 +448,6 @@ class DefaultListVariableStateTest {
     @Test
     void isPinnedIsFalseForAnUnassignedElement() {
         var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         var v1 = new TestdataPinnedWithIndexListValue("1");
@@ -493,7 +471,6 @@ class DefaultListVariableStateTest {
     @Test
     void isPinnedIsFalseWhenTheDescriptorDoesNotSupportPinning() {
         var variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         var v1 = new TestdataListValue("1");
@@ -514,7 +491,6 @@ class DefaultListVariableStateTest {
     @Test
     void isPinnedFollowsAnElementAsItMoves() {
         var variableDescriptor = TestdataPinnedWithIndexListEntity.buildVariableDescriptorForValueList();
-        @SuppressWarnings("unchecked")
         var notifier = (Consumer<Object>) mock(Consumer.class);
         var state = new DefaultListVariableState<>(variableDescriptor, notifier);
         var v1 = new TestdataPinnedWithIndexListValue("1");
@@ -525,6 +501,7 @@ class DefaultListVariableStateTest {
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(new ArrayList<>(List.of(e1)));
         solution.setValueList(List.of(v1, v2));
+
         var scoreDirector = resetOn(state, variableDescriptor, solution);
 
         assertSoftly(softly -> {
