@@ -128,8 +128,7 @@ class SolverDashboardTest {
         var phaseScope = (AbstractPhaseScope<Object>) mock(AbstractPhaseScope.class);
         when(phaseScope.getPhaseId()).thenReturn(EventProducerId.localSearch(0));
         doReturn(InnerScore.fullyAssigned(SimpleScore.of(-5))).when(phaseScope).getBestScore();
-        // Every other AbstractPhaseScope method is left unstubbed, so Mockito's defaults (0L, 0)
-        // exercise exactly the zero-elapsed-time, zero-steps edge case this guards against.
+        // Every other AbstractPhaseScope method is unstubbed, so Mockito's defaults exercise the zero-steps edge case.
 
         dashboard.phaseEnded(phaseScope);
 
@@ -177,7 +176,6 @@ class SolverDashboardTest {
         var snapshot = dashboard.buildSnapshot();
         assertThat(snapshot.scoreLevelLabels()).containsExactly("hard", "soft");
         // A hard-constraint repair paid for with a soft-score cost: hard only rises, soft only falls.
-        // Plotting a single softest-level line (the old behaviour) would show this as a collapse.
         assertThat(snapshot.bestScoreHistoryByLevel().get(0)).containsExactly(-2.0, -1.0);
         assertThat(snapshot.bestScoreHistoryByLevel().get(1)).containsExactly(-100.0, -900.0);
     }

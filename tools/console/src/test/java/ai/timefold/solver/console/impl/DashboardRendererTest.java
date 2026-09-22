@@ -12,8 +12,7 @@ class DashboardRendererTest {
 
     private static final String IDENTIFICATION = "Timefold Solver Community Edition v1.2.3";
 
-    // Wraps the given history as a single, unlabelled score level (the SimpleScore case), which is
-    // enough for every test in this file that isn't specifically about the per-level sparkline rows.
+    // Wraps history as a single, unlabelled score level (the SimpleScore case); enough unless a test is about per-level rows.
     private static DashboardSnapshot snapshot(String acceptedPercentText, List<Double> history, List<String> phaseLines) {
         return new DashboardSnapshot(
                 83_000L, "Local Search", 4811L, "-12hard/-340soft", "-12hard/-352soft", acceptedPercentText,
@@ -72,9 +71,7 @@ class DashboardRendererTest {
 
     @Test
     void twoColumnStatsAlignAcrossRowsRegardlessOfValueLength() {
-        // The fixture's Steps/Moves eval and Speed/Accepted values are deliberately different
-        // lengths from each other (e.g. "4,812" vs "1,200,000"), which used to shift the second
-        // column's starting position between the two rows.
+        // Fixture values deliberately differ in length (e.g. "4,812" vs "1,200,000"); used to shift the second column.
         var lines = DashboardRenderer.render(snapshot("38.1 %", List.of(1.0), List.of()), 120, 20, IDENTIFICATION);
         var stepsLine = lines.stream().filter(line -> line.contains("Steps:")).findFirst().orElseThrow();
         var movesEvalLine = lines.stream().filter(line -> line.contains("Moves eval:")).findFirst().orElseThrow();
@@ -124,10 +121,8 @@ class DashboardRendererTest {
 
     @Test
     void downsampleNeverProducesFewerThanTheFullTargetWidth() {
-        // Regression: an integer "group width" of ceil(size / target) jumps straight from 1 to 2
-        // the moment size first exceeds target by even one sample, instantly halving the bucket
-        // count right as the sparkline first fills the terminal. Proportional slicing always
-        // produces exactly `target` buckets instead, for every size from 1 up through well past it.
+        // Regression: an integer group width (ceil(size/target)) jumps from 1 to 2 the moment size first exceeds
+        // target; proportional slicing always produces exactly `target` buckets instead.
         var target = 20;
         for (var size = 1; size <= 50; size++) {
             var values = new ArrayList<Double>();
@@ -151,24 +146,21 @@ class DashboardRendererTest {
         var sparklineLine = lines.stream().filter(line -> line.contains("score  ")).findFirst().orElseThrow();
         var barsStart = sparklineLine.indexOf("score  ") + "score  ".length();
         var sparklineChars = sparklineLine.substring(barsStart, sparklineLine.length() - 2); // trims the " │" border
-        // Fixed-width grouping doesn't always fill every column (the group width is rounded up),
-        // so trailing columns may be blank padding rather than a real, low-valued bar; strip that
-        // before comparing so the assertion is about the real data, not incidental padding.
+        // Strips trailing blank padding columns before comparing real data.
         var realBars = sparklineChars.stripTrailing();
-        // A tail-only view of this history would show nothing but the flat "100.0" half; spanning
-        // the whole run means the low-then-high transition is visible across the compressed width.
+        // A tail-only view would show only the flat "100.0" half; spanning the whole run makes the transition visible.
         assertThat(realBars.charAt(0)).isNotEqualTo(realBars.charAt(realBars.length() - 1));
     }
 
     @Test
     void sparklineIsNotFlattenedByAnOldFarAwaySpike() {
         var history = new ArrayList<Double>();
-        // Bucket 0: one extreme early spike, diluted by averaging with 9 normal-range values.
+        // Bucket 0: an extreme early spike diluted by averaging with 9 normal-range values.
         history.add(10_000.0);
         for (var i = 0; i < 9; i++) {
             history.add(500.0);
         }
-        // The remaining 13 buckets: a real, later, small-scale ramp within a much narrower range.
+        // Remaining 13 buckets: a real, later, small-scale ramp in a much narrower range.
         for (var bucket = 0; bucket < 13; bucket++) {
             var value = 500.0 + bucket * 50.0;
             for (var i = 0; i < 10; i++) {
@@ -179,19 +171,14 @@ class DashboardRendererTest {
         var sparklineLine = lines.stream().filter(line -> line.contains("score  ")).findFirst().orElseThrow();
         var barsStart = sparklineLine.indexOf("score  ") + "score  ".length();
         var sparklineChars = sparklineLine.substring(barsStart, sparklineLine.length() - 2); // trims the " │" border
-        // Normalizing against the raw history's min/max (10_000 vs 500) would dwarf this entire
-        // 500-1100 ramp into a single flat level; normalizing against the displayed values doesn't.
+        // Normalizing against raw min/max (10_000 vs 500) would flatten this 500-1100 ramp; against displayed values doesn't.
         assertThat(sparklineChars.chars().distinct().count()).isGreaterThan(1);
     }
 
     @Test
     void repeatedHistoryCompactionSpreadsNewDataAcrossManyBucketsNotJustTheLast() {
-        // Mirrors SolverDashboard.stepEnded()'s own compaction loop: grow past 2x the limit, then
-        // halve back down to the limit in one clean pass, rather than squeezing down by 1 every
-        // single step once over capacity. The latter always lands its one uneven bucket at the
-        // tail (a "size+1 into size" downsample's rounding remainder accumulates there), turning
-        // the newest bucket into a decaying exponential moving average that stops responding to
-        // new data while every earlier bucket freezes forever.
+        // Mirrors SolverDashboard's own compaction: grow past 2x the limit, then halve in one clean pass, rather
+        // than downsampling by 1 every step (which sticks the newest bucket at a stale average forever).
         var limit = 200;
         var history = new ArrayDeque<Double>();
         for (var i = 0; i < limit; i++) {
@@ -236,17 +223,14 @@ class DashboardRendererTest {
         var lines = DashboardRenderer.render(snapshot, 60, 20, IDENTIFICATION);
         var hardLine = lines.stream().filter(line -> line.contains("hard  ")).findFirst().orElseThrow();
         var softLine = lines.stream().filter(line -> line.contains("soft  ")).findFirst().orElseThrow();
-        // A hard-constraint repair paid for with a soft-score cost must not read as a single
-        // collapsing line: each level gets its own row, driven by its own history.
+        // A hard-constraint repair paid for with a soft-score cost must not read as one collapsing line.
         assertThat(hardLine).isNotEqualTo(softLine);
         assertThat(lines).anySatisfy(line -> assertThat(line).contains("best score over time"));
     }
 
     @Test
     void narrowTerminalStacksStatRowsInsteadOfTruncatingValues() {
-        // At MIN_WIDTH (40 columns, 36 of content), these values need 45 columns combined into the
-        // two default side-by-side columns; stacking into four single-column rows must keep every
-        // value intact instead of silently cutting one off mid-digit.
+        // At MIN_WIDTH (36 content columns), these values need 45 combined; stacking into 4 rows must not truncate any.
         var snapshot = new DashboardSnapshot(
                 83_000L, "Local Search", 5_234_788L, "-12hard/-340soft", "-12hard/-352soft", "38.1 %",
                 812_345L, 1_200_000_000L, 300L, 3L, 1_000_000L, "2.8 × 10^41",
@@ -291,8 +275,7 @@ class DashboardRendererTest {
         assertThat(text).contains("Moves Accepted:", "12,456");
         assertThat(text).contains("Acceptance:", "11.9 %");
         assertThat(text).contains("Score Calcs:");
-        // No "moves generated" or "generation/evaluation time" split: neither exists as a real,
-        // distinct metric in the solver, so they are not fabricated here.
+        // No "moves generated"/"generation time" split: not a real metric in the solver, so not fabricated here.
         assertThat(text).doesNotContainIgnoringCase("generated");
         assertThat(text).doesNotContainIgnoringCase("generation time");
         assertThat(text).doesNotContainIgnoringCase("evaluation time");

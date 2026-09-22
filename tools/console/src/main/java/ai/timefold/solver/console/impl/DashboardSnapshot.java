@@ -3,9 +3,10 @@ package ai.timefold.solver.console.impl;
 import java.util.List;
 
 /**
- * Immutable snapshot of solver progress at a single point in time, used to render one frame.
- * Decoupled from live solver scope objects so that {@link DashboardRenderer#render} can be a pure
- * function.
+ * Immutable snapshot of solver progress at a single point in time,
+ * used to render one frame.
+ * Decoupled from live solver scope objects
+ * so that {@link DashboardRenderer#render} can be a pure function.
  */
 record DashboardSnapshot(
         long elapsedMillis,

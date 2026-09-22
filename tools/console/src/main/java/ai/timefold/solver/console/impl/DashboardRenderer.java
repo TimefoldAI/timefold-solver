@@ -3,11 +3,11 @@ package ai.timefold.solver.console.impl;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
- * Turns a {@link DashboardSnapshot} into the lines of one frame. No I/O, no terminal access, no
- * shared state — a pure function, safe to unit test directly.
+ * Turns a {@link DashboardSnapshot} into the lines of one frame.
+ * No I/O, no terminal access, no shared state —
+ * a pure function, safe to unit test directly.
  */
 final class DashboardRenderer {
 
@@ -16,42 +16,46 @@ final class DashboardRenderer {
     private static final int MIN_WIDTH = 40;
     private static final int MAX_WIDTH = 120;
     private static final int MIN_TITLE_LENGTH = "Timefold".length();
-    private static final String SPARKLINE_LABEL = "  best score over time";
+    private static final String BEST_SCORE_CAPTION = "best score over time";
+    private static final String SPARKLINE_LABEL = "  " + BEST_SCORE_CAPTION;
+    private static final String WAITING_TO_START = "Waiting to start...";
+    private static final String STEPS_LABEL = "Steps:";
+    private static final String MOVES_EVAL_LABEL = "Moves eval:";
+    private static final String SPEED_LABEL = "Speed:";
+    private static final String ACCEPTED_LABEL = "Accepted:";
+    private static final String HORIZONTAL_LINE = "─";
+    private static final String DOUBLE_HORIZONTAL_LINE = "═";
 
     private DashboardRenderer() {
     }
 
     static List<String> render(DashboardSnapshot snapshot, int width, int height, String identification) {
-        var frameWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
+        var frameWidth = Math.clamp(width, MIN_WIDTH, MAX_WIDTH);
         var contentWidth = frameWidth - 4; // "│ " + content + " │"
 
         var body = new ArrayList<String>();
-        var phaseLine = snapshot.phaseName() == null ? "Waiting to start..." : "Phase: " + snapshot.phaseName();
+        var phaseLine = snapshot.phaseName() == null ? WAITING_TO_START : "Phase: " + snapshot.phaseName();
         body.add(content(phaseLine, "[q] to stop", contentWidth));
         body.add(content("Best: " + snapshot.bestScoreText(), "", contentWidth));
         body.add(content("Step: " + snapshot.stepScoreText(), "", contentWidth));
         body.addAll(sparklineRows(snapshot.scoreLevelLabels(), snapshot.bestScoreHistoryByLevel(), contentWidth));
 
-        // Both columns' labels and values are padded to the wider of the two rows, so "Speed:" and
-        // "Accepted:" (and their values) start at the same column in both rows regardless of which
-        // one happens to be longer on a given frame.
+        // Padded to the wider row so both columns align regardless of which value is longer.
         var stepsText = format(snapshot.stepIndex() + 1);
         var movesEvalText = format(snapshot.moveEvaluationCount());
-        var leftLabelWidth = Math.max("Steps:".length(), "Moves eval:".length());
+        var leftLabelWidth = Math.max(STEPS_LABEL.length(), MOVES_EVAL_LABEL.length());
         var leftValueWidth = Math.max(stepsText.length(), movesEvalText.length());
 
         var speedText = format(snapshot.moveEvaluationSpeed()) + "/s";
         var acceptedText = snapshot.acceptedPercentText();
-        var rightLabelWidth = Math.max("Speed:".length(), "Accepted:".length());
+        var rightLabelWidth = Math.max(SPEED_LABEL.length(), ACCEPTED_LABEL.length());
         var rightValueWidth = Math.max(speedText.length(), acceptedText.length());
 
-        var stepsColumn = statColumn("Steps:", stepsText, leftLabelWidth, leftValueWidth);
-        var movesEvalColumn = statColumn("Moves eval:", movesEvalText, leftLabelWidth, leftValueWidth);
-        var speedColumn = statColumn("Speed:", speedText, rightLabelWidth, rightValueWidth);
-        var acceptedColumn = statColumn("Accepted:", acceptedText, rightLabelWidth, rightValueWidth);
-        // borderedLine() only guarantees a single space between the two columns, so anything wider
-        // than contentWidth minus that one space gets silently cut mid-value; both rows share the
-        // same column widths, so checking one row covers both.
+        var stepsColumn = statColumn(STEPS_LABEL, stepsText, leftLabelWidth, leftValueWidth);
+        var movesEvalColumn = statColumn(MOVES_EVAL_LABEL, movesEvalText, leftLabelWidth, leftValueWidth);
+        var speedColumn = statColumn(SPEED_LABEL, speedText, rightLabelWidth, rightValueWidth);
+        var acceptedColumn = statColumn(ACCEPTED_LABEL, acceptedText, rightLabelWidth, rightValueWidth);
+        // Both rows share column widths, so checking one covers both; otherwise stack into 4 single-column rows.
         if (stepsColumn.length() + 1 + speedColumn.length() <= contentWidth) {
             body.add(content(stepsColumn, speedColumn, contentWidth));
             body.add(content(movesEvalColumn, acceptedColumn, contentWidth));
@@ -62,12 +66,9 @@ final class DashboardRenderer {
             body.add(content(acceptedColumn, "", contentWidth));
         }
 
-        // Borders and the problem size line always fit; the body can grow past the terminal height
-        // with enough score levels or a narrow terminal (the stat rows stack to four), so phase
-        // history gets whatever is left of the height budget, dropping the oldest lines first, and
-        // can itself shrink to nothing.
-        var alwaysPresent = 3 /* top border + problem size line + bottom border */ + body.size();
-        var historyBudget = Math.max(0, height - alwaysPresent - 1 /* separator, reserved only if shown */);
+        // Phase history gets whatever height is left after borders and body, dropping oldest lines first.
+        var alwaysPresent = 3 + body.size(); // top border + problem size line + bottom border
+        var historyBudget = Math.max(0, height - alwaysPresent - 1); // separator, reserved only if shown
         var history = snapshot.finishedPhaseLines();
         var shown = Math.min(historyBudget, history.size());
         var visibleHistory = history.subList(history.size() - shown, history.size());
@@ -100,11 +101,9 @@ final class DashboardRenderer {
     }
 
     /**
-     * One sparkline row per score level (e.g. {@code hard} and {@code soft}), each labelled and
-     * indented to the widest label, plus one caption row underneath indented to the bars. Plotting
-     * the levels separately, rather than only the softest one, keeps a hard-constraint repair paid
-     * for with a soft-score cost from reading as a regression: each level's own row only ever moves
-     * the direction that level's score actually moved.
+     * One sparkline row per score level (e.g. {@code hard}, {@code soft});
+     * plotted separately so a hard-constraint repair paid for with a soft-score cost
+     * doesn't read as a regression on either row.
      */
     private static List<String> sparklineRows(List<String> levelLabels, List<List<Double>> historyByLevel,
             int contentWidth) {
@@ -119,13 +118,13 @@ final class DashboardRenderer {
             var bars = sparkline(historyByLevel.get(i), barWidth);
             rows.add(content(padRight(levelLabels.get(i), labelWidth) + "  " + bars, "", contentWidth));
         }
-        rows.add(content(" ".repeat(labelWidth + 2) + "best score over time", "", contentWidth));
+        rows.add(content(" ".repeat(labelWidth + 2) + BEST_SCORE_CAPTION, "", contentWidth));
         return rows;
     }
 
     private static String problemSizeLine(DashboardSnapshot snapshot, int contentWidth) {
         var text = snapshot.approximateProblemScaleText() == null
-                ? "Problem: Waiting to start..." // mirrors the phaseLine placeholder wording above
+                ? "Problem: " + WAITING_TO_START
                 : "Problem: %s entities, %s variables, %s values, scale %s".formatted(
                         format(snapshot.entityCount()), format(snapshot.variableCount()),
                         format(snapshot.approximateValueCount()), snapshot.approximateProblemScaleText());
@@ -177,24 +176,23 @@ final class DashboardRenderer {
                 : identification;
         var title = " " + titleText + " ";
         var dashCount = Math.max(1, frameWidth - 2 - title.length() - rightLabel.length());
-        return "┌" + title + "─".repeat(dashCount) + rightLabel + "┐";
+        return "┌" + title + HORIZONTAL_LINE.repeat(dashCount) + rightLabel + "┐";
     }
 
     private static String bottomBorder(int frameWidth) {
-        return "└" + "─".repeat(Math.max(0, frameWidth - 2)) + "┘";
+        return "└" + HORIZONTAL_LINE.repeat(Math.max(0, frameWidth - 2)) + "┘";
     }
 
     private static String separator(int frameWidth) {
-        return "├" + "─".repeat(Math.max(0, frameWidth - 2)) + "┤";
+        return "├" + HORIZONTAL_LINE.repeat(Math.max(0, frameWidth - 2)) + "┤";
     }
 
     /**
-     * Renders the one-shot report printed after the live dashboard closes: a double-line box,
-     * visually distinct from the live dashboard's single-line box, since it reports on a finished
-     * run rather than an ongoing one.
+     * Renders the one-shot report printed after the live dashboard closes,
+     * as a double-line box to visually distinguish it from the single-line live dashboard.
      */
     static List<String> renderFinalSummary(FinalSummary summary, int width) {
-        var frameWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
+        var frameWidth = Math.clamp(width, MIN_WIDTH, MAX_WIDTH);
         var contentWidth = frameWidth - 4;
 
         var lines = new ArrayList<String>();
@@ -214,35 +212,32 @@ final class DashboardRenderer {
     }
 
     private static String doubleTopBorder(int frameWidth) {
-        return "╔" + "═".repeat(Math.max(0, frameWidth - 2)) + "╗";
+        return "╔" + DOUBLE_HORIZONTAL_LINE.repeat(Math.max(0, frameWidth - 2)) + "╗";
     }
 
     private static String doubleBottomBorder(int frameWidth) {
-        return "╚" + "═".repeat(Math.max(0, frameWidth - 2)) + "╝";
+        return "╚" + DOUBLE_HORIZONTAL_LINE.repeat(Math.max(0, frameWidth - 2)) + "╝";
     }
 
     private static String doubleSeparator(int frameWidth) {
-        return "╠" + "═".repeat(Math.max(0, frameWidth - 2)) + "╣";
+        return "╠" + DOUBLE_HORIZONTAL_LINE.repeat(Math.max(0, frameWidth - 2)) + "╣";
     }
 
     private static String sparkline(List<Double> history, int width) {
         if (history.isEmpty()) {
             return " ".repeat(width);
         }
-        // Whole-run view: compress the full history into exactly `width` columns rather than only
-        // showing its most recent tail. Short histories just fill in from the left instead.
+        // Whole-run view: compress history into exactly `width` columns instead of showing only the recent tail.
         var downsampled = downsample(history, width);
-        // Normalize against the downsampled (displayed) values, not the raw history: averaging
-        // narrows a bucket's range versus its raw samples, so a min/max taken from raw history can
-        // permanently outrange every later bucket after one old, sharp swing, crushing everything
-        // since — including genuine, smaller-scale, ongoing progress — toward a single flat level.
+        // Normalized against the downsampled values, not raw history: a raw min/max can get stuck on one old
+        // sharp swing and crush all later, genuine progress toward a flat level.
         var min = downsampled.stream().mapToDouble(Double::doubleValue).min().orElseThrow();
         var max = downsampled.stream().mapToDouble(Double::doubleValue).max().orElseThrow();
         var range = max - min == 0.0 ? 1.0 : max - min;
         var builder = new StringBuilder();
         for (var value : downsampled) {
             var level = (int) (((value - min) * (SPARK_LEVELS.length - 1)) / range);
-            builder.append(SPARK_LEVELS[Math.max(0, Math.min(SPARK_LEVELS.length - 1, level))]);
+            builder.append(SPARK_LEVELS[Math.clamp(level, 0, SPARK_LEVELS.length - 1)]);
         }
         while (builder.length() < width) {
             builder.append(' ');
@@ -251,22 +246,13 @@ final class DashboardRenderer {
     }
 
     /**
-     * Compresses {@code values} down to exactly {@code targetSize} entries by averaging
-     * proportional slices, so the result always fills the full requested width — never fewer
-     * entries, even when {@code values} only just barely exceeds {@code targetSize}. Returns
-     * {@code values} unchanged if it already fits. Shared between rendering (compress to the
-     * current terminal width) and {@link SolverDashboard}'s history bookkeeping (compress to stay
-     * within its retention cap while still spanning the whole run).
-     * <p>
-     * A fixed-width chunking scheme (grouping every {@code ceil(size / targetSize)} raw samples)
-     * was tried instead, to keep already-computed groups from reshuffling as more data streams in.
-     * It does not work here: an integer group width can only take values 1, 2, 3, ... and jumps
-     * straight from 1 to 2 the moment {@code values.size()} first exceeds {@code targetSize} by
-     * even one sample — instantly halving the visible bucket count right as the sparkline first
-     * fills the terminal. Proportional slicing has no such cliff. Its own downside (bucket
-     * boundaries shift slightly as {@code values} grows) is far less visible now that
-     * {@link SolverDashboard} samples once per repaint (a slow, steady cadence) rather than once
-     * per solver step (bursty and fast), which was the original reason to move away from it.
+     * Compresses {@code values} to exactly {@code targetSize} entries by averaging proportional slices
+     * (never fewer, even when barely over {@code targetSize});
+     * returns {@code values} unchanged if it already fits.
+     * Shared by rendering (compress to terminal width) and {@link SolverDashboard}'s history
+     * (compress to its retention cap).
+     * Proportional slicing, not fixed-width chunking, avoids a cliff
+     * where an integer group width jumps from 1 to 2 the moment {@code values.size()} first exceeds {@code targetSize}.
      */
     static List<Double> downsample(List<Double> values, int targetSize) {
         if (values.size() <= targetSize) {
@@ -286,7 +272,7 @@ final class DashboardRenderer {
     }
 
     private static String format(long value) {
-        return String.format(Locale.US, "%,d", value);
+        return String.format("%,d", value);
     }
 
     static String formatElapsed(long millis) {
