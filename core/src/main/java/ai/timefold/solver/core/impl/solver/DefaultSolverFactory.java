@@ -142,6 +142,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
         var isStepAssertOrMore = globalEnvironmentMode.isStepAssertOrMore();
         var constraintMatchEnabled = solverScope.isAnyMetricConstraintMatchBased() || isStepAssertOrMore;
+        var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
+        var indictmentsEnabled =
+                previewFeaturesEnabled != null && previewFeaturesEnabled.contains(PreviewFeature.SOLVE_WITH_INDICTMENTS);
         if (constraintMatchEnabled && !isStepAssertOrMore) {
             LOGGER.info(
                     "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
@@ -154,7 +157,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(scoreDirector));
         var moveThreadCount = resolveMoveThreadCount(true);
-        var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
         if (scoreDirectorFactoryConfig != null) {
