@@ -35,6 +35,7 @@ import org.jspecify.annotations.Nullable;
  * A value is considered reachable to another value if both exist within their respective entity value ranges.
  * <p>
  * The decorator can only be applied to list variables.
+ * 
  * <pre>{@code
  * e1 = entity_range[v1, v2, v3]
  * e2 = entity_range[v1, v4]
@@ -43,6 +44,7 @@ import org.jspecify.annotations.Nullable;
  * v3 = [v1, v2]
  * v4 = [v1]
  * }</pre>
+ * 
  * This node is currently used by the {@link ListChangeMoveSelector} and {@link ListSwapMoveSelector} selectors.
  * To illustrate its usage, let’s assume how moves are generated for the list swap type.
  * Initially, the swap move selector used a left value selector to choose a value.
