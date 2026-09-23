@@ -14,6 +14,7 @@ import org.jspecify.annotations.NullMarked;
 public enum ConstraintMatchPolicy {
     DISABLED(false, false, false),
     ENABLED_WITHOUT_JUSTIFICATIONS(true, false, false),
+    ENABLED_WITHOUT_INDICTMENTS(true, true, false),
     ENABLED(true, true, true);
 
     /**
@@ -29,6 +30,7 @@ public enum ConstraintMatchPolicy {
     public static ConstraintMatchPolicy match(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
         return switch (scoreAnalysisFetchPolicy) {
             case FETCH_MATCH_COUNT, FETCH_SHALLOW -> ENABLED_WITHOUT_JUSTIFICATIONS;
+            case FETCH_JUSTIFICATIONS -> ENABLED_WITHOUT_INDICTMENTS;
             case FETCH_ALL -> ENABLED;
         };
     }

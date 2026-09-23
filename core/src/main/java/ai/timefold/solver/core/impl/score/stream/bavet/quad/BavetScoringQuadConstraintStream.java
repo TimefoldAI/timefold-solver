@@ -54,7 +54,7 @@ final class BavetScoringQuadConstraintStream<Solution_, A, B, C, D>
     private QuadScoreImpacter<A, B, C, D> buildScoreImpacter(ConstraintMatchPolicy constraintMatchPolicy) {
         return switch (constraintMatchPolicy) {
             case DISABLED -> scoreImpact::impactNaked;
-            case ENABLED -> scoreImpact::impactFull;
+            case ENABLED, ENABLED_WITHOUT_INDICTMENTS -> scoreImpact::impactFull;
             case ENABLED_WITHOUT_JUSTIFICATIONS ->
                 scoreImpact::impactWithoutJustification;
         };

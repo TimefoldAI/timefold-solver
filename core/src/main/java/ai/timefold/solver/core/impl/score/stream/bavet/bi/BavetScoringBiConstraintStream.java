@@ -53,7 +53,7 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
     private BiScoreImpacter<A, B> buildScoreImpacter(ConstraintMatchPolicy constraintMatchPolicy) {
         return switch (constraintMatchPolicy) {
             case DISABLED -> scoreImpact::impactNaked;
-            case ENABLED -> scoreImpact::impactFull;
+            case ENABLED, ENABLED_WITHOUT_INDICTMENTS -> scoreImpact::impactFull;
             case ENABLED_WITHOUT_JUSTIFICATIONS ->
                 scoreImpact::impactWithoutJustification;
         };
