@@ -109,7 +109,10 @@ The request body is a JSON envelope with one required top-level field (`modelInp
         "unimprovedSpentLimit": "PT30S"
       },
       "maxThreadCount": 1,
-      "tags": ["production", "monday"]
+      "tags": ["production", "monday"],
+      "options": {
+        "customOption": "customValue"
+      }
     }
   },
   "modelInput": { <1>
@@ -133,6 +136,9 @@ The `run` configuration controls how long the solver runs:
 
 | `tags`
 | Optional labels for filtering or grouping runs.
+
+| `options`
+| Optional key-value pairs for custom run options.
 |===
 
 `Termination` settings can be specified per dataset to override the hardcoded termination settings.
