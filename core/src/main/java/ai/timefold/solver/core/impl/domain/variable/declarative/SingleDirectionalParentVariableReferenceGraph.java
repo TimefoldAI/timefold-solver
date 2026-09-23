@@ -94,11 +94,14 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         sortedChangedEntities.sort(topologicalOrderComparator);
         for (var changedEntity : sortedChangedEntities) {
             var key = keyFunction.apply(changedEntity);
-            var lastProcessed = keyToLastProcessedObject.get(key);
             if (key == null) {
                 // Unassigned element
                 updateChanged(changedEntity);
-            } else if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
+                continue;
+            }
+
+            var lastProcessed = keyToLastProcessedObject.get(key);
+            if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
                 lastProcessed = updateChanged(changedEntity);
                 keyToLastProcessedObject.put(key, lastProcessed);
             }
