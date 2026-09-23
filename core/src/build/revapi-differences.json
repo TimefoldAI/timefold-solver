@@ -162,7 +162,7 @@
         {
           "ignore": true,
           "code": "java.method.addedToInterface",
-          "new": "method java.util.SequencedMap<ai.timefold.solver.core.api.score.analysis.IndictableTypeRef, java.util.List<ai.timefold.solver.core.api.score.analysis.IndictmentAnalysis<Score_>>> ai.timefold.solver.core.api.score.analysis.ScoreAnalysis<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::indictmentMap()",
+          "new": "method java.util.SequencedMap<java.lang.String, java.util.List<ai.timefold.solver.core.api.score.analysis.IndictmentAnalysis<Score_>>> ai.timefold.solver.core.api.score.analysis.ScoreAnalysis<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::indictmentMap()",
           "justification": "Add support for Indictments in ScoreAnalysis; it is not implemented by user code."
         }
       ]

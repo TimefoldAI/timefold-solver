@@ -32,6 +32,11 @@ public enum ScoreAnalysisFetchPolicy {
      * This is useful when there are too many matches to send over the wire
      * or meaningfully present to users.
      */
-    FETCH_MATCH_COUNT
-
+    FETCH_MATCH_COUNT,
+    /**
+     * {@link ScoreAnalysis} is initialized except for indictments.
+     * All included {@link ConstraintAnalysis} objects include full {@link ConstraintAnalysis#matches() match analysis},
+     * {@link ScoreAnalysis#indictmentMap()} will be empty.
+     */
+    FETCH_JUSTIFICATIONS
 }

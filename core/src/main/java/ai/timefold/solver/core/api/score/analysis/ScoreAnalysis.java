@@ -164,7 +164,7 @@ public interface ScoreAnalysis<Score_ extends Score<Score_>> {
      * @return a map from indicted class to a list of {@link IndictmentAnalysis} linking planning entities and problem facts
      *         to their impact in this {@link ScoreAnalysis}
      */
-    SequencedMap<IndictableTypeRef, List<IndictmentAnalysis<Score_>>> indictmentMap();
+    SequencedMap<String, List<IndictmentAnalysis<Score_>>> indictmentMap();
 
     /**
      * Returns a diagnostic text that explains the solution through the {@link ConstraintAnalysis} API to identify which

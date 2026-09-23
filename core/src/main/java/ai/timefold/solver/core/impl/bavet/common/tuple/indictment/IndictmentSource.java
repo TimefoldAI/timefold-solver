@@ -40,13 +40,13 @@ public sealed interface IndictmentSource {
     void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds, Consumer<Object> sourceConsumer);
 
     /**
-     * Get the support of an indictment source. The support is a map from
-     * node id to supporting indictment sources. This is used when a node reuses
+     * Get the corroborators of an indictment source. The corroborators is a map from
+     * node id to corroborating indictment sources. This is used when a node reuses
      * tuples and adds additional indicted objects, such as `ifExists` nodes.
      * 
      * @return a map from node id to additional indictment sources
      */
-    Map<Long, Set<IndictmentSource>> support();
+    Map<Long, Set<IndictmentSource>> corroborators();
 
     /**
      * Do a tree transversal visiting all supporting nodes with an empty visited set
@@ -67,14 +67,14 @@ public sealed interface IndictmentSource {
     }
 
     /**
-     * Get the support set for a given node id.
+     * Get the corroborators set for a given node id.
      * 
      * @param nodeId The node id to get the support set of
      * @return A set to be used as the support of a given node id
-     * @see #support()
+     * @see #corroborators()
      */
-    default Set<IndictmentSource> getSupportForNodeId(long nodeId) {
-        return support().computeIfAbsent(nodeId, ignored -> new LinkedHashSet<>());
+    default Set<IndictmentSource> getCorroboratorsForNodeId(long nodeId) {
+        return corroborators().computeIfAbsent(nodeId, ignored -> new LinkedHashSet<>());
     }
 
     static boolean checkIfAlreadyVisitedAndVisitSupport(IndictmentSource self, Set<IndictmentSource> visited,
@@ -84,14 +84,14 @@ public sealed interface IndictmentSource {
         }
 
         if (involvedNodeIds == null) {
-            for (var indictmentSourceSet : self.support().values()) {
+            for (var indictmentSourceSet : self.corroborators().values()) {
                 for (var indictmentSource : indictmentSourceSet) {
                     indictmentSource.visitSources(visited, null, sourceConsumer);
                 }
             }
         } else {
             for (var nodeId : involvedNodeIds) {
-                for (var indictmentSource : self.support().getOrDefault(nodeId, Collections.emptySet())) {
+                for (var indictmentSource : self.corroborators().getOrDefault(nodeId, Collections.emptySet())) {
                     indictmentSource.visitSources(visited, involvedNodeIds, sourceConsumer);
                 }
             }
@@ -180,44 +180,44 @@ public sealed interface IndictmentSource {
     }
 
     /**
-     * Adds the indictment source of the supporting tuple to the carrying tuple's support
+     * Adds the indictment source of the corroborating tuple to the carrying tuple's corroborators
      * 
-     * @param nodeId The node id that created this support
+     * @param nodeId The node id that created this corroborator
      * @param carry the tuple that is propagated
-     * @param support the tuple that contributed to the carry being propagated but is not propagated itself
+     * @param corroborator the tuple that contributed to the carry being propagated but is not propagated itself
      */
-    static void addSupport(long nodeId, Tuple carry, Tuple support) {
+    static void addCorroborator(long nodeId, Tuple carry, Tuple corroborator) {
         if (carry.getIndictmentSource() == DISABLED) {
             return;
         }
-        carry.getIndictmentSource().getSupportForNodeId(nodeId).add(support.getIndictmentSource());
+        carry.getIndictmentSource().getCorroboratorsForNodeId(nodeId).add(corroborator.getIndictmentSource());
     }
 
     /**
-     * Clears the carrying tuple's support
+     * Clears the carrying tuple's corroborators.
      * 
-     * @param nodeId The node id that created this support
+     * @param nodeId The node id that created the corroborators
      * @param carry the tuple that is propagated
      */
-    static void clearSupport(long nodeId, Tuple carry) {
+    static void clearCorroborators(long nodeId, Tuple carry) {
         if (carry.getIndictmentSource() == DISABLED) {
             return;
         }
-        carry.getIndictmentSource().getSupportForNodeId(nodeId).clear();
+        carry.getIndictmentSource().getCorroboratorsForNodeId(nodeId).clear();
     }
 
     /**
-     * Remove the indictment source of the supporting tuple from the carrying tuple's support
+     * Remove the indictment source of the corroborating tuple from the carrying tuple's corroborators
      * 
-     * @param nodeId The node id that created this support
+     * @param nodeId The node id that created this corroborator
      * @param carry the tuple that is propagated
-     * @param support the tuple that used to contribute to the carry being propagated but is not propagated itself
+     * @param corroborator the tuple that used to contribute to the carry being propagated but is not propagated itself
      */
-    static void removeSupport(long nodeId, Tuple carry, Tuple support) {
+    static void removeCorroborator(long nodeId, Tuple carry, Tuple corroborator) {
         if (carry.getIndictmentSource() == DISABLED) {
             return;
         }
-        carry.getIndictmentSource().getSupportForNodeId(nodeId).remove(support.getIndictmentSource());
+        carry.getIndictmentSource().getCorroboratorsForNodeId(nodeId).remove(corroborator.getIndictmentSource());
     }
 
     record DisabledIndictmentSource() implements IndictmentSource {
@@ -228,12 +228,12 @@ public sealed interface IndictmentSource {
         }
 
         @Override
-        public Map<Long, Set<IndictmentSource>> support() {
+        public Map<Long, Set<IndictmentSource>> corroborators() {
             throw new UnsupportedOperationException("Impossible state: indictments are disabled.");
         }
     }
 
-    record RootIndictmentSource(Object source, Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
+    record RootIndictmentSource(Object source, Map<Long, Set<IndictmentSource>> corroborators) implements IndictmentSource {
         @Override
         public void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds,
                 Consumer<Object> sourceConsumer) {
@@ -255,7 +255,7 @@ public sealed interface IndictmentSource {
     }
 
     record JoinedIndictmentSource(IndictmentSource left, IndictmentSource right,
-            Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
+            Map<Long, Set<IndictmentSource>> corroborators) implements IndictmentSource {
         @Override
         public void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds,
                 Consumer<Object> sourceConsumer) {
@@ -278,7 +278,7 @@ public sealed interface IndictmentSource {
     }
 
     record AggregateIndictmentSource(List<IndictmentSource> sourceList,
-            Map<Long, Set<IndictmentSource>> support) implements IndictmentSource {
+            Map<Long, Set<IndictmentSource>> corroborators) implements IndictmentSource {
         @Override
         public void visitSources(Set<IndictmentSource> visited, long @Nullable [] involvedNodeIds,
                 Consumer<Object> sourceConsumer) {
@@ -291,8 +291,8 @@ public sealed interface IndictmentSource {
         }
 
         @Override
-        public Set<IndictmentSource> getSupportForNodeId(long nodeId) {
-            return support.computeIfAbsent(nodeId, ignored -> new LinkedHashSet<>());
+        public Set<IndictmentSource> getCorroboratorsForNodeId(long nodeId) {
+            return corroborators.computeIfAbsent(nodeId, ignored -> new LinkedHashSet<>());
         }
 
         @Override

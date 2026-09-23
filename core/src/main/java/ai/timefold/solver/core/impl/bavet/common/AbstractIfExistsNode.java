@@ -137,7 +137,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     protected void incrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
-        IndictmentSource.addSupport(getId(), counter.getTuple(), rightTuple);
+        IndictmentSource.addCorroborator(getId(), counter.getTuple(), rightTuple);
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doInsertCounter(counter);
@@ -162,7 +162,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     protected void decrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
-        IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
+        IndictmentSource.removeCorroborator(getId(), counter.getTuple(), rightTuple);
         counter.countRight--;
         if (counter.countRight == 0) {
             if (shouldExist) {
@@ -271,12 +271,12 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         }
         if (testFiltering(counter.leftTuple, rightTuple)) {
             counter.countRight++;
-            IndictmentSource.addSupport(getId(), counter.getTuple(), rightTuple);
+            IndictmentSource.addCorroborator(getId(), counter.getTuple(), rightTuple);
             var tracker = new FilteringTracker<>(counter, rightTuple);
             linkLeft(tracker);
             linkRight(tracker);
         } else {
-            IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
+            IndictmentSource.removeCorroborator(getId(), counter.getTuple(), rightTuple);
         }
     }
 
@@ -339,12 +339,12 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         }
         if (testFiltering(leftTuple, rightTuple)) {
             incrementCounterRight(counter);
-            IndictmentSource.addSupport(getId(), counter.getTuple(), rightTuple);
+            IndictmentSource.addCorroborator(getId(), counter.getTuple(), rightTuple);
             var tracker = new FilteringTracker<>(counter, rightTuple);
             linkLeft(tracker);
             linkRight(tracker);
         } else {
-            IndictmentSource.removeSupport(getId(), counter.getTuple(), rightTuple);
+            IndictmentSource.removeCorroborator(getId(), counter.getTuple(), rightTuple);
         }
     }
 

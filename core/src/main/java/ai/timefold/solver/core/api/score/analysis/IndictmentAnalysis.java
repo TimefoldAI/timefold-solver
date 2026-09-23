@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.score.Score;
 public interface IndictmentAnalysis<Score_ extends Score<Score_>> {
     /**
      * The object that was indicted by constraints.
+     * Its type corresponds to the containing entry's key in {@link ScoreAnalysis#indictmentMap()}.
      * 
      * @return the indicted object
      */
