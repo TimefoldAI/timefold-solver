@@ -165,6 +165,33 @@ constraintAnalysis.matches().forEach(matchAnalysis -> {
 Each match is accompanied by the score difference it caused, and a justification object (see above).
 Typically, the scoring engine creates justification objects automatically by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustifications[Constraint Streams' `justifyWith(...)` call].
 
+[#scoreAnalysisIndictments]
+=== Finding the indicted objects
+
+When using `ScoreAnalysisFetchPolicy.FETCH_ALL`, `ScoreAnalysis.indictmentMap()` provides the total score impact and the matching constraints for each planning entity and problem fact involved in a constraint match.
+The map is keyed by `IndictableTypeRef`, and each value is a list of `IndictmentAnalysis` instances sorted by the absolute value of their total score impact:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+scoreAnalysis.indictmentMap().forEach((type, indictments) -> {
+    System.out.println(type.id());
+    indictments.forEach(indictment -> {
+        Object indictee = indictment.indictee();
+        HardSoftScore scoreImpact = indictment.score();
+        ...
+    });
+});
+----
+====
+
+By default, `IndictableTypeRef` uses the canonical name of the indicted object's class.
+To expose a different type identifier or indictee representation, implement `Indictable` on the planning entity or problem fact.
+`ScoreAnalysisFetchPolicy.FETCH_SHALLOW` and `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` return an empty indictment map.
+
 [#scoreAnalysisDiff]
 === Identifying changes between two solutions
 
