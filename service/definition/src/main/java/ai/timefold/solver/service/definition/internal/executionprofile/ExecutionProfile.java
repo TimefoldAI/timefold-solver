@@ -26,9 +26,9 @@ public interface ExecutionProfile {
     /**
      * Reads the values this profile recognizes from the run's options (as supplied via {@code RunConfiguration.options}),
      * validates them, and maps them to environment variables injected into the solver pod. The profile picks out only the
-     * keys it recognizes and ignores the rest, since the options map is shared with other run configuration. It must not
-     * invent values the caller did not supply. Keys must be valid environment-variable names. When multiple profiles are
-     * activated and define the same key, the resulting value is unspecified. Defaults to no environment variables.
+     * keys it recognizes and ignores the rest, since the options map is shared with other run configuration. Keys must
+     * be valid environment-variable names. If two activated profiles map to the same environment variable, the run is
+     * rejected. Defaults to no environment variables.
      */
     default Map<String, String> toEnvironment(Map<String, String> options) {
         return Map.of();

@@ -131,7 +131,10 @@ Additionally, more fields might be added for specific model implementations.
           "unimprovedSpentLimit": "PT10S"
         },
         "maxThreadCount": 1,
-        "tags": []
+        "tags": [],
+        "options": {
+          "seed": "42"
+        }
       },
       "model": {
         "overrides": "<model-specific configurations>"
@@ -141,12 +144,13 @@ Additionally, more fields might be added for specific model implementations.
 }
 ----
 
-The `run` configuration has four fields:
+The `run` configuration has five fields:
 
 - `name`: The run name (if empty, it will be generated).
 - `maxThreadCount`: The maximum thread count, which indicates the maximum number of threads to be used for solving.
 If not provided, 1 will be used.
 - `tags`: The tags, which are a set of optional tags to be assigned to the run.
+- `options`: An optional map of string values consumed by the active execution profiles, for example the `seed` option read by the fixed random seed profile.
 - `termination`: The termination properties determining how long the solver should run:
 
 * `spentLimit`: The maximum duration to keep the solver running (ISO 8601 Duration).
