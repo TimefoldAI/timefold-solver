@@ -6,29 +6,34 @@
 :icons: font
 include::../../_attributes.adoc[]
 
-// Keep this in sync with the quarkus repo's copy
-// https://github.com/quarkusio/quarkus/blob/main/docs/src/main/asciidoc/timefold.adoc
-// Keep this also in sync with spring-boot-quickstart.adoc where applicable
-
-This guide walks you through the process of creating a Vehicle Routing application
-with https://quarkus.io/[Quarkus] and https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
+This guide walks you through the process of creating a Vehicle Routing optimization service
+with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
+It builds on the xref:running-timefold-solver/service/overview.adoc#serviceOverview[service module]:
+you define the planning model and its API, and Timefold Solver takes care of the rest.
 
 [TIP]
 ====
-https://docs.timefold.ai/field-service-routing/latest/introduction[Check out our off-the-shelf model for Field Service Routing] (REST API)
+https://docs.timefold.ai/field-service-routing/latest/introduction[Check out our off-the-shelf model for Field Service Routing] (REST API).
+It goes beyond basic vehicle routing and supports additional constraints such as priorities, skills, fairness and more.
 ====
 
+[sectnums!]
 == What you will build
 
-You will build a REST application that optimizes a https://timefold.ai/vehicle-routing-problem[Vehicle Routing Problem] (VRP):
+You will build an optimization service that solves a https://timefold.ai/vehicle-routing-problem[Vehicle Routing Problem] (VRP)
+with capacities and time windows:
 
 image::quickstart/vehicle-routing/vehicleRouteScreenshot.png[]
 
+Each vehicle leaves its own home location at a set time, drives a route of visits, and returns home.
 Your service will assign `Visit` instances to `Vehicle` instances automatically
-by using AI to adhere to hard and soft scheduling _constraints_, such as the following examples:
+by using AI to adhere to hard, medium and soft _constraints_:
 
-* The demand for a vehicle cannot exceed its capacity.
-* The deliveries have specific deadlines that must be met.
+* The demand of the visits on a route cannot exceed the capacity of the vehicle.
+* A visit must be serviced before the end of its time window.
+A vehicle that arrives early waits.
+* As many visits as possible should be assigned to a vehicle.
+A visit that fits on no route is left unassigned rather than forced onto one.
 * The less total travel time, the better.
 
 Mathematically speaking, VRP is an _NP-hard_ problem.
@@ -38,6 +43,7 @@ for a non-trivial dataset, even on a supercomputer.
 Luckily, AI constraint solvers such as Timefold Solver have advanced algorithms
 that deliver a near-optimal solution in a reasonable amount of time.
 
+[sectnums!]
 == Solution source code
 
 Follow the instructions in the next sections to create the application step by step (recommended).
@@ -53,419 +59,160 @@ $ git clone {quickstarts-clone-url}
 +
 or download an {quickstarts-archive-url}[archive].
 
-. Find the solution in {vrp-quickstart-url}[the `java` directory]
+. Find the solution in {vrp-quickstart-url}[the `use-cases/vehicle-routing` directory]
 and run it (see its README file).
+The complete example also includes a web UI, demo datasets, input validation, metrics and a recommendation endpoint.
 
+[sectnums!]
 == Prerequisites
 
 To complete this guide, you need:
 
-include::../shared/_java-prerequisites.adoc[]
+* **Tools**
+** JDK {java-version} or higher
+** Maven
+** An IDE of your choice (IntelliJ IDEA, VSCode, ...)
+
+* **Knowledge**
+** Java (Basic)
+** Quarkus (Basic)
+
+If this is your first service, consider doing the xref:quickstart/service/getting-started.adoc[Getting started: building a service] guide first.
+It introduces the service module with a simpler model.
 
 == The build file and the dependencies
 
-Use https://code.quarkus.io/?a=timefold-solver-quickstart&j=21&e=rest&e=rest-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus[code.quarkus.io] to generate an application
-with the following extensions, for Maven or Gradle:
-
-[NOTE]
-====
-Clicking the link above will automatically select the dependencies for you on *code.quarkus.io*.
-====
-
-* Quarkus REST JAX-RS (`quarkus-rest`)
-* Quarkus REST Jackson (`quarkus-rest-jackson`)
-* Timefold Solver (`timefold-solver-quarkus`)
-* Timefold Solver Jackson (`timefold-solver-quarkus-jackson`)
+Create a Maven file that uses the service parent POM
+and depends on `timefold-solver-service-with-maps`.
+That dependency adds the map service, which provides the driving times between locations.
 
 Your `pom.xml` file has the following content:
 
-[tabs]
-====
-Java::
-+
---
-[source,xml,subs=attributes+]
+[source,xml,subs=attributes+,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.acme</groupId>
-  <artifactId>vehicle-routing</artifactId>
-  <version>1.0-SNAPSHOT</version>
-
-  <properties>
-    <maven.compiler.release>11</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <version.io.quarkus>{quarkus-version}</version.io.quarkus>
-    <version.ai.timefold.solver>{timefold-solver-version}</version.ai.timefold.solver>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <!-- Alternatively, use <artifactId>quarkus-universe-bom</artifactId>
-         which includes both quarkus-bom and timefold-solver-bom. -->
-        <artifactId>quarkus-bom</artifactId>
-        <version>${version.io.quarkus}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-bom</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-jackson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus-jackson</artifactId>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${version.compiler.plugin}</version>
-      </plugin>
-      <plugin>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${version.io.quarkus}</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-</project>
-----
---
-Kotlin::
-+
---
-[source,xml,subs=attributes+]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-service-parent</artifactId>
+    <version>{timefold-solver-version}</version>
+  </parent>
 
   <groupId>org.acme</groupId>
   <artifactId>vehicle-routing</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>${revision}</version>
 
   <properties>
-    <maven.compiler.release>11</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <version.io.quarkus>{quarkus-version}</version.io.quarkus>
-    <version.ai.timefold.solver>{timefold-solver-version}</version.ai.timefold.solver>
+    <revision>1.0.0-SNAPSHOT</revision>
+    <maven.compiler.release>21</maven.compiler.release>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <!-- Alternatively, use <artifactId>quarkus-universe-bom</artifactId>
-         which includes both quarkus-bom and timefold-solver-bom. -->
-        <artifactId>quarkus-bom</artifactId>
-        <version>${version.io.quarkus}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-bom</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest</artifactId>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-service-with-maps</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-jackson</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus-jackson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib</artifactId>
-      <version>1.9.22</version>
+      <artifactId>timefold-solver-service-maps-service-test</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <sourceDirectory>src/main/kotlin</sourceDirectory>
-    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${version.compiler.plugin}</version>
-      </plugin>
-      <plugin>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${version.io.quarkus}</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <version>${version.kotlin}</version>
-        <executions>
-          <execution>
-            <id>compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>test-compile</id>
-            <goals>
-              <goal>test-compile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-maven-allopen</artifactId>
-            <version>${version.kotlin}</version>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <javaParameters>true</javaParameters>
-          <jvmTarget>21</jvmTarget>
-          <compilerPlugins>
-            <plugin>all-open</plugin>
-          </compilerPlugins>
-          <pluginOptions>
-            <option>all-open:annotation=jakarta.ws.rs.Path</option>
-            <option>all-open:annotation=jakarta.enterprise.context.ApplicationScoped</option>
-            <option>all-open:annotation=io.quarkus.test.junit.QuarkusTest</option>
-          </pluginOptions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
 ----
---
-====
+
+The parent POM brings in Quarkus, the REST layer, the OpenAPI tooling and the usual test libraries,
+so you do not need to declare them yourself.
 
 include::vehicle-routing-model.adoc[leveloffset=+1]
 include::vehicle-routing-constraints.adoc[leveloffset=+1]
 include::vehicle-routing-solution.adoc[leveloffset=+1]
+include::vehicle-routing-api.adoc[leveloffset=+1]
 
-== Create the solver service
+== Expose the REST API
 
-Now you are ready to put everything together and create a REST service.
-But solving planning problems on REST threads causes HTTP timeout issues.
-Therefore, the Quarkus extension injects a `SolverManager` instance,
-which runs solvers in a separate thread pool
-and can solve multiple datasets in parallel.
+To expose the service, provide an interface which extends the `ModelRest` interface.
+The service module generates all the xref:running-timefold-solver/service/rest-api.adoc#generatedEndpoints[REST endpoints] from it:
+submitting a problem, polling for the solution, terminating a run early, score analysis and more.
 
-[tabs]
-====
-Java::
-+
---
-Create the `src/main/java/org/acme/vehiclerouting/rest/VehicleRoutePlanResource.java` class:
+Create the `src/main/java/org/acme/vehiclerouting/rest/VehicleRoutePlanResource.java` interface:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 package org.acme.vehiclerouting.rest;
 
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
-import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 
-import ai.timefold.solver.core.api.solver.SolverJob;
-import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.service.rest.api.ModelRest;
 
-import org.acme.vehiclerouting.domain.VehicleRoutePlan;
-
-@Path("route-plans")
-public class VehicleRoutePlanResource {
-
-    private final SolverManager<VehicleRoutePlan, String> solverManager;
-
-    public VehicleRoutePlanResource() {
-        this.solverManager = null;
-    }
-
-    @Inject
-    public VehicleRoutePlanResource(SolverManager<VehicleRoutePlan, String> solverManager) {
-        this.solverManager = solverManager;
-    }
-
-    @POST
-    @Consumes({ MediaType.APPLICATION_JSON })
-    @Produces(MediaType.APPLICATION_JSON)
-    public VehicleRoutePlan solve(VehicleRoutePlan problem) {
-        String jobId = UUID.randomUUID().toString();
-        SolverJob<VehicleRoutePlan, String> solverJob = solverManager.solveBuilder()
-                .withProblemId(jobId)
-                .withProblem(problem)
-                .run();
-        VehicleRoutePlan solution;
-        try {
-            // Wait until the solving ends
-            solution = solverJob.getFinalBestSolution();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IllegalStateException("Solving failed.", e);
-        }
-        return solution;
-    }
+// Endpoints are automatically added by the service module.
+@Path("/route-plans")
+public interface VehicleRoutePlanResource extends ModelRest {
 }
 ----
---
-Kotlin::
-+
---
-Create the `src/main/kotlin/org/acme/vehiclerouting/rest/VehicleRoutePlanResource.kt` class:
 
-[source,kotlin]
-----
-package org.acme.vehiclerouting.rest
+The `@Path` annotation configures the base path of all those endpoints.
+The service module prefixes it with the API version, so the endpoints are served at `/v1/route-plans`.
 
-import java.util.UUID
-import java.util.concurrent.ExecutionException
+== Configure the service
 
-import jakarta.inject.Inject
-import jakarta.ws.rs.Consumes
-import jakarta.ws.rs.POST
-import jakarta.ws.rs.Path
-import jakarta.ws.rs.Produces
-import jakarta.ws.rs.core.MediaType
-
-import ai.timefold.solver.core.api.solver.SolverManager
-
-import org.acme.vehiclerouting.domain.VehicleRoutePlan
-
-@Path("route-plans")
-class VehicleRoutePlanResource {
-    private val solverManager: SolverManager<VehicleRoutePlan, String>?
-
-    constructor() {
-        this.solverManager = null
-    }
-
-    @Inject
-    constructor(solverManager: SolverManager<VehicleRoutePlan, String>?) {
-        this.solverManager = solverManager
-    }
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    fun solve(problem: VehicleRoutePlan): VehicleRoutePlan {
-        val jobId = UUID.randomUUID().toString()
-        val solverJob = solverManager!!.solveBuilder()
-            .withProblemId(jobId)
-            .withProblem(problem)
-            .run()
-        val solution: VehicleRoutePlan
-        try {
-            // Wait until the solving ends
-            solution = solverJob.finalBestSolution
-        } catch (e: InterruptedException) {
-            throw IllegalStateException("Solving failed.", e)
-        } catch (e: ExecutionException) {
-            throw IllegalStateException("Solving failed.", e)
-        }
-        return solution
-    }
-}
-----
---
-====
-
-For simplicity's sake, this initial implementation waits for the solver to finish,
-which can still cause an HTTP timeout.
-The _complete_ implementation avoids HTTP timeouts much more elegantly.
-
-== Set the termination time
-
-Without a termination setting or a `terminationEarly()` event, the solver runs forever.
-To avoid that, limit the solving time to five seconds.
-That is short enough to avoid the HTTP timeout.
+Without a termination setting, the solver runs forever.
+You also need to provide some basic metadata about your service.
 
 Create the `src/main/resources/application.properties` file:
 
-[source,properties]
+[source,properties,options="nowrap"]
 ----
-# The solver runs only for 5 seconds to avoid a HTTP timeout in this simple implementation.
-# It's recommended to run for at least 5 minutes ("5m") otherwise.
-quarkus.timefold.solver.termination.spent-limit=5s
+########################
+# Timefold Solver properties
+########################
+
+# The solver runs for 30 seconds. To run for 5 minutes use "PT5M" and for 2 hours use "PT2H".
+timefold.model.termination.spent-limit=PT30S
+
+########################
+# Model information
+########################
+
+timefold.model.id=vehicle-routing
+quarkus.application.name=${timefold.model.id}
+timefold.model.name=Vehicle Routing
+model.api.version=v1
+timefold.model.api-version=${model.api.version}
+
+timefold.model.contact.email=example@acme.com
+timefold.model.contact.name=A.C.M.E.
+timefold.model.contact.url=https://acme.com
+
+########################
+# Model settings
+########################
+
+timefold.model.max-thread-count=16
+timefold.model.default-config.max-thread-count=1
+timefold.platform.map-service.use-remote=false
+timefold.platform.map-service.enable-fallback=true
+
+########################
+# Test overrides
+########################
+
+%test.timefold.model.termination.spent-limit=PT30S
+%test.timefold.model.termination.best-score-limit=0hard/0medium/*soft
 ----
+
+* `timefold.model.termination.spent-limit` sets the default maximum time the solver runs,
+in https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format].
+A request can override it with `config.run.termination.spentLimit`.
+* `timefold.model.name` and the contact fields are *required* metadata.
+They identify your service and populate the generated OpenAPI specification.
+* The `timefold.platform.map-service` properties are explained in xref:#vrpQuarkusQuickStartMapService[Driving times from the map service].
+* The test overrides stop the solver as soon as every visit is assigned without breaking a hard constraint (`0hard/0medium/*soft`).
+The spent limit remains as a backstop, for a dataset where the fleet cannot absorb every visit.
 
 Timefold Solver returns _the best solution_ found in the available termination time.
 Due to xref:optimization-algorithms/overview.adoc#doesTimefoldFindTheOptimalSolution[the nature of NP-hard problems],
@@ -478,10 +225,12 @@ First start the application:
 
 [source,shell]
 ----
-$ mvn compile quarkus:dev
+$ mvn quarkus:dev
 ----
 
 include::../shared/_quarkus-dev-mode-note.adoc[]
+
+Open the http://localhost:8080/q/swagger-ui/[Swagger UI] to inspect the generated endpoints.
 
 === Try the application
 
@@ -489,40 +238,104 @@ Now that the application is running, you can test the REST service.
 You can use any REST client you wish.
 The following example uses the Linux command `curl` to send a POST request:
 
+[source,shell,options="nowrap"]
+----
+$ curl -X POST http://localhost:8080/v1/route-plans -H "Content-Type: application/json" -d '{
+  "config": {
+    "run": {
+      "termination": {
+        "spentLimit": "PT5S"
+      }
+    }
+  },
+  "modelInput": {
+    "startDateTime": "2026-02-10T07:30:00Z",
+    "endDateTime": "2026-02-11T00:00:00Z",
+    "vehicles": [
+      {"id": "1", "capacity": 15, "homeLocation": {"latitude": 40.6059, "longitude": -75.6810}, "departureTime": "2026-02-10T07:30:00Z"},
+      {"id": "2", "capacity": 25, "homeLocation": {"latitude": 40.3219, "longitude": -75.6978}, "departureTime": "2026-02-10T07:30:00Z"}
+    ],
+    "visits": [
+      {"id": "1", "name": "Dan Green", "location": {"latitude": 40.7610, "longitude": -75.1605}, "demand": 1, "minStartTime": "2026-02-10T13:00:00Z", "maxEndTime": "2026-02-10T18:00:00Z", "serviceDurationMinutes": 20},
+      {"id": "2", "name": "Ivy King", "location": {"latitude": 40.1375, "longitude": -75.4925}, "demand": 1, "minStartTime": "2026-02-10T13:00:00Z", "maxEndTime": "2026-02-10T18:00:00Z", "serviceDurationMinutes": 20},
+      {"id": "3", "name": "Flo Li", "location": {"latitude": 39.8712, "longitude": -75.6452}, "demand": 2, "minStartTime": "2026-02-10T08:00:00Z", "maxEndTime": "2026-02-10T12:00:00Z", "serviceDurationMinutes": 10},
+      {"id": "4", "name": "Flo Cole", "location": {"latitude": 40.4612, "longitude": -75.1825}, "demand": 1, "minStartTime": "2026-02-10T13:00:00Z", "maxEndTime": "2026-02-10T18:00:00Z", "serviceDurationMinutes": 40},
+      {"id": "5", "name": "Carl Green", "location": {"latitude": 40.6135, "longitude": -75.8330}, "demand": 1, "minStartTime": "2026-02-10T08:00:00Z", "maxEndTime": "2026-02-10T12:00:00Z", "serviceDurationMinutes": 30}
+    ]
+  }
+}'
+----
+
+The service does not wait for the solver to finish.
+It answers right away with `202 Accepted` and the metadata of the new run:
+
+[source,json,options="nowrap"]
+----
+{
+  "id": "7f3a91bc-4e2d-4c1a-b8f6-1234567890ab",
+  "name": "Dataset-2026-02-09T10:15:30.123+01:00",
+  "submitDateTime": "2026-02-09T10:15:30.123+01:00",
+  "solverStatus": "DATASET_CREATED"
+}
+----
+
+Use the `id` to retrieve the (intermediate) solution:
+
 [source,shell]
 ----
-$ curl -i -X POST http://localhost:8080/route-plans -H "Content-Type:application/json" -d '{"name":"demo","vehicles":[{"id":"1","capacity":15,"homeLocation":[40.605994321126936,-75.68106859680056],"departureTime":"2024-02-10T07:30:00"},{"id":"2","capacity":25,"homeLocation":[40.32196770776356,-75.69785667307953],"departureTime":"2024-02-10T07:30:00"}],"visits":[{"id":"1","name":"Dan Green","location":[40.76104493121754,-75.16056341466826],"demand":1,"minStartTime":"2024-02-10T13:00:00","maxEndTime":"2024-02-10T18:00:00","serviceDuration":1200},{"id":"2","name":"Ivy King","location":[40.13754381024318,-75.492526629236],"demand":1,"minStartTime":"2024-02-10T13:00:00","maxEndTime":"2024-02-10T18:00:00","serviceDuration":1200.000000000},{"id":"3","name":"Flo Li","location":[39.87122455090297,-75.64520072015769],"demand":2,"minStartTime":"2024-02-10T08:00:00","maxEndTime":"2024-02-10T12:00:00","serviceDuration":600.000000000},{"id":"4","name":"Flo Cole","location":[40.46124744193433,-75.18250987609025],"demand":1,"minStartTime":"2024-02-10T13:00:00","maxEndTime":"2024-02-10T18:00:00","serviceDuration":2400.000000000},{"id":"5","name":"Carl Green","location":[40.61352381171549,-75.83301278355529],"demand":1,"minStartTime":"2024-02-10T08:00:00","maxEndTime":"2024-02-10T12:00:00","serviceDuration":1800.000000000}]}'
+$ curl http://localhost:8080/v1/route-plans/7f3a91bc-4e2d-4c1a-b8f6-1234567890ab
 ----
 
-After about five seconds, according to the termination spent time defined in your `application.properties`,
+After about five seconds, according to the `spentLimit` of the request,
 the service returns an output similar to the following example:
 
-[source]
+[source,json,options="nowrap"]
 ----
-HTTP/1.1 200
-Content-Type: application/json
-...
-
-{"name":"demo","vehicles":[{"id":"1","capacity":15,"homeLocation":[40.605994321126936,-75.68106859680056],"departureTime":"2024-02-10T07:30:00","visits":[<LIST OF VISITS ASSIGNED TO CAR 1>],"arrivalTime":"2024-02-10T15:34:11","totalDemand":3,"totalDrivingTimeSeconds":10826},{"id":"2","capacity":25,"homeLocation":[40.32196770776356,-75.69785667307953],"departureTime":"2024-02-10T07:30:00","visits":[<LIST OF VISITS ASSIGNED TO CAR 2>],"arrivalTime":"2024-02-10T13:52:18","totalDemand":3,"totalDrivingTimeSeconds":7890}],"visits":[{"id":"1","name":"Dan Green","location":[40.76104493121754,-75.16056341466826],"demand":1,"minStartTime":"2024-02-10T13:00:00","maxEndTime":"2024-02-10T18:00:00","serviceDuration":1200.000000000,"vehicle":"1","previousVisit":"5","nextVisit":"4","arrivalTime":"2024-02-10T09:40:50","startServiceTime":"2024-02-10T13:00:00","departureTime":"2024-02-10T13:20:00","drivingTimeSecondsFromPreviousStandstill":4250},{"id":"2","name":"Ivy King","location":[40.13754381024318,-75.492526629236],"demand":1,"minStartTime":"2024-02-10T13:00:00","maxEndTime":"2024-02-10T18:00:00","serviceDuration":1200.000000000,"vehicle":"2","previousVisit":"3","nextVisit":null,"arrivalTime":"2024-02-10T09:19:12","startServiceTime":"2024-02-10T13:00:00","departureTime":"2024-02-10T13:20:00","drivingTimeSecondsFromPreviousStandstill":2329},{"id":"3","name":"Flo Li","location":[39.87122455090297,-75.64520072015769],"demand":2,"minStartTime":"2024-02-10T08:00:00","maxEndTime":"2024-02-10T12:00:00","serviceDuration":600.000000000,"vehicle":"2","previousVisit":null,"nextVisit":"2","arrivalTime":"2024-02-10T08:30:23","startServiceTime":"2024-02-10T08:30:23","departureTime":"2024-02-10T08:40:23","drivingTimeSecondsFromPreviousStandstill":3623},{"id":"4","name":"Flo Cole","location":[40.46124744193433,-75.18250987609025],"demand":1,"minStartTime":"2024-02-10T13:00:00","maxEndTime":"2024-02-10T18:00:00","serviceDuration":2400.000000000,"vehicle":"1","previousVisit":"1","nextVisit":null,"arrivalTime":"2024-02-10T14:00:04","startServiceTime":"2024-02-10T14:00:04","departureTime":"2024-02-10T14:40:04","drivingTimeSecondsFromPreviousStandstill":2404},{"id":"5","name":"Carl Green","location":[40.61352381171549,-75.83301278355529],"demand":1,"minStartTime":"2024-02-10T08:00:00","maxEndTime":"2024-02-10T12:00:00","serviceDuration":1800.000000000,"vehicle":"1","previousVisit":null,"nextVisit":"1","arrivalTime":"2024-02-10T07:45:25","startServiceTime":"2024-02-10T08:00:00","departureTime":"2024-02-10T08:30:00","drivingTimeSecondsFromPreviousStandstill":925}],"score":"0hard/-18716soft","totalDrivingTimeSeconds":18716}
+{
+  "metadata": {
+    "id": "7f3a91bc-4e2d-4c1a-b8f6-1234567890ab",
+    ...
+    "solverStatus": "SOLVING_COMPLETED",
+    "score": "0hard/0medium/-18716soft"
+  },
+  "modelOutput": {
+    "vehicles": [
+      {"id": "1", "visitIds": ["5", "1", "4"], "totalDemand": 3, "totalDrivingTimeSeconds": 10826, "arrivalTime": "2026-02-10T15:34:11Z"},
+      {"id": "2", "visitIds": ["3", "2"], "totalDemand": 3, "totalDrivingTimeSeconds": 7890, "arrivalTime": "2026-02-10T13:52:18Z"}
+    ],
+    "visits": [
+      {"id": "1", "vehicleId": "1", "arrivalTime": "2026-02-10T09:40:50Z", "startServiceTime": "2026-02-10T13:00:00Z", "departureTime": "2026-02-10T13:20:00Z", "drivingTimeSecondsFromPreviousStandstill": 4250},
+      ...
+    ]
+  }
+}
 ----
 
-Notice that your application assigned all five visits to one of the two vehicles.
+Notice that your application assigned all five visits to one of the two vehicles,
+so the medium score is `0`.
 Also notice that it conforms to all hard constraints.
-For example, visits `1`, `4`, and `5` were scheduled to the vehicle `1`.
+For example, visits `5`, `1`, and `4` were scheduled, in that order, to vehicle `1`.
 
-On the server side, the `info` log shows what Timefold Solver did in those five seconds:
+The exact numbers depend on the driving times.
+Running locally, the map service estimates them from the straight-line distance.
 
-[source,options="nowrap"]
+To see which constraints contribute to the score, call the score analysis endpoint:
+
+[source,shell]
 ----
-... Solving started: time spent (17), best score (0hard/0soft), environment mode (PHASE_ASSERT), move thread count (NONE), random (JDK with seed 0).
-... Construction Heuristic phase (0) ended: time spent (33), best score (0hard/-18755soft), move evaluation speed (2222/sec), step total (5).
-... Local Search phase (1) ended: time spent (5000), best score (0hard/-18716soft), move evaluation speed (89685/sec), step total (40343).
-... Solving ended: time spent (5000), best score (0hard/-18716soft), move evaluation speed (89079/sec), phase total (2), environment mode (PHASE_ASSERT), move thread count (NONE).
+$ curl http://localhost:8080/v1/route-plans/7f3a91bc-4e2d-4c1a-b8f6-1234567890ab/score-analysis
 ----
+
+Every constraint match in the response carries its justification,
+for example `"Vehicle '1' drives 180 minute(s) to service 3 visit(s)."`.
+
+See the xref:running-timefold-solver/service/consumer-guide.adoc[service consumer guide] for everything a client of your service can do,
+including polling versus Server-Sent Events and terminating a run early.
 
 === Test the application
 
 A good application includes test coverage.
+The parent POM already brings in JUnit, REST Assured, Awaitility and AssertJ.
 
 ==== Test the constraints
 
@@ -530,360 +343,202 @@ To test each constraint in isolation, use a `ConstraintVerifier` in unit tests.
 It tests each constraint's corner cases in isolation from the other tests,
 which lowers maintenance when adding a new constraint with proper test coverage.
 
-First update your build tool configuration:
+A `ConstraintVerifier` test builds the domain objects directly,
+so it bypasses the model enrichment step in which the map service builds the travel time matrix.
+The `timefold-solver-service-maps-service-test` dependency provides the classes to build that matrix yourself:
+`HaversineTravelTimeAndDistanceMatrixProvider`, the same straight-line calculation the map service uses locally,
+and `TestDistanceCalculator`, which fills in the matrix for a list of locations.
 
-Add some dependencies in your `pom.xml`:
-[source,xml]
-----
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-----
+Create the `src/test/java/org/acme/vehiclerouting/solver/VehicleRoutePlanConstraintProviderTest.java` class:
 
-Then create the test itself:
-
-[tabs]
-====
-Java::
-+
---
-Create the `src/test/java/org/acme/vehiclerouting/solver/VehicleRoutingConstraintProviderTest.java` class:
-
-[source,java]
+[source,java,options="nowrap"]
 ----
 package org.acme.vehiclerouting.solver;
 
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Arrays;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
 
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
+import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.service.maps.api.model.Location;
+import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
+import ai.timefold.solver.service.maps.service.test.api.TestDistanceCalculator;
 
-import org.acme.vehiclerouting.domain.Location;
 import org.acme.vehiclerouting.domain.Vehicle;
 import org.acme.vehiclerouting.domain.VehicleRoutePlan;
 import org.acme.vehiclerouting.domain.Visit;
-import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-class VehicleRoutingConstraintProviderTest {
+class VehicleRoutePlanConstraintProviderTest {
 
-    /*
-     * LOCATION_1 to LOCATION_2 is approx. 11713 m ~843 seconds of driving time
-     * LOCATION_2 to LOCATION_3 is approx. 8880 m ~639 seconds of driving time
-     * LOCATION_1 to LOCATION_3 is approx. 13075 m ~941 seconds of driving time
-     */
-    private static final Location LOCATION_1 = new Location(49.288087, 16.562172);
-    private static final Location LOCATION_2 = new Location(49.190922, 16.624466);
-    private static final Location LOCATION_3 = new Location(49.1767533245638, 16.50422914190477);
+    private static final OffsetDateTime DAY_START = OffsetDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
-    private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
+    private static final HaversineTravelTimeAndDistanceMatrixProvider PROVIDER =
+            new HaversineTravelTimeAndDistanceMatrixProvider(new ObjectMapper());
 
     @Inject
-    ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutePlan> constraintVerifier;
-
-    @BeforeAll
-    static void initDrivingTimeMaps() {
-        HaversineDrivingTimeCalculator.getInstance().initDrivingTimeMaps(Arrays.asList(LOCATION_1, LOCATION_2, LOCATION_3));
-    }
+    ConstraintVerifier<VehicleRoutePlanConstraintProvider, VehicleRoutePlan> constraintVerifier;
 
     @Test
-    void vehicleCapacityPenalized() {
-        LocalDateTime tomorrow_07_00 = LocalDateTime.of(TOMORROW, LocalTime.of(7, 0));
-        LocalDateTime tomorrow_08_00 = LocalDateTime.of(TOMORROW, LocalTime.of(8, 0));
-        LocalDateTime tomorrow_10_00 = LocalDateTime.of(TOMORROW, LocalTime.of(10, 0));
-        Vehicle vehicleA = new Vehicle("1", 100, LOCATION_1, tomorrow_07_00);
-        Visit visit1 = new Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
-        vehicleA.getVisits().add(visit1);
-        Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
-        vehicleA.getVisits().add(visit2);
+    void vehicleCapacity() {
+        Vehicle vehicle = new Vehicle("1", 10, new Location(51.00, 3.65), DAY_START.withHour(7));
+        Visit visit1 = aVisit("1", new Location(51.01, 3.66), 5);
+        Visit visit2 = aVisit("2", new Location(51.02, 3.68), 8);
+        vehicle.getVisits().addAll(List.of(visit1, visit2));
 
-        constraintVerifier.verifyThat(VehicleRoutingConstraintProvider::vehicleCapacity)
-                .given(vehicleA, visit1, visit2)
-                .penalizesBy(20);
-    }
-}
-
-----
---
-Kotlin::
-+
---
-Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.kt` class:
-
-[source,kotlin]
-----
-package org.acme.vehiclerouting.solver;
-
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.util.Arrays
-
-import jakarta.inject.Inject
-
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory
-import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier
-
-import org.acme.vehiclerouting.domain.Location
-import org.acme.vehiclerouting.domain.Vehicle
-import org.acme.vehiclerouting.domain.VehicleRoutePlan
-import org.acme.vehiclerouting.domain.Visit
-import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-
-import io.quarkus.test.junit.QuarkusTest
-
-@QuarkusTest
-internal class VehicleRoutingConstraintProviderTest {
-
-    @Inject
-    lateinit var constraintVerifier: ConstraintVerifier<VehicleRoutingConstraintProvider, VehicleRoutePlan>
-
-    @Test
-    fun vehicleCapacityPenalized() {
-        val tomorrow_07_00 = LocalDateTime.of(TOMORROW, LocalTime.of(7, 0))
-        val tomorrow_08_00 = LocalDateTime.of(TOMORROW, LocalTime.of(8, 0))
-        val tomorrow_10_00 = LocalDateTime.of(TOMORROW, LocalTime.of(10, 0))
-        val vehicleA = Vehicle("1", 100, LOCATION_1, tomorrow_07_00)
-        val visit1 = Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L))
-        vehicleA.visits!!.add(visit1)
-        val visit2 = Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L))
-        vehicleA.visits!!.add(visit2)
-
-        constraintVerifier!!.verifyThat { obj: VehicleRoutingConstraintProvider, factory: ConstraintFactory? ->
-            obj.vehicleCapacity(
-                factory!!
-            )
-        }
-            .given(vehicleA, visit1, visit2)
-            .penalizesBy(20)
+        // Three over capacity: 5 + 8 of 10.
+        constraintVerifier.verifyThat(VehicleRoutePlanConstraintProvider::vehicleCapacity)
+                .givenSolution(aRoutePlan(List.of(vehicle), List.of(visit1, visit2)))
+                .penalizesBy(3);
     }
 
-    companion object {
-        /*
-     * LOCATION_1 to LOCATION_2 is approx. 11713 m ~843 seconds of driving time
-     * LOCATION_2 to LOCATION_3 is approx. 8880 m ~639 seconds of driving time
-     * LOCATION_1 to LOCATION_3 is approx. 13075 m ~941 seconds of driving time
-     */
-        private val LOCATION_1 = Location(49.288087, 16.562172)
-        private val LOCATION_2 = Location(49.190922, 16.624466)
-        private val LOCATION_3 = Location(49.1767533245638, 16.50422914190477)
+    private static Visit aVisit(String id, Location location, int demand) {
+        return new Visit(id, "Visit " + id, location, demand,
+                DAY_START.withHour(8), DAY_START.withHour(18), Duration.ofMinutes(10));
+    }
 
-        private val TOMORROW: LocalDate = LocalDate.now().plusDays(1)
-        @JvmStatic
-        @BeforeAll
-        fun initDrivingTimeMaps() {
-            HaversineDrivingTimeCalculator.INSTANCE.initDrivingTimeMaps(
-                Arrays.asList(
-                    LOCATION_1, LOCATION_2, LOCATION_3
-                )
-            )
-        }
+    private static VehicleRoutePlan aRoutePlan(List<Vehicle> vehicles, List<Visit> visits) {
+        VehicleRoutePlan plan = new VehicleRoutePlan(vehicles, visits);
+        // Build the travel time matrix the map service would otherwise build.
+        TestDistanceCalculator.initDistanceMaps(plan.getLocations(),
+                PROVIDER::calculateDistance,
+                PROVIDER::calculateTravelTime);
+        SolutionManager.updateShadowVariables(plan);
+        return plan;
     }
 }
 ----
---
-====
 
-This test verifies that the constraint `VehicleRoutingConstraintProvider::vehicleCapacity`,
-when given two visits assigned to the same vehicle, penalizes with a match weight of `20` (exceeded capacity).
-So with a constraint weight of `20hard` it would reduce the score by `-20hard`.
+This test verifies that the constraint `VehicleRoutePlanConstraintProvider::vehicleCapacity`,
+when given two visits assigned to the same vehicle, penalizes with a match weight of `3` (exceeded capacity).
+So with a constraint weight of `1hard` it would reduce the score by `-3hard`.
 
 Notice how `ConstraintVerifier` ignores the constraint weight during testing - even
 if those constraint weights are hard coded in the `ConstraintProvider` - because
 constraints weights change regularly before going into production.
 This way, constraint weight tweaking does not break the unit tests.
 
-==== Test the solver
+==== Test the service
 
-In a JUnit test, generate a test dataset and send it to the `VehicleRoutePlanResource` to solve.
+In a JUnit test, send a small dataset to the REST API and wait until the run finishes.
 
-Add some dependencies in your `pom.xml`:
-[source,xml]
-----
-    <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <scope>test</scope>
-    </dependency>
-----
-
-Then create the test itself:
-
-[tabs]
-====
-Java::
-+
---
 Create the `src/test/java/org/acme/vehiclerouting/rest/VehicleRoutePlanResourceTest.java` class:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 package org.acme.vehiclerouting.rest;
 
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import ai.timefold.solver.core.api.solver.SolverStatus;
+import jakarta.inject.Inject;
 
-import org.acme.vehiclerouting.domain.VehicleRoutePlan;
+import org.acme.vehiclerouting.dto.input.LocationInputDTO;
+import org.acme.vehiclerouting.dto.input.VehicleInputDTO;
+import org.acme.vehiclerouting.dto.input.VehicleRoutePlanInput;
+import org.acme.vehiclerouting.dto.input.VisitInputDTO;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-public class VehicleRoutePlanResourceTest {
+class VehicleRoutePlanResourceTest {
+
+    private static final OffsetDateTime DAY_START = OffsetDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+
+    private static final Set<String> TERMINAL_STATUSES = Set.of(
+            "DATASET_INVALID",
+            "SOLVING_COMPLETED",
+            "SOLVING_FAILED",
+            "SOLVING_INCOMPLETE");
+
+    // The ObjectMapper of the application, which knows how to serialize OffsetDateTime.
+    @Inject
+    ObjectMapper mapper;
 
     @Test
-    public void solveDemoDataUntilFeasible() {
-        VehicleRoutePlan vehicleRoutePlan = given()
-                .when().get("/demo-data/FIRENZE")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(VehicleRoutePlan.class);
+    void solveUntilFeasible() throws Exception {
+        List<VehicleInputDTO> vehicles = List.of(
+                new VehicleInputDTO("1", 20, new LocationInputDTO(51.00, 3.65), DAY_START.withHour(7), List.of()),
+                new VehicleInputDTO("2", 20, new LocationInputDTO(51.05, 3.75), DAY_START.withHour(7), List.of()));
+        List<VisitInputDTO> visits = List.of(
+                aVisit("1", 51.01, 3.66),
+                aVisit("2", 51.02, 3.68),
+                aVisit("3", 51.06, 3.76),
+                aVisit("4", 51.07, 3.78));
+        var input = new VehicleRoutePlanInput(DAY_START.withHour(7), DAY_START.plusDays(1), vehicles, visits);
 
-        String jobId = given()
+        String datasetId = given()
                 .contentType(ContentType.JSON)
-                .body(vehicleRoutePlan)
-                .expect().contentType(ContentType.TEXT)
-                .when().post("/route-plans")
+                .body(mapper.writeValueAsString(Map.of("modelInput", input)))
+                .when().post("/v1/route-plans")
                 .then()
-                .statusCode(200)
-                .extract()
-                .asString();
+                .statusCode(202)
+                .extract().jsonPath().getString("id");
 
         await()
                 .atMost(Duration.ofMinutes(1))
                 .pollInterval(Duration.ofMillis(500L))
-                .until(() -> SolverStatus.NOT_SOLVING.name().equals(
-                        get("/route-plans/" + jobId + "/status")
-                                .jsonPath().get("solverStatus")));
+                .until(() -> TERMINAL_STATUSES.contains(
+                        get("/v1/route-plans/" + datasetId).jsonPath().getString("metadata.solverStatus")));
 
-        VehicleRoutePlan solution = get("/route-plans/" + jobId).then().extract().as(VehicleRoutePlan.class);
-        assertEquals(solution.getSolverStatus(), SolverStatus.NOT_SOLVING);
-        assertNotNull(solution.getVehicles());
-        assertNotNull(solution.getVisits());
-        assertNotNull(solution.getVehicles().get(0).getVisits());
-        assertTrue(solution.getScore().isFeasible());
+        var response = get("/v1/route-plans/" + datasetId).then().extract().jsonPath();
+        assertThat(response.getString("metadata.solverStatus")).isEqualTo("SOLVING_COMPLETED");
+        assertThat(response.getString("metadata.score")).startsWith("0hard/0medium/");
     }
-}
 
-----
---
-Kotlin::
-+
---
-Create the `src/test/kotlin/org/acme/vehiclerouting/rest/VehicleRoutePlanResourceTest.kt` class:
-
-[source,kotlin]
-----
-package org.acme.vehiclerouting.rest
-
-import java.time.Duration
-
-import ai.timefold.solver.core.api.solver.SolverStatus
-
-import org.acme.vehiclerouting.domain.VehicleRoutePlan
-import org.junit.jupiter.api.Test
-
-import io.quarkus.test.junit.QuarkusTest
-import io.restassured.RestAssured
-import io.restassured.http.ContentType
-
-import org.awaitility.Awaitility
-
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
-
-@QuarkusTest
-class VehicleRoutePlanResourceTest {
-    @Test
-    fun solveDemoDataUntilFeasible() {
-        val vehicleRoutePlan = RestAssured.given()
-            .`when`()["/demo-data/FIRENZE"]
-            .then()
-            .statusCode(200)
-            .extract()
-            .`as`(VehicleRoutePlan::class.java)
-
-        val jobId = RestAssured.given()
-            .contentType(ContentType.JSON)
-            .body(vehicleRoutePlan)
-            .expect().contentType(ContentType.TEXT)
-            .`when`().post("/route-plans")
-            .then()
-            .statusCode(200)
-            .extract()
-            .asString()
-
-        Awaitility.await()
-            .atMost(Duration.ofMinutes(1))
-            .pollInterval(Duration.ofMillis(500L))
-            .until {
-                SolverStatus.NOT_SOLVING.name == RestAssured.get("/route-plans/$jobId/status")
-                    .jsonPath().get("solverStatus")
-            }
-
-        val solution = RestAssured.get("/route-plans/$jobId").then().extract().`as`(
-            VehicleRoutePlan::class.java
-        )
-        assertEquals(solution.solverStatus, SolverStatus.NOT_SOLVING)
-        assertNotNull(solution.vehicles)
-        assertNotNull(solution.visits)
-        assertNotNull(solution.vehicles!!.get(0).visits)
-        assertTrue(solution.score!!.isFeasible())
+    private static VisitInputDTO aVisit(String id, double latitude, double longitude) {
+        return new VisitInputDTO(id, "Visit " + id, new LocationInputDTO(latitude, longitude), 1,
+                DAY_START.withHour(8), DAY_START.withHour(18), 10);
     }
 }
 ----
---
-====
 
-This test verifies that after solving that it found a feasible solution (no hard constraints broken).
+This test verifies that after solving, the service found a solution that assigns every visit
+without breaking a hard constraint.
 
-Add test properties to the `src/main/resources/application.properties` file:
-
-[source,properties]
-----
-quarkus.timefold.solver.termination.spent-limit=5s
-
-# Effectively disable spent-time termination in favor of the best-score-limit
-%test.quarkus.timefold.solver.termination.spent-limit=1h
-%test.quarkus.timefold.solver.termination.best-score-limit=0hard/*soft
-----
-
-Normally, the solver finds a feasible solution in less than 200 milliseconds.
-Notice how the `application.properties` overwrites the solver termination during tests
-to terminate as soon as a feasible solution (`0hard/*soft`) is found.
-This avoids hard coding a solver time, because the unit test might run on arbitrary hardware.
+The `%test` properties in `application.properties` terminate the solver
+as soon as such a solution (`0hard/0medium/*soft`) is found.
+This avoids hard coding a solver time, because the test might run on arbitrary hardware.
 This approach ensures that the test runs long enough to find a feasible solution, even on slow machines.
 But it does not run a millisecond longer than it strictly must, even on fast machines.
+
+=== Generate the initial OpenAPI specification
+
+Before running a full build with `mvn install`, generate the initial OpenAPI specification file.
+The build compares the generated specification against `src/build/openapi.json` to catch accidental API changes,
+so the build fails if that file does not exist yet.
+
+Run the following command once to create it:
+
+[source,shell]
+----
+$ mvn clean package -Dupdate-api
+----
+
+We recommend committing `src/build/openapi.json` to version control.
+See xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deliberate API changes] for more details.
 
 === Logging
 
@@ -904,22 +559,111 @@ change the logging in the `application.properties` file or with a `-D` system pr
 quarkus.log.category."ai.timefold.solver".level=debug
 ----
 
-Use `debug` logging to show every _step_:
+Use `debug` logging to show every _step_ and `trace` logging to show every _step_ and every _move_ per step.
 
-[source,options="nowrap"]
+== Going further
+
+The {vrp-quickstart-url}[complete quickstart] adds more on top of what this guide covers.
+
+=== Nearby selection (Enterprise Edition)
+
+xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection] is a Timefold Solver Enterprise Edition feature.
+It makes the solver focus on moves between visits that are close to each other,
+which makes a big difference for routing problems.
+
+Nearby selection needs a `NearbyDistanceMeter` that measures how close a visit is to another visit or to a vehicle.
+To cover both with a single class, first let `Vehicle` and `Visit` expose their location through a common interface.
+
+Create the `src/main/java/org/acme/vehiclerouting/domain/LocationAware.java` interface:
+
+[source,java,options="nowrap"]
 ----
-... Solving started: time spent (67), best score (0hard/0soft), environment mode (PHASE_ASSERT), random (JDK with seed 0).
-...     CH step (0), time spent (128), score (0hard/0soft), selected move count (15), picked move ([Math(101) {null -> Room A}, Math(101) {null -> MONDAY 08:30}]).
-...     CH step (1), time spent (145), score (0hard/0soft), selected move count (15), picked move ([Physics(102) {null -> Room A}, Physics(102) {null -> MONDAY 09:30}]).
-...
+package org.acme.vehiclerouting.domain;
+
+import ai.timefold.solver.service.maps.api.model.Location;
+
+public interface LocationAware {
+
+    Location getLocation();
+}
 ----
 
-Use `trace` logging to show every _step_ and every _move_ per step.
+Make `Vehicle` and `Visit` implement it.
+`Visit` already has a `getLocation()` method.
+For `Vehicle`, add one that returns its home location:
 
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Vehicle implements LocationAware {
+
+    ...
+
+    @Override
+    public Location getLocation() {
+        return homeLocation;
+    }
+}
+----
+
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Visit implements LocationAware {
+    ...
+}
+----
+
+Then create the `src/main/java/org/acme/vehiclerouting/domain/LocationDistanceMeter.java` class:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.domain;
+
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
+
+public class LocationDistanceMeter implements NearbyDistanceMeter<Visit, LocationAware> {
+
+    @Override
+    public double getNearbyDistance(Visit origin, LocationAware destination) {
+        return origin.getLocation().getTravelTimeTo(destination.getLocation()).seconds();
+    }
+}
+----
+
+Finally, register it in `application.properties`:
+
+[source,properties,options="nowrap"]
+----
+%enterprise.quarkus.timefold.solver.nearby-distance-meter-class=org.acme.vehiclerouting.domain.LocationDistanceMeter
+----
+
+The `%enterprise` prefix only applies the property under the `enterprise` Maven profile (`mvn quarkus:dev -Denterprise`),
+so the model still runs under the Community Edition.
+
+=== Everything else
+
+* *Input validation*: a `ModelValidator` rejects inputs that are well-formed but make no sense,
+such as duplicate IDs, a route referring to a visit that does not exist, or a time window too short for its service duration.
+See xref:running-timefold-solver/service/rest-api.adoc#validatingRestInput[Validating REST input].
+* *Demo data*: a `DemoDataGenerator` publishes ready-to-solve datasets under `/v1/demo-data`,
+which the web UI of the quickstart uses.
+See xref:running-timefold-solver/service/demo-data.adoc[Demo data].
+* *Metrics*: `VehicleRoutePlan` also implements `InputMetricsAware` and `OutputMetricsAware`,
+to report figures such as the number of unassigned visits and the total driving time.
+See xref:running-timefold-solver/service/exposing-metrics.adoc[Exposing metrics].
+* *Recommended assignments*: a xref:running-timefold-solver/service/rest-api.adoc#customEndpoints[custom endpoint]
+next to the generated ones, `POST /v1/route-plans/recommendation`, answers the question
+"where would this new visit fit best into the plan we already have?"
+It uses the xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Assignment Recommendation API],
+which is a Timefold Solver Enterprise Edition feature.
+* *Deploying to the Timefold Platform*: see xref:deploying-to-platform/guide.adoc[Deploying to Timefold Platform].
+
+[sectnums!]
 == Summary
 
 Congratulations!
-You have just developed a Quarkus application with https://timefold.ai[Timefold]!
+You have just developed a vehicle routing optimization service with https://timefold.ai[Timefold]!
 
-For a full implementation with a web UI and in-memory storage,
-check out {vrp-quickstart-url}[the Quarkus quickstart source code].
+For the full implementation with a web UI, demo data, validation and recommendations,
+check out {vrp-quickstart-url}[the quickstart source code].
