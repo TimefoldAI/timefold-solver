@@ -11,7 +11,9 @@ public interface LocationsAwareSolverModel<Score_ extends Score<Score_>> extends
 
     List<Location> getLocations();
 
-    Optional<String> getLocationSetName();
+    default Optional<String> getLocationSetName() {
+        return Optional.empty();
+    }
 
     void setLocationsNotInMap(List<Location> locationsNotInMap);
 

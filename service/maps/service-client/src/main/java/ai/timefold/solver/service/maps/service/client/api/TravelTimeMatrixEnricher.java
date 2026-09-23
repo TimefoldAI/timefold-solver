@@ -3,6 +3,7 @@ package ai.timefold.solver.service.maps.service.client.api;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -62,7 +63,8 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     }
 
     private LocationsAwareSolverModel<?> enrichSingleMatrix(LocationsAwareSolverModel<?> solverModel) {
-        List<Location> locations = solverModel.getLocations(); // Get all the locations from the model only once.
+        // Get all the locations from the model only once.
+        List<Location> locations = Objects.requireNonNull(solverModel.getLocations(), "List of locations cannot be null.");
         TravelTimeAndDistanceWithMetadata travelTimeAndDistance;
         try {
             travelTimeAndDistance =
@@ -85,7 +87,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     }
 
     private LocationsAwareSolverModel<?> enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel) {
-        List<Location> locations = solverModel.getLocations();
+        List<Location> locations = Objects.requireNonNull(solverModel.getLocations(), "List of locations cannot be null.");
         TravelTimesByTimeframeWithMetadata result;
         try {
             result = mapService.getTravelTimeAndDistanceByTimeframe(locations, optionsSupplier.getOptions());
