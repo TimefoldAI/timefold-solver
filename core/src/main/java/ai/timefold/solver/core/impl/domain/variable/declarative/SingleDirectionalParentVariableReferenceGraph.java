@@ -20,6 +20,8 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final VariableUpdaterInfo<Solution_>[] sortedVariableUpdaterInfos;
     private final UnaryOperator<Object> successorFunction;
+    // This is an unstable comparator within a move; the index of a value may change
+    // multiple times during a move, and will only be consistent when updateChanged is called
     private final Comparator<Object> topologicalOrderComparator;
     private final UnaryOperator<Object> keyFunction;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
