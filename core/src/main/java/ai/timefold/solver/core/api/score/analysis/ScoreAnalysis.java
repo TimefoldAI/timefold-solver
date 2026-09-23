@@ -156,13 +156,15 @@ public interface ScoreAnalysis<Score_ extends Score<Score_>> {
     Collection<ConstraintAnalysis<Score_>> constraintAnalyses();
 
     /**
-     * Returns a list of {@link IndictmentAnalysis} instances that make up this {@link ScoreAnalysis},
-     * sorted by the absolute value of their total score contribution.
+     * Returns a map from indicted classes to a list of {@link IndictmentAnalysis} that contributed to at least one constraint
+     * match in the {@link ScoreAnalysis}. By default, the key is the canonical name of the class, but can be controlled
+     * by implementing {@link Indictable}. The lists are sorted by the absolute value of their total score contribution, in
+     * descending order.
      *
-     * @return a list of {@link IndictmentAnalysis} linking planning entities and problem facts to their impact
-     *         in this {@link ScoreAnalysis}
+     * @return a map from indicted class to a list of {@link IndictmentAnalysis} linking planning entities and problem facts
+     *         to their impact in this {@link ScoreAnalysis}
      */
-    List<IndictmentAnalysis<Score_>> indictmentAnalyses();
+    SequencedMap<IndictableTypeRef, List<IndictmentAnalysis<Score_>>> indictmentMap();
 
     /**
      * Returns a diagnostic text that explains the solution through the {@link ConstraintAnalysis} API to identify which
