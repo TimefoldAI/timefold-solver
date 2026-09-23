@@ -165,6 +165,45 @@ constraintAnalysis.matches().forEach(matchAnalysis -> {
 Each match is accompanied by the score difference it caused, and a justification object (see above).
 Typically, the scoring engine creates justification objects automatically by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustifications[Constraint Streams' `justifyWith(...)` call].
 
+[#scoreAnalysisIndictments]
+=== Finding indicted objects
+
+To find the planning entities and problem facts that contribute to the score, use `ScoreAnalysis.indictmentMap()`:
+
+[source,java,options="nowrap"]
+----
+scoreAnalysis.indictmentMap().forEach((type, indictments) -> {
+    indictments.forEach(indictment -> {
+        Object indictee = indictment.indictee();
+        HardSoftScore scoreImpact = indictment.score();
+        ...
+    });
+});
+----
+
+The map is keyed by `IndictableTypeRef`, and each `IndictmentAnalysis` contains the indicted object, its total score impact,
+and the constraint matches involving it. The entries are sorted by the absolute value of their total score impact.
+`indictmentMap()` is populated only when the score analysis uses `ScoreAnalysisFetchPolicy.FETCH_ALL`; it is empty for the other fetch policies.
+
+By default, the type reference uses the canonical class name and the indicted object is the same instance as the planning entity or problem fact.
+To expose a different type identifier or object, implement `Indictable`:
+
+[source,java,options="nowrap"]
+----
+public class PlanningEntity implements Indictable {
+
+    @Override
+    public IndictableTypeRef getIndictableTypeRef() {
+        return IndictableTypeRef.of("PlanningEntity");
+    }
+
+    @Override
+    public Object getIndictedObject() {
+        return ...;
+    }
+}
+----
+
 [#scoreAnalysisDiff]
 === Identifying changes between two solutions
 
@@ -217,6 +256,7 @@ To succeed at this, `ScoreAnalysis` is JSON-friendly and can be easily sent over
 * or if you directly included the `timefold-solver-jackson` module in your project.
 
 If you implemented `ConstraintJustication` to provide custom justification objects, you are responsible for making them JSON-friendly yourself.
+When using `ScoreAnalysisFetchPolicy.FETCH_ALL`, the JSON also contains the indicted objects and their constraint matches in the `indictments` field.
 
 [NOTE]
 ====
