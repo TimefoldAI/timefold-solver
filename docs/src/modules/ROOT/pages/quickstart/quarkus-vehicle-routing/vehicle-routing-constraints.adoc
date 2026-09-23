@@ -6,140 +6,243 @@ The higher the better.
 Timefold Solver looks for the best solution, which is the solution with the highest score found in the available time.
 It might be the _optimal_ solution.
 
-Because this use case has hard and soft constraints,
-use the `HardSoftScore` class to represent the score:
+Because this use case has hard, medium and soft constraints,
+use the `HardMediumSoftScore` class to represent the score:
 
 * Hard constraints must not be broken.
 For example: _The vehicle capacity must not be exceeded._
-* Soft constraints should not be broken.
+* Medium constraints should not be broken.
+For example: _As many visits as possible should be assigned to a vehicle._
+* Soft constraints should not be broken either, but are only considered once the medium constraints are as good as they get.
 For example: _The sum total of travel time._
 
 Hard constraints are weighted against other hard constraints.
-Soft constraints are weighted too, against other soft constraints.
-*Hard constraints always outweigh soft constraints*, regardless of their respective weights.
+Medium and soft constraints are weighted too, against other constraints of the same level.
+*Hard constraints always outweigh medium constraints, and medium constraints always outweigh soft constraints*, regardless of their respective weights.
 
-To calculate the score, create a `VehicleRoutingConstraintProvider` class
-to perform incremental score calculation.
-It uses Timefold Solver's xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]
-which is inspired by Java Streams and SQL:
+The medium level is what makes unassigned visits work.
+Assigning a visit is always worth more than any saving in travel time,
+but never worth breaking a hard constraint.
+So the solver only leaves a visit unassigned when it cannot fit on any route.
 
-[tabs]
-====
-Java::
-+
---
-Create a `src/main/java/org/acme/vehiclerouting/solver/VehicleRoutingConstraintProvider.java` class:
+== Constraint names
 
-[source,java]
+The service module exposes constraints through its REST API, for example in the score analysis
+and in the constraint weight overrides.
+To reference them consistently, keep the constraint names in one place.
+
+Create the `src/main/java/org/acme/vehiclerouting/domain/VehicleRoutePlanConstraintProperties.java` class:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.domain;
+
+public final class VehicleRoutePlanConstraintProperties {
+
+    public static final String VEHICLE_CAPACITY = "Vehicle capacity";
+    public static final String SERVICE_FINISHED_AFTER_MAX_END_TIME = "Service finished after max end time";
+
+    public static final String MAXIMIZE_VISITS_ASSIGNED = "Maximize visits assigned";
+
+    public static final String MINIMIZE_TRAVEL_TIME = "Minimize travel time";
+
+    private VehicleRoutePlanConstraintProperties() {
+    }
+}
+----
+
+Constraints are also organized in groups, which the Timefold Platform uses to present them.
+Create the `src/main/java/org/acme/vehiclerouting/solver/VehicleRoutePlanConstraintGroup.java` class:
+
+[source,java,options="nowrap"]
 ----
 package org.acme.vehiclerouting.solver;
 
-import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.service.definition.api.description.ConstraintGroupInfo;
+
+public final class VehicleRoutePlanConstraintGroup {
+
+    public static final ConstraintGroupInfo VEHICLE_CAPACITY = new ConstraintGroupInfo("vehicleCapacity",
+            "Vehicle capacity",
+            "Keep the total demand of the visits on a vehicle's route within the capacity that vehicle has.",
+            "IconTruckLoading",
+            new String[] { "vehicle capacity" });
+
+    public static final ConstraintGroupInfo TIME_WINDOWS = new ConstraintGroupInfo("timeWindows",
+            "Time windows",
+            "Service every visit inside the time window it accepts a vehicle in.",
+            "IconClock",
+            new String[] { "time windows" });
+
+    public static final ConstraintGroupInfo VISIT_ASSIGNMENT = new ConstraintGroupInfo("visitAssignment",
+            "Visit assignment",
+            "Get as many visits as possible onto a vehicle's route, rather than leaving them unserviced.",
+            "IconMapPin",
+            new String[] { "visit assignment" });
+
+    public static final ConstraintGroupInfo TRAVEL_TIME = new ConstraintGroupInfo("travelTime",
+            "Travel time",
+            "Keep the fleet on the road for as little time as possible.",
+            "IconRoute",
+            new String[] { "travel time" });
+
+    private VehicleRoutePlanConstraintGroup() {
+    }
+}
+----
+
+== Constraint justifications
+
+Every constraint match can carry a xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustifications[justification]:
+an object that explains why the constraint matched.
+The service module returns these justifications in the score analysis,
+so a user of your service can see exactly which vehicle is overloaded or which visit is late.
+
+Each justification is a record that implements `ModelConstraintJustification`.
+
+Create the `src/main/java/org/acme/vehiclerouting/domain/justification/VehicleRoutePlanJustification.java` interface:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.domain.justification;
+
+import ai.timefold.solver.service.definition.api.ModelConstraintJustification;
+
+import org.acme.vehiclerouting.domain.Vehicle;
+
+public interface VehicleRoutePlanJustification extends ModelConstraintJustification {
+
+    String getDescription();
+
+    default String description() {
+        return getDescription();
+    }
+
+    record VehicleCapacityJustification(String vehicle, int capacity, int totalDemand, int excessDemand)
+            implements VehicleRoutePlanJustification {
+
+        public static VehicleCapacityJustification of(Vehicle vehicle) {
+            return new VehicleCapacityJustification(vehicle.getId(), vehicle.getCapacity(), vehicle.getTotalDemand(),
+                    vehicle.getTotalDemand() - vehicle.getCapacity());
+        }
+
+        @Override
+        public String getDescription() {
+            return "Vehicle '%s' carries a demand of %d, which is %d over its capacity of %d."
+                    .formatted(vehicle, totalDemand, excessDemand, capacity);
+        }
+    }
+
+    // ServiceFinishedAfterMaxEndTimeJustification, VisitNotAssignedJustification
+    // and TravelTimeJustification follow the same pattern and are excluded
+}
+----
+
+As with the xref:#vrpQuarkusQuickStartApi[API classes], the complete quickstart annotates the justifications with `@Schema`
+so they are documented in the generated OpenAPI specification.
+There, the interface also lists every justification record in `@Schema(oneOf = ...)`:
+a record that is not listed does not show up in the specification.
+
+See {vrp-quickstart-url}[the quickstart source code] for the other three justification records.
+
+== The constraint provider
+
+To calculate the score, create a `VehicleRoutePlanConstraintProvider` class
+to perform incremental score calculation.
+It uses Timefold Solver's xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]
+which is inspired by Java Streams and SQL.
+
+Each constraint is registered with a `ConstraintInfo`, which gives it a name, a description and a group.
+The service module uses this information to describe the constraints of your model in its REST API.
+
+Create the `src/main/java/org/acme/vehiclerouting/solver/VehicleRoutePlanConstraintProvider.java` class:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.solver;
+
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.service.definition.api.description.ConstraintInfo;
 
-import org.acme.vehiclerouting.domain.Visit;
 import org.acme.vehiclerouting.domain.Vehicle;
+import org.acme.vehiclerouting.domain.VehicleRoutePlanConstraintProperties;
+import org.acme.vehiclerouting.domain.Visit;
+import org.acme.vehiclerouting.domain.justification.VehicleRoutePlanJustification.ServiceFinishedAfterMaxEndTimeJustification;
+import org.acme.vehiclerouting.domain.justification.VehicleRoutePlanJustification.TravelTimeJustification;
+import org.acme.vehiclerouting.domain.justification.VehicleRoutePlanJustification.VehicleCapacityJustification;
+import org.acme.vehiclerouting.domain.justification.VehicleRoutePlanJustification.VisitNotAssignedJustification;
 
-public class VehicleRoutingConstraintProvider implements ConstraintProvider {
-
-    public static final String VEHICLE_CAPACITY = "vehicleCapacity";
-    public static final String SERVICE_FINISHED_AFTER_MAX_END_TIME = "serviceFinishedAfterMaxEndTime";
-    public static final String MINIMIZE_TRAVEL_TIME = "minimizeTravelTime";
+public class VehicleRoutePlanConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
         return new Constraint[] {
+                // Hard constraints
                 vehicleCapacity(factory),
                 serviceFinishedAfterMaxEndTime(factory),
+
+                // Medium constraints
+                maximizeVisitsAssigned(factory),
+
+                // Soft constraints
                 minimizeTravelTime(factory)
         };
     }
 
-    protected Constraint vehicleCapacity(ConstraintFactory factory) {
+    public Constraint vehicleCapacity(ConstraintFactory factory) {
         return factory.forEach(Vehicle.class)
                 .filter(vehicle -> vehicle.getTotalDemand() > vehicle.getCapacity())
-                .penalizeLong(HardSoftScore.ONE_HARD,
+                .penalize(HardMediumSoftScore.ONE_HARD,
                         vehicle -> vehicle.getTotalDemand() - vehicle.getCapacity())
-                .asConstraint(VEHICLE_CAPACITY);
+                .justifyWith((vehicle, score) -> VehicleCapacityJustification.of(vehicle))
+                .asConstraint(new ConstraintInfo(VehicleRoutePlanConstraintProperties.VEHICLE_CAPACITY,
+                        VehicleRoutePlanConstraintProperties.VEHICLE_CAPACITY,
+                        "The total demand of all visits assigned to a vehicle must not exceed its capacity.",
+                        VehicleRoutePlanConstraintGroup.VEHICLE_CAPACITY));
     }
 
-    protected Constraint serviceFinishedAfterMaxEndTime(ConstraintFactory factory) {
+    public Constraint serviceFinishedAfterMaxEndTime(ConstraintFactory factory) {
         return factory.forEach(Visit.class)
                 .filter(Visit::isServiceFinishedAfterMaxEndTime)
-                .penalizeLong(HardSoftScore.ONE_HARD,
+                .penalize(HardMediumSoftScore.ONE_HARD,
                         Visit::getServiceFinishedDelayInMinutes)
-                .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME);
+                .justifyWith((visit, score) -> ServiceFinishedAfterMaxEndTimeJustification.of(visit))
+                .asConstraint(
+                        new ConstraintInfo(VehicleRoutePlanConstraintProperties.SERVICE_FINISHED_AFTER_MAX_END_TIME,
+                                VehicleRoutePlanConstraintProperties.SERVICE_FINISHED_AFTER_MAX_END_TIME,
+                                "A visit must be serviced before its maximum end time.",
+                                VehicleRoutePlanConstraintGroup.TIME_WINDOWS));
     }
 
-    protected Constraint minimizeTravelTime(ConstraintFactory factory) {
+    public Constraint maximizeVisitsAssigned(ConstraintFactory factory) {
+        return factory.forEachIncludingUnassigned(Visit.class)
+                .filter(visit -> visit.getVehicle() == null)
+                .penalize(HardMediumSoftScore.ONE_MEDIUM, visit -> visit.getServiceDuration().toMinutes())
+                .justifyWith((visit, score) -> VisitNotAssignedJustification.of(visit))
+                .asConstraint(new ConstraintInfo(VehicleRoutePlanConstraintProperties.MAXIMIZE_VISITS_ASSIGNED,
+                        VehicleRoutePlanConstraintProperties.MAXIMIZE_VISITS_ASSIGNED,
+                        "As many visits as possible should be assigned to a vehicle.",
+                        VehicleRoutePlanConstraintGroup.VISIT_ASSIGNMENT));
+    }
+
+    public Constraint minimizeTravelTime(ConstraintFactory factory) {
         return factory.forEach(Vehicle.class)
-                .penalizeLong(HardSoftScore.ONE_SOFT,
+                .penalize(HardMediumSoftScore.ONE_SOFT,
                         Vehicle::getTotalDrivingTimeSeconds)
-                .asConstraint(MINIMIZE_TRAVEL_TIME);
-    }
-}
-
-----
---
-
-Kotlin::
-+
---
-Create a `src/main/kotlin/org/acme/vehiclerouting/solver/VehicleRoutingConstraintProvider.kt` class:
-
-[source,kotlin]
-----
-package org.acme.vehiclerouting.solver
-
-import ai.timefold.solver.core.api.score.HardSoftScore
-import ai.timefold.solver.core.api.score.stream.Constraint
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider
-
-import org.acme.vehiclerouting.domain.Visit
-import org.acme.vehiclerouting.domain.Vehicle
-
-class VehicleRoutingConstraintProvider : ConstraintProvider {
-    override fun defineConstraints(factory: ConstraintFactory): Array<Constraint> {
-        return arrayOf(
-            vehicleCapacity(factory),
-            serviceFinishedAfterMaxEndTime(factory),
-            minimizeTravelTime(factory)
-        )
-    }
-
-    protected fun vehicleCapacity(factory: ConstraintFactory): Constraint {
-        return factory.forEach(Vehicle::class.java)
-            .filter({ vehicle: Vehicle -> vehicle.totalDemand > vehicle.capacity })
-            .penalizeLong(
-                HardSoftScore.ONE_HARD
-            ) { vehicle: Vehicle -> vehicle.totalDemand - vehicle.capacity }
-            .asConstraint(VEHICLE_CAPACITY)
-    }
-
-    protected fun serviceFinishedAfterMaxEndTime(factory: ConstraintFactory): Constraint {
-        return factory.forEach(Visit::class.java)
-            .filter({ obj: Visit -> obj.isServiceFinishedAfterMaxEndTime })
-            .penalizeLong(HardSoftScore.ONE_HARD,
-                { obj: Visit -> obj.serviceFinishedDelayInMinutes })
-            .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME)
-    }
-
-    protected fun minimizeTravelTime(factory: ConstraintFactory): Constraint {
-        return factory.forEach(Vehicle::class.java)
-            .penalizeLong(HardSoftScore.ONE_SOFT,
-                { obj: Vehicle -> obj.totalDrivingTimeSeconds })
-            .asConstraint(MINIMIZE_TRAVEL_TIME)
-    }
-
-    companion object {
-        const val VEHICLE_CAPACITY: String = "vehicleCapacity"
-        const val SERVICE_FINISHED_AFTER_MAX_END_TIME: String = "serviceFinishedAfterMaxEndTime"
-        const val MINIMIZE_TRAVEL_TIME: String = "minimizeTravelTime"
+                .justifyWith((vehicle, score) -> TravelTimeJustification.of(vehicle))
+                .asConstraint(new ConstraintInfo(VehicleRoutePlanConstraintProperties.MINIMIZE_TRAVEL_TIME,
+                        VehicleRoutePlanConstraintProperties.MINIMIZE_TRAVEL_TIME,
+                        "Minimize the total travel time of all vehicles.",
+                        VehicleRoutePlanConstraintGroup.TRAVEL_TIME));
     }
 }
 ----
---
-====
+
+Notice that `maximizeVisitsAssigned` starts from `forEachIncludingUnassigned(Visit.class)`.
+A plain `forEach(Visit.class)` skips visits that are not on any route,
+which are exactly the visits this constraint needs to penalize.
+The penalty is the service duration of the unassigned visit,
+so the solver prefers to leave out a short visit rather than a long one.
