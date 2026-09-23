@@ -140,14 +140,8 @@ Under the hood, the platform enriches the model before the solver starts: it cal
 `getLocations()`, requests the matrix from the map service, and injects it into each `Location`.
 No code in your model calls the map service directly.
 This follows the same shape as any other xref:./model-enrichment.adoc#solverModelEnrichment[model
-enrichment] — the map service is simply a built-in enricher the platform provides for you.
+enrichment]. The map service is simply a built-in enricher the platform provides for you.
 
-[NOTE]
-====
-`getLocations()` is called on a model that may not be fully initialized yet.
-Guard against null collections so that the enricher sees an empty list rather than a
-`NullPointerException`.
-====
 
 [#mapServiceLocationAware]
 == Using driving times in the domain
@@ -237,6 +231,23 @@ timefold.platform.map-service.enable-fallback=true
  single one.
 |===
 
+When `use-remote=true` (the default), the extension also needs the REST client settings for the
+remote map service it connects to:
+
+[source,properties]
+----
+# Map service endpoint
+timefold.platform.map-service.url=http://localhost:8180
+quarkus.rest-client.map-service.url=${timefold.platform.map-service.url}
+
+# Distance matrix calculation potentially takes a long time, avoid timeouts
+timefold.platform.map-service.read-timeout=3600000
+quarkus.rest-client.map-service.read-timeout=${timefold.platform.map-service.read-timeout}
+----
+
+This map service is not packaged with Timefold Solver, it is only available on the Timefold
+platform.
+
 The local computation is a great-circle (Haversine) distance converted to a driving time at a
 fixed average speed.
 It requires no network access and no map data, which makes it the right choice for development,
@@ -245,9 +256,9 @@ quality against it and then expect the same numbers in production.
 
 [WARNING]
 ====
-`use-remote=false` and `enable-fallback=true`, as shown above, are development settings — they are
-what the `vehicle-routing` quickstart uses to run without any external dependency.
-In production, leave `use-remote` at its default so that the solver optimizes against real driving
+`use-remote=false` and `enable-fallback=true`, as shown above, are development settings. They are
+what the `vehicle-routing` https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/vehicle-routing[quickstart] uses to run without any external dependency.
+In production, leave `use-remote` at its default so the solver optimizes against real driving
 times.
 ====
 
@@ -274,37 +285,16 @@ timefold.platform.map-service.provider=haversine
  speed. No map data and no network access, so it is instant and always available — but it ignores
  roads, water and one-way streets entirely. Suitable for development, demos and tests; never for
  production planning.
+
+|`osrm`
+|Enterprise
+|Driving time and distance computed from real road-network data by an https://project-osrm.org/[OSRM]
+ instance. Follows roads, water and one-way streets, so it is accurate enough for production planning,
+ but it requires map data to be loaded into the OSRM instance and network access to reach it.
 |===
 
-TODO: add more
-
-[NOTE]
-====
-Road-network-aware providers, and the ability to plug in your own, are part of
-xref:commercial-editions/commercial-editions.adoc[Timefold Solver Enterprise Edition] — see
-<<mapServiceCustomProvider>>.
-====
-
-[#mapServiceCustomProvider]
-=== Bringing your own matrices
-
-Not every organization wants a map service to compute driving times.
-Some already have a routing engine, a negotiated contract with a map data vendor, or a matrix
-derived from their own historical GPS traces.
-
-For those cases, Timefold Solver Enterprise Edition lets you supply a *custom provider*: an
-implementation that hands the map extension a matrix you computed yourself.
-From the solver model's point of view nothing changes. `Location.getDrivingTimeTo(...)` still
-answers from the matrix, and the model never learns where the numbers came from.
-
-A provider implements a small contract: an identifier it is selected by, one method that computes
-the full matrix over a list of locations, one that computes a rectangular origins-by-destinations
-matrix, and one that reports which locations it could not place on its map — those become the
-model's `getLocationsNotInMap()`, see <<mapServiceUnreachableLocations>>.
-
-include::../../commercial-editions/_only-enterprise.adoc[]
-
-TODO: How to?
+Any provider other than `haversine` runs on the remote map service, so it also needs the endpoint
+settings described in <<mapServiceConfiguration>>.
 
 [#mapServiceLocationSets]
 == One-off matrices versus named location sets
@@ -325,8 +315,8 @@ rather than rebuild it on every run.
 > QUESTION: Does the Naming also work with a custom distance matrix?
 
 Creating and populating a named location set is a management operation on the map service, not
-something your solver model does. Consult the Timefold Platform documentation for how to create
-one. TODO: REF TO THOSE DOCS
+something your solver model does. Consult the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service#location_sets[Timefold Platform documentation] for how to create
+one.
 
 Once created, a named location set has one of three states: `PROCESSING` while the map service
 builds it, `COMPLETED` once it is ready to be used by a solve, or `NOT_FOUND` if the name a solve
