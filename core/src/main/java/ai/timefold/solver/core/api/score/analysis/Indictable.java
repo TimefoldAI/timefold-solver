@@ -23,7 +23,7 @@ public interface Indictable {
      * 
      * @return a string that can be used to identify the class of {@link #getIndictedObject()}
      */
-    String getIndictedTypeId();
+    IndictableTypeRef getIndictableTypeRef();
 
     /**
      * Optional method. It is used to calculate the {@link IndictmentAnalysis#indictee()}

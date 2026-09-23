@@ -12,13 +12,6 @@ import ai.timefold.solver.core.api.score.Score;
  */
 public interface IndictmentAnalysis<Score_ extends Score<Score_>> {
     /**
-     * An identifier for the type of object indicted.
-     * 
-     * @return a string that can be used to identify the type of object indicted
-     */
-    String type();
-
-    /**
      * The object that was indicted by constraints.
      * 
      * @return the indicted object
