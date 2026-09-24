@@ -19,7 +19,7 @@ Key words per [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html): **MUST** 
    - Config changes → reference docs; 
    - Breaking changes → migration guides.
 3. **Examples**: Docs SHOULD include code examples; quickstart examples SHOULD be added externally.
-4. **Implementation**: Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments. 
+4. **Implementation**: Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments. Keep them concise.
 5. **Formatting**: Any form of documentation (being source code comments, Javadoc, or user documentation) must follow [Semantic Line Breaks](https://sembr.org).
 
 ### II. Consistent Terminology
