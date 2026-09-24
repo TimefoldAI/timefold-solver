@@ -86,6 +86,21 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     InnerScore<Score_> calculateScore();
 
     /**
+     * Like {@link #calculateScore()}, but returns a partial calculation if it can prove the resulting
+     * score will be below the given lower bound.
+     *
+     * @param lowerBound The minimum score that would be accepted, inclusive.
+     * @return never null, the {@link Score} of the {@link PlanningSolution working solution} if it would
+     *         be above the lower bound, and a partial score otherwise.
+     */
+    default InnerScore<Score_> calculateScoreAboveBound(Score_ lowerBound) {
+        return calculateScore();
+    }
+
+    default void undoCalculateScoreAboveBound() {
+    }
+
+    /**
      * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} can be called.
      *         {@link ConstraintMatchPolicy#ENABLED_WITHOUT_JUSTIFICATIONS} if only the former can be called.
      *         {@link ConstraintMatchPolicy#DISABLED} if neither can be called.
@@ -139,6 +154,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     default InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
         return executeTemporaryMove(move, null, assertMoveScoreFromScratch);
+    }
+
+    InnerScore<Score_> executeTemporaryMoveAboveBound(Move<Solution_> move, Score_ lowerBound,
+            @Nullable Consumer<SolutionView<Solution_>> consumer,
+            boolean assertMoveScoreFromScratch);
+
+    default InnerScore<Score_> executeTemporaryMoveAboveBound(Move<Solution_> move, Score_ lowerBound,
+            boolean assertMoveScoreFromScratch) {
+        return executeTemporaryMoveAboveBound(move, lowerBound, null, assertMoveScoreFromScratch);
     }
 
     /**

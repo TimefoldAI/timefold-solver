@@ -263,10 +263,26 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     public abstract InnerScore<Score_> innerCalculateScore();
 
+    public InnerScore<Score_> innerCalculateScoreAboveBound(Score_ lowerBound) {
+        return innerCalculateScore();
+    }
+
     @Override
     public final InnerScore<Score_> calculateScore() {
         if (lastVariableUpdateSuccessful) {
             return innerCalculateScore();
+        } else {
+            // invalid scores are worse than any valid score, even those with unassigned values
+            var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
+            getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
+            return invalidScore;
+        }
+    }
+
+    @Override
+    public final InnerScore<Score_> calculateScoreAboveBound(Score_ lowerBound) {
+        if (lastVariableUpdateSuccessful) {
+            return innerCalculateScoreAboveBound(lowerBound);
         } else {
             // invalid scores are worse than any valid score, even those with unassigned values
             var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
@@ -463,6 +479,28 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         var result = moveDirector.executeTemporary(move, score -> {
+            if (solutionTracker != null) {
+                solutionTracker.setAfterMoveSolution(workingSolution);
+            }
+            if (assertMoveScoreFromScratch) {
+                assertWorkingScoreFromScratch(score, move);
+            }
+            if (consumer != null) {
+                consumer.accept(moveDirector);
+            }
+            return score;
+        });
+        return Objects.requireNonNull(result);
+    }
+
+    @Override
+    public InnerScore<Score_> executeTemporaryMoveAboveBound(Move<Solution_> move, Score_ lowerBound,
+            @Nullable Consumer<SolutionView<Solution_>> consumer,
+            boolean assertMoveScoreFromScratch) {
+        if (solutionTracker != null) {
+            solutionTracker.setBeforeMoveSolution(workingSolution);
+        }
+        var result = moveDirector.executeTemporaryAboveBound(move, lowerBound, score -> {
             if (solutionTracker != null) {
                 solutionTracker.setAfterMoveSolution(workingSolution);
             }
