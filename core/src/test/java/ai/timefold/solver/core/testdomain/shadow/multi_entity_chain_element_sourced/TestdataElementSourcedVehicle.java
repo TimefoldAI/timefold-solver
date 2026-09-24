@@ -17,7 +17,7 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
  * <p>
  * Unlike {@code TestdataChainLoopVehicle}, its endTime is sourced from its route alone and never
  * reads its own startTime, so nothing declares the dependency of the endTime on the startTime.
- * The element cascade has to supply that edge itself, or the endTime is computed before the route
+ * The block node's edges have to supply that dependency, or the endTime is computed before the route
  * it summarizes has been walked, and the loop through the route goes undetected.
  */
 @PlanningEntity

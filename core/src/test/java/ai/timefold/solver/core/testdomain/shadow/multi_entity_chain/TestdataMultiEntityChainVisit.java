@@ -49,10 +49,8 @@ public class TestdataMultiEntityChainVisit extends TestdataObject {
         }
         Integer base;
         if (previousVisit == null) {
-            // previousEndTime is transiently null until the predecessor vehicles' endTime
-            // values have propagated down the vehicle chain, one graph-and-cascade pass per
-            // chain level; until then this supplier may run again with the settled value.
-            // The (Integer) cast keeps the ternary from unboxing it, which would throw.
+            // previousEndTime is null when a predecessor vehicle has no end time;
+            // the (Integer) cast keeps the ternary from unboxing it, which would throw.
             base = chainedToPreviousVehicle ? vehicle.getPreviousEndTime() : (Integer) vehicle.getDepartureTime();
         } else {
             var previousEnd = previousVisit.getEndServiceTime();

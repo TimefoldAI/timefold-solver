@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -234,7 +233,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var directPostChainVariableIdList = new ArrayList<VariableMetaModel<?, ?, ?>>();
         for (var descriptor : allDescriptors) {
             var entityDescriptor = descriptor.getEntityDescriptor();
-            if (elementEntityClass.isAssignableFrom(entityDescriptor.getEntityClass())) {
+            if (entityDescriptor.getEntityClass() == elementEntityClass) {
                 elementDescriptorList.add(descriptor);
                 continue;
             }
@@ -259,61 +258,30 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var elementConsistencyState = graphDescriptor.consistencyTracker()
                 .getDeclarativeEntityConsistencyState(sortedElementDescriptors.getFirst().getEntityDescriptor());
 
-        // The topologically first chain element is the list's first element for a previous parent,
-        // but the list's last element for a next parent, whose successor function walks backwards.
-        var isPreviousDirection = graphStructureAndDirection.direction() == ParentVariableType.PREVIOUS;
-        Function<Object, @Nullable Object> ownerToFirstElement = owner -> {
-            var elementList = listVariableDescriptor.getValue(owner);
-            if (elementList.isEmpty()) {
-                return null;
-            }
-            return isPreviousDirection ? elementList.getFirst() : elementList.getLast();
-        };
-        var topologicalSorter = getTopologicalSorter(solutionDescriptor,
-                Objects.requireNonNull(changedVariableNotifier.innerScoreDirector()),
-                Objects.requireNonNull(graphStructureAndDirection.direction()));
-        var blockUpdater = new ListElementBlockUpdater<>(listVariableMetaModel, ownerConsistencyState,
-                elementConsistencyState, sortedElementDescriptors, topologicalSorter, ownerToFirstElement,
-                hasNoNonDeclarativeSourcesFromParent(elementDescriptorList));
-
-        // The pre-chain variables the elements read through their inverse: when one of them changes
-        // during an update, its entity's whole list must be walked, since any element may read it.
-        // These variables are declarative, so they only ever change through a notifier; wrapping it
-        // observes every such change, and the pre-chain to block node edges guarantee the whole
-        // chain is asked for before the entity's block node is processed.
+        // The pre-chain variables the elements read through their inverse:
+        // when one of them changes, its entity's whole list must be walked, since any element may read it.
         var elementReadVariableSet = new LinkedHashSet<VariableMetaModel<?, ?, ?>>();
-        // Identity set keyed by VariableDescriptor: the notifier below already receives it on every
-        // declarative variable write, so membership is checked directly instead of hopping through
-        // the variable's metamodel first.
-        var elementReadVariableDescriptorSet =
-                Collections.newSetFromMap(new IdentityHashMap<VariableDescriptor<Solution_>, Boolean>());
         for (var descriptor : elementDescriptorList) {
             for (var source : descriptor.getSources()) {
                 if (source.parentVariableType() == ParentVariableType.INVERSE) {
                     // Non-null: the detection rejects inverse sources targeting non-declarative variables.
-                    var preChainVariableMetaModel = Objects.requireNonNull(
-                            source.variableSourceReferences().getFirst().downstreamDeclarativeVariableMetamodel());
-                    elementReadVariableSet.add(preChainVariableMetaModel);
-                    @SuppressWarnings("unchecked")
-                    var preChainVariableDescriptor =
-                            ((InnerVariableMetaModel<Solution_>) preChainVariableMetaModel).variableDescriptor();
-                    elementReadVariableDescriptorSet.add(preChainVariableDescriptor);
+                    elementReadVariableSet.add(Objects.requireNonNull(
+                            source.variableSourceReferences().getFirst().downstreamDeclarativeVariableMetamodel()));
                 }
             }
         }
-        var flaggingNotifier = elementReadVariableSet.isEmpty() ? changedVariableNotifier
-                : new ChangedVariableNotifier<>(
-                        changedVariableNotifier.beforeVariableChanged(),
-                        (variableDescriptor, entity) -> {
-                            if (elementReadVariableDescriptorSet.contains(variableDescriptor)) {
-                                blockUpdater.recordWholeChainDirty(entity);
-                            }
-                            changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
-                        },
-                        changedVariableNotifier.innerScoreDirector());
+        var preChainVariableDescriptorList = innerDescriptorList.stream()
+                .filter(descriptor -> elementReadVariableSet.contains(descriptor.getVariableMetaModel()))
+                .toList();
+        var listVariableState = Objects.requireNonNull(changedVariableNotifier.innerScoreDirector())
+                .<Object, Object> getListVariableState(listVariableDescriptor);
+        var blockUpdater = new ListElementBlockUpdater<>(listVariableDescriptor, listVariableState,
+                graphStructureAndDirection.direction() == ParentVariableType.PREVIOUS, ownerConsistencyState,
+                elementConsistencyState, sortedElementDescriptors, preChainVariableDescriptorList,
+                hasNoNonDeclarativeSourcesFromParent(elementDescriptorList));
 
         var innerGraphDescriptor = new GraphDescriptor<>(graphDescriptor.consistencyTracker(), solutionDescriptor,
-                graphDescriptor.ignoreInconsistentSolutions(), new VariableReferenceGraphBuilder<>(flaggingNotifier),
+                graphDescriptor.ignoreInconsistentSolutions(), new VariableReferenceGraphBuilder<>(changedVariableNotifier),
                 graphDescriptor.entities(), graphDescriptor.graphCreator());
         var builder = innerGraphDescriptor.variableReferenceGraphBuilder();
         builder.excludesListElements = true;
@@ -331,7 +299,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var innerGraph = builder.build(innerGraphDescriptor.graphCreator(),
                 innerGraphDescriptor.ignoreInconsistentSolutions());
         return new ListElementBlockVariableReferenceGraph<>(innerGraph, blockUpdater, listVariableMetaModel,
-                elementEntityClass, elementConsistencyState, elementDescriptorList, flaggingNotifier,
+                elementEntityClass, elementConsistencyState, elementDescriptorList, changedVariableNotifier,
                 graphDescriptor.entities());
     }
 
@@ -360,6 +328,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             // variable an after processor was registered for, the list variable among them, which is
             // what marks every block node changed for the initial walk.
             builder.addVariableReferenceEntity(owner, List.of(blockUpdater));
+            blockUpdater.addListEntity(owner);
             var blockNode = builder.lookupOrError(listVariableMetaModel, owner);
             // lookupOrNull: an extended model may declare the variable on a subclass only.
             for (var preChainVariableId : preChainVariableIdSet) {
@@ -383,10 +352,10 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
      * {@link VariableReferenceGraphBuilder#addFixedEdge(GraphNode, GraphNode) fixed} edges,
      * unless they close a dependency loop.
      * <p>
-     * Such a loop runs through the list's elements, which the arbitrary graph depends on through
-     * the dynamic edges of a {@link ParentVariableType#LIST_ELEMENT} source, where a move can
-     * break it. The block node has no such edges, since it stands for every element of its list
-     * entity, so failing fast on the loop would reject a model the arbitrary graph solves.
+     * The arbitrary graph may not have such a loop: there, each element variable has a node of its own,
+     * reached through the dynamic edges of a {@link ParentVariableType#LIST_ELEMENT} source, which a move
+     * can change. The block node stands for every variable of every element of its list entity instead,
+     * so failing fast on the loop would reject a model the arbitrary graph solves.
      *
      * @return true to keep building the block graph, false to fall back to the arbitrary graph,
      *         which fails the build fast itself on a fixed loop.

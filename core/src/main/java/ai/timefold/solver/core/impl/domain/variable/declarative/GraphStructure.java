@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -56,12 +55,14 @@ public enum GraphStructure {
      * gets a single block node representing its whole chain of elements, ordered after the entity's
      * pre-chain variables (which the elements read through their inverse) and before its post-chain
      * variables (which read the elements). When the block node is processed, it walks the entity's
-     * list from the earliest dirty element in the direction of
+     * list from each element whose sources changed, in the direction of
      * {@link GraphStructureAndDirection#direction()}.
      * The list elements the block nodes represent are available via {@link GraphStructureAndDirection#blockedElementClass()}.
      * This decomposition is valid because the elements only read their chain and, through their
-     * inverse, pre-chain declarative variables of their own list entity, and because the other
+     * inverse, declarative variables of their own list entity, and because the other
      * classes only reach the elements through the list variable itself.
+     * Built as {@link #ARBITRARY} when there is no score director, or when those nodes would form
+     * a dependency loop.
      */
     LIST_ELEMENT_BLOCK;
 
@@ -261,16 +262,6 @@ public enum GraphStructure {
             // existing structures anyway.
             return null;
         }
-        // A variable sourced from the list's elements is computed after their chain is walked.
-        var postChainVariableIdSet = new LinkedHashSet<VariableMetaModel<?, ?, ?>>();
-        for (var descriptor : declarativeShadowVariableDescriptors) {
-            for (var source : descriptor.getSources()) {
-                if (source.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
-                    postChainVariableIdSet.add(descriptor.getVariableMetaModel());
-                    break;
-                }
-            }
-        }
         for (var descriptor : declarativeShadowVariableDescriptors) {
             var isElementSource = descriptor.getEntityDescriptor().getEntityClass() == elementEntityClass;
             for (var variableSource : descriptor.getSources()) {
@@ -289,13 +280,11 @@ public enum GraphStructure {
                             }
                         }
                         case INVERSE -> {
-                            // Only safe when it targets a declarative variable of the list entity
-                            // that is not itself sourced from the elements, which would need a cycle
-                            // through the block node. Reaching one indirectly is caught at build
-                            // time, where the block edges close the cycle the graph then reports.
-                            var inverseTarget = variableSource.variableSourceReferences().getFirst()
-                                    .downstreamDeclarativeVariableMetamodel();
-                            if (inverseTarget == null || postChainVariableIdSet.contains(inverseTarget)) {
+                            // Only safe when it targets a declarative variable of the list entity.
+                            // One that depends on the elements, directly or not, would close a loop
+                            // through the block node, which the build detects.
+                            if (variableSource.variableSourceReferences().getFirst()
+                                    .downstreamDeclarativeVariableMetamodel() == null) {
                                 return null;
                             }
                         }

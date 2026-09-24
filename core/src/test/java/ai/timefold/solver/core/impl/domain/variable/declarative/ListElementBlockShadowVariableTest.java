@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.executeRandomListMove;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.solveWithFullAssert;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.solveWithFullAssertAndEveryListMove;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -8,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainConstraintProvider;
@@ -21,8 +25,12 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.Tes
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataFactCycleSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataFactCycleVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataFactCycleVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderVisit;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /**
  * Tests {@link ListElementBlockVariableReferenceGraph} on a model where
@@ -80,7 +88,7 @@ class ListElementBlockShadowVariableTest {
     }
 
     @Test
-    void swapCreatesNonContiguousDirtyElements() {
+    void swapWithinARoute() {
         var v1 = new TestdataMultiEntityChainVisit("v1", 1);
         var v2 = new TestdataMultiEntityChainVisit("v2", 5);
         var v3 = new TestdataMultiEntityChainVisit("v3", 3);
@@ -99,7 +107,7 @@ class ListElementBlockShadowVariableTest {
         var context = MoveTester.build(solutionMetaModel).using(solution);
         assertThat(vehicle.getEndTime()).isEqualTo(1 + 5 + 3 + 2);
 
-        // Swap the first and third visits: the dirty elements are non-contiguous.
+        // Swap the first and third visits.
         context.execute(Moves.swap(listVariableMetaModel, vehicle, 0, vehicle, 2));
         assertThat(v3.getEndServiceTime()).isEqualTo(3);
         assertThat(v2.getEndServiceTime()).isEqualTo(8);
@@ -154,7 +162,7 @@ class ListElementBlockShadowVariableTest {
 
     /**
      * Emptying a route leaves no element to walk, so only the entity's post-chain variables carry
-     * the change; the block node's structural change flag is what marks them.
+     * the change; the list change is what marks them.
      */
     @Test
     void emptyingARouteUpdatesItsPostChainVariables() {
@@ -293,6 +301,54 @@ class ListElementBlockShadowVariableTest {
     }
 
     /**
+     * A visit reads the end time of its own vehicle, which the visits source:
+     * the block node would have to be computed both before and after that end time,
+     * so the build falls back to the arbitrary graph, whose per-visit nodes do not loop.
+     */
+    @Test
+    void elementsReadingAPostChainVariableFallBack() {
+        var v1 = new TestdataPostChainReaderVisit("v1", 2);
+        var v2 = new TestdataPostChainReaderVisit("v2", 3);
+        var v3 = new TestdataPostChainReaderVisit("v3", 4); // Initially unassigned.
+        var vehicleA = new TestdataPostChainReaderVehicle("A");
+        var vehicleB = new TestdataPostChainReaderVehicle("B");
+        vehicleA.setVisits(new ArrayList<>(List.of(v1, v2)));
+        var solution = new TestdataPostChainReaderSolution();
+        solution.setVehicles(List.of(vehicleA, vehicleB));
+        solution.setVisits(List.of(v1, v2, v3));
+
+        var solutionDescriptor = TestdataPostChainReaderSolution.buildSolutionDescriptor();
+        var entities = new Object[] { vehicleA, vehicleB, v1, v2, v3 };
+        var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor, entities);
+        var scoreDirector = Mockito.mock(InnerScoreDirector.class);
+        Mockito.when(scoreDirector.getListVariableState(Mockito.any())).thenReturn(Mockito.mock(ListVariableState.class));
+        var graph = DefaultShadowVariableSessionFactory.buildGraphForStructureAndDirection(graphStructureAndDirection,
+                new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
+                        ChangedVariableNotifier.of(scoreDirector), entities));
+        assertThat(graph).isNotInstanceOf(ListElementBlockVariableReferenceGraph.class);
+
+        var solutionMetaModel = TestdataPostChainReaderSolution.buildMetaModel();
+        var listVariableMetaModel = solutionMetaModel.genuineEntity(TestdataPostChainReaderVehicle.class)
+                .listVariable("visits", TestdataPostChainReaderVisit.class);
+        var context = MoveTester.build(solutionMetaModel).using(solution);
+        assertThat(vehicleA.getEndTime()).isEqualTo(5);
+        assertThat(v1.getSlack()).isEqualTo(3);
+        assertThat(v2.getSlack()).isZero();
+
+        context.execute(Moves.assign(listVariableMetaModel, v3, vehicleA, 1));
+        assertThat(vehicleA.getEndTime()).isEqualTo(9);
+        assertThat(v1.getSlack()).isEqualTo(7);
+        assertThat(v3.getSlack()).isEqualTo(3);
+        context.execute(Moves.change(listVariableMetaModel, vehicleA, 0, vehicleB, 0));
+        assertThat(vehicleB.getEndTime()).isEqualTo(2);
+        assertThat(v1.getSlack()).isZero();
+        DeclarativeShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
+                s -> s.getVehicles().stream().map(TestdataPostChainReaderVehicle::getEndTime).toList(),
+                s -> s.getVisits().stream().map(TestdataPostChainReaderVisit::getEndServiceTime).toList(),
+                s -> s.getVisits().stream().map(TestdataPostChainReaderVisit::getSlack).toList());
+    }
+
+    /**
      * Differential test: after every random move, the incrementally maintained shadow
      * variables must equal a from-scratch recomputation, which uses the arbitrary graph.
      */
@@ -301,41 +357,13 @@ class ListElementBlockShadowVariableTest {
         for (var seed = 0; seed < 30; seed++) {
             var random = new Random(seed);
             var solution = generateSolution(true);
-            var vehicles = solution.getVehicles();
-            var visits = solution.getVisits();
-
             var solutionMetaModel = TestdataMultiEntityChainSolution.buildMetaModel();
             var listVariableMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainVehicle.class)
                     .listVariable("visits", TestdataMultiEntityChainVisit.class);
             var context = MoveTester.build(solutionMetaModel).using(solution);
-
             for (var moveIndex = 0; moveIndex < 40; moveIndex++) {
-                var unassignedVisits = visits.stream().filter(visit -> visit.getVehicle() == null).toList();
-                var assignedVehicles = vehicles.stream().filter(vehicle -> !vehicle.getVisits().isEmpty()).toList();
-                var moveType = random.nextInt(3);
-                if (moveType == 0 && !unassignedVisits.isEmpty()) {
-                    var visit = unassignedVisits.get(random.nextInt(unassignedVisits.size()));
-                    var vehicle = vehicles.get(random.nextInt(vehicles.size()));
-                    context.execute(Moves.assign(listVariableMetaModel, visit, vehicle,
-                            random.nextInt(vehicle.getVisits().size() + 1)));
-                } else if (moveType == 1 && !assignedVehicles.isEmpty()) {
-                    var vehicle = assignedVehicles.get(random.nextInt(assignedVehicles.size()));
-                    context.execute(Moves.unassign(listVariableMetaModel, vehicle,
-                            random.nextInt(vehicle.getVisits().size())));
-                } else if (!assignedVehicles.isEmpty()) {
-                    var sourceVehicle = assignedVehicles.get(random.nextInt(assignedVehicles.size()));
-                    var sourceIndex = random.nextInt(sourceVehicle.getVisits().size());
-                    var targetVehicle = vehicles.get(random.nextInt(vehicles.size()));
-                    var targetSize = targetVehicle.getVisits().size();
-                    var targetIndex = random.nextInt(targetVehicle == sourceVehicle ? targetSize : targetSize + 1);
-                    if (targetVehicle == sourceVehicle && targetIndex == sourceIndex) {
-                        continue;
-                    }
-                    context.execute(Moves.change(listVariableMetaModel, sourceVehicle, sourceIndex,
-                            targetVehicle, targetIndex));
-                } else {
-                    continue;
-                }
+                executeRandomListMove(context, listVariableMetaModel, TestdataMultiEntityChainVehicle::getVisits,
+                        solution.getVehicles(), solution.getVisits(), random);
                 assertShadowsAreAtFixedPoint(solution);
             }
         }
@@ -349,6 +377,13 @@ class ListElementBlockShadowVariableTest {
     @Test
     void solvingStaysAtFixedPointWithPreChainReadingElements() {
         assertShadowsAreAtFixedPoint(solve(generateSolution(true)));
+    }
+
+    @Test
+    void solvingWithEveryListMoveStaysAtFixedPoint() {
+        assertShadowsAreAtFixedPoint(solveWithFullAssertAndEveryListMove(TestdataMultiEntityChainSolution.class,
+                TestdataMultiEntityChainConstraintProvider.class, generateSolution(true),
+                TestdataMultiEntityChainVehicle.class, TestdataMultiEntityChainVisit.class));
     }
 
     /**

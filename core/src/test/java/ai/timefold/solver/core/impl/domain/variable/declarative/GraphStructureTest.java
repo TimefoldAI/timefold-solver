@@ -56,6 +56,9 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.Testdat
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderVisit;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListSolution;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
 
@@ -258,6 +261,18 @@ class GraphStructureTest {
                 TestdataElementSourcedSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
                 .hasFieldOrPropertyWithValue("blockedElementClass", TestdataElementSourcedVisit.class);
+    }
+
+    @Test
+    void multiEntityChainWithElementsReadingAPostChainVariable() {
+        var vehicle = new TestdataPostChainReaderVehicle("A");
+        var visit = new TestdataPostChainReaderVisit("v1", 1);
+        // The detection only judges the shape of the model; the loop the block node would close
+        // with its vehicle's end time is left to the build, which falls back to the arbitrary graph.
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataPostChainReaderSolution.buildSolutionDescriptor(), vehicle, visit))
+                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
+                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataPostChainReaderVisit.class);
     }
 
     @Test

@@ -1,10 +1,13 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.executeRandomListMove;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.solveWithFullAssert;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.solveWithFullAssertAndEveryListMove;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
@@ -76,6 +79,40 @@ class ListElementBlockNextShadowVariableTest {
 
     @Test
     void solveNextDirectionalModelWithFullAssert() {
+        assertShadowsAreAtFixedPoint(solveWithFullAssert(TestdataMultiEntityChainNextSolution.class,
+                TestdataMultiEntityChainNextConstraintProvider.class, generateSolution(),
+                TestdataMultiEntityChainNextVehicle.class, TestdataMultiEntityChainNextVisit.class));
+    }
+
+    @Test
+    void solveNextDirectionalModelWithEveryListMove() {
+        assertShadowsAreAtFixedPoint(solveWithFullAssertAndEveryListMove(TestdataMultiEntityChainNextSolution.class,
+                TestdataMultiEntityChainNextConstraintProvider.class, generateSolution(),
+                TestdataMultiEntityChainNextVehicle.class, TestdataMultiEntityChainNextVisit.class));
+    }
+
+    /**
+     * Differential test: after every random move, the incrementally maintained shadow
+     * variables must equal a from-scratch recomputation, which uses the arbitrary graph.
+     */
+    @Test
+    void randomMovesStayAtFixedPoint() {
+        for (var seed = 0; seed < 30; seed++) {
+            var random = new Random(seed);
+            var solution = generateSolution();
+            var solutionMetaModel = TestdataMultiEntityChainNextSolution.buildMetaModel();
+            var listVariableMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainNextVehicle.class)
+                    .listVariable("visits", TestdataMultiEntityChainNextVisit.class);
+            var context = MoveTester.build(solutionMetaModel).using(solution);
+            for (var moveIndex = 0; moveIndex < 40; moveIndex++) {
+                executeRandomListMove(context, listVariableMetaModel, TestdataMultiEntityChainNextVehicle::getVisits,
+                        solution.getVehicles(), solution.getVisits(), random);
+                assertShadowsAreAtFixedPoint(solution);
+            }
+        }
+    }
+
+    private static TestdataMultiEntityChainNextSolution generateSolution() {
         var vehicles = new ArrayList<TestdataMultiEntityChainNextVehicle>();
         for (var i = 0; i < 3; i++) {
             vehicles.add(new TestdataMultiEntityChainNextVehicle("vehicle" + i, 100));
@@ -87,13 +124,10 @@ class ListElementBlockNextShadowVariableTest {
         for (var i = 0; i < 6; i++) {
             visits.add(new TestdataMultiEntityChainNextVisit("visit" + i, 1 + (i % 3)));
         }
-        var problem = new TestdataMultiEntityChainNextSolution();
-        problem.setVehicles(vehicles);
-        problem.setVisits(visits);
-
-        assertShadowsAreAtFixedPoint(solveWithFullAssert(TestdataMultiEntityChainNextSolution.class,
-                TestdataMultiEntityChainNextConstraintProvider.class, problem,
-                TestdataMultiEntityChainNextVehicle.class, TestdataMultiEntityChainNextVisit.class));
+        var solution = new TestdataMultiEntityChainNextSolution();
+        solution.setVehicles(vehicles);
+        solution.setVisits(visits);
+        return solution;
     }
 
     private static void assertShadowsAreAtFixedPoint(TestdataMultiEntityChainNextSolution solution) {

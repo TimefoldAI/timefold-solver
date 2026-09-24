@@ -22,7 +22,8 @@ public class TestdataChainLoopVehicle extends TestdataObject {
     @PlanningVariable(allowsUnassigned = true)
     TestdataChainLoopVehicle previousVehicle;
 
-    int departureTime;
+    // Null when unknown, which leaves the start time of a vehicle without predecessor undefined.
+    Integer departureTime;
 
     @PlanningListVariable(allowsUnassignedValues = true)
     List<TestdataChainLoopVisit> visits = new ArrayList<>();
@@ -39,7 +40,7 @@ public class TestdataChainLoopVehicle extends TestdataObject {
     public TestdataChainLoopVehicle() {
     }
 
-    public TestdataChainLoopVehicle(String code, int departureTime) {
+    public TestdataChainLoopVehicle(String code, Integer departureTime) {
         super(code);
         this.departureTime = departureTime;
     }
@@ -68,7 +69,7 @@ public class TestdataChainLoopVehicle extends TestdataObject {
         this.previousVehicle = previousVehicle;
     }
 
-    public int getDepartureTime() {
+    public Integer getDepartureTime() {
         return departureTime;
     }
 
