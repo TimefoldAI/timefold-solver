@@ -6,7 +6,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public record GraphNode<Solution_>(Object entity, List<VariableUpdaterInfo<Solution_>> variableReferences,
+public record GraphNode<Solution_>(Object entity, List<VariableUpdater<Solution_>> variableReferences,
         int graphNodeId, int entityId, @Nullable int[] groupEntityIds) {
     @Override
     public boolean equals(Object object) {
@@ -22,6 +22,6 @@ public record GraphNode<Solution_>(Object entity, List<VariableUpdaterInfo<Solut
 
     @Override
     public String toString() {
-        return entity + ":" + variableReferences.stream().map(VariableUpdaterInfo::id).toList();
+        return entity + ":" + variableReferences.stream().map(VariableUpdater::id).toList();
     }
 }

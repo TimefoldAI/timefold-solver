@@ -17,6 +17,7 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class VariableReferenceGraphBuilder<Solution_> {
 
@@ -28,15 +29,20 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> fixedEdges;
     final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> initialDynamicEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
-    final Map<Integer, Map<Object, GraphNode<Solution_>>> variableGroupIdToContainingNodeMap;
+    final Map<Object, Map<Object, GraphNode<Solution_>>> nodeGroupKeyToContainingNodeMap;
     final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
     boolean isGraphFixed;
+    /**
+     * True when a planning list variable has its elements represented by one block node per
+     * list entity instead of a node each, so a list element source needs no per-element edges.
+     */
+    boolean excludesListElements;
 
     public VariableReferenceGraphBuilder(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.changedVariableNotifier = changedVariableNotifier;
         nodeList = new ArrayList<>();
         variableReferenceToContainingNodeMap = new HashMap<>();
-        variableGroupIdToContainingNodeMap = new HashMap<>();
+        nodeGroupKeyToContainingNodeMap = new HashMap<>();
         variableReferenceToBeforeProcessor = new HashMap<>();
         variableReferenceToAfterProcessor = new HashMap<>();
         fixedEdges = new HashMap<>();
@@ -44,6 +50,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         entityToEntityId = new IdentityHashMap<>();
         listVariableReferenceToElementLocator = new HashMap<>();
         isGraphFixed = true;
+        excludesListElements = false;
     }
 
     /**
@@ -66,14 +73,16 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 .add(listElementSourceLocator);
     }
 
-    public <Entity_> void addVariableReferenceEntity(Entity_ entity, List<VariableUpdaterInfo<Solution_>> variableReferences) {
-        var groupId = variableReferences.get(0).groupId();
+    public <Entity_> void addVariableReferenceEntity(Entity_ entity,
+            List<? extends VariableUpdater<Solution_>> uncopiedVariableReferences) {
+        List<VariableUpdater<Solution_>> variableReferences = List.copyOf(uncopiedVariableReferences);
+        var nodeGroupKey = variableReferences.get(0).nodeGroupKey();
         var isGroup = variableReferences.get(0).groupEntities() != null;
         var entityRepresentative = entity;
         if (isGroup) {
             entityRepresentative = (Entity_) variableReferences.get(0).groupEntities()[0];
         }
-        var instanceMap = variableGroupIdToContainingNodeMap.get(groupId);
+        var instanceMap = nodeGroupKeyToContainingNodeMap.get(nodeGroupKey);
 
         var instance = instanceMap == null ? null : instanceMap.get(entityRepresentative);
         if (instance != null) {
@@ -81,7 +90,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         }
         if (instanceMap == null) {
             instanceMap = new IdentityHashMap<>();
-            variableGroupIdToContainingNodeMap.put(groupId, instanceMap);
+            nodeGroupKeyToContainingNodeMap.put(nodeGroupKey, instanceMap);
         }
 
         var entityId = entityToEntityId.computeIfAbsent(entityRepresentative, ignored -> entityToEntityId.size());
@@ -110,7 +119,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     private void addToInstanceMaps(Map<Object, GraphNode<Solution_>> instanceMap,
-            Object entity, GraphNode<Solution_> node, List<VariableUpdaterInfo<Solution_>> variableReferences) {
+            Object entity, GraphNode<Solution_> node, List<VariableUpdater<Solution_>> variableReferences) {
         instanceMap.put(entity, node);
         for (var variable : variableReferences) {
             var variableInstanceMap =
@@ -153,23 +162,37 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     public @NonNull GraphNode<Solution_> lookupOrError(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        var out = variableReferenceToContainingNodeMap.getOrDefault(variableId, Collections.emptyMap()).get(entity);
+        var out = lookupOrNull(variableId, entity);
         if (out == null) {
             throw new IllegalArgumentException();
         }
         return out;
     }
 
-    private void assertNoFixedLoops() {
+    /**
+     * As {@link #lookupOrError(VariableMetaModel, Object)}, but for a variable an extended model
+     * may declare on a subclass only, so that the entity may not have it.
+     */
+    public @Nullable GraphNode<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
+        return variableReferenceToContainingNodeMap.getOrDefault(variableId, Collections.emptyMap()).get(entity);
+    }
+
+    /**
+     * @return a graph of this builder's fixed edges alone, to test candidate edges against
+     */
+    DefaultTopologicalOrderGraph newFixedEdgeGraph() {
         var graph = new DefaultTopologicalOrderGraph(nodeList.size());
         for (var fixedEdge : fixedEdges.entrySet()) {
             var fromNodeId = fixedEdge.getKey().graphNodeId();
             for (var toNode : fixedEdge.getValue()) {
-                var toNodeId = toNode.graphNodeId();
-                graph.addEdge(fromNodeId, toNodeId);
+                graph.addEdge(fromNodeId, toNode.graphNodeId());
             }
         }
+        return graph;
+    }
 
+    private void assertNoFixedLoops() {
+        var graph = newFixedEdgeGraph();
         var changedBitSet = new BitSet();
         graph.commitChanges(changedBitSet);
 
@@ -192,7 +215,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
 
         for (var cycle : nodeCycleList) {
             cycle.stream().flatMap(node -> node.variableReferences().stream())
-                    .map(VariableUpdaterInfo::id)
+                    .map(VariableUpdater::id)
                     .forEach(loopedVariables::add);
         }
 
