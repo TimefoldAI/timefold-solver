@@ -65,6 +65,26 @@ public class LongArrayDistanceMatrixTest {
     }
 
     @Test
+    void cacheShortIndexInLocationAttachedAfterMatrixIsFilled() {
+        LongArrayDistanceMatrix distanceMatrix = new LongArrayDistanceMatrix(2);
+        // The converters fill the matrix with their own location instances before the model's locations are attached.
+        Location responseA = new Location(0.0, 1.0);
+        Location responseB = new Location(1.0, 0.0);
+        distanceMatrix.put(responseA, responseB, 7L);
+        distanceMatrix.put(responseB, responseA, 9L);
+
+        Location a = new Location(0.0, 1.0);
+        Location b = new Location(1.0, 0.0);
+        a.setDistanceMatrix(distanceMatrix);
+        b.setDistanceMatrix(distanceMatrix);
+
+        assertThat((int) a.getIndex(distanceMatrix)).isEqualTo(0);
+        assertThat((int) b.getIndex(distanceMatrix)).isEqualTo(1);
+        assertThat(distanceMatrix.get(a, b)).isEqualTo(7L);
+        assertThat(distanceMatrix.get(b, a)).isEqualTo(9L);
+    }
+
+    @Test
     void putNoResize() {
         LongArrayDistanceMatrix distanceMatrix = new LongArrayDistanceMatrix(4);
         Location a = new Location(0.0, 1.0);
