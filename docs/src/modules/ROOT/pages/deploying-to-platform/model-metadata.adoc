@@ -175,6 +175,8 @@ This profile is what consumers get out of the box, before they add any profile o
 
 | `timefold.model.default-config.map.transport-type`
 | Default transport type used when computing distances, for models that require map data.
+One of `car` (the default), `bicycle`, `foot`, or `auto-select` to take the transport types from the dataset itself.
+See xref:running-timefold-solver/service/model-enrichment.adoc#transportTypes[Transport types].
 
 | `timefold.model.default-config.map.use-traffic`
 | Whether the default profile takes live traffic into account. Defaults to `false`.
