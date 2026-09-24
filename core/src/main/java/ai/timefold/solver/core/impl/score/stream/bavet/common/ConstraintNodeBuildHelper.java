@@ -116,6 +116,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         return scoreInliner;
     }
 
+    @Nullable
     public Scorer<?> getScorer(BavetScoringConstraintStream<Solution_> stream) {
         return streamToScorers.get(stream);
     }
