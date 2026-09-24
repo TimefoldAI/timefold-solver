@@ -161,9 +161,11 @@ public final class LongArrayDistanceMatrix implements IndexableDistanceMatrix {
         if (shortId == null) {
             shortId = idGenerator;
             locationToId.put(location, shortId);
-            location.setIndex(this, shortId);
             idGenerator++;
         }
+        // The matrix is usually filled before the location is attached to it,
+        // so the id may already exist while the location has not cached it yet.
+        location.setIndex(this, shortId);
         return shortId;
     }
 
