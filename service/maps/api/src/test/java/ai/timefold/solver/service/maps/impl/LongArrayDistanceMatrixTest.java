@@ -78,7 +78,7 @@ public class LongArrayDistanceMatrixTest {
         a.setDistanceMatrix(distanceMatrix);
         b.setDistanceMatrix(distanceMatrix);
 
-        assertThat((int) a.getIndex(distanceMatrix)).isEqualTo(0);
+        assertThat((int) a.getIndex(distanceMatrix)).isZero();
         assertThat((int) b.getIndex(distanceMatrix)).isEqualTo(1);
         assertThat(distanceMatrix.get(a, b)).isEqualTo(7L);
         assertThat(distanceMatrix.get(b, a)).isEqualTo(9L);
