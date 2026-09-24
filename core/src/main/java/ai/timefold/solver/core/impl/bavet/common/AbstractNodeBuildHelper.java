@@ -32,7 +32,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     protected AbstractNodeBuildHelper(Set<Stream_> activeStreamSet) {
         this.activeStreamSet = activeStreamSet;
-        int activeStreamSetSize = activeStreamSet.size();
+        var activeStreamSetSize = activeStreamSet.size();
         this.nodeCreatorMap = HashMap.newHashMap(Math.max(16, activeStreamSetSize));
         this.tupleLifecycleMap = HashMap.newHashMap(Math.max(16, activeStreamSetSize));
         this.storeIndexMap = HashMap.newHashMap(Math.max(16, activeStreamSetSize / 2));
@@ -53,7 +53,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         nodeCreatorMap.put(node, creator);
         if (!(node instanceof AbstractRootNode<?>)) {
             if (parent == null) {
-                throw new IllegalStateException("Impossible state: The node (%s) has no parent (%s).".formatted(node, parent));
+                throw new IllegalStateException("Impossible state: The node (%s) has no parent.".formatted(node));
             }
             putInsertUpdateRetract(parent, (TupleLifecycle<? extends Tuple>) node);
         }
@@ -123,7 +123,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     }
 
     public int extractTupleStoreSize(Stream_ tupleSourceStream) {
-        Integer lastIndex = storeIndexMap.put(tupleSourceStream, Integer.MIN_VALUE);
+        var lastIndex = storeIndexMap.put(tupleSourceStream, Integer.MIN_VALUE);
         return (lastIndex == null) ? 0 : lastIndex + 1;
     }
 
@@ -133,7 +133,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     }
 
     public List<AbstractNode> destroyAndGetNodeList() {
-        List<AbstractNode> nodeList = this.reversedNodeList;
+        var nodeList = this.reversedNodeList;
         Collections.reverse(nodeList);
         this.reversedNodeList = null;
         return nodeList;
@@ -149,7 +149,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
                     "Impossible state: node-creating stream (%s) has no parent node.".formatted(childNodeCreator));
         }
         // Look the stream up among node creators and if found, the node is the parent node.
-        for (Map.Entry<AbstractNode, Stream_> entry : this.nodeCreatorMap.entrySet()) {
+        for (var entry : this.nodeCreatorMap.entrySet()) {
             if (entry.getValue() == childNodeCreator) {
                 return entry.getKey();
             }
@@ -210,7 +210,23 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
                 var rightParent = (Stream_) nodeCreator.getRightParent();
                 var leftParentNode = buildHelper.findParentNode(leftParent);
                 var rightParentNode = buildHelper.findParentNode(rightParent);
-                yield Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
+                var leftLayerIndex = leftParentNode.getLayerIndex();
+                var rightLayerIndex = rightParentNode.getLayerIndex();
+                if (twoInputNode instanceof DeferredSettleAware deferredSettleAware) {
+                    // How far apart the two inputs settle decides whether this node can ever read a stale tuple.
+                    // A deferring parent settles one step later than an ordinary one:
+                    // it only decides which of its out-tuples the predicate dooms in its own prepareForSettle(),
+                    // rather than retracting them as soon as its own parent tells it to.
+                    // Count that as one more step of settle distance.
+                    // Parents are laid out before their children, so the parent's own answer is already final here.
+                    var deeperParentNode = leftLayerIndex >= rightLayerIndex ? leftParentNode : rightParentNode;
+                    var deeperParentSettlesLate = leftLayerIndex != rightLayerIndex
+                            && deeperParentNode instanceof DeferredSettleAware deeperParent
+                            && deeperParent.canDeferWork();
+                    deferredSettleAware.setSettleDistance(
+                            Math.abs(leftLayerIndex - rightLayerIndex) + (deeperParentSettlesLate ? 1 : 0));
+                }
+                yield Math.max(leftLayerIndex, rightLayerIndex) + 1;
             }
             default -> { // Every other node sits above its parent.
                 var nodeCreator = buildHelper.getNodeCreatingStream(node);
