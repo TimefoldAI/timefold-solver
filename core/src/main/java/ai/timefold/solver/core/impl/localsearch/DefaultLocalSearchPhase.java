@@ -150,8 +150,10 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         collectMetrics(stepScope);
         var phaseScope = stepScope.getPhaseScope();
         if (logger.isDebugEnabled()) {
-            if (stepScope.getAcceptedMoveCount() == 0 && phaseTermination.isPhaseTerminated(phaseScope)) {
-                // Terminated early
+            if (stepScope.getAcceptedMoveCount() == 0 && !phaseTermination.isPhaseTerminated(phaseScope)) {
+                // When no moves are accepted and the phase is not terminated,
+                // it indicates that the decider ended the move evaluation after failing to find doable moves.
+                // This implies that it was interrupted prematurely without any termination request.
                 logger.debug("""
                         {}    LS step ({}), time spent ({}), score ({}), {} best score ({}), \
                         terminated prematurely after selecting {} moves.""",
