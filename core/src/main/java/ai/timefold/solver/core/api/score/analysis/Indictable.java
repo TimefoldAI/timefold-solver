@@ -6,7 +6,7 @@ import org.jspecify.annotations.NullMarked;
  * An optional interface a class can implement to customize how it appears
  * when indicted in a {@link ScoreAnalysis}.
  * <p>
- * When not implemented, the class' canonical name is used for {@link IndictmentAnalysis#type()}
+ * When not implemented, the class' canonical name is used as the key in {@link ScoreAnalysis#indictmentMap()}}
  * and {@link IndictmentAnalysis#indictee()} is the same instance.
  * <p>
  * The primary use case for implementing {@link Indictable} is if you have a separate
