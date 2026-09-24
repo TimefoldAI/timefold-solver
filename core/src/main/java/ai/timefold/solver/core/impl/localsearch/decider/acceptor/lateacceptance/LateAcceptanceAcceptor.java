@@ -7,6 +7,8 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
+import org.jspecify.annotations.Nullable;
+
 public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     protected int lateAcceptanceSize = -1;
@@ -43,6 +45,20 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
             throw new IllegalArgumentException(
                     "The lateAcceptanceSize (%d) cannot be negative or zero.".formatted(lateAcceptanceSize));
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public @Nullable <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope) {
+        var minScore = (InnerScore<Score_>) scoreBuffer.getCurrent();
+        if (hillClimbingEnabled) {
+            var lastStepScore = (InnerScore<Score_>) stepScope.getPhaseScope()
+                    .getLastCompletedStepScope().getScore();
+            if (lastStepScore.compareTo(minScore) < 0) {
+                minScore = lastStepScore;
+            }
+        }
+        return minScore.raw();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
