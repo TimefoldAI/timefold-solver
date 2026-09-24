@@ -204,8 +204,10 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.neighborhood to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.partitionedsearch to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.phase to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.score.director.stream to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.bavet to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.bavet.uni to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.score.stream.common.inliner to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.random to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.recaller to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.event to ai.timefold.solver.enterprise.core;
