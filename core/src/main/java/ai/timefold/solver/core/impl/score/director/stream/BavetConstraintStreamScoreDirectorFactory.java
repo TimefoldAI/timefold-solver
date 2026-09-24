@@ -13,6 +13,7 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector.Builder;
@@ -67,6 +68,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
 
     private final BavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;
     private final ConstraintMetaModel constraintMetaModel;
+    private final boolean profilingEnabled;
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode) {
@@ -77,6 +79,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
             ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode, boolean profilingEnabled) {
         super(solutionDescriptor, globalEnvironmentMode);
         var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, globalEnvironmentMode);
+        this.profilingEnabled = profilingEnabled;
         constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
         constraintSessionFactory =
                 new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
@@ -93,6 +96,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         this.constraintMetaModel = inheritedScoreDirectorFactory.constraintMetaModel;
         this.initializingScoreTrend = inheritedScoreDirectorFactory.initializingScoreTrend;
         this.assertionScoreDirectorFactory = inheritedScoreDirectorFactory.assertionScoreDirectorFactory;
+        this.profilingEnabled = inheritedScoreDirectorFactory.profilingEnabled;
     }
 
     public BavetConstraintSession<Score_> newSession(@Nullable Solution_ workingSolution,
@@ -117,9 +121,19 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         return constraintMetaModel;
     }
 
+    public boolean isProfilingEnabled() {
+        return profilingEnabled;
+    }
+
     @Override
-    public Builder<Solution_, Score_> createScoreDirectorBuilder(EnvironmentMode environmentMode) {
-        return new Builder<>(this, environmentMode);
+    public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>
+            createScoreDirectorBuilder(EnvironmentMode environmentMode) {
+        if (solutionDescriptor.isTieredScoreCalculationEnabled()) {
+            return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.TIERED_SCORE_CALCULATION)
+                    .getTieredBavetScoreDirectorBuilder(this, environmentMode);
+        } else {
+            return new Builder<>(this, environmentMode);
+        }
     }
 
     @SuppressWarnings("unchecked")

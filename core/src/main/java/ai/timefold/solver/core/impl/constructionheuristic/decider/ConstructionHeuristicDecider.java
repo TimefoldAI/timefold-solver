@@ -12,6 +12,8 @@ import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -147,9 +149,17 @@ public class ConstructionHeuristicDecider<Solution_> {
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
-        var scoreDirector = moveScope.getScoreDirector();
-        var score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
+        var scoreDirector = (InnerScoreDirector) moveScope.getScoreDirector();
+        InnerScore<?> score;
+        var lowerBound = forager.scoreLowerBound();
+        if (lowerBound != null) {
+            score = scoreDirector.executeTemporaryMoveAboveBound(moveScope.getMove(), lowerBound,
+                    assertMoveScoreFromScratch);
+        } else {
+            score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
+        }
         moveScope.setScore(score);
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {
