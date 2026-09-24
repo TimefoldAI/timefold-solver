@@ -163,7 +163,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
                 .sorted() // Deterministic order; CAR, when used, comes first and is therefore the primary one.
                 .toList();
         if (!optionsSupplier.isAutoSelectTransportType()) {
-            TransportType configuredTransportType = optionsSupplier.getTransportType();
+            var configuredTransportType = optionsSupplier.getTransportType();
             failIfNotAllowed(List.of(configuredTransportType));
             List<TransportType> unsupported = datasetTransportTypes.stream()
                     .filter(transportType -> transportType != configuredTransportType)
