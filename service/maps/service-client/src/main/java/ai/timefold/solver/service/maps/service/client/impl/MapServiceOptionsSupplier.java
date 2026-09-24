@@ -77,6 +77,9 @@ public class MapServiceOptionsSupplier {
     }
 
     public TransportType getDefaultTransportType() {
+        if (!isAutoSelectTransportType()) {
+            return transportType;
+        }
         if (isAllowed(TransportType.CAR)) {
             return TransportType.CAR;
         }
@@ -88,7 +91,7 @@ public class MapServiceOptionsSupplier {
     }
 
     public String getOptions(String locationSetName) {
-        return getOptions(locationSetName, isAutoSelectTransportType() ? getDefaultTransportType() : transportType);
+        return getOptions(locationSetName, getDefaultTransportType());
     }
 
     public String getOptions(TransportType transportType) {

@@ -92,6 +92,13 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         locations.forEach(location -> {
             location.setTravelTimeMatrix(transportType, travelTimeAndDistance.travelTimeAndDistance().travelTime());
             location.setDistanceMatrix(transportType, travelTimeAndDistance.travelTimeAndDistance().distance());
+            if (primary) {
+                // The primary transport type also fills the transport-type-less matrices, so that lookups which do
+                // not specify one keep working. Without this, a deployment configured for a single non-default
+                // transport type would leave them empty and every such lookup would fail.
+                location.setTravelTimeMatrix(travelTimeAndDistance.travelTimeAndDistance().travelTime());
+                location.setDistanceMatrix(travelTimeAndDistance.travelTimeAndDistance().distance());
+            }
         });
         if (primary) {
             solverModel
@@ -122,11 +129,19 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
             for (Location location : locations) {
                 location.setTravelTimeMatrix(transportType, travelTimes[0]);
                 location.setDistanceMatrix(transportType, distances[0]);
+                if (primary) {
+                    location.setTravelTimeMatrix(travelTimes[0]);
+                    location.setDistanceMatrix(distances[0]);
+                }
             }
         } else {
             for (Location location : locations) {
                 location.setTravelTimeMatrices(transportType, travelTimes, result.timeframeIndexResolver());
                 location.setDistanceMatrices(transportType, distances, result.timeframeIndexResolver());
+                if (primary) {
+                    location.setTravelTimeMatrices(travelTimes, result.timeframeIndexResolver());
+                    location.setDistanceMatrices(distances, result.timeframeIndexResolver());
+                }
             }
         }
         if (primary) {

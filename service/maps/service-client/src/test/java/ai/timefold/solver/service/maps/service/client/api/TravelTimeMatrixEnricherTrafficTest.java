@@ -181,6 +181,44 @@ class TravelTimeMatrixEnricherTrafficTest {
     }
 
     @Test
+    void singleNonDefaultTransportTypeAlsoFillsTheTransportTypeLessMatrices() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        StubMapService stub = new StubMapService(null,
+                new TravelTimeAndDistanceWithMetadata(
+                        new TravelTimeAndDistance(matrixOf(l1, l2, 75L), matrixOf(l1, l2, 750L)), List.of()));
+        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplierOf("bicycle", null),
+                new MapEnrichmentContext(), false);
+
+        enricher.enrich(new StubLocationsModel(List.of(l1, l2), List.of(TransportType.BICYCLE)));
+
+        assertThat(stub.singleInvocationOptions).containsExactly("transportType:bicycle");
+        assertThat(l1.getTravelTimeTo(l2, TransportType.BICYCLE)).isEqualTo(TravelTime.of(75L));
+        // Callers that do not state a transport type (e.g. a nearby distance meter comparing two unassigned visits)
+        // must still get an answer; otherwise a bicycle-only deployment fails on every such lookup.
+        assertThat(l1.getTravelTimeTo(l2)).isEqualTo(TravelTime.of(75L));
+        assertThat(l1.getDistanceTo(l2)).isEqualTo(TravelDistance.of(750L));
+        assertThat(l1.getTravelTimeTo(l2, MORNING_AT)).isEqualTo(TravelTime.of(75L));
+    }
+
+    @Test
+    void autoSelectFillsTheTransportTypeLessMatricesFromThePrimaryTransportType() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        StubMapService stub = new StubMapService(null,
+                new TravelTimeAndDistanceWithMetadata(
+                        new TravelTimeAndDistance(matrixOf(l1, l2, 75L), matrixOf(l1, l2, 750L)), List.of()));
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, autoSelectOptionsSupplier(null), new MapEnrichmentContext(), false);
+
+        enricher.enrich(new StubLocationsModel(List.of(l1, l2), List.of(TransportType.BICYCLE, TransportType.FOOT)));
+
+        // Bicycle sorts first, so it is the primary one and the one a transport-type-less lookup resolves to.
+        assertThat(stub.singleInvocationOptions).containsExactly("transportType:bicycle", "transportType:foot");
+        assertThat(l1.getTravelTimeTo(l2)).isEqualTo(TravelTime.of(75L));
+    }
+
+    @Test
     void autoSelectRejectsTransportTypeNotAllowed() {
         Location l1 = new Location(0, 0);
         Location l2 = new Location(1, 1);
