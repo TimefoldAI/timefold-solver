@@ -28,6 +28,11 @@ final class ListVariableStateCarrier<Solution_> {
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private int unassignedCount = 0;
     private Map<Object, MutablePosition> elementPositionMap;
+    /**
+     * Whether {@link #initialize(InnerScoreDirector, int)} has run at least once.
+     * Distinguishes a fresh director setup from a reset (e.g. problem change) that must clear unassigned shadows.
+     */
+    private boolean initialized = false;
 
     public ListVariableStateCarrier(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
             Consumer<Object> notifier) {
@@ -54,6 +59,8 @@ final class ListVariableStateCarrier<Solution_> {
     }
 
     public void initialize(InnerScoreDirector<Solution_, ?> scoreDirector, int initialUnassignedCount) {
+        var isFirstInitialization = !initialized;
+        initialized = true;
         this.scoreDirector = scoreDirector;
         this.unassignedCount = initialUnassignedCount;
 
@@ -69,14 +76,12 @@ final class ListVariableStateCarrier<Solution_> {
             elementPositionMap = null;
         }
 
-        // If the elements have any shadows, set them to null if no entity has their values
-        // We do not want to do this eagerly,
-        // since shadow variable update events are not triggered.
-        var shouldUnassignElements =
-                !scoreDirector.expectShadowVariablesInCorrectState() && (externalizedIndexProcessor != null ||
-                        externalizedInverseProcessor != null ||
-                        externalizedPreviousElementProcessor != null ||
-                        externalizedNextElementProcessor != null);
+        // We need to update stale shadow variables after a problem change,
+        // where expectShadowVariablesInCorrectState is already true.
+        var isAnythingExternalized = externalizedIndexProcessor != null || externalizedInverseProcessor != null ||
+                externalizedPreviousElementProcessor != null || externalizedNextElementProcessor != null;
+        var shouldUnassignElements = isAnythingExternalized &&
+                !(scoreDirector.expectShadowVariablesInCorrectState() && isFirstInitialization);
         var unassignedValueSet = CollectionUtils.newIdentityHashSet(initialUnassignedCount);
 
         if (shouldUnassignElements) {
