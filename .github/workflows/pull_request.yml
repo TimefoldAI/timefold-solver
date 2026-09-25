@@ -90,7 +90,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm ] # Windows doesn't work, Mac is not a deploy OS.
         module: ["spring-integration", "quarkus-integration"]
-        java-version: [ 25, 27 ] # Current LTS and latest JDK; replace 27 on each JDK release.
+        java-version: [ 25 ] # GraalVM only available for LTS.
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v7
