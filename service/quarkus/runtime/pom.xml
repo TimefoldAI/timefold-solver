@@ -42,6 +42,10 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-service-storage-inmemory</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-service-rest</artifactId>
     </dependency>
     <dependency>
