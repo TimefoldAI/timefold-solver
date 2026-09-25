@@ -8,13 +8,15 @@ public class SupportedStorages {
     public static final String INMEMORY_STORAGE = "inmemory";
     public static final String FILESYSTEM_STORAGE = "filesystem";
     public static final String S3_STORAGE = "s3";
+    public static final String HTTP_STORAGE = "http";
 
     public enum Variant {
         S3(S3_STORAGE),
         GoogleCloud(GOOGLE_CLOUD_STORAGE),
         Azure(AZURE_STORAGE),
         InMemory(INMEMORY_STORAGE),
-        FileSystem(FILESYSTEM_STORAGE);
+        FileSystem(FILESYSTEM_STORAGE),
+        Http(HTTP_STORAGE);
 
         private String identifier;
 

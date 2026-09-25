@@ -22,6 +22,11 @@ public class DummyStorageService extends
     }
 
     @Override
+    protected Class<?> getModelOutputClass() {
+        return null;
+    }
+
+    @Override
     protected Class<?> getInputMetricsClass() {
         return null;
     }
