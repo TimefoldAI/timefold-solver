@@ -33,7 +33,7 @@ public class ModelsExtensionStorageGenerationTest {
             TestdataSolution.class, TestdataConstraintProvider.class, TestdataRest.class, TestdataModelConvertor.class);
 
     @Inject
-    Storage<TestdataModelOutput> storage;
+    Storage storage;
 
     @Inject
     AbstractStorageService<TestdataModelInput, TestdataModelConfig, TestdataModelInputMetrics, TestdataModelOutputMetrics, TestdataModelOutput, SimpleScore, TestdataModelConstraintJustification> storageService;
