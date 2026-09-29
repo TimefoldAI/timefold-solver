@@ -95,7 +95,7 @@ public final class VehicleRoutePlanConstraintGroup {
 
 Every constraint match can carry a xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustifications[justification]:
 an object that explains why the constraint matched.
-The service module returns these justifications in the score analysis,
+The Enterprise Edition's score analysis endpoint returns these justifications,
 so a user of your service can see exactly which vehicle is overloaded or which visit is late.
 
 Each justification is a record that implements `ModelConstraintJustification`.

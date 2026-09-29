@@ -319,8 +319,7 @@ For example, visits `5`, `1`, and `4` were scheduled, in that order, to vehicle 
 The exact numbers depend on the driving times.
 Running locally, the map service estimates them from the straight-line distance.
 
-To see which constraints contribute to the score, call the score analysis endpoint:
-
+With the Enterprise Edition enabled, call the score analysis endpoint to see which constraints contribute to the score:
 [source,shell]
 ----
 $ curl http://localhost:8080/v1/route-plans/7f3a91bc-4e2d-4c1a-b8f6-1234567890ab/score-analysis
