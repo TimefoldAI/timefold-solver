@@ -1775,3 +1775,18 @@ xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[K
 ====
 
 
+
+ifndef::custom-moves-included[]
+// Compatibility anchors: this content moved to custom-moves.adoc.
+// Keep these IDs so that existing deep links into this page still land somewhere useful.
+[#customMovesIntroduction]
+== Custom moves
+
+[[generatingCustomMoves]][[moveListFactory]][[moveIteratorFactory]]
+Custom moves, including generating them with a `MoveListFactory` or a `MoveIteratorFactory`,
+are described in xref:optimization-algorithms/custom-moves.adoc[Custom moves]:
+
+* xref:optimization-algorithms/custom-moves.adoc#generatingCustomMoves[Generating custom moves]
+* xref:optimization-algorithms/custom-moves.adoc#moveListFactory[`MoveListFactory`]
+* xref:optimization-algorithms/custom-moves.adoc#moveIteratorFactory[`MoveIteratorFactory`]
+endif::[]
