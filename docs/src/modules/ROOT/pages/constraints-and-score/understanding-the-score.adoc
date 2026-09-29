@@ -234,7 +234,7 @@ In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the de
 == Solution Diff: What changed between now and then?
 
 IMPORTANT: The solution diff is exclusive to Timefold Solver Enterprise Edition.
-It is also only available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature].
+It is also only available as a xref:upgrading-timefold-solver/overview.adoc#previewFeatures[preview feature].
 It may be subject to change and must be enabled in the solver configuration by setting: `<enablePreviewFeature>PLANNING_SOLUTION_DIFF</enablePreviewFeature>`
 
 Using the `SolutionManager` API, you can compare two solutions provided by the solver, and find out what changed between them:
