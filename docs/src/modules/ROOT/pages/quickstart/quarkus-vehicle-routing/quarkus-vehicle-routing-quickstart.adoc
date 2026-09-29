@@ -192,7 +192,7 @@ timefold.model.contact.url=https://acme.com
 # Model settings
 ########################
 
-timefold.model.max-thread-count=16
+timefold.model.max-thread-count=NONE
 timefold.model.default-config.max-thread-count=1
 timefold.platform.map-service.use-remote=false
 timefold.platform.map-service.enable-fallback=true
