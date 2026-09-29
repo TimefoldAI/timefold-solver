@@ -21,13 +21,13 @@ they share the `Move` interface and therefore the same custom `Move` can be used
 
 
 [#generatingCustomMoves]
-=== Generating custom moves
+== Generating custom moves
 
 Now, let's generate instances of this custom ``Move`` class.
 There are 2 ways:
 
 [#moveListFactory]
-==== `MoveListFactory`: the easy way to generate custom moves
+=== `MoveListFactory`: the easy way to generate custom moves
 
 The easiest way to generate custom moves is by implementing the interface ``MoveListFactory``:
 
@@ -77,7 +77,7 @@ A custom `MoveListFactory` implementation must ensure that it does not move xref
 
 
 [#moveIteratorFactory]
-==== ``MoveIteratorFactory``: generate Custom moves just in time
+=== ``MoveIteratorFactory``: generate Custom moves just in time
 
 Use this advanced form to generate custom moves Just In Time
 by implementing the `MoveIteratorFactory` interface:

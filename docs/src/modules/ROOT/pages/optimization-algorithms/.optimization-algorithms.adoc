@@ -3,6 +3,8 @@
 :doctype: book
 :sectnums:
 :icons: font
+// Hides the compatibility anchors in move-selector-reference.adoc, which would otherwise duplicate the IDs in custom-moves.adoc.
+:custom-moves-included:
 
 include::overview.adoc[leveloffset=+1]
 include::construction-heuristics.adoc[leveloffset=+1]
@@ -10,3 +12,4 @@ include::local-search.adoc[leveloffset=+1]
 include::exhaustive-search.adoc[leveloffset=+1]
 include::neighborhoods.adoc[leveloffset=+1]
 include::move-selector-reference.adoc[leveloffset=+1]
+include::custom-moves.adoc[leveloffset=+1]
