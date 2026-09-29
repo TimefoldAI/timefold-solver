@@ -79,6 +79,8 @@
 ** Migration guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 *** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
+*** xref:upgrading-timefold-solver/migration-guides/shadow-variables-inconsistent-to-structural-score.adoc[leveloffset=+1]
+
 * Commercial editions
 ** xref:commercial-editions/commercial-editions.adoc[Overview]
 ** xref:commercial-editions/installation.adoc[Installation]
