@@ -23,6 +23,8 @@ public class TimefoldLoggingConfigProcessor {
         runtimeConfigBuildProducer.produce(
                 new RunTimeConfigurationDefaultBuildItem("quarkus.log.handler.file.solver.filter", "solver-log-filter"));
         runtimeConfigBuildProducer.produce(
+                new RunTimeConfigurationDefaultBuildItem("quarkus.log.handler.file.solver.level", "INFO"));
+        runtimeConfigBuildProducer.produce(
                 new RunTimeConfigurationDefaultBuildItem("quarkus.log.category.\"ai.timefold.solver\".handlers", "solver"));
     }
 }
