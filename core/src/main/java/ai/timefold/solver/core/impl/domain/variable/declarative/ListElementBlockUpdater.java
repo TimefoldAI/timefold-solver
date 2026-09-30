@@ -1,15 +1,12 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
@@ -29,8 +26,8 @@ import org.jspecify.annotations.Nullable;
  * through the graph's edges.
  * The whole chain is walked when a pre-chain variable changed, since any element may read it,
  * and when no element recorded where the chain changed.
- * The dirty state of every list entity is allocated once;
- * after an update, only the entities that update dirtied are reset.
+ * Each list entity's {@link ChainState} is allocated once, here;
+ * {@link ListElementBlockVariableReferenceGraph}, which tracks the changes, records in it where the chain changed.
  * <p>
  * When the block node is part of a dependency loop, the elements follow their entity:
  * they are marked inconsistent and their variables are set to null.
@@ -41,7 +38,6 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     // These are immutable.
     private final VariableMetaModel<Solution_, ?, ?> listVariableMetaModel;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
-    private final ListVariableState<Solution_, Object, Object> listVariableState;
     // A previous element parent orders the chain as the list; a next element parent reverses it.
     private final boolean isChainInListOrder;
     private final EntityConsistencyState<Solution_, Object> listEntityConsistencyState;
@@ -51,17 +47,13 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     private final DeclarativeShadowVariableDescriptor<Solution_>[] preChainVariableDescriptors;
     private final boolean canTerminateEarly;
 
-    // These are mutable, written by ListElementBlockVariableReferenceGraph.
-    private final List<Object> changedElementList;
-    // The unassigned elements the classification in progress recomputed, so that each is recomputed once.
-    private final List<Object> recomputedUnassignedElementList;
+    // The chain states are mutable, written by ListElementBlockVariableReferenceGraph as it records the changes
+    // and by this updater as it walks the chains.
     private final IdentityHashMap<Object, ChainState> listEntityToChainStateMap;
-    private final List<ChainState> dirtyChainStateList;
 
     @SuppressWarnings("unchecked")
     ListElementBlockUpdater(
             ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableState<Solution_, Object, Object> listVariableState,
             boolean isChainInListOrder,
             EntityConsistencyState<Solution_, Object> listEntityConsistencyState,
             EntityConsistencyState<Solution_, Object> elementConsistencyState,
@@ -71,15 +63,11 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
         this.listVariableMetaModel = listVariableDescriptor.getVariableMetaModel();
         this.preChainVariableDescriptors = preChainVariableDescriptorList.toArray(new DeclarativeShadowVariableDescriptor[0]);
         this.listVariableDescriptor = listVariableDescriptor;
-        this.listVariableState = listVariableState;
         this.isChainInListOrder = isChainInListOrder;
         this.listEntityConsistencyState = listEntityConsistencyState;
         this.elementConsistencyState = elementConsistencyState;
         this.canTerminateEarly = canTerminateEarly;
-        this.changedElementList = new ArrayList<>();
-        this.recomputedUnassignedElementList = new ArrayList<>();
         this.listEntityToChainStateMap = new IdentityHashMap<>();
-        this.dirtyChainStateList = new ArrayList<>();
 
         this.elementUpdaters = new VariableUpdaterInfo[sortedElementDescriptorList.size()];
         var updaterId = 0;
@@ -230,24 +218,17 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     }
 
     /**
-     * Records an element whose source variables changed;
-     * classified by the chain of its list entity in {@link #classifyChangedElements}.
+     * Recomputes an element that left its list, which no block node walks;
+     * its suppliers read a null inverse, so it ends up cleared,
+     * and re-assigning it to the same position is detected as a change.
      */
-    void recordChangedElement(Object element) {
-        // An element's list variable state changes all at once, so its events come in a row.
-        if (changedElementList.isEmpty() || changedElementList.getLast() != element) {
-            changedElementList.add(element);
-        }
+    void recomputeUnassignedElement(Object element, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
+        markConsistent(element, changedVariableNotifier);
+        updateElement(element, changedVariableNotifier);
     }
 
-    /**
-     * Records a list entity whose list changed.
-     * The elements whose source variables changed record themselves; when none of them is in this list,
-     * as when a forced update of every shadow variable simulates a change on every list,
-     * the whole chain is walked.
-     */
-    void recordChangedList(Object listEntity) {
-        markDirty(listEntityToChainStateMap.get(listEntity));
+    ChainState getChainState(Object listEntity) {
+        return listEntityToChainStateMap.get(listEntity);
     }
 
     /**
@@ -265,108 +246,61 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
      * Registers a list entity whose block node this updater backs.
      */
     void addListEntity(Object listEntity) {
-        listEntityToChainStateMap.put(listEntity, new ChainState(listEntity, preChainVariableDescriptors.length));
-    }
-
-    private void markDirty(ChainState chainState) {
-        if (!chainState.isDirty) {
-            chainState.isDirty = true;
-            dirtyChainStateList.add(chainState);
-        }
-    }
-
-    /**
-     * Classifies the recorded elements by the chain of their list entity and feeds each dirty list entity
-     * to the given consumer, so its block node can be marked changed.
-     * An unassigned element is recomputed here rather than by a block node, having no list entity;
-     * its suppliers read a null inverse, so it ends up cleared,
-     * and re-assigning it to the same position is detected as a change.
-     */
-    void classifyChangedElements(ChangedVariableNotifier<Solution_> changedVariableNotifier,
-            Consumer<Object> dirtyListEntityConsumer) {
-        for (var element : changedElementList) {
-            var listEntity = listVariableState.getInverseSingleton(element);
-            if (listEntity == null) {
-                // A move changing an element before unassigning it records it twice, apart.
-                if (!containsSame(recomputedUnassignedElementList, element)) {
-                    recomputedUnassignedElementList.add(element);
-                    markConsistent(element, changedVariableNotifier);
-                    updateElement(element, changedVariableNotifier);
-                }
-                continue;
-            }
-            var chainState = listEntityToChainStateMap.get(listEntity);
-            chainState.addChangedElementIndex(listVariableState.getIndexOrFail(element));
-            markDirty(chainState);
-        }
-        changedElementList.clear();
-        recomputedUnassignedElementList.clear();
-        for (var chainState : dirtyChainStateList) {
-            dirtyListEntityConsumer.accept(chainState.listEntity);
-        }
-    }
-
-    @SuppressWarnings("ForLoopReplaceableByForEach")
-    private static boolean containsSame(List<Object> elementList, Object element) {
-        // Avoid creation of iterators on the hot path.
-        for (var i = 0; i < elementList.size(); i++) {
-            if (elementList.get(i) == element) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Resets the chains the update dirtied.
-     * An update that gave up on a dependency loop processed no block node, and the graph keeps their
-     * marks for the next update; their chains are walked whole then, because a legacy composite move
-     * may change them again before that update, without undoing first.
-     */
-    void endUpdate(boolean isUpdated) {
-        for (var chainState : dirtyChainStateList) {
-            if (!isUpdated) {
-                chainState.isChainStale = true;
-            }
-            chainState.reset();
-        }
-        dirtyChainStateList.clear();
+        listEntityToChainStateMap.put(listEntity, new ChainState(preChainVariableDescriptors.length));
     }
 
     /**
      * The dirty state of a list entity's chain.
      */
-    private static final class ChainState {
+    static final class ChainState {
 
         // Differs from any value, so that the first update walks the whole chain.
         private static final Object NOT_WALKED = new Object();
 
-        private final Object listEntity;
         // The list entity's pre-chain values the chain was last walked with; not reset between updates.
         private final @Nullable Object[] preChainValues;
         // The list indexes of the elements whose source variables changed, in no particular order.
         private int[] changedElementIndexes = new int[4];
         private int changedElementCount;
-        // In dirtyChainStateList.
+        // Changed since the last update, so in the graph's dirtyChainStateList.
         private boolean isDirty;
         // A dependency loop marked the chain inconsistent, or an update gave up before walking it,
         // until an update walks the whole chain; not reset between updates.
         private boolean isChainStale;
 
-        private ChainState(Object listEntity, int preChainVariableCount) {
-            this.listEntity = listEntity;
+        private ChainState(int preChainVariableCount) {
             this.preChainValues = new Object[preChainVariableCount];
             Arrays.fill(preChainValues, NOT_WALKED);
         }
 
-        private void addChangedElementIndex(int index) {
+        void addChangedElementIndex(int index) {
             if (changedElementCount == changedElementIndexes.length) {
                 changedElementIndexes = Arrays.copyOf(changedElementIndexes, changedElementCount * 2);
             }
             changedElementIndexes[changedElementCount++] = index;
         }
 
-        private void reset() {
+        /**
+         * @return true if the chain was not dirty yet
+         */
+        boolean markDirty() {
+            if (isDirty) {
+                return false;
+            }
+            isDirty = true;
+            return true;
+        }
+
+        /**
+         * Resets the chain an update dirtied.
+         * An update that gave up on a dependency loop processed no block node, and the graph keeps their
+         * marks for the next update; the chain is walked whole then, because a legacy composite move
+         * may change it again before that update, without undoing first.
+         */
+        void endUpdate(boolean isUpdated) {
+            if (!isUpdated) {
+                isChainStale = true;
+            }
             changedElementCount = 0;
             isDirty = false;
         }

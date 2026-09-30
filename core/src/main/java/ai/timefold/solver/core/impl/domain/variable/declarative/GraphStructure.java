@@ -93,12 +93,7 @@ public enum GraphStructure {
             return new GraphStructureAndDirection(LIST_ELEMENT_BLOCK, null,
                     blockAndDirection.direction(), blockAndDirection.elementEntityClass());
         }
-        return determineGraphStructure(declarativeShadowVariableDescriptors, entities);
-    }
 
-    private static <Solution_> GraphStructureAndDirection determineGraphStructure(
-            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-            Object... entities) {
         var multipleDeclarativeEntityClasses = declarativeShadowVariableDescriptors.stream()
                 .map(variable -> variable.getEntityDescriptor().getEntityClass())
                 .distinct().count() > 1;
