@@ -22,7 +22,8 @@ public record RunConfiguration(
                 minimum = "1") @JsonInclude(JsonInclude.Include.NON_EMPTY) @Positive Integer maxThreadCount,
         @JsonInclude(JsonInclude.Include.NON_NULL) @Schema(
                 description = "Optional tags to be assigned to the dataset.") @Size(max = 100) Set<String> tags,
-        @JsonInclude(JsonInclude.Include.NON_NULL) @Schema(hidden = true) Map<String, String> options) {
+        @JsonInclude(JsonInclude.Include.NON_NULL) @Schema(nullable = true,
+                description = "Optional map of string run options consumed by the active execution profiles.") Map<String, String> options) {
 
     public RunConfiguration(String name, SolverTerminationConfig termination, Integer maxThreadCount, Set<String> tags) {
         this(name, termination, maxThreadCount, tags, null);
