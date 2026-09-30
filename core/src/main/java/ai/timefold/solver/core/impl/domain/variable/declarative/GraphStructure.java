@@ -271,11 +271,12 @@ public enum GraphStructure {
                             }
                         }
                         case INVERSE -> {
-                            // Only safe when it targets a declarative variable of the list entity.
-                            // One that depends on the elements, directly or not, would close a loop
-                            // through the block node, which the build detects.
-                            if (variableSource.variableSourceReferences().getFirst()
-                                    .downstreamDeclarativeVariableMetamodel() == null) {
+                            // Only safe when it targets a declarative or a genuine variable of the list entity.
+                            // A declarative one that depends on the elements, directly or not, would close a loop
+                            // through the block node, which the build detects; a genuine one depends on nothing.
+                            var listEntityReference = variableSource.variableSourceReferences().getLast();
+                            if (!listEntityReference.isDeclarative()
+                                    && !listEntityReference.variableMetaModel().isGenuine()) {
                                 return null;
                             }
                         }

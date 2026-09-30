@@ -8,6 +8,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -43,8 +44,8 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     private final EntityConsistencyState<Solution_, Object> listEntityConsistencyState;
     private final EntityConsistencyState<Solution_, Object> elementConsistencyState;
     private final VariableUpdaterInfo<Solution_>[] elementUpdaters;
-    // The list entity's variables its elements read through their inverse.
-    private final DeclarativeShadowVariableDescriptor<Solution_>[] preChainVariableDescriptors;
+    // The list entity's variables its elements read through their inverse, declarative or genuine.
+    private final VariableDescriptor<Solution_>[] preChainVariableDescriptors;
     private final boolean canTerminateEarly;
 
     // The chain states are mutable, written by ListElementBlockVariableReferenceGraph as it records the changes
@@ -58,10 +59,10 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
             EntityConsistencyState<Solution_, Object> listEntityConsistencyState,
             EntityConsistencyState<Solution_, Object> elementConsistencyState,
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedElementDescriptorList,
-            List<DeclarativeShadowVariableDescriptor<Solution_>> preChainVariableDescriptorList,
+            List<VariableDescriptor<Solution_>> preChainVariableDescriptorList,
             boolean canTerminateEarly) {
         this.listVariableMetaModel = listVariableDescriptor.getVariableMetaModel();
-        this.preChainVariableDescriptors = preChainVariableDescriptorList.toArray(new DeclarativeShadowVariableDescriptor[0]);
+        this.preChainVariableDescriptors = preChainVariableDescriptorList.toArray(new VariableDescriptor[0]);
         this.listVariableDescriptor = listVariableDescriptor;
         this.isChainInListOrder = isChainInListOrder;
         this.listEntityConsistencyState = listEntityConsistencyState;
@@ -113,8 +114,8 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
             chainState.isChainStale = true;
             return markChainInconsistent(elementList, changedVariableNotifier);
         }
-        // The pre-chain nodes come before the block node in the graph's order,
-        // so they are already up to date for this update.
+        // The declarative pre-chain nodes come before the block node in the graph's order,
+        // so they are already up to date for this update; the genuine ones only change through moves.
         var isPreChainChanged = updatePreChainValues(listEntity, chainState);
         if (chainState.isChainStale) {
             chainState.isChainStale = false;

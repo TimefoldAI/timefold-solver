@@ -24,12 +24,13 @@ import org.jspecify.annotations.NullMarked;
  * see {@link GraphStructure#LIST_ELEMENT_BLOCK}.
  * <p>
  * The graph itself covers everything else and is built by the normal machinery,
- * with fixed edges from each entity's pre-chain variables to its block node
+ * with fixed edges from each entity's declarative pre-chain variables to its block node
  * and from its block node to its post-chain variables;
  * a single {@link #updateChanged()} pass in topological order therefore walks each dirty chain
  * exactly once, after its pre-chain variables and before its post-chain variables.
  * This wrapper tracks the changes the block nodes need, like any graph tracks its changed nodes:
- * it records the elements whose source variables changed and the list entities whose list changed,
+ * it records the elements whose source variables changed and the list entities whose list
+ * or genuine pre-chain variables changed,
  * classifies the elements by the chain of their entity, into the chain state the block updater walks from,
  * and marks the dirty entities' block nodes before delegating the update.
  * It also marks the list entity's post-chain variables changed on a list change,
@@ -48,6 +49,7 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
     private final ListElementBlockUpdater<Solution_> blockUpdater;
     private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final String listVariableName;
+    private final Class<?> listEntityClass;
     private final Class<?> elementEntityClass;
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
@@ -85,6 +87,7 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
         this.blockUpdater = blockUpdater;
         this.listVariableState = listVariableState;
         this.listVariableName = listVariableMetaModel.name();
+        this.listEntityClass = listVariableMetaModel.entity().type();
         this.elementEntityClass = elementEntityClass;
         this.changedVariableNotifier = changedVariableNotifier;
         // The graph is only built for a solution with at least one list entity, hence one block node.
@@ -132,8 +135,15 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
         if (isUpdating) {
             return;
         }
-        if (monitoredSourceVariableSet.contains(variableReference) && elementEntityClass.isInstance(entity)) {
-            recordChangedElement(entity);
+        if (monitoredSourceVariableSet.contains(variableReference)) {
+            if (elementEntityClass.isInstance(entity)) {
+                recordChangedElement(entity);
+            } else if (listEntityClass.isInstance(entity)) {
+                // A pre-chain variable, which outside an update can only be a genuine one:
+                // it has no graph node to reach the block node through,
+                // and the block updater walks the whole chain when its value changed.
+                markChainDirty(entity, blockUpdater.getChainState(entity));
+            }
         }
         innerGraph.afterVariableChanged(variableReference, entity);
     }

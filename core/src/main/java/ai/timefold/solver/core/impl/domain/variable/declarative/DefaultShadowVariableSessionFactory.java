@@ -262,18 +262,21 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
         // The pre-chain variables the elements read through their inverse:
         // when one of them changes, its entity's whole list must be walked, since any element may read it.
+        // The detection only accepts declarative ones, which an edge orders before the block node,
+        // and genuine ones, which have no graph node: their change marks the block node instead.
         var preChainVariableIdSet = new LinkedHashSet<VariableMetaModel<?, ?, ?>>();
         for (var descriptor : elementDescriptorList) {
             for (var source : descriptor.getSources()) {
                 if (source.parentVariableType() == ParentVariableType.INVERSE) {
-                    // Non-null: the detection rejects inverse sources targeting non-declarative variables.
-                    preChainVariableIdSet.add(Objects.requireNonNull(
-                            source.variableSourceReferences().getFirst().downstreamDeclarativeVariableMetamodel()));
+                    preChainVariableIdSet.add(source.variableSourceReferences().getLast().variableMetaModel());
                 }
             }
         }
-        var preChainVariableDescriptorList = innerDescriptorList.stream()
-                .filter(descriptor -> preChainVariableIdSet.contains(descriptor.getVariableMetaModel()))
+        var preChainVariableDescriptorList = preChainVariableIdSet.stream()
+                .map(variableId -> Objects.requireNonNull(listEntityDescriptor.getVariableDescriptor(variableId.name())))
+                .toList();
+        var declarativePreChainVariableIdList = preChainVariableIdSet.stream()
+                .filter(variableId -> !variableId.isGenuine())
                 .toList();
         var blockUpdater = new ListElementBlockUpdater<>(listVariableDescriptor,
                 graphStructureAndDirection.direction() == ParentVariableType.PREVIOUS, listEntityConsistencyState,
@@ -291,7 +294,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         populateArbitraryGraph(innerGraphDescriptor, innerDescriptorList);
 
         var blockEdgeList = addBlockNodesAndCollectEdges(builder, graphDescriptor.entities(), listEntityClass,
-                listVariableMetaModel, blockUpdater, preChainVariableIdSet, postChainVariableIdList);
+                listVariableMetaModel, blockUpdater, declarativePreChainVariableIdList, postChainVariableIdList);
         if (!addBlockEdgesUnlessTheyLoop(builder, blockEdgeList)) {
             LOGGER.trace("The block node edges would form a dependency loop; falling back to the arbitrary graph.");
             return buildArbitraryGraph(graphDescriptor);
@@ -314,13 +317,13 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     /**
      * Adds one block node per list entity.
      *
-     * @return the edges ordering each block node after its entity's pre-chain variables
+     * @return the edges ordering each block node after its entity's declarative pre-chain variables
      *         and before its post-chain variables
      */
     private static <Solution_> List<BlockEdge<Solution_>> addBlockNodesAndCollectEdges(
             VariableReferenceGraphBuilder<Solution_> builder, Object[] entities, Class<?> listEntityClass,
             VariableMetaModel<Solution_, ?, ?> listVariableMetaModel, ListElementBlockUpdater<Solution_> blockUpdater,
-            Set<VariableMetaModel<?, ?, ?>> preChainVariableIdSet,
+            List<VariableMetaModel<?, ?, ?>> declarativePreChainVariableIdList,
             List<VariableMetaModel<?, ?, ?>> postChainVariableIdList) {
         var blockEdgeList = new ArrayList<BlockEdge<Solution_>>();
         // Every block node shares the updater, keyed by the list variable itself,
@@ -335,7 +338,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             builder.addVariableReferenceEntity(listEntity, blockUpdaterList);
             blockUpdater.addListEntity(listEntity);
             var blockNode = builder.lookupOrError(listVariableMetaModel, listEntity);
-            for (var preChainVariableId : preChainVariableIdSet) {
+            for (var preChainVariableId : declarativePreChainVariableIdList) {
                 blockEdgeList.add(new BlockEdge<>(builder.lookupOrError(preChainVariableId, listEntity), blockNode));
             }
             for (var postChainVariableId : postChainVariableIdList) {
@@ -377,6 +380,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariables) {
         for (var declarativeShadowVariable : declarativeShadowVariables) {
             for (var source : declarativeShadowVariable.getSources()) {
+                if (source.parentVariableType() == ParentVariableType.INVERSE) {
+                    // Only the block node accepts such a source, as a pre-chain variable:
+                    // its change walks the whole chain, so no walk from a changed element needs to reach
+                    // the elements reading it.
+                    continue;
+                }
                 for (var sourceReference : source.variableSourceReferences()) {
                     if (!sourceReference.isTopLevel() && !sourceReference.isDeclarative()) {
                         return false;

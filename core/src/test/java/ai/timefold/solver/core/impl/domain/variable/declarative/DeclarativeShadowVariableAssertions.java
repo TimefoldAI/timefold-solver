@@ -7,11 +7,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
@@ -35,6 +37,8 @@ import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Ra
 
 final class DeclarativeShadowVariableAssertions {
 
+    private static final Map<Class<?>, SolutionDescriptor<?>> SOLUTION_DESCRIPTOR_MAP = new ConcurrentHashMap<>();
+
     /**
      * Asserts that the incrementally maintained shadow variables equal a from-scratch recomputation.
      *
@@ -57,26 +61,41 @@ final class DeclarativeShadowVariableAssertions {
     }
 
     /**
-     * Recomputes every shadow variable of the solution from scratch.
-     * The built-in shadow variables are recomputed by
-     * {@link SolutionManager#updateShadowVariables(Class, Object...)}, since the variable reference graph
-     * only ever covers declarative shadow variables.
-     * The declarative shadow variables are then recomputed by {@link GraphStructure#ARBITRARY},
-     * whatever structure the model would otherwise use:
-     * building the graph marks all of its nodes changed, so this last pass alone decides their values,
+     * Recomputes every declarative shadow variable of the solution from scratch
+     * with {@link GraphStructure#ARBITRARY}, whatever structure the model would otherwise use:
+     * building the graph marks all of its nodes changed, so this pass alone decides their values,
      * making the reference independent of the graph under test.
+     * The built-in shadow variables it reads are those the move tester maintains.
      */
+    @SuppressWarnings("unchecked")
     private static <Solution_> void recomputeFromScratch(Class<Solution_> solutionClass, Solution_ solution) {
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass);
+        var solutionDescriptor = (SolutionDescriptor<Solution_>) SOLUTION_DESCRIPTOR_MAP.computeIfAbsent(solutionClass,
+                clazz -> buildSolutionDescriptor(solutionClass, solution));
         var entityList = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entityList::add);
         var entities = entityList.toArray();
-        SolutionManager.updateShadowVariables(solutionClass, entities);
         var graphDescriptor = new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
                 ChangedVariableNotifier.empty(), entities);
         DefaultShadowVariableSessionFactory.buildGraphForStructureAndDirection(
                 new GraphStructure.GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null), graphDescriptor)
                 .updateChanged();
+    }
+
+    /**
+     * Building a solution descriptor costs more than the recomputation on these small solutions,
+     * so it is built once per solution class.
+     * It must know the entity classes, or it has no declarative shadow variables and the graph is empty.
+     */
+    private static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
+            Solution_ solution) {
+        var entityClassList = new ArrayList<Class<?>>();
+        SolutionDescriptor.buildSolutionDescriptor(solutionClass).visitAllEntities(solution, entity -> {
+            if (entity.getClass().isAnnotationPresent(PlanningEntity.class)
+                    && !entityClassList.contains(entity.getClass())) {
+                entityClassList.add(entity.getClass());
+            }
+        });
+        return SolutionDescriptor.buildSolutionDescriptor(solutionClass, entityClassList.toArray(Class<?>[]::new));
     }
 
     /**
