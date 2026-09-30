@@ -17,7 +17,6 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 public final class VariableReferenceGraphBuilder<Solution_> {
 
@@ -74,8 +73,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     public <Entity_> void addVariableReferenceEntity(Entity_ entity,
-            List<? extends VariableUpdater<Solution_>> uncopiedVariableReferences) {
-        List<VariableUpdater<Solution_>> variableReferences = List.copyOf(uncopiedVariableReferences);
+            List<? extends VariableUpdater<Solution_>> variableReferences) {
         var nodeGroupKey = variableReferences.get(0).nodeGroupKey();
         var isGroup = variableReferences.get(0).groupEntities() != null;
         var entityRepresentative = entity;
@@ -119,7 +117,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     private void addToInstanceMaps(Map<Object, GraphNode<Solution_>> instanceMap,
-            Object entity, GraphNode<Solution_> node, List<VariableUpdater<Solution_>> variableReferences) {
+            Object entity, GraphNode<Solution_> node, List<? extends VariableUpdater<Solution_>> variableReferences) {
         instanceMap.put(entity, node);
         for (var variable : variableReferences) {
             var variableInstanceMap =
@@ -162,19 +160,11 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     public @NonNull GraphNode<Solution_> lookupOrError(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        var out = lookupOrNull(variableId, entity);
+        var out = variableReferenceToContainingNodeMap.getOrDefault(variableId, Collections.emptyMap()).get(entity);
         if (out == null) {
             throw new IllegalArgumentException();
         }
         return out;
-    }
-
-    /**
-     * As {@link #lookupOrError(VariableMetaModel, Object)}, but for a variable an extended model
-     * may declare on a subclass only, so that the entity may not have it.
-     */
-    public @Nullable GraphNode<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        return variableReferenceToContainingNodeMap.getOrDefault(variableId, Collections.emptyMap()).get(entity);
     }
 
     /**
@@ -185,7 +175,8 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         for (var fixedEdge : fixedEdges.entrySet()) {
             var fromNodeId = fixedEdge.getKey().graphNodeId();
             for (var toNode : fixedEdge.getValue()) {
-                graph.addEdge(fromNodeId, toNode.graphNodeId());
+                var toNodeId = toNode.graphNodeId();
+                graph.addEdge(fromNodeId, toNodeId);
             }
         }
         return graph;

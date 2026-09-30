@@ -14,9 +14,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.Selecto
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListChangeMove;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataElementSourcedSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataElementSourcedVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataElementSourcedVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVisit;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,22 +33,22 @@ import org.junit.jupiter.api.Test;
 class ListElementBlockElementSourcedShadowVariableTest {
 
     @Test
-    void changeOnPredecessorVehiclePropagatesThroughTheRoute() {
-        var a1 = new TestdataElementSourcedVisit("a1", 2);
-        var a2 = new TestdataElementSourcedVisit("a2", 3);
-        var b1 = new TestdataElementSourcedVisit("b1", 4);
-        var vehicleA = new TestdataElementSourcedVehicle("A", 0);
-        var vehicleB = new TestdataElementSourcedVehicle("B", 10);
+    void vehicleLoopThroughTheRouteRejectsTheMove() {
+        var a1 = new TestdataMultiEntityChainElementSourcedVisit("a1", 2);
+        var a2 = new TestdataMultiEntityChainElementSourcedVisit("a2", 3);
+        var b1 = new TestdataMultiEntityChainElementSourcedVisit("b1", 4);
+        var vehicleA = new TestdataMultiEntityChainElementSourcedVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainElementSourcedVehicle("B", 10);
         vehicleA.setVisits(new ArrayList<>(List.of(a1, a2)));
         vehicleB.setVisits(new ArrayList<>(List.of(b1)));
 
-        var solution = new TestdataElementSourcedSolution();
+        var solution = new TestdataMultiEntityChainElementSourcedSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB));
         solution.setVisits(List.of(a1, a2, b1));
 
-        var solutionMetaModel = TestdataElementSourcedSolution.buildMetaModel();
-        var previousVehicleMetaModel = solutionMetaModel.genuineEntity(TestdataElementSourcedVehicle.class)
-                .basicVariable("previousVehicle", TestdataElementSourcedVehicle.class);
+        var solutionMetaModel = TestdataMultiEntityChainElementSourcedSolution.buildMetaModel();
+        var previousVehicleMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainElementSourcedVehicle.class)
+                .basicVariable("previousVehicle", TestdataMultiEntityChainElementSourcedVehicle.class);
         var context = MoveTester.build(solutionMetaModel).using(solution);
 
         // Unchained: A starts at 0 -> [2, 5]; B starts at 10 -> [14].
@@ -63,28 +63,6 @@ class ListElementBlockElementSourcedShadowVariableTest {
         assertThat(a1.getEndServiceTime()).isEqualTo(16);
         assertThat(a2.getEndServiceTime()).isEqualTo(19);
         assertThat(vehicleA.getEndTime()).isEqualTo(19);
-    }
-
-    @Test
-    void vehicleLoopThroughTheRouteRejectsTheMove() {
-        var a1 = new TestdataElementSourcedVisit("a1", 2);
-        var a2 = new TestdataElementSourcedVisit("a2", 3);
-        var b1 = new TestdataElementSourcedVisit("b1", 4);
-        var vehicleA = new TestdataElementSourcedVehicle("A", 0);
-        var vehicleB = new TestdataElementSourcedVehicle("B", 10);
-        vehicleA.setVisits(new ArrayList<>(List.of(a1, a2)));
-        vehicleB.setVisits(new ArrayList<>(List.of(b1)));
-
-        var solution = new TestdataElementSourcedSolution();
-        solution.setVehicles(List.of(vehicleA, vehicleB));
-        solution.setVisits(List.of(a1, a2, b1));
-
-        var solutionMetaModel = TestdataElementSourcedSolution.buildMetaModel();
-        var previousVehicleMetaModel = solutionMetaModel.genuineEntity(TestdataElementSourcedVehicle.class)
-                .basicVariable("previousVehicle", TestdataElementSourcedVehicle.class);
-        var context = MoveTester.build(solutionMetaModel).using(solution);
-
-        context.execute(Moves.change(previousVehicleMetaModel, vehicleA, vehicleB));
 
         // Chaining B after A closes a loop that exists only through the two routes: B's startTime
         // feeds A's visits, which feed A's endTime, which feeds B's startTime.
@@ -109,24 +87,24 @@ class ListElementBlockElementSourcedShadowVariableTest {
      */
     @Test
     void aMoveThatDirtiesARouteAndClosesALoopLeavesNothingStale() {
-        var a1 = new TestdataElementSourcedVisit("a1", 2);
-        var a2 = new TestdataElementSourcedVisit("a2", 3);
-        var b1 = new TestdataElementSourcedVisit("b1", 4);
-        var spare = new TestdataElementSourcedVisit("spare", 5);
-        var vehicleA = new TestdataElementSourcedVehicle("A", 0);
-        var vehicleB = new TestdataElementSourcedVehicle("B", 10);
+        var a1 = new TestdataMultiEntityChainElementSourcedVisit("a1", 2);
+        var a2 = new TestdataMultiEntityChainElementSourcedVisit("a2", 3);
+        var b1 = new TestdataMultiEntityChainElementSourcedVisit("b1", 4);
+        var spare = new TestdataMultiEntityChainElementSourcedVisit("spare", 5);
+        var vehicleA = new TestdataMultiEntityChainElementSourcedVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainElementSourcedVehicle("B", 10);
         vehicleA.setVisits(new ArrayList<>(List.of(a1, a2)));
         vehicleB.setVisits(new ArrayList<>(List.of(b1)));
 
-        var solution = new TestdataElementSourcedSolution();
+        var solution = new TestdataMultiEntityChainElementSourcedSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB));
         solution.setVisits(List.of(a1, a2, b1, spare));
 
-        var solutionMetaModel = TestdataElementSourcedSolution.buildMetaModel();
-        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataElementSourcedVehicle.class);
+        var solutionMetaModel = TestdataMultiEntityChainElementSourcedSolution.buildMetaModel();
+        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainElementSourcedVehicle.class);
         var previousVehicleMetaModel =
-                vehicleMetaModel.basicVariable("previousVehicle", TestdataElementSourcedVehicle.class);
-        var listVariableMetaModel = vehicleMetaModel.listVariable("visits", TestdataElementSourcedVisit.class);
+                vehicleMetaModel.basicVariable("previousVehicle", TestdataMultiEntityChainElementSourcedVehicle.class);
+        var listVariableMetaModel = vehicleMetaModel.listVariable("visits", TestdataMultiEntityChainElementSourcedVisit.class);
         var context = MoveTester.build(solutionMetaModel).using(solution);
 
         context.execute(Moves.change(previousVehicleMetaModel, vehicleA, vehicleB));
@@ -156,30 +134,31 @@ class ListElementBlockElementSourcedShadowVariableTest {
      */
     @Test
     void anUpdateAfterAFailedOneWalksWhatTheFailedOneRecorded() {
-        var a1 = new TestdataElementSourcedVisit("a1", 2);
-        var b1 = new TestdataElementSourcedVisit("b1", 4);
-        var b2 = new TestdataElementSourcedVisit("b2", 3);
-        var b3 = new TestdataElementSourcedVisit("b3", 2);
-        var b4 = new TestdataElementSourcedVisit("b4", 1);
-        var spare = new TestdataElementSourcedVisit("spare", 5);
-        var vehicleA = new TestdataElementSourcedVehicle("A", 0);
-        var vehicleB = new TestdataElementSourcedVehicle("B", 10);
+        var a1 = new TestdataMultiEntityChainElementSourcedVisit("a1", 2);
+        var b1 = new TestdataMultiEntityChainElementSourcedVisit("b1", 4);
+        var b2 = new TestdataMultiEntityChainElementSourcedVisit("b2", 3);
+        var b3 = new TestdataMultiEntityChainElementSourcedVisit("b3", 2);
+        var b4 = new TestdataMultiEntityChainElementSourcedVisit("b4", 1);
+        var spare = new TestdataMultiEntityChainElementSourcedVisit("spare", 5);
+        var vehicleA = new TestdataMultiEntityChainElementSourcedVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainElementSourcedVehicle("B", 10);
         vehicleA.setVisits(new ArrayList<>(List.of(a1)));
         vehicleB.setVisits(new ArrayList<>(List.of(b1, b2, b3, b4)));
 
-        var solution = new TestdataElementSourcedSolution();
+        var solution = new TestdataMultiEntityChainElementSourcedSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB));
         solution.setVisits(List.of(a1, b1, b2, b3, b4, spare));
 
-        var solutionMetaModel = TestdataElementSourcedSolution.buildMetaModel();
-        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataElementSourcedVehicle.class);
-        var previousVehicleMetaModel = vehicleMetaModel.basicVariable("previousVehicle", TestdataElementSourcedVehicle.class);
+        var solutionMetaModel = TestdataMultiEntityChainElementSourcedSolution.buildMetaModel();
+        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainElementSourcedVehicle.class);
+        var previousVehicleMetaModel =
+                vehicleMetaModel.basicVariable("previousVehicle", TestdataMultiEntityChainElementSourcedVehicle.class);
         var previousVehicleDescriptor =
-                ((DefaultPlanningVariableMetaModel<TestdataElementSourcedSolution, TestdataElementSourcedVehicle, TestdataElementSourcedVehicle>) previousVehicleMetaModel)
+                ((DefaultPlanningVariableMetaModel<TestdataMultiEntityChainElementSourcedSolution, TestdataMultiEntityChainElementSourcedVehicle, TestdataMultiEntityChainElementSourcedVehicle>) previousVehicleMetaModel)
                         .variableDescriptor();
         var listVariableDescriptor =
-                ((DefaultPlanningListVariableMetaModel<TestdataElementSourcedSolution, TestdataElementSourcedVehicle, TestdataElementSourcedVisit>) vehicleMetaModel
-                        .listVariable("visits", TestdataElementSourcedVisit.class))
+                ((DefaultPlanningListVariableMetaModel<TestdataMultiEntityChainElementSourcedSolution, TestdataMultiEntityChainElementSourcedVehicle, TestdataMultiEntityChainElementSourcedVisit>) vehicleMetaModel
+                        .listVariable("visits", TestdataMultiEntityChainElementSourcedVisit.class))
                         .variableDescriptor();
         var context = MoveTester.build(solutionMetaModel).using(solution);
         context.execute(Moves.change(previousVehicleMetaModel, vehicleA, vehicleB));
@@ -198,10 +177,10 @@ class ListElementBlockElementSourcedShadowVariableTest {
         assertShadowsAreAtFixedPoint(solution);
     }
 
-    private static void assertShadowsAreAtFixedPoint(TestdataElementSourcedSolution solution) {
+    private static void assertShadowsAreAtFixedPoint(TestdataMultiEntityChainElementSourcedSolution solution) {
         DeclarativeShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
-                s -> s.getVehicles().stream().map(TestdataElementSourcedVehicle::getStartTime).toList(),
-                s -> s.getVehicles().stream().map(TestdataElementSourcedVehicle::getEndTime).toList(),
-                s -> s.getVisits().stream().map(TestdataElementSourcedVisit::getEndServiceTime).toList());
+                s -> s.getVehicles().stream().map(TestdataMultiEntityChainElementSourcedVehicle::getStartTime).toList(),
+                s -> s.getVehicles().stream().map(TestdataMultiEntityChainElementSourcedVehicle::getEndTime).toList(),
+                s -> s.getVisits().stream().map(TestdataMultiEntityChainElementSourcedVisit::getEndServiceTime).toList());
     }
 }

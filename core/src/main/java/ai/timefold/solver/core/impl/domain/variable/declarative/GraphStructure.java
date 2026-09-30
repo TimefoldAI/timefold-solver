@@ -50,19 +50,15 @@ public enum GraphStructure {
     ARBITRARY,
 
     /**
-     * A graph structure where a planning list variable's elements are excluded from the graph,
-     * which covers the other entity classes with per-variable nodes. Each list entity additionally
-     * gets a single block node representing its whole chain of elements, ordered after the entity's
-     * pre-chain variables (which the elements read through their inverse) and before its post-chain
-     * variables (which read the elements). When the block node is processed, it walks the entity's
-     * list from each element whose sources changed, in the direction of
-     * {@link GraphStructureAndDirection#direction()}.
-     * The list elements the block nodes represent are available via {@link GraphStructureAndDirection#blockedElementClass()}.
-     * This decomposition is valid because the elements only read their chain and, through their
-     * inverse, declarative variables of their own list entity, and because the other
-     * classes only reach the elements through the list variable itself.
-     * Built as {@link #ARBITRARY} when there is no score director, or when those nodes would form
-     * a dependency loop.
+     * A graph structure where the elements of a planning list variable,
+     * of {@link GraphStructureAndDirection#blockedElementClass()}, are not graph nodes.
+     * Each list entity gets a single block node for its elements instead,
+     * ordered after the variables its elements read through their inverse
+     * and before the variables sourced from its elements.
+     * Processing a block node walks its list in the {@link GraphStructureAndDirection#direction()},
+     * from each element whose sources changed.
+     * Built as {@link #ARBITRARY} without a score director or a list entity,
+     * or when the block nodes would close a dependency loop.
      */
     LIST_ELEMENT_BLOCK;
 
@@ -228,11 +224,11 @@ public enum GraphStructure {
             return null;
         }
         var elementEntityClass = chainDirection.elementEntityClass();
-        var ownerEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
-        var ownerEntityClass = ownerEntityDescriptor.getEntityClass();
+        var listEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
+        var listEntityClass = listEntityDescriptor.getEntityClass();
         if (!elementEntityClass.isAssignableFrom(listVariableDescriptor.getElementType())
-                || ownerEntityClass.isAssignableFrom(elementEntityClass)
-                || elementEntityClass.isAssignableFrom(ownerEntityClass)) {
+                || listEntityClass.isAssignableFrom(elementEntityClass)
+                || elementEntityClass.isAssignableFrom(listEntityClass)) {
             // The block node walks the list entity's list and classifies entities with instanceof,
             // so the element class must cover the list's elements and be distinct from the list entity.
             return null;
@@ -254,7 +250,7 @@ public enum GraphStructure {
                 return null;
             }
         }
-        if (ownerEntityDescriptor.getShadowVariableDescriptors().stream()
+        if (listEntityDescriptor.getShadowVariableDescriptors().stream()
                 .noneMatch(variableDescriptor -> variableDescriptor instanceof DeclarativeShadowVariableDescriptor<?>)) {
             // The block node tracks its looped status through the list entity's consistency state,
             // which only exists when the list entity has declarative shadow variables of its own.

@@ -36,29 +36,25 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity.TestdataMultiEntit
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataElementSourcedSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataElementSourcedVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataElementSourcedVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataExtendedPriorityVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataExtendedSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataExtendedVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataExtendedVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataNonOwnerDepot;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataNonOwnerSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataNonOwnerVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataNonOwnerVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedPriorityVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader.TestdataPostChainReaderVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack.TestdataMultiEntityChainSlackSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack.TestdataMultiEntityChainSlackVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack.TestdataMultiEntityChainSlackVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_watched.TestdataMultiEntityChainWatchedSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_watched.TestdataMultiEntityChainWatchedVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_watched.TestdataMultiEntityChainWatchedVisit;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListSolution;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
 
@@ -187,8 +183,7 @@ class GraphStructureTest {
         // which the block node's entity at a time updates cannot do.
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataAlignedListElementSolution.buildSolutionDescriptor(), entity, value))
-                .hasFieldOrPropertyWithValue("structure", ARBITRARY)
-                .hasFieldOrPropertyWithValue("blockedElementClass", null);
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY);
     }
 
     @Test
@@ -217,62 +212,49 @@ class GraphStructureTest {
 
     @Test
     void multiEntityChainWithFactCollectionOfElements() {
-        var vehicle = new TestdataWatchedVisitsVehicle("A", 0);
-        var watcher = new TestdataWatchedVisitsVehicle("W", 0);
-        var visit = new TestdataWatchedVisitsVisit("v1", 1);
+        var vehicle = new TestdataMultiEntityChainWatchedVehicle("A", 0);
+        var watcher = new TestdataMultiEntityChainWatchedVehicle("W", 0);
+        var visit = new TestdataMultiEntityChainWatchedVisit("v1", 1);
         watcher.getWatchedVisits().add(visit);
         assertThat(GraphStructure.determineGraphStructure(
-                TestdataWatchedVisitsSolution.buildSolutionDescriptor(), vehicle, watcher, visit))
-                .hasFieldOrPropertyWithValue("structure", ARBITRARY)
-                .hasFieldOrPropertyWithValue("blockedElementClass", null);
-    }
-
-    @Test
-    void multiEntityChainWithNonListOwnerEntity() {
-        var vehicle = new TestdataNonOwnerVehicle("A", 0);
-        var visit = new TestdataNonOwnerVisit("v1", 1);
-        var depot = new TestdataNonOwnerDepot("D", 0);
-        // The block node reports its looped status through the list entity's consistency state,
-        // so a list entity without declarative shadow variables falls back to the arbitrary graph.
-        assertThat(GraphStructure.determineGraphStructure(
-                TestdataNonOwnerSolution.buildSolutionDescriptor(), vehicle, visit, depot))
-                .hasFieldOrPropertyWithValue("structure", ARBITRARY)
-                .hasFieldOrPropertyWithValue("blockedElementClass", null);
+                TestdataMultiEntityChainWatchedSolution.buildSolutionDescriptor(), vehicle, watcher, visit))
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY);
     }
 
     @Test
     void multiEntityChainWithPlanningVariableChainedVehicles() {
-        var vehicle = new TestdataChainLoopVehicle("A", 0);
-        var visit = new TestdataChainLoopVisit("v1", 1);
+        var vehicle = new TestdataMultiEntityChainLoopVehicle("A", 0);
+        var visit = new TestdataMultiEntityChainLoopVisit("v1", 1);
         assertThat(GraphStructure.determineGraphStructure(
-                TestdataChainLoopSolution.buildSolutionDescriptor(), vehicle, visit))
+                TestdataMultiEntityChainLoopSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataChainLoopVisit.class);
+                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainLoopVisit.class);
     }
 
     @Test
     void multiEntityChainWithElementSourcedEndTime() {
-        var vehicle = new TestdataElementSourcedVehicle("A", 0);
-        var visit = new TestdataElementSourcedVisit("v1", 1);
+        var vehicle = new TestdataMultiEntityChainElementSourcedVehicle("A", 0);
+        var visit = new TestdataMultiEntityChainElementSourcedVisit("v1", 1);
         // The vehicle's endTime never reads its own startTime, so nothing but the block node's edges
         // orders it after the route it summarizes.
         assertThat(GraphStructure.determineGraphStructure(
-                TestdataElementSourcedSolution.buildSolutionDescriptor(), vehicle, visit))
+                TestdataMultiEntityChainElementSourcedSolution.buildSolutionDescriptor(), vehicle, visit))
+                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataElementSourcedVisit.class);
+                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainElementSourcedVisit.class);
     }
 
     @Test
     void multiEntityChainWithElementsReadingAPostChainVariable() {
-        var vehicle = new TestdataPostChainReaderVehicle("A");
-        var visit = new TestdataPostChainReaderVisit("v1", 1);
+        var vehicle = new TestdataMultiEntityChainSlackVehicle("A");
+        var visit = new TestdataMultiEntityChainSlackVisit("v1", 1);
         // The detection only judges the shape of the model; the loop the block node would close
         // with its vehicle's end time is left to the build, which falls back to the arbitrary graph.
         assertThat(GraphStructure.determineGraphStructure(
-                TestdataPostChainReaderSolution.buildSolutionDescriptor(), vehicle, visit))
+                TestdataMultiEntityChainSlackSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataPostChainReaderVisit.class);
+                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainSlackVisit.class);
     }
 
     @Test
@@ -284,14 +266,13 @@ class GraphStructureTest {
 
     @Test
     void multiEntityChainWithDeclarativeVisitSubclass() {
-        var vehicle = new TestdataExtendedVehicle("A", 0);
-        var visit = new TestdataExtendedVisit("v1", 1);
-        var priorityVisit = new TestdataExtendedPriorityVisit("p1", 1, 10);
+        var vehicle = new TestdataMultiEntityChainExtendedVehicle("A", 0);
+        var visit = new TestdataMultiEntityChainExtendedVisit("v1", 1);
+        var priorityVisit = new TestdataMultiEntityChainExtendedPriorityVisit("p1", 1, 10);
         // The block node's walk applies every element updater to every element,
         // so a declarative variable declared on a visit subclass falls back to the arbitrary graph.
         assertThat(GraphStructure.determineGraphStructure(
-                TestdataExtendedSolution.buildSolutionDescriptor(), vehicle, visit, priorityVisit))
-                .hasFieldOrPropertyWithValue("structure", ARBITRARY)
-                .hasFieldOrPropertyWithValue("blockedElementClass", null);
+                TestdataMultiEntityChainExtendedSolution.buildSolutionDescriptor(), vehicle, visit, priorityVisit))
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY);
     }
 }

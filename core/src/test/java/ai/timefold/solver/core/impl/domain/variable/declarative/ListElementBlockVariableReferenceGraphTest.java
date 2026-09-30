@@ -71,7 +71,7 @@ class ListElementBlockVariableReferenceGraphTest {
 
         // The topological order puts vehicle A's block node before vehicle B's,
         // so every element is computed exactly once even at construction.
-        assertThat(List.of(a1, a2, b1, b2)).allMatch(visit -> visit.getCalledCount() == 1);
+        assertThat(List.of(a1, a2, b1, b2)).allSatisfy(visit -> assertThat(visit.getCalledCount()).isOne());
         assertThat(a3.getCalledCount()).isOne();
         assertThat(vehicleB.getEndTime()).isEqualTo(4);
 
@@ -79,13 +79,19 @@ class ListElementBlockVariableReferenceGraphTest {
         vehicleB.reset();
         List.of(a1, a2, a3, b1, b2).forEach(TestdataMultiEntityChainVisit::reset);
 
-        // Append a3 to the end of vehicle A's route.
+        // Append a3 to the end of vehicle A's route, with the events the score director sends.
+        var visitsMetaModel = solutionDescriptor.getMetaModel().entity(TestdataMultiEntityChainVehicle.class)
+                .variable("visits");
+        var visitList = solutionDescriptor.getListVariableDescriptor().getValue(vehicleA);
+        graph.beforeListVariableChanged(visitsMetaModel, vehicleA, visitList, 2, 2);
         vehicleA.getVisits().add(a3);
-        link(listVariableState, vehicleA, a3, a2, 2);
-
         var visitMetaModel = solutionDescriptor.getMetaModel().entity(TestdataMultiEntityChainVisit.class);
+        graph.beforeVariableChanged(visitMetaModel.variable("vehicle"), a3);
+        graph.beforeVariableChanged(visitMetaModel.variable("previousVisit"), a3);
+        link(listVariableState, vehicleA, a3, a2, 2);
         graph.afterVariableChanged(visitMetaModel.variable("vehicle"), a3);
         graph.afterVariableChanged(visitMetaModel.variable("previousVisit"), a3);
+        graph.afterListVariableChanged(visitsMetaModel, vehicleA, visitList, 2, 3);
         graph.updateChanged();
 
         // The elements before the insertion point are unreachable from it and are left alone.
@@ -106,23 +112,14 @@ class ListElementBlockVariableReferenceGraphTest {
         assertThat(vehicleB.getEndTime()).isEqualTo(5);
     }
 
-    @Test
-    void deepChainRecomputesEachVariableOnce() {
-        assertDeepChainRecomputesEachVariableOnce(false);
-    }
-
     /**
      * A vehicle's endTime that also reads its own previousEndTime changes as soon as its predecessor's
      * endTime does. Its edge from the block node is what keeps it from being computed before the chain
      * it summarizes has been walked, and from running ahead of the walks down the vehicle chain.
      */
     @Test
-    void deepChainRecomputesEachVariableOnceWhenTheEndTimeReadsThePreviousEndTime() {
-        assertDeepChainRecomputesEachVariableOnce(true);
-    }
-
-    private static void assertDeepChainRecomputesEachVariableOnce(boolean endTimeIncludesPreviousEndTime) {
-        var vehicleList = buildChain(endTimeIncludesPreviousEndTime);
+    void deepChainRecomputesEachVariableOnce() {
+        var vehicleList = buildChain(true);
         var unassignedVisit = new TestdataMultiEntityChainVisit("extra", LONG_VISIT_DURATION);
         var solution = buildSolution(vehicleList, unassignedVisit);
 

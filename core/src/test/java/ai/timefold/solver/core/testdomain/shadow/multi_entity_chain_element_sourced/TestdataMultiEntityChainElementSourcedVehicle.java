@@ -15,21 +15,21 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
  * instead of a fact. The solver can therefore chain two vehicles to each other, which is a
  * dependency loop it can break again; a loop between facts would fail fast at build time instead.
  * <p>
- * Unlike {@code TestdataChainLoopVehicle}, its endTime is sourced from its route alone and never
+ * Unlike {@code TestdataMultiEntityChainLoopVehicle}, its endTime is sourced from its route alone and never
  * reads its own startTime, so nothing declares the dependency of the endTime on the startTime.
  * The block node's edges have to supply that dependency, or the endTime is computed before the route
  * it summarizes has been walked, and the loop through the route goes undetected.
  */
 @PlanningEntity
-public class TestdataElementSourcedVehicle extends TestdataObject {
+public class TestdataMultiEntityChainElementSourcedVehicle extends TestdataObject {
 
     @PlanningVariable(allowsUnassigned = true)
-    TestdataElementSourcedVehicle previousVehicle;
+    TestdataMultiEntityChainElementSourcedVehicle previousVehicle;
 
     int departureTime;
 
     @PlanningListVariable(allowsUnassignedValues = true)
-    List<TestdataElementSourcedVisit> visits = new ArrayList<>();
+    List<TestdataMultiEntityChainElementSourcedVisit> visits = new ArrayList<>();
 
     @ShadowVariable(supplierName = "startTimeSupplier")
     Integer startTime;
@@ -37,10 +37,10 @@ public class TestdataElementSourcedVehicle extends TestdataObject {
     @ShadowVariable(supplierName = "endTimeSupplier")
     Integer endTime;
 
-    public TestdataElementSourcedVehicle() {
+    public TestdataMultiEntityChainElementSourcedVehicle() {
     }
 
-    public TestdataElementSourcedVehicle(String code, int departureTime) {
+    public TestdataMultiEntityChainElementSourcedVehicle(String code, int departureTime) {
         super(code);
         this.departureTime = departureTime;
     }
@@ -62,11 +62,11 @@ public class TestdataElementSourcedVehicle extends TestdataObject {
         return visits.getLast().getEndServiceTime();
     }
 
-    public TestdataElementSourcedVehicle getPreviousVehicle() {
+    public TestdataMultiEntityChainElementSourcedVehicle getPreviousVehicle() {
         return previousVehicle;
     }
 
-    public void setPreviousVehicle(TestdataElementSourcedVehicle previousVehicle) {
+    public void setPreviousVehicle(TestdataMultiEntityChainElementSourcedVehicle previousVehicle) {
         this.previousVehicle = previousVehicle;
     }
 
@@ -74,11 +74,11 @@ public class TestdataElementSourcedVehicle extends TestdataObject {
         return departureTime;
     }
 
-    public List<TestdataElementSourcedVisit> getVisits() {
+    public List<TestdataMultiEntityChainElementSourcedVisit> getVisits() {
         return visits;
     }
 
-    public void setVisits(List<TestdataElementSourcedVisit> visits) {
+    public void setVisits(List<TestdataMultiEntityChainElementSourcedVisit> visits) {
         this.visits = visits;
     }
 

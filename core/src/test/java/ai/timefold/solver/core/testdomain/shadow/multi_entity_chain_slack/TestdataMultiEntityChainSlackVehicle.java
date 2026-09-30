@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,18 +10,18 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataPostChainReaderVehicle extends TestdataObject {
+public class TestdataMultiEntityChainSlackVehicle extends TestdataObject {
 
     @PlanningListVariable(allowsUnassignedValues = true)
-    List<TestdataPostChainReaderVisit> visits = new ArrayList<>();
+    List<TestdataMultiEntityChainSlackVisit> visits = new ArrayList<>();
 
     @ShadowVariable(supplierName = "endTimeSupplier")
     Integer endTime;
 
-    public TestdataPostChainReaderVehicle() {
+    public TestdataMultiEntityChainSlackVehicle() {
     }
 
-    public TestdataPostChainReaderVehicle(String code) {
+    public TestdataMultiEntityChainSlackVehicle(String code) {
         super(code);
     }
 
@@ -30,11 +30,11 @@ public class TestdataPostChainReaderVehicle extends TestdataObject {
         return visits.isEmpty() ? 0 : visits.getLast().getEndServiceTime();
     }
 
-    public List<TestdataPostChainReaderVisit> getVisits() {
+    public List<TestdataMultiEntityChainSlackVisit> getVisits() {
         return visits;
     }
 
-    public void setVisits(List<TestdataPostChainReaderVisit> visits) {
+    public void setVisits(List<TestdataMultiEntityChainSlackVisit> visits) {
         this.visits = visits;
     }
 

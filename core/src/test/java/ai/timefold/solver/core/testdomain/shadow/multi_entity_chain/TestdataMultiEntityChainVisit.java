@@ -49,9 +49,12 @@ public class TestdataMultiEntityChainVisit extends TestdataObject {
         }
         Integer base;
         if (previousVisit == null) {
-            // previousEndTime is null when a predecessor vehicle has no end time;
-            // the (Integer) cast keeps the ternary from unboxing it, which would throw.
-            base = chainedToPreviousVehicle ? vehicle.getPreviousEndTime() : (Integer) vehicle.getDepartureTime();
+            if (chainedToPreviousVehicle) {
+                // Null when a predecessor vehicle has no end time.
+                base = vehicle.getPreviousEndTime();
+            } else {
+                base = vehicle.getDepartureTime();
+            }
         } else {
             var previousEnd = previousVisit.getEndServiceTime();
             if (previousEnd == null) {

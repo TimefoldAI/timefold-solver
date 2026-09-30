@@ -17,16 +17,16 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
  * dependency loop it can break again; a loop between facts would fail fast at build time instead.
  */
 @PlanningEntity
-public class TestdataChainLoopVehicle extends TestdataObject {
+public class TestdataMultiEntityChainLoopVehicle extends TestdataObject {
 
     @PlanningVariable(allowsUnassigned = true)
-    TestdataChainLoopVehicle previousVehicle;
+    TestdataMultiEntityChainLoopVehicle previousVehicle;
 
     // Null when unknown, which leaves the start time of a vehicle without predecessor undefined.
     Integer departureTime;
 
     @PlanningListVariable(allowsUnassignedValues = true)
-    List<TestdataChainLoopVisit> visits = new ArrayList<>();
+    List<TestdataMultiEntityChainLoopVisit> visits = new ArrayList<>();
 
     @ShadowVariable(supplierName = "startTimeSupplier")
     Integer startTime;
@@ -37,10 +37,10 @@ public class TestdataChainLoopVehicle extends TestdataObject {
     @ShadowVariablesInconsistent
     Boolean inconsistent;
 
-    public TestdataChainLoopVehicle() {
+    public TestdataMultiEntityChainLoopVehicle() {
     }
 
-    public TestdataChainLoopVehicle(String code, Integer departureTime) {
+    public TestdataMultiEntityChainLoopVehicle(String code, Integer departureTime) {
         super(code);
         this.departureTime = departureTime;
     }
@@ -61,11 +61,11 @@ public class TestdataChainLoopVehicle extends TestdataObject {
         return visits.getLast().getEndServiceTime();
     }
 
-    public TestdataChainLoopVehicle getPreviousVehicle() {
+    public TestdataMultiEntityChainLoopVehicle getPreviousVehicle() {
         return previousVehicle;
     }
 
-    public void setPreviousVehicle(TestdataChainLoopVehicle previousVehicle) {
+    public void setPreviousVehicle(TestdataMultiEntityChainLoopVehicle previousVehicle) {
         this.previousVehicle = previousVehicle;
     }
 
@@ -73,11 +73,11 @@ public class TestdataChainLoopVehicle extends TestdataObject {
         return departureTime;
     }
 
-    public List<TestdataChainLoopVisit> getVisits() {
+    public List<TestdataMultiEntityChainLoopVisit> getVisits() {
         return visits;
     }
 
-    public void setVisits(List<TestdataChainLoopVisit> visits) {
+    public void setVisits(List<TestdataMultiEntityChainLoopVisit> visits) {
         this.visits = visits;
     }
 

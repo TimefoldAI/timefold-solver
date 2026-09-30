@@ -1,10 +1,11 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
@@ -12,23 +13,26 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
  * takes its whole route down with it.
  */
 @PlanningEntity
-public class TestdataElementSourcedVisit extends TestdataObject {
+public class TestdataMultiEntityChainLoopVisit extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "visits")
-    TestdataElementSourcedVehicle vehicle;
+    TestdataMultiEntityChainLoopVehicle vehicle;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")
-    TestdataElementSourcedVisit previousVisit;
+    TestdataMultiEntityChainLoopVisit previousVisit;
 
     int duration = 1;
 
     @ShadowVariable(supplierName = "endServiceTimeSupplier")
     Integer endServiceTime;
 
-    public TestdataElementSourcedVisit() {
+    @ShadowVariablesInconsistent
+    Boolean inconsistent;
+
+    public TestdataMultiEntityChainLoopVisit() {
     }
 
-    public TestdataElementSourcedVisit(String code, int duration) {
+    public TestdataMultiEntityChainLoopVisit(String code, int duration) {
         super(code);
         this.duration = duration;
     }
@@ -46,19 +50,19 @@ public class TestdataElementSourcedVisit extends TestdataObject {
         return base + duration;
     }
 
-    public TestdataElementSourcedVehicle getVehicle() {
+    public TestdataMultiEntityChainLoopVehicle getVehicle() {
         return vehicle;
     }
 
-    public void setVehicle(TestdataElementSourcedVehicle vehicle) {
+    public void setVehicle(TestdataMultiEntityChainLoopVehicle vehicle) {
         this.vehicle = vehicle;
     }
 
-    public TestdataElementSourcedVisit getPreviousVisit() {
+    public TestdataMultiEntityChainLoopVisit getPreviousVisit() {
         return previousVisit;
     }
 
-    public void setPreviousVisit(TestdataElementSourcedVisit previousVisit) {
+    public void setPreviousVisit(TestdataMultiEntityChainLoopVisit previousVisit) {
         this.previousVisit = previousVisit;
     }
 
@@ -74,4 +78,11 @@ public class TestdataElementSourcedVisit extends TestdataObject {
         this.endServiceTime = endServiceTime;
     }
 
+    public Boolean getInconsistent() {
+        return inconsistent;
+    }
+
+    public void setInconsistent(Boolean inconsistent) {
+        this.inconsistent = inconsistent;
+    }
 }

@@ -44,7 +44,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     private final ListVariableState<Solution_, Object, Object> listVariableState;
     // A previous element parent orders the chain as the list; a next element parent reverses it.
     private final boolean isChainInListOrder;
-    private final EntityConsistencyState<Solution_, Object> ownerConsistencyState;
+    private final EntityConsistencyState<Solution_, Object> listEntityConsistencyState;
     private final EntityConsistencyState<Solution_, Object> elementConsistencyState;
     private final VariableUpdaterInfo<Solution_>[] elementUpdaters;
     // The list entity's variables its elements read through their inverse.
@@ -55,7 +55,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     private final List<Object> changedElementList;
     // The unassigned elements the classification in progress recomputed, so that each is recomputed once.
     private final List<Object> recomputedUnassignedElementList;
-    private final IdentityHashMap<Object, ChainState> ownerToChainStateMap;
+    private final IdentityHashMap<Object, ChainState> listEntityToChainStateMap;
     private final List<ChainState> dirtyChainStateList;
 
     @SuppressWarnings("unchecked")
@@ -63,7 +63,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             ListVariableState<Solution_, Object, Object> listVariableState,
             boolean isChainInListOrder,
-            EntityConsistencyState<Solution_, Object> ownerConsistencyState,
+            EntityConsistencyState<Solution_, Object> listEntityConsistencyState,
             EntityConsistencyState<Solution_, Object> elementConsistencyState,
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedElementDescriptorList,
             List<DeclarativeShadowVariableDescriptor<Solution_>> preChainVariableDescriptorList,
@@ -73,12 +73,12 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
         this.listVariableDescriptor = listVariableDescriptor;
         this.listVariableState = listVariableState;
         this.isChainInListOrder = isChainInListOrder;
-        this.ownerConsistencyState = ownerConsistencyState;
+        this.listEntityConsistencyState = listEntityConsistencyState;
         this.elementConsistencyState = elementConsistencyState;
         this.canTerminateEarly = canTerminateEarly;
         this.changedElementList = new ArrayList<>();
         this.recomputedUnassignedElementList = new ArrayList<>();
-        this.ownerToChainStateMap = new IdentityHashMap<>();
+        this.listEntityToChainStateMap = new IdentityHashMap<>();
         this.dirtyChainStateList = new ArrayList<>();
 
         this.elementUpdaters = new VariableUpdaterInfo[sortedElementDescriptorList.size()];
@@ -110,24 +110,24 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
 
     @Override
     public EntityConsistencyState<Solution_, Object> entityConsistencyState() {
-        return ownerConsistencyState;
+        return listEntityConsistencyState;
     }
 
     @Override
-    public boolean update(Object owner, boolean isEntityInconsistent,
+    public boolean update(Object listEntity, boolean isEntityInconsistent,
             ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         // The list cannot change while the graph updates, so it is read once.
-        var elementList = listVariableDescriptor.getValue(owner);
-        var chainState = ownerToChainStateMap.get(owner);
+        var elementList = listVariableDescriptor.getValue(listEntity);
+        var chainState = listEntityToChainStateMap.get(listEntity);
         if (isEntityInconsistent) {
-            // The owner is part of a dependency loop the solver may break later;
+            // The list entity is part of a dependency loop the solver may break later;
             // its elements read its pre-chain variables, so they are inconsistent with it.
             chainState.isChainStale = true;
             return markChainInconsistent(elementList, changedVariableNotifier);
         }
         // The pre-chain nodes come before the block node in the graph's order,
         // so they are already up to date for this update.
-        var isPreChainChanged = updatePreChainValues(owner, chainState);
+        var isPreChainChanged = updatePreChainValues(listEntity, chainState);
         if (chainState.isChainStale) {
             chainState.isChainStale = false;
             for (var element : elementList) {
@@ -137,14 +137,14 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
         }
         // Outside a stale chain, an inconsistent element came from one since the last update. A dependency loop
         // only reaches a chain through the pre-chain variables its elements read through their inverse,
-        // so the inverse is a source variable, and its change made the element a seed.
-        for (var i = 0; i < chainState.seedCount; i++) {
-            markConsistent(elementList.get(chainState.seedIndexes[i]), changedVariableNotifier);
+        // so the inverse is a source variable, and its change recorded the element.
+        for (var i = 0; i < chainState.changedElementCount; i++) {
+            markConsistent(elementList.get(chainState.changedElementIndexes[i]), changedVariableNotifier);
         }
-        if (isPreChainChanged || chainState.seedCount == 0) {
+        if (isPreChainChanged || chainState.changedElementCount == 0) {
             return walkWholeChain(elementList, changedVariableNotifier);
         }
-        return walkFromSeeds(elementList, chainState, changedVariableNotifier);
+        return walkFromChangedElements(elementList, chainState, changedVariableNotifier);
     }
 
     private boolean walkWholeChain(List<Object> elementList, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
@@ -155,17 +155,19 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
         return anyElementChanged;
     }
 
-    private boolean walkFromSeeds(List<Object> elementList, ChainState chainState,
+    private boolean walkFromChangedElements(List<Object> elementList, ChainState chainState,
             ChangedVariableNotifier<Solution_> changedVariableNotifier) {
-        var seedIndexes = chainState.seedIndexes;
-        var seedCount = chainState.seedCount;
-        Arrays.sort(seedIndexes, 0, seedCount);
+        var changedElementIndexes = chainState.changedElementIndexes;
+        var changedElementCount = chainState.changedElementCount;
+        Arrays.sort(changedElementIndexes, 0, changedElementCount);
         var chainLength = elementList.size();
         var anyElementChanged = false;
-        // The seeds up to it have been walked after their predecessors, so walking them again changes nothing.
+        // The changed elements up to it have been walked after their predecessors,
+        // so walking them again changes nothing.
         var lastWalkedPosition = -1;
-        for (var i = 0; i < seedCount; i++) {
-            var position = isChainInListOrder ? seedIndexes[i] : chainLength - 1 - seedIndexes[seedCount - 1 - i];
+        for (var i = 0; i < changedElementCount; i++) {
+            var position = isChainInListOrder ? changedElementIndexes[i]
+                    : chainLength - 1 - changedElementIndexes[changedElementCount - 1 - i];
             if (position <= lastWalkedPosition) {
                 continue;
             }
@@ -215,10 +217,10 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     /**
      * @return true if a pre-chain variable differs from the value the chain was last walked with
      */
-    private boolean updatePreChainValues(Object owner, ChainState chainState) {
+    private boolean updatePreChainValues(Object listEntity, ChainState chainState) {
         var isChanged = false;
         for (var i = 0; i < preChainVariableDescriptors.length; i++) {
-            var value = preChainVariableDescriptors[i].getValue(owner);
+            var value = preChainVariableDescriptors[i].getValue(listEntity);
             if (!Objects.equals(chainState.preChainValues[i], value)) {
                 chainState.preChainValues[i] = value;
                 isChanged = true;
@@ -229,7 +231,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
 
     /**
      * Records an element whose source variables changed;
-     * classified into a seed of its owner's chain by {@link #classifyChangedElements}.
+     * classified by the chain of its list entity in {@link #classifyChangedElements}.
      */
     void recordChangedElement(Object element) {
         // An element's list variable state changes all at once, so its events come in a row.
@@ -244,15 +246,15 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
      * as when a forced update of every shadow variable simulates a change on every list,
      * the whole chain is walked.
      */
-    void recordChangedList(Object owner) {
-        markDirty(ownerToChainStateMap.get(owner));
+    void recordChangedList(Object listEntity) {
+        markDirty(listEntityToChainStateMap.get(listEntity));
     }
 
     /**
      * Adds every declarative variable of every element of the list entity's chain.
      */
-    void addElementVariables(Object owner, Set<EntityVariablePair> entityVariablePairSet) {
-        for (var element : listVariableDescriptor.getValue(owner)) {
+    void addElementVariables(Object listEntity, Set<EntityVariablePair> entityVariablePairSet) {
+        for (var element : listVariableDescriptor.getValue(listEntity)) {
             for (var updater : elementUpdaters) {
                 entityVariablePairSet.add(new EntityVariablePair(element, updater.id().name()));
             }
@@ -262,8 +264,8 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     /**
      * Registers a list entity whose block node this updater backs.
      */
-    void addListEntity(Object owner) {
-        ownerToChainStateMap.put(owner, new ChainState(owner, preChainVariableDescriptors.length));
+    void addListEntity(Object listEntity) {
+        listEntityToChainStateMap.put(listEntity, new ChainState(listEntity, preChainVariableDescriptors.length));
     }
 
     private void markDirty(ChainState chainState) {
@@ -274,17 +276,17 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     }
 
     /**
-     * Classifies the recorded elements into seeds of their owners' chains and feeds each dirty owner
+     * Classifies the recorded elements by the chain of their list entity and feeds each dirty list entity
      * to the given consumer, so its block node can be marked changed.
      * An unassigned element is recomputed here rather than by a block node, having no list entity;
      * its suppliers read a null inverse, so it ends up cleared,
      * and re-assigning it to the same position is detected as a change.
      */
     void classifyChangedElements(ChangedVariableNotifier<Solution_> changedVariableNotifier,
-            Consumer<Object> dirtyOwnerConsumer) {
+            Consumer<Object> dirtyListEntityConsumer) {
         for (var element : changedElementList) {
-            var owner = listVariableState.getInverseSingleton(element);
-            if (owner == null) {
+            var listEntity = listVariableState.getInverseSingleton(element);
+            if (listEntity == null) {
                 // A move changing an element before unassigning it records it twice, apart.
                 if (!containsSame(recomputedUnassignedElementList, element)) {
                     recomputedUnassignedElementList.add(element);
@@ -293,14 +295,14 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
                 }
                 continue;
             }
-            var chainState = ownerToChainStateMap.get(owner);
-            chainState.addSeed(listVariableState.getIndexOrFail(element));
+            var chainState = listEntityToChainStateMap.get(listEntity);
+            chainState.addChangedElementIndex(listVariableState.getIndexOrFail(element));
             markDirty(chainState);
         }
         changedElementList.clear();
         recomputedUnassignedElementList.clear();
         for (var chainState : dirtyChainStateList) {
-            dirtyOwnerConsumer.accept(chainState.owner);
+            dirtyListEntityConsumer.accept(chainState.listEntity);
         }
     }
 
@@ -339,33 +341,33 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
         // Differs from any value, so that the first update walks the whole chain.
         private static final Object NOT_WALKED = new Object();
 
-        private final Object owner;
-        // The owner's pre-chain values the chain was last walked with; not reset between updates.
+        private final Object listEntity;
+        // The list entity's pre-chain values the chain was last walked with; not reset between updates.
         private final @Nullable Object[] preChainValues;
         // The list indexes of the elements whose source variables changed, in no particular order.
-        private int[] seedIndexes = new int[4];
-        private int seedCount;
+        private int[] changedElementIndexes = new int[4];
+        private int changedElementCount;
         // In dirtyChainStateList.
         private boolean isDirty;
         // A dependency loop marked the chain inconsistent, or an update gave up before walking it,
         // until an update walks the whole chain; not reset between updates.
         private boolean isChainStale;
 
-        private ChainState(Object owner, int preChainVariableCount) {
-            this.owner = owner;
+        private ChainState(Object listEntity, int preChainVariableCount) {
+            this.listEntity = listEntity;
             this.preChainValues = new Object[preChainVariableCount];
             Arrays.fill(preChainValues, NOT_WALKED);
         }
 
-        private void addSeed(int index) {
-            if (seedCount == seedIndexes.length) {
-                seedIndexes = Arrays.copyOf(seedIndexes, seedCount * 2);
+        private void addChangedElementIndex(int index) {
+            if (changedElementCount == changedElementIndexes.length) {
+                changedElementIndexes = Arrays.copyOf(changedElementIndexes, changedElementCount * 2);
             }
-            seedIndexes[seedCount++] = index;
+            changedElementIndexes[changedElementCount++] = index;
         }
 
         private void reset() {
-            seedCount = 0;
+            changedElementCount = 0;
             isDirty = false;
         }
     }

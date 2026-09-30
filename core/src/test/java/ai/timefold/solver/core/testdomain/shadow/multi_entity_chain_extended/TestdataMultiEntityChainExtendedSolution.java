@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended;
 
 import java.util.List;
 
@@ -11,40 +11,41 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 @PlanningSolution
-public class TestdataExtendedSolution {
+public class TestdataMultiEntityChainExtendedSolution {
 
-    public static SolutionDescriptor<TestdataExtendedSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataExtendedSolution.class,
-                TestdataExtendedVehicle.class, TestdataExtendedVisit.class, TestdataExtendedPriorityVisit.class);
+    public static SolutionDescriptor<TestdataMultiEntityChainExtendedSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataMultiEntityChainExtendedSolution.class,
+                TestdataMultiEntityChainExtendedVehicle.class, TestdataMultiEntityChainExtendedVisit.class,
+                TestdataMultiEntityChainExtendedPriorityVisit.class);
     }
 
-    public static PlanningSolutionMetaModel<TestdataExtendedSolution> buildMetaModel() {
+    public static PlanningSolutionMetaModel<TestdataMultiEntityChainExtendedSolution> buildMetaModel() {
         return buildSolutionDescriptor().getMetaModel();
     }
 
     @PlanningEntityCollectionProperty
-    List<TestdataExtendedVehicle> vehicles;
+    List<TestdataMultiEntityChainExtendedVehicle> vehicles;
 
     @PlanningEntityCollectionProperty
     @ValueRangeProvider
-    List<TestdataExtendedVisit> visits;
+    List<TestdataMultiEntityChainExtendedVisit> visits;
 
     @PlanningScore
     SimpleScore score;
 
-    public List<TestdataExtendedVehicle> getVehicles() {
+    public List<TestdataMultiEntityChainExtendedVehicle> getVehicles() {
         return vehicles;
     }
 
-    public void setVehicles(List<TestdataExtendedVehicle> vehicles) {
+    public void setVehicles(List<TestdataMultiEntityChainExtendedVehicle> vehicles) {
         this.vehicles = vehicles;
     }
 
-    public List<TestdataExtendedVisit> getVisits() {
+    public List<TestdataMultiEntityChainExtendedVisit> getVisits() {
         return visits;
     }
 
-    public void setVisits(List<TestdataExtendedVisit> visits) {
+    public void setVisits(List<TestdataMultiEntityChainExtendedVisit> visits) {
         this.visits = visits;
     }
 

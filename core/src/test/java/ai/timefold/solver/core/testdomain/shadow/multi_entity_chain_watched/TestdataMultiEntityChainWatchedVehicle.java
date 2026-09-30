@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_watched;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +11,16 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
  * A vehicle watching a fact collection of visits that may be assigned to other vehicles,
- * which the multi-entity chained graph cannot represent.
+ * which the list element block cannot represent, since its visits are not graph nodes.
  */
 @PlanningEntity
-public class TestdataWatchedVisitsVehicle extends TestdataObject {
+public class TestdataMultiEntityChainWatchedVehicle extends TestdataObject {
 
-    List<TestdataWatchedVisitsVisit> watchedVisits = new ArrayList<>();
+    List<TestdataMultiEntityChainWatchedVisit> watchedVisits = new ArrayList<>();
     int departureTime;
 
     @PlanningListVariable(allowsUnassignedValues = true)
-    List<TestdataWatchedVisitsVisit> visits = new ArrayList<>();
+    List<TestdataMultiEntityChainWatchedVisit> visits = new ArrayList<>();
 
     @ShadowVariable(supplierName = "endTimeSupplier")
     Integer endTime;
@@ -28,10 +28,10 @@ public class TestdataWatchedVisitsVehicle extends TestdataObject {
     @ShadowVariable(supplierName = "watchedEndTimeSupplier")
     Integer watchedEndTime;
 
-    public TestdataWatchedVisitsVehicle() {
+    public TestdataMultiEntityChainWatchedVehicle() {
     }
 
-    public TestdataWatchedVisitsVehicle(String code, int departureTime) {
+    public TestdataMultiEntityChainWatchedVehicle(String code, int departureTime) {
         super(code);
         this.departureTime = departureTime;
     }
@@ -56,11 +56,11 @@ public class TestdataWatchedVisitsVehicle extends TestdataObject {
         return max;
     }
 
-    public List<TestdataWatchedVisitsVisit> getWatchedVisits() {
+    public List<TestdataMultiEntityChainWatchedVisit> getWatchedVisits() {
         return watchedVisits;
     }
 
-    public void setWatchedVisits(List<TestdataWatchedVisitsVisit> watchedVisits) {
+    public void setWatchedVisits(List<TestdataMultiEntityChainWatchedVisit> watchedVisits) {
         this.watchedVisits = watchedVisits;
     }
 
@@ -72,11 +72,11 @@ public class TestdataWatchedVisitsVehicle extends TestdataObject {
         this.departureTime = departureTime;
     }
 
-    public List<TestdataWatchedVisitsVisit> getVisits() {
+    public List<TestdataMultiEntityChainWatchedVisit> getVisits() {
         return visits;
     }
 
-    public void setVisits(List<TestdataWatchedVisitsVisit> visits) {
+    public void setVisits(List<TestdataMultiEntityChainWatchedVisit> visits) {
         this.visits = visits;
     }
 

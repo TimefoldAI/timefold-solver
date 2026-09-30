@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_watched;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -7,27 +7,24 @@ import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-/**
- * The class declaring the previous element, and therefore the element class of its vehicle's list.
- */
 @PlanningEntity
-public class TestdataExtendedVisit extends TestdataObject {
+public class TestdataMultiEntityChainWatchedVisit extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "visits")
-    TestdataExtendedVehicle vehicle;
+    TestdataMultiEntityChainWatchedVehicle vehicle;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")
-    TestdataExtendedVisit previousVisit;
+    TestdataMultiEntityChainWatchedVisit previousVisit;
 
     int duration = 1;
 
     @ShadowVariable(supplierName = "endServiceTimeSupplier")
     Integer endServiceTime;
 
-    public TestdataExtendedVisit() {
+    public TestdataMultiEntityChainWatchedVisit() {
     }
 
-    public TestdataExtendedVisit(String code, int duration) {
+    public TestdataMultiEntityChainWatchedVisit(String code, int duration) {
         super(code);
         this.duration = duration;
     }
@@ -37,31 +34,35 @@ public class TestdataExtendedVisit extends TestdataObject {
         if (vehicle == null) {
             return null;
         }
-        var base = previousVisit == null ? (Integer) vehicle.getDepartureTime() : previousVisit.getEndServiceTime();
-        if (base == null) {
-            return null;
+        if (previousVisit == null) {
+            return vehicle.getDepartureTime() + duration;
         }
-        return base + duration;
-    }
-
-    public TestdataExtendedVehicle getVehicle() {
-        return vehicle;
-    }
-
-    public void setVehicle(TestdataExtendedVehicle vehicle) {
-        this.vehicle = vehicle;
-    }
-
-    public TestdataExtendedVisit getPreviousVisit() {
-        return previousVisit;
-    }
-
-    public void setPreviousVisit(TestdataExtendedVisit previousVisit) {
-        this.previousVisit = previousVisit;
+        var previousEndServiceTime = previousVisit.getEndServiceTime();
+        return previousEndServiceTime == null ? null : previousEndServiceTime + duration;
     }
 
     public int getDuration() {
         return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public TestdataMultiEntityChainWatchedVehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(TestdataMultiEntityChainWatchedVehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public TestdataMultiEntityChainWatchedVisit getPreviousVisit() {
+        return previousVisit;
+    }
+
+    public void setPreviousVisit(TestdataMultiEntityChainWatchedVisit previousVisit) {
+        this.previousVisit = previousVisit;
     }
 
     public Integer getEndServiceTime() {
@@ -71,5 +72,4 @@ public class TestdataExtendedVisit extends TestdataObject {
     public void setEndServiceTime(Integer endServiceTime) {
         this.endServiceTime = endServiceTime;
     }
-
 }

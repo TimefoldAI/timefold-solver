@@ -79,20 +79,20 @@ final class DeclarativeShadowVariableAssertions {
                 .updateChanged();
     }
 
-    static <Solution_> Solution_ solveWithFullAssert(Class<Solution_> solutionClass,
-            Class<? extends ConstraintProvider> constraintProviderClass, Solution_ problem, Class<?>... entityClasses) {
-        return SolverFactory.<Solution_> create(buildFullAssertSolverConfig(solutionClass, constraintProviderClass,
-                entityClasses)).buildSolver().solve(problem);
-    }
-
     /**
-     * As {@link #solveWithFullAssert(Class, Class, Object, Class[])}, with sub list moves that may reverse
+     * Solves under {@link EnvironmentMode#FULL_ASSERT}, with sub list moves that may reverse
      * and ruin and recreate moves on top of the default list moves,
      * so that single moves change a list in several places.
      */
     static <Solution_> Solution_ solveWithFullAssertAndEveryListMove(Class<Solution_> solutionClass,
             Class<? extends ConstraintProvider> constraintProviderClass, Solution_ problem, Class<?>... entityClasses) {
-        var solverConfig = buildFullAssertSolverConfig(solutionClass, constraintProviderClass, entityClasses)
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withSolutionClass(solutionClass)
+                .withEntityClasses(entityClasses)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withConstraintProviderClass(constraintProviderClass))
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L))
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig().withMoveSelectorConfig(new UnionMoveSelectorConfig()
                                 .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
@@ -100,17 +100,6 @@ final class DeclarativeShadowVariableAssertions {
                                         new SubListSwapMoveSelectorConfig().withSelectReversingMoveToo(true),
                                         new KOptListMoveSelectorConfig(), new ListRuinRecreateMoveSelectorConfig())));
         return SolverFactory.<Solution_> create(solverConfig).buildSolver().solve(problem);
-    }
-
-    private static <Solution_> SolverConfig buildFullAssertSolverConfig(Class<Solution_> solutionClass,
-            Class<? extends ConstraintProvider> constraintProviderClass, Class<?>... entityClasses) {
-        return new SolverConfig()
-                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
-                .withSolutionClass(solutionClass)
-                .withEntityClasses(entityClasses)
-                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                        .withConstraintProviderClass(constraintProviderClass))
-                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
     }
 
     /**

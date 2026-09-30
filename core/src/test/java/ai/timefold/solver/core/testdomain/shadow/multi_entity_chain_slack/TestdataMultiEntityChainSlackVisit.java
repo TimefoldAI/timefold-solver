@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_post_chain_reader;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -12,13 +12,13 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
  * a block node standing for all of them would have to be computed both before and after that end time.
  */
 @PlanningEntity
-public class TestdataPostChainReaderVisit extends TestdataObject {
+public class TestdataMultiEntityChainSlackVisit extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "visits")
-    TestdataPostChainReaderVehicle vehicle;
+    TestdataMultiEntityChainSlackVehicle vehicle;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")
-    TestdataPostChainReaderVisit previousVisit;
+    TestdataMultiEntityChainSlackVisit previousVisit;
 
     int duration = 1;
 
@@ -28,10 +28,10 @@ public class TestdataPostChainReaderVisit extends TestdataObject {
     @ShadowVariable(supplierName = "slackSupplier")
     Integer slack;
 
-    public TestdataPostChainReaderVisit() {
+    public TestdataMultiEntityChainSlackVisit() {
     }
 
-    public TestdataPostChainReaderVisit(String code, int duration) {
+    public TestdataMultiEntityChainSlackVisit(String code, int duration) {
         super(code);
         this.duration = duration;
     }
@@ -53,19 +53,19 @@ public class TestdataPostChainReaderVisit extends TestdataObject {
         return vehicle.getEndTime() - endServiceTime;
     }
 
-    public TestdataPostChainReaderVehicle getVehicle() {
+    public TestdataMultiEntityChainSlackVehicle getVehicle() {
         return vehicle;
     }
 
-    public void setVehicle(TestdataPostChainReaderVehicle vehicle) {
+    public void setVehicle(TestdataMultiEntityChainSlackVehicle vehicle) {
         this.vehicle = vehicle;
     }
 
-    public TestdataPostChainReaderVisit getPreviousVisit() {
+    public TestdataMultiEntityChainSlackVisit getPreviousVisit() {
         return previousVisit;
     }
 
-    public void setPreviousVisit(TestdataPostChainReaderVisit previousVisit) {
+    public void setPreviousVisit(TestdataMultiEntityChainSlackVisit previousVisit) {
         this.previousVisit = previousVisit;
     }
 

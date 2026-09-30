@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback;
+package ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,23 +11,23 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
  * A vehicle whose visits are not all of the same declarative entity class,
- * {@link TestdataExtendedPriorityVisit} declaring a declarative shadow variable of its own.
+ * {@link TestdataMultiEntityChainExtendedPriorityVisit} declaring a declarative shadow variable of its own.
  */
 @PlanningEntity
-public class TestdataExtendedVehicle extends TestdataObject {
+public class TestdataMultiEntityChainExtendedVehicle extends TestdataObject {
 
     int departureTime;
 
     @PlanningListVariable(allowsUnassignedValues = true)
-    List<TestdataExtendedVisit> visits = new ArrayList<>();
+    List<TestdataMultiEntityChainExtendedVisit> visits = new ArrayList<>();
 
     @ShadowVariable(supplierName = "endTimeSupplier")
     Integer endTime;
 
-    public TestdataExtendedVehicle() {
+    public TestdataMultiEntityChainExtendedVehicle() {
     }
 
-    public TestdataExtendedVehicle(String code, int departureTime) {
+    public TestdataMultiEntityChainExtendedVehicle(String code, int departureTime) {
         super(code);
         this.departureTime = departureTime;
     }
@@ -44,11 +44,11 @@ public class TestdataExtendedVehicle extends TestdataObject {
         return departureTime;
     }
 
-    public List<TestdataExtendedVisit> getVisits() {
+    public List<TestdataMultiEntityChainExtendedVisit> getVisits() {
         return visits;
     }
 
-    public void setVisits(List<TestdataExtendedVisit> visits) {
+    public void setVisits(List<TestdataMultiEntityChainExtendedVisit> visits) {
         this.visits = visits;
     }
 

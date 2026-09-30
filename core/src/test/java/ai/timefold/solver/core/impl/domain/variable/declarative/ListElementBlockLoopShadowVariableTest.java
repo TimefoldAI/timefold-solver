@@ -15,9 +15,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.Selecto
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopVisit;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,22 +31,22 @@ class ListElementBlockLoopShadowVariableTest {
 
     @Test
     void vehicleLoopMarksItsWholeRouteInconsistent() {
-        var a1 = new TestdataChainLoopVisit("a1", 2);
-        var a2 = new TestdataChainLoopVisit("a2", 3);
-        var b1 = new TestdataChainLoopVisit("b1", 4);
+        var a1 = new TestdataMultiEntityChainLoopVisit("a1", 2);
+        var a2 = new TestdataMultiEntityChainLoopVisit("a2", 3);
+        var b1 = new TestdataMultiEntityChainLoopVisit("b1", 4);
 
-        var vehicleA = new TestdataChainLoopVehicle("A", 0);
-        var vehicleB = new TestdataChainLoopVehicle("B", 10);
+        var vehicleA = new TestdataMultiEntityChainLoopVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainLoopVehicle("B", 10);
         vehicleA.setVisits(new ArrayList<>(List.of(a1, a2)));
         vehicleB.setVisits(new ArrayList<>(List.of(b1)));
 
-        var solution = new TestdataChainLoopSolution();
+        var solution = new TestdataMultiEntityChainLoopSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB));
         solution.setVisits(List.of(a1, a2, b1));
 
-        var solutionMetaModel = TestdataChainLoopSolution.buildMetaModel();
-        var previousVehicleMetaModel = solutionMetaModel.genuineEntity(TestdataChainLoopVehicle.class)
-                .basicVariable("previousVehicle", TestdataChainLoopVehicle.class);
+        var solutionMetaModel = TestdataMultiEntityChainLoopSolution.buildMetaModel();
+        var previousVehicleMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainLoopVehicle.class)
+                .basicVariable("previousVehicle", TestdataMultiEntityChainLoopVehicle.class);
 
         var context = MoveTester.build(solutionMetaModel).using(solution);
         // Unchained: A starts at 0 -> [2, 5]; B starts at 10 -> [14].
@@ -92,22 +92,22 @@ class ListElementBlockLoopShadowVariableTest {
      */
     @Test
     void loopReportsTheVisitsOfTheRoutesItRunsThrough() {
-        var a1 = new TestdataChainLoopVisit("a1", 2);
-        var a2 = new TestdataChainLoopVisit("a2", 3);
-        var b1 = new TestdataChainLoopVisit("b1", 4);
-        var vehicleA = new TestdataChainLoopVehicle("A", 0);
-        var vehicleB = new TestdataChainLoopVehicle("B", 10);
+        var a1 = new TestdataMultiEntityChainLoopVisit("a1", 2);
+        var a2 = new TestdataMultiEntityChainLoopVisit("a2", 3);
+        var b1 = new TestdataMultiEntityChainLoopVisit("b1", 4);
+        var vehicleA = new TestdataMultiEntityChainLoopVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainLoopVehicle("B", 10);
         vehicleA.setVisits(new ArrayList<>(List.of(a1, a2)));
         vehicleB.setVisits(new ArrayList<>(List.of(b1)));
         vehicleA.setPreviousVehicle(vehicleB);
         vehicleB.setPreviousVehicle(vehicleA);
-        var solution = new TestdataChainLoopSolution();
+        var solution = new TestdataMultiEntityChainLoopSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB));
         solution.setVisits(List.of(a1, a2, b1));
 
-        var solutionDescriptor = TestdataChainLoopSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataMultiEntityChainLoopSolution.buildSolutionDescriptor();
         var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor,
-                (TestdataChainLoopSolution s) -> SimpleScore.of(0), EnvironmentMode.PHASE_ASSERT)
+                (TestdataMultiEntityChainLoopSolution s) -> SimpleScore.of(0), EnvironmentMode.PHASE_ASSERT)
                 .buildScoreDirector();
         scoreDirector.setWorkingSolution(solution);
         var arbitraryGraph = DefaultShadowVariableSessionFactory.buildGraphForStructureAndDirection(
@@ -123,26 +123,27 @@ class ListElementBlockLoopShadowVariableTest {
      */
     @Test
     void elementsLeavingALoopedVehicleBecomeConsistent() {
-        var a1 = new TestdataChainLoopVisit("a1", 2);
-        var a2 = new TestdataChainLoopVisit("a2", 3);
-        var b1 = new TestdataChainLoopVisit("b1", 4);
-        var c1 = new TestdataChainLoopVisit("c1", 1);
+        var a1 = new TestdataMultiEntityChainLoopVisit("a1", 2);
+        var a2 = new TestdataMultiEntityChainLoopVisit("a2", 3);
+        var b1 = new TestdataMultiEntityChainLoopVisit("b1", 4);
+        var c1 = new TestdataMultiEntityChainLoopVisit("c1", 1);
 
-        var vehicleA = new TestdataChainLoopVehicle("A", 0);
-        var vehicleB = new TestdataChainLoopVehicle("B", 10);
-        var vehicleC = new TestdataChainLoopVehicle("C", 20);
+        var vehicleA = new TestdataMultiEntityChainLoopVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainLoopVehicle("B", 10);
+        var vehicleC = new TestdataMultiEntityChainLoopVehicle("C", 20);
         vehicleA.setVisits(new ArrayList<>(List.of(a1, a2)));
         vehicleB.setVisits(new ArrayList<>(List.of(b1)));
         vehicleC.setVisits(new ArrayList<>(List.of(c1)));
 
-        var solution = new TestdataChainLoopSolution();
+        var solution = new TestdataMultiEntityChainLoopSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB, vehicleC));
         solution.setVisits(List.of(a1, a2, b1, c1));
 
-        var solutionMetaModel = TestdataChainLoopSolution.buildMetaModel();
-        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataChainLoopVehicle.class);
-        var previousVehicleMetaModel = vehicleMetaModel.basicVariable("previousVehicle", TestdataChainLoopVehicle.class);
-        var listVariableMetaModel = vehicleMetaModel.listVariable("visits", TestdataChainLoopVisit.class);
+        var solutionMetaModel = TestdataMultiEntityChainLoopSolution.buildMetaModel();
+        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainLoopVehicle.class);
+        var previousVehicleMetaModel =
+                vehicleMetaModel.basicVariable("previousVehicle", TestdataMultiEntityChainLoopVehicle.class);
+        var listVariableMetaModel = vehicleMetaModel.listVariable("visits", TestdataMultiEntityChainLoopVisit.class);
         var context = MoveTester.build(solutionMetaModel).using(solution);
 
         // A after B, then B after A: the loop takes both routes down.
@@ -171,31 +172,32 @@ class ListElementBlockLoopShadowVariableTest {
      */
     @Test
     void vehicleLeavingALoopBringsBackItsWholeRoute() {
-        var a1 = new TestdataChainLoopVisit("a1", 2);
-        var a2 = new TestdataChainLoopVisit("a2", 3);
-        var b1 = new TestdataChainLoopVisit("b1", 4);
-        var c1 = new TestdataChainLoopVisit("c1", 1);
+        var a1 = new TestdataMultiEntityChainLoopVisit("a1", 2);
+        var a2 = new TestdataMultiEntityChainLoopVisit("a2", 3);
+        var b1 = new TestdataMultiEntityChainLoopVisit("b1", 4);
+        var c1 = new TestdataMultiEntityChainLoopVisit("c1", 1);
 
-        var vehicleA = new TestdataChainLoopVehicle("A", null); // Unknown departure, so no start time of its own.
-        var vehicleB = new TestdataChainLoopVehicle("B", 10);
-        var vehicleC = new TestdataChainLoopVehicle("C", 0);
+        var vehicleA = new TestdataMultiEntityChainLoopVehicle("A", null); // Unknown departure, so no start time of its own.
+        var vehicleB = new TestdataMultiEntityChainLoopVehicle("B", 10);
+        var vehicleC = new TestdataMultiEntityChainLoopVehicle("C", 0);
         vehicleA.setVisits(new ArrayList<>(List.of(a1, a2)));
         vehicleB.setVisits(new ArrayList<>(List.of(b1)));
         vehicleC.setVisits(new ArrayList<>(List.of(c1)));
 
-        var solution = new TestdataChainLoopSolution();
+        var solution = new TestdataMultiEntityChainLoopSolution();
         solution.setVehicles(List.of(vehicleA, vehicleB, vehicleC));
         solution.setVisits(List.of(a1, a2, b1, c1));
 
-        var solutionMetaModel = TestdataChainLoopSolution.buildMetaModel();
-        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataChainLoopVehicle.class);
-        var previousVehicleMetaModel = vehicleMetaModel.basicVariable("previousVehicle", TestdataChainLoopVehicle.class);
+        var solutionMetaModel = TestdataMultiEntityChainLoopSolution.buildMetaModel();
+        var vehicleMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainLoopVehicle.class);
+        var previousVehicleMetaModel =
+                vehicleMetaModel.basicVariable("previousVehicle", TestdataMultiEntityChainLoopVehicle.class);
         var previousVehicleDescriptor =
-                ((DefaultPlanningVariableMetaModel<TestdataChainLoopSolution, TestdataChainLoopVehicle, TestdataChainLoopVehicle>) previousVehicleMetaModel)
+                ((DefaultPlanningVariableMetaModel<TestdataMultiEntityChainLoopSolution, TestdataMultiEntityChainLoopVehicle, TestdataMultiEntityChainLoopVehicle>) previousVehicleMetaModel)
                         .variableDescriptor();
         var listVariableDescriptor =
-                ((DefaultPlanningListVariableMetaModel<TestdataChainLoopSolution, TestdataChainLoopVehicle, TestdataChainLoopVisit>) vehicleMetaModel
-                        .listVariable("visits", TestdataChainLoopVisit.class))
+                ((DefaultPlanningListVariableMetaModel<TestdataMultiEntityChainLoopSolution, TestdataMultiEntityChainLoopVehicle, TestdataMultiEntityChainLoopVisit>) vehicleMetaModel
+                        .listVariable("visits", TestdataMultiEntityChainLoopVisit.class))
                         .variableDescriptor();
         var context = MoveTester.build(solutionMetaModel).using(solution);
 
