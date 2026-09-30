@@ -109,10 +109,7 @@ The request body is a JSON envelope with one required top-level field (`modelInp
         "unimprovedSpentLimit": "PT30S"
       },
       "maxThreadCount": 1,
-      "tags": ["production", "monday"],
-      "options": {
-        "seed": "42"
-      }
+      "tags": ["production", "monday"]
     }
   },
   "modelInput": { <1>
@@ -136,9 +133,6 @@ The `run` configuration controls how long the solver runs:
 
 | `tags`
 | Optional labels for filtering or grouping runs.
-
-| `options`
-| Optional map of string values consumed by the active execution profiles, such as the `seed` option for the fixed random seed profile.
 |===
 
 `Termination` settings can be specified per dataset to override the hardcoded termination settings.
