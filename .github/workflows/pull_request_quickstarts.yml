@@ -27,8 +27,12 @@ jobs:
     permissions:
       contents: read
     concurrency:
-      group: downstream-quickstarts-${{ github.event_name }}-${{ github.head_ref }}
+      group: downstream-quickstarts-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.java-version }}
       cancel-in-progress: true
+    strategy:
+      fail-fast: false # A broken JDK must not cancel the others.
+      matrix:
+        java-version: [ 25, 27 ] # Current LTS and latest JDK; replace 27 on each JDK release.
     timeout-minutes: 120
     steps:
       # Clone timefold-solver
@@ -60,10 +64,10 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
 
       # Build and test
-      - name: Setup Temurin 25 and Maven
+      - name: Setup Temurin and Maven
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: '25'
+          java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
           cache: 'maven'
       - name: Quickly build timefold-solver

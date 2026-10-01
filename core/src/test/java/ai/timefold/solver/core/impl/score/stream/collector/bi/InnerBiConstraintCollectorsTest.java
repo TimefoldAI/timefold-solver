@@ -1590,7 +1590,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
         LoadBalance<String> actualResult = collector.finisher().apply((Container_) container);
         assertThat(actualResult.unfairness())
                 .as("Collector (" + collector + ") did not produce expected result.")
-                .isEqualTo(expectedValue);
+                .isEqualByComparingTo(expectedValue); // Scale-safe comparison.
     }
 
 }

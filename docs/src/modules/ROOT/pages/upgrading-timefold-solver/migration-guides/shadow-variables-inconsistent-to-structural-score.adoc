@@ -1,5 +1,5 @@
 [#migrateShadowVariablesInconsistent]
-= `@ShadowVariablesInconsistent` to structural scores
+= @ShadowVariablesInconsistent to structural scores
 :doctype: book
 :icons: font
 
