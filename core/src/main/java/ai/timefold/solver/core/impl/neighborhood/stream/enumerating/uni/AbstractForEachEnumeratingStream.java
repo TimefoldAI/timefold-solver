@@ -41,7 +41,7 @@ abstract sealed class AbstractForEachEnumeratingStream<Solution_, A>
     public final void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
+        var node = new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle, false, outputStoreSize);
         if (shouldIncludeNull && node.supports(LifecycleOperation.INSERT)) {
             node.insert(null);
         }
