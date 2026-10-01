@@ -46,8 +46,10 @@ import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
@@ -190,6 +192,11 @@ public interface TimefoldSolverEnterpriseService {
      */
     ConstraintProviderNodeSharer createNodeSharer();
 
+    <Solution_, Score_ extends Score<Score_>>
+            AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>
+            getTieredBavetScoreDirectorBuilder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> factory,
+                    EnvironmentMode environmentMode);
+
     <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(PhaseTermination<Solution_> termination,
             ConstructionHeuristicForager<Solution_> forager, HeuristicConfigPolicy<Solution_> configPolicy);
 
@@ -255,7 +262,8 @@ public interface TimefoldSolverEnterpriseService {
                 "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
         CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration"),
         SCORE_ANALYSIS("Score analysis", "do not use SolutionManager's analyze() method"),
-        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method");
+        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method"),
+        TIERED_SCORE_CALCULATION("Tiered score calculation", "remove tiered score calculation from solver configuration");
 
         private final String name;
         private final String workaround;

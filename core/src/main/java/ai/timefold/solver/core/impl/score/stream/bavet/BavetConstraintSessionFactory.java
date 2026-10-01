@@ -67,7 +67,6 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         var zeroScore = scoreDefinition.getZeroScore();
         var constraintStreamSet = new LinkedHashSet<BavetAbstractConstraintStream<Solution_>>();
         var constraintWeightMap = HashMap.<Constraint, Score_> newHashMap(constraints.size());
-
         // Only log constraint weights if logging is enabled; otherwise we don't need to build the string.
         var constraintWeightLoggingEnabled = !scoreDirectorDerived && LOGGER.isEnabledForLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL);
         var constraintWeightString = constraintWeightLoggingEnabled
@@ -120,7 +119,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                         scoreDirectorDerived));
     }
 
-    private ConstraintStreamsBavetNodeNetwork buildNodeNetwork(Solution_ workingSolution,
+    public static <Solution_, Score_ extends Score<Score_>> ConstraintStreamsBavetNodeNetwork buildNodeNetwork(
+            Solution_ workingSolution,
             ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
             AbstractScoreInliner<Score_> scoreInliner, InnerConstraintProfiler profiler, boolean scoreDirectorDerived) {
         var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, profiler);
@@ -153,12 +153,13 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         var constraintToScorerMap = scoreInliner.getConstraints()
                 .stream()
                 .map(constraint -> (BavetConstraint<Solution_>) constraint)
+                .filter(constraint -> buildHelper.getScorer(constraint.getScoringConstraintStream()) != null)
                 .collect(Collectors.toMap(Function.identity(),
                         constraint -> buildHelper.getScorer(constraint.getScoringConstraintStream()), (a, b) -> a,
                         LinkedHashMap::new));
 
-        if (constraintProfiler != null) {
-            constraintProfiler.registerNodeGraph(workingSolution, nodeList, scoreInliner.getConstraints(),
+        if (profiler != null) {
+            profiler.registerNodeGraph(workingSolution, nodeList, scoreInliner.getConstraints(),
                     buildHelper::getNodeCreatingStream, buildHelper::findParentNode);
         }
 

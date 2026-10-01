@@ -33,7 +33,7 @@ public final class BavetConstraintSession<Score_ extends Score<Score_>>
         this(scoreInliner, ConstraintStreamsBavetNodeNetwork.EMPTY);
     }
 
-    BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner, ConstraintStreamsBavetNodeNetwork nodeNetwork) {
+    public BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner, ConstraintStreamsBavetNodeNetwork nodeNetwork) {
         super(nodeNetwork);
         this.scoreInliner = scoreInliner;
     }
