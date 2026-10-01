@@ -3,9 +3,10 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import ai.timefold.solver.core.api.domain.common.Lookup;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public record SubList(Object entity, int fromIndex, int length) {
+public record SubList(@Nullable Object entity, int fromIndex, int length) {
 
     public int getToIndex() {
         return fromIndex + length;
@@ -17,6 +18,7 @@ public record SubList(Object entity, int fromIndex, int length) {
 
     @Override
     public String toString() {
-        return entity + "[" + fromIndex + ".." + getToIndex() + "]";
+        return "%s[%d..%d]".formatted(entity, fromIndex, getToIndex());
     }
+
 }

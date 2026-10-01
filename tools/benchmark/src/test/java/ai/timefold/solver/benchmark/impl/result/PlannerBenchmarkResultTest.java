@@ -13,9 +13,8 @@ import java.util.Collections;
 
 import ai.timefold.solver.benchmark.impl.loader.FileProblemProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -37,19 +36,19 @@ class PlannerBenchmarkResultTest {
         var p1SolverX = new SolverBenchmarkResult(p1);
         p1SolverX.setName("Solver X");
         var p1SolverConfigX = new SolverConfig();
-        p1SolverConfigX.setRandomType(RandomType.JDK);
+        p1SolverConfigX.setRandomSeed(0L);
         p1SolverX.setSolverConfig(p1SolverConfigX);
         p1SolverX.setSingleBenchmarkResultList(new ArrayList<>());
         var p1SolverY = new SolverBenchmarkResult(p1);
         p1SolverY.setName("Solver Y");
         var p1SolverConfigY = new SolverConfig();
-        p1SolverConfigY.setRandomType(RandomType.MERSENNE_TWISTER);
+        p1SolverConfigY.setRandomSeed(1L);
         p1SolverY.setSolverConfig(p1SolverConfigY);
         p1SolverY.setSingleBenchmarkResultList(new ArrayList<>());
         var p2SolverZ = new SolverBenchmarkResult(p2);
         p2SolverZ.setName("Solver Z");
         var p2SolverConfigZ = new SolverConfig();
-        p2SolverConfigZ.setRandomType(RandomType.WELL1024A);
+        p2SolverConfigZ.setRandomSeed(2L);
         p2SolverZ.setSolverConfig(p2SolverConfigZ);
         p2SolverZ.setSingleBenchmarkResultList(new ArrayList<>());
 
@@ -127,10 +126,10 @@ class PlannerBenchmarkResultTest {
         assertThat(jaxbString.trim()).isEqualToIgnoringWhitespace(originalXml.trim());
     }
 
-    // nested class below are used in the testPlannerBenchmarkResult.xml
+    // nested classes below are used in the testPlannerBenchmarkResult.xml
 
-    private static abstract class DummyIncrementalScoreCalculator
-            implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+    private static abstract class DummyEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
     }
 

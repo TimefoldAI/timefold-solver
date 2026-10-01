@@ -11,10 +11,9 @@ import java.util.Set;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
@@ -24,7 +23,7 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
-    private final NodeNetwork nodeNetwork;
+    private final AbstractBavetNodeNetwork nodeNetwork;
     private final RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle;
     private final Class<?>[] sourceClasses;
     private final Set<Class<?>> entityClassSet;
@@ -66,11 +65,11 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
                         ConstraintMatchPolicy.DISABLED),
                 null);
 
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(streamSet, buildHelper,
                 BavetAbstractConstraintStream::buildNode,
                 node -> {
-                    if (!(node instanceof BavetRootNode<?> sourceRootNode)) {
+                    if (!(node instanceof AbstractRootNode<?> sourceRootNode)) {
                         return;
                     }
                     var nodeSourceClasses = sourceRootNode.getSourceClasses();
@@ -80,14 +79,14 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
                     }
                 });
 
-        this.nodeNetwork = AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, buildHelper);
+        this.nodeNetwork = buildHelper.buildPrecomputeNodeNetwork(nodeList, declaredClassToNodeMap);
         this.recordingTupleLifecycle =
                 (RecordingTupleLifecycle<Tuple_>) buildHelper
                         .getAggregatedTupleLifecycle(List.of(recordingPrecomputeConstraintStream));
         this.sourceClasses = declaredClassToNodeMap.keySet().toArray(new Class<?>[0]);
     }
 
-    public NodeNetwork getNodeNetwork() {
+    public AbstractBavetNodeNetwork getNodeNetwork() {
         return nodeNetwork;
     }
 

@@ -2,7 +2,6 @@ package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonSerializer;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;

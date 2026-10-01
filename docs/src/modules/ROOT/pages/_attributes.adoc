@@ -1,7 +1,8 @@
 // Attributes derived from the maven build, typically versions, are defined in the pom.xml and antora.yml.
 :quickstarts-clone-url: https://github.com/TimefoldAI/timefold-quickstarts
 :quickstarts-archive-url: https://github.com/TimefoldAI/timefold-quickstarts/archive/refs/heads/stable.tar.gz
-:hello-world-java-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/java/hello-world
-:spring-boot-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/java/spring-boot-integration
-:quarkus-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/java/school-timetabling
-:vrp-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/java/vehicle-routing
+:hello-world-java-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/hello-world
+:spring-boot-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/spring-boot-integration
+:quarkus-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/school-timetabling
+:vrp-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/vehicle-routing
+:service-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/service

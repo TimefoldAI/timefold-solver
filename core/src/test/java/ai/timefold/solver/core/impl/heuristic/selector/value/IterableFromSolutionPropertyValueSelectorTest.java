@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,7 +14,6 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -45,7 +45,7 @@ class IterableFromSolutionPropertyValueSelectorTest {
         var solution = new TestdataSolution();
         solution.setValueList(List.of(new TestdataValue("jan"), new TestdataValue("feb"), new TestdataValue("mar"),
                 new TestdataValue("apr"), new TestdataValue("may"), new TestdataValue("jun")));
-        var solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         doReturn(solution).when(scoreDirector).getWorkingSolution();

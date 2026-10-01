@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.quad;
 
+import java.util.function.IntSupplier;
+
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
@@ -15,9 +17,9 @@ public final class Group3Mapping0CollectorQuadNode<OldA, OldB, OldC, OldD, A, B,
 
     public Group3Mapping0CollectorQuadNode(QuadFunction<OldA, OldB, OldC, OldD, A> groupKeyMappingA,
             QuadFunction<OldA, OldB, OldC, OldD, B> groupKeyMappingB, QuadFunction<OldA, OldB, OldC, OldD, C> groupKeyMappingC,
-            int groupStoreIndex,
+            IntSupplier storeIndexReserver,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex,
+        super(storeIndexReserver,
                 tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, groupKeyMappingC, tuple),
                 nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;

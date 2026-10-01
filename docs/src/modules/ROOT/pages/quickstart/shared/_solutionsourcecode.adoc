@@ -1,0 +1,5 @@
+== Solution source code
+
+Follow the instructions in the next sections to create the application step by step (recommended).
+
+In case you get stuck during this Getting Started guide, it might be worth checking the solution project {framework-quickstart-url}[on GitHub].

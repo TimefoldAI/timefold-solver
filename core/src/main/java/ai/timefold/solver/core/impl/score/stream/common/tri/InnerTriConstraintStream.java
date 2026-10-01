@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.common.tri;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
@@ -23,10 +21,6 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
 
     static <A, B, C> QuadFunction<A, B, C, Score<?>, DefaultConstraintJustification> createDefaultJustificationMapping() {
         return (a, b, c, score) -> DefaultConstraintJustification.of(score, a, b, c);
-    }
-
-    static <A, B, C> TriFunction<A, B, C, Collection<?>> createDefaultIndictedObjectsMapping() {
-        return Arrays::asList;
     }
 
     RetrievalSemantics getRetrievalSemantics();

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,6 +11,8 @@ import java.util.Set;
 
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class MathUtilsTest {
     // https://stackoverflow.com/a/11916946
@@ -207,5 +210,68 @@ class MathUtilsTest {
         assertThat(MathUtils.getLogInBase(3, 9)).isEqualTo(2.0, tolerance);
         assertThat(MathUtils.getLogInBase(3, 27)).isEqualTo(3.0, tolerance);
         assertThat(MathUtils.getLogInBase(9, 3)).isEqualTo(0.5, tolerance);
+    }
+
+    @CsvSource("""
+             0, 1
+             1, 1
+             2, 2
+             3, 6
+             4, 24
+             5, 120
+             6, 720
+             7, 5040
+             8, 40320
+             9, 362880
+            10, 3628800
+            11, 39916800
+            12, 479001600
+            13, 6227020800
+            14, 87178291200
+            15, 1307674368000
+            16, 20922789888000
+            17, 355687428096000
+            18, 6402373705728000
+            19, 121645100408832000
+            20, 2432902008176640000
+            """)
+    @ParameterizedTest
+    void factorial(int n, long factorial) {
+        assertThat(MathUtils.factorial(n)).isEqualTo(factorial);
+    }
+
+    @Test
+    void factorialBounds() {
+        assertThatThrownBy(() -> MathUtils.factorial(-1))
+                .hasMessage("Factorial of -1 is undefined.");
+        assertThatThrownBy(() -> MathUtils.factorial(21))
+                .hasMessage("Factorial of 21 is too large to fit in a long.");
+    }
+
+    @CsvSource("""
+             0,  0,   1
+             1,  0,   1
+             1,  1,   1
+             5,  0,   1
+             5,  1,   5
+             5,  2,  10
+             5,  3,  10
+             5,  4,   5
+             5,  5,   1
+            10,  0,   1
+            10,  1,  10
+            10,  2,  45
+            10,  3, 120
+            10,  4, 210
+            10,  5, 252
+            10,  6, 210
+            10,  7, 120
+            10,  8,  45
+            10,  9,  10
+            10, 10,   1
+            """)
+    @ParameterizedTest
+    void binomialCoefficient(int n, int k, long coefficient) {
+        assertThat(MathUtils.binomialCoefficient(n, k)).isEqualTo(coefficient);
     }
 }

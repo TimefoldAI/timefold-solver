@@ -8,22 +8,22 @@ import jakarta.ws.rs.Path;
 
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.jackson.it.domain.ITestdataPlanningSolution;
+import ai.timefold.solver.quarkus.jackson.it.testdata.TestdataJacksonPlanningSolution;
 
 @Path("/timefold/test")
 public class TimefoldTestResource {
 
-    private final SolverManager<ITestdataPlanningSolution> solverManager;
+    private final SolverManager<TestdataJacksonPlanningSolution> solverManager;
 
     @Inject
-    public TimefoldTestResource(SolverManager<ITestdataPlanningSolution> solverManager) {
+    public TimefoldTestResource(SolverManager<TestdataJacksonPlanningSolution> solverManager) {
         this.solverManager = solverManager;
     }
 
     @POST
     @Path("/solver-factory")
-    public ITestdataPlanningSolution solveWithSolverFactory(ITestdataPlanningSolution problem) {
-        SolverJob<ITestdataPlanningSolution> solverJob = solverManager.solve(1L, problem);
+    public TestdataJacksonPlanningSolution solveWithSolverFactory(TestdataJacksonPlanningSolution problem) {
+        SolverJob<TestdataJacksonPlanningSolution> solverJob = solverManager.solve(1L, problem);
         try {
             return solverJob.getFinalBestSolution();
         } catch (InterruptedException e) {

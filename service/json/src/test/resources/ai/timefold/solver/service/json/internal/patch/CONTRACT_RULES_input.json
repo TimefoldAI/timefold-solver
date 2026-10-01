@@ -1,0 +1,1043 @@
+{
+	"contracts": [
+		{
+			"id": "fullTimeContract",
+			"priority": "10",
+			"consecutiveDaysWorkedRules": [
+				{
+					"id": "Max5ConsecutiveDaysFullTime",
+					"maximum": 5
+				}
+			],
+			"periodRules": [
+				{
+					"id": "Max8HoursPerDayFullTime",
+					"period": "DAY",
+					"minutesWorkedMax": 480,
+					"periodShiftOverlapKind": "START_ONLY"
+				},
+				{
+					"id": "Max40HoursPerWeekFullTime",
+					"period": "WEEK",
+					"minutesWorkedMax": 2400,
+					"periodShiftOverlapKind": "START_ONLY"
+				}
+			],
+			"minutesBetweenShiftsRules": [
+				{
+					"id": "Minimum12HoursBetweenShiftsFullTime",
+					"minimumMinutesBetweenShifts": 720
+				}
+			],
+			"weekendConfiguration": {
+			},
+			"fteConfiguration": {
+				"fixedFte": 1
+			}
+		},
+		{
+			"id": "partTimeContract",
+			"priority": "10",
+			"consecutiveDaysWorkedRules": [
+				{
+					"id": "Max5ConsecutiveDaysPartTime",
+					"maximum": 5
+				}
+			],
+			"periodRules": [
+				{
+					"id": "Max8HoursPerDayPartTime",
+					"period": "DAY",
+					"minutesWorkedMax": 480,
+					"periodShiftOverlapKind": "START_ONLY"
+				},
+				{
+					"id": "Max24HoursPerWeekPartTime",
+					"period": "WEEK",
+					"minutesWorkedMax": 1440,
+					"periodShiftOverlapKind": "START_ONLY"
+				}
+			],
+			"minutesBetweenShiftsRules": [
+				{
+					"id": "Minimum12HoursBetweenShiftsPartTime",
+					"minimumMinutesBetweenShifts": 720
+				}
+			],
+			"weekendConfiguration": {
+			},
+			"fteConfiguration": {
+				"fixedFte": 0.5
+			}
+		},
+		{
+			"id": "patternContract",
+			"priority": "10",
+			"periodRules": [
+				{
+					"id": "Max8HoursPerDayPattern",
+					"period": "DAY",
+					"minutesWorkedMax": 480,
+					"periodShiftOverlapKind": "START_ONLY"
+				},
+				{
+					"id": "Max40HoursPerWeekPattern",
+					"period": "WEEK",
+					"minutesWorkedMax": 2400,
+					"periodShiftOverlapKind": "START_ONLY"
+				}
+			],
+			"minutesBetweenShiftsRules": [
+				{
+					"id": "Minimum12HoursBetweenShiftsPattern",
+					"minimumMinutesBetweenShifts": 720
+				}
+			],
+			"multiDayShiftSequencePatternRules": [
+				{
+					"id": "MMMMMOO",
+					"satisfiability": "PREFERRED",
+					"pattern": [
+						{
+							"includeShiftTags": [
+								"Morning"
+							]
+						},
+						{
+							"includeShiftTags": [
+								"Morning"
+							]
+						},
+						{
+							"includeShiftTags": [
+								"Morning"
+							]
+						},
+						{
+							"includeShiftTags": [
+								"Morning"
+							]
+						},
+						{
+							"includeShiftTags": [
+								"Morning"
+							]
+						},
+						{
+							"type": "OFF"
+						},
+						{
+							"type": "OFF"
+						}
+					]
+				}
+			],
+			"weekendConfiguration": {
+			},
+			"fteConfiguration": {
+				"fixedFte": 1
+			}
+		}
+	],
+	"employees": [
+		{
+			"id": "Ann Cole",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Ambulance"
+				}
+			],
+			"preferredTimeSpans": [
+				{
+					"start": "2025-08-04T00:00:00-04:00",
+					"end": "2025-08-06T00:00:00-04:00",
+					"includeShiftTags": [
+						"Morning"
+					]
+				},
+				{
+					"start": "2025-08-06T00:00:00-04:00",
+					"end": "2025-08-09T00:00:00-04:00",
+					"includeShiftTags": [
+						"Afternoon"
+					]
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Beth Fox",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Ambulance"
+				}
+			],
+			"preferredTimeSpans": [
+				{
+					"start": "2025-08-06T00:00:00-04:00",
+					"end": "2025-08-08T00:00:00-04:00",
+					"includeShiftTags": [
+						"Morning"
+					]
+				}
+			],
+			"unavailableTimeSpans": [
+				{
+					"start": "2025-08-05T00:00:00-04:00",
+					"end": "2025-08-06T00:00:00-04:00"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Carl Robinson",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Ambulance"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Dan Green",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Maternity"
+				}
+			],
+			"unavailableTimeSpans": [
+				{
+					"start": "2025-08-07T00:00:00-04:00",
+					"end": "2025-08-09T00:00:00-04:00"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Elsa Jones",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Maternity"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Flo King",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Surgery"
+				}
+			],
+			"unavailableTimeSpans": [
+				{
+					"start": "2025-08-04T00:00:00-04:00",
+					"end": "2025-08-05T00:00:00-04:00"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Gus Li",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Surgery"
+				}
+			],
+			"unpreferredTimeSpans": [
+				{
+					"start": "2025-08-04T00:00:00-04:00",
+					"end": "2025-08-11T00:00:00-04:00",
+					"includeShiftTags": [
+						"Night"
+					]
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Lucy Zane (24h/w)",
+			"contracts": [
+				"partTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Maternity"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Hugo Poe",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Surgery"
+				},
+				{
+					"id": "Maternity"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Jay Smith",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Surgery"
+				},
+				{
+					"id": "Ambulance"
+				}
+			],
+			"preferredTimeSpans": [
+				{
+					"start": "2025-08-04T00:00:00-04:00",
+					"end": "2025-08-11T00:00:00-04:00",
+					"includeShiftTags": [
+						"Night"
+					]
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Kevin Watt (MMMMMOO)",
+			"contracts": [
+				"patternContract"
+			],
+			"skills": [
+				{
+					"id": "Surgery"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Ivy Rye",
+			"contracts": [
+				"fullTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Surgery"
+				},
+				{
+					"id": "Maternity"
+				}
+			],
+			"timeZoneId": "-04:00"
+		},
+		{
+			"id": "Monica Young (24h/w)",
+			"contracts": [
+				"partTimeContract"
+			],
+			"skills": [
+				{
+					"id": "Ambulance"
+				}
+			],
+			"timeZoneId": "-04:00"
+		}
+	],
+	"shifts": [
+		{
+			"id": "Mon M Ambulance",
+			"start": "2025-08-04T06:00:00-04:00",
+			"end": "2025-08-04T14:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Mon A Ambulance",
+			"start": "2025-08-04T14:00:00-04:00",
+			"end": "2025-08-04T22:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Mon N Ambulance",
+			"start": "2025-08-04T22:00:00-04:00",
+			"end": "2025-08-05T06:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Mon M Maternity",
+			"start": "2025-08-04T06:00:00-04:00",
+			"end": "2025-08-04T14:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Mon A Maternity",
+			"start": "2025-08-04T14:00:00-04:00",
+			"end": "2025-08-04T22:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Mon N Maternity",
+			"start": "2025-08-04T22:00:00-04:00",
+			"end": "2025-08-05T06:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Mon M Surgery",
+			"start": "2025-08-04T06:00:00-04:00",
+			"end": "2025-08-04T14:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Mon A Surgery",
+			"start": "2025-08-04T14:00:00-04:00",
+			"end": "2025-08-04T22:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Mon N Surgery",
+			"start": "2025-08-04T22:00:00-04:00",
+			"end": "2025-08-05T06:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Tue M Ambulance",
+			"start": "2025-08-05T06:00:00-04:00",
+			"end": "2025-08-05T14:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Tue A Ambulance",
+			"start": "2025-08-05T14:00:00-04:00",
+			"end": "2025-08-05T22:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Tue N Ambulance",
+			"start": "2025-08-05T22:00:00-04:00",
+			"end": "2025-08-06T06:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Tue M Maternity",
+			"start": "2025-08-05T06:00:00-04:00",
+			"end": "2025-08-05T14:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Tue A Maternity",
+			"start": "2025-08-05T14:00:00-04:00",
+			"end": "2025-08-05T22:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Tue N Maternity",
+			"start": "2025-08-05T22:00:00-04:00",
+			"end": "2025-08-06T06:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Tue M Surgery",
+			"start": "2025-08-05T06:00:00-04:00",
+			"end": "2025-08-05T14:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Tue A Surgery",
+			"start": "2025-08-05T14:00:00-04:00",
+			"end": "2025-08-05T22:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Tue N Surgery",
+			"start": "2025-08-05T22:00:00-04:00",
+			"end": "2025-08-06T06:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Wed M Ambulance",
+			"start": "2025-08-06T06:00:00-04:00",
+			"end": "2025-08-06T14:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Wed A Ambulance",
+			"start": "2025-08-06T14:00:00-04:00",
+			"end": "2025-08-06T22:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Wed N Ambulance",
+			"start": "2025-08-06T22:00:00-04:00",
+			"end": "2025-08-07T06:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Wed M Maternity",
+			"start": "2025-08-06T06:00:00-04:00",
+			"end": "2025-08-06T14:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Wed A Maternity",
+			"start": "2025-08-06T14:00:00-04:00",
+			"end": "2025-08-06T22:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Wed N Maternity",
+			"start": "2025-08-06T22:00:00-04:00",
+			"end": "2025-08-07T06:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Wed M Surgery",
+			"start": "2025-08-06T06:00:00-04:00",
+			"end": "2025-08-06T14:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Wed A Surgery",
+			"start": "2025-08-06T14:00:00-04:00",
+			"end": "2025-08-06T22:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Wed N Surgery",
+			"start": "2025-08-06T22:00:00-04:00",
+			"end": "2025-08-07T06:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Thu M Ambulance",
+			"start": "2025-08-07T06:00:00-04:00",
+			"end": "2025-08-07T14:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Thu A Ambulance",
+			"start": "2025-08-07T14:00:00-04:00",
+			"end": "2025-08-07T22:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Thu N Ambulance",
+			"start": "2025-08-07T22:00:00-04:00",
+			"end": "2025-08-08T06:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Thu M Maternity",
+			"start": "2025-08-07T06:00:00-04:00",
+			"end": "2025-08-07T14:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Thu A Maternity",
+			"start": "2025-08-07T14:00:00-04:00",
+			"end": "2025-08-07T22:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Thu N Maternity",
+			"start": "2025-08-07T22:00:00-04:00",
+			"end": "2025-08-08T06:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Thu M Surgery",
+			"start": "2025-08-07T06:00:00-04:00",
+			"end": "2025-08-07T14:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Thu A Surgery",
+			"start": "2025-08-07T14:00:00-04:00",
+			"end": "2025-08-07T22:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Thu N Surgery",
+			"start": "2025-08-07T22:00:00-04:00",
+			"end": "2025-08-08T06:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Fri M Ambulance",
+			"start": "2025-08-08T06:00:00-04:00",
+			"end": "2025-08-08T14:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Fri A Ambulance",
+			"start": "2025-08-08T14:00:00-04:00",
+			"end": "2025-08-08T22:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Fri N Ambulance",
+			"start": "2025-08-08T22:00:00-04:00",
+			"end": "2025-08-09T06:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Fri M Maternity",
+			"start": "2025-08-08T06:00:00-04:00",
+			"end": "2025-08-08T14:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Fri A Maternity",
+			"start": "2025-08-08T14:00:00-04:00",
+			"end": "2025-08-08T22:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Fri N Maternity",
+			"start": "2025-08-08T22:00:00-04:00",
+			"end": "2025-08-09T06:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Fri M Surgery",
+			"start": "2025-08-08T06:00:00-04:00",
+			"end": "2025-08-08T14:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Fri A Surgery",
+			"start": "2025-08-08T14:00:00-04:00",
+			"end": "2025-08-08T22:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Fri N Surgery",
+			"start": "2025-08-08T22:00:00-04:00",
+			"end": "2025-08-09T06:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Sat M Ambulance",
+			"start": "2025-08-09T06:00:00-04:00",
+			"end": "2025-08-09T14:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Sat A Ambulance",
+			"start": "2025-08-09T14:00:00-04:00",
+			"end": "2025-08-09T22:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Sat N Ambulance",
+			"start": "2025-08-09T22:00:00-04:00",
+			"end": "2025-08-10T06:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Sat M Maternity",
+			"start": "2025-08-09T06:00:00-04:00",
+			"end": "2025-08-09T14:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Sat A Maternity",
+			"start": "2025-08-09T14:00:00-04:00",
+			"end": "2025-08-09T22:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Sat N Maternity",
+			"start": "2025-08-09T22:00:00-04:00",
+			"end": "2025-08-10T06:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Sat M Surgery",
+			"start": "2025-08-09T06:00:00-04:00",
+			"end": "2025-08-09T14:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Sat A Surgery",
+			"start": "2025-08-09T14:00:00-04:00",
+			"end": "2025-08-09T22:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Sat N Surgery",
+			"start": "2025-08-09T22:00:00-04:00",
+			"end": "2025-08-10T06:00:00-04:00",
+			"requiredSkills": [
+				"Surgery"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Sun M Ambulance",
+			"start": "2025-08-10T06:00:00-04:00",
+			"end": "2025-08-10T14:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Sun A Ambulance",
+			"start": "2025-08-10T14:00:00-04:00",
+			"end": "2025-08-10T22:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Sun N Ambulance",
+			"start": "2025-08-10T22:00:00-04:00",
+			"end": "2025-08-11T06:00:00-04:00",
+			"requiredSkills": [
+				"Ambulance"
+			],
+			"tags": [
+				"Night"
+			]
+		},
+		{
+			"id": "Sun M Maternity",
+			"start": "2025-08-10T06:00:00-04:00",
+			"end": "2025-08-10T14:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Morning"
+			]
+		},
+		{
+			"id": "Sun A Maternity",
+			"start": "2025-08-10T14:00:00-04:00",
+			"end": "2025-08-10T22:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Afternoon"
+			]
+		},
+		{
+			"id": "Sun N Maternity",
+			"start": "2025-08-10T22:00:00-04:00",
+			"end": "2025-08-11T06:00:00-04:00",
+			"requiredSkills": [
+				"Maternity"
+			],
+			"tags": [
+				"Night"
+			]
+		}
+	],
+	"globalRules": {
+		"balanceTimeWorkedRules": [
+			{
+				"id": "BalanceTimeWorked"
+			}
+		]
+	},
+	"planningWindow": {
+		"start": "2025-08-04T00:00:00Z",
+		"end": "2025-08-12T00:00:00Z"
+	}
+}

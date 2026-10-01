@@ -104,9 +104,9 @@ public class DefaultConstructionHeuristicPhase<Solution_>
                                 stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
                     }
                 } else {
-                    throw new IllegalStateException("The step index (" + stepScope.getStepIndex()
-                            + ") has selected move count (" + stepScope.getSelectedMoveCount()
-                            + ") but failed to pick a nextStep (" + stepScope.getStep() + ").");
+                    throw new IllegalStateException(
+                            "The step index (%d) has selected move count (%d) but failed to pick a nextStep (%s).".formatted(
+                                    stepScope.getStepIndex(), stepScope.getSelectedMoveCount(), stepScope.getStep()));
                 }
                 // Although stepStarted has been called, stepEnded is not called for this step.
                 earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
@@ -190,11 +190,17 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         phaseScope.endingNow();
         if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
             logger.info(
-                    "{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), step total ({}).",
+                    """
+                            {}Construction Heuristic phase ({}) ended: time spent ({}), environment mode ({}), best score ({}), \
+                            {}move evaluation speed ({}/sec), step total ({}).""",
                     logIndentation,
                     phaseIndex,
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                    environmentMode.name(),
                     phaseScope.getBestScore().raw(),
+                    // Multithreaded solving uses "effective" move evaluation speed, since not all evaluated moves
+                    // are foraged
+                    (decider.getClass().equals(ConstructionHeuristicDecider.class)) ? "" : "effective ",
                     phaseScope.getPhaseMoveEvaluationSpeed(),
                     phaseScope.getNextStepIndex());
         }
@@ -222,23 +228,17 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     }
 
     public static class DefaultConstructionHeuristicPhaseBuilder<Solution_>
-            extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
+            extends AbstractPossiblyInitializingPhaseBuilder<Solution_, DefaultConstructionHeuristicPhase<Solution_>> {
 
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
-                PhaseTermination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
-                ConstructionHeuristicDecider<Solution_> decider) {
-            super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
+        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean lastInitializingPhase,
+                EnvironmentMode environmentMode, String logIndentation, PhaseTermination<Solution_> phaseTermination,
+                EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
+            super(phaseIndex, lastInitializingPhase, environmentMode, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
-        }
-
-        @Override
-        public DefaultConstructionHeuristicPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
-            super.enableAssertions(environmentMode);
-            return this;
         }
 
         public EntityPlacer<Solution_> getEntityPlacer() {

@@ -1,23 +1,24 @@
 package ai.timefold.solver.benchmark.impl;
 
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverTags;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
 
 public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBenchmarkRunner<Solution_>> {
 
@@ -79,9 +80,8 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             solverConfig = new SolverConfig(solverConfig);
             solverConfig.offerRandomSeedFromSubSingleIndex(subSingleBenchmarkResult.getSubSingleBenchmarkIndex());
         }
-        var subSingleBenchmarkTagMap = new HashMap<String, String>();
         var runId = UUID.randomUUID().toString();
-        subSingleBenchmarkTagMap.put("timefold.benchmark.run", runId);
+        var subSingleBenchmarkSolverTags = SolverTags.withProblemId(runId);
         solverConfig = new SolverConfig(solverConfig);
         randomSeed = solverConfig.getRandomSeed();
 
@@ -91,14 +91,14 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         // Register metrics
         var statisticRegistry = new StatisticRegistry<Solution_>(solverFactory.getSolutionDescriptor().getScoreDefinition());
         Metrics.addRegistry(statisticRegistry);
-        var runTag = Tags.of("timefold.benchmark.run", runId);
+        var runTag = subSingleBenchmarkSolverTags.asTags();
         subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap().forEach((statisticType, subSingleStatistic) -> {
             subSingleStatistic.open(statisticRegistry, runTag);
             subSingleStatistic.initPointList();
         });
 
         var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
-        solver.setMonitorTagMap(subSingleBenchmarkTagMap);
+        solver.setMonitorTags(subSingleBenchmarkSolverTags);
         solver.addPhaseLifecycleListener(statisticRegistry);
         var solution = solver.solve(problem);
 
@@ -123,11 +123,12 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             var isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().getConstraintMatchPolicy()
                     .isEnabled();
             if (isConstraintMatchEnabled) { // Easy calculator fails otherwise.
-                var scoreExplanation =
-                        solutionManager.explain(solution, SolutionUpdatePolicy.NO_UPDATE);
-                subSingleBenchmarkResult.setScoreExplanationSummary(scoreExplanation.getSummary());
+                var scoreExplanation = TimefoldSolverEnterpriseService.loadOrNull(b -> solutionManager.analyze(solution,
+                        ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT, SolutionUpdatePolicy.NO_UPDATE));
+                if (scoreExplanation != null) { // Avoid hard fail when Enterprise is not present.
+                    subSingleBenchmarkResult.setScoreExplanationSummary(scoreExplanation.summarize());
+                }
             }
-
             problemBenchmarkResult.writeSolution(subSingleBenchmarkResult, solution);
         }
         MDC.remove(NAME_MDC);

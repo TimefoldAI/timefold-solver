@@ -659,8 +659,8 @@ public class EntityDescriptor<Solution_> {
         return effectiveVariableDescriptorMap.get(variableName);
     }
 
-    public boolean hasAnyDeclaredGenuineVariableDescriptor() {
-        return !declaredGenuineVariableDescriptorMap.isEmpty();
+    public boolean hasAnyEffectiveGenuineVariableDescriptor() {
+        return !effectiveGenuineVariableDescriptorList.isEmpty();
     }
 
     public SequencedCollection<GenuineVariableDescriptor<Solution_>> getDeclaredGenuineVariableDescriptors() {
@@ -814,4 +814,7 @@ public class EntityDescriptor<Solution_> {
         return "%s(%s)".formatted(getClass().getSimpleName(), entityClass.getCanonicalName());
     }
 
+    public int getMaxVariableOrdinal() {
+        return effectiveVariableDescriptorMap.size();
+    }
 }

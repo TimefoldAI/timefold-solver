@@ -3,28 +3,24 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 import java.util.Iterator;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.bavet.common.index.RepeatingRandomIterator;
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
-import ai.timefold.solver.core.impl.util.ElementAwareArrayList.Entry;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tuple>
         extends AbstractDatasetInstance<Solution_, Tuple_>
-        implements Iterable<Tuple_> {
+        implements UniDatasetInstance<Tuple_>, Iterable<Tuple_> {
 
     private final ElementAwareArrayList<Tuple_> tupleList = new ElementAwareArrayList<>();
-    private final int rightIteratorStoreIndex;
 
-    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightIteratorStoreIndex, int entryStoreIndex) {
+    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int entryStoreIndex) {
         super(parent, entryStoreIndex);
-        this.rightIteratorStoreIndex = rightIteratorStoreIndex;
-    }
-
-    public int getRightIteratorStoreIndex() {
-        return rightIteratorStoreIndex;
     }
 
     @Override
@@ -35,7 +31,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
                             .formatted(tuple));
         }
 
-        tuple.setStore(entryStoreIndex, tupleList.add(tuple));
+        tuple.setStore(entryStoreIndex, tupleList.addEntry(tuple));
     }
 
     @Override
@@ -50,24 +46,48 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
     @Override
     public void retract(Tuple_ tuple) {
-        Entry<Tuple_> entry = tuple.removeStore(entryStoreIndex);
+        ElementAwareArrayList<Tuple_>.Entry entry = tuple.removeStore(entryStoreIndex);
         if (entry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-
-        tupleList.remove(entry);
+        entry.remove();
     }
 
+    /**
+     * Not part of {@link UniDatasetInstance}: only satisfies {@link Iterable},
+     * for callers (such as {@code JustInTimeBiDatasetInstance#size()})
+     * that need a plain, non-random walk internally.
+     */
     @Override
     public Iterator<Tuple_> iterator() {
         return tupleList.iterator();
     }
 
-    public Iterator<Tuple_> randomIterator(RandomGenerator workingRandom) {
+    @Override
+    public Iterator<Tuple_> iterator(RandomGenerator workingRandom) {
+        return RepeatingRandomIterator.of(tupleList, workingRandom);
+    }
+
+    @Override
+    public UniqueRandomIterator<Tuple_> exhaustiveIterator(RandomGenerator workingRandom) {
         return UniqueRandomIterator.of(tupleList, workingRandom);
     }
 
+    /**
+     * As defined by {@link #exhaustiveIterator(RandomGenerator)},
+     * but the caller must call {@link RetiringRandomIterator#retire()} itself
+     * after each {@link Iterator#next()} to permanently drop an element.
+     * Only meant for a caller which must decide by itself
+     * when an element is no longer needed,
+     * such as the left side of a join,
+     * which must not retire a tuple until its right side is confirmed empty.
+     */
+    public RetiringRandomIterator<Tuple_> retiringRandomIterator(RandomGenerator workingRandom) {
+        return RetiringRandomIterator.of(tupleList, workingRandom);
+    }
+
+    @Override
     public int size() {
         return tupleList.size();
     }

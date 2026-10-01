@@ -2,7 +2,7 @@ package ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassigned
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -119,7 +119,7 @@ public class TestdataAllowsUnassignedEntityProvidingSolution extends TestdataObj
 
     @ProblemFactCollectionProperty
     public Collection<TestdataValue> getProblemFacts() {
-        Set<TestdataValue> valueSet = new HashSet<>();
+        Set<TestdataValue> valueSet = new LinkedHashSet<>();
         for (TestdataAllowsUnassignedEntityProvidingEntity entity : entityList) {
             valueSet.addAll(entity.getValueRange());
         }

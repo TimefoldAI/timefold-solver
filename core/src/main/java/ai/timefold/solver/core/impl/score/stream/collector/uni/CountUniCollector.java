@@ -1,16 +1,17 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
-final class CountUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
+final class CountUniCollector<A> implements UniConstraintCollector<A, MutableLong, Long> {
     private static final CountUniCollector<?> INSTANCE = new CountUniCollector<>();
 
     private CountUniCollector() {
@@ -22,20 +23,40 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, LongCounte
     }
 
     @Override
-    public @NonNull Supplier<LongCounter> supplier() {
-        return LongCounter::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull BiFunction<LongCounter, A, Runnable> accumulator() {
-        return (counter, a) -> {
-            counter.increment();
-            return counter::decrement;
-        };
+    public @NonNull UniConstraintCollectorAccumulator<MutableLong, A> accumulator() {
+        return Slot::new;
     }
 
     @Override
-    public @Nullable Function<LongCounter, Long> finisher() {
-        return LongCounter::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
+    }
+
+    private static final class Slot<A> extends AbstractCountSlot
+            implements UniConstraintCollectorValueHandle<A> {
+
+        Slot(MutableLong state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a) {
+            addMapped();
+        }
+
+        @Override
+        public void replaceWith(A a) {
+            replaceWithMapped();
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

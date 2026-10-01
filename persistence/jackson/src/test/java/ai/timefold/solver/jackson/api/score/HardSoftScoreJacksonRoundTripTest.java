@@ -1,8 +1,6 @@
 package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +13,12 @@ class HardSoftScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTes
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestHardSoftLongScoreWrapper(null));
         var score = HardSoftScore.of(1200L, 34L);
+        assertSerializeAndDeserialize(score, new TestHardSoftLongScoreWrapper(score));
+    }
+
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new HardSoftScore(-1L, 1200L, 34L);
         assertSerializeAndDeserialize(score, new TestHardSoftLongScoreWrapper(score));
     }
 

@@ -25,7 +25,7 @@ record BiLongImpactHandler<A, B>(ToLongBiFunction<A, B> matchWeigher)
         var b = tuple.getB();
         var constraint = impacter.getContext().getConstraint();
         return impacter.impactScore(matchWeigher.applyAsLong(a, b),
-                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b));
+                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), a, b));
     }
 
     @Override

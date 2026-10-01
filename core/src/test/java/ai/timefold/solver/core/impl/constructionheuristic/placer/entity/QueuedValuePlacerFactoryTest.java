@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer.entity;
 
 import static ai.timefold.solver.core.impl.constructionheuristic.placer.entity.PlacementAssertions.assertValuePlacement;
 import static ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicyTestUtils.buildHeuristicConfigPolicy;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -36,7 +38,8 @@ class QueuedValuePlacerFactoryTest {
                 new QueuedValuePlacerFactory<TestdataSolution>(config)
                         .buildEntityPlacer(buildHeuristicConfigPolicy());
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
+        when(solverScope.getWorkingRandom()).thenReturn(mock(RandomSource.class));
         placer.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);

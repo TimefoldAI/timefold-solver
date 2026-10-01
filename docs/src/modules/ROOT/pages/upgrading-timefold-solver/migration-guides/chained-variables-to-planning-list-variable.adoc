@@ -4,7 +4,7 @@
 :icons: font
 
 This section explains how to update your planning model to use
-the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] approach
+the xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[planning list variable] approach
 instead of the chained planning variable,
 which has been deprecated in Timefold Solver 1.x and removed entirely in Timefold Solver 2.0.
 
@@ -42,7 +42,7 @@ public class Vehicle {
 === 2. Convert the chained entity to use shadow variables
 
 On the child element class (e.g. Customer), we need to replace some of the existing annotations with
-xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariables[planning list shadow variables] to
+xref:domain-modeling/modeling-planning-problems.adoc#listVariableShadowVariables[planning list shadow variables] to
 mirror the relationships now implied by the list assignment:
 
 * Parent reference: Replace the existing `@AnchorShadowVariable`
@@ -76,7 +76,7 @@ public class Customer {
 
 === 3. Update the planning solution
 
-By moving to xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variables],
+By moving to xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[planning list variables],
 we no longer need two `@ValueRangeProviders`.
 
 [source,java]
@@ -193,4 +193,4 @@ The solver ensures that a customer is in at most one vehicle’s list at a time.
 [#migrateChainedNext]
 == Next
 
-* xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[Planning list variable reference]
+* xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[Planning list variable reference]

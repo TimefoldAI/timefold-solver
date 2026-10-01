@@ -6,11 +6,11 @@ module ai.timefold.solver.quarkus.benchmark.deployment {
 
     requires ai.timefold.solver.quarkus.benchmark;
     requires ai.timefold.solver.quarkus.deployment;
+    requires io.quarkus.core;
     requires io.smallrye.config;
     requires org.jboss.logging;
     requires quarkus.arc.deployment;
     requires quarkus.builder;
-    requires quarkus.core;
     requires quarkus.core.deployment;
 
 }

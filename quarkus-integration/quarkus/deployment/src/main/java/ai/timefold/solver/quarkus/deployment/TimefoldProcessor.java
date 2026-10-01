@@ -46,6 +46,7 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSour
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.util.SolverVersionUtils;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
@@ -90,6 +91,7 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
@@ -121,6 +123,11 @@ class TimefoldProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem("timefold-solver");
+    }
+
+    @BuildStep
+    NativeImageResourceBuildItem registerGitProperties() {
+        return new NativeImageResourceBuildItem(SolverVersionUtils.CORE_GIT_PROPERTIES);
     }
 
     @BuildStep
@@ -260,7 +267,6 @@ class TimefoldProcessor {
 
         // Step 2 - validate all SolverConfig definitions
         assertNoMemberAnnotationWithoutClassAnnotation(indexView);
-        assertNodeSharingDisabled(solverConfigMap);
         assertSolverConfigSolutionClasses(indexView, solverConfigMap);
         assertSolverConfigEntityClasses(indexView);
         assertSolverConfigConstraintClasses(indexView, solverConfigMap);
@@ -385,22 +391,6 @@ class TimefoldProcessor {
             throw new IllegalStateException(
                     "Unused classes ([%s]) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
                             PlanningSolution.class.getSimpleName()));
-        }
-    }
-
-    private void assertNodeSharingDisabled(Map<String, SolverConfig> solverConfigMap) {
-        for (var entry : solverConfigMap.entrySet()) {
-            var solverConfig = entry.getValue();
-            var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
-            if (scoreDirectorFactoryConfig != null &&
-                    Boolean.TRUE.equals(scoreDirectorFactoryConfig.getConstraintStreamAutomaticNodeSharing())) {
-                throw new IllegalStateException("""
-                        SolverConfig %s enabled automatic node sharing via SolverConfig, which is not allowed.
-                        Enable automatic node sharing with the property %s instead."""
-                        .formatted(
-                                entry.getKey(),
-                                "quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true"));
-            }
         }
     }
 
@@ -813,6 +803,11 @@ class TimefoldProcessor {
                     }
                     solverConfig.withNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) clazz);
                 });
+
+        timefoldBuildTimeConfig.getSolverConfig(solverName)
+                .flatMap(SolverBuildTimeConfig::constraintStreamAutomaticNodeSharing)
+                .ifPresent(automaticNodeSharing -> solverConfig.getScoreDirectorFactoryConfig()
+                        .withConstraintStreamAutomaticNodeSharing(automaticNodeSharing));
         // Termination properties are set at runtime
     }
 
@@ -952,7 +947,15 @@ class TimefoldProcessor {
             Set<Class<?>> reflectiveClassSet) {
         // Use mvn quarkus:dev -Dquarkus.debug.generated-classes-dir=dump-classes
         // to dump generated classes
-        var classOutput = new GeneratedClassGizmo2Adaptor(generatedClasses, generatedResources, true);
+        var createdClassSet = new LinkedHashSet<String>();
+        var classOutput = new GeneratedClassGizmo2Adaptor(createdClass -> {
+            // It would be more error-prone to find all locations where
+            // duplicate classes can be made, so instead, allow the duplicate
+            // classes but do not send them to the downstream producer
+            if (createdClassSet.add(createdClass.binaryName())) {
+                generatedClasses.produce(createdClass);
+            }
+        }, generatedResources, true);
         var beanClassOutput = new GeneratedBeanGizmo2Adaptor(generatedBeans);
 
         var generatedMemberAccessorsClassNameSet = new HashSet<String>();

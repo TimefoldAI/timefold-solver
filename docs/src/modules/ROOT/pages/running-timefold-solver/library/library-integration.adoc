@@ -1,0 +1,412 @@
+[#libraryIntegration]
+= Using Timefold Solver as a Library
+:page-aliases: using-timefold-solver/running-the-solver.adoc, running-timefold-solver/library-integration.adoc
+:doctype: book
+:sectnums:
+:icons: font
+
+When xref:running-timefold-solver/service/overview.adoc[running as a service], the framework manages the `Solver` and `SolverManager` on your behalf,
+you interact only through the REST API.
+When embedding Timefold Solver as a library, your code drives the entire solving lifecycle.
+This page covers what that means in practice.
+
+[#howLibrarySolvingWorks]
+== Solver basics
+
+At its core, a `Solver` takes a planning problem and returns the best solution it finds within the configured time limit:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+Timetable problem = ...;
+Timetable bestSolution = solver.solve(problem);
+----
+====
+
+The `Solver` wades through xref:optimization-algorithms/overview.adoc#searchSpaceSize[the search space] of possible solutions
+and remembers the best it encounters.
+Depending on the problem size, time budget, and configuration,
+xref:optimization-algorithms/overview.adoc#doesTimefoldFindTheOptimalSolution[that solution may or may not be optimal].
+
+[NOTE]
+====
+The instance passed to `solve(solution)` is cloned by the Solver. Do not treat it as the best solution.
+Use the returned instance instead, which is most likely xref:domain-modeling/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the input.
+====
+
+NOTE: The input may be partially or fully initialized, which is common in xref:responding-to-change/real-time-planning.adoc[repeated planning].
+
+However, `Solver.solve()` *blocks the calling thread* for the entire duration of solving.
+This makes it unsuitable for use in REST endpoints or anywhere you need to handle multiple problems concurrently.
+`SolverManager` solves both problems.
+
+[#solverManagerConcept]
+== `SolverManager`
+
+A `SolverManager` is a facade for one or more `Solver` instances
+to simplify solving planning problems in REST and other enterprise services.
+Unlike the `Solver.solve(...)` method:
+
+* *`SolverManager.solve(...)` returns immediately*: it schedules a problem for asynchronous solving without blocking the calling thread.
+This avoids timeout issues of HTTP and other technologies.
+* *`SolverManager.solve(...)` solves multiple planning problems* of the same domain, in parallel.
+
+Internally a `SolverManager` manages a thread pool of solver threads, which call `Solver.solve(...)`,
+and a thread pool of consumer threads, which handle best solution changed events.
+
+In xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkus[Quarkus] and xref:running-timefold-solver/library/spring-boot.adoc#integrationWithSpringBoot[Spring Boot],
+the `SolverManager` instance is automatically injected in your code.
+Otherwise, build a `SolverManager` instance with the `create(...)` method:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../solverConfig.xml");
+SolverManager<VehicleRoutePlan, String> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
+----
+====
+
+Each problem submitted to the `SolverManager.solve(...)` methods needs a unique problem ID.
+Later calls to `getSolverStatus(problemId)` or `terminateEarly(problemId)` use that problem ID
+to distinguish between the planning problems.
+The problem ID must be an immutable class, such as `Long`, `String` or `java.util.UUID`.
+
+The `SolverManagerConfig` class has a `parallelSolverCount` property,
+that controls how many solvers are run in parallel.
+For example, if set to `4`, submitting five problems
+has four problems solving immediately, and the fifth one starts when another one ends.
+If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
+By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
+regardless of the xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[`moveThreadCount`] of the solvers.
+
+To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+VehicleRoutePlan problem1 = ...;
+String problemId = UUID.randomUUID().toString();
+// Returns immediately
+SolverJob<VehicleRoutePlan, String> solverJob = solverManager.solve(problemId, problem1);
+...
+
+try {
+    // Returns only after solving terminates
+    VehicleRoutePlan solution1 = solverJob.getFinalBestSolution();
+} catch (InterruptedException | ExecutionException e) {
+    throw ...;
+}
+----
+====
+
+However, there are better approaches, both for solving batch problems before an end-user needs the solution
+as well as for live solving while an end-user is actively waiting for the solution, as explained below.
+
+The current `SolverManager` implementation runs on a single computer node,
+but future work aims to distribute solver loads across a cloud.
+
+
+[#solverManagerBuilder]
+== The `SolverManager` Builder
+
+The `SolverManager` also enables the creation of a builder to customize and submit a planning problem for solving.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public interface SolverManager<Solution_> {
+
+    SolverJobBuilder<Solution_, ProblemId_> solveBuilder();
+
+    ...
+}
+----
+====
+
+=== Required settings
+
+The `SolverJobBuilder` contract includes many optional methods, but only two are required: `withProblemId(...)` and `withProblem(...)`.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+solverManager.solveBuilder()
+        .withProblemId(problemId)
+        .withProblem(problem)
+...
+----
+====
+
+The job's unique ID is specified using `withProblemId(problemId)`.
+The provided ID allows for the identification of a specific problem,
+enabling actions such as checking the solving status or terminating its execution.
+In addition to the unique ID, we must specify the problem to solve using `withProblem(problem)`.
+
+=== Optional settings
+
+Additional optional methods are also included in the `SolverJobBuilder` contract:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+solverManager.solveBuilder()
+        .withProblemId(problemId)
+        .withProblem(problem)
+        .withFirstInitializedSolutionEventConsumer(firstInitializedSolutionEventConsumer)
+        .withBestSolutionEventConsumer(bestSolutionEventConsumer)
+        .withFinalBestSolutionEventConsumer(finalBestSolutionEventConsumer)
+        .withExceptionHandler(exceptionHandler)
+        .withConfigOverride(configOverride)
+...
+----
+====
+
+A consumer for the first initialized solution can be configured with `withFirstInitializedSolutionEventConsumer(...)`.
+The solution is returned by the last phase that immediately precedes the first local search phase.
+
+Whenever a new best solution is generated by the solver,
+it can be consumed by configuring it with `withBestSolutionEventConsumer(...)`.
+The final best solution consumer,
+which is called at the end of the solving process,
+can be set using `withFinalBestSolutionEventConsumer(...)`.
+Additionally,
+an improved solution consumer capable of throttling events is available in the <<throttlingBestSolutionEvents,Enterprise Edition>> of the Timefold Solver.
+
+[WARNING]
+====
+Do not modify the solutions returned by the events in `withFirstInitializedSolutionEventConsumer(...)` and `withBestSolutionEventConsumer(...)`.
+These instances are still utilized during the solving process, and any modifications may lead to solver corruption.
+====
+
+[#throttlingBestSolutionEvents]
+==== Throttling best solution events in `SolverManager`
+
+include::../../commercial-editions/_only-enterprise.adoc[]
+
+This feature helps you avoid overloading your system with best solution events,
+especially in the early phase of the solving process when the solver is typically improving the solution very rapidly.
+
+To enable event throttling, use `ThrottlingBestSolutionEventConsumer` when starting a new `SolverJob` using `SolverManager`:
+
+[source,java,options="nowrap"]
+----
+...
+import ai.timefold.solver.enterprise.core.api.ThrottlingBestSolutionEventConsumer;
+import java.time.Duration;
+...
+
+public class TimetableService {
+
+    private SolverManager<Timetable, Long> solverManager;
+
+    public String solve(Timetable problem) {
+        var bestSolutionEventConsumer = ThrottlingBestSolutionEventConsumer.of(
+            event -> {
+               // Your custom event handling code goes here.
+            },
+            Duration.ofSeconds(1)); // Throttle to 1 event per second.
+
+        String jobId = ...;
+        solverManager.solveBuilder()
+                .withProblemId(jobId)
+                .withProblem(problem)
+                .withBestSolutionEventConsumer(bestSolutionEventConsumer)
+                .run(); // Start the solver job and listen to best solutions, with throttling.
+        return jobId;
+    }
+
+}
+----
+
+This will ensure that your system will never receive more than one best solution event per second.
+Some other important points to note:
+
+- If multiple events arrive during the pre-defined 1-second interval, only the last event will be delivered.
+- When the `SolverJob` terminates, the last event received will be delivered regardless of the throttle,
+unless it was already delivered before.
+- If your consumer throws an exception, we will still count the event as delivered.
+- If the system is too occupied to start and execute new threads,
+event delivery will be delayed until a thread can be started.
+
+[NOTE]
+====
+If you are using the `ThrottlingBestSolutionEventConsumer` for intermediate best solutions
+together with a final best solution consumer,
+both these consumers will receive the final best solution.
+====
+
+To handle errors that may arise during the solving process,
+set up the handling logic by defining `withExceptionHandler(...)`.
+
+Finally, to build an instance of the solver,
+xref:running-timefold-solver/library/configuration.adoc[a configuration step] is necessary.
+These settings are static and applied to any related solving execution.
+If you want to override certain settings for a particular job,
+such as the termination configuration, you can use the `withConfigOverride(...)` method.
+
+[NOTE]
+====
+The solver also permits the configuration of multiple solver managers with distinct settings in xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkusMultipleResources[Quarkus] or xref:running-timefold-solver/library/spring-boot.adoc#integrationWithSpringBootMultipleResources[Spring Boot].
+====
+
+[#solverManagerSolveBatch]
+=== Solve batch problems
+
+At night, batch solving is a great approach to deliver solid plans by breakfast, because:
+
+* There are typically few or no problem changes in the middle of the night.
+Some organizations even enforce a deadline, for example, _submit all day off requests before midnight_.
+* The solvers can run for much longer, often hours, because nobody's waiting for it and CPU resources are often cheaper.
+
+To solve a multiple datasets in parallel (limited by `parallelSolverCount`),
+call `solve(...)` for each dataset:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class TimetableService {
+
+    private SolverManager<Timetable, Long> solverManager;
+
+    // Returns immediately, call it for every dataset
+    public void solveBatch(Long timetableId) {
+        solverManager.solve(timetableId,
+                // Called once, when solving starts
+                this::findById,
+                // Called once, when solving ends
+                this::save);
+    }
+
+    public Timetable findById(Long timetableId) {...}
+
+    public void save(Timetable timetable) {...}
+
+}
+----
+====
+
+A solid plan delivered by breakfast is great,
+even if you need to react on problem changes during the day.
+
+
+[#solverManagerSolveAndListen]
+=== Solve and listen to show progress to the end-user
+
+When a solver is running while an end-user is waiting for that solution,
+the user might need to wait for several minutes or hours before receiving a result.
+To assure the user that everything is going well,
+show progress by displaying the best solution and best score attained so far.
+
+To handle intermediate best solutions, use `solveAndListen(...)`:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class TimetableService {
+
+    private SolverManager<Timetable, Long> solverManager;
+
+    // Returns immediately
+    public void solveLive(Long timetableId) {
+        solverManager.solveAndListen(timetableId,
+                // Called once, when solving starts
+                this::findById,
+                // Called multiple times, for every best solution change
+                this::save);
+    }
+
+    public Timetable findById(Long timetableId) {...}
+
+    public void save(Timetable timetable) {...}
+
+    public void stopSolving(Long timetableId) {
+        solverManager.terminateEarly(timetableId);
+    }
+
+}
+----
+====
+
+This implementation is using the database to communicate with the UI, which polls the database.
+More advanced implementations push the best solutions directly to the UI or a messaging queue.
+
+If the user is satisfied with the intermediate best solution
+and does not want to wait any longer for a better one, call `SolverManager.terminateEarly(problemId)`.
+
+[NOTE]
+====
+Best solution events may be triggered in a rapid succession,
+especially at the start of solving.
+
+Users of our xref:commercial-editions/commercial-editions.adoc[Enterprise Edition]
+may use the <<throttlingBestSolutionEvents,throttling feature>>
+to limit the number of best solution events fired over any period of time.
+
+Open-source users may implement their own throttling mechanism within the `Consumer` itself.
+====
+
+[#integrationWithJPMS]
+== Java Platform Module System (JPMS)
+
+Starting in version 2.0, Timefold Solver has official support for the https://openjdk.org/projects/jigsaw/spec/[Java Platform Module System (JPMS)].
+
+When using Timefold Solver from code on the modulepath,
+_export_ the packages that contain your domain objects, constraints and solver configuration, and _open_ them to the Timefold Solver module(s)
+in your `module-info.java` file:
+
+[source,java,options="nowrap"]
+----
+module org.acme.vehiclerouting {
+    requires ai.timefold.solver.core;
+    ...
+
+    exports org.acme.vehiclerouting.domain; // Domain classes
+    exports org.acme.vehiclerouting.solver; // Constraints
+
+    opens org.acme.vehiclerouting.domain to ai.timefold.solver.core; // Domain classes
+    opens org.acme.vehiclerouting.solver to ai.timefold.solver.core; // Constraints
+    ...
+}
+----
+
+If this is not set up correctly, you will get errors. Usually, these mention the `unnamed module` and give detailed information of what needs to be changed.
+
+[source,options="nowrap"]
+----
+class org.acme.schooltimetabling.domain.Timetable$Timefold$MemberAccessor$Field$lessons (in unnamed module @0x273444fe)
+cannot access class org.acme.schooltimetabling.domain.Timetable (in module hello.world.school.timetabling)
+because module hello.world.school.timetabling does not export org.acme.schooltimetabling.domain to unnamed module @0x273444fe
+----
+
+[WARNING]
+====
+Only JPMS exported packages are part of the supported public API.
+====
+If you access non-exported classes (for example by running on the classpath), and we later change or remove them, we will not treat that as a breaking change.
+Those classes are not covered by compatibility guarantees.
+
+You can opt-out of JPMS by running all JAR files on the classpath instead of using the module path (for example, by not configuring a module path in your build or runtime setup).

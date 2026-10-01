@@ -6,7 +6,6 @@
 :sectnums:
 :icons: font
 
-
 [#scoreTerminology]
 == Score terminology
 
@@ -34,19 +33,16 @@ image::constraints-and-score/overview/optimalWithIncompleteConstraints.png[align
 To implement a verbal business constraint, it needs to be formalized as a score constraint.
 Luckily, defining constraints in Timefold Solver is very flexible through the following score techniques:
 
-* **Score signum (positive or negative)**: maximize or minimize a constraint type
-* **Score weight**: put a cost/profit on a constraint type
-* **Score level (hard, soft, ...)**: prioritize a group of constraint types
-* *Pareto scoring* (rarely used)
+Score signum (positive or negative):: Maximize or minimize a constraint type.
+Score weight:: Put a cost/profit on a constraint type.
+Score level (hard, soft, ...):: Prioritize a group of constraint types.
+Pareto scoring (rarely used):: Optimize multiple objectives without weighting them against each other.
 
 Take the time to acquaint yourself with the first three techniques.
 Once you understand them, formalizing most business constraints becomes straightforward.
 
-[NOTE]
-====
-Do not presume that your business knows all its score constraints in advance.
+NOTE: Do not presume that your business knows all its score constraints in advance.
 Expect score constraints to be added, changed or removed after the first releases.
-====
 
 
 [#scoreConstraintSignum]
@@ -96,7 +92,7 @@ Putting a good weight on a constraint is often a difficult analytical decision,
 because it is about making choices and trade-offs against other constraints.
 Different stakeholders have different priorities.
 *Don't waste time with constraint weight discussions at the start of an implementation,
-instead add a xref:constraints-and-score/constraint-configuration.adoc[constraint configuration]
+instead add a xref:running-timefold-solver/library/constraint-overrides.adoc[constraint configuration]
 and allow users to change them through a UI.*
 A non-accurate weight is less damaging than mediocre algorithms:
 
@@ -129,7 +125,7 @@ then a score is _feasible_ if no hard constraints are broken.
 ====
 By default, Timefold Solver will always assign all planning variables a planning value.
 If there is no feasible solution, this means the best solution will be infeasible.
-To instead leave some of the planning entities unassigned, apply xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanning[overconstrained planning].
+To instead leave some of the planning entities unassigned, apply xref:domain-modeling/common-patterns.adoc#overconstrainedPlanning[overconstrained planning].
 ====
 
 For each constraint, you need to pick a score level, a score weight and a score signum.
@@ -167,6 +163,32 @@ even though Timefold Solver can handle many score levels.
 Most use cases use a `Score` with two or three weights,
 such as xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore]
 and xref:constraints-and-score/overview.adoc#hardMediumSoftScore[HardMediumSoftScore].
+
+
+[#structuralScore]
+=== Structural score
+
+All `Score` implementations have an implicit xref:constraints-and-score/overview.adoc#structuralScore[structural] component that outranks every score level.
+It is `0` if the solution is structurally sound and negative if the solution is structurally flawed.
+A solution is structurally flawed when some of its xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables] form a dependency loop and cannot be calculated
+(see xref:domain-modeling/modeling-planning-problems.adoc#detectingInconsistencies[Detecting Inconsistencies in Shadow Variables]).
+
+Because the structural component is compared before every other level,
+a score with a negative structural component is worse than any score with a `0` structural component,
+no matter how many score constraints are broken.
+It therefore behaves like a super hard score level,
+and a score with a negative structural component is not xref:#scoreLevel[feasible].
+
+During solving, the structural component is always `0`,
+because Timefold Solver never accepts a structurally flawed solution.
+A negative structural component only appears on solutions that were modified outside of a solver step,
+such as a solution modified by a xref:optimization-algorithms/overview.adoc#customSolverPhase[custom phase]
+or a solution passed to `Solver.solve(...)`.
+
+When it is not `0`, the structural component is printed as the leading `structural` level of the score string,
+for example ``-1structural/0hard/-5soft``.
+When it is `0`, it is omitted,
+so a structurally sound score is printed as usual, for example ``0hard/-5soft``.
 
 
 [#paretoScoring]
@@ -300,7 +322,7 @@ Most use cases use a ``HardSoftScore``.
 [NOTE]
 ====
 To properly write a `Score` to a database (with JPA/Hibernate) or to XML/JSON (with JAXB/Jackson),
-see xref:integration/integration.adoc#integration[the integration chapter].
+see xref:running-timefold-solver/library/integration.adoc#integration[the integration chapter].
 ====
 
 
@@ -415,35 +437,25 @@ A variant score type `BendableBigDecimalScore` uses `BigDecimal` values instead 
 
 There are several ways to calculate the `Score` of a solution:
 
-* **xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]**:
-Implement each constraint as a separate Constraint Stream.
-Fast and scalable.
-* **xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculator]** (not recommended):
-Implement multiple low-level methods.
-Fast and scalable.
-Very difficult to implement and maintain.
-Supports xref:constraints-and-score/understanding-the-score.adoc[score explanations] with extra effort.
-* **xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy score calculator]** (not recommended):
-Implement all constraints together in a single method.
-Does not scale.
-Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
+xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]:: Implement each constraint as a separate Constraint Stream. Fast and scalable.
+xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculator]:: Implement multiple low-level methods. Fast and scalable. Very difficult to implement and maintain. Supports xref:constraints-and-score/understanding-the-score.adoc[score explanations] with extra effort.
+xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy score calculator] (not recommended):: Implement all constraints together in a single method. Does not scale. Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
 
 Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
 All score calculation types are object-oriented and can reuse existing Java code.
 
 [IMPORTANT]
 ====
-The score calculation must be read-only.
+The score calculation must be deterministic and free of side-effects.
 It must not change the planning entities or the problem facts in any way.
 For example, it must not call a setter method on a planning entity in the score calculation.
 
-Timefold Solver does not recalculate the score of a solution if it can predict it (unless an xref:using-timefold-solver/running-the-solver.adoc#environmentMode[environmentMode assertion] is enabled).
+Timefold Solver does not recalculate the score of a solution if it can predict it (unless an xref:running-timefold-solver/solver-diagnostics.adoc#environmentMode[environmentMode assertion] is enabled).
 For example, after a winning step is done, there is no need to calculate the score because that move was done and undone earlier.
 As a result, there is no guarantee that changes applied during score calculation actually happen.
 
-To update planning entities when the planning variable change, use xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
+To update planning entities when the planning variable change, use xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
 ====
-
 
 [#initializingScoreTrend]
 === `InitializingScoreTrend`
@@ -485,7 +497,7 @@ Alternatively, you can also specify the trend for each score level separately:
 [#invalidScoreDetection]
 === Invalid score detection
 
-When you put the xref:using-timefold-solver/running-the-solver.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``STEP_ASSERT``),
+When you put the xref:running-timefold-solver/solver-diagnostics.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``STEP_ASSERT``),
 it will detect score corruption in the xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
 However, that will not verify that your score calculator actually implements your score constraints as your business desires.
 For example, one constraint might consistently match the wrong pattern.

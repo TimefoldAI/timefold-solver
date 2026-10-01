@@ -2,15 +2,13 @@ package ai.timefold.solver.migration.v2;
 
 import static org.openrewrite.java.Assertions.java;
 
+import ai.timefold.solver.migration.AbstractRecipeTest;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 
-@Execution(ExecutionMode.CONCURRENT)
-class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
+class GeneralMethodDeleteInvocationMigrationRecipeTest extends AbstractRecipeTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -90,6 +88,34 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                             String getConstraintPackage();
                                             String getConstraintId();
                                             ConstraintFactory getConstraintFactory();
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.api.score.stream.uni;
+                                        import java.util.function.Function;
+                                        public interface UniConstraintBuilder<A, Score_> {
+                                            UniConstraintBuilder<A, Score_> indictWith(Function<A, ?> indictment);
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.api.score.stream.bi;
+                                        import java.util.function.BiFunction;
+                                        public interface BiConstraintBuilder<A, B, Score_> {
+                                            BiConstraintBuilder<A, B, Score_> indictWith(BiFunction<A, B, ?> indictment);
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.api.score.stream.tri;
+                                        public interface TriConstraintBuilder<A, B, C, Score_> {
+                                            TriConstraintBuilder<A, B, C, Score_> indictWith(Object indictment);
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.api.score.stream.quad;
+                                        public interface QuadConstraintBuilder<A, B, C, D, Score_> {
+                                            QuadConstraintBuilder<A, B, C, D, Score_> indictWith(Object indictment);
+                                        }""",
+                                """
+                                        package ai.timefold.solver.test.api.score.stream;
+                                        public interface SingleConstraintAssertion {
+                                            SingleConstraintAssertion indictsWith(Object matcher);
+                                            SingleConstraintAssertion indictsWithExactly(Object... matchers);
                                         }"""));
     }
 
@@ -267,6 +293,57 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
 
                         public class Test {
                                 Constraint constraint;
+                                public void test() {
+                                }
+                        }"""));
+    }
+
+    @Test
+    void removeIndictWith() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.uni.UniConstraintBuilder;
+                        import ai.timefold.solver.core.api.score.stream.bi.BiConstraintBuilder;
+                        import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
+                        import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
+                        import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
+
+                        import java.util.function.Function;
+
+                        public class Test {
+                                UniConstraintBuilder<Object, ?> uni;
+                                BiConstraintBuilder<Object, Object, ?> bi;
+                                TriConstraintBuilder<Object, Object, Object, ?> tri;
+                                QuadConstraintBuilder<Object, Object, Object, Object, ?> quad;
+                                SingleConstraintAssertion assertion;
+                                public void test() {
+                                    uni.indictWith(Function.identity());
+                                    bi.indictWith((a, b) -> a);
+                                    tri.indictWith(null);
+                                    quad.indictWith(null);
+                                    assertion.indictsWith(null);
+                                    assertion.indictsWithExactly(null);
+                                }
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.uni.UniConstraintBuilder;
+                        import ai.timefold.solver.core.api.score.stream.bi.BiConstraintBuilder;
+                        import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
+                        import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
+                        import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
+
+                        import java.util.function.Function;
+
+                        public class Test {
+                                UniConstraintBuilder<Object, ?> uni;
+                                BiConstraintBuilder<Object, Object, ?> bi;
+                                TriConstraintBuilder<Object, Object, Object, ?> tri;
+                                QuadConstraintBuilder<Object, Object, Object, Object, ?> quad;
+                                SingleConstraintAssertion assertion;
                                 public void test() {
                                 }
                         }"""));

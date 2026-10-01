@@ -1,0 +1,204 @@
+= Model enrichment
+:page-aliases: service/modeling-changes.adoc, running-timefold-solver/service/modeling-changes.adoc
+:description: Enrich your SolverModel with additional information before solving starts.
+:doctype: book
+:sectnums:
+:icons: font
+
+[#solverModelEnrichment]
+== What is model enrichment?
+
+Model enrichment is the process of adding extra information to the `SolverModel` before solving starts.
+The service receives the planning problem as submitted through the REST API,
+but sometimes that raw model is incomplete: it may be missing derived fields, external lookups, or pre-computed values
+that are too expensive or impractical to calculate during solving.
+
+Enrichers run once, just before the solver begins, and produce an augmented model that constraints can use directly.
+
+Common use cases include:
+
+* Looking up data from an external service or database (e.g. travel times, holiday calendars, price lists).
+* Pinning entities that represent work already completed or committed.
+* Pre-computing expensive derived values (e.g. distance matrices, compatibility scores) so constraints stay fast.
+
+[#whyEnrich]
+== Why enrich the model instead of computing inside constraints?
+
+Constraint streams execute many times per second during solving.
+Any computation that can be done once before solving starts should be moved into model enrichment.
+
+WARNING: Never do computations that involve remote calls, database queries,
+or complex algorithms while the solver is running (e.g. inside constraint streams or shadow variables).
+This is an antipattern and will make the solver unusably slow.
+
+[#bestPractices]
+== Best practices
+
+Do::
++
+* Make enrichers idempotent: calling `enrich()` twice should produce the same result.
+* Fail fast: if a required external resource is unavailable, throw an exception rather than silently returning an incomplete model.
+* Use the `SolverModelEnrichmentDirector` to control ordering when one enricher depends on another.
+
+Don't::
++
+* Do not perform heavy computation inside constraint streams. Move it to an enricher instead.
+* Do not keep mutable state in enrichers; they may be invoked concurrently from multiple threads.
+* Do not use enrichment for validation that should happen at input time; reject bad input at the API boundary, not here.
+
+[#implementingAnEnricher]
+== Implementing an enricher
+
+To enrich the model, implement `SolverModelEnricher` and annotate it so it is picked up by your Dependency Injection (DI) container.
+
+In this example, the `Timetable` planning solution contains `Timeslot` objects.
+Each `Timeslot` has an `isHoliday` field that must be populated by consulting an external calendar service.
+
+.Timeslot class with the field to be enriched
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+public class Timeslot {
+
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+
+    private boolean isHoliday; // <1>
+
+    public void setHoliday(boolean isHoliday) {
+        this.isHoliday = isHoliday;
+    }
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+<1> This field is not provided by the caller — it is populated by the enricher.
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+data class Timeslot(
+    val startTime: LocalDateTime? = null,
+    val endTime: LocalDateTime? = null
+) {
+    var isHoliday: Boolean = false // <1>
+}
+----
+<1> This field is not provided by the caller — it is populated by the enricher.
+--
+====
+
+.Enricher implementation
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+@ApplicationScoped
+public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
+
+    @Override
+    public Timetable enrich(Timetable solverModel) {
+        for (Timeslot timeslot : solverModel.getTimeslots()) {
+            boolean isHoliday = overlapsWithKnownHoliday(timeslot.getStartTime(), timeslot.getEndTime());
+            timeslot.setHoliday(isHoliday);
+        }
+        return solverModel;
+    }
+
+    private boolean overlapsWithKnownHoliday(LocalDateTime start, LocalDateTime end) {
+        // Call an external service or database here.
+        return false;
+    }
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimeslotHolidayEnricher : SolverModelEnricher<Timetable> {
+
+    override fun enrich(solverModel: Timetable): Timetable {
+        for (timeslot in solverModel.timeslots) {
+            timeslot.isHoliday = overlapsWithKnownHoliday(timeslot.startTime, timeslot.endTime)
+        }
+        return solverModel
+    }
+
+    private fun overlapsWithKnownHoliday(start: LocalDateTime?, end: LocalDateTime?): Boolean {
+        // Call an external service or database here.
+        return false
+    }
+}
+----
+--
+====
+
+[#enrichmentDirector]
+== Controlling enrichment order
+
+When you have multiple enrichers, register a `SolverModelEnrichmentDirector` to control the order in which they run.
+This matters when one enricher builds on the output of another.
+
+//TODO add link to maps component docs https://github.com/TimefoldAI/timefold-solver/issues/2348
+
+.Enrichment director that sequences enrichers explicitly
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+@ApplicationScoped
+public class TimetableEnrichmentDirector implements SolverModelEnrichmentDirector<Timetable> {
+
+    private final TimeslotHolidayEnricher timeslotEnricher;
+
+    @Inject
+    public TimetableEnrichmentDirector(TimeslotHolidayEnricher timeslotEnricher) {
+        this.timeslotEnricher = timeslotEnricher;
+    }
+
+    @Override
+    public Timetable enrich(Timetable solverModel) {
+        var enrichedModel = timeslotEnricher.enrich(solverModel);
+        // Chain additional enrichers here, in dependency order.
+        return enrichedModel;
+    }
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimetableEnrichmentDirector @Inject constructor(
+    private val timeslotEnricher: TimeslotHolidayEnricher
+) : SolverModelEnrichmentDirector<Timetable> {
+
+    override fun enrich(solverModel: Timetable): Timetable {
+        val enrichedModel = timeslotEnricher.enrich(solverModel)
+        // Chain additional enrichers here, in dependency order.
+        return enrichedModel
+    }
+}
+----
+--
+====

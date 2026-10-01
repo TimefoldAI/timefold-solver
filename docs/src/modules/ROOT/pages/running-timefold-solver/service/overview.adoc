@@ -1,0 +1,56 @@
+[#serviceOverview]
+= Building a service
+:page-aliases: service/overview.adoc
+:description: Overview of running Timefold Solver as a fully isolated optimization service.
+:doctype: book
+:sectnums:
+:icons: font
+
+Run dataset optimization as a fully isolated service.
+This opinionated approach eliminates the boilerplate typically needed to expose a solver over a REST API.
+
+If you haven't done so yet, start with the xref:../quickstart/service/getting-started.adoc[Getting started: building a service] guide.
+
+[#howSolvingWorks]
+== How solving works
+
+Once your service is running, solving is driven entirely through the REST API — no solver management code required.
+
+. *Submit a problem* — `POST /<root>` with your planning problem as a JSON body.
+The service registers the dataset, starts optimizing asynchronously, and returns an ID immediately.
+. *Poll for results* — `GET /<root>/\{id\}` returns the best solution found so far, along with the current score.
+Call this repeatedly to show progress to the end-user, or once after a known time limit.
+. *Terminate early* — `DELETE /<root>/\{id\}` stops solving and returns the best solution reached.
+. *Inspect score analysis* — `GET /<root>/\{id\}/score-analysis` breaks down which constraints are violated and by how much.
+
+See xref:running-timefold-solver/service/rest-api.adoc[REST API] for the full endpoint reference and request/response formats.
+
+[#foundationsStillApply]
+== Built on Timefold Solver (the library)
+
+The service module is not a separate product, it is Timefold Solver with an opinionated runtime on top.
+Under the hood, the same `Solver`, `SolverManager`, constraint streams, and optimization algorithms are running.
+Everything you know about modeling planning problems and writing constraints transfers directly.
+
+If you are coming from the library, think of the service as the infrastructure layer you no longer have to write yourself:
+instead of wiring up a `SolverManager`, a REST endpoint, or thinking about good model ergonomics,
+the service module provides all of that out of the box.
+
+Your modeling and constraint knowledge is the same, only the plumbing changes.
+
+The following areas of the documentation apply equally to both service and library mode:
+
+xref:domain-modeling/modeling-planning-problems.adoc[*Modeling planning problems*]::
+How to annotate your domain with `@PlanningSolution`, `@PlanningEntity`, `@PlanningVariable`, and related annotations.
+This is largely the same in both modes; service-specific interfaces are covered in the service section.
+
+xref:../constraints-and-score/overview.adoc#constraintsAndScoreOverview[*Constraints and Score*]::
+How to define hard and soft constraints, choose a score type, and analyze solution quality.
+Constraint streams and score calculation work identically in both modes.
+
+xref:../running-timefold-solver/multithreaded-solving.adoc[*Tuning and diagnostics*]::
+Environment modes, logging, monitoring, multi-threaded solving, and random seed configuration.
+These concepts and most configuration options apply regardless of how you run the solver.
+
+The pages in this section cover only what is *specific* to the service module:
+the REST API contract, model enrichment, constraint weight overrides, demo data, and metrics.

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -9,7 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.selector.common.TestdataObjectSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ManualValueMimicRecorder;
@@ -64,16 +65,16 @@ class FilteringValueRangeSelectorTest {
         var secondEntity = new TestdataListEntityProvidingEntity("e2", List.of(apr, may, jun));
         solution.setEntityList(List.of(firstEntity, secondEntity));
 
-        var solverScope = mock(SolverScope.class);
+        SolverScope<TestdataListEntityProvidingSolution> solverScope = mockSolverScope();
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         doReturn(solution).when(scoreDirector).getWorkingSolution();
         doReturn(ValueRangeManager.of(TestdataListEntityProvidingSolution.buildSolutionDescriptor(), solution))
                 .when(scoreDirector)
                 .getValueRangeManager();
-        var listVariableSupply = mock(ListVariableStateSupply.class);
-        doReturn(listVariableSupply).when(scoreDirector).getListVariableStateSupply(any());
-        doReturn(TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList()).when(listVariableSupply)
+        var listVariableState = mock(ListVariableState.class);
+        doReturn(listVariableState).when(scoreDirector).getListVariableState(any());
+        doReturn(TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList()).when(listVariableState)
                 .getSourceVariableDescriptor();
         valueSelector.solvingStarted(solverScope);
 

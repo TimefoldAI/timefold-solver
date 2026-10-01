@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -12,16 +13,11 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
 public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
-        extends AbstractNode
-        implements TupleLifecycle<InTuple_> {
+        extends AbstractSingleInputNode<InTuple_> {
 
     private final int groupStoreIndex;
     /**
-     * Unused when {@link #hasCollector} is false.
-     */
-    private final int undoStoreIndex;
-    /**
-     * Unused when {@link #hasMultipleGroups} is false.
+     * Unused when {@link #hasGroupKeyFunction} is false.
      */
     private final Function<InTuple_, GroupKey_> groupKeyFunction;
     /**
@@ -36,18 +32,18 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
      * Some code paths may decide to not supply a grouping function.
      * In that case, every tuple accumulates into {@link #singletonGroup} and not to {@link #groupMap}.
      */
-    private final boolean hasMultipleGroups;
+    private final boolean hasGroupKeyFunction;
     /**
      * Some code paths may decide to not supply a collector.
      * In that case, we skip the code path that would attempt to use it.
      */
     private final boolean hasCollector;
     /**
-     * Used when {@link #hasMultipleGroups} is true, otherwise {@link #singletonGroup} is used.
+     * Used when {@link #hasGroupKeyFunction} is true, otherwise {@link #singletonGroup} is used.
      */
     private final Map<Object, Group<OutTuple_, ResultContainer_>> groupMap;
     /**
-     * Used when {@link #hasMultipleGroups} is false, otherwise {@link #groupMap} is used.
+     * Used when {@link #hasGroupKeyFunction} is false, otherwise {@link #groupMap} is used.
      *
      * @implNote The field is lazy initialized in order to maintain the same semantics as with the groupMap above.
      *           When all tuples are removed, the field will be set to null, as if the group never existed.
@@ -56,23 +52,23 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private final DynamicPropagationQueue<OutTuple_, Group<OutTuple_, ResultContainer_>> propagationQueue;
     private final boolean useAssertingGroupKey;
 
-    protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex,
-            Function<InTuple_, GroupKey_> groupKeyFunction, Supplier<ResultContainer_> supplier,
+    protected AbstractGroupNode(IntSupplier storeIndexReserver, Function<InTuple_, GroupKey_> groupKeyFunction,
+            Supplier<ResultContainer_> supplier,
             Function<ResultContainer_, Result_> finisher,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        this.groupStoreIndex = groupStoreIndex;
-        this.undoStoreIndex = undoStoreIndex;
+        super(nextNodesTupleLifecycle);
+        this.groupStoreIndex = storeIndexReserver.getAsInt();
         this.groupKeyFunction = groupKeyFunction;
         this.supplier = supplier;
         this.finisher = finisher;
-        this.hasMultipleGroups = groupKeyFunction != null;
+        this.hasGroupKeyFunction = groupKeyFunction != null;
         this.hasCollector = supplier != null;
         /*
          * Not using the default sizing to 1000.
          * The number of groups can be very small, and that situation is not unlikely.
          * Therefore, the size of these collections is kept default.
          */
-        this.groupMap = hasMultipleGroups ? new HashMap<>() : null;
+        this.groupMap = hasGroupKeyFunction ? new HashMap<>() : null;
         this.propagationQueue = hasCollector ? new DynamicPropagationQueue<>(nextNodesTupleLifecycle,
                 group -> {
                     var outTuple = group.getTuple();
@@ -84,10 +80,10 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         this.useAssertingGroupKey = environmentMode.isStepAssertOrMore();
     }
 
-    protected AbstractGroupNode(int groupStoreIndex,
+    protected AbstractGroupNode(IntSupplier storeIndexReserver,
             Function<InTuple_, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
             EnvironmentMode environmentMode) {
-        this(groupStoreIndex, -1,
+        this(storeIndexReserver,
                 groupKeyFunction, null, null, nextNodesTupleLifecycle,
                 environmentMode);
     }
@@ -100,54 +96,49 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     @Override
     public final void insert(InTuple_ tuple) {
         if (tuple.getStore(groupStoreIndex) != null) {
-            throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple
-                    + ") was already added in the tupleStore.");
+            throw new IllegalStateException(
+                    "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
+                            .formatted(tuple));
         }
-        var userSuppliedKey = hasMultipleGroups ? groupKeyFunction.apply(tuple) : null;
+        var userSuppliedKey = hasGroupKeyFunction ? groupKeyFunction.apply(tuple) : null;
         createTuple(tuple, userSuppliedKey);
     }
 
     private void createTuple(InTuple_ tuple, GroupKey_ userSuppliedKey) {
-        var newGroup = getOrCreateGroup(userSuppliedKey);
-        var outTuple = accumulate(tuple, newGroup);
+        var group = getOrCreateGroup(userSuppliedKey);
+        if (hasCollector) {
+            groupInsert(group.getResultContainer(), tuple);
+        }
+        tuple.setStore(groupStoreIndex, group);
+        var outTuple = group.getTuple();
         switch (outTuple.getState()) {
             case CREATING, UPDATING -> {
                 // Already in the correct state.
             }
-            case OK, DYING -> propagationQueue.update(newGroup);
-            case ABORTING -> propagationQueue.insert(newGroup);
-            default -> throw new IllegalStateException("Impossible state: The group (" + newGroup + ") in node (" + this
-                    + ") is in an unexpected state (" + outTuple.getState() + ").");
+            case OK, DYING -> propagationQueue.update(group);
+            case ABORTING -> propagationQueue.insert(group);
+            default -> throw new IllegalStateException(
+                    "Impossible state: The group (%s) in node (%s) is in an unexpected state (%s)."
+                            .formatted(group, this, outTuple.getState()));
         }
-    }
-
-    private OutTuple_ accumulate(InTuple_ tuple, Group<OutTuple_, ResultContainer_> group) {
-        if (hasCollector) {
-            var undoAccumulator = accumulate(group.getResultContainer(), tuple);
-            tuple.setStore(undoStoreIndex, undoAccumulator);
-        }
-        tuple.setStore(groupStoreIndex, group);
-        return group.getTuple();
     }
 
     private Group<OutTuple_, ResultContainer_> getOrCreateGroup(GroupKey_ userSuppliedKey) {
         var groupMapKey = useAssertingGroupKey ? new AssertingGroupKey<>(userSuppliedKey) : userSuppliedKey;
-        if (hasMultipleGroups) {
+        if (hasGroupKeyFunction) {
             // Avoids computeIfAbsent in order to not create lambdas on the hot path.
             var group = groupMap.get(groupMapKey);
             if (group == null) {
                 group = createGroupWithGroupKey(groupMapKey);
                 groupMap.put(groupMapKey, group);
-            } else {
-                group.parentCount++;
             }
+            group.addContributor();
             return group;
         } else {
             if (singletonGroup == null) {
                 singletonGroup = createGroupWithoutGroupKey();
-            } else {
-                singletonGroup.parentCount++;
             }
+            singletonGroup.addContributor();
             return singletonGroup;
         }
     }
@@ -155,7 +146,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private Group<OutTuple_, ResultContainer_> createGroupWithGroupKey(Object groupMapKey) {
         var userSuppliedKey = extractUserSuppliedKey(groupMapKey);
         var outTuple = createOutTuple(userSuppliedKey);
-        var group = hasCollector ? Group.create(groupMapKey, supplier.get(), outTuple)
+        var group = hasCollector
+                ? Group.create(groupMapKey, supplier.get(), outTuple)
                 : Group.<OutTuple_, ResultContainer_> createWithoutAccumulate(groupMapKey, outTuple);
         propagationQueue.insert(group);
         return group;
@@ -164,8 +156,9 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private Group<OutTuple_, ResultContainer_> createGroupWithoutGroupKey() {
         var outTuple = createOutTuple(null);
         if (!hasCollector) {
-            throw new IllegalStateException("Impossible state: The node (" + this + ") has no collector, "
-                    + "but it is still trying to create a group without a group key.");
+            throw new IllegalStateException(
+                    "Impossible state: The node (%s) has no collector, but it is still trying to create a group without a group key."
+                            .formatted(this));
         }
         var group = Group.createWithoutGroupKey(supplier.get(), outTuple);
         propagationQueue.insert(group);
@@ -185,47 +178,58 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             insert(tuple);
             return;
         }
-        if (hasCollector) {
-            Runnable undoAccumulator = tuple.getStore(undoStoreIndex);
-            undoAccumulator.run();
-        }
-        if (!hasMultipleGroups) {
+        if (!hasGroupKeyFunction) {
             updateGroup(tuple, oldGroup);
             return;
         }
-        var oldUserSuppliedGroupKey = extractUserSuppliedKey(oldGroup.getGroupKey());
         var newUserSuppliedGroupKey = groupKeyFunction.apply(tuple);
-        if (Objects.equals(oldUserSuppliedGroupKey, newUserSuppliedGroupKey)) {
+        var storedKey = oldGroup.getGroupKey();
+        var sameKey = useAssertingGroupKey
+                ? Objects.equals(extractUserSuppliedKey(storedKey), newUserSuppliedGroupKey)
+                : Objects.equals(storedKey, newUserSuppliedGroupKey);
+        if (sameKey) {
             updateGroup(tuple, oldGroup);
         } else {
-            killTuple(oldGroup);
+            if (hasCollector) {
+                groupRetract(tuple);
+            }
+            oldGroup.removeContributor();
+            killOutTuple(oldGroup);
             createTuple(tuple, newUserSuppliedGroupKey);
         }
     }
 
-    private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) { // No need to change parentCount because it is the same group
-        var outTuple = accumulate(tuple, oldGroup);
+    private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) {
+        // No need to change contributors because it is the same group.
+        if (hasCollector) {
+            groupUpdate(oldGroup.getResultContainer(), tuple);
+        }
+        var outTuple = oldGroup.getTuple();
         switch (outTuple.getState()) {
             case CREATING, UPDATING -> {
                 // Already in the correct state.
             }
             case OK -> propagationQueue.update(oldGroup);
-            default ->
-                throw new IllegalStateException("Impossible state: The group (%s) in node (%s) is in an unexpected state (%s)."
-                        .formatted(oldGroup, this, outTuple.getState()));
+            default -> throw new IllegalStateException(
+                    "Impossible state: The group (%s) in node (%s) is in an unexpected state (%s)."
+                            .formatted(oldGroup, this, outTuple.getState()));
         }
     }
 
-    private void killTuple(Group<OutTuple_, ResultContainer_> group) {
-        var newParentCount = --group.parentCount;
-        var killGroup = (newParentCount == 0);
+    /**
+     *
+     * @param group the group which created the outTuple
+     */
+    private void killOutTuple(Group<OutTuple_, ResultContainer_> group) {
+        var killGroup = group.isEmpty();
         if (killGroup) {
-            var groupKey = hasMultipleGroups ? group.getGroupKey() : null;
+            var groupKey = hasGroupKeyFunction ? group.getGroupKey() : null;
             var oldGroup = removeGroup(groupKey);
             if (oldGroup == null) {
-                throw new IllegalStateException("Impossible state: the group for the groupKey ("
-                        + groupKey + ") doesn't exist in the groupMap.\n" +
-                        "Maybe groupKey hashcode changed while it shouldn't have?");
+                throw new IllegalStateException("""
+                        Impossible state: the group for the groupKey (%s) doesn't exist in the groupMap.
+                        Maybe groupKey hashcode changed while it shouldn't have?"""
+                        .formatted(groupKey));
             }
         }
         var outTuple = group.getTuple();
@@ -247,13 +251,14 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
                     propagationQueue.update(group);
                 }
             }
-            default -> throw new IllegalStateException("Impossible state: The group (" + group + ") in node (" + this
-                    + ") is in an unexpected state (" + outTuple.getState() + ").");
+            default -> throw new IllegalStateException(
+                    "Impossible state: The group (%s) in node (%s) is in an unexpected state (%s)."
+                            .formatted(group, this, outTuple.getState()));
         }
     }
 
     private Group<OutTuple_, ResultContainer_> removeGroup(Object groupKey) {
-        if (hasMultipleGroups) {
+        if (hasGroupKeyFunction) {
             return groupMap.remove(groupKey);
         } else {
             var oldGroup = singletonGroup;
@@ -270,13 +275,17 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             return;
         }
         if (hasCollector) {
-            Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
-            undoAccumulator.run();
+            groupRetract(tuple);
         }
-        killTuple(group);
+        group.removeContributor();
+        killOutTuple(group);
     }
 
-    protected abstract Runnable accumulate(ResultContainer_ resultContainer, InTuple_ tuple);
+    protected abstract void groupInsert(ResultContainer_ resultContainer, InTuple_ tuple);
+
+    protected abstract void groupUpdate(ResultContainer_ resultContainer, InTuple_ tuple);
+
+    protected abstract void groupRetract(InTuple_ tuple);
 
     @Override
     public Propagator getPropagator() {

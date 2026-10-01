@@ -7,13 +7,11 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -28,6 +26,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
+import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -48,9 +48,10 @@ public class SolverScope<Solution_> {
     private final AtomicLong endingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
 
     private Set<SolverMetric> solverMetricSet = Collections.emptySet();
+    private boolean anyMetricConstraintMatchBased;
     private Tags monitoringTags;
     private int startingSolverCount;
-    private RandomGenerator workingRandom;
+    private RandomSource workingRandom;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
@@ -133,6 +134,11 @@ public class SolverScope<Solution_> {
 
     public void setSolverMetricSet(EnumSet<SolverMetric> solverMetricSet) {
         this.solverMetricSet = solverMetricSet;
+        this.anyMetricConstraintMatchBased = this.solverMetricSet.stream().anyMatch(SolverMetric::isMetricConstraintMatchBased);
+    }
+
+    public boolean isAnyMetricConstraintMatchBased() {
+        return anyMetricConstraintMatchBased;
     }
 
     public int getStartingSolverCount() {
@@ -143,11 +149,11 @@ public class SolverScope<Solution_> {
         this.startingSolverCount = startingSolverCount;
     }
 
-    public RandomGenerator getWorkingRandom() {
+    public RandomSource getWorkingRandom() {
         return workingRandom;
     }
 
-    public void setWorkingRandom(RandomGenerator workingRandom) {
+    public void setWorkingRandom(RandomSource workingRandom) {
         this.workingRandom = workingRandom;
     }
 
@@ -193,7 +199,7 @@ public class SolverScope<Solution_> {
     }
 
     public void assertScoreFromScratch(Solution_ solution) {
-        scoreDirector.getScoreDirectorFactory().assertScoreFromScratch(solution);
+        scoreDirector.assertScoreFromScratch(solution);
     }
 
     @SuppressWarnings("unchecked")
@@ -353,9 +359,9 @@ public class SolverScope<Solution_> {
         childThreadSolverScope.monitoringTags = monitoringTags;
         childThreadSolverScope.solverMetricSet = solverMetricSet;
         childThreadSolverScope.startingSolverCount = startingSolverCount;
-        // TODO FIXME use RandomFactory
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
-        childThreadSolverScope.workingRandom = new Random(workingRandom.nextLong());
+        var delegatingRandom = (DefaultRandomSource) workingRandom;
+        childThreadSolverScope.workingRandom = delegatingRandom.split();
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);

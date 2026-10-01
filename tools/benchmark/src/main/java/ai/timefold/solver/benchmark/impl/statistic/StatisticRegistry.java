@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.ObjLongConsumer;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -30,7 +30,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         implements PhaseLifecycleListener<Solution_> {
 
-    private static final String CONSTRAINT_NAME_TAG = "constraint.name";
+    private static final String CONSTRAINT_ID_TAG = "constraint.id";
 
     List<Consumer<SolverScope<Solution_>>> solverMeterListenerList = new ArrayList<>();
     List<BiConsumer<Long, AbstractStepScope<Solution_>>> stepMeterListenerList = new ArrayList<>();
@@ -108,13 +108,13 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         // Add the constraint ids from the meter ids
         getMeterIds(metric, runId)
                 .stream()
-                .map(meterId -> ConstraintRef.of(meterId.getTag(CONSTRAINT_NAME_TAG)))
+                .map(meterId -> ConstraintRef.of(meterId.getTag(CONSTRAINT_ID_TAG)))
                 .distinct()
                 .forEach(constraintRef -> {
-                    var constraintMatchTotalRunId = runId.and(CONSTRAINT_NAME_TAG, constraintRef.constraintName());
-                    // Get the score from the corresponding constraint name meters
+                    var constraintMatchTotalRunId = runId.and(CONSTRAINT_ID_TAG, constraintRef.id());
+                    // Get the score from the corresponding constraint ID meters
                     extractScoreFromMeters(metric, constraintMatchTotalRunId,
-                            // Get the count gauge (add constraint name to the run tags)
+                            // Get the count gauge (add constraint ID to the run tags)
                             score -> {
                                 var count = SolverMetricUtil.getGaugeValue(this, SolverMetricUtil.getGaugeName(metric, "count"),
                                         constraintMatchTotalRunId);

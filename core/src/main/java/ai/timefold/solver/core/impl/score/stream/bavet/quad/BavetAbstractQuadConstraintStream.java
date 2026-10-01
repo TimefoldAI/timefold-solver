@@ -1,10 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
-import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultIndictedObjectsMapping;
 import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultJustificationMapping;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -422,10 +420,9 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     private <Score_ extends Score<Score_>> QuadConstraintBuilderImpl<A, B, C, D, Score_> newTerminator(
             BavetScoringConstraintStream<Solution_> stream, Score_ constraintWeight, ScoreImpactType impactType) {
         return new QuadConstraintBuilderImpl<>(
-                (constraintName, constraintDescription, constraintGroup, constraintWeight_, impactType_,
-                        justificationMapping, indictedObjectsMapping) -> buildConstraint(constraintName,
-                                constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
-                                indictedObjectsMapping, stream),
+                (description, constraintWeight_, impactType_,
+                        justificationMapping) -> buildConstraint(description,
+                                constraintWeight_, impactType_, justificationMapping, stream),
                 impactType, constraintWeight);
     }
 
@@ -439,11 +436,6 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     @Override
     protected final PentaFunction<A, B, C, D, Score<?>, DefaultConstraintJustification> getDefaultJustificationMapping() {
         return createDefaultJustificationMapping();
-    }
-
-    @Override
-    protected final QuadFunction<A, B, C, D, Collection<?>> getDefaultIndictedObjectsMapping() {
-        return createDefaultIndictedObjectsMapping();
     }
 
 }

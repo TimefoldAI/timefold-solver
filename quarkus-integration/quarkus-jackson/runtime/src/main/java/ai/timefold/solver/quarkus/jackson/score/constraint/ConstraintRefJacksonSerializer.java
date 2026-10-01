@@ -2,7 +2,7 @@ package ai.timefold.solver.quarkus.jackson.score.constraint;
 
 import java.io.IOException;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -13,6 +13,6 @@ public final class ConstraintRefJacksonSerializer extends JsonSerializer<Constra
     @Override
     public void serialize(ConstraintRef constraintRef, JsonGenerator generator, SerializerProvider serializers)
             throws IOException {
-        generator.writeString(constraintRef.constraintName());
+        generator.writeString(constraintRef.id());
     }
 }

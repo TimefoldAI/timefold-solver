@@ -4,18 +4,15 @@ import static org.openrewrite.java.Assertions.java;
 
 import java.util.List;
 
+import ai.timefold.solver.migration.AbstractRecipeTest;
 import ai.timefold.solver.migration.NoWildCardImportStyle;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
-@Execution(ExecutionMode.CONCURRENT)
-class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
+class GeneralTypeChangeMigrationRecipeTest extends AbstractRecipeTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -61,7 +58,29 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface PillarChangeMove {}",
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface PillarSwapMove {}",
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface RuinRecreateMove {}",
-                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface SwapMove {}"));
+                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface SwapMove {}",
+                                "package ai.timefold.solver.core.api.score.constraint; public class ConstraintRef {}"));
+    }
+
+    @Test
+    void migrateConstraintRef() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+
+                        public class Test {
+                                ConstraintRef constraintRef;
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+
+                        public class Test {
+                                ConstraintRef constraintRef;
+                        }"""));
     }
 
     @Test

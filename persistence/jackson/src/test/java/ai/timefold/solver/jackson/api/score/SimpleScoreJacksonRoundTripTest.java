@@ -1,8 +1,6 @@
 package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.jackson.api.score.buildin.SimpleScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.SimpleScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +13,12 @@ class SimpleScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTest 
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestSimpleLongScoreWrapper(null));
         var score = SimpleScore.of(1234L);
+        assertSerializeAndDeserialize(score, new TestSimpleLongScoreWrapper(score));
+    }
+
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new SimpleScore(-1L, 1234L);
         assertSerializeAndDeserialize(score, new TestSimpleLongScoreWrapper(score));
     }
 

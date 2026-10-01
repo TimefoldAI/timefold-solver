@@ -23,6 +23,10 @@ public class SelectedCountLimitMoveSelector<Solution_> extends AbstractMoveSelec
         phaseLifecycleSupport.addEventListener(childMoveSelector);
     }
 
+    public MoveSelector<Solution_> getChildMoveSelector() {
+        return childMoveSelector;
+    }
+
     // ************************************************************************
     // Worker methods
     // ************************************************************************

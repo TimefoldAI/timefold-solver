@@ -11,7 +11,7 @@ import ai.timefold.solver.benchmark.config.report.BenchmarkReportConfig;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReportFactory;
 import ai.timefold.solver.benchmark.impl.result.BenchmarkResultIO;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -45,15 +45,25 @@ class PlannerBenchmarkResultTest {
         assertThat(aggregatedPlannerBenchmarkResult.getFailureCount()).isZero();
     }
 
-    // nested class below are used in the testPlannerBenchmarkResult.xml
+    // nested classes below are used in the testPlannerBenchmarkResult.xml
 
-    private static abstract class DummyIncrementalScoreCalculator
-            implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+    public static class DummyEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
+        @Override
+        public SimpleScore calculateScore(TestdataSolution solution) {
+            return null;
+        }
     }
 
-    private static abstract class DummyDistanceNearbyMeter
+    public static class DummyDistanceNearbyMeter
             implements NearbyDistanceMeter<TestdataSolution, TestdataEntity> {
 
+        @Override
+        public double getNearbyDistance(TestdataSolution origin, TestdataEntity destination) {
+            return 0;
+        }
+
     }
+
 }

@@ -28,7 +28,7 @@ record UniBigDecimalImpactHandler<A>(Function<A, BigDecimal> matchWeigher) imple
         var a = tuple.getA();
         var constraint = impacter.getContext().getConstraint();
         return impacter.impactScore(matchWeigher.apply(a),
-                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a));
+                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), a));
     }
 
 }

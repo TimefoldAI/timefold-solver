@@ -1,0 +1,48 @@
+package ai.timefold.solver.core.impl.score.stream.collector;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.ConnectedRangeTracker;
+import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
+
+import org.jspecify.annotations.Nullable;
+
+public abstract class AbstractConnectedRangesSlot<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
+
+    public static final class State<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
+        private final ConnectedRangeTracker<Interval_, Point_, Difference_> context;
+
+        public State(Function<? super Interval_, ? extends Point_> startMap,
+                Function<? super Interval_, ? extends Point_> endMap,
+                BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
+            this.context = new ConnectedRangeTracker<>(startMap, endMap, differenceFunction);
+        }
+
+        public ConnectedRangeChain<Interval_, Point_, Difference_> result() {
+            return context.getConnectedRangeChain();
+        }
+    }
+
+    private final State<Interval_, Point_, Difference_> state;
+    private @Nullable Range<Interval_, Point_> cachedRange;
+
+    public AbstractConnectedRangesSlot(State<Interval_, Point_, Difference_> state) {
+        this.state = state;
+    }
+
+    protected void addMapped(Interval_ result) {
+        cachedRange = state.context.getRange(result);
+        state.context.add(cachedRange);
+    }
+
+    protected void replaceWithMapped(Interval_ input) {
+        removeMapped();
+        addMapped(input);
+    }
+
+    protected void removeMapped() {
+        state.context.remove(cachedRange);
+    }
+}

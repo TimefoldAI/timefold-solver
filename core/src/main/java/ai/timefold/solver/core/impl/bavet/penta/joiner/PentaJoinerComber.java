@@ -77,10 +77,13 @@ public final class PentaJoinerComber<A, B, C, D, E> {
     }
 
     /**
+     * Returns the merged indexing joiner, reordered equal-first so the indexer chain always has its
+     * (merged) equal level at the top.
+     *
      * @return never null
      */
     public DefaultPentaJoiner<A, B, C, D, E> getMergedJoiner() {
-        return mergedJoiner;
+        return mergedJoiner.reorderedEqualsFirst();
     }
 
     /**

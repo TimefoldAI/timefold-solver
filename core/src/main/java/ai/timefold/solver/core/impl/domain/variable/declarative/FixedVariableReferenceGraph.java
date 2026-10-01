@@ -1,23 +1,28 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.BitSet;
-import java.util.PriorityQueue;
+import java.util.Collections;
+import java.util.List;
+import java.util.Spliterators;
 import java.util.function.IntFunction;
+import java.util.stream.StreamSupport;
+
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 
 import org.jspecify.annotations.NonNull;
 
 public final class FixedVariableReferenceGraph<Solution_>
-        extends AbstractVariableReferenceGraph<Solution_, PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder>> {
+        extends AbstractVariableReferenceGraph<Solution_, NodeTopologicalOrderQueue> {
     // These are immutable
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
-
+    private final int[][] cachedComponentForwardEdges;
     // These are mutable
     private boolean isFinalized = false;
 
     public FixedVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         super(outerGraph, graphCreator);
-        // We don't use a bit set to store changes, so pass a one-use instance
+        cachedComponentForwardEdges = new int[nodeList.size()][];
         graph.commitChanges(new BitSet(nodeList.size()));
         isFinalized = true;
 
@@ -25,7 +30,12 @@ public final class FixedVariableReferenceGraph<Solution_>
         // each node to changed.
         changedVariableNotifier = outerGraph.changedVariableNotifier;
         for (var node = 0; node < nodeList.size(); node++) {
-            changeSet.add(nodeTopologicalOrders[node]);
+            var finalNode = node;
+            cachedComponentForwardEdges[node] = StreamSupport
+                    .intStream(() -> Spliterators.spliterator(graph.nodeForwardEdges(finalNode), 0, 0),
+                            0, false)
+                    .toArray();
+            markChanged(nodeList.get(node));
             var variableReference = nodeList.get(node).variableReferences().get(0);
             var entityConsistencyState = variableReference.entityConsistencyState();
             if (variableReference.groupEntities() != null) {
@@ -46,49 +56,44 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
-    protected PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> createChangeSet(int instanceCount) {
-        return new PriorityQueue<>(instanceCount);
+    protected NodeTopologicalOrderQueue createChangeTracker(int instanceCount) {
+        return new NodeTopologicalOrderQueue(graph, instanceCount);
     }
 
     @Override
-    public void markChanged(@NonNull GraphNode<Solution_> node) {
+    void markChanged(@NonNull GraphNode<Solution_> node) {
         // Before the graph is finalized, ignore changes, since
         // we don't know the topological order yet
         if (isFinalized) {
-            changeSet.add(nodeTopologicalOrders[node.graphNodeId()]);
+            changeTracker.offer(node.graphNodeId());
         }
     }
 
     @Override
-    public void updateChanged() {
-        BitSet visited;
-        if (!changeSet.isEmpty()) {
-            visited = new BitSet(nodeList.size());
-            visited.set(changeSet.peek().nodeId());
-        } else {
-            return;
-        }
-
-        // NOTE: This assumes the user did not add any fixed loops to
-        // their graph (i.e. have two variables ALWAYS depend on one-another).
-        while (!changeSet.isEmpty()) {
-            var changedNode = changeSet.poll();
-            var entityVariable = nodeList.get(changedNode.nodeId());
+    boolean innerUpdateChanged() {
+        // A fixed graph is acyclic - assertNoFixedLoops() rejects a looped one at build time -
+        // and no edge is added or removed afterwards, so every edge runs strictly forward in
+        // topological order. The queue polls in that order and drops a node already in it,
+        // so each node is updated at most once per pass.
+        while (!changeTracker.isEmpty()) {
+            var changedNodeId = changeTracker.poll();
+            var entityVariable = nodeList.get(changedNodeId);
             var entity = entityVariable.entity();
             var shadowVariableReferences = entityVariable.variableReferences();
             for (var shadowVariableReference : shadowVariableReferences) {
                 var isVariableChanged = shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
                 if (isVariableChanged) {
-                    for (var iterator = graph.nodeForwardEdges(changedNode.nodeId()); iterator.hasNext();) {
-                        var nextNode = iterator.next();
-                        if (visited.get(nextNode)) {
-                            continue;
-                        }
-                        visited.set(nextNode);
-                        changeSet.add(nodeTopologicalOrders[nextNode]);
+                    for (var nextNode : cachedComponentForwardEdges[changedNodeId]) {
+                        changeTracker.offer(nextNode);
                     }
                 }
             }
         }
+        return true;
+    }
+
+    @Override
+    public List<VariableLoop> getVariableLoops() {
+        return Collections.emptyList();
     }
 }

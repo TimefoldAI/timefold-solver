@@ -2,12 +2,10 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
-import static org.mockito.Mockito.mock;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
@@ -49,14 +47,14 @@ class ProbabilityMoveSelectorTest {
         MoveSelector<TestdataSolution> moveSelector = new ProbabilityMoveSelector<>(childMoveSelector,
                 SelectionCacheType.STEP, probabilityWeightFactory);
 
-        Random workingRandom = new TestRandom(
+        var workingRandom = new TestRandom(
                 1222.0 / 1234.0,
                 111.0 / 1234.0,
                 0.0,
                 1230.0 / 1234.0,
                 1199.0 / 1234.0);
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         moveSelector.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScopeA = PlannerTestUtils.delegatingPhaseScope(solverScope);

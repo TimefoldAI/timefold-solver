@@ -2,20 +2,23 @@ package ai.timefold.solver.core.impl.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.random.RandomGenerator;
@@ -23,11 +26,11 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.AnalyzableIncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchRegistry;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
@@ -59,19 +62,24 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
+import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
-import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
-import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
@@ -80,6 +88,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.classloader.TestdataSeparateClassLoaderDomain;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -100,6 +109,8 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstValue;
@@ -133,6 +144,10 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationValue;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldEntity;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldSolution;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldValue;
 import ai.timefold.solver.core.testdomain.sort.comparator.OneValuePerEntityComparatorEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableEntity;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
@@ -262,6 +277,41 @@ class DefaultSolverTest {
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("NEIGHBORHOODS");
+    }
+
+    @Test
+    void neighborhoodsRejectsVariableNeighborhoodDescent() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0"))
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withLocalSearchType(LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+        Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("does not support the Neighborhoods API");
+    }
+
+    @Test
+    void variableNeighborhoodDescentStillWorksWithoutNeighborhoods() {
+        // Preview feature not enabled: plain VND, using legacy move selectors, must remain unaffected.
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0"))
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withLocalSearchType(LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+        var result = PlannerTestUtils.solve(solverConfig, solution);
+        Assertions.assertThat(result).isNotNull();
     }
 
     @Test
@@ -403,50 +453,6 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveCorruptedIncrementalUninitialized() {
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
-                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
-
-        var solution = new TestdataSolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-
-        Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution, false))
-                .hasMessageContaining("Score corruption")
-                .hasMessageContaining("workingScore")
-                .hasMessageContaining("uncorruptedScore")
-                .hasMessageContaining("Score corruption analysis:");
-    }
-
-    @Test
-    void solveCorruptedIncrementalInitialized() {
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
-                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
-        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
-        var solver = solverFactory.buildSolver();
-
-        var solution = new TestdataSolution("s1");
-        var value1 = new TestdataValue("v1");
-        var value2 = new TestdataValue("v2");
-        solution.setValueList(List.of(value1, value2));
-        var entity1 = new TestdataEntity("e1");
-        entity1.setValue(value1);
-        var entity2 = new TestdataEntity("e2");
-        entity2.setValue(value2);
-        solution.setEntityList(List.of(entity1, entity2));
-
-        Assertions.assertThatThrownBy(() -> solver.solve(solution))
-                .hasMessageContaining("Score corruption")
-                .hasMessageContaining("workingScore")
-                .hasMessageContaining("uncorruptedScore")
-                .hasMessageContaining("Score corruption analysis:");
-    }
-
-    @Test
     void solveEmptyEntityList() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
@@ -575,6 +581,168 @@ class DefaultSolverTest {
             assertThat(bestSolution.get().getValueList()).hasSize(valueCount + 1);
             solver.terminateEarly();
         }
+    }
+
+    @Test
+    @Timeout(60)
+    void problemChangeAfterTheSolveRunsOnAScoreDirectorOfItsOwn() throws InterruptedException {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so the run ends on a score director which is not the one the first phase ran on.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.setDaemon(true); // Keep the solver waiting for the problem change instead of returning.
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+
+        var firstRunEnded = new CountDownLatch(1);
+        var changeProcessed = new CountDownLatch(1);
+        var firstPhaseScoreDirectorList = new CopyOnWriteArrayList<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        var restartedFirstPhaseStarted = new CountDownLatch(1);
+        var lastPhaseScoreDirector = new AtomicReference<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 0) {
+                    firstPhaseScoreDirectorList.add(phaseScope.getScoreDirector());
+                    if (firstPhaseScoreDirectorList.size() == 2) {
+                        restartedFirstPhaseStarted.countDown();
+                    }
+                } else {
+                    lastPhaseScoreDirector.compareAndSet(null, phaseScope.getScoreDirector());
+                }
+            }
+
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                try {
+                    firstRunEnded.countDown();
+                    changeProcessed.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        final var valueCount = 4;
+        var problem = TestdataSolution.generateSolution(valueCount, valueCount);
+        var endedRunScoreDirectorWasStillClosed = new AtomicBoolean();
+        var workingSolutionDuringChange = new AtomicReference<TestdataSolution>();
+        var bestSolutionAfterChange = new AtomicReference<TestdataSolution>();
+        solver.addEventListener(bestSolutionChangedEvent -> {
+            var newBestSolution = bestSolutionChangedEvent.getNewBestSolution();
+            if (bestSolutionChangedEvent.isEveryProblemChangeProcessed()
+                    && newBestSolution.getValueList().size() == valueCount + 1) {
+                bestSolutionAfterChange.compareAndSet(null, newBestSolution);
+            }
+        });
+
+        try (var executorService = Executors.newSingleThreadExecutor()) {
+            try {
+                executorService.submit(() -> solver.solve(problem));
+                // A problem change queued while a run is in progress terminates that run early,
+                // and no phase would run at all.
+                // Waiting for the run to end is the point of this test:
+                // by then its score director is closed,
+                // so checkProblemChanges has to build one of its own to apply the change to.
+                firstRunEnded.await();
+                // At this point,
+                // the solver has completed the first run
+                // and will wait for the problem change to be added,
+                // ensuring that checkProblemChanges is executed correctly.
+                solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+                    // close() clears the working solution, which is the observable proof it stayed closed.
+                    endedRunScoreDirectorWasStillClosed.set(lastPhaseScoreDirector.get().getWorkingSolution() == null);
+                    workingSolutionDuringChange.set(workingSolution);
+                    problemChangeDirector.addProblemFact(new TestdataValue("added value"), problem.getValueList()::add);
+                });
+                // The first run now finishes completely
+                changeProcessed.countDown();
+                restartedFirstPhaseStarted.await();
+            } finally {
+                solver.terminateEarly();
+            }
+        }
+
+        // The score director the run ended on close
+        assertThat(endedRunScoreDirectorWasStillClosed).isTrue();
+        assertThat(workingSolutionDuringChange.get()).isNotNull();
+        // No change to the solution from the first run
+        assertThat(workingSolutionDuringChange.get().getEntityList())
+                .as("the best solution of the run which just ended is loaded into the new score director")
+                .hasSize(valueCount)
+                .allMatch(entity -> entity.getValue() != null);
+        // The best solution must include the real-time changes
+        assertThat(bestSolutionAfterChange.get().getValueList()).hasSize(valueCount + 1);
+        // The restarted solver resumes at the first phase, on a score director of its own.
+        assertThat(firstPhaseScoreDirectorList).hasSize(2);
+        assertThat(firstPhaseScoreDirectorList.get(1)).isNotSameAs(firstPhaseScoreDirectorList.get(0));
+    }
+
+    @Test
+    void replacedScoreDirectorIsClosedWhenAPhaseOverridesTheEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so SolverContextManager has to swap in a score director for it.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+
+        var scoreDirectorPerPhase = new ArrayList<InnerScoreDirector<TestdataSolution, SimpleScore>>();
+        var replacedDirectorWasClosedOnSwap = new AtomicBoolean();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                // The swap already happened; solver-level listeners run after SolverContextManager.
+                if (!scoreDirectorPerPhase.isEmpty()) {
+                    // close() clears the working solution, which is the observable proof of the release.
+                    replacedDirectorWasClosedOnSwap.set(scoreDirectorPerPhase.get(0).getWorkingSolution() == null);
+                }
+                scoreDirectorPerPhase.add(phaseScope.getScoreDirector());
+            }
+        });
+        solver.solve(TestdataSolution.generateSolution(2, 2));
+
+        assertThat(scoreDirectorPerPhase).hasSize(2);
+        assertThat(scoreDirectorPerPhase.get(1)).isNotSameAs(scoreDirectorPerPhase.get(0));
+        assertThat(replacedDirectorWasClosedOnSwap).isTrue();
+    }
+
+    @Test
+    void ensureScoreCalculationCountConsistent() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS (the last phase) overridden to a stricter EnvironmentMode than the global one,
+        // so SolverContextManager swaps in a fresh score director between the two phases.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataSolution>) solverFactory.buildSolver();
+        var problem = TestdataSolution.generateSolution(2, 2);
+
+        var countAfterFirstPhase = new AtomicLong(-1);
+        var countAtSecondPhaseStart = new AtomicLong(-1);
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 1) {
+                    countAtSecondPhaseStart.set(phaseScope.getScoreDirector().getCalculationCount());
+                }
+            }
+
+            @Override
+            public void phaseEnded(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 0) {
+                    countAfterFirstPhase.set(phaseScope.getScoreDirector().getCalculationCount());
+                }
+            }
+        });
+        solver.solve(problem);
+
+        // Terminations count score calculations across the whole solve,
+        // so the swapped-in score director must continue the running total rather than restart it at zero.
+        // Not an exact match: runPhases() calls setWorkingSolutionFromBestSolution() between the two phases,
+        // which scores once more on the outgoing director before the swap copies the total over.
+        // SolverContextManagerTest pins the exact hand-over.
+        assertThat(countAfterFirstPhase).hasPositiveValue();
+        assertThat(countAtSecondPhaseStart.get()).isGreaterThanOrEqualTo(countAfterFirstPhase.get());
     }
 
     @Test
@@ -1000,7 +1168,8 @@ class DefaultSolverTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMultiVarSolution.class, TestdataMultiVarEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
-                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
 
         var problem = TestdataMultiVarSolution.generateUninitializedSolution(2, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
@@ -1443,19 +1612,26 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntityList().getFirst().getValue().getCode()).isEqualTo("v1");
-        assertThat(solution.getEntityList().get(1).getValue().getCode()).isEqualTo("v2");
+        assertThat(solution.getEntityList())
+                .map(entity -> entity.getValue().getCode())
+                .containsExactlyInAnyOrder("v1", "v2");
 
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(-2));
     }
 
     @Test
+    @Timeout(60)
     void solveStaleDeclarativeShadows() {
+        // Timeout is necessary since we use best score feasible as changes to random affect
+        // the step count to get to a feasible solution, and if we somehow broke LS so it never
+        // find a feasible solution, it would run forever otherwise.
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
                 .withEasyScoreCalculatorClass(null)
-                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class);
+                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class)
+                .withPhases(new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig()
+                        .withBestScoreFeasible(true)));
 
         var e1 = new TestdataConcurrentEntity("e1");
         var e2 = new TestdataConcurrentEntity("e2");
@@ -1484,11 +1660,196 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("a1",
-                "b1");
-        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a2", "b2");
+        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1",
+                "a1");
+        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2", "a2");
 
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
+    }
+
+    @Test
+    void solveWhenIgnoringInconsistentSolutionsUnassignsIfInitialSolutionInconsistent() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(command -> {
+                        }));
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
+
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
+
+        e1.setValues(List.of(b2, b1));
+        e2.setValues(List.of(a1, a2));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        var solution = PlannerTestUtils.solve(solverConfig, problem, false);
+        assertThat(solution.getEntities().getFirst().getValues()).isEmpty();
+        assertThat(solution.getEntities().getLast().getValues()).hasSize(2);
+
+        var sE2 = solution.getEntities().getLast();
+
+        var sA1 = solution.getValues().get(0);
+        var sA2 = solution.getValues().get(1);
+        var sB1 = solution.getValues().get(2);
+        var sB2 = solution.getValues().get(3);
+
+        assertThat(sA1.getEntity()).isEqualTo(sE2);
+        assertThat(sA1.getPreviousValue()).isNull();
+
+        assertThat(sA2.getEntity()).isEqualTo(sE2);
+        assertThat(sA2.getPreviousValue()).isEqualTo(sA1);
+
+        assertThat(sB1.getEntity()).isNull();
+        assertThat(sB1.getPreviousValue()).isNull();
+
+        assertThat(sB2.getEntity()).isNull();
+        assertThat(sB2.getPreviousValue()).isNull();
+    }
+
+    @Test
+    void solveWhenIgnoringInconsistentSolutionsThrowsIfInconsistentEntityPinned() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class);
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
+
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
+
+        e1.setValues(List.of(b2, b1));
+        e2.setValues(List.of(a2, a1));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        e1.setPinnedToIndex(1);
+
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem, false))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContainingAll("Entity", "b2", "while involved in a dependency loop");
+    }
+
+    @Test
+    void solveCustomPhaseReturnsStructurallyFlawed() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(command -> {
+                            var solution = (TestdataDependencyNoInconsistentFieldSolution) command.getWorkingSolution();
+                            var sE1 = solution.getEntities().getFirst();
+                            var sB1 = solution.getValues().get(2);
+                            var sB2 = solution.getValues().get(3);
+                            var metaModel = command.getSolutionMetaModel()
+                                    .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                                    .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+                            command.execute(Moves.compose(
+                                    Moves.assign(metaModel, sB2, sE1, 0),
+                                    Moves.assign(metaModel, sB1, sE1, 1)));
+                        }));
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
+
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
+
+        e1.setValues(List.of(b2, b1));
+        e2.setValues(List.of(a1, a2));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("The move ", "caused the solution to become structurally flawed.");
+    }
+
+    @Test
+    void solveIgnoreInconsistent() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class);
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
+
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0L, -360L));
+        var solutionValues = solution.getValues();
+        var solutionA1 = solutionValues.get(0);
+        var solutionA2 = solutionValues.get(1);
+        var solutionB1 = solutionValues.get(2);
+        var solutionB2 = solutionValues.get(3);
+
+        assertThat(solutionA2.getStartTime()).isAfterOrEqualTo(solutionA1.getEndTime());
+        assertThat(solutionB2.getStartTime()).isAfterOrEqualTo(solutionB1.getEndTime());
     }
 
     private static List<MoveSelectorConfig<?>> generateMovesForMixedModel() {
@@ -1819,6 +2180,40 @@ class DefaultSolverTest {
     }
 
     @Test
+    void solveCustomClassLoader() {
+        // Spring DevTools redefine existing classes, with their updated definitions replacing
+        // existing instances, and their updated definition are only available from the Thread's Context ClassLoader.
+        // This test verify the Context ClassLoader definition is used instead of the one from the parent ClassLoader.
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSeparateClassLoaderDomain.getTestdataSolutionClass(),
+                TestdataSeparateClassLoaderDomain.getTestdataEntityClass());
+        var originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(TestdataSeparateClassLoaderDomain.getClassLoader());
+            var solution = TestdataSeparateClassLoaderDomain.generateSolution();
+
+            solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                    BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
+            assertThat(solution).isNotNull();
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
+    }
+
+    @Test
+    void solveListVarEntityRangeModelWithTreeSet() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataListUnassignedEntityProvidingSortedSetSolution.class)
+                .withEntityClasses(TestdataListUnassignedEntityProvidingSortedSetEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
+
+        var problem = TestdataListUnassignedEntityProvidingSortedSetSolution.generateSolution();
+
+        problem = PlannerTestUtils.solve(solverConfig, problem, true);
+        assertThat(problem).isNotNull();
+    }
+
+    @Test
     void failRuinRecreateWithMultiVar() {
         // Solver config
         var localSearchConfig = new LocalSearchPhaseConfig().withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig());
@@ -2002,6 +2397,91 @@ class DefaultSolverTest {
     }
 
     @Test
+    void solvingErrorClosesScoreDirectorWhenSolvingStartedFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // The score director the solver was built with; solving fails before any phase adopts a context for it.
+        var scoreDirector = solver.getSolverScope().getScoreDirector();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataSolution>() {
+            @Override
+            public void solvingStarted(SolverScope<TestdataSolution> solverScope) {
+                throw new IllegalStateException("Boom from a listener");
+            }
+        });
+
+        // The caller must see the real failure, not a follow-up failure from the solver's own cleanup.
+        assertThatCode(() -> solver.solve(TestdataSolution.generateSolution(2, 2)))
+                .hasMessageContaining("Boom from a listener");
+
+        // Otherwise a long-lived SolverManager accumulates one unclosed score director per failed job.
+        assertThat(scoreDirector.getWorkingSolution()).isNull();
+    }
+
+    @Test
+    void solvingErrorNotifiesListenersBeforeClosingTheScoreDirector() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // Force invalid move factory
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var workingSolutionSeenByListener = new AtomicReference<Object>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataListSolution>() {
+            @Override
+            public void solvingError(SolverScope<TestdataListSolution> solverScope, Exception exception) {
+                workingSolutionSeenByListener.set(solverScope.getScoreDirector().getWorkingSolution());
+            }
+        });
+
+        assertThatCode(() -> solver.solve(TestdataListSolution.generateUninitializedSolution(2, 2)))
+                .hasMessageContaining("The value (bad value) from the planning variable (valueList)");
+
+        // Closing clears the working solution, so releasing before notifying would hand listeners a gutted
+        // score director exactly when they are trying to diagnose the failure.
+        assertThat(workingSolutionSeenByListener.get()).isNotNull();
+    }
+
+    @Test
+    void solvingErrorClosesScoreDirectorWhenPhaseFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // Force invalid move factory
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+
+        // Expected to be the director created for the LS phase
+        var swappedScoreDirector = new AtomicReference<>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseStarted(AbstractPhaseScope<TestdataListSolution> phaseScope) {
+                if (phaseScope.getPhaseIndex() == 1) {
+                    swappedScoreDirector.set(phaseScope.getScoreDirector());
+                }
+            }
+        });
+
+        assertThatCode(() -> solver.solve(problem))
+                .hasMessageContaining("The value (bad value) from the planning variable (valueList)");
+
+        // The orphaned non-default director must have been closed
+        assertThat(swappedScoreDirector.get()).isNotNull();
+        var closedWorkingSolution = ((InnerScoreDirector<?, ?>) swappedScoreDirector.get()).getWorkingSolution();
+        assertThat(closedWorkingSolution).isNull();
+    }
+
+    @Test
     void failCustomPhaseValueRangeAssertion() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
                 TestdataListValue.class);
@@ -2080,67 +2560,6 @@ class DefaultSolverTest {
 
         @Override
         public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
-            var random = new Random();
-            return SimpleScore.of(random.nextInt(1000));
-        }
-    }
-
-    public static class CorruptedIncrementalScoreCalculator
-            implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataSolution, SimpleScore> {
-
-        @Override
-        public void resetWorkingSolution(@NonNull TestdataSolution workingSolution, boolean constraintMatchEnabled) {
-            // Ignore
-        }
-
-        @Override
-        public @NonNull Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
-            return Collections.singletonList(new DefaultConstraintMatchTotal<>(ConstraintRef.of("b"), SimpleScore.of(1)));
-        }
-
-        @Override
-        public @Nullable Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
-            return Collections.singletonMap(new TestdataEntity("e1"),
-                    new DefaultIndictment<>(new TestdataEntity("e1"), SimpleScore.ONE));
-        }
-
-        @Override
-        public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
-            // Ignore
-        }
-
-        @Override
-        public void beforeEntityAdded(@NonNull Object entity) {
-            // Ignore
-        }
-
-        @Override
-        public void afterEntityAdded(@NonNull Object entity) {
-            // Ignore
-        }
-
-        @Override
-        public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-            // Ignore
-        }
-
-        @Override
-        public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-            // Ignore
-        }
-
-        @Override
-        public void beforeEntityRemoved(@NonNull Object entity) {
-            // Ignore
-        }
-
-        @Override
-        public void afterEntityRemoved(@NonNull Object entity) {
-            // Ignore
-        }
-
-        @Override
-        public @NonNull SimpleScore calculateScore() {
             var random = new Random();
             return SimpleScore.of(random.nextInt(1000));
         }
@@ -2307,9 +2726,250 @@ class DefaultSolverTest {
         @Override
         protected void execute(VariableDescriptorAwareScoreDirector<TestdataListSolution> scoreDirector) {
             var entity = scoreDirector.getWorkingSolution().getEntityList().getFirst();
-            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            var appendIndex = entity.getValueList().size();
+            scoreDirector.beforeListVariableChanged(entity, "valueList", appendIndex, appendIndex);
             entity.getValueList().add(new TestdataListValue("bad value"));
-            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+            scoreDirector.afterListVariableChanged(entity, "valueList", appendIndex, appendIndex + 1);
         }
     }
+
+    @Test
+    void solveIncrementalInitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(TestdataIncrementalScoreCalculator.class));
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        solution.setValueList(List.of(value1, value2));
+        var entity1 = new TestdataEntity("e1");
+        entity1.setValue(value1);
+        var entity2 = new TestdataEntity("e2");
+        entity2.setValue(value2);
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var bestSolution = solver.solve(solution);
+        assertThat(bestSolution).isNotNull();
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(2));
+    }
+
+    @Test
+    void solveCorruptedIncrementalUninitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
+
+        var solution = new TestdataSolution("s1");
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
+
+        assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution, false))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis:");
+    }
+
+    @Test
+    void solveCorruptedIncrementalInitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        solution.setValueList(List.of(value1, value2));
+        var entity1 = new TestdataEntity("e1");
+        entity1.setValue(value1);
+        var entity2 = new TestdataEntity("e2");
+        entity2.setValue(value2);
+        solution.setEntityList(List.of(entity1, entity2));
+
+        assertThatThrownBy(() -> solver.solve(solution))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis:");
+    }
+
+    @Test
+    void assertDefaultEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsOnly(EnvironmentMode.PHASE_ASSERT);
+    }
+
+    @Test
+    void assertUpdatedDefaultEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsOnly(EnvironmentMode.FULL_ASSERT);
+    }
+
+    @Test
+    void assertPhaseEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // LS with TRACKED_FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsExactly(EnvironmentMode.FULL_ASSERT, EnvironmentMode.TRACKED_FULL_ASSERT);
+    }
+
+    @Test
+    void assertDefaultPhaseEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS with FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().stream().map(Phase::getEnvironmentMode).toList())
+                .containsExactly(EnvironmentMode.PHASE_ASSERT, EnvironmentMode.FULL_ASSERT);
+    }
+
+    @Test
+    void solveWithPhaseEnvironmentModeOverride() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // LS phase overridden to TRACKED_FULL_ASSERT
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        var problem = TestdataSolution.generateSolution(2, 2);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(bestSolution).isNotNull();
+    }
+
+    @Test
+    void solveListVariableWithPhaseEnvironmentModeOverride() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
+        // LS phase overridden to TRACKED_FULL_ASSERT
+        var localSearchPhaseConfig = solverConfig.getPhaseConfigList().get(1);
+        localSearchPhaseConfig.setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        localSearchPhaseConfig.setTerminationConfig(new TerminationConfig().withStepCountLimit(50));
+        var problem = TestdataListSolution.generateUninitializedSolution(20, 5);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(bestSolution).isNotNull();
+    }
+
+    @Test
+    void ensureListVariableStateIsReusedAcrossPhases() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        var phaseConfigList = new ArrayList<>(solverConfig.getPhaseConfigList());
+        phaseConfigList.add(new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
+        solverConfig.setPhaseConfigList(phaseConfigList);
+
+        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
+        var solver = (AbstractSolver<TestdataListSolution>) solverFactory.buildSolver();
+        var problem = TestdataListSolution.generateUninitializedSolution(10, 4);
+
+        var listVariableDescriptor = solver.getScoreDirectorFactory().getSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListEntity.class)
+                .getListVariableDescriptor();
+
+        // Capture the state the score director hands out at the end of each phase (CH, LS1, LS2 in order).
+        var statesAfterEachPhase = new ArrayList<ListVariableState<TestdataListSolution, Object, Object>>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseEnded(AbstractPhaseScope<TestdataListSolution> phaseScope) {
+                statesAfterEachPhase.add(phaseScope.getScoreDirector().getListVariableState(listVariableDescriptor));
+            }
+        });
+        solver.solve(problem);
+        // Three phases: CH, LS1 and LS2
+        assertThat(statesAfterEachPhase).hasSize(3);
+        /*
+         * The score director owns a single state for its entire lifetime.
+         * A phase borrows it in phaseStarted() and drops its reference in phaseEnded()
+         * no phase may acquire a state of its own.
+         */
+        var firstState = statesAfterEachPhase.get(0);
+        assertThat(statesAfterEachPhase).allSatisfy(state -> assertThat(state).isSameAs(firstState));
+    }
+
+    @NullMarked
+    public static class CorruptedIncrementalScoreCalculator
+            implements AnalyzableIncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+
+        private @Nullable ConstraintMatchRegistry<SimpleScore> constraintMatchRegistry;
+
+        @Override
+        public void resetWorkingSolution(TestdataSolution workingSolution) {
+            Objects.requireNonNull(constraintMatchRegistry)
+                    .registerConstraintMatch(ConstraintRef.of("b"), SimpleScore.of(1));
+        }
+
+        @Override
+        public void beforeVariableChanged(Object entity, String variableName) {
+            // Ignore
+        }
+
+        @Override
+        public void afterVariableChanged(Object entity, String variableName) {
+            // Ignore
+        }
+
+        @Override
+        public SimpleScore calculateScore() {
+            var random = new Random();
+            return SimpleScore.of(random.nextInt(1000));
+        }
+
+        @Override
+        public void enableConstraintMatch(ConstraintMatchRegistry<SimpleScore> constraintMatchRegistry) {
+            this.constraintMatchRegistry = constraintMatchRegistry;
+        }
+    }
+
+    @NullMarked
+    public static class TestdataIncrementalScoreCalculator
+            implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+
+        private int initializedEntityCount;
+
+        @Override
+        public void resetWorkingSolution(TestdataSolution workingSolution) {
+            initializedEntityCount = 0;
+            for (var entity : workingSolution.getEntityList()) {
+                if (entity.getValue() != null) {
+                    initializedEntityCount++;
+                }
+            }
+        }
+
+        @Override
+        public void beforeVariableChanged(Object entity, String variableName) {
+            if (((TestdataEntity) entity).getValue() != null) {
+                initializedEntityCount--;
+            }
+        }
+
+        @Override
+        public void afterVariableChanged(Object entity, String variableName) {
+            if (((TestdataEntity) entity).getValue() != null) {
+                initializedEntityCount++;
+            }
+        }
+
+        @Override
+        public SimpleScore calculateScore() {
+            return SimpleScore.of(initializedEntityCount);
+        }
+    }
+
 }

@@ -2,10 +2,10 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.NeighborhoodsGroupNodeConstructor;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -15,25 +15,30 @@ import org.jspecify.annotations.Nullable;
 final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
         extends AbstractBiEnumeratingStream<Solution_, A, B> {
 
-    private final GroupNodeConstructor<BiTuple<NewA, NewB>> nodeConstructor;
+    private final NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<NewA, NewB>> nodeConstructor;
     private @Nullable AftBridgeBiEnumeratingStream<Solution_, NewA, NewB> aftStream;
 
-    public BiGroupBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
+    BiGroupBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractBiEnumeratingStream<Solution_, A, B> parent,
-            GroupNodeConstructor<BiTuple<NewA, NewB>> nodeConstructor) {
+            NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<NewA, NewB>> nodeConstructor) {
         super(enumeratingStreamFactory, parent);
-        this.nodeConstructor = nodeConstructor;
+        this.nodeConstructor = Objects.requireNonNull(nodeConstructor);
     }
 
-    public void setAftBridge(AftBridgeBiEnumeratingStream<Solution_, NewA, NewB> aftStream) {
+    void setAftBridge(AftBridgeBiEnumeratingStream<Solution_, NewA, NewB> aftStream) {
         this.aftStream = aftStream;
     }
 
     @Override
+    public boolean guaranteesDistinct() {
+        return true;
+    }
+
+    @Override
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
-        var aftStreamChildList = aftStream.getChildStreamList();
-        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this,
-                enumeratingStreamFactory.getEnvironmentMode());
+        var view = buildHelper.getSessionContext().solutionView();
+        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream,
+                aftStream.getChildStreamList(), this, enumeratingStreamFactory.getEnvironmentMode(), view);
     }
 
     @Override
@@ -53,7 +58,6 @@ final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
 
     @Override
     public String toString() {
-        return "BiGroup()";
+        return "BiGroupBi()";
     }
-
 }

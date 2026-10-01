@@ -28,7 +28,6 @@ public final class CollectionUtils {
         /*
          * Some move implementations on the hot path rely heavily on list reversal.
          * As such, the following implementation was benchmarked to perform as well as possible for lists of all sizes.
-         * See PLANNER-2808 for details.
          */
         switch (originalList.size()) {
             case 0 -> {
@@ -53,8 +52,8 @@ public final class CollectionUtils {
         }
     }
 
-    public static <T> List<T> concat(List<T> left, List<T> right) {
-        List<T> result = new ArrayList<>(left.size() + right.size());
+    public static <T> List<T> concat(List<? extends T> left, List<? extends T> right) {
+        var result = new ArrayList<T>(left.size() + right.size());
         result.addAll(left);
         result.addAll(right);
         return result;

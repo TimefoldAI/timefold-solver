@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.Collections;
@@ -11,6 +12,7 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.constraintverifier.TestdataConstraintVerifierConstraintProvider;
 import ai.timefold.solver.core.testdomain.constraintverifier.TestdataConstraintVerifierExtendedSolution;
 import ai.timefold.solver.core.testdomain.constraintverifier.TestdataConstraintVerifierFirstEntity;
@@ -35,7 +37,7 @@ import org.junit.jupiter.api.Test;
 class MultiConstraintAssertionTest {
 
     @Test
-    void triggerVariableListenersListSingleSolution() {
+    void updateShadowVariablesListSingleSolution() {
         var constraintVerifier = ConstraintVerifier.build(new TestdataListMultipleShadowVariableConstraintProvider(),
                 TestdataListMultipleShadowVariableSolution.class,
                 TestdataListMultipleShadowVariableEntity.class,
@@ -66,6 +68,51 @@ class MultiConstraintAssertionTest {
                 .givenSolution(solution)
                 .scores(HardSoftScore.of(1, 1), "There should be penalties"))
                 .hasMessageContaining("There should be penalties");
+    }
+
+    @Test
+    void getScoreReturnsTypedScoreWithGivenFacts() {
+        var constraintVerifier = ConstraintVerifier.build(new TestdataConstraintVerifierConstraintProvider(),
+                TestdataConstraintVerifierExtendedSolution.class,
+                TestdataConstraintVerifierFirstEntity.class,
+                TestdataConstraintVerifierSecondEntity.class);
+        var entity = new TestdataConstraintVerifierFirstEntity("entity1", new TestdataValue());
+
+        HardSoftScore score = constraintVerifier
+                .verifyThat()
+                .given(entity)
+                .getScore();
+
+        assertThat(score).isNotNull();
+        assertThat(score).isInstanceOf(HardSoftScore.class);
+
+        assertThat(score.hardScore()).isEqualTo(-5);
+        assertThat(score.softScore()).isEqualTo(2);
+    }
+
+    @Test
+    void getScoreEnablesRelativeComparisonWithGivenFacts() {
+        var constraintVerifier = ConstraintVerifier.build(new TestdataConstraintVerifierConstraintProvider(),
+                TestdataConstraintVerifierExtendedSolution.class,
+                TestdataConstraintVerifierFirstEntity.class,
+                TestdataConstraintVerifierSecondEntity.class);
+        // Scenario A: 1 entity
+        var entityA = new TestdataConstraintVerifierFirstEntity("A", new TestdataValue());
+
+        // Scenario B: 2 entities
+        var entityB1 = new TestdataConstraintVerifierFirstEntity("B1", new TestdataValue());
+        var entityB2 = new TestdataConstraintVerifierFirstEntity("B2", new TestdataValue());
+
+        HardSoftScore scoreA = constraintVerifier
+                .verifyThat()
+                .given(entityA)
+                .getScore();
+        HardSoftScore scoreB = constraintVerifier
+                .verifyThat()
+                .given(entityB1, entityB2)
+                .getScore();
+
+        assertThat(scoreA).isGreaterThan(scoreB);
     }
 
     @Test

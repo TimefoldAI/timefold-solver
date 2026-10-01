@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.doReturn;
@@ -29,7 +30,7 @@ class BestScoreTerminationTest {
         ScoreDefinition<SimpleScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(1);
         var termination = new BestScoreTermination<TestdataSolution>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         when(solverScope.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         when(solverScope.isBestSolutionInitialized()).thenReturn(true);
         doReturn(SimpleScore.of(-1100)).when(solverScope).getStartingInitializedScore();

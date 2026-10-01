@@ -3,8 +3,6 @@ package ai.timefold.solver.jackson.api.score;
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
-import ai.timefold.solver.jackson.api.score.buildin.HardMediumSoftBigDecimalScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.HardMediumSoftBigDecimalScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +15,13 @@ class HardMediumSoftBigDecimalScoreJacksonRoundTripTest extends AbstractScoreJac
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestHardMediumSoftBigDecimalScoreWrapper(null));
         var score = HardMediumSoftBigDecimalScore.of(new BigDecimal("1200.0021"),
+                new BigDecimal("-3.1415"), new BigDecimal("34.4300"));
+        assertSerializeAndDeserialize(score, new TestHardMediumSoftBigDecimalScoreWrapper(score));
+    }
+
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new HardMediumSoftBigDecimalScore(-1L, new BigDecimal("1200.0021"),
                 new BigDecimal("-3.1415"), new BigDecimal("34.4300"));
         assertSerializeAndDeserialize(score, new TestHardMediumSoftBigDecimalScoreWrapper(score));
     }

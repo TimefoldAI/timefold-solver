@@ -1,0 +1,29 @@
+[#_using_metrics]
+= Using metrics
+:description: Input and output metrics make platform features like solve graphs, comparison, and Insights more useful.
+:doctype: book
+:icons: font
+
+include::../_attributes.adoc[]
+
+include::_preview-note.adoc[]
+
+Metrics aren't just extra fields in the API response.
+Once your model is xref:deploying-to-platform/guide.adoc[deployed to Timefold Platform], input and output metrics feed several platform features that would otherwise only show consumers a raw score and a solved dataset:
+
+* *Solve graphs*: output metrics can be plotted alongside the hard, medium, and soft score as the solver runs, so consumers see how a metric evolves over time, not just its final value.
+See https://docs.timefold.ai/timefold-platform/latest/how-tos/interpreting-model-run-results#_solve_graphs[Solve graphs] for details.
+* *Dataset comparison*: input and output metrics are available as columns when comparing multiple datasets side by side, making it possible to spot how problem size or solution quality differs between them.
+See https://docs.timefold.ai/timefold-platform/latest/how-tos/comparing-runs[Comparing datasets] for details.
+* *Insights*: both metric types can be tracked over time across many datasets, so consumers can tell whether operational planning is improving or degrading.
+See https://docs.timefold.ai/timefold-platform/latest/how-tos/insights[Insights] for details.
+
+Without input and output metrics, none of these views have anything model-specific to show beyond the score.
+
+See xref:running-timefold-solver/service/exposing-metrics.adoc[Exposing metrics] for how to define and implement input and output metrics on your model.
+
+You should also give each metric an OpenAPI `title`, `description`, and `format` in its `@Schema` annotation.
+These surface directly in the platform UI: in solve graphs, the comparison view, and Insights, consumers see the `title` as the metric's label and the `description` as its explanation, not the raw field name.
+A metric without a clear title and description is much harder for a consumer to interpret at a glance.
+
+Redeploy your model, as described in xref:deploying-to-platform/guide.adoc[Deploying to the platform guide], then submit a dataset and check that your metrics show up in the solve graphs, comparison view, and Insights.

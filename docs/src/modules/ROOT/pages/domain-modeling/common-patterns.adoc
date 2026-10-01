@@ -1,0 +1,300 @@
+[#commonPatterns]
+= Common patterns
+:page-aliases: design-patterns/design-patterns.adoc
+:doctype: book
+:sectnums:
+:icons: font
+
+[NOTE]
+====
+This page covers patterns you will encounter while designing your domain model.
+It is best read alongside the xref:domain-modeling/domain-modeling.adoc[domain modeling guide], not after, especially the time assignment section if your problem involves scheduling tasks in time.
+====
+
+[#timeRepresentations]
+== Choosing a time representation
+
+Dealing with time and dates in planning problems may be problematic because it is dependent on the needs of your use case.
+
+There are several representations of timestamps, dates, durations and periods in Java and Kotlin.
+Choose the right representation type for your use case:
+
+* ``DayOfWeek`` with or without ``LocalTime`` if no date is involved.
+* ``LocalDate`` if no time is involved.
+* ``LocalDateTime`` if your model only works in a single timezone without DST (Daylight Saving Time).
+* ``OffsetDateTime`` if your model supports timezones or DST (Daylight Saving Time).
+** Avoid ``ZonedDateTime``, it is error-prone.
+* Never use ``java.util.Date``: it is a slow, error-prone way to represent timestamps.
+
+[#assigningTimeToPlanningEntities]
+== Assigning time to planning entities
+
+There are several designs for assigning a planning entity to a starting time (or date):
+
+* If the starting time is fixed beforehand, it is not a planning variable (in that solver).
+** For example: in Bed Allocation Scheduling, the arrival day of each patient is fixed beforehand.
+** This is common in multi-stage planning,
+when the starting time has been decided already in an earlier planning stage.
+
+* If the starting time is not fixed, it is a planning variable (genuine or shadow).
+
+** If all planning entities have the same duration,
+use the <<timeslotPattern,Timeslot pattern>>.
+*** For example, in school timetabling, all lectures take one hour. Therefore, each timeslot is one hour.
+*** Even if the planning entities have different durations, but the same duration per type, it's often appropriate.
+**** For example, in conference scheduling, breakout talks take one hour and lab talks take 2 hours.
+But there's an enumeration of the timeslots and each timeslot only accepts one talk type.
+
+** If the duration differs and time is rounded to a specific time granularity (for example 5 minutes)
+use the <<timeGrainPattern,TimeGrain pattern>>.
+
+** If the duration differs and one task starts immediately after the previous task (assigned to the same executor) finishes,
+use the <<chainedThroughTimePattern,Chained Through Time pattern>>.
+*** For example, in time windowed vehicle routing, each vehicle departs immediately to the next customer when the delivery for the previous customer finishes.
+*** Even if the next task does not always start immediately, but the gap is deterministic, it applies.
+**** For example, in vehicle routing, each driver departs immediately to the next customer,
+unless it's the first departure after noon, in which case there's first a 1 hour lunch.
+
+** If the employees need to decide the order of theirs tasks per day, week or SCRUM sprint themselves,
+use the <<timeBucketPattern,Time Bucket pattern>>.
+*** For example, in elevator maintenance scheduling, a mechanic gets up to 40 hours worth of tasks per week,
+but there's no point in ordering them within 1 week because there's likely to be disruption from entrapments or other elevator outages.
+
+Choose the right pattern depending on the use case:
+
+image::domain-modeling/design-patterns/assigningTimeToPlanningEntities.png[align="center"]
+
+image::domain-modeling/design-patterns/assigningTimeToPlanningEntities2.png[align="center"]
+
+
+[#timeslotPattern]
+=== Timeslot pattern: assign to a fixed-length timeslot
+
+If all planning entities have *the same duration* (or can be inflated to the same duration), the Timeslot pattern is useful.
+The planning entities are assigned to a timeslot rather than time.
+For example, in school timetabling, all lectures take one hour.
+
+The timeslots can start at any time.
+For example, the timeslots start at 8:00, 9:00, 10:15 (after a 15-minute break), 11:15, ... They can even overlap, but that is unusual.
+
+It is also usable if all planning entities can be inflated to the same duration.
+For example, in Examination Timetabling, some exams take 90 minutes and others 120 minutes, but all timeslots are 120 minutes.
+When an exam of 90 minutes is assigned to a timeslot, for the remaining 30 minutes, its seats are occupied too and cannot be used by another exam.
+
+Usually there is a second planning variable, for example the room.
+In course timetabling, two lectures are in conflict if they share the same room at the same timeslot.
+However, in exam timetabling, that is allowed, if there is enough seating capacity in the room (although mixed exam durations in the same room do inflict a soft score penalty).
+
+
+[#timeGrainPattern]
+=== TimeGrain pattern: assign to a starting TimeGrain
+
+Assigning humans to start a meeting at four seconds after 9 o'clock is pointless because most human activities have a time granularity of five minutes or 15 minutes.
+Therefore it is not necessary to allow a planning entity to be assigned subsecond, second or even one minute accuracy.
+A granularity of 15 minutes, 1 hour or 1 day accuracy suffices for most use cases.
+The TimeGrain pattern models such *time accuracy* by partitioning time as time grains.
+For example, in Meeting Scheduling, all meetings start/end in hour, half hour, or 15-minute intervals before or after each hour,
+therefore the optimal settings for time grains is 15 minutes.
+
+Each planning entity is assigned to a start time grain.
+The end time grain is calculated by adding the duration in grains to the starting time grain.
+Overlap of two entities is determined by comparing their start and end time grains.
+
+*The TimeGrain pattern doesn't scale well*.
+Especially with a finer time granularity (such as 1 minute) and a long planning window,
+the value range (and therefore xref:optimization-algorithms/overview.adoc#searchSpaceSize[the search space]) is too big to scale well.
+It's recommended to use a coarse time granularity (such as 1 week, 1 day, 1 half day, ...) or shorten the planning window size to scale.
+To resolve scaling issues, the <<timeBucketPattern,Time Bucket pattern>> is often a good alternative.
+
+[#chainedThroughTimePattern]
+=== Chained through time pattern: assign in a chain that determines starting time
+
+If a person or a machine continuously works on **one task at a time in sequence**,
+which means starting a task when the previous is finished (or with a deterministic delay), the Chained Through Time pattern is useful.
+For example, in xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle routing with time windows],
+a vehicle drives from customer to customer (thus it handles one customer at a time).
+
+The focus in this pattern is on deciding the order of a set of elements instead of assigning them to a specific date and time.
+However, the time coordinate of each element can be deduced from its position in the sequence.
+If the elements' position on time axis affects the score,
+use a xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variable] to calculate the time.
+
+This pattern is implemented using the xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[planning list variable].
+The planning entity determines the starting time of the first element in its planning list variable.
+The second element's starting time is calculated based on the starting time and duration of the first element.
+For example, in task assignment, Beth (the entity) starts working at 8:00, thus her first task starts at 8:00.
+It lasts 52 minutes, therefore her second task starts at 8:52.
+The starting time of an element is usually a xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variable].
+
+[#chainedThroughTimePatternGaps]
+==== Chained through time pattern: creating gaps
+
+Between planning entities, there are three ways to create gaps:
+
+* No gaps: This is common when the anchor is a machine. For example, a build server always starts the next job when the previous finishes, without a break.
+* Only deterministic gaps: This is common for humans. For example, any task that crosses the 10:00 barrier gets an extra 15 minutes duration so the human can take a break.
+** A deterministic gap can be subjected to complex business logic.
+For example, a cross-continent truck driver needs to rest 15 minutes after two hours of driving
+(which may also occur during loading or unloading time at a customer location)
+and also needs to rest 10 hours after 14 hours of work.
+* Planning variable gaps: This is uncommon, because that extra planning variable reduces efficiency and scalability,
+(besides impacting the xref:optimization-algorithms/overview.adoc#searchSpaceSize[search space] too).
+
+
+[#chainedThroughTimeAutomaticCollapse]
+==== Chained through time: automatic collapse
+
+In some use case there is an overhead time for certain tasks,
+which can be shared by multiple tasks, if those are consecutively scheduled.
+Basically, the solver receives a _discount_ if it combines those tasks.
+
+For example when delivering pizza to two different customers,
+a food delivery service combines both deliveries into a single trip,
+if those two customers ordered from the same restaurant around the same time and live in the same part of the city.
+
+image::domain-modeling/design-patterns/chainedThroughTimeAutomaticCollapse.png[align="center"]
+
+Implement the automatic collapse in the xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables]
+that calculate the start and end times of each task.
+
+
+[#chainedThroughTimeAutomaticDelayUntilLast]
+
+==== Chained through time: automatic delay until last
+
+Some tasks require more than one person to execute.
+In such cases, both employees need to be there at the same time,
+before the work can start.
+
+For example when assembling furniture, assembling a bed is a two-person job.
+
+image::domain-modeling/design-patterns/chainedThroughTimeAutomaticDelayUntilLast.png[align="center"]
+
+Implement the automatic delay in the xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables]
+that calculates the arrival, start and end times of each task.
+*Separate the arrival time from the start time.*
+Additionally, add loop detection to avoid an infinite loop:
+
+image::domain-modeling/design-patterns/chainedThroughTimeAutomaticDelayUntilLastLoop.png[align="center"]
+
+
+[#timeBucketPattern]
+=== Time bucket pattern: assign to a capacitated bucket per time period
+
+In this pattern, the time of each employee is divided into _buckets_.
+For example 1 bucket per week.
+Each bucket has a capacity, depending on the FTE (Full Time Equivalent), holidays and the approved vacation of the employee.
+For example, a bucket usually has 40 hours for a full time employee and 20 hours for a half time employee
+but only 8 hours on a specific week if the employee takes vacation the rest of that week.
+
+Each task is assigned to a bucket, which determines the employee and the coarse-grained time period for working on it.
+_The tasks within one bucket are not ordered_: it's up to the employee to decide the order.
+This gives the employee more autonomy, but makes it harder to do certain optimization,
+such as minimize travel time between task locations.
+
+
+[#overconstrainedPlanning]
+== Overconstrained planning
+
+Sometimes there are not enough resources to assign all planning entities.
+For example, there may be more shifts than available employees, or more deliveries than vehicles can handle in a day.
+This is called an overconstrained problem.
+
+By default, Timefold Solver assigns every planning entity to a value, which means it will overload resources and break hard constraints rather than leave anything unassigned.
+The correct approach is to explicitly model the possibility of leaving entities unassigned.
+
+[#overconstrainedPlanningWithNullValues]
+=== The recommended approach
+
+There are two steps to handle overconstrained planning correctly:
+
+. Allow the planning variable to be unassigned.
+. Add a score constraint to penalize unassigned entities.
+
+==== Step 1: Allow unassigned values
+
+Set `allowsUnassigned = true` on the planning variable:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Shift {
+
+    @PlanningVariable(allowsUnassigned = true)
+    private Employee employee;
+
+    ...
+}
+----
+====
+
+Timefold Solver automatically adds `null` to the value range.
+There is no need to add `null` to any `ValueRangeProvider`.
+
+==== Step 2: Penalize unassigned entities
+
+Add a score constraint at the appropriate level (usually medium, between hard and soft) to penalize each unassigned entity.
+Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[`forEachIncludingUnassigned()`] to include entities with a `null` planning variable, which are otherwise filtered out by default:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+private Constraint penalizeUnassignedShifts(ConstraintFactory factory) {
+    return factory.forEachIncludingUnassigned(Shift.class)
+            .filter(shift -> shift.getEmployee() == null)
+            .penalize(HardMediumSoftScore.ONE_MEDIUM)
+            .asConstraint("Unassigned shift");
+}
+----
+====
+
+[IMPORTANT]
+====
+Without this constraint, a solution with *all* entities unassigned scores better than one with any hard constraint violations — because no assignments means no hard constraint violations.
+Always penalize unassigned entities when using `allowsUnassigned = true`.
+====
+
+The solver will now only leave a shift unassigned when every possible assignment would cost more in hard or medium score than leaving it empty.
+
+image::responding-to-change/overconstrainedPlanning.png[align="center"]
+
+
+[#dummyValuesAntipattern]
+=== The dummy values antipattern
+
+A common alternative is to introduce a "dummy" resource (e.g. a dummy employee or a dummy vehicle) to absorb the unassigned entities.
+The idea is that entities assigned to the dummy are effectively unassigned.
+
+This approach appears to work at first, but causes a range of problems.
+
+==== Hard constraints bleed onto the dummy
+
+Real constraints (e.g. skill requirements, capacity limits, or working hour rules) now also apply to the dummy resource.
+Either the dummy violates them (corrupting the score), or you add `!= dummyEmployee` guards to every constraint that touches that relationship.
+As the constraint set grows, these guards are easy to forget and hard to test.
+
+==== The search space grows unnecessarily
+
+The solver treats the dummy resource as a valid assignment target like any other value.
+Entities are considered for assignment to the dummy even when a real assignment is available, which inflates the search space and slows down solving.
+
+==== Solutions are harder to reason about
+
+From the solver's perspective, an entity assigned to the dummy is fully assigned.
+It takes extra application logic to distinguish "assigned to dummy" from "genuinely assigned", both in constraints and in the output of the solver.
+
+==== Use `allowsUnassigned` instead
+
+The `allowsUnassigned = true` approach avoids all of these problems:
+
+* `null` is treated as a first-class outcome, not a workaround.
+* Constraints do not need to be aware of a dummy value.
+* The search space is not inflated.
+* Unassigned entities are unambiguous in the solution output.

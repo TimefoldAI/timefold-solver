@@ -27,12 +27,12 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
     }
 
     public long add(long addend) {
-        value += addend;
+        value = Math.addExact(value, addend);
         return value;
     }
 
     public long subtract(long subtrahend) {
-        value -= subtrahend;
+        value = Math.subtractExact(value, subtrahend);
         return value;
     }
 

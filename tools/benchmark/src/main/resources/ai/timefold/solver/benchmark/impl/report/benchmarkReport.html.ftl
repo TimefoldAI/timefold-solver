@@ -404,7 +404,7 @@
                                         <th>Problem scale</th>
                                         <td>${benchmarkReport.plannerBenchmarkResult.averageProblemScale!""}</td>
                                         <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
-                                            <td class="problemScale">${problemBenchmarkResult.problemScale!""}</td>
+                                            <td class="problemScale">${problemBenchmarkResult.formattedProblemScale!""}</td>
                                         </#list>
                                     </tr>
                                 </thead>
@@ -472,7 +472,7 @@
                                         <th>Problem scale</th>
                                         <td>${benchmarkReport.plannerBenchmarkResult.averageProblemScale!""}</td>
                                         <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
-                                            <td class="problemScale">${problemBenchmarkResult.problemScale!""}</td>
+                                            <td class="problemScale">${problemBenchmarkResult.formattedProblemScale!""}</td>
                                         </#list>
                                     </tr>
                                 </thead>
@@ -585,7 +585,7 @@
                                         <th>Problem scale</th>
                                         <td>${benchmarkReport.plannerBenchmarkResult.averageProblemScale!""}</td>
                                         <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
-                                            <td class="problemScale">${problemBenchmarkResult.problemScale!""}</td>
+                                            <td class="problemScale">${problemBenchmarkResult.formattedProblemScale!""}</td>
                                         </#list>
                                     </tr>
                                 </thead>
@@ -668,7 +668,7 @@
                             </tr>
                             <tr>
                                 <th>Problem scale</th>
-                                <td>${problemBenchmarkResult.problemScale!""}</td>
+                                <td>${problemBenchmarkResult.formattedProblemScale!""}</td>
                             </tr>
                             <#if problemBenchmarkResult.inputSolutionLoadingTimeMillisSpent??>
                                 <tr>
@@ -750,7 +750,7 @@
                                             <#assign chartList = pureSubSingleStatistic.getChartList()>
                                             <#if chartList?size != 0>
                                                 <#if singleStatisticType.hasScoreLevels()>
-                                                    <@addChartList chartList=chartList idPrefix="singleStatistic_" + problemBenchmarkResult.anchorId + "_" + singleStatisticType.anchorId />
+                                                    <@addChartList chartList=chartList idPrefix="singleStatistic_" + pureSubSingleStatistic.anchorId + "_" + singleStatisticType.anchorId />
                                                 <#else>
                                                     <@addChart chart=chartList[0] />
                                                 </#if>

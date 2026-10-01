@@ -5,11 +5,9 @@ import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.one
 import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.threeKeysGroupBy;
 import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.twoKeysGroupBy;
 import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.zeroKeysGroupBy;
-import static ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream.createDefaultIndictedObjectsMapping;
 import static ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream.createDefaultJustificationMapping;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -490,10 +488,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     private <Score_ extends Score<Score_>> UniConstraintBuilderImpl<A, Score_> newTerminator(
             BavetScoringConstraintStream<Solution_> stream, Score_ constraintWeight, ScoreImpactType impactType) {
         return new UniConstraintBuilderImpl<>(
-                (constraintName, constraintDescription, constraintGroup, constraintWeight_, impactType_,
-                        justificationMapping, indictedObjectsMapping) -> buildConstraint(constraintName,
-                                constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
-                                indictedObjectsMapping, stream),
+                (description, constraintWeight_, impactType_,
+                        justificationMapping) -> buildConstraint(description,
+                                constraintWeight_, impactType_, justificationMapping, stream),
                 impactType, constraintWeight);
     }
 
@@ -507,11 +504,6 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     @Override
     protected final BiFunction<A, Score<?>, DefaultConstraintJustification> getDefaultJustificationMapping() {
         return createDefaultJustificationMapping();
-    }
-
-    @Override
-    protected final Function<A, Collection<?>> getDefaultIndictedObjectsMapping() {
-        return createDefaultIndictedObjectsMapping();
     }
 
 }

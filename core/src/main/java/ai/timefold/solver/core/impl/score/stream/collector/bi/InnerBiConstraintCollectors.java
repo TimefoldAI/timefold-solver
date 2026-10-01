@@ -24,32 +24,32 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
-public class InnerBiConstraintCollectors {
+public final class InnerBiConstraintCollectors {
     public static <A, B> BiConstraintCollector<A, B, ?, Double> average(ToLongBiFunction<? super A, ? super B> mapper) {
         return new AverageBiCollector<>(mapper);
     }
 
     static <A, B, Mapped_, Average_> BiConstraintCollector<A, B, ?, Average_> average(
             BiFunction<? super A, ? super B, ? extends Mapped_> mapper,
-            Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier) {
-        return new AverageReferenceBiCollector<>(mapper, calculatorSupplier);
+            Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier) {
+        return new AverageReferenceBiCollector<>(mapper, stateSupplier);
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal> averageBigDecimal(
             BiFunction<? super A, ? super B, ? extends BigDecimal> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigDecimal());
+        return average(mapper, AbstractReferenceAverageSlot.bigDecimalState());
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, Duration> averageDuration(
             BiFunction<? super A, ? super B, ? extends Duration> mapper) {
-        return average(mapper, ReferenceAverageCalculator.duration());
+        return average(mapper, AbstractReferenceAverageSlot.durationState());
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal> averageBigInteger(
             BiFunction<? super A, ? super B, ? extends BigInteger> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigInteger());
+        return average(mapper, AbstractReferenceAverageSlot.bigIntegerState());
     }
 
     public static <A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
@@ -104,12 +104,6 @@ public class InnerBiConstraintCollectors {
         return new MaxComparableBiCollector<>(mapper);
     }
 
-    public static <A, B, Result_> BiConstraintCollector<A, B, ?, Result_> max(
-            BiFunction<? super A, ? super B, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MaxComparatorBiCollector<>(mapper, comparator);
-    }
-
     public static <A, B, Result_, Property_ extends Comparable<? super Property_>>
             BiConstraintCollector<A, B, ?, Result_> max(
                     BiFunction<? super A, ? super B, ? extends Result_> mapper,
@@ -120,12 +114,6 @@ public class InnerBiConstraintCollectors {
     public static <A, B, Result_ extends Comparable<? super Result_>> BiConstraintCollector<A, B, ?, Result_> min(
             BiFunction<? super A, ? super B, ? extends Result_> mapper) {
         return new MinComparableBiCollector<>(mapper);
-    }
-
-    public static <A, B, Result_> BiConstraintCollector<A, B, ?, Result_> min(
-            BiFunction<? super A, ? super B, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MinComparatorBiCollector<>(mapper, comparator);
     }
 
     public static <A, B, Result_, Property_ extends Comparable<? super Property_>>

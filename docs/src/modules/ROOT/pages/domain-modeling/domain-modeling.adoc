@@ -1,0 +1,102 @@
+[#domainModelingGuide]
+= Domain modeling guide
+:doctype: book
+:sectnums:
+:icons: font
+
+Before writing any code, it helps to think through your domain model on paper.
+This guide walks you through the process of translating a real-world planning problem into a model that Timefold Solver can work with: identifying which parts of your domain change during planning, which relationships become planning variables, and how to structure entities to keep the search space manageable.
+
+The structure of your model directly affects the size of the search space. Poor choices can make even small problems slow to solve.
+
+[NOTE]
+====
+This guide builds on concepts introduced in the xref:quickstart/overview.adoc[Getting Started guides].
+If you haven't completed one yet,
+====
+
+. *Draw a class diagram of your domain model.*
+.. Make sure there are no duplications in your data model and that relationships between objects are clearly defined.
+
+.. Create sample instances for each class. For example, in the employee rostering `Employee` class, create `Ann`, `Bert`, and `Carl`.
+
+. *Determine which relationships (or fields) change during planning and color them orange.*
+One side of these relationships will become a planning variable later on.
+For example, in employee rostering, the `Shift` to `Employee` relationship changes during planning, so it is orange.
+However, other relationships, such as from `Employee` to `Skill`, are immutable during planning.
++
+While reviewing your orange relationships, also check for the following:
+
+* *Shadow variables:* If an orange field can always be derived from other genuine planning variables without ambiguity, it is a shadow variable rather than a genuine planning variable. Color it purple instead. For example, the arrival time at a delivery stop can be calculated from the vehicle's route and known travel times. See xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables] for implementation details.
+* *Ordered sequences:* If the goal is to find an optimal order of elements rather than assigning each to a specific value, use the xref:domain-modeling/common-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
+* If any of those relationships involve time or date, see xref:domain-modeling/common-patterns.adoc#assigningTimeToPlanningEntities[Assigning time to planning entities] before continuing.
+
++
+[NOTE]
+====
+Only one side of a bi-directional relationship can be a genuine planning variable.
+The other side will become an xref:domain-modeling/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] later on.
+Keep bi-directional relationships orange.
+====
+
++
+. *If there is an orange many-to-many relationship, replace it
+with a one-to-many and a many-to-one relationship to a new intermediate class.*
+
+
++
+The following figure illustrates introducing a `ShiftAssignment` class
+to represent the many-to-many relationship between `Shift` and `Employee`.
+`Shift` contains every shift time that needs to be filled with an employee.
+
++
+image::domain-modeling/design-patterns/employeeShiftRosteringModelingGuideA.png[align="center"]
+
++
+[NOTE]
+====
+Timefold Solver does not currently support a `@PlanningVariable` annotation on a collection.
+xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[Planning list variable] is not a means of achieving a many-to-one relationship;
+it serves to indicate that these values happen in a sequence one after another.
+====
+
++
+. *Annotate a many-to-one relationship with a `@PlanningEntity` annotation.* Usually the _many_ side of the relationship is the planning entity class that contains the planning variable. If the relationship is bi-directional, both sides are a planning entity class but usually the _many_ side has the planning variable and the _one_ side has the shadow variable. For example, in employee rostering, the `ShiftAssignment` class has an `@PlanningEntity` annotation.
+
++
+. *Make sure each planning entity is meaningful without its planning variables.*
+When all planning variables are `null`, a business person should still be able to describe what the entity represents.
+A planning entity class cannot consist of only planning variables or an ID and only planning variables.
+.. Remove any surplus `@PlanningVariable` annotations so that they become problem properties.
+Doing this significantly decreases xref:optimization-algorithms/overview.adoc#searchSpaceSize[the search space size] and significantly increases solving efficiency. For example, in employee rostering, the `ShiftAssignment` class should not annotate both the `Shift` and `Employee` relationship with `@PlanningVariable`.
+.. A surrogate ID alone does not count as a problem property. The entity needs at least one meaningful, identifying field beyond its ID and planning variables.
+.. In some cases, multiple planning entity instances have the same set of problem properties.
+In such cases, add an extra problem property to distinguish them.
+For example, in employee rostering,
+the `ShiftAssignment` class has the problem property `Shift`
+as well as the problem property `indexInShift` to tell apart multiple assignments to the same shift.
+
++
+[NOTE]
+====
+There is no need to add a hard constraint to ensure that two planning entities are different.
+Two entities which .equals(...) each other are strictly forbidden and fail fast.
+====
+
++
+. *Choose the model in which the number of planning entities is fixed during planning.*
+If the count of planning entities can vary depending on the solution, the solver cannot establish a fixed search space to explore.
+This is a common first-timer mistake: modeling from the perspective of the resource rather than the work item.
+
++
+For example, in employee rostering,
+it is impossible to know in advance how many shifts each employee will have before Timefold Solver solves the model
+and the results can differ for each solution found.
+On the other hand, the number of employees per shift is known in advance,
+so it is better to make the `Shift` relationship a problem property
+and the `Employee` relationship a planning variable as shown in the following examples.
+
++
+image::domain-modeling/design-patterns/employeeShiftRosteringModelingGuideB.png[align="center"]
+
+Once you have completed these steps, implement your model using the xref:domain-modeling/modeling-planning-problems.adoc[building blocks reference].

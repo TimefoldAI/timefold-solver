@@ -5,9 +5,23 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
-public class RangeSplitPoint<Range_, Point_ extends Comparable<Point_>>
+public final class RangeSplitPoint<Range_, Point_ extends Comparable<Point_>>
         implements Comparable<RangeSplitPoint<Range_, Point_>> {
+
+    // Reuse these instances in createCollections().
+    @SuppressWarnings("rawtypes")
+    private static final Comparator COMPARATOR_START = comparator(Range::getStart);
+    @SuppressWarnings("rawtypes")
+    private static final Comparator COMPARATOR_END = comparator(Range::getEnd);
+
+    private static <Range_, Point_ extends Comparable<Point_>> Comparator<Range<Range_, Point_>>
+            comparator(Function<Range<Range_, Point_>, Point_> function) {
+        return Comparator.comparing(function)
+                .thenComparingInt(range -> System.identityHashCode(range.getValue()));
+    }
+
     final Point_ splitPoint;
     Map<Range_, Integer> startpointRangeToCountMap;
     Map<Range_, Integer> endpointRangeToCountMap;
@@ -19,14 +33,12 @@ public class RangeSplitPoint<Range_, Point_ extends Comparable<Point_>>
     }
 
     protected void createCollections() {
-        startpointRangeToCountMap = new IdentityHashMap<>();
-        endpointRangeToCountMap = new IdentityHashMap<>();
-        rangesStartingAtSplitPointSet = new TreeMultiSet<>(
-                Comparator.<Range<Range_, Point_>, Point_> comparing(Range::getEnd)
-                        .thenComparingInt(range -> System.identityHashCode(range.getValue())));
-        rangesEndingAtSplitPointSet = new TreeMultiSet<>(
-                Comparator.<Range<Range_, Point_>, Point_> comparing(Range::getStart)
-                        .thenComparingInt(range -> System.identityHashCode(range.getValue())));
+        // Almost always holds a single entry (one range starting/ending at this exact point);
+        // avoid IdentityHashMap's default 64-slot table for what's typically a 1-entry map.
+        startpointRangeToCountMap = new IdentityHashMap<>(1);
+        endpointRangeToCountMap = new IdentityHashMap<>(1);
+        rangesStartingAtSplitPointSet = new TreeMultiSet<>(COMPARATOR_END);
+        rangesEndingAtSplitPointSet = new TreeMultiSet<>(COMPARATOR_START);
     }
 
     public boolean addRangeStartingAtSplitPoint(Range<Range_, Point_> range) {
@@ -72,9 +84,18 @@ public class RangeSplitPoint<Range_, Point_ extends Comparable<Point_>>
     }
 
     public Iterator<Range_> getValuesStartingFromSplitPointIterator() {
-        return rangesStartingAtSplitPointSet.stream()
-                .map(Range::getValue)
-                .iterator();
+        var iterator = rangesStartingAtSplitPointSet.iterator();
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Range_ next() {
+                return iterator.next().getValue();
+            }
+        };
     }
 
     public boolean isEmpty() {
@@ -83,12 +104,11 @@ public class RangeSplitPoint<Range_, Point_ extends Comparable<Point_>>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        RangeSplitPoint<?, ?> that = (RangeSplitPoint<?, ?>) o;
-        return splitPoint.equals(that.splitPoint);
+        }
+        return o instanceof RangeSplitPoint<?, ?> other
+                && splitPoint.equals(other.splitPoint);
     }
 
     public boolean isBefore(RangeSplitPoint<Range_, Point_> other) {
@@ -101,7 +121,7 @@ public class RangeSplitPoint<Range_, Point_ extends Comparable<Point_>>
 
     @Override
     public int hashCode() {
-        return Objects.hash(splitPoint);
+        return Objects.hashCode(splitPoint);
     }
 
     @Override

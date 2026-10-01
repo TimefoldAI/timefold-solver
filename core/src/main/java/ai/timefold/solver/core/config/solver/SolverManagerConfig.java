@@ -24,7 +24,7 @@ public final class SolverManagerConfig extends AbstractConfig<SolverManagerConfi
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverManagerConfig.class);
 
     private String parallelSolverCount = null;
-    private Class<? extends ThreadFactory> threadFactoryClass = null;
+    private String threadFactoryClass = null;
 
     // Future features:
     // throttlingDelay
@@ -46,11 +46,11 @@ public final class SolverManagerConfig extends AbstractConfig<SolverManagerConfi
     }
 
     public @Nullable Class<? extends ThreadFactory> getThreadFactoryClass() {
-        return threadFactoryClass;
+        return ConfigUtils.resolveClass(threadFactoryClass, "threadFactoryClass", this);
     }
 
     public void setThreadFactoryClass(@Nullable Class<? extends ThreadFactory> threadFactoryClass) {
-        this.threadFactoryClass = threadFactoryClass;
+        this.threadFactoryClass = threadFactoryClass == null ? null : threadFactoryClass.getName();
     }
 
     // ************************************************************************
@@ -63,7 +63,7 @@ public final class SolverManagerConfig extends AbstractConfig<SolverManagerConfi
     }
 
     public @NonNull SolverManagerConfig withThreadFactoryClass(@NonNull Class<? extends ThreadFactory> threadFactoryClass) {
-        this.threadFactoryClass = threadFactoryClass;
+        this.threadFactoryClass = threadFactoryClass.getName();
         return this;
     }
 
@@ -109,7 +109,7 @@ public final class SolverManagerConfig extends AbstractConfig<SolverManagerConfi
         parallelSolverCount = ConfigUtils.inheritOverwritableProperty(parallelSolverCount,
                 inheritedConfig.getParallelSolverCount());
         threadFactoryClass = ConfigUtils.inheritOverwritableProperty(threadFactoryClass,
-                inheritedConfig.getThreadFactoryClass());
+                inheritedConfig.threadFactoryClass);
         return this;
     }
 
@@ -120,7 +120,7 @@ public final class SolverManagerConfig extends AbstractConfig<SolverManagerConfi
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(threadFactoryClass);
+        classVisitor.accept(getThreadFactoryClass());
     }
 
 }

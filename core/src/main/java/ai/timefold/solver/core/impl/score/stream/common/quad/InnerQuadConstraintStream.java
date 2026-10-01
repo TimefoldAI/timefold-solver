@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.common.quad;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
@@ -23,10 +21,6 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     static <A, B, C, D> PentaFunction<A, B, C, D, Score<?>, DefaultConstraintJustification>
             createDefaultJustificationMapping() {
         return (a, b, c, d, score) -> DefaultConstraintJustification.of(score, a, b, c, d);
-    }
-
-    static <A, B, C, D> QuadFunction<A, B, C, D, Collection<?>> createDefaultIndictedObjectsMapping() {
-        return Arrays::asList;
     }
 
     RetrievalSemantics getRetrievalSemantics();

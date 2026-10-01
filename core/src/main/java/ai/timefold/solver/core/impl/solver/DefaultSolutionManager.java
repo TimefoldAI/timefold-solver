@@ -1,13 +1,16 @@
 package ai.timefold.solver.core.impl.solver;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -16,14 +19,11 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
-import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.VariableSnapshotTotal;
-import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.domain.variable.violation.VariableSnapshotTotal;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
-import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.core.impl.util.MutableReference;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
 import org.jspecify.annotations.NullMarked;
@@ -55,22 +55,25 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     @Override
     public Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
         if (solutionUpdatePolicy == SolutionUpdatePolicy.NO_UPDATE) {
-            throw new IllegalArgumentException("Can not call " + this.getClass().getSimpleName()
-                    + ".update() with this solutionUpdatePolicy (" + solutionUpdatePolicy + ").");
+            throw new IllegalArgumentException(
+                    "Cannot call %s.update() with this solutionUpdatePolicy (%s), since it would do nothing."
+                            .formatted(this.getClass().getSimpleName(), solutionUpdatePolicy));
         }
-        return callScoreDirector(solution, solutionUpdatePolicy,
-                s -> s.getSolutionDescriptor().getScore(s.getWorkingSolution()), ConstraintMatchPolicy.DISABLED, false);
+        return callScoreDirector("Solution update", solution, solutionUpdatePolicy,
+                (s, inconsistentEntities) -> s.getSolutionDescriptor().getScore(s.getWorkingSolution()),
+                ConstraintMatchPolicy.DISABLED, false, false);
     }
 
-    private <Result_> Result_ callScoreDirector(Solution_ solution,
-            SolutionUpdatePolicy solutionUpdatePolicy, Function<InnerScoreDirector<Solution_, Score_>, Result_> function,
-            ConstraintMatchPolicy constraintMatchPolicy, boolean cloneSolution) {
+    private <Result_> Result_ callScoreDirector(String feature, Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy,
+            BiFunction<InnerScoreDirector<Solution_, Score_>, List<VariableLoop>, Result_> function,
+            ConstraintMatchPolicy constraintMatchPolicy,
+            boolean cloneSolution, boolean handlesStructurallyFlawedSolutions) {
         var isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
         var nonNullSolution = Objects.requireNonNull(solution);
-        try (var scoreDirector = getScoreDirectorFactory().createScoreDirectorBuilder()
-                .withLookUpEnabled(cloneSolution)
+        try (var scoreDirector = getScoreDirectorFactory().createScoreDirectorBuilder().withLookUpEnabled(cloneSolution)
                 .withConstraintMatchPolicy(constraintMatchPolicy)
                 .withExpectShadowVariablesInCorrectState(!isShadowVariableUpdateEnabled)
+                .withForceAllowInconsistentSolutions(handlesStructurallyFlawedSolutions)
                 .build()) {
             nonNullSolution = cloneSolution ? scoreDirector.cloneSolution(nonNullSolution) : nonNullSolution;
             if (isShadowVariableUpdateEnabled) {
@@ -87,22 +90,37 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                         Requested constraint matching but score director doesn't support it.
                         Maybe use Constraint Streams instead of Easy or Incremental score calculator?""");
             }
-            if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
-                scoreDirector.calculateScore();
-            }
-            return function.apply(scoreDirector);
-        }
-    }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public ScoreExplanation<Solution_, Score_> explain(Solution_ solution,
-            SolutionUpdatePolicy solutionUpdatePolicy) {
-        var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
-        var explanation = callScoreDirector(solution, solutionUpdatePolicy, DefaultScoreExplanation::new,
-                ConstraintMatchPolicy.ENABLED, false);
-        assertFreshScore(solution, currentScore, explanation.getScore(), solutionUpdatePolicy);
-        return explanation;
+            // if handlesStructurallyFlawedSolutions is true, then the score can never be structurally flawed
+            // and all variable updates will be successful
+            List<VariableLoop> inconsistentEntities = null;
+            if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
+                var score = scoreDirector.calculateScore();
+                if (score.isStructurallyFlawed()) {
+                    inconsistentEntities = scoreDirector.computeVariableLoops();
+                    throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
+                }
+                if (handlesStructurallyFlawedSolutions) {
+                    inconsistentEntities = scoreDirector.computeVariableLoops();
+                    if (!inconsistentEntities.isEmpty()) {
+                        scoreDirector.getSolutionDescriptor().setScore(
+                                scoreDirector.getWorkingSolution(),
+                                scoreDirector.getScoreDefinition().getStructurallyFlawedScore()
+                                        .add(score.raw()));
+                    }
+                }
+            } else if (!scoreDirector.isLastVariableUpdateSuccessful()) {
+                inconsistentEntities = scoreDirector.computeVariableLoops();
+                throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
+            }
+
+            if (inconsistentEntities == null) {
+                inconsistentEntities = (handlesStructurallyFlawedSolutions) ? scoreDirector.computeVariableLoops()
+                        : Collections.emptyList();
+            }
+
+            return function.apply(scoreDirector, inconsistentEntities);
+        }
     }
 
     private void assertFreshScore(Solution_ solution, Score_ currentScore, Score_ calculatedScore,
@@ -115,10 +133,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                         Current score (%s) and freshly calculated score (%s) for solution (%s) do not match.
                         Maybe run %s environment mode to check for score corruptions.
                         Otherwise enable %s.%s to update the stale score.
-                        """
-                        .formatted(currentScore, calculatedScore, solution, EnvironmentMode.TRACKED_FULL_ASSERT,
-                                SolutionUpdatePolicy.class.getSimpleName(),
-                                SolutionUpdatePolicy.UPDATE_ALL));
+                        """.formatted(currentScore, calculatedScore, solution, EnvironmentMode.TRACKED_FULL_ASSERT,
+                        SolutionUpdatePolicy.class.getSimpleName(), SolutionUpdatePolicy.UPDATE_ALL));
             }
         }
     }
@@ -128,67 +144,37 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     public ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
             SolutionUpdatePolicy solutionUpdatePolicy) {
         Objects.requireNonNull(fetchPolicy, "fetchPolicy");
+        var enterpriseService =
+                TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.SCORE_ANALYSIS);
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
-        var analysis = callScoreDirector(solution, solutionUpdatePolicy,
-                scoreDirector -> scoreDirector.buildScoreAnalysis(fetchPolicy), ConstraintMatchPolicy.match(fetchPolicy),
-                false);
+        var analysis = callScoreDirector("Score analysis", solution, solutionUpdatePolicy,
+                (scoreDirector, inconsistentEntities) -> enterpriseService.analyze(scoreDirector.calculateScore(),
+                        scoreDirector.getConstraintMatchTotalMap(), inconsistentEntities,
+                        scoreDirector.getScoreDefinition(), fetchPolicy),
+                ConstraintMatchPolicy.match(fetchPolicy), false, true);
         assertFreshScore(solution, currentScore, analysis.score(), solutionUpdatePolicy);
         return analysis;
     }
 
     @Override
     public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {
+        var enterpriseService =
+                TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.RECOMMENDATIONS);
         solverFactory.ensurePreviewFeature(PreviewFeature.PLANNING_SOLUTION_DIFF);
-        return solverFactory.getSolutionDescriptor()
-                .diff(oldSolution, newSolution);
+        return enterpriseService.solutionDiff(solverFactory.getSolutionDescriptor().getMetaModel(), oldSolution, newSolution);
     }
 
     @Override
     public <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(Solution_ solution,
             In_ evaluatedEntityOrElement, Function<In_, @Nullable Out_> propositionFunction,
             ScoreAnalysisFetchPolicy fetchPolicy) {
-        var assigner = new Assigner<Solution_, Score_, RecommendedAssignment<Out_, Score_>, In_, Out_>(solverFactory,
-                propositionFunction, DefaultRecommendedAssignment::new, fetchPolicy, solution, evaluatedEntityOrElement);
-        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
-                true);
-    }
-
-    /**
-     * Generates a Bavet node network visualization for the given solution.
-     * It uses a Graphviz DOT language representation.
-     * The string returned by this method can be converted to an image using {@code dot}:
-     *
-     * <pre>
-     * $ dot -Tsvg input.dot > output.svg
-     * </pre>
-     * 
-     * This assumes the string returned by this method is saved to a file named {@code input.dot}.
-     * 
-     * <p>
-     * The node network itself is an internal implementation detail of Constraint Streams.
-     * Do not rely on any particular node network structure in production code,
-     * and do not micro-optimize your constraints to match the node network.
-     * Such optimizations are destined to become obsolete and possibly harmful as the node network evolves.
-     * 
-     * <p>
-     * This method is only provided for debugging purposes
-     * and is deliberately not part of the public API.
-     * Its signature or behavior may change without notice,
-     * and it may be removed in future versions.
-     *
-     * @see <a href="https://graphviz.org/doc/info/lang.html">Graphviz DOT language</a>
-     *
-     * @param solution Will be used to read constraint weights, which determine the final node network.
-     * @return A string representing the node network in Graphviz DOT language.
-     */
-    public @Nullable String visualizeNodeNetwork(Solution_ solution) {
-        if (scoreDirectorFactory instanceof BavetConstraintStreamScoreDirectorFactory<Solution_, ?> bavetScoreDirectorFactory) {
-            var result = new MutableReference<String>(null);
-            bavetScoreDirectorFactory.newSession(solution, new ConsistencyTracker<>(),
-                    ConstraintMatchPolicy.ENABLED, false, result::setValue);
-            return result.getValue();
-        }
-        throw new UnsupportedOperationException("Node network visualization is only supported when using Constraint Streams.");
+        var enterpriseService =
+                TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.RECOMMENDATIONS);
+        return callScoreDirector("Recommended assignment",
+                solution, SolutionUpdatePolicy.UPDATE_ALL,
+                (scoreDirector, inconsistentEntities) -> enterpriseService.buildRecommender(solverFactory, solution,
+                        evaluatedEntityOrElement, propositionFunction, fetchPolicy).apply((InnerScoreDirector) scoreDirector),
+                ConstraintMatchPolicy.match(fetchPolicy), true, false);
     }
 
 }

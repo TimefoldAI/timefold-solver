@@ -9,7 +9,6 @@ which is called in its deepest loops.
 Faster score calculation will return the same solution in less time with the same algorithm,
 which normally means a better solution in equal time.
 
-
 [#moveEvaluationSpeed]
 == Move evaluation and score calculation speed
 
@@ -62,6 +61,11 @@ without forcing you to write a complicated incremental score calculation algorit
 Note that the speedup is relative to the size of your planning problem (your __n__),
 making incremental score calculation far more scalable.
 
+[#enterprisePerformanceImprovements]
+== Enterprise performance improvements
+
+The xref:commercial-editions/commercial-editions.adoc[Enterprise Edition] of Timefold Solver has a number of xref:commercial-editions/performance-improvements.adoc[performance improvements] that can further speed up score calculation.
+The Enterprise Edition also allows for <<constraintProfiling,Constraint Profiling>>, making it easy to identify constraint performance bottlenecks.
 
 [#avoidCallingRemoteServicesDuringScoreCalculation]
 == Avoid calling remote services during score calculation
@@ -72,7 +76,7 @@ The network latency will kill your move evaluation performance.
 Cache the results of those remote services if possible.
 
 If some parts of a constraint can be calculated once, when the `Solver` starts, and never change during solving,
-then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#cachedProblemFact[cached problem facts].
+then turn them into xref:domain-modeling/modeling-planning-problems.adoc#cachedProblemFact[cached problem facts].
 
 
 [#pointlessConstraints]
@@ -80,9 +84,22 @@ then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#c
 
 If a constraint is only relevant when certain data is present on the input
 (for example, if you want a capacity constraint to only be evaluated when capacity information is present),
-set the xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero.
+set the xref:running-timefold-solver/library/constraint-overrides.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero.
 In xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
 this will result in the constraint not being added to the node network and therefore have no performance impact at all.
+
+Should you forget to set the constraint weight to zero,
+the constraint may still be deactivated at runtime,
+if the engine can prove that it will never contribute to the score.
+For example, a constraint using `forEach(Visit.class)` will be deactivated
+if there are no `Visit` instances in the solution.
+
+This is inferior to manually setting the constraint weight to zero,
+as the engine can only perform optimizations it can guarantee are safe
+based on the limited information it has.
+With full understanding of the domain,
+you are in a much better position to know which constraints are relevant and which are not,
+and you can set the weights accordingly.
 
 [#buildInHardConstraint]
 == Built-in hard constraint
@@ -90,13 +107,13 @@ this will result in the constraint not being added to the node network and there
 Instead of implementing a hard constraint, it can sometimes be built in.
 For example, if `Lecture` A should never be assigned to `Room` X, but it uses `ValueRangeProvider` on Solution,
 so the `Solver` will often try to assign it to `Room` X too (only to find out that it breaks a hard constraint).
-Use xref:using-timefold-solver/modeling-planning-problems.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity]
+Use xref:domain-modeling/modeling-planning-problems.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity]
 or xref:optimization-algorithms/move-selector-reference.adoc#filteredSelection[filtered selection]
 to define that Course A should only be assigned a `Room` different than X.
 
 This can give a good performance gain in some use cases, not just because the move evaluation is faster,
 but mainly because most optimization algorithms will spend less time evaluating infeasible solutions.
-However, usually this is not a good idea because there is a real risk of trading short-term benefits for long-term harm:
+However, there is a real risk of trading short-term benefits for long-term harm:
 
 * Many optimization algorithms rely on the freedom to break hard constraints when changing planning entities,
 to get out of local optima.
@@ -299,38 +316,189 @@ For that reason, it is generally recommended putting Joiners based on enum field
 == Indexing, Hashing, Looping
 The code on the hot path of your application needs to be as fast as possible.
 
-* When you use xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[Shadow Variables], you will provide a `supplier` method that computes the value of the shadow variable.
+* When you use xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[Shadow Variables], you will provide a `supplier` method that computes the value of the shadow variable.
 * This method will be called very often during score calculation, so it needs to be fast.
 * If you need to do a lookup in a collection to find an element, ideally you are indexing into an array.
 * The second best option is to use a `HashMap` or `HashSet`.
 * Avoid using `java.util.Stream` or any other form of explicit iteration in constraints, as that is much slower.
 
-[#enableAutomaticNodeSharing]
-== Enable automatic node sharing (Enterprise Edition only)
-If you are using the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition], you should xref:enterprise-edition/enterprise-edition.adoc#automaticNodeSharing[enable automatic node sharing] as it can significantly speed up score calculation.
-
 [#benchmark]
 == Benchmark
 Whatever you do, benchmark on a large and diverse set of inputs.
 
-JVM performance may differ by as much as 20% between runs. To decide whether your changes helped or made things worse, make sure to always average the move evaluation speed from multiple runs on the same machine with the same solver configuration. We provide a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to help you with that.
+JVM performance may differ by as much as 20% between runs. To decide whether your changes helped or made things worse, make sure to always average the move evaluation speed from multiple runs on the same machine with the same solver configuration. We provide a xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to help you with that.
 
+[#constraintProfiling]
 == Constraint Profiling
 
-[NOTE]
+include::../commercial-editions/_only-enterprise.adoc[]
+
+Profiling allows you to identify which constraints are taking the majority of time spent in score calculation and thus are worth optimizing.
+Unfortunately, traditional profiling tools only report the internal classes used to calculate constraints instead of the constraints themselves. xref:./score-calculation.adoc#constraintStreams[Constraint streams] have builtin support for profiling constraints directly.
+
+=== Configuration
+
+[tabs]
 ====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
+XML::
+
+* Add `<constraintStreamProfilingEnabled>true</constraintStreamProfilingEnabled>` in your `solverConfig.xml`:
++
+[source,xml,options="nowrap"]
+----
+  <scoreDirectorFactory>
+    <constraintProviderClass>...ConstraintProvider</constraintProviderClass>
+    <constraintStreamProfilingEnabled>true</constraintStreamProfilingEnabled>
+  </scoreDirectorFactory>
+----
+
+Spring Boot::
+
+Set the property `timefold.solver.constraint-stream-profiling-enabled` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+timefold.solver.constraint-stream-profiling-enabled=true
+----
+
+Quarkus::
+
+Set the property `quarkus.timefold.solver.constraint-stream-profiling-enabled` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.solver.constraint-stream-profiling-enabled=true
+----
 ====
 
-xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint streams] have builtin support for xref:enterprise-edition/enterprise-edition.adoc#constraintProfiling[profiling constraints].
-Profiling constraints allows you to identify which constraints are taking the majority of the time spent in score calculation and thus are worth optimizing.
+Constraint profiling will log its results to the `ai.timefold.solver.enterprise.core.api.ConstraintProfiler` class at the end of solving.
+For the report to be generated, xref:running-timefold-solver/solver-diagnostics.adoc#logging[the particular logging levels must be configured and enabled].
+
+IMPORTANT: Constraint profiling is only supported for xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint stream score calculation]
+when xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedSolving[multi-threaded solving] is disabled.
+
+=== Understanding the report
+
+When constraint stream profiling is enabled, a breakdown of time spent in each constraint is logged at the end of solving.
+
+[source,text]
+----
+INFO:  # Constraint Profiling Summary
+|                                                    | Time Spent | Of Total |
+| :------------------------------------------------- | ---------: | -------: |
+| 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
+| 6: Room conflict                                   |     4.17 s |  15.61 % |
+| 4: Student group conflict                          |     3.76 s |  14.07 % |
+| 5: Teacher conflict                                |     3.41 s |  12.76 % |
+| 1: Student group subject variety                   |     3.25 s |  12.14 % |
+| 3: Teacher room stability                          |     3.25 s |  12.14 % |
+| Work shared by 1, 2, 3, 4, 5, 6                    |     2.71 s |  10.12 % |
+
+DEBUG: ## Constraint Profiling Node Breakdown
+| 2: Teacher time efficiency                         | Time Spent | Of Total |
+| :------------------------------------------------- | ---------: | -------: |
+| JOIN Node 26                                       |     1.56 s |  25.20 % |
+| JOIN Left Input 6                                  |     1.28 s |  20.69 % |
+| JOIN Right Input 7                                 |     1.09 s |  17.55 % |
+| FILTER 5                                           |     1.83 s |  29.49 % |
+| SCORING 4                                          |     0.44 s |   7.06 % |
+
+ - JOIN Node 26 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Left Input 6 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Right Input 7 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - FILTER 5 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:79
+ - SCORING 4 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:84
+
+...
+
+TRACE: ## Constraint Profiling Lifecycle Breakdown
+| 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
+| :--------------------------------------- | -------: | -------: | --------: |
+| JOIN                                     |  13.12 % |  75.64 % |   11.23 % |
+| FILTER                                   |  23.69 % |  50.45 % |   25.86 % |
+| SCORING                                  |  13.10 % |  16.12 % |   70.78 % |
+
+...
+----
+
+NOTE: The data is printed as a https://www.markdownguide.org/extended-syntax/#tables[Markdown table].
+Any Markdown-enabled text editor will show a well-formatted table.
+
+Add different logging levels, different information is reported:
+
+INFO:: How much time spent in score calculation is spent by each constraint (total and relative percentage) in descending order.
++
+[source,text]
+----
+| 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
+----
++
+xref:commercial-editions/performance-improvements.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by", with the numbers identifying constraints that shared the work.
+In the example below, work was shared by constraints 1 to 6:
++
+[source,text]
+----
+| Work shared by 1, 2, 3, 4, 5, 6                    |     2.71 s |  10.12 % |
+----
+
+`DEBUG`:: A breakdown for each constraint of time spent (total and relative percentage) by each constraint stream building block (e.g., join, filter).
++
+[source,text]
+----
+| 2: Teacher time efficiency                         | Time Spent | Of Total |
+| :------------------------------------------------- | ---------: | -------: |
+| JOIN Node 26                                       |     1.56 s |  25.20 % |
+| JOIN Left Input 6                                  |     1.28 s |  20.69 % |
+| JOIN Right Input 7                                 |     1.09 s |  17.55 % |
+| FILTER 5                                           |     1.83 s |  29.49 % |
+| SCORING 4                                          |     0.44 s |   7.06 % |
+----
++
+To make it easier to map the building blocks to your `ConstraintProvider` code,
+the location(s) where each building block was defined is also reported:
++
+[source,text]
+----
+ - JOIN Node 26 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+----
+
+`TRACE`:: A breakdown for each constraint of time spent by each building block,
+shown as percentage of time spent in each of the lifecycle phases.
++
+[source,text]
+----
+| 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
+| :--------------------------------------- | -------: | -------: | --------: |
+| JOIN                                     |  13.12 % |  75.64 % |   11.23 % |
+| FILTER                                   |  23.69 % |  50.45 % |   25.86 % |
+| SCORING                                  |  13.10 % |  16.12 % |   70.78 % |
+----
++
+NOTE: This is only relevant to people intimately familiar with the underlying implementation of Constraint Streams
+and can be safely ignored by everyday users.
+
+=== Interpreting the results
+
+Constraint profiling measures wall clock time, not CPU time,
+and as such includes any garbage collection pauses that may occur during score calculation.
+These numbers should be used as a guide to identify which constraints are the most expensive,
+not as an exact measurement.
+
+Due to the nature of the JVM, the results may vary between runs.
+The solver needs to run for a sufficient amount of time
+to allow the JVM to warm up and stabilize.
+We recommend running the solver for minutes rather than seconds,
+but more than that is unlikely to bring any additional benefit.
+For increased confidence in the results,
+you can run the solver multiple times in different JVM processes
+and average the results.
 
 NOTE: Traditional profiling tools such as Java Mission Control will report the internal classes used to calculate constraints instead of the constraints themselves.
 
+
 [#fullAssert]
 == Validate the implementation using FULL_ASSERT
-When you are done optimizing your score calculation, make sure to validate it using xref:using-timefold-solver/running-the-solver.adoc#environmentModeFullAssert[`FULL_ASSERT`] mode. Make sure not to run with this mode in production.
+When you are done optimizing your score calculation, make sure to validate it using xref:running-timefold-solver/solver-diagnostics.adoc#environmentModeFullAssert[`FULL_ASSERT`] mode. Make sure not to run with this mode in production.
 
 [#otherScoreCalculationPerformanceTricks]
 == Other score calculation performance tricks
@@ -403,6 +571,6 @@ For example, move multiple items from the same container to another container.
 
 Not all score constraints have the same performance cost.
 Sometimes one score constraint can ruin performance outright.
-Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
 to do a one minute run and check what happens to the move evaluation speed
 if you comment out all but one of the score constraints.

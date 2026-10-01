@@ -88,6 +88,10 @@ public final class DefaultCustomPhase<Solution_>
                 () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
         customPhaseCommand.changeWorkingSolution(commandContext);
         calculateWorkingStepScore(stepScope, customPhaseCommand);
+        if (stepScope.getScore().isStructurallyFlawed()) {
+            throw new IllegalStateException("The custom phase command (%s) resulted in an inconsistent solution."
+                    .formatted(customPhaseCommand));
+        }
         var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
     }
@@ -110,31 +114,27 @@ public final class DefaultCustomPhase<Solution_>
         super.phaseEnded(phaseScope);
         ensureCorrectTermination(phaseScope, logger);
         phaseScope.endingNow();
-        logger.info("{}Custom phase ({}) ended: time spent ({}), best score ({}),"
+        logger.info("{}Custom phase ({}) ended: time spent ({}), environment mode ({}), best score ({}),"
                 + " move evaluation speed ({}/sec), step total ({}).",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                environmentMode.name(),
                 phaseScope.getBestScore().raw(),
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
     }
 
     public static final class DefaultCustomPhaseBuilder<Solution_>
-            extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
+            extends AbstractPossiblyInitializingPhaseBuilder<Solution_, DefaultCustomPhase<Solution_>> {
 
         private final List<PhaseCommand<Solution_>> customPhaseCommandList;
 
-        public DefaultCustomPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
-                PhaseTermination<Solution_> phaseTermination, List<PhaseCommand<Solution_>> customPhaseCommandList) {
-            super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
+        public DefaultCustomPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, EnvironmentMode environmentMode,
+                String logIndentation, PhaseTermination<Solution_> phaseTermination,
+                List<PhaseCommand<Solution_>> customPhaseCommandList) {
+            super(phaseIndex, lastInitializingPhase, environmentMode, logIndentation, phaseTermination);
             this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
-        }
-
-        @Override
-        public DefaultCustomPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
-            super.enableAssertions(environmentMode);
-            return this;
         }
 
         @Override

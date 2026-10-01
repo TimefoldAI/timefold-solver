@@ -8,7 +8,6 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachFilteredUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachUnfilteredUniNode;
@@ -52,7 +51,7 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
+        var tupleLifecycle = buildHelper.<UniTuple<A>> getAggregatedTupleLifecycle(childStreamList);
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         var filter = filterFunction != null ? filterFunction.apply(buildHelper) : null;
         var node = filter == null ? new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle, outputStoreSize)
@@ -66,16 +65,11 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
     // ************************************************************************
 
     @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null || getClass() != other.getClass()) {
-            return false;
-        }
-        BavetForEachUniConstraintStream<?, ?> that = (BavetForEachUniConstraintStream<?, ?>) other;
-        return Objects.equals(forEachClass, that.forEachClass) && Objects.equals(filterFunction, that.filterFunction)
-                && getRetrievalSemantics().equals(that.getRetrievalSemantics());
+    public boolean equals(Object o) {
+        return o instanceof BavetForEachUniConstraintStream<?, ?> otherStream
+                && forEachClass.equals(otherStream.forEachClass)
+                && Objects.equals(filterFunction, otherStream.filterFunction)
+                && getRetrievalSemantics().equals(otherStream.getRetrievalSemantics());
     }
 
     @Override

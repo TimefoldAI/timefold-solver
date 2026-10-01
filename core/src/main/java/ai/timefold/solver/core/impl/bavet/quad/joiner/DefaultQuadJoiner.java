@@ -10,17 +10,18 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.AbstractJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
-public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> implements QuadJoiner<A, B, C, D> {
+@NullMarked
+public final class DefaultQuadJoiner<A, B, C, D>
+        extends AbstractJoiner<D>
+        implements QuadJoiner<A, B, C, D> {
 
-    private static final DefaultQuadJoiner NONE =
-            new DefaultQuadJoiner(new TriFunction[0], new JoinerType[0], new Function[0]);
+    private static final DefaultQuadJoiner NONE = new DefaultQuadJoiner(new TriFunction[0], new JoinerType[0], new Function[0]);
 
     private final TriFunction<A, B, C, Object>[] leftMappings;
 
-    public DefaultQuadJoiner(TriFunction<A, B, C, ?> leftMapping, JoinerType joinerType,
-            Function<D, ?> rightMapping) {
+    public DefaultQuadJoiner(TriFunction<A, B, C, ?> leftMapping, JoinerType joinerType, Function<D, ?> rightMapping) {
         super(rightMapping, joinerType);
         this.leftMappings = new TriFunction[] { leftMapping };
     }
@@ -32,26 +33,50 @@ public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> imple
     }
 
     public static <A, B, C, D> DefaultQuadJoiner<A, B, C, D> merge(List<DefaultQuadJoiner<A, B, C, D>> joinerList) {
-        if (joinerList.size() == 1) {
-            return joinerList.get(0);
-        }
-        return joinerList.stream().reduce(NONE, DefaultQuadJoiner::and);
+        return switch (joinerList.size()) {
+            case 0 -> NONE;
+            case 1 -> joinerList.getFirst();
+            default -> joinerList.stream().reduce(NONE, DefaultQuadJoiner::and);
+        };
     }
 
     @Override
-    public @NonNull DefaultQuadJoiner<A, B, C, D> and(@NonNull QuadJoiner<A, B, C, D> otherJoiner) {
-        DefaultQuadJoiner<A, B, C, D> castJoiner = (DefaultQuadJoiner<A, B, C, D>) otherJoiner;
-        int joinerCount = getJoinerCount();
-        int castJoinerCount = castJoiner.getJoinerCount();
-        int newJoinerCount = joinerCount + castJoinerCount;
-        JoinerType[] newJoinerTypes = Arrays.copyOf(this.joinerTypes, newJoinerCount);
-        TriFunction[] newLeftMappings = Arrays.copyOf(this.leftMappings, newJoinerCount);
-        Function[] newRightMappings = Arrays.copyOf(this.rightMappings, newJoinerCount);
-        for (int i = 0; i < castJoiner.getJoinerCount(); i++) {
-            int newJoinerIndex = i + joinerCount;
+    public DefaultQuadJoiner<A, B, C, D> and(QuadJoiner<A, B, C, D> otherJoiner) {
+        var castJoiner = (DefaultQuadJoiner<A, B, C, D>) otherJoiner;
+        var joinerCount = getJoinerCount();
+        var castJoinerCount = castJoiner.getJoinerCount();
+        var newJoinerCount = joinerCount + castJoinerCount;
+        var newJoinerTypes = Arrays.copyOf(this.joinerTypes, newJoinerCount);
+        var newLeftMappings = Arrays.copyOf(this.leftMappings, newJoinerCount);
+        var newRightMappings = Arrays.copyOf(this.rightMappings, newJoinerCount);
+        for (var i = 0; i < castJoinerCount; i++) {
+            var newJoinerIndex = i + joinerCount;
             newJoinerTypes[newJoinerIndex] = castJoiner.getJoinerType(i);
             newLeftMappings[newJoinerIndex] = castJoiner.getLeftMapping(i);
             newRightMappings[newJoinerIndex] = castJoiner.getRightMapping(i);
+        }
+        return new DefaultQuadJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
+    }
+
+    /**
+     * @return this if already equal-first (or single joiner); otherwise a copy with all
+     *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
+     *         {@link AbstractJoiner#equalsFirstSortedPositions}).
+     */
+    DefaultQuadJoiner<A, B, C, D> reorderedEqualsFirst() {
+        var order = equalsFirstSortedPositions(joinerTypes);
+        if (order == null) {
+            return this;
+        }
+        var count = order.length;
+        var newLeftMappings = new TriFunction[count];
+        var newJoinerTypes = new JoinerType[count];
+        var newRightMappings = new Function[count];
+        for (var i = 0; i < count; i++) {
+            var from = order[i];
+            newLeftMappings[i] = leftMappings[from];
+            newJoinerTypes[i] = joinerTypes[from];
+            newRightMappings[i] = rightMappings[from];
         }
         return new DefaultQuadJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
@@ -61,11 +86,11 @@ public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> imple
     }
 
     public boolean matches(A a, B b, C c, D d) {
-        int joinerCount = getJoinerCount();
-        for (int i = 0; i < joinerCount; i++) {
-            JoinerType joinerType = getJoinerType(i);
-            Object leftMapping = getLeftMapping(i).apply(a, b, c);
-            Object rightMapping = getRightMapping(i).apply(d);
+        var joinerCount = getJoinerCount();
+        for (var i = 0; i < joinerCount; i++) {
+            var joinerType = getJoinerType(i);
+            var leftMapping = getLeftMapping(i).apply(a, b, c);
+            var rightMapping = getRightMapping(i).apply(d);
             if (!joinerType.matches(leftMapping, rightMapping)) {
                 return false;
             }

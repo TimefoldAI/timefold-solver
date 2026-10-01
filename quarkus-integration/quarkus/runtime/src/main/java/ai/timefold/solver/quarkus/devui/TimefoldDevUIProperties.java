@@ -2,7 +2,7 @@ package ai.timefold.solver.quarkus.devui;
 
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 
 public class TimefoldDevUIProperties { // TODO make record?
 

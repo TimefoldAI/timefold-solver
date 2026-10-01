@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.TerminalEnumeratingStream;
@@ -22,15 +24,24 @@ final class LeftTerminalUniEnumeratingStream<Solution_, A>
     @Override
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         assertEmptyChildStreamList();
-        var datasetInstance = dataset.instantiate(
-                buildHelper.reserveTupleStoreIndex(parent.getTupleSource()),
-                buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
+        var datasetInstance = dataset.instantiate(buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
         buildHelper.putInsertUpdateRetract(this, datasetInstance);
     }
 
     @Override
     public UniLeftDataset<Solution_, A> getDataset() {
         return dataset;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof LeftTerminalUniEnumeratingStream<?, ?> other
+                && parent == other.parent;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(LeftTerminalUniEnumeratingStream.class, parent);
     }
 
     @Override

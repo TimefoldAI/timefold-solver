@@ -3,14 +3,17 @@ package ai.timefold.solver.core.impl.score.stream.collector.bi;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceSumSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class SumReferenceBiCollector<A, B, Result_>
-        extends ObjectCalculatorBiCollector<A, B, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
+        extends
+        AbstractReferenceBasedBiCollector<A, B, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;
@@ -25,8 +28,40 @@ final class SumReferenceBiCollector<A, B, Result_>
     }
 
     @Override
-    public @NonNull Supplier<ReferenceSumCalculator<Result_>> supplier() {
-        return () -> new ReferenceSumCalculator<>(zero, adder, subtractor);
+    public @NonNull Supplier<AbstractReferenceSumSlot.State<Result_>> supplier() {
+        return () -> new AbstractReferenceSumSlot.State<>(zero, adder, subtractor);
+    }
+
+    @Override
+    public @NonNull Function<AbstractReferenceSumSlot.State<Result_>, Result_> finisher() {
+        return AbstractReferenceSumSlot.State::result;
+    }
+
+    @Override
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(AbstractReferenceSumSlot.State<Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractReferenceSumSlot<Result_>
+            implements BiConstraintCollectorValueHandle<A, B> {
+        Slot(AbstractReferenceSumSlot.State<Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b) {
+            addMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

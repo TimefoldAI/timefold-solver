@@ -1,40 +1,30 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
-import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
-import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
-import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.VariableListener;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableState;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -50,36 +40,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends VariableDescriptorAwareScoreDirector<Solution_>, AutoCloseable {
-
-    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> getConstraintAnalysis(
-            ConstraintMatchTotal<Score_> constraintMatchTotal, ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
-        return switch (scoreAnalysisFetchPolicy) {
-            case FETCH_ALL -> {
-                // Justification can not be null here, because they are enabled by FETCH_ALL.
-                var deduplicatedConstraintMatchMap = constraintMatchTotal.getConstraintMatchSet().stream()
-                        .collect(groupingBy(c -> (ConstraintJustification) c.getJustification(), toList()));
-                var matchAnalyses = sumMatchesWithSameJustification(constraintMatchTotal, deduplicatedConstraintMatchMap);
-                yield new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(),
-                        constraintMatchTotal.getConstraintWeight(), constraintMatchTotal.getScore(), matchAnalyses);
-            }
-            case FETCH_MATCH_COUNT ->
-                new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
-                        constraintMatchTotal.getScore(), null, constraintMatchTotal.getConstraintMatchCount());
-            case FETCH_SHALLOW ->
-                new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
-                        constraintMatchTotal.getScore(), null);
-        };
-    }
-
-    private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>> sumMatchesWithSameJustification(
-            ConstraintMatchTotal<Score_> constraintMatchTotal,
-            Map<ConstraintJustification, List<ConstraintMatch<Score_>>> deduplicatedConstraintMatchMap) {
-        return deduplicatedConstraintMatchMap.entrySet().stream().map(entry -> {
-            var score = entry.getValue().stream().map(ConstraintMatch::getScore).reduce(constraintMatchTotal.getScore().zero(),
-                    Score::add);
-            return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
-        }).toList();
-    }
 
     /**
      * Sets the {@link PlanningSolution working solution} of the {@link ScoreDirector}
@@ -126,8 +86,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     InnerScore<Score_> calculateScore();
 
     /**
-     * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} and {@link #getIndictmentMap()}
-     *         can be called.
+     * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} can be called.
      *         {@link ConstraintMatchPolicy#ENABLED_WITHOUT_JUSTIFICATIONS} if only the former can be called.
      *         {@link ConstraintMatchPolicy#DISABLED} if neither can be called.
      */
@@ -141,32 +100,12 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * Call {@link #calculateScore()} before calling this method,
      * unless that method has already been called since the last {@link PlanningVariable} changes.
      *
-     * @return never null, the key is the constraint name.
+     * @return never null, the key is the constraint reference.
      *         If a constraint is present in the problem but resulted in no matches,
      *         it will still be in the map with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
      * @throws IllegalStateException if {@link #getConstraintMatchPolicy()} returns {@link ConstraintMatchPolicy#DISABLED}.
-     * @see #getIndictmentMap()
      */
-    Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();
-
-    /**
-     * Explains the impact of each planning entity or problem fact on the {@link Score}.
-     * An {@link Indictment} is basically the inverse of a {@link ConstraintMatchTotal}:
-     * it is a {@link Score} total for each {@link ConstraintMatch#getJustification() constraint justification}.
-     * <p>
-     * The sum of {@link ConstraintMatchTotal#getScore()} differs from {@link #calculateScore()}
-     * because each {@link ConstraintMatch#getScore()} is counted
-     * for each {@link ConstraintMatch#getJustification() constraint justification}.
-     * <p>
-     * Call {@link #calculateScore()} before calling this method,
-     * unless that method has already been called since the last {@link PlanningVariable} changes.
-     *
-     * @return never null, the key is a {@link ProblemFactCollectionProperty problem fact} or a
-     *         {@link PlanningEntity planning entity}
-     * @throws IllegalStateException unless {@link #getConstraintMatchPolicy()} returns {@link ConstraintMatchPolicy#ENABLED}.
-     * @see #getConstraintMatchTotalMap()
-     */
-    Map<Object, Indictment<Score_>> getIndictmentMap();
+    Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();
 
     /**
      * @return used to check {@link #isWorkingEntityListDirty(long)} later on
@@ -181,6 +120,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * Executes a move, finds out its score, and immediately undoes it.
+     * The undo action also restores the working solution score to its original value.
      * If appropriate, consider setting {@link #setAllChangesWillBeUndoneBeforeStepEnds(boolean)} to true beforehand,
      * and resetting it to false afterward.
      * There are performance gains to be made
@@ -233,6 +173,10 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     boolean expectShadowVariablesInCorrectState();
 
+    boolean ignoreInconsistentSolutions();
+
+    void unassignInconsistentEntities();
+
     /**
      * @return never null
      */
@@ -247,6 +191,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return never null
      */
     ScoreDefinition<Score_> getScoreDefinition();
+
+    /**
+     * The environment mode this score director was built for,
+     * which decides which assertions it runs.
+     * It is not necessarily the solver's global environment mode:
+     * a phase may override it,
+     * in which case that phase's score director reports the phase's mode.
+     */
+    EnvironmentMode getEnvironmentMode();
 
     /**
      * Returns a planning clone of the solution,
@@ -274,7 +227,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     void resetCalculationCount();
 
-    void incrementCalculationCount();
+    default void incrementCalculationCount() {
+        incrementCalculationCount(1L);
+    }
+
+    void incrementCalculationCount(long count);
 
     /**
      * @return never null
@@ -285,10 +242,35 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     ValueRangeManager<Solution_> getValueRangeManager();
 
-    <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
-            getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
+    /**
+     * Returns the {@link BasicVariableState}, the single source of truth for the inverse relation
+     * of the given basic {@link PlanningVariable}.
+     *
+     * @param variableDescriptor never null, must not describe a {@link PlanningListVariable}
+     * @return never null
+     */
+    BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor);
+
+    /**
+     * Returns the {@link ListVariableState}, the single source of truth for all information
+     * about elements inside the given {@link PlanningListVariable}, including its shadow variables.
+     *
+     * @param variableDescriptor never null
+     * @return never null
+     */
+    <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(ListVariableDescriptor<Solution_> variableDescriptor);
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
+
+    /**
+     * Asserts that if the {@link Score} is calculated for the parameter solution,
+     * it would be equal to the score of that parameter.
+     *
+     * @param solution never null
+     * @see InnerScoreDirector#assertWorkingScoreFromScratch(InnerScore, Object)
+     */
+    void assertScoreFromScratch(Solution_ solution);
 
     /**
      * Do not waste performance by propagating changes to step (or higher) mechanisms.
@@ -315,7 +297,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction);
 
     /**
-     * Asserts that if all {@link VariableListener}s are forcibly triggered,
+     * Asserts that if all shadow variables are forcibly updated,
      * and therefore all shadow variables are updated if needed,
      * that none of the shadow variables of the {@link PlanningSolution working solution} change,
      * Then also asserts that the {@link Score} calculated for the {@link PlanningSolution working solution} afterwards
@@ -339,7 +321,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction);
 
@@ -353,7 +334,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param predictedScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertPredictedScoreFromScratch(InnerScore<Score_> predictedScore, Object completedAction);
 
@@ -377,11 +357,29 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void close();
 
     /**
-     * Unlike {@link #triggerVariableListeners()} which only triggers notifications already in the queue,
-     * this triggers every variable listener on every genuine variable.
+     * Unlike {@link #updateShadowVariables()} which only triggers notifications already in the queue,
+     * this updates shadow variables on every genuine variable.
      * This is useful in {@link SolutionManager#update(Object)} to fill in shadow variable values.
      */
-    void forceTriggerVariableListeners();
+    void forceUpdateShadowVariables();
+
+    /**
+     * Exists not to break models.
+     * 
+     * @deprecated use {@link #forceUpdateShadowVariables()} directly.
+     */
+    @Deprecated(since = "2.5.0", forRemoval = true)
+    default void forceTriggerVariableListeners() {
+        forceUpdateShadowVariables();
+    }
+
+    /**
+     * @return true if the last {@link #updateShadowVariables()} did not result in a structurally flawed solutions,
+     *         false otherwise.
+     *         <p>
+     *         Note: Planning models with {@link ShadowVariablesInconsistent} will always result in successful updates.
+     */
+    boolean isLastVariableUpdateSuccessful();
 
     /**
      * A derived score director is created from a root score director.
@@ -389,16 +387,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     default boolean isDerived() {
         return false;
-    }
-
-    default ScoreAnalysis<Score_> buildScoreAnalysis(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
-        var state = calculateScore();
-        var constraintAnalysisMap = new TreeMap<ConstraintRef, ConstraintAnalysis<Score_>>();
-        for (var constraintMatchTotal : getConstraintMatchTotalMap().values()) {
-            var constraintAnalysis = getConstraintAnalysis(constraintMatchTotal, scoreAnalysisFetchPolicy);
-            constraintAnalysisMap.put(constraintMatchTotal.getConstraintRef(), constraintAnalysis);
-        }
-        return new ScoreAnalysis<>(state.raw(), constraintAnalysisMap, state.isFullyAssigned());
     }
 
     default void beforeEntityAdded(Object entity) {
@@ -436,5 +424,4 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void beforeProblemFactRemoved(Object problemFact);
 
     void afterProblemFactRemoved(Object problemFact);
-
 }

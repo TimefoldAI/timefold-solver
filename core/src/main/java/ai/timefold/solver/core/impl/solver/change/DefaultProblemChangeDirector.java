@@ -99,7 +99,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
             scoreDirector.setWorkingSolution(scoreDirector.getWorkingSolution());
             problemEntitiesChanged = false;
         } else {
-            scoreDirector.triggerVariableListeners();
+            scoreDirector.updateShadowVariables();
         }
     }
 

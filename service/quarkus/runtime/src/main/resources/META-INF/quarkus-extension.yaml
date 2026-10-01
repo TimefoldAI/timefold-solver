@@ -1,0 +1,9 @@
+name: Timefold Solver Quarkus Model
+description: Solver Model extensions for Timefold models
+metadata:
+keywords:
+   - timefold-models
+#  guide: ... # To create and publish this guide, see https://github.com/quarkiverse/quarkiverse/wiki#documenting-your-extension
+categories:
+   - "planning"
+status: "preview"

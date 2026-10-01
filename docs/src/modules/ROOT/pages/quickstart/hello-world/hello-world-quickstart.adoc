@@ -87,7 +87,7 @@ To complete this guide, you need:
 Java/Kotlin::
 +
 --
-include::../shared/java-prerequisites.adoc[]
+include::../shared/_java-prerequisites.adoc[]
 --
 ====
 
@@ -96,7 +96,7 @@ include::../shared/java-prerequisites.adoc[]
 Create a Maven or Gradle build file and add these dependencies:
 
 * `timefold-solver-core` (compile scope) to solve the school timetable problem.
-* A xref:using-timefold-solver/running-the-solver.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
+* A xref:running-timefold-solver/solver-diagnostics.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
 
 [tabs]
 ====
@@ -223,9 +223,9 @@ test {
 --
 ====
 
-include::../shared/school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-constraints.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-solution.adoc[leveloffset=+1]
 
 == Create the application
 
@@ -353,7 +353,7 @@ public class TimetableApp {
                 .filter(lesson -> lesson.getTimeslot() != null && lesson.getRoom() != null)
                 .collect(Collectors.groupingBy(Lesson::getTimeslot, Collectors.groupingBy(Lesson::getRoom)));
         LOGGER.info("|            | " + rooms.stream()
-                .map(room -> String.format("%-10s", room.getName())).collect(Collectors.joining(" | ")) + " |");
+                .map(room -> String.format("%-10s", room.name())).collect(Collectors.joining(" | ")) + " |");
         LOGGER.info("|" + "------------|".repeat(rooms.size() + 1));
         for (Timeslot timeslot : timetable.getTimeslots()) {
             List<List<Lesson>> cells = rooms.stream()
@@ -675,7 +675,7 @@ To see any output in the console, logging must be configured properly.
 Java/Kotlin::
 +
 --
-include::../shared/java-logback-config.adoc[]
+include::../shared/_java-logback-config.adoc[]
 --
 ====
 

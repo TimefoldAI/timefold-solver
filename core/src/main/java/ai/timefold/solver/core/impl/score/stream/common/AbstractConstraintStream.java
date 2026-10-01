@@ -27,6 +27,4 @@ public abstract class AbstractConstraintStream<Solution_> implements ConstraintS
 
     protected abstract <JustificationMapping_> JustificationMapping_ getDefaultJustificationMapping();
 
-    protected abstract <IndictedObjectsMapping_> IndictedObjectsMapping_ getDefaultIndictedObjectsMapping();
-
 }

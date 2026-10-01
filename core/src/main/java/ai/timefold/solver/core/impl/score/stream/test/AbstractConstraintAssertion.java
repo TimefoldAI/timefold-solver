@@ -1,11 +1,16 @@
 package ai.timefold.solver.core.impl.score.stream.test;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
@@ -22,8 +27,7 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
 
     abstract Solution_ getSolution();
 
-    abstract void update(InnerScore<Score_> score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
-            Map<Object, Indictment<Score_>> indictmentMap);
+    abstract void update(InnerScore<Score_> score, Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap);
 
     /**
      * The logic ensures the solution is initialized only once.
@@ -57,20 +61,36 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
             // As a result,
             // any validation using a solution would never work in these cases
             // due to an error when calling calculateScore().
-            // Calling scoreDirector.triggerVariableListeners() runs the custom listeners and clears the queue.
+            // Calling scoreDirector.updateShadowVariables() runs the custom listeners and clears the queue.
             // However, to maintain API consistency,
             // we will only trigger the listeners
             // if the user opts to use settingAllShadowVariables.
             if (bavetConstraintStreamScoreDirector != null) {
-                bavetConstraintStreamScoreDirector.clearShadowVariablesListenerQueue();
+                bavetConstraintStreamScoreDirector.clearPendingShadowVariableUpdates();
             }
-            update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),
-                    scoreDirector.getIndictmentMap());
+            update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap());
             initialized = true;
         }
     }
 
     void toggleInitialized() {
         this.initialized = true;
+    }
+
+    protected String explainScore(InnerScore<Score_> workingScore,
+            Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection) {
+        return TimefoldSolverEnterpriseService.loadOrDefault(
+                s -> {
+                    var constraintAnalyses = new TreeMap<ConstraintRef, ConstraintMatchTotal<Score_>>();
+                    for (var constraintMatchTotal : constraintMatchTotalCollection) {
+                        var constraintRef = constraintMatchTotal.getConstraintRef();
+                        constraintAnalyses.put(constraintRef, constraintMatchTotal);
+                    }
+                    return s.analyze(workingScore, constraintAnalyses, Collections.emptyList(),
+                            null,
+                            ScoreAnalysisFetchPolicy.FETCH_ALL)
+                            .summarize();
+                },
+                () -> "Score analysis is only available in Timefold Solver Enterprise Edition.");
     }
 }

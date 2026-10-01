@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -18,6 +19,7 @@ class RuinRecreateConstructionHeuristicPhaseBuilderTest {
     @Test
     void buildSingleThreaded() {
         var solverConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withSolutionDescriptor(TestdataSolution.buildSolutionDescriptor())
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] {
                         InitializingScoreTrendLevel.ANY, InitializingScoreTrendLevel.ANY, InitializingScoreTrendLevel.ANY }))
@@ -29,8 +31,25 @@ class RuinRecreateConstructionHeuristicPhaseBuilderTest {
     }
 
     @Test
+    void nestedPhaseRunsInTheEnclosingPhaseEnvironmentMode() {
+        // A ruin & recreate move selector is built from its enclosing phase's config policy, not the solver's,
+        // so this policy stands for a local search phase which overrode the solver's environment mode.
+        var phaseConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withSolutionDescriptor(TestdataSolution.buildSolutionDescriptor())
+                .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] {
+                        InitializingScoreTrendLevel.ANY, InitializingScoreTrendLevel.ANY, InitializingScoreTrendLevel.ANY }))
+                .build();
+        var constructionHeuristicConfig = mock(ConstructionHeuristicPhaseConfig.class);
+        var builder = RuinRecreateConstructionHeuristicPhaseBuilder.create(phaseConfigPolicy, constructionHeuristicConfig);
+        // The nested construction heuristic is dragged along into the enclosing phase's mode.
+        assertThat(builder.build().getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
+    }
+
+    @Test
     void buildMultiThreaded() {
         var solverConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withSolutionDescriptor(TestdataSolution.buildSolutionDescriptor())
                 .withMoveThreadCount(2)
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] {

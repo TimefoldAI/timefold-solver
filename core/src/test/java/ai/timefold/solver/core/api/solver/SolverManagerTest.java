@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.api.solver.SolverStatus.NOT_SOLVING;
 import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_ACTIVE;
 import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_SCHEDULED;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertSolutionInitialized;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -584,7 +585,7 @@ class SolverManagerTest {
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             var problem = PlannerTestUtils.generateTestdataSolution("s1");
 
-            SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+            SolverScope<TestdataSolution> solverScope = mockSolverScope();
             doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
             var solverJob = (DefaultSolverJob<TestdataSolution>) solverManager.solve(1L, problem);
@@ -613,7 +614,7 @@ class SolverManagerTest {
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             var problem = PlannerTestUtils.generateTestdataSolution("s1");
 
-            SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+            SolverScope<TestdataSolution> solverScope = mockSolverScope();
             doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
             // Override spent limit to 100 milliseconds

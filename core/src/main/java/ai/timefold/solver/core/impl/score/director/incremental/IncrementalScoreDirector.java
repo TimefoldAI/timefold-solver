@@ -1,27 +1,29 @@
 package ai.timefold.solver.core.impl.score.director.incremental;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.AnalyzableIncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchRegistration;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchRegistry;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.util.MutableReference;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -37,14 +39,24 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Score_>>
-        extends AbstractScoreDirector<Solution_, Score_, IncrementalScoreDirectorFactory<Solution_, Score_>> {
+        extends AbstractScoreDirector<Solution_, Score_, IncrementalScoreDirectorFactory<Solution_, Score_>>
+        implements ConstraintMatchRegistry<Score_> {
 
     private final IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
+    private final boolean constraintMatchEnabled;
+    private Score_ totalScore;
+    private final SortedMap<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = new TreeMap<>();
 
     private IncrementalScoreDirector(Builder<Solution_, Score_> builder) {
         super(builder);
         this.incrementalScoreCalculator = Objects.requireNonNull(builder.incrementalScoreCalculator,
                 "The incrementalScoreCalculator must not be null.");
+        this.constraintMatchEnabled = getConstraintMatchPolicy().isEnabled();
+        this.totalScore = getScoreDefinition().getZeroScore();
+        if (incrementalScoreCalculator instanceof AnalyzableIncrementalScoreCalculator<Solution_, Score_> analyzableIncrementalScoreCalculator
+                && constraintMatchEnabled) {
+            analyzableIncrementalScoreCalculator.enableConstraintMatch(this);
+        }
     }
 
     public IncrementalScoreCalculator<Solution_, Score_> getIncrementalScoreCalculator() {
@@ -58,17 +70,18 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
         super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, null);
-        if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator) {
-            ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, ?>) incrementalScoreCalculator)
-                    .resetWorkingSolution(workingSolution, getConstraintMatchPolicy().isEnabled());
-        } else {
-            incrementalScoreCalculator.resetWorkingSolution(workingSolution);
-        }
+        resetWorkingSolutionAndMaps(workingSolution);
+    }
+
+    private void resetWorkingSolutionAndMaps(Solution_ workingSolution) {
+        constraintMatchTotalMap.clear();
+        totalScore = getScoreDefinition().getZeroScore();
+        incrementalScoreCalculator.resetWorkingSolution(workingSolution);
     }
 
     @Override
-    public InnerScore<Score_> calculateScore() {
-        variableListenerSupport.assertNotificationQueuesAreEmpty();
+    public InnerScore<Score_> innerCalculateScore() {
+        variableSupport.assertShadowVariablesAreUpToDate();
         var score = Objects.requireNonNull(incrementalScoreCalculator.calculateScore(),
                 () -> "The incrementalScoreCalculator (%s) must return a non-null score in the method calculateScore()."
                         .formatted(incrementalScoreCalculator));
@@ -77,48 +90,13 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
+    public Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         if (!constraintMatchPolicy.isEnabled()) {
             throw new IllegalStateException("When constraint matching (" + constraintMatchPolicy
                     + ") is disabled in the constructor, this method should not be called.");
         }
-        // Notice that we don't trigger the variable listeners
-        return ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score_>) incrementalScoreCalculator)
-                .getConstraintMatchTotals()
-                .stream()
-                .collect(toMap(c -> c.getConstraintRef().constraintName(), identity()));
-    }
-
-    @Override
-    public Map<Object, Indictment<Score_>> getIndictmentMap() {
-        if (!constraintMatchPolicy.isJustificationEnabled()) {
-            throw new IllegalStateException("When constraint matching with justifications (" + constraintMatchPolicy
-                    + ") is disabled in the constructor, this method should not be called.");
-        }
-        Map<Object, Indictment<Score_>> incrementalIndictmentMap =
-                ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score_>) incrementalScoreCalculator)
-                        .getIndictmentMap();
-        if (incrementalIndictmentMap != null) {
-            return incrementalIndictmentMap;
-        }
-        Map<Object, Indictment<Score_>> indictmentMap = new LinkedHashMap<>();
-        Score_ zeroScore = getScoreDefinition().getZeroScore();
-        Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = getConstraintMatchTotalMap();
-        for (ConstraintMatchTotal<Score_> constraintMatchTotal : constraintMatchTotalMap.values()) {
-            for (ConstraintMatch<Score_> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
-                constraintMatch.getIndictedObjectList()
-                        .stream()
-                        .filter(Objects::nonNull)
-                        .distinct() // One match might have the same indictment twice.
-                        .forEach(fact -> {
-                            DefaultIndictment<Score_> indictment =
-                                    (DefaultIndictment<Score_>) indictmentMap.computeIfAbsent(fact,
-                                            k -> new DefaultIndictment<>(fact, zeroScore));
-                            indictment.addConstraintMatch(constraintMatch);
-                        });
-            }
-        }
-        return indictmentMap;
+        // Notice that we don't update the shadow variables
+        return constraintMatchTotalMap;
     }
 
     @Override
@@ -131,14 +109,8 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     // ************************************************************************
 
     @Override
-    public void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        incrementalScoreCalculator.beforeEntityAdded(entity);
-        super.beforeEntityAdded(entityDescriptor, entity);
-    }
-
-    @Override
     public void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        incrementalScoreCalculator.afterEntityAdded(entity);
+        resetWorkingSolutionAndMaps(workingSolution);
         super.afterEntityAdded(entityDescriptor, entity);
     }
 
@@ -153,8 +125,6 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
         incrementalScoreCalculator.afterVariableChanged(entity, variableDescriptor.getVariableName());
         super.afterVariableChanged(variableDescriptor, entity);
     }
-
-    // TODO Add support for list variable (https://issues.redhat.com/browse/PLANNER-2711).
 
     @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
@@ -195,14 +165,8 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        incrementalScoreCalculator.beforeEntityRemoved(entity);
-        super.beforeEntityRemoved(entityDescriptor, entity);
-    }
-
-    @Override
     public void afterEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        incrementalScoreCalculator.afterEntityRemoved(entity);
+        resetWorkingSolutionAndMaps(workingSolution);
         super.afterEntityRemoved(entityDescriptor, entity);
     }
 
@@ -217,30 +181,81 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterProblemFactAdded(Object problemFact) {
-        incrementalScoreCalculator.resetWorkingSolution(workingSolution); // TODO do not nuke it
+        resetWorkingSolutionAndMaps(workingSolution);
         super.afterProblemFactAdded(problemFact);
     }
 
     @Override
-    public void beforeProblemPropertyChanged(Object problemFactOrEntity) {
-        super.beforeProblemPropertyChanged(problemFactOrEntity);
-    }
-
-    @Override
     public void afterProblemPropertyChanged(Object problemFactOrEntity) {
-        incrementalScoreCalculator.resetWorkingSolution(workingSolution); // TODO do not nuke it
+        resetWorkingSolutionAndMaps(workingSolution);
         super.afterProblemPropertyChanged(problemFactOrEntity);
     }
 
     @Override
-    public void beforeProblemFactRemoved(Object problemFact) {
-        super.beforeProblemFactRemoved(problemFact);
+    public void afterProblemFactRemoved(Object problemFact) {
+        resetWorkingSolutionAndMaps(workingSolution);
+        super.afterProblemFactRemoved(problemFact);
     }
 
     @Override
-    public void afterProblemFactRemoved(Object problemFact) {
-        incrementalScoreCalculator.resetWorkingSolution(workingSolution); // TODO do not nuke it
-        super.afterProblemFactRemoved(problemFact);
+    public ConstraintMatchRegistration<Score_> registerConstraintMatch(ConstraintRef constraintRef, Score_ score,
+            ConstraintJustification justification) {
+        if (!constraintMatchEnabled) {
+            throw new IllegalStateException(
+                    "Cannot register constraint match (%s) when constraint matching (%s) is disabled in the constructor."
+                            .formatted(constraintRef, constraintMatchPolicy));
+        }
+        var total = constraintMatchTotalMap.get(constraintRef);
+        if (total == null) {
+            total = new ConstraintMatchTotal<>(constraintRef, score.zero());
+            constraintMatchTotalMap.put(constraintRef, total);
+        }
+
+        var match = total.addConstraintMatch(justification, score);
+        totalScore = totalScore.add(score);
+        var effectiveTotal = total;
+        var canceled = new MutableReference<>(false);
+        return new DefaultConstraintMatchRegistration<>(match, () -> {
+            if (Objects.requireNonNullElse(canceled.getValue(), false)) {
+                throw new IllegalStateException("Constraint match (%s) can only be canceled once."
+                        .formatted(match));
+            }
+            canceled.setValue(true);
+            totalScore = totalScore.subtract(score);
+            effectiveTotal.removeConstraintMatch(match);
+        });
+    }
+
+    @Override
+    public Score_ totalScore() {
+        return totalScore;
+    }
+
+    private record DefaultConstraintMatchRegistration<Score_ extends Score<Score_>>(
+            ConstraintMatch<Score_> constraintMatch,
+            Runnable undo)
+            implements
+                ConstraintMatchRegistration<Score_> {
+
+        @Override
+        public ConstraintRef constraintRef() {
+            return constraintMatch.getConstraintRef();
+        }
+
+        @Override
+        public Score_ score() {
+            return constraintMatch.getScore();
+        }
+
+        @Override
+        public ConstraintJustification justification() {
+            return Objects.requireNonNull(constraintMatch.getJustification());
+        }
+
+        @Override
+        public void cancel() {
+            undo.run();
+        }
     }
 
     @NullMarked
@@ -250,8 +265,9 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
         private @Nullable IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
 
-        public Builder(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
-            super(scoreDirectorFactory);
+        public Builder(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+                EnvironmentMode environmentMode) {
+            super(scoreDirectorFactory, environmentMode);
         }
 
         public Builder<Solution_, Score_>
@@ -272,11 +288,12 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
         private static ConstraintMatchPolicy determineCorrectPolicy(ConstraintMatchPolicy constraintMatchPolicy,
                 @Nullable IncrementalScoreCalculator<?, ?> incrementalScoreCalculator) {
-            if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator<?, ?>) {
-                return constraintMatchPolicy;
-            } else {
+            if (incrementalScoreCalculator == null) {
                 return ConstraintMatchPolicy.DISABLED;
             }
+            return incrementalScoreCalculator instanceof AnalyzableIncrementalScoreCalculator<?, ?>
+                    ? constraintMatchPolicy
+                    : ConstraintMatchPolicy.DISABLED;
         }
     }
 

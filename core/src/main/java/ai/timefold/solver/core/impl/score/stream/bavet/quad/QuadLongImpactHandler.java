@@ -33,7 +33,7 @@ record QuadLongImpactHandler<A, B, C, D>(ToLongQuadFunction<A, B, C, D> matchWei
         var d = tuple.getD();
         var constraint = impacter.getContext().getConstraint();
         return impacter.impactScore(matchWeigher.applyAsLong(a, b, c, d),
-                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b,
+                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), a, b,
                         c, d));
     }
 

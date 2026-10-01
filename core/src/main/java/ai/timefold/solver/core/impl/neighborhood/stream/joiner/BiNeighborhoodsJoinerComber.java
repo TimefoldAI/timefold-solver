@@ -45,7 +45,10 @@ public record BiNeighborhoodsJoinerComber<Solution_, A, B>(DefaultBiNeighborhood
                         "The joiner class (%s) is not supported.".formatted(joiner.getClass().getSimpleName()));
             }
         }
-        DefaultBiNeighborhoodsJoiner<A, B> mergedJoiner = DefaultBiNeighborhoodsJoiner.merge(defaultJoinerList);
+        // Reorder equal-first eagerly (this is a record, so there is no accessor to compute it on read),
+        // so the indexer chain always has its (merged) equal level at the top.
+        DefaultBiNeighborhoodsJoiner<A, B> mergedJoiner =
+                DefaultBiNeighborhoodsJoiner.merge(defaultJoinerList).reorderedEqualsFirst();
         BiNeighborhoodsPredicate<Solution_, A, B> mergedFiltering = mergeFiltering(filteringList);
         return new BiNeighborhoodsJoinerComber<>(mergedJoiner, mergedFiltering);
     }

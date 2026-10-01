@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactor
 
 public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigFactory<Solution_, SubListSelectorConfig> {
 
-    private static final int DEFAULT_MINIMUM_SUB_LIST_SIZE = 1; // TODO Bump this to 2 in Timefold Solver 2.0
+    private static final int DEFAULT_MINIMUM_SUB_LIST_SIZE = 1;
     private static final int DEFAULT_MAXIMUM_SUB_LIST_SIZE = Integer.MAX_VALUE;
 
     private SubListSelectorFactory(SubListSelectorConfig config) {

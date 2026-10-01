@@ -1,86 +1,121 @@
+# Dependabot configuration — kept identical in shape across all four solver repos.
+# Only the schedule time, ecosystem list, and 1.x section differ per repo.
+#
+# WHY THIS LOOKS THE WAY IT DOES (read before editing):
+#
+# * Dependencies are split by SemVer level into separate PRs to match the merge
+#   workflow: patch = usually safe / merge on sight, minor = usually needs work,
+#   major = needs attention. Quarkus and Spring get their OWN PRs (their bumps
+#   are easier to review as a unit) and are themselves split patch-vs-rest, so a
+#   safe Quarkus/Spring patch stays merge-on-sight instead of being held hostage
+#   by a minor/major bump in the same PR.
+#
+# * Uses the regular `groups` feature so each dependency lands in exactly ONE PR
+#   (its highest bump, routed to the first matching group). PRs are per-ecosystem
+#   (maven PRs are separate from github-actions PRs).
+#
+# * GROUP ORDER MATTERS — Dependabot assigns a dep to the FIRST matching group, so
+#   quarkus/spring are listed before the major/minor/patch catch-alls.
+#
+# * Commit prefix is plain "deps" for ALL groups — Dependabot has no per-group
+#   commit-message. The level/identity shows in the PR title and branch name, e.g.
+#   "deps: bump the patch group ..." / branch dependabot/maven/patch-<hash>.
+#
+# * Schedule: Monday 01:00 Europe/Berlin (= 1am CEST in summer), staggered +15 min
+#   per repo (solver 01:00, enterprise 01:15, quickstarts 01:30, benchmarks 01:45).
+#
+# * Quarkus/Spring patterns drop the ":" so the wildcard spans sub-groupIds
+#   (io.quarkus*, io.quarkiverse*, ...). Re-scan pom.xml/*.gradle if new families appear.
 version: 2
-updates: # uses the default branch by default
+updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
       interval: weekly
-      day: "monday"
-      time: "01:00" # Otherwise it picks a random time.
-    open-pull-requests-limit: 99
+      day: monday
+      time: "01:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 10
+    labels: ["dependencies"]
     commit-message:
-      prefix: "deps: "
-    labels: ["dependencies"] # Don't use any other labels.
+      prefix: "deps"
     groups:
-      # We want to control these upgrades separately.
-      # They've introduced changes in the past which required manual intervention.
+      # Identity groups first — first-match-wins keeps these out of the semver buckets.
+      # Each family is split patch-vs-rest: the *-patch group (listed first) grabs
+      # patches for merge-on-sight; the rest-group (no update-types) catches that
+      # family's minor/major (and any non-semver bump).
+      quarkus-patch:
+        patterns: ["io.quarkus*", "io.quarkiverse*"]
+        update-types: ["patch"]
       quarkus:
-        patterns:
-          - "io.quarkus:*"
+        patterns: ["io.quarkus*", "io.quarkiverse*"]
+      spring-patch:
+        patterns: ["org.springframework*", "org.springdoc*", "io.spring*"]
+        update-types: ["patch"]
       spring:
-        patterns:
-          - "org.springframework.boot:*"
-          - "org.springframework:*"
-          - "org.springdoc:*"
-      openrewrite:
-        patterns:
-          - "org.openrewrite.maven:*"
-          - "org.openrewrite.recipe:*"
-      # Everything else can be grouped together to minimize the number of PRs.
-      # If any dependency ever breaks our code, it will be ungrouped.
-      regular:
-        patterns:
-          - "*"
-  - package-ecosystem: "github-actions"
+        patterns: ["org.springframework*", "org.springdoc*", "io.spring*"]
+      # Everything else, split by SemVer level into its own PR.
+      major:
+        patterns: ["*"]
+        update-types: ["major"]
+      minor:
+        patterns: ["*"]
+        update-types: ["minor"]
+      patch:
+        patterns: ["*"]
+        update-types: ["patch"]
+
+  - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
-      day: "monday"
-      time: "01:00" # Otherwise it picks a random time.
-    open-pull-requests-limit: 99
+      day: monday
+      time: "01:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 10
+    labels: ["dependencies"]
     commit-message:
-      prefix: "deps: "
-    labels: ["dependencies"] # Don't use any other labels.
+      prefix: "deps"
     groups:
-      # Everything can be grouped together to minimize the number of PRs.
-      # If any dependency ever breaks our code, it will be ungrouped.
-      regular:
-        patterns:
-          - "*"
+      # Actions are NOT semver-split — one PR for all action updates (minimize PRs).
+      actions:
+        patterns: ["*"]
+
+  # ---- 1.x maintenance branch: monthly patch-only backports ----
+  # CAVEAT: Dependabot ignores commit-message on a non-default target-branch, so
+  # these commits will NOT carry the "deps" prefix; nothing we can do in config.
   - package-ecosystem: maven
     target-branch: "1.x"
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "0 1 * * 1#1" # First Monday of the month
-    open-pull-requests-limit: 99
+      cronjob: "0 1 * * 1#1"   # first Monday of the month
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 10
+    labels: ["dependencies"]
     commit-message:
-      prefix: "deps: "
-    labels: ["dependencies"] # Don't use any other labels.
+      prefix: "deps"
+    # Ignore major/minor entirely — without this, Dependabot opens solo PRs for
+    # ungrouped updates even on a maintenance branch.
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
-      # Everything else can be grouped together to minimize the number of PRs.
-      # If any dependency ever breaks our code, it will be ungrouped.
-      regular:
-        update-types:
-          - "patch"
-        patterns:
-          - "*"
+      patch:
+        patterns: ["*"]
+        update-types: ["patch"]
 
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: github-actions
     target-branch: "1.x"
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "0 1 * * 1#1" # First Monday of the month
-    open-pull-requests-limit: 99
+      cronjob: "0 1 * * 1#1"   # first Monday of the month
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 10
+    labels: ["dependencies"]
     commit-message:
-      prefix: "deps: "
-    labels: ["dependencies"] # Don't use any other labels.
+      prefix: "deps"
     groups:
-      # Everything can be grouped together to minimize the number of PRs.
-      # If any dependency ever breaks our code, it will be ungrouped.
-      regular:
-        patterns:
-          - "*"
+      actions:
+        patterns: ["*"]

@@ -9,6 +9,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
 import ai.timefold.solver.quarkus.jackson.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
@@ -36,9 +37,9 @@ class LoadBalanceRoundTripTest {
         Item c = new Item("C");
         var collector = (UniConstraintCollector) ConstraintCollectors.loadBalance(Function.identity());
         var context = collector.supplier().get();
-        var accumulator = collector.accumulator();
+        var accumulator = (UniConstraintCollectorAccumulator<Object, Item>) collector.accumulator();
         for (var item : List.of(a, b, c, a, a, b, a)) {
-            accumulator.apply(context, item);
+            accumulator.intoGroup(context).add(item);
         }
 
         // Retrieve the instance to be serialized.

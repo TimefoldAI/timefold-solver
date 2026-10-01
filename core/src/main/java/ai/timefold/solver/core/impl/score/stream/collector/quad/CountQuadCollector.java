@@ -3,13 +3,16 @@ package ai.timefold.solver.core.impl.score.stream.collector.quad;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
+final class CountQuadCollector<A, B, C, D>
+        implements QuadConstraintCollector<A, B, C, D, MutableLong, Long> {
     private static final CountQuadCollector<?, ?, ?, ?> INSTANCE = new CountQuadCollector<>();
 
     private CountQuadCollector() {
@@ -21,20 +24,40 @@ final class CountQuadCollector<A, B, C, D> implements QuadConstraintCollector<A,
     }
 
     @Override
-    public @NonNull Supplier<LongCounter> supplier() {
-        return LongCounter::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull PentaFunction<LongCounter, A, B, C, D, Runnable> accumulator() {
-        return (counter, a, b, c, d) -> {
-            counter.increment();
-            return counter::decrement;
-        };
+    public @NonNull QuadConstraintCollectorAccumulator<MutableLong, A, B, C, D> accumulator() {
+        return Slot::new;
     }
 
     @Override
-    public @NonNull Function<LongCounter, Long> finisher() {
-        return LongCounter::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
+    }
+
+    private static final class Slot<A, B, C, D> extends AbstractCountSlot
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
+
+        Slot(MutableLong state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c, D d) {
+            addMapped();
+        }
+
+        @Override
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped();
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

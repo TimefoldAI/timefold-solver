@@ -16,6 +16,12 @@ class HardSoftScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTes
         assertSerializeAndDeserialize(score, new TestHardSoftScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new HardSoftScore(-1L, 1200L, 34L);
+        assertSerializeAndDeserialize(score, new TestHardSoftScoreWrapper(score));
+    }
+
     public static class TestHardSoftScoreWrapper extends TestScoreWrapper<HardSoftScore> {
 
         @JsonSerialize(using = HardSoftScoreJacksonSerializer.class)

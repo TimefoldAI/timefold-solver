@@ -29,7 +29,7 @@ public class GeneralMethodChangeNameMigrationRecipe extends AbstractRecipe {
                 // Constraint
                 new CustomChangeMethodRecipe("ai.timefold.solver.core.api.score.stream.Constraint",
                         "getConstraintName()",
-                        ".getConstraintRef().constraintName()"),
+                        ".getConstraintRef().id()"),
                 // Constraint
                 new ChangeMethodName("ai.timefold.solver.core.api.solver.Solver isEveryProblemFactChangeProcessed()",
                         "isEveryProblemChangeProcessed", true, false),

@@ -35,7 +35,7 @@ record QuadBigDecimalImpactHandler<A, B, C, D>(QuadFunction<A, B, C, D, BigDecim
         var d = tuple.getD();
         var constraint = impacter.getContext().getConstraint();
         return impacter.impactScore(matchWeigher.apply(a, b, c, d),
-                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b,
+                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), a, b,
                         c, d));
     }
 

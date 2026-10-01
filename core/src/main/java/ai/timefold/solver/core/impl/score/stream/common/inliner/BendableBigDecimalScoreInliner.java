@@ -6,6 +6,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
@@ -32,7 +33,7 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
         Integer singleLevel = null;
         var constraintWeight = constraintWeightMap.get(constraint);
         for (var i = 0; i < constraintWeight.levelsSize(); i++) {
-            if (!constraintWeight.hardOrSoftScore(i).equals(BigDecimal.ZERO)) {
+            if (!ScoreUtil.isZero(constraintWeight.hardOrSoftScore(i))) {
                 if (singleLevel != null) {
                     singleLevel = null;
                     break;

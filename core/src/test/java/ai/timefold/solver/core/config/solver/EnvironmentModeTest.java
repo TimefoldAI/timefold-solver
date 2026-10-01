@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.config.solver;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -29,7 +31,6 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
-import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -93,7 +94,7 @@ class EnvironmentModeTest {
 
     @ParameterizedTest(name = "{0}")
     @EnumSource(EnvironmentMode.class)
-    void corruptedUndoShadowVariableListener(EnvironmentMode environmentMode) {
+    void corruptedUndoShadowVariable(EnvironmentMode environmentMode) {
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(environmentMode)
                 .withSolutionClass(CorruptedUndoShadowSolution.class)
@@ -159,9 +160,17 @@ class EnvironmentModeTest {
                 e2.setValue(v2);
                 e2.setValueClone(v2);
                 v2.setEntities(new ArrayList<>(List.of(e2)));
-                assertThatNoException()
-                        .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
-                                new CorruptedUndoShadowSolution(List.of(e1, e2), List.of(v1, v2)), true));
+                var solvedSolution = PlannerTestUtils.solve(solverConfig,
+                        new CorruptedUndoShadowSolution(List.of(e1, e2), List.of(v1, v2)), true);
+
+                // The inverse-relation shadow collection must still match the final variable state;
+                // assert-mode solving and its undos must not have corrupted it.
+                for (var value : solvedSolution.getValueList()) {
+                    var expectedEntities = solvedSolution.getEntityList().stream()
+                            .filter(entity -> entity.getValue() == value)
+                            .toList();
+                    assertThat(value.getEntities()).containsExactlyInAnyOrderElementsOf(expectedEntities);
+                }
             }
         }
     }
@@ -186,14 +195,14 @@ class EnvironmentModeTest {
     }
 
     private void assertReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomFactory(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomFactory());
+        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSource().moveIteratorUsage(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomSource().moveIteratorUsage());
         assertSameScoreSeries(solver1, solver2);
     }
 
     private void assertNonReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomFactory(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomFactory());
+        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSource().moveIteratorUsage(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomSource().moveIteratorUsage());
         assertDifferentScoreSeries(solver1, solver2);
     }
 
@@ -241,10 +250,7 @@ class EnvironmentModeTest {
                 }));
     }
 
-    private void assertGeneratingSameNumbers(RandomFactory factory1, RandomFactory factory2) {
-        var random = factory1.createRandom();
-        var random2 = factory2.createRandom();
-
+    private void assertGeneratingSameNumbers(RandomGenerator random, RandomGenerator random2) {
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
                         .as("Random factories should generate the same results "
@@ -252,15 +258,13 @@ class EnvironmentModeTest {
                         .isEqualTo(random2.nextInt())));
     }
 
-    private void assertGeneratingDifferentNumbers(RandomFactory factory1, RandomFactory factory2) {
-        var random = factory1.createRandom();
-        var random2 = factory2.createRandom();
-
+    private void assertGeneratingDifferentNumbers(RandomGenerator random, RandomGenerator random2) {
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
-                        .as("Random factories should not generate exactly the same results "
-                                + "in the non-reproducible environment mode. "
-                                + "It can happen but the probability is very low. Run test again")
+                        .as("""
+                                Random factories should not generate exactly the same results \
+                                in the non-reproducible environment mode. \
+                                It can happen but the probability is very low. Run test again""")
                         .isNotEqualTo(random2.nextInt())));
     }
 

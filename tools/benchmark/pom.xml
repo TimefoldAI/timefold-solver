@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-build-parent</artifactId>
-    <version>999-SNAPSHOT</version>
+    <version>${revision}</version>
     <relativePath>../../build/build-parent/pom.xml</relativePath>
   </parent>
 
@@ -140,9 +140,6 @@
       <plugin>
         <groupId>org.revapi</groupId>
         <artifactId>revapi-maven-plugin</artifactId>
-        <configuration>
-          <skip>true</skip> <!-- Temporarily until we've released 2.0.0. -->
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

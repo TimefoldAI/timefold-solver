@@ -6,15 +6,23 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
-import ai.timefold.solver.core.impl.solver.random.RandomFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolverTest.DummyEasyScoreCalculator;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.invalid.noentity.TestdataNoEntitySolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -103,6 +111,23 @@ class DefaultSolverFactoryTest {
     }
 
     @Test
+    void useCorrectRandomSeed() {
+        // Reproducible
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withRandomSeed(123456L);
+        var defaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
+        var randomGenerator = (DelegatingSplittableRandomGenerator) defaultSolverFactory
+                .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get().moveIteratorUsage();
+        var otherRandomGenerator =
+                (DelegatingSplittableRandomGenerator) RandomSource.seeded(solverConfig.getRandomSeed()).moveIteratorUsage();
+        assertThat(randomGenerator.getSeed()).isEqualTo(otherRandomGenerator.getSeed());
+        assertThat(otherRandomGenerator.nextLong()).isEqualTo(randomGenerator.nextLong());
+    }
+
+    @Test
     void testNoSolutionConfiguration() {
         SolverConfig solverConfig = new SolverConfig();
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
@@ -119,17 +144,6 @@ class DefaultSolverFactoryTest {
                 .hasMessageContaining("The solver configuration must have at least 1 entityClass")
                 .hasMessageContaining(
                         "If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already.");
-    }
-
-    @Test
-    void testInvalidRandomConfiguration() {
-        SolverConfig solverConfig =
-                SolverConfig.createFromXmlResource("ai/timefold/solver/core/config/solver/testdataSolverConfig.xml")
-                        .withRandomFactoryClass(RandomFactory.class)
-                        .withRandomSeed(1000L);
-        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
-                .hasMessageContaining("The solverConfig with randomFactoryClass ")
-                .hasMessageContaining("has a non-null randomType (null) or a non-null randomSeed (1000).");
     }
 
     @Test
@@ -154,6 +168,130 @@ class DefaultSolverFactoryTest {
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
                 .hasMessageContainingAll("Constraint profiling",
                         "remove constraintStreamProfilingEnabled from the solver configuration");
+    }
+
+    @Test
+    void assertEnvironmentModeWithoutPhases() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void assertEnvironmentModeWithValidPhases() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        // The default environment mode must be used by at least one phase,
+        // and every phase must be at least as strict as the default.
+        solverConfig.getPhaseConfigList().getFirst().setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void assertEnvironmentWithNonReproducibleAndMismatchingPhase() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NO_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
+                .hasMessageContaining("is only possible when global environmentMode is reproducible");
+    }
+
+    @Test
+    void assertEnvironmentModeWithGlobalNotUsedByAnyPhase() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT);
+        // Every phase may override the global mode; it still governs everything outside the phases.
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void everyPhaseOverridingLeavesTheGlobalEnvironmentModeAlone() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.getPhaseConfigList()
+                .forEach(phaseConfig -> phaseConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT));
+        var solver = (AbstractSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        // The configured global mode stands even though no phase runs in it
+        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.PHASE_ASSERT);
+    }
+
+    @Test
+    void differingPhaseEnvironmentModesLeaveTheGlobalEnvironmentModeAlone() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NON_INTRUSIVE_FULL_ASSERT);
+        var solver = (AbstractSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.STEP_ASSERT);
+    }
+
+    @Test
+    void onePhaseLeftOnTheGlobalEnvironmentMode() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        // Only the second phase overrides; the first still runs in the global mode, so it must stay.
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var solver = (AbstractSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        assertThat(solver.globalEnvironmentMode).isEqualTo(EnvironmentMode.PHASE_ASSERT);
+    }
+
+    @Test
+    void phaseEnvironmentModeCannotMakeTheGlobalNonReproducible() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.getPhaseConfigList()
+                .forEach(phaseConfig -> phaseConfig.setEnvironmentMode(EnvironmentMode.NON_REPRODUCIBLE));
+        // NON_REPRODUCIBLE is the most lenient mode, so a phase set to it is always less strict than the
+        // global one, and the strictness rule rejects it.
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
+                .hasMessageContaining("must have an assertion level higher than or equal to the global environment level");
+    }
+
+    @Test
+    void solvesWithEveryPhaseOverridingAnUnsetGlobalEnvironmentMode() {
+        // "Assert everything", expressed per phase, with the solver-level mode left at its default.
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.getPhaseConfigList().forEach(phaseConfig -> phaseConfig
+                .setEnvironmentMode(EnvironmentMode.FULL_ASSERT));
+        var solution = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver()
+                .solve(TestdataSolution.generateSolution(2, 2));
+        assertThat(solution).isNotNull();
+        assertThat(solution.getScore()).isNotNull();
+    }
+
+    @Test
+    void solvesWithConstraintStreamsAndAPhaseOverridingTheEnvironmentMode() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataConstraintProvider.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(5)));
+        var solverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
+        assertThat(solverFactory.<SimpleScore> getScoreDirectorFactory().getInitializingScoreTrend()).isNotNull();
+        var solution = solverFactory.buildSolver().solve(TestdataSolution.generateSolution(2, 2));
+        assertThat(solution.getScore()).isNotNull();
+    }
+
+    @Test
+    void assertEnvironmentModeWithPhaseLessStrictThanDefault() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(0).setEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        solverConfig.getPhaseConfigList().get(1).setEnvironmentMode(EnvironmentMode.NO_ASSERT);
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
+                .hasMessageContaining(
+                        "must have an assertion level higher than or equal to the global environment level");
     }
 
 }

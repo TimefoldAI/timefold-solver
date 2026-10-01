@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.Pair;
-
-import org.apache.commons.math3.util.CombinatoricsUtils;
 
 final class KOptUtils {
 
@@ -105,17 +104,17 @@ final class KOptUtils {
     }
 
     public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(Node_[] pickedValues,
-            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
-        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
-        return node -> entityOrderInfo.successor(node, listVariableStateSupply);
+            ListVariableState<?, Object, Object> listVariableState) {
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableState);
+        return node -> entityOrderInfo.successor(node, listVariableState);
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_>
-            getBetweenPredicate(ListVariableStateSupply<?, ?, ?> listVariableStateSupply) {
+            getBetweenPredicate(ListVariableState<?, ?, ?> listVariableState) {
         return (start, middle, end) -> {
-            int startIndex = listVariableStateSupply.getIndexOrFail(start);
-            int middleIndex = listVariableStateSupply.getIndexOrFail(middle);
-            int endIndex = listVariableStateSupply.getIndexOrFail(end);
+            int startIndex = listVariableState.getIndexOrFail(start);
+            int middleIndex = listVariableState.getIndexOrFail(middle);
+            int endIndex = listVariableState.getIndexOrFail(end);
 
             if (startIndex <= endIndex) {
                 // test middleIndex in [startIndex, endIndex]
@@ -128,9 +127,9 @@ final class KOptUtils {
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getMultiEntityBetweenPredicate(Node_[] pickedValues,
-            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
-        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
-        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, listVariableStateSupply);
+            ListVariableState<?, Object, Object> listVariableState) {
+        var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableState);
+        return (start, middle, end) -> entityOrderInfo.between(start, middle, end, listVariableState);
     }
 
     public static void flipSubarray(int[] array, int fromIndexInclusive, int toIndexExclusive) {
@@ -187,7 +186,7 @@ final class KOptUtils {
         for (var i = 1; i < k; i++) {
             for (var j = 0; j <= i; j++) {
                 var sign = ((k + j - 1) % 2 == 0) ? 1 : -1;
-                totalTypes += sign * CombinatoricsUtils.binomialCoefficient(i, j) * CombinatoricsUtils.factorial(j) * (1L << j);
+                totalTypes += sign * MathUtils.binomialCoefficient(i, j) * MathUtils.factorial(j) * (1L << j);
             }
         }
         return totalTypes;

@@ -3,8 +3,6 @@ package ai.timefold.solver.jackson.api.score;
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
-import ai.timefold.solver.jackson.api.score.buildin.SimpleBigDecimalScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.SimpleBigDecimalScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +15,12 @@ class SimpleBigDecimalScoreJacksonRoundTripTest extends AbstractScoreJacksonRoun
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestSimpleBigDecimalScoreWrapper(null));
         var score = SimpleBigDecimalScore.of(new BigDecimal("1234.4321"));
+        assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
+    }
+
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new SimpleBigDecimalScore(-1L, new BigDecimal("1234.4321"));
         assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
     }
 

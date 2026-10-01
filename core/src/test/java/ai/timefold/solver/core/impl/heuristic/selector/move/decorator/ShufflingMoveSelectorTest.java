@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
-import static org.mockito.Mockito.mock;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,7 +44,7 @@ class ShufflingMoveSelectorTest {
         verify(childMoveSelector, times(1)).isNeverEnding();
 
         TestRandom workingRandom = new TestRandom(2, 0);
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         moveSelector.solvingStarted(solverScope);
 

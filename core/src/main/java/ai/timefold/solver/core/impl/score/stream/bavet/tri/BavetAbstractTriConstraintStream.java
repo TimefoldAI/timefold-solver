@@ -5,11 +5,9 @@ import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.one
 import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.threeKeysGroupBy;
 import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.twoKeysGroupBy;
 import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.zeroKeysGroupBy;
-import static ai.timefold.solver.core.impl.score.stream.common.tri.InnerTriConstraintStream.createDefaultIndictedObjectsMapping;
 import static ai.timefold.solver.core.impl.score.stream.common.tri.InnerTriConstraintStream.createDefaultJustificationMapping;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -473,10 +471,9 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     private <Score_ extends Score<Score_>> TriConstraintBuilderImpl<A, B, C, Score_>
             newTerminator(BavetScoringConstraintStream<Solution_> stream, Score_ constraintWeight, ScoreImpactType impactType) {
         return new TriConstraintBuilderImpl<>(
-                (constraintName, constraintDescription, constraintGroup, constraintWeight_, impactType_,
-                        justificationMapping, indictedObjectsMapping) -> buildConstraint(constraintName,
-                                constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
-                                indictedObjectsMapping, stream),
+                (description, constraintWeight_, impactType_,
+                        justificationMapping) -> buildConstraint(description,
+                                constraintWeight_, impactType_, justificationMapping, stream),
                 impactType, constraintWeight);
     }
 
@@ -490,11 +487,6 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     @Override
     protected final QuadFunction<A, B, C, Score<?>, DefaultConstraintJustification> getDefaultJustificationMapping() {
         return createDefaultJustificationMapping();
-    }
-
-    @Override
-    protected final TriFunction<A, B, C, Collection<?>> getDefaultIndictedObjectsMapping() {
-        return createDefaultIndictedObjectsMapping();
     }
 
 }

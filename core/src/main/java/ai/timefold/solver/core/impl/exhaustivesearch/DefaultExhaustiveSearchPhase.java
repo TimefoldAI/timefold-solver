@@ -63,8 +63,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
         while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
             var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
-            var node = expandableNodeQueue.last();
-            expandableNodeQueue.remove(node);
+            var node = expandableNodeQueue.removeLast();
             stepScope.setExpandingNode(node);
             stepStarted(stepScope);
             decider.restoreWorkingSolution(stepScope, assertWorkingSolutionScoreFromScratch,
@@ -101,11 +100,13 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         super.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
-        logger.info("{}Exhaustive Search phase ({}) ended: time spent ({}), best score ({}),"
-                + " move evaluation speed ({}/sec), step total ({}).",
+        logger.info("""
+                {}Exhaustive Search phase ({}) ended: time spent ({}), environment mode ({}), best score ({}),\
+                move evaluation speed ({}/sec), step total ({}).""",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                environmentMode.name(),
                 phaseScope.getBestScore().raw(),
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
@@ -133,7 +134,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         }
     }
 
-    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
+    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_, DefaultExhaustiveSearchPhase<Solution_>> {
 
         private final Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator;
         private final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
@@ -141,20 +142,22 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         private boolean assertWorkingSolutionScoreFromScratch = false;
         private boolean assertExpectedWorkingSolutionScore = false;
 
-        public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
-                Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator,
+        public Builder(int phaseIndex, EnvironmentMode environmentMode, String logIndentation,
+                PhaseTermination<Solution_> phaseTermination, Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator,
                 AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider) {
-            super(phaseIndex, logIndentation, phaseTermination);
+            super(phaseIndex, environmentMode, logIndentation, phaseTermination);
             this.nodeComparator = nodeComparator;
             this.decider = decider;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public Builder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
-            super.enableAssertions(environmentMode);
+        public <Builder_ extends AbstractPhaseBuilder<Solution_, DefaultExhaustiveSearchPhase<Solution_>>> Builder_
+                enableAssertions() {
+            super.enableAssertions();
             assertWorkingSolutionScoreFromScratch = environmentMode.isFullyAsserted();
             assertExpectedWorkingSolutionScore = environmentMode.isIntrusivelyAsserted();
-            return this;
+            return (Builder_) this;
         }
 
         @Override

@@ -2,16 +2,14 @@ package ai.timefold.solver.migration.v2;
 
 import static org.openrewrite.java.Assertions.java;
 
+import ai.timefold.solver.migration.AbstractRecipeTest;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
-@Execution(ExecutionMode.CONCURRENT)
-class GeneralMethodChangeNameMigrationRecipeTest implements RewriteTest {
+class GeneralMethodChangeNameMigrationRecipeTest extends AbstractRecipeTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
@@ -174,7 +172,7 @@ class GeneralMethodChangeNameMigrationRecipeTest implements RewriteTest {
                                 UnionMoveSelectorConfig unionMoveSelectorConfig;
                                 public void test() {
                                     benchmark.benchmark();
-                                    constraint.getConstraintRef().constraintName();
+                                    constraint.getConstraintRef().id();
                                     solver.isEveryProblemChangeProcessed();
                                     bestSolutionChangedEvent.isEveryProblemChangeProcessed();
                                     cartesianProductMoveSelectorConfig.getMoveSelectorList();

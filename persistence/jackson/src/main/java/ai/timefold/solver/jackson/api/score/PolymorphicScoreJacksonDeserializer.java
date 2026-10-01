@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonDeserializer;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;

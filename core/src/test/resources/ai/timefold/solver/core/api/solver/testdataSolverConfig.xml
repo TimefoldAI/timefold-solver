@@ -5,6 +5,6 @@
 
   <!-- Score configuration -->
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>ai.timefold.solver.core.testdomain.TestdataIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <easyScoreCalculatorClass>ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator</easyScoreCalculatorClass>
   </scoreDirectorFactory>
 </solver>

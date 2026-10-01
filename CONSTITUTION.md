@@ -13,13 +13,14 @@ Key words per [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html): **MUST** 
 
 **Documentation**:
 
-1. **Public API** (MUST): All public classes/interfaces/methods MUST have Javadoc with `@param`, `@return`, `@throws` (omit NPE for null params; omit if present on referenced overload). `@since` optional.
-2. **User-facing** (MUST): 
+1. **Public API**: All public classes/interfaces/methods MUST have Javadoc with `@param`, `@return`, `@throws` (omit NPE for null params; omit if present on referenced overload). `@since` optional.
+2. **User-facing**: 
    - New features → user guide; 
    - Config changes → reference docs; 
    - Breaking changes → migration guides.
-3. **Examples** (SHOULD): Docs SHOULD include code examples; quickstart examples SHOULD be added externally.
-4. **Implementation** (SHOULD): Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments.
+3. **Examples**: Docs SHOULD include code examples; quickstart examples SHOULD be added externally.
+4. **Implementation**: Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments. 
+5. **Formatting**: Any form of documentation (being source code comments, Javadoc, or user documentation) must follow [Semantic Line Breaks](https://sembr.org).
 
 ### II. Consistent Terminology
 
@@ -88,11 +89,10 @@ Performance/stress tests are in other repositories; not applicable here.
 **Style**:
 1. Newlines: formatter preserves them; use sparingly to separate logical blocks
 2. Field access order in methods SHOULD match declaration order
-3. Imports MUST be used; no fully qualified names in source (exception: disambiguating same simple name)
-4. `var` preferred over diamond; diamond MUST be used when `var` not used and type is inferable
+3. `var` preferred over diamond; diamond MUST be used when `var` not used and type is inferable
    - ✅ `var list = new ArrayList<String>();`; ✅ `List<String> list = new ArrayList<>();`
    - ❌ `var list = new ArrayList<>();` (compiler error); ❌ `List<String> list = new ArrayList<String>();`
-5. Asterisk imports MUST NOT be used
+4. Asterisk imports MUST NOT be used
 
 **SonarCloud Quality Gates** (MUST):
 - Reliability and Maintainability grades MUST be B or better; PRs worsening below B fail CI
@@ -178,11 +178,12 @@ MUST use:
 
 ## Package Structure and API Stability
 
-| Package type | Stability |
-|---|---|
-| `*.api.*` | 100% backwards compatible; breaking only in major versions |
-| `*.config.*` | 100% backwards compatible; breaking only in major versions |
-| All others | No guarantees |
+| Package type      | Stability                                                                     |
+|-------------------|-------------------------------------------------------------------------------|
+| `*.api.*`         | 100% backwards compatible; breaking only in major versions                    |
+| `*.preview.api.*` | Best-effort backwards compatibility; may break in minor versions if necessary |
+| `*.config.*`      | 100% backwards compatible; breaking only in major versions                    |
+| All others        | No guarantees                                                                 |
 
 **Versioning**: MAJOR = breaking API/config change; MINOR = new backwards-compat feature; PATCH = bug fix.
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.tri;
 
+import java.util.function.IntSupplier;
+
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
@@ -13,9 +15,9 @@ public final class Group2Mapping0CollectorTriNode<OldA, OldB, OldC, A, B>
     private final int outputStoreSize;
 
     public Group2Mapping0CollectorTriNode(TriFunction<OldA, OldB, OldC, A> groupKeyMappingA,
-            TriFunction<OldA, OldB, OldC, B> groupKeyMappingB, int groupStoreIndex,
+            TriFunction<OldA, OldB, OldC, B> groupKeyMappingB, IntSupplier storeIndexReserver,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, int outputStoreSize, EnvironmentMode environmentMode) {
-        super(groupStoreIndex,
+        super(storeIndexReserver,
                 tuple -> createGroupKey(groupKeyMappingA, groupKeyMappingB, tuple), nextNodesTupleLifecycle, environmentMode);
         this.outputStoreSize = outputStoreSize;
     }

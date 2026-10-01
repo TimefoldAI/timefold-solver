@@ -26,7 +26,6 @@ public enum LocalSearchType {
      */
     public static @NonNull LocalSearchType @NonNull [] getBluePrintTypes() {
         return Arrays.stream(values())
-                // Workaround for https://issues.redhat.com/browse/PLANNER-1294
                 .filter(localSearchType -> localSearchType != SIMULATED_ANNEALING)
                 .toArray(LocalSearchType[]::new);
     }

@@ -1,0 +1,7 @@
+[IMPORTANT]
+====
+Deploying custom models to the platform is in preview.
+
+This is currently only available to a limited set of partners.
+If you're interested in joining this preview program, mailto:info@timefold.ai[get in touch with the Timefold team] to discuss access.
+====

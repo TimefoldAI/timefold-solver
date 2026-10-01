@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.mock;
@@ -16,7 +17,7 @@ class TimeMillisSpentTerminationTest {
     @Test
     void solveTermination() {
         SolverTermination<TestdataSolution> termination = new TimeMillisSpentTermination<>(1000L);
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
 
         when(solverScope.calculateTimeMillisSpentUpToNow()).thenReturn(0L);
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();

@@ -10,18 +10,31 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple> extends AbstractNode
-        implements BavetRootNode<Object> {
+public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
+        extends AbstractRootNode<Object> {
+
+    private final TupleLifecycle<Tuple_> downstreamTupleLifecycle;
     private final RecordAndReplayPropagator<Tuple_> recordAndReplayPropagator;
     private final Class<?>[] sourceClasses;
 
     protected AbstractPrecomputeNode(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
             TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
+        this.downstreamTupleLifecycle = nextNodesTupleLifecycle;
         this.recordAndReplayPropagator = new RecordAndReplayPropagator<>(precomputeBuildHelperSupplier,
                 this::remapTuple,
                 nextNodesTupleLifecycle);
         this.sourceClasses = sourceClasses;
+    }
+
+    @Override
+    public void afterAllFactsInserted(boolean unused) {
+        downstreamTupleLifecycle.afterAllFactsInserted(recordAndReplayPropagator.canProduceTuples());
+    }
+
+    @Override
+    public boolean isActive() {
+        return recordAndReplayPropagator.canProduceTuples() && downstreamTupleLifecycle.isActive();
     }
 
     @Override
@@ -50,7 +63,7 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple> extends Abstr
     }
 
     @Override
-    public final boolean supports(BavetRootNode.LifecycleOperation lifecycleOperation) {
+    public final boolean supports(AbstractRootNode.LifecycleOperation lifecycleOperation) {
         return true;
     }
 
@@ -79,4 +92,5 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple> extends Abstr
     }
 
     protected abstract Tuple_ remapTuple(Tuple_ tuple);
+
 }

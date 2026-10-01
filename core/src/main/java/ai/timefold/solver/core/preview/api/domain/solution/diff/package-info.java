@@ -4,6 +4,9 @@
  * using the {@link ai.timefold.solver.core.api.solver.SolutionManager#diff(java.lang.Object, java.lang.Object)}.
  *
  * <p>
+ * Note: Solution diff is exclusive to Timefold Solver Enterprise Edition.
+ *
+ * <p>
  * <strong>This package and all of its contents is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
  * any class, method, or field may change or be removed without prior notice,

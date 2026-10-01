@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfEntitySelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.doReturn;
@@ -55,7 +56,7 @@ class SortingEntitySelectorTest {
                 new SortingEntitySelector(childEntitySelector, cacheType,
                         new TestdataObjectSorter<TestdataSolution, TestdataEntity>());
 
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope solverScope = mockSolverScope();
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         doReturn(new TestdataSolution()).when(scoreDirector).getWorkingSolution();

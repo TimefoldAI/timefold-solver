@@ -7,7 +7,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
@@ -34,8 +34,8 @@ class ConstraintWeightOverridesTest {
         var secondAndFirst = ConstraintWeightOverrides.of(Map.of(
                 SECOND_WEIGHT, SimpleScore.ONE,
                 FIRST_WEIGHT, SimpleScore.ZERO));
-        assertThat(firstAndSecond.getKnownConstraintNames())
-                .containsExactly(secondAndFirst.getKnownConstraintNames().toArray(new String[0]));
+        assertThat(firstAndSecond.getKnownConstraintIds())
+                .containsExactly(secondAndFirst.getKnownConstraintIds().toArray(new String[0]));
     }
 
     @Test
@@ -81,7 +81,7 @@ class ConstraintWeightOverridesTest {
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             // Default weights
             scoreDirector.setWorkingSolution(solution);
-            scoreDirector.triggerVariableListeners();
+            scoreDirector.updateShadowVariables();
             assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(5));
 
             // Only second constraint is active
@@ -89,7 +89,7 @@ class ConstraintWeightOverridesTest {
                     FIRST_WEIGHT, SimpleScore.ZERO,
                     SECOND_WEIGHT, SimpleScore.of(2))));
             scoreDirector.setWorkingSolution(solution);
-            scoreDirector.triggerVariableListeners();
+            scoreDirector.updateShadowVariables();
             assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-10));
 
             // Unknown constraint is present

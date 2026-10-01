@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 import java.util.ArrayList;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.exhaustivesearch.event.ExhaustiveSearchPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
@@ -24,7 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
         implements ExhaustiveSearchPhaseLifecycleListener<Solution_>
-        permits BasicExhaustiveSearchDecider, ListVariableExhaustiveSearchDecider, MixedVariableExhaustiveSearchDecider {
+        permits BasicVariableExhaustiveSearchDecider, ListVariableExhaustiveSearchDecider,
+        MixedVariableExhaustiveSearchDecider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExhaustiveSearchDecider.class);
 
@@ -56,17 +58,14 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
         this.scoreBounder = scoreBounder;
     }
 
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        this.assertMoveScoreFromScratch = environmentMode.isFullyAsserted();
+        this.assertExpectedUndoMoveScore = environmentMode.isIntrusivelyAsserted();
+    }
+
     @SuppressWarnings("unchecked")
     public ScoreBounder<Score_> getScoreBounder() {
         return (ScoreBounder<Score_>) scoreBounder;
-    }
-
-    public void setAssertMoveScoreFromScratch(boolean assertMoveScoreFromScratch) {
-        this.assertMoveScoreFromScratch = assertMoveScoreFromScratch;
-    }
-
-    public void setAssertExpectedUndoMoveScore(boolean assertExpectedUndoMoveScore) {
-        this.assertExpectedUndoMoveScore = assertExpectedUndoMoveScore;
     }
 
     protected void enableAcceptUninitializedSolutions() {
@@ -107,11 +106,9 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
         var scoreDirector = stepScope.<Score_> getScoreDirector();
         var move = moveNode.getMove();
         if (!skipMoveExecution) {
-            var undoMove = scoreDirector.getMoveDirector().executeTemporary(move,
-                    (score, undo) -> {
-                        processMove(stepScope, moveNode, isSolutionComplete, score);
-                        return undo;
-                    });
+            var undoMove = scoreDirector.getMoveDirector()
+                    .executeTemporaryProducingUndoMove(move,
+                            score -> processMove(stepScope, moveNode, isSolutionComplete, score));
             moveNode.setUndoMove(undoMove);
         }
         var executionPoint = SolverLifecyclePoint.of(stepScope, moveNode.getTreeId());
@@ -123,9 +120,8 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
             }
         }
         var nodeScore = moveNode.getScore();
-        LOGGER.trace("{}        Move treeId ({}), score ({}), expandable ({}), move ({}).",
-                logIndentation, executionPoint.treeId(), nodeScore == null ? "null" : nodeScore, moveNode.isExpandable(),
-                moveNode.getMove());
+        LOGGER.trace("{}        Move treeId ({}), score ({}), move ({}).",
+                logIndentation, executionPoint.treeId(), nodeScore == null ? "null" : nodeScore, moveNode.getMove());
     }
 
     private void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,
@@ -204,7 +200,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
 
     protected void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope,
             ExhaustiveSearchLayer layer) {
-        var startLayer = layer == null ? phaseScope.getLayerList().get(0) : layer;
+        var startLayer = layer == null ? phaseScope.getLayerList().getFirst() : layer;
         var startNode = new ExhaustiveSearchNode<Solution_>(startLayer, null);
 
         if (scoreBounderEnabled) {

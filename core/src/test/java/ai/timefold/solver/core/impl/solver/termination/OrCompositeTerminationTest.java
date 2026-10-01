@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.mock;
@@ -22,7 +23,7 @@ class OrCompositeTerminationTest extends AbstractCompositeTerminationTest {
         SolverTermination<TestdataSolution> termination2 = mock(MockableSolverTermination.class);
         SolverTermination<TestdataSolution> compositeTermination =
                 new OrCompositeTermination<>(Arrays.asList(termination1, termination2));
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
 
         when(termination1.isSolverTerminated(solverScope)).thenReturn(false);
         when(termination2.isSolverTerminated(solverScope)).thenReturn(false);
@@ -100,7 +101,7 @@ class OrCompositeTerminationTest extends AbstractCompositeTerminationTest {
         SolverTermination<TestdataSolution> termination2 = mock(MockableSolverTermination.class);
         SolverTermination<TestdataSolution> compositeTermination =
                 new OrCompositeTermination<>(Arrays.asList(termination1, termination2));
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
 
         when(termination1.calculateSolverTimeGradient(solverScope)).thenReturn(0.0);
         when(termination2.calculateSolverTimeGradient(solverScope)).thenReturn(0.0);

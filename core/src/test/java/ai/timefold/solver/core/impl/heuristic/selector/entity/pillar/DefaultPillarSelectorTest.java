@@ -11,13 +11,12 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.SubPillarConfigPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.VariableSupport;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -103,9 +102,9 @@ class DefaultPillarSelectorTest {
         SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(solutionDescriptor).when(scoreDirector).getSolutionDescriptor();
-        doReturn(VariableListenerSupport.create(scoreDirector)).when(scoreDirector).getSupplyManager();
+        doReturn(VariableSupport.create(scoreDirector)).when(scoreDirector).getSupplyManager();
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = PlannerTestUtils.mockSolverScope();
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         return solverScope;
     }
@@ -260,7 +259,7 @@ class DefaultPillarSelectorTest {
 
         // nextInt pattern: pillarIndex, subPillarSize, element 0, element 1, element 2, ...
         // Expected pillar cache: [b, d], [c, e, f]
-        Random workingRandom = new TestRandom(
+        var workingRandom = new TestRandom(
                 1, 0, 0, 0, // [c, e]
                 0, 0, 0, 0); // [b, d]
 
@@ -307,7 +306,7 @@ class DefaultPillarSelectorTest {
 
         // nextInt pattern: pillarIndex, subPillarSize, subPillarStartingIndex
         // Expected pillar cache: [a], [b, d], [c, e, f]
-        Random workingRandom = new TestRandom(
+        var workingRandom = new TestRandom(
                 1, 1, // [b, d]
                 2, 2, // [c, e, f]
                 2, 1, 1, // [c, e, f]
@@ -423,7 +422,7 @@ class DefaultPillarSelectorTest {
          * Then after step end, the same process repeats in reverse, eventually reaching zero active count.
          */
         SupplyManager pillarSupplyManager = solverScope.getScoreDirector().getSupplyManager();
-        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isZero();
         pillarSelector1.stepStarted(stepScopeA1);
         Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(1);
 
@@ -437,7 +436,7 @@ class DefaultPillarSelectorTest {
 
         Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(1);
         pillarSelector2.stepEnded(stepScopeA1);
-        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isZero();
 
         pillarSelector1.phaseEnded(phaseScopeA);
         pillarSelector2.phaseEnded(phaseScopeA);
@@ -485,7 +484,7 @@ class DefaultPillarSelectorTest {
          * Therefore we need to ensure that the step cache is cleared on phaseEnded() as well.
          */
         SupplyManager pillarSupplyManager = solverScope.getScoreDirector().getSupplyManager();
-        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isZero();
         pillarSelector1.stepStarted(stepScopeA1);
         Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(1);
 
@@ -499,12 +498,12 @@ class DefaultPillarSelectorTest {
 
         Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(1);
         pillarSelector2.phaseEnded(phaseScopeA);
-        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isZero();
 
         pillarSelector1.solvingEnded(solverScope);
-        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isEqualTo(0);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector1.getPillarDemand())).isZero();
         pillarSelector2.solvingEnded(solverScope);
-        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector2.getPillarDemand())).isEqualTo(0);
+        Assertions.assertThat(pillarSupplyManager.getActiveCount(pillarSelector2.getPillarDemand())).isZero();
     }
 
 }

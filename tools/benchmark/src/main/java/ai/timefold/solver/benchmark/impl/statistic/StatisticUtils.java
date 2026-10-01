@@ -55,14 +55,13 @@ public class StatisticUtils {
         return standardDeviationDoubles;
     }
 
-    // TODO Do the locale formatting in benchmarkReport.html.ftl - https://issues.redhat.com/browse/PLANNER-169
     public static String getStandardDeviationString(double[] standardDeviationDoubles) {
         if (standardDeviationDoubles == null) {
             return null;
         }
         StringBuilder standardDeviationString = new StringBuilder(standardDeviationDoubles.length * 9);
         // Abbreviate to 2 decimals
-        // We don't use a local sensitive DecimalFormat, because other Scores don't use it either (see PLANNER-169)
+        // We don't use a local sensitive DecimalFormat, because other Scores don't use it either
         DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols(Locale.US);
         DecimalFormat exponentialFormat = new DecimalFormat("0.0#E0", decimalFormatSymbols);
         DecimalFormat decimalFormat = new DecimalFormat("0.0#", decimalFormatSymbols);

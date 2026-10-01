@@ -121,7 +121,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 @PlanningEntity
@@ -196,7 +196,7 @@ import java.time.LocalDateTime
 import java.util.ArrayList
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity
-import ai.timefold.solver.core.api.domain.entity.PlanningId
+import ai.timefold.solver.core.api.domain.common.PlanningId
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable
 
 @PlanningEntity
@@ -265,7 +265,7 @@ so it is easier to read Timefold Solver's `DEBUG` or `TRACE` log, as shown later
 ====
 Determining the `@PlanningListVariable` fields for an arbitrary constraint solving use case
 is often challenging the first time.
-Read xref:design-patterns/design-patterns.adoc#domainModelingGuide[the domain modeling guidelines] to avoid common pitfalls.
+Read xref:domain-modeling/domain-modeling.adoc#domainModelingGuide[the domain modeling guidelines] to avoid common pitfalls.
 ====
 
 == Visit
@@ -292,7 +292,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
@@ -404,7 +404,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity
-import ai.timefold.solver.core.api.domain.entity.PlanningId
+import ai.timefold.solver.core.api.domain.common.PlanningId
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable

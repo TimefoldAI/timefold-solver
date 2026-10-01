@@ -8,7 +8,7 @@ import java.util.function.Function;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.AbstractSubSingleStatisticTest;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.assertj.core.api.SoftAssertions;
@@ -36,7 +36,7 @@ public final class ConstraintMatchTotalBestScoreSubSingleStatisticTest
         assertions.assertThat(outputPoints)
                 .hasSize(1)
                 .first()
-                .matches(s -> Objects.equals(s.getConstraintRef().constraintName(), "CP"), "Constraint names do not match.")
+                .matches(s -> Objects.equals(s.getConstraintRef().id(), "CP"), "Constraint IDs do not match.")
                 .matches(s -> s.getConstraintMatchCount() == Integer.MAX_VALUE, "Constraint match counts do not match.")
                 .matches(s -> s.getScoreTotal().equals(SimpleScore.of(Integer.MAX_VALUE)), "Scores do not match.")
                 .matches(s -> s.getTimeMillisSpent() == Long.MAX_VALUE, "Millis do not match.");

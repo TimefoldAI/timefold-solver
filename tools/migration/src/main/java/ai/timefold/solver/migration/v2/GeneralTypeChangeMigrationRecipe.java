@@ -55,6 +55,9 @@ public class GeneralTypeChangeMigrationRecipe extends AbstractRecipe {
                         "ai.timefold.solver.core.api.score.BendableScore", true),
                 new ChangeType("ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore",
                         "ai.timefold.solver.core.api.score.BendableBigDecimalScore", true),
+                // ConstraintRef
+                new ChangeType("ai.timefold.solver.core.api.score.constraint.ConstraintRef",
+                        "ai.timefold.solver.core.api.score.stream.ConstraintRef", true),
                 // Problem fact
                 new ChangeType("ai.timefold.solver.core.api.solver.ProblemFactChange",
                         "ai.timefold.solver.core.api.solver.change.ProblemChange", true),

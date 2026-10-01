@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
 import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
@@ -32,21 +32,21 @@ class SequenceRoundTripTest {
     }
 
     @Test
-    void roundTrip() throws JacksonException {
+    <Ctx_> void roundTrip() throws JacksonException {
         // Prepare the data to be serialized.
-        Item sequence1Item1 = new Item("sequence1Item1", 0);
-        Item sequence1Item2 = new Item("sequence1Item2", 1);
-        Item sequence2Item1 = new Item("sequence2Item1", 3);
-        Item sequence2Item2 = new Item("sequence2Item2", 4);
-        Item sequence2Item3 = new Item("sequence2Item3", 5);
-        Item sequence3Item1 = new Item("sequence3Item1", 7);
-        UniConstraintCollector<Item, SequenceCalculator<Integer>, SequenceChain<Item, Integer>> collector =
+        var sequence1Item1 = new Item("sequence1Item1", 0);
+        var sequence1Item2 = new Item("sequence1Item2", 1);
+        var sequence2Item1 = new Item("sequence2Item1", 3);
+        var sequence2Item2 = new Item("sequence2Item2", 4);
+        var sequence2Item3 = new Item("sequence2Item3", 5);
+        var sequence3Item1 = new Item("sequence3Item1", 7);
+        UniConstraintCollector<Item, Ctx_, SequenceChain<Item, Integer>> collector =
                 (UniConstraintCollector) ConstraintCollectors.toConsecutiveSequences(Item::index);
         var context = collector.supplier().get();
-        var accumulator = collector.accumulator();
+        var accumulator = (UniConstraintCollectorAccumulator<Object, Item>) collector.accumulator();
         for (var item : List.of(sequence1Item1, sequence1Item2, sequence2Item1, sequence2Item2, sequence2Item3,
                 sequence3Item1)) {
-            accumulator.apply(context, item);
+            accumulator.intoGroup(context).add(item);
         }
 
         // Retrieve the instances to be serialized.

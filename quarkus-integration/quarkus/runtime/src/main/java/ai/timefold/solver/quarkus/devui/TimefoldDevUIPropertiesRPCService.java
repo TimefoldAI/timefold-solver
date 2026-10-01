@@ -13,8 +13,8 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
@@ -70,7 +70,7 @@ public class TimefoldDevUIPropertiesRPCService {
         var out = new JsonObject();
         devUIProperties.forEach((key, value) -> out.put(key, JsonArray.of(value.getConstraintList()
                 .stream()
-                .map(ConstraintRef::constraintName)
+                .map(ConstraintRef::id)
                 .toArray())));
         return out;
     }

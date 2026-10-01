@@ -2,27 +2,13 @@ package ai.timefold.solver.quarkus.jackson;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.BendableScore;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
-import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
-import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
-import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
-import ai.timefold.solver.core.api.solver.RecommendedAssignment;
-import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
-import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.quarkus.jackson.domain.solution.AbstractConstraintWeightOverridesDeserializer;
-import ai.timefold.solver.quarkus.jackson.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
-import ai.timefold.solver.quarkus.jackson.solver.AbstractRecommendedAssignmentJacksonDeserializer;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +17,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
@@ -65,159 +50,6 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     }
 
     @Test
-    void scoreAnalysisWithoutMatches() throws JsonProcessingException {
-        var objectMapper = JsonMapper.builder()
-                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
-                .defaultPropertyInclusion(
-                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
-                .addModule(TimefoldJacksonModule.createModule())
-                .build();
-
-        var constraintRef1 = ConstraintRef.of("constraint1");
-        var constraintRef2 = ConstraintRef.of("constraint2");
-        var constraintAnalysis1 =
-                new ConstraintAnalysis<>(constraintRef1, HardSoftScore.ofSoft(1), HardSoftScore.ofSoft(2), null);
-        var constraintAnalysis2 =
-                new ConstraintAnalysis<>(constraintRef2, HardSoftScore.ofHard(1), HardSoftScore.ofHard(1), null, 2);
-        var originalScoreAnalysis = new ScoreAnalysis<>(HardSoftScore.of(1, 2),
-                Map.of(constraintRef1, constraintAnalysis1,
-                        constraintRef2, constraintAnalysis2));
-
-        // Hardest constraints first, package name second.
-        var serialized = objectMapper.writeValueAsString(originalScoreAnalysis);
-        assertThat(serialized)
-                .isEqualToIgnoringWhitespace("""
-                        {
-                           "score" : "1hard/2soft",
-                           "initialized" : true,
-                           "constraints" : [ {
-                             "name" : "constraint2",
-                             "weight" : "1hard/0soft",
-                             "score" : "1hard/0soft",
-                             "matchCount" : 2
-                           }, {
-                             "name" : "constraint1",
-                             "weight" : "0hard/1soft",
-                             "score" : "0hard/2soft"
-                           } ]
-                         }""");
-
-        objectMapper.registerModule(new CustomJacksonModule());
-        ScoreAnalysis<HardSoftScore> deserialized = objectMapper.readValue(serialized, ScoreAnalysis.class);
-        assertThat(deserialized).isEqualTo(originalScoreAnalysis);
-    }
-
-    @Test
-    void scoreAnalysisWithMatches() throws JsonProcessingException {
-        var objectMapper = JsonMapper.builder()
-                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
-                .defaultPropertyInclusion(
-                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
-                .addModule(TimefoldJacksonModule.createModule())
-                .build();
-
-        var originalScoreAnalysis = getScoreAnalysis();
-        var serialized = objectMapper.writeValueAsString(originalScoreAnalysis);
-        assertThat(serialized)
-                .isEqualToIgnoringWhitespace(getSerializedScoreAnalysis());
-
-        objectMapper.registerModule(new CustomJacksonModule());
-        ScoreAnalysis<HardSoftScore> deserialized = objectMapper.readValue(serialized, ScoreAnalysis.class);
-        assertThat(deserialized).isEqualTo(originalScoreAnalysis);
-    }
-
-    private static ScoreAnalysis<HardSoftScore> getScoreAnalysis() {
-        var constraintRef1 = ConstraintRef.of("constraint1");
-        var constraintRef2 = ConstraintRef.of("constraint2");
-        var matchAnalysis1 = new MatchAnalysis<>(constraintRef1, HardSoftScore.ofHard(1),
-                DefaultConstraintJustification.of(HardSoftScore.ofHard(1), "A", "B"));
-        var matchAnalysis2 = new MatchAnalysis<>(constraintRef1, HardSoftScore.ofHard(1),
-                DefaultConstraintJustification.of(HardSoftScore.ofHard(1), "B", "C", "D"));
-        var matchAnalysis3 = new MatchAnalysis<>(constraintRef2, HardSoftScore.ofSoft(1),
-                DefaultConstraintJustification.of(HardSoftScore.ofSoft(1), "D"));
-        var matchAnalysis4 = new MatchAnalysis<>(constraintRef2, HardSoftScore.ofSoft(3),
-                DefaultConstraintJustification.of(HardSoftScore.ofSoft(3), "A", "C"));
-        var constraintAnalysis1 =
-                new ConstraintAnalysis<>(constraintRef1, HardSoftScore.ofHard(1), HardSoftScore.ofHard(2),
-                        List.of(matchAnalysis1, matchAnalysis2));
-        var constraintAnalysis2 =
-                new ConstraintAnalysis<>(constraintRef2, HardSoftScore.ofSoft(1), HardSoftScore.ofSoft(4),
-                        List.of(matchAnalysis3, matchAnalysis4));
-        return new ScoreAnalysis<>(HardSoftScore.of(2, 4),
-                Map.of(constraintRef1, constraintAnalysis1,
-                        constraintRef2, constraintAnalysis2));
-    }
-
-    private static String getSerializedScoreAnalysis() {
-        return """
-                {
-                  "score" : "2hard/4soft",
-                  "initialized" : true,
-                  "constraints" : [ {
-                    "name" : "constraint1",
-                    "weight" : "1hard/0soft",
-                    "score" : "2hard/0soft",
-                    "matches" : [ {
-                            "score" : "1hard/0soft",
-                            "justification" : [ "A", "B" ]
-                        }, {
-                            "score" : "1hard/0soft",
-                            "justification" : [ "B", "C", "D" ]
-                        }
-                     ],
-                    "matchCount" : 2
-                  }, {
-                    "name" : "constraint2",
-                    "weight" : "0hard/1soft",
-                    "score" : "0hard/4soft",
-                    "matches" : [ {
-                            "score" : "0hard/1soft",
-                            "justification" : [ "D" ]
-                        }, {
-                            "score" : "0hard/3soft",
-                            "justification" : [ "A", "C" ]
-                    } ],
-                    "matchCount" : 2
-                  } ]
-                }""";
-    }
-
-    @Test
-    void recommendedAssignment() throws JsonProcessingException {
-        var objectMapper = JsonMapper.builder()
-                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
-                .defaultPropertyInclusion(
-                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
-                .addModule(TimefoldJacksonModule.createModule())
-                .build();
-
-        var proposition = new Pair<>("A", "1");
-        var originalScoreAnalysis = getScoreAnalysis();
-        var originalRecommendedAssignment = new DefaultRecommendedAssignment<>(0, proposition, originalScoreAnalysis);
-        var fitList = List.of(originalRecommendedAssignment);
-
-        var serialized = objectMapper.writeValueAsString(fitList);
-        assertThat(serialized)
-                .isEqualToIgnoringWhitespace("""
-                        [ {
-                             "proposition" : {
-                               "key" : "A",
-                               "value" : "1"
-                             },
-                             "scoreDiff" : %s
-                           } ]""".formatted(getSerializedScoreAnalysis()));
-
-        objectMapper.registerModule(new CustomJacksonModule());
-        List<RecommendedAssignment<Pair<String, String>, HardSoftScore>> deserialized =
-                objectMapper.readValue(serialized,
-                        TypeFactory.defaultInstance().constructCollectionType(List.class, RecommendedAssignment.class));
-        assertThat(deserialized)
-                .hasSize(1)
-                .first()
-                .isEqualTo(originalRecommendedAssignment);
-    }
-
-    @Test
     void constraintWeightOverrides() throws JsonProcessingException {
         var objectMapper = JsonMapper.builder()
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
@@ -248,8 +80,6 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
         public CustomJacksonModule() {
             super("Timefold Custom");
-            addDeserializer(ScoreAnalysis.class, new CustomScoreAnalysisJacksonDeserializer());
-            addDeserializer(RecommendedAssignment.class, new CustomRecommendedAssignmentJacksonDeserializer());
             addDeserializer(ConstraintWeightOverrides.class, new CustomConstraintWeightOverridesDeserializer());
         }
 
@@ -263,38 +93,6 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
             return HardSoftScore.parseScore(scoreString);
         }
 
-    }
-
-    public static final class CustomScoreAnalysisJacksonDeserializer
-            extends AbstractScoreAnalysisJacksonDeserializer<HardSoftScore> {
-
-        @Override
-        protected HardSoftScore parseScore(String scoreString) {
-            return HardSoftScore.parseScore(scoreString);
-        }
-
-        @Override
-        protected <ConstraintJustification_ extends ConstraintJustification> ConstraintJustification_
-                parseConstraintJustification(ConstraintRef constraintRef, String constraintJustificationString,
-                        HardSoftScore score) {
-            List<Object> justificationList = Arrays.stream(constraintJustificationString.split(","))
-                    .map(s -> s.replace("[", "")
-                            .replace("]", "")
-                            .replace("\"", "")
-                            .strip())
-                    .collect(Collectors.toList());
-            return (ConstraintJustification_) DefaultConstraintJustification.of(score, justificationList);
-        }
-
-    }
-
-    public static final class CustomRecommendedAssignmentJacksonDeserializer
-            extends AbstractRecommendedAssignmentJacksonDeserializer<Pair<String, String>, HardSoftScore> {
-
-        @Override
-        protected Class<Pair<String, String>> getPropositionClass() {
-            return (Class) Pair.class;
-        }
     }
 
     public static class TestTimefoldJacksonModuleWrapper {

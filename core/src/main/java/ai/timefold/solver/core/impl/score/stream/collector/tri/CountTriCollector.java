@@ -3,13 +3,15 @@ package ai.timefold.solver.core.impl.score.stream.collector.tri;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, LongCounter, Long> {
+final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, MutableLong, Long> {
     private static final CountTriCollector<?, ?, ?> INSTANCE = new CountTriCollector<>();
 
     private CountTriCollector() {
@@ -21,20 +23,40 @@ final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C
     }
 
     @Override
-    public @NonNull Supplier<LongCounter> supplier() {
-        return LongCounter::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull QuadFunction<LongCounter, A, B, C, Runnable> accumulator() {
-        return (counter, a, b, c) -> {
-            counter.increment();
-            return counter::decrement;
-        };
+    public @NonNull TriConstraintCollectorAccumulator<MutableLong, A, B, C> accumulator() {
+        return Slot::new;
     }
 
     @Override
-    public @NonNull Function<LongCounter, Long> finisher() {
-        return LongCounter::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
+    }
+
+    private static final class Slot<A, B, C> extends AbstractCountSlot
+            implements TriConstraintCollectorValueHandle<A, B, C> {
+
+        Slot(MutableLong state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped();
+        }
+
+        @Override
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped();
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

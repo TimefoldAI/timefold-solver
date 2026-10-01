@@ -22,7 +22,7 @@ record UniLongImpactHandler<A>(ToLongFunction<A> matchWeigher) implements UniImp
         var a = tuple.getA();
         var constraint = impacter.getContext().getConstraint();
         return impacter.impactScore(matchWeigher.applyAsLong(a),
-                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a));
+                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), a));
     }
 
     @Override

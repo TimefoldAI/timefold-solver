@@ -26,7 +26,7 @@ public abstract class AbstractSelector<Solution_> implements Selector<Solution_>
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        workingRandom = solverScope.getWorkingRandom();
+        workingRandom = solverScope.getWorkingRandom().moveIteratorUsage();
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
     }
 

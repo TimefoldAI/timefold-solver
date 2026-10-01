@@ -71,7 +71,7 @@ public final class UnionMoveSelectorConfig
     })
     private List<MoveSelectorConfig> moveSelectorConfigList = null;
 
-    private Class<? extends SelectionProbabilityWeightFactory> selectorProbabilityWeightFactoryClass = null;
+    private String selectorProbabilityWeightFactoryClass = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -93,12 +93,13 @@ public final class UnionMoveSelectorConfig
     }
 
     public @Nullable Class<? extends SelectionProbabilityWeightFactory> getSelectorProbabilityWeightFactoryClass() {
-        return selectorProbabilityWeightFactoryClass;
+        return ConfigUtils.resolveClass(selectorProbabilityWeightFactoryClass, "selectorProbabilityWeightFactoryClass", this);
     }
 
     public void setSelectorProbabilityWeightFactoryClass(
             @Nullable Class<? extends SelectionProbabilityWeightFactory> selectorProbabilityWeightFactoryClass) {
-        this.selectorProbabilityWeightFactoryClass = selectorProbabilityWeightFactoryClass;
+        this.selectorProbabilityWeightFactoryClass = selectorProbabilityWeightFactoryClass == null ? null
+                : selectorProbabilityWeightFactoryClass.getName();
     }
 
     // ************************************************************************
@@ -118,7 +119,7 @@ public final class UnionMoveSelectorConfig
 
     public @NonNull UnionMoveSelectorConfig withSelectorProbabilityWeightFactoryClass(
             @NonNull Class<? extends SelectionProbabilityWeightFactory> selectorProbabilityWeightFactoryClass) {
-        this.selectorProbabilityWeightFactoryClass = selectorProbabilityWeightFactoryClass;
+        this.selectorProbabilityWeightFactoryClass = selectorProbabilityWeightFactoryClass.getName();
         return this;
     }
 
@@ -139,7 +140,7 @@ public final class UnionMoveSelectorConfig
         moveSelectorConfigList =
                 ConfigUtils.inheritMergeableListConfig(moveSelectorConfigList, inheritedConfig.getMoveSelectorList());
         selectorProbabilityWeightFactoryClass = ConfigUtils.inheritOverwritableProperty(
-                selectorProbabilityWeightFactoryClass, inheritedConfig.getSelectorProbabilityWeightFactoryClass());
+                selectorProbabilityWeightFactoryClass, inheritedConfig.selectorProbabilityWeightFactoryClass);
         return this;
     }
 
@@ -154,7 +155,7 @@ public final class UnionMoveSelectorConfig
         if (moveSelectorConfigList != null) {
             moveSelectorConfigList.forEach(ms -> ms.visitReferencedClasses(classVisitor));
         }
-        classVisitor.accept(selectorProbabilityWeightFactoryClass);
+        classVisitor.accept(getSelectorProbabilityWeightFactoryClass());
     }
 
     @Override

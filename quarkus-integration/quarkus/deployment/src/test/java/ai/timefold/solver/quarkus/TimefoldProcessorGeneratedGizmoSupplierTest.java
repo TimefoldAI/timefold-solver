@@ -38,6 +38,7 @@ import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -170,45 +171,27 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
         }
     }
 
+    @NullMarked
     public static class DummyIncrementalScoreCalculator
             implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+
         @Override
-        public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
+        public void resetWorkingSolution(TestdataSolution workingSolution) {
             // Ignore
         }
 
         @Override
-        public void beforeEntityAdded(@NonNull Object entity) {
+        public void beforeVariableChanged(Object entity, String variableName) {
             // Ignore
         }
 
         @Override
-        public void afterEntityAdded(@NonNull Object entity) {
+        public void afterVariableChanged(Object entity, String variableName) {
             // Ignore
         }
 
         @Override
-        public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-            // Ignore
-        }
-
-        @Override
-        public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-            // Ignore
-        }
-
-        @Override
-        public void beforeEntityRemoved(@NonNull Object entity) {
-            // Ignore
-        }
-
-        @Override
-        public void afterEntityRemoved(@NonNull Object entity) {
-            // Ignore
-        }
-
-        @Override
-        public @NonNull SimpleScore calculateScore() {
+        public SimpleScore calculateScore() {
             return null;
         }
     }

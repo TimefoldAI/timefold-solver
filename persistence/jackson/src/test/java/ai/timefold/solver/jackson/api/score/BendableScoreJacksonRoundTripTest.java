@@ -1,8 +1,6 @@
 package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.BendableScore;
-import ai.timefold.solver.jackson.api.score.buildin.BendableScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.BendableScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +13,12 @@ class BendableScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTes
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestBendableLongScoreWrapper(null));
         var score = BendableScore.of(new long[] { 1000L, 200L }, new long[] { 34L });
+        assertSerializeAndDeserialize(score, new TestBendableLongScoreWrapper(score));
+    }
+
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new BendableScore(-1L, new long[] { 1000L, 200L }, new long[] { 34L });
         assertSerializeAndDeserialize(score, new TestBendableLongScoreWrapper(score));
     }
 

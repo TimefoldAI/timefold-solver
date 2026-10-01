@@ -16,7 +16,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
-import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ListVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
@@ -60,6 +60,7 @@ class DefaultExhaustiveSearchPhaseTest {
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.isLastVariableUpdateSuccessful()).thenReturn(true);
         var moveDirector = new MoveDirector<>(scoreDirector);
         doAnswer(invocation -> {
             var move = (Move<TestdataSolution>) invocation.getArgument(0);
@@ -88,7 +89,7 @@ class DefaultExhaustiveSearchPhaseTest {
         when(lastCompletedStepScope.getExpandingNode()).thenReturn(node3A);
         when(stepScope.getExpandingNode()).thenReturn(node4B);
 
-        var decider = new BasicExhaustiveSearchDecider<TestdataSolution, SimpleScore>("", null, null,
+        var decider = new BasicVariableExhaustiveSearchDecider<TestdataSolution, SimpleScore>("", null, null,
                 mock(EntitySelector.class), null, null,
                 false, null);
         decider.restoreWorkingSolution(stepScope, false, false);
@@ -120,6 +121,7 @@ class DefaultExhaustiveSearchPhaseTest {
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);
         InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.isLastVariableUpdateSuccessful()).thenReturn(true);
         var moveDirector = new MoveDirector<>(scoreDirector);
         doAnswer(invocation -> {
             var move = (Move<TestdataListSolution>) invocation.getArgument(0);

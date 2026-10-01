@@ -1,5 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.List;
+
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -34,7 +38,23 @@ public final class DefaultShadowVariableSession<Solution_> implements Supply {
                 entity);
     }
 
-    public void updateVariables() {
-        graph.updateChanged();
+    public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
+            int fromIndex, int toIndex) {
+        graph.beforeListVariableChanged(variableDescriptor.getVariableMetaModel(), entity,
+                variableDescriptor.getValue(entity), fromIndex, toIndex);
+    }
+
+    public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
+            int toIndex) {
+        graph.afterListVariableChanged(variableDescriptor.getVariableMetaModel(), entity,
+                variableDescriptor.getValue(entity), fromIndex, toIndex);
+    }
+
+    public boolean updateVariables() {
+        return graph.updateChanged();
+    }
+
+    public List<VariableLoop> getVariableLoops() {
+        return graph.getVariableLoops();
     }
 }

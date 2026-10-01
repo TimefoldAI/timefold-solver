@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerSoluti
 import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class FollowerValuesShadowVariableTest {
     @Test
@@ -88,6 +90,46 @@ class FollowerValuesShadowVariableTest {
         assertThat(followerA3.getValue()).isEqualTo(value1);
         assertThat(followerB1.getValue()).isEqualTo(value2);
         assertThat(followerB2.getValue()).isEqualTo(value2);
+    }
+
+    @Test
+    void testUpdateOnce() {
+        var leaderA = new TestdataLeaderEntity("A");
+        var leaderB = new TestdataLeaderEntity("B");
+        var leaderC = new TestdataLeaderEntity("C");
+
+        var followerA1 = Mockito.spy(new TestdataFollowerEntity("A1", leaderA));
+        var followerA2 = Mockito.spy(new TestdataFollowerEntity("A2", leaderA));
+        var followerA3 = Mockito.spy(new TestdataFollowerEntity("A3", leaderA));
+
+        var followerB1 = Mockito.spy(new TestdataFollowerEntity("B1", leaderB));
+        var followerB2 = Mockito.spy(new TestdataFollowerEntity("B2", leaderB));
+
+        var value1 = new TestdataValue("1");
+        var value2 = new TestdataValue("2");
+
+        var solution = new TestdataFollowerSolution("Solution",
+                List.of(leaderA, leaderB, leaderC),
+                List.of(followerA1, followerA2, followerA3,
+                        followerB1, followerB2),
+                List.of(value1, value2));
+
+        var solutionMetamodel = TestdataFollowerSolution.buildMetaModel();
+        var variableMetamodel = solutionMetamodel.genuineEntity(TestdataLeaderEntity.class)
+                .basicVariable("value", TestdataValue.class);
+        var context = MoveTester.build(solutionMetamodel)
+                .using(solution);
+
+        Mockito.reset(followerA1, followerA2, followerA3, followerB1, followerB2);
+        context.execute(Moves.change(variableMetamodel, leaderA, value1));
+
+        for (var entity : List.of(followerA1)) {
+            verify(entity, Mockito.times(1)).valueSupplier();
+        }
+
+        for (var entity : List.of(followerA2, followerA3, followerB1, followerB2)) {
+            verify(entity, Mockito.never()).valueSupplier();
+        }
     }
 
 }

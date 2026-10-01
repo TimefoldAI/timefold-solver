@@ -56,9 +56,9 @@ Java::
 
 ====
 
-This constraint stream iterates over all instances of class `Shift` in the xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem facts] and
-xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntity[planning entities]
-in the xref:using-timefold-solver/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem].
+This constraint stream iterates over all instances of class `Shift` in the xref:domain-modeling/modeling-planning-problems.adoc#problemFacts[problem facts] and
+xref:domain-modeling/modeling-planning-problems.adoc#planningEntity[planning entities]
+in the xref:domain-modeling/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem].
 It finds every `Shift` which is assigned to employee `Ann` and for every such instance (also called a match), it adds a
 soft penalty of `1` to the overall xref:constraints-and-score/overview.adoc#calculateTheScore[score].
 The following figure illustrates this process on a problem with 4 different shifts:
@@ -72,7 +72,7 @@ The following figure illustrates this xref:constraints-and-score/performance.ado
 image::constraints-and-score/score-calculation/constraintStreamIncrementalCalculation.png[align="center"]
 
 Constraint Streams API also has advanced support for xref:constraints-and-score/understanding-the-score.adoc[score explanation]
-through xref:constraintStreamsCustomizingJustificationsAndIndictments[custom justifications and indictments].
+through <<constraintStreamsCustomizingJustifications,custom justifications>>.
 
 image::constraints-and-score/score-calculation/constraintStreamJustification.png[align="center"]
 
@@ -261,14 +261,14 @@ This constraint stream penalizes each known and initialized instance of `Shift`.
 === ForEach
 
 The `.forEach(T)` building block selects every `T` instance that
-is in a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact collection]
-or a xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitiesOfASolution[planning entity collection]
-that is xref:using-timefold-solver/modeling-planning-problems.adoc#detectingInconsistencies[consistent]
+is in a xref:domain-modeling/modeling-planning-problems.adoc#problemFacts[problem fact collection]
+or a xref:domain-modeling/modeling-planning-problems.adoc#planningEntitiesOfASolution[planning entity collection]
+that is xref:domain-modeling/modeling-planning-problems.adoc#detectingInconsistencies[consistent]
 and has no `null` genuine planning variables.
 
-To include instances with a `null` xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[genuine planning variable],
+To include instances with a `null` xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[genuine planning variable],
 or planning values
-not assigned to any xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable],
+not assigned to any xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[planning list variable],
 replace the `forEach()` building block by `forEachIncludingUnassigned()`:
 
 [tabs]
@@ -301,36 +301,20 @@ Java::
 ----
 ====
 
-In cases utilizing the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable],
+In cases utilizing the xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[planning list variable],
 you may want
-to include an xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable]
+to include an xref:domain-modeling/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable]
 to maximize performance of your constraints.
 
 
 [#constraintStreamsPenaltiesRewards]
 === Penalties and rewards
 
-The purpose of constraint streams is to build up a xref:constraints-and-score/overview.adoc#whatIsAScore[score] for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[solution].
+The purpose of constraint streams is to build up a xref:constraints-and-score/overview.adoc#whatIsAScore[score] for a xref:domain-modeling/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[solution].
 To do this, every constraint stream must contain a call to either a `penalize()` or a `reward()`
 building block.
 The `penalize()` building block makes the score worse and the `reward()` building block improves the score.
-
 Each constraint stream is then terminated by calling `asConstraint()` method, which finally builds the constraint.
-Constraints have several components:
-
-- Constraint name is the human-readable descriptive name for the constraint,
-which must be unique within the entire `ConstraintProvider` implementation.
-- Constraint weight is a constant score value indicating how much every breach of the constraint affects the score.
-Valid examples include `SimpleScore.ONE`, `HardSoftScore.ONE_HARD` and `HardMediumSoftScore.of(1, 2, 3)`.
-- Constraint match weigher is an optional function indicating how many times the constraint weight should be applied in
-the score.
-The penalty or reward score impact is the constraint weight multiplied by the match weight.
-The default value is `1`.
-
-[NOTE]
-====
-Constraints with zero constraint weight are automatically disabled and do not impose any performance penalty.
-====
 
 The Constraint Streams API supports many different types of penalties.
 Browse the API in your IDE for the full list of method overloads.
@@ -341,22 +325,59 @@ constraint stream.
 The score type must be the same type as used on the `@PlanningScore` annotated member on the planning solution.
 - Dynamic penalty (`penalize(SimpleScore.ONE, Shift::getHours)`) makes the score worse by the number
 of hours in every matching `Shift` in the constraint stream.
-This is an example of using a constraint match weigher.
-- Configurable penalty (`penalizeConfigurable()`) makes the score worse using constraint weights
-defined in xref:constraints-and-score/constraint-configuration.adoc#constraintConfiguration[constraint configuration].
-- Configurable dynamic penalty(`penalizeConfigurable(Shift::getHours)`) makes the score worse using
-constraint weights defined in xref:constraints-and-score/constraint-configuration.adoc#constraintConfiguration[constraint configuration], multiplied by the number of hours in
-every matching `Shift` in the constraint stream.
+This is an example of using a constraint match weight.
 
 By replacing the keyword `penalize` by `reward` in the name of these building blocks, you get operations that
 affect score in the opposite direction.
 
+[#constraintAnatomy]
+==== Anatomy of a constraint
 
-[#constraintStreamsCustomizingJustificationsAndIndictments]
-==== Customizing justifications and indictments
+Constraints have several components:
+
+- Constraint ID is a short(ish) name for the constraint,
+which must be unique within the entire `ConstraintProvider` implementation.
+It is validated to not include most special characters.
+- Constraint weight is a constant score value indicating how much every breach of the constraint affects the score.
+Valid examples include `SimpleScore.ONE`, `HardSoftScore.ONE_HARD` and `HardMediumSoftScore.of(1, 2, 3)`.
+The penalty or reward score impact is the constraint weight multiplied by the match weight.
+The default value is `1`.
+
+NOTE: Constraints with zero weight are automatically disabled and do not impose any performance penalty.
+
+[#constraintMetadata]
+===== Attaching metadata to constraints
+
+`asConstraint(String id)` is a shorthand that creates a simple `ConstraintMetadata` carrying only the constraint ID.
+For richer metadata, implement the `ConstraintMetadata` interface and pass it to `asConstraint(ConstraintMetadata)`:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    public record MyConstraintMetadata(String id, String displayName) implements ConstraintMetadata {
+    }
+
+    private Constraint penalizeEveryShift(ConstraintFactory factory) {
+        return factory.forEach(Shift.class)
+                .penalize(HardSoftScore.ONE_SOFT)
+                .asConstraint(new MyConstraintMetadata("penalizeEveryShift", "Penalize every shift"));
+    }
+----
+====
+
+The ID is snapshotted at build time via `ConstraintMetadata#id()`;
+any subsequent mutation of the ID does not affect the constraint's identity.
+The full metadata are accessible at runtime via `Constraint#getConstraintMetadata()`.
+
+
+[#constraintStreamsCustomizingJustifications]
+==== Customizing justifications
 
 One of important Timefold Solver features is its ability to xref:constraints-and-score/understanding-the-score.adoc[explain the score] of solutions it produced
-through the use of justifications and indictments.
+through the use of justifications.
 By default, each constraint is justified with `ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification`,
 and the final tuple makes up the indicted objects.
 For example, in the following constraint, the indicted objects will be of type `Vehicle` and an `Integer`:
@@ -377,33 +398,8 @@ Java::
                 .asConstraint("vehicleCapacity");
     }
 ----
-
-
 ====
 
-For the purposes of creating a xref:constraints-and-score/understanding-the-score.adoc#indictmentHeatMap[heat map], the `Vehicle` is very important, but the naked `Integer` carries no semantics.
-We can remove it by providing the `indictWith(...)` method with a custom indictment mapping:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    protected Constraint vehicleCapacity(ConstraintFactory factory) {
-        return factory.forEach(Customer.class)
-                .filter(customer -> customer.getVehicle() != null)
-                .groupBy(Customer::getVehicle, sum(Customer::getDemand))
-                .filter((vehicle, demand) -> demand > vehicle.getCapacity())
-                .penalizeLong(HardSoftScore.ONE_HARD,
-                        (vehicle, demand) -> demand - vehicle.getCapacity())
-                .indictWith((vehicle, demand) -> List.of(vehicle))
-                .asConstraint("vehicleCapacity");
-    }
-----
-====
-
-The same mechanism can also be used to transform any of the indicted objects to any other object.
 To present the constraint matches to the user or to send them over the wire where they can be further processed,
 use the `justifyWith(...)` method to provide a custom constraint justification:
 
@@ -422,7 +418,6 @@ Java::
                         (vehicle, demand) -> demand - vehicle.getCapacity())
                 .justifyWith((vehicle, demand, score) ->
                     new VehicleDemandOveruse(vehicle, demand, score))
-                .indictWith((vehicle, demand) -> List.of(vehicle))
                 .asConstraint("vehicleCapacity");
     }
 ----
@@ -559,12 +554,10 @@ that both represent an interval which overlap.
 All `Joiners` methods have an overloaded method to use the same property of the same class on both stream sides.
 For example, calling `equal(Shift::getEmployee)` is the same as calling `equal(Shift::getEmployee, Shift::getEmployee)`.
 
-[NOTE]
-====
-If the other stream might match multiple times, but it must only impact the score once (for each element of the original
-stream), use <<constraintStreamsConditionalPropagation,ifExists>> instead.
+NOTE: If the other stream might match multiple times,
+but it must only impact the score once (for each element of the original stream),
+use <<constraintStreamsConditionalPropagation,ifExists>> instead.
 It does not create cartesian products and therefore generally performs better.
-====
 
 ==== Evaluation of multiple joiners
 
@@ -601,8 +594,8 @@ the key is `[the result of calling Visit.getVehicleShift() && result of calling 
 (Using the second mapping function of each joiner.)
 
 However, both of the key mapping functions are calculated independently of the other,
-and therefore the `lessThan()` joiner's mapping functions will be executed even in cases
-when the `equal()` joiner would not match.
+and therefore the `lessThan()` joiner's mapping functions will be executed
+even in cases when the `equal()` joiner would not match.
 This leads to a `NullPointerException` being thrown in the example above,
 where the `lessThan()` joiner's mapping functions are executed on a `Visit` instance
 that has a `null` `vehicleShift` property which wasn't (yet) filtered out by the `equal()` joiner.
@@ -610,7 +603,8 @@ The filtering only happens inside the joiner's indexes and to access them,
 we need these keys to be generated first.
 
 To avoid these issues,
-do not assume that subsequent joiners' mapping functions only apply after the previous joiners have matched.
+do not assume that subsequent joiners' mapping functions only apply
+after the previous joiners have matched.
 Alternatively (and possibly at the cost of reduced performance) use the filtering joiner,
 which is processed differently and does not suffer from this issue:
 
@@ -631,7 +625,8 @@ Java::
 
 ==== Performance considerations
 
-It is tempting to replace filters with joiners where applicable, expecting better performance.
+It is tempting to replace filters with joiners where applicable,
+expecting better performance.
 However, that is not always the case.
 Joiners bring overhead of maintaining indexes,
 and if the joiner does not significantly reduce the number of matches,
@@ -642,12 +637,18 @@ Some of the more advanced joiners may require very large datasets to outperform 
 
 When it comes to performance, we recommend you follow these guidelines:
 
-- Do not optimize prematurely. First, implement the constraint in the most readable way.
-- Measure performance. If any particular constraint is shown to be the bottleneck,
-try alternative implementations.
-- Do not make assumptions about performance.
+- Do not optimize prematurely. First implement the constraint in the most readable way.
+- Do not make assumptions about performance, measure it instead.
 Performance characteristics of any API may not be what you expect,
 and they may change between Timefold Solver versions as we constantly improve our technology.
+- Use xref:constraints-and-score/performance.adoc#constraintProfiling[constraint profiling] to find the most expensive constraint,
+and optimize it first. Then repeat until you reach satisfactory performance.
+
+NOTE: In order to maximize performance,
+the order of evaluation of indexes will not be the same
+as the order of joiners in the code.
+Typically, all `equal()` joiners are combined into one key and evaluated first, followed by the rest of the indexing joiners
+and finally the filtering joiners.
 
 [#constraintStreamsGroupingAndCollectors]
 === Grouping and collectors
@@ -706,6 +707,7 @@ There are many collectors available out of the box.
 You can also provide your own collectors by implementing the
 `ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector` interface,
 or its `Bi...`, `Tri...` and `Quad...` counterparts.
+
 
 
 [#collectorsCount]
@@ -1189,6 +1191,146 @@ ConstraintCollectors.collectAndThen(
     doubleValue -> (int) Math.round(doubleValue))
 ----
 ====
+
+
+[#constraintStreamsCustomCollector]
+==== Implementing a custom collector
+
+When no built-in collector covers the required aggregation,
+implement `UniConstraintCollector<A, ResultContainer_, Result_>` directly
+(or its `Bi...`, `Tri...`, `Quad...` counterparts for higher-arity streams).
+The interface has three methods:
+
+[cols="1,3"]
+|===
+| Method | Purpose
+
+| `supplier()`
+| Creates a fresh mutable result container for each group.
+
+| `accumulator()`
+| Called when a fact enters a group; returns a `UniConstraintCollectorValueHandle`
+  whose `add()`, `replaceWith()`, and `remove()` methods maintain the container.
+
+| `finisher()`
+| Converts the container into the immutable group result.
+|===
+
+The following example shows a simplified version of the built-in `toList()` collector:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class SimpleToListCollector<A>
+        implements UniConstraintCollector<A, List<A>, List<A>> {
+
+    @Override
+    public Supplier<List<A>> supplier() {
+        return ArrayList::new;
+    }
+
+    @Override
+    public UniConstraintCollectorAccumulator<List<A>, A> accumulator() {
+        return list -> new UniConstraintCollectorValueHandle<>() {
+            private A current;
+
+            @Override
+            public void add(A element) {
+                current = element;
+                list.add(element);
+            }
+
+            @Override
+            public void remove() {
+                list.remove(current);
+                current = null;
+            }
+        };
+    }
+
+    @Override
+    public Function<List<A>, List<A>> finisher() {
+        return Collections::unmodifiableList;
+    }
+}
+----
+====
+
+`accumulator()` returns a factory: for each fact that enters a group,
+the solver calls `intoGroup(container)` to obtain a fresh handle,
+then calls `add()` exactly once, zero or more `replaceWith()` calls as the fact changes,
+and `remove()` at most once when the fact leaves the group.
+
+`list.remove(current)` removes by value (runs in linear time).
+You might consider storing the insertion index instead and removing by index (runs in constant time),
+but that would be risky —
+any removal can shift subsequent indices at any time,
+making stored positions unreliable.
+Thankfully, there is a better way, using an incremental update.
+
+When a planning variable changes, the solver calls `replaceWith()` on the affected handle.
+The default implementation (inherited from `UniConstraintCollectorValueHandle`) does `remove()` followed by `add()`.
+For `ArrayList`, this means scanning to find the element in linear time,
+then shifting all subsequent elements to close the gap, and finally appending the new value at the end.
+
+Overriding `replaceWith()` with `list.set()` avoids the shift entirely:
+`set()` replaces the element in-place at its current position —
+no elements are moved, and the element's position in the list is preserved.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class IncrementalToListCollector<A>
+        implements UniConstraintCollector<A, List<A>, List<A>> {
+
+    @Override
+    public Supplier<List<A>> supplier() {
+        return ArrayList::new;
+    }
+
+    @Override
+    public UniConstraintCollectorAccumulator<List<A>, A> accumulator() {
+        return list -> new UniConstraintCollectorValueHandle<>() {
+            private A current;
+
+            @Override
+            public void add(A element) {
+                current = element;
+                list.add(element);
+            }
+
+            @Override
+            public void replaceWith(A element) {
+                list.set(list.indexOf(current), element);
+                current = element;
+            }
+
+            @Override
+            public void remove() {
+                list.remove(current);
+                current = null;
+            }
+        };
+    }
+
+    @Override
+    public Function<List<A>, List<A>> finisher() {
+        return Collections::unmodifiableList;
+    }
+}
+----
+====
+
+NOTE: The above implementation of `replaceWith()` is still not ideal,
+as it requires a linear scan to find the element.
+This will cause constraint scaling issues in larger lists,
+and is the main reason why we do not recommend using `toList()` in performance-sensitive constraints.
 
 
 [#constraintStreamsConditionalPropagation]
@@ -1862,7 +2004,7 @@ In this case, the `given(...)` call takes the `vehicleA`, `visit1` and `visit2` 
 Alternatively, you can use a `givenSolution(...)` method here and provide a planning solution instead.
 
 It's important to understand
-that calling `givenSolution(...)` does not update any xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables].
+that calling `givenSolution(...)` does not update any xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables].
 This is the default behavior and can be modified by invoking `settingAllShadowVariables()`.
 
 [tabs]
@@ -1880,8 +2022,8 @@ Java::
 
 [NOTE]
 ====
-You can also use methods `justifiesWith(...)`, `justifiesWithExactly(...)`, `indictsWith(...)` and `indictsWithExactly(...)`
-to validate the expected constraint justifications and indictments mapped by the constraint definition.
+You can also use methods `justifiesWith(...)` and `justifiesWithExactly(...)`
+to validate the expected constraint justifications mapped by the constraint definition.
 ====
 
 Finally, the `penalizesBy(...)` call completes the test,
@@ -1897,8 +2039,32 @@ If the tested constraints depend on shadow variables,
 it is your responsibility to either assign the correct values beforehand,
 or to call `settingAllShadowVariables()` to have them automatically updated.
 
-When executing `justifiesWith(...)`, `justifiesWithExactly(...)`, `indictsWith(...)` and `indictsWithExactly(...)`,
+When executing `justifiesWith(...)` and `justifiesWithExactly(...)`,
 comparisons are made using the standard method `equals` on the fact problem instances.
+
+[#constraintStreamsTestingCustomAssertions]
+=== Employing custom assertions
+
+The `score()` and `impact()` methods allow you to extract the raw score or constraint match weight total
+produced by a constraint, enabling you to use custom assertions using third-party assertion libraries such as AssertJ.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+        HardSoftScore scoreA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+                .given(entity1, entity2)
+                .score();
+        HardSoftScore scoreB = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+                .given(entity3, entity4)
+                .score();
+        assertThat(scoreA).isLessThan(scoreB);
+----
+====
+
+This is especially useful when you want to compare the _severity_ of a constraint across different scenarios.
 
 [#constraintStreamsTestingAllConstraints]
 === Testing all constraints together
@@ -1944,7 +2110,7 @@ remains consistent as your code base evolves.
 It is therefore necessary for the `given(...)` method to list all planning entities and problem facts,
 or provide the entire planning solution instead.
 
-To test all constraints while updating all xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables],
+To test all constraints while updating all xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables],
 call `giveSolution(...)` and `settingAllShadowVariables()`.
 This approach ensures that constraints which depend on the related variables are evaluated accordingly.
 
@@ -2041,8 +2207,8 @@ Configure it in the solver configuration:
 ----
 
 To configure values of an `EasyScoreCalculator` dynamically in the solver configuration
-(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `easyScoreCalculatorCustomProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
@@ -2058,17 +2224,18 @@ add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefol
 [#incrementalScoreCalculation]
 === Incremental score calculation
 
-A way to implement your score calculation incrementally in a supported programming language.
+A way to implement your score calculation incrementally in Java.
 
-* Advantages:
-** Very fast and scalable; currently the fastest if implemented correctly.
-* Disadvantages:
-** Hard to write
-*** A scalable implementation heavily uses maps, indexes etc.
+Advantages::
+- Very fast and scalable; possibly an order of magnitude faster than <<constraintStreams,Constraint Streams>>,if implemented correctly.
+Disadvantages::
+- Difficult to write; a scalable implementation heavily uses maps, indexes etc.
 You have to learn, design, write and improve all these performance optimizations yourself.
-Why not have <<constraintStreams,constraint streams>> do the hard work for you?
-** Hard to read
-*** Regular score constraint changes can lead to high maintenance costs.
+- Difficult to maintain; regular constraint changes can lead to high maintenance costs.
+
+Considering the significant development and maintenance effort required to implement an incremental score calculator,
+we recommend using <<constraintStreams,Constraint Streams>> unless its incremental performance characteristics doesn't match your needs.
+This is unlikely for any but the biggest of problems.
 
 To start using an Incremental score calculator,
 implement all the methods of the interface `IncrementalScoreCalculator`:
@@ -2115,13 +2282,13 @@ Configure it in the solver configuration:
 [IMPORTANT]
 ====
 Incremental score calculator code can be difficult to write and to review.
-xref:constraints-and-score/overview.adoc#invalidScoreDetection[Assert its correctness] by using an ``EasyScoreCalculator`` to fulfill
+xref:constraints-and-score/overview.adoc#invalidScoreDetection[Assert its correctness] by using <<constraintStreams,Constraint Streams>> to fulfill
 the assertions triggered by the ``environmentMode``.
 ====
 
 To configure values of an `IncrementalScoreCalculator` dynamically in the solver configuration
-(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `incrementalScoreCalculatorCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `incrementalScoreCalculatorCustomProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
@@ -2134,26 +2301,58 @@ add the `incrementalScoreCalculatorCustomProperties` element and use xref:using-
 ----
 
 
-[#constraintMatchAwareIncrementalScoreCalculator]
-==== `ConstraintMatchAwareIncrementalScoreCalculator`
+[#analyzableIncrementalScoreCalculator]
+==== Incremental score calculator and score analysis
+
+include::../commercial-editions/_only-enterprise.adoc[]
 
 To add support for xref:constraints-and-score/understanding-the-score.adoc[score analysis],
-optionally also implement the `ConstraintMatchAwareIncrementalScoreCalculator` interface:
+implement the `AnalyzableIncrementalScoreCalculator` interface instead of `IncrementalScoreCalculator`:
 
 [source,java,options="nowrap"]
 ----
-public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score_ extends Score<Score_>> {
+public interface AnalyzableIncrementalScoreCalculator<Solution_, Score_ extends Score<Score_>>
+    extends IncrementalScoreCalculator<Solution_, Score_> {
 
-    void resetWorkingSolution(Solution_ workingSolution, boolean constraintMatchEnabled);
+    void enableConstraintMatch(ConstraintMatchRegistry<Score_> constraintMatchRegistry);
 
-    Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals();
-
-    Map<Object, Indictment<Score_>> getIndictmentMap();
 }
 ----
 
-Typically it means creating one `ConstraintMatchTotal` per constraint type
-and calling `addConstraintMatch()` for each constraint match.
-`getConstraintMatchTotals()` code often duplicates some logic of the normal `IncrementalScoreCalculator` methods.
-Constraint Streams doesn't have this disadvantage, because they are aware of constraint matches by design,
-without any extra domain-specific code.
+The solver will call this method exactly once,
+letting your implementation know that it should start tracking constraint matches.
+The `ConstraintMatchRegistry` instance passed to this method provides the API for tracking constraint matches:
+
+[source,java,options="nowrap"]
+----
+public interface ConstraintMatchRegistry<Score_ extends Score<Score_>> {
+
+    ConstraintMatchRegistration<Score_> registerConstraintMatch(ConstraintRef constraintRef, Score_ score,
+            ConstraintJustification justification);
+
+    ...
+
+}
+----
+
+You can notify the solver of a new constraint match by calling `registerConstraintMatch()`.
+This method takes three parameters:
+- `constraintRef` is a reference to the constraint which is being matched.
+- `score` is the score impact of the match.
+- `justification` is an object which explains the reason for the match. It is an optional argument.
+
+The method will return a `ConstraintMatchRegistration` instance, which provides the API for updating and retracting the match:
+
+[source,java,options="nowrap"]
+----
+public interface ConstraintMatchRegistration<Score_ extends Score<Score_>> {
+
+    void cancel();
+
+    ...
+}
+----
+
+By calling `cancel()`, you can notify the solver that a previously registered match is no longer valid.
+Once `resetWorkingSolution()` is called on the incremental score calculator,
+all registered matches are automatically canceled.

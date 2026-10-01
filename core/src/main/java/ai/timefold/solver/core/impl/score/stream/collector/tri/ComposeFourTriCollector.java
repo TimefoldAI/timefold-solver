@@ -6,9 +6,12 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
@@ -24,10 +27,10 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
     private final Supplier<ResultHolder3_> thirdSupplier;
     private final Supplier<ResultHolder4_> fourthSupplier;
 
-    private final QuadFunction<ResultHolder1_, A, B, C, Runnable> firstAccumulator;
-    private final QuadFunction<ResultHolder2_, A, B, C, Runnable> secondAccumulator;
-    private final QuadFunction<ResultHolder3_, A, B, C, Runnable> thirdAccumulator;
-    private final QuadFunction<ResultHolder4_, A, B, C, Runnable> fourthAccumulator;
+    private final TriConstraintCollectorAccumulator<ResultHolder1_, A, B, C> firstIncremental;
+    private final TriConstraintCollectorAccumulator<ResultHolder2_, A, B, C> secondIncremental;
+    private final TriConstraintCollectorAccumulator<ResultHolder3_, A, B, C> thirdIncremental;
+    private final TriConstraintCollectorAccumulator<ResultHolder4_, A, B, C> fourthIncremental;
 
     private final Function<ResultHolder1_, Result1_> firstFinisher;
     private final Function<ResultHolder2_, Result2_> secondFinisher;
@@ -50,10 +53,10 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
         this.thirdSupplier = third.supplier();
         this.fourthSupplier = fourth.supplier();
 
-        this.firstAccumulator = first.accumulator();
-        this.secondAccumulator = second.accumulator();
-        this.thirdAccumulator = third.accumulator();
-        this.fourthAccumulator = fourth.accumulator();
+        this.firstIncremental = TriCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = TriCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = TriCollectorUtils.toIncremental(third.accumulator());
+        this.fourthIncremental = TriCollectorUtils.toIncremental(fourth.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -72,26 +75,15 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
     }
 
     @Override
-    public @NonNull QuadFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C, Runnable>
+    public @NonNull
+            TriConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C>
             accumulator() {
-        return (resultHolder, a, b, c) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b, c),
-                secondAccumulator.apply(resultHolder.b(), a, b, c),
-                thirdAccumulator.apply(resultHolder.c(), a, b, c),
-                fourthAccumulator.apply(resultHolder.d(), a, b, c));
-    }
-
-    private static Runnable composeUndo(Runnable first, Runnable second, Runnable third,
-            Runnable fourth) {
-        return () -> {
-            first.run();
-            second.run();
-            third.run();
-            fourth.run();
-        };
+        return ValueHandle::new;
     }
 
     @Override
-    public @NonNull Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
+    public @NonNull Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, @Nullable Result_>
+            finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()),
@@ -115,5 +107,43 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
     @Override
     public int hashCode() {
         return Objects.hash(first, second, third, fourth, composeFunction);
+    }
+
+    private final class ValueHandle implements TriConstraintCollectorValueHandle<A, B, C> {
+        private final TriConstraintCollectorValueHandle<A, B, C> v1;
+        private final TriConstraintCollectorValueHandle<A, B, C> v2;
+        private final TriConstraintCollectorValueHandle<A, B, C> v3;
+        private final TriConstraintCollectorValueHandle<A, B, C> v4;
+
+        ValueHandle(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
+            this.v1 = firstIncremental.intoGroup(container.a());
+            this.v2 = secondIncremental.intoGroup(container.b());
+            this.v3 = thirdIncremental.intoGroup(container.c());
+            this.v4 = fourthIncremental.intoGroup(container.d());
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            v1.add(a, b, c);
+            v2.add(a, b, c);
+            v3.add(a, b, c);
+            v4.add(a, b, c);
+        }
+
+        @Override
+        public void replaceWith(A a, B b, C c) {
+            v1.replaceWith(a, b, c);
+            v2.replaceWith(a, b, c);
+            v3.replaceWith(a, b, c);
+            v4.replaceWith(a, b, c);
+        }
+
+        @Override
+        public void remove() {
+            v1.remove();
+            v2.remove();
+            v3.remove();
+            v4.remove();
+        }
     }
 }

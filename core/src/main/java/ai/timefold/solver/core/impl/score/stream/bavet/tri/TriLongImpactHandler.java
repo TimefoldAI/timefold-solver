@@ -27,11 +27,11 @@ record TriLongImpactHandler<A, B, C>(ToLongTriFunction<A, B, C> matchWeigher)
     @Override
     public ScoreImpact<?> impactFull(WeightedScoreImpacter<?, ?> impacter, TriTuple<A, B, C> tuple) {
         var a = tuple.getA();
-        B b = tuple.getB();
-        C c = tuple.getC();
+        var b = tuple.getB();
+        var c = tuple.getC();
         var constraint = impacter.getContext().getConstraint();
         return impacter.impactScore(matchWeigher.applyAsLong(a, b, c),
-                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), constraint.getIndictedObjectsMapping(), a, b,
+                ConstraintMatchSupplier.of(constraint.getJustificationMapping(), a, b,
                         c));
     }
 

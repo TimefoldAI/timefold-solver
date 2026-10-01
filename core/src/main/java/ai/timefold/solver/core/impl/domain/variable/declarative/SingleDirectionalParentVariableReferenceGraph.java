@@ -2,13 +2,17 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
+import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -16,11 +20,16 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final VariableUpdaterInfo<Solution_>[] sortedVariableUpdaterInfos;
     private final UnaryOperator<Object> successorFunction;
+    // This is an unstable comparator within a move; the index of a value may change
+    // multiple times during a move, and will only be consistent when updateChanged is called
     private final Comparator<Object> topologicalOrderComparator;
     private final UnaryOperator<Object> keyFunction;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
-    private final List<Object> changedEntities;
+    private final Set<Object> changedEntities;
+    // This is a field to avoid allocating a new list every update
+    private final List<Object> sortedChangedEntities;
     private final Class<?> monitoredEntityClass;
+    private final Map<Object, Object> keyToLastProcessedObject;
     private final boolean canTerminateEarly;
     private boolean isUpdating;
 
@@ -35,7 +44,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         monitoredEntityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
         sortedVariableUpdaterInfos = new VariableUpdaterInfo[sortedDeclarativeShadowVariableDescriptors.size()];
         monitoredSourceVariableSet = new HashSet<>();
-        changedEntities = new ArrayList<>();
+        changedEntities = new LinkedIdentityHashSet<>();
+        sortedChangedEntities = new ArrayList<>();
+        keyToLastProcessedObject = new IdentityHashMap<>();
         isUpdating = false;
 
         this.canTerminateEarly = canTerminateEarly;
@@ -77,20 +88,29 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     }
 
     @Override
-    public void updateChanged() {
+    public boolean updateChanged() {
         isUpdating = true;
-        changedEntities.sort(topologicalOrderComparator);
-        var processed = new IdentityHashMap<>();
-        for (var changedEntity : changedEntities) {
+        sortedChangedEntities.addAll(changedEntities);
+        sortedChangedEntities.sort(topologicalOrderComparator);
+        for (var changedEntity : sortedChangedEntities) {
             var key = keyFunction.apply(changedEntity);
-            var lastProcessed = processed.get(key);
+            if (key == null) {
+                // Unassigned element
+                updateChanged(changedEntity);
+                continue;
+            }
+
+            var lastProcessed = keyToLastProcessedObject.get(key);
             if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
                 lastProcessed = updateChanged(changedEntity);
-                processed.put(key, lastProcessed);
+                keyToLastProcessedObject.put(key, lastProcessed);
             }
         }
         isUpdating = false;
         changedEntities.clear();
+        sortedChangedEntities.clear();
+        keyToLastProcessedObject.clear();
+        return true;
     }
 
     /**
@@ -130,6 +150,11 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         if (!isUpdating && monitoredSourceVariableSet.contains(variableReference) && monitoredEntityClass.isInstance(entity)) {
             changedEntities.add(entity);
         }
+    }
+
+    @Override
+    public List<VariableLoop> getVariableLoops() {
+        return Collections.emptyList();
     }
 
 }

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -18,15 +18,15 @@ import ai.timefold.solver.core.preview.api.move.Move;
  */
 public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final Iterator<Object> leftValueIterator;
     private final IterableValueSelector<Solution_> rightValueSelector;
     private Iterator<Object> rightValueIterator;
     private Object upcomingLeftValue;
 
-    public OriginalListSwapIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
+    public OriginalListSwapIterator(ListVariableState<Solution_, Object, Object> listVariableState,
             IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector) {
-        this.listVariableStateSupply = listVariableStateSupply;
+        this.listVariableState = listVariableState;
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;
         this.rightValueIterator = Collections.emptyIterator();
@@ -43,17 +43,17 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         }
 
         var upcomingRightValue = rightValueIterator.next();
-        return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
+        return buildSwapMove(listVariableState, upcomingLeftValue, upcomingRightValue);
     }
 
-    static <Solution_> Move<Solution_> buildSwapMove(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
+    static <Solution_> Move<Solution_> buildSwapMove(ListVariableState<Solution_, Object, Object> listVariableState,
             Object upcomingLeftValue, Object upcomingRightValue) {
         if (upcomingLeftValue == upcomingRightValue) {
             return SelectorBasedNoChangeMove.getInstance();
         }
-        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-        var upcomingLeft = listVariableStateSupply.getElementPosition(upcomingLeftValue);
-        var upcomingRight = listVariableStateSupply.getElementPosition(upcomingRightValue);
+        var listVariableDescriptor = listVariableState.getSourceVariableDescriptor();
+        var upcomingLeft = listVariableState.getElementPosition(upcomingLeftValue);
+        var upcomingRight = listVariableState.getElementPosition(upcomingRightValue);
         var leftUnassigned = upcomingLeft instanceof UnassignedElement;
         var rightUnassigned = upcomingRight instanceof UnassignedElement;
         if (leftUnassigned && rightUnassigned) { // No need to swap two unassigned elements.

@@ -71,8 +71,11 @@ public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSe
 
     @Override
     public void addMove(LocalSearchMoveScope<Solution_> moveScope) {
-        selectedMoveCount++;
         moveScope.getStepScope().getPhaseScope().addMoveEvaluationCount(moveScope.getMove(), 1);
+        if (moveScope.getScore().isStructurallyFlawed()) {
+            return;
+        }
+        selectedMoveCount++;
         if (moveScope.getAccepted()) {
             acceptedMoveCount++;
             checkPickEarly(moveScope);
@@ -121,7 +124,7 @@ public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSe
         if (finalistList.size() == 1 || !breakTieRandomly) {
             return finalistList.get(0);
         }
-        int randomIndex = stepScope.getWorkingRandom().nextInt(finalistList.size());
+        int randomIndex = stepScope.getWorkingRandom().acceptorUsage().nextInt(finalistList.size());
         return finalistList.get(randomIndex);
     }
 

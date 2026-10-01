@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.common.bi;
 
-import java.util.Collection;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
@@ -19,7 +17,6 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>> e
         implements BiConstraintBuilder<A, B, Score_> {
 
     private @Nullable TriFunction<A, B, Score_, ConstraintJustification> justificationMapping;
-    private @Nullable BiFunction<A, B, Collection<Object>> indictedObjectsMapping;
 
     public BiConstraintBuilderImpl(BiConstraintConstructor<A, B, Score_> constraintConstructor, ScoreImpactType impactType,
             Score_ constraintWeight) {
@@ -41,22 +38,6 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>> e
         }
         this.justificationMapping =
                 (TriFunction<A, B, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
-        return this;
-    }
-
-    @Override
-    protected @Nullable BiFunction<A, B, Collection<Object>> getIndictedObjectsMapping() {
-        return indictedObjectsMapping;
-    }
-
-    @Override
-    public BiConstraintBuilder<A, B, Score_> indictWith(BiFunction<A, B, Collection<Object>> indictedObjectsMapping) {
-        if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException("""
-                    Indicted objects' mapping already set (%s).
-                    Maybe the constraint calls indictWith() twice?""".formatted(indictedObjectsMapping));
-        }
-        this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;
     }
 

@@ -1,15 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.BASIC;
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CASCADING_UPDATE;
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CUSTOM_LISTENER;
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.DECLARATIVE;
 import static ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy.DISABLED;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,8 +18,7 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultShadowVariableMetaModel;
@@ -36,10 +30,9 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -54,24 +47,8 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ShadowVariableUpdateHelper<Solution_> {
 
-    private static final EnumSet<ShadowVariableType> SUPPORTED_TYPES =
-            EnumSet.of(BASIC, CUSTOM_LISTENER, CASCADING_UPDATE, DECLARATIVE);
-
     public static <Solution_> ShadowVariableUpdateHelper<Solution_> create() {
-        return new ShadowVariableUpdateHelper<>(SUPPORTED_TYPES);
-    }
-
-    // Testing purposes
-    static <Solution_> ShadowVariableUpdateHelper<Solution_> create(ShadowVariableType... supportedTypes) {
-        var typesSet = EnumSet.noneOf(ShadowVariableType.class);
-        typesSet.addAll(Arrays.asList(supportedTypes));
-        return new ShadowVariableUpdateHelper<>(typesSet);
-    }
-
-    private final EnumSet<ShadowVariableType> supportedShadowVariableTypes;
-
-    private ShadowVariableUpdateHelper(EnumSet<ShadowVariableType> supportedShadowVariableTypes) {
-        this.supportedShadowVariableTypes = supportedShadowVariableTypes;
+        return new ShadowVariableUpdateHelper<>();
     }
 
     @SuppressWarnings("unchecked")
@@ -83,7 +60,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass,
                 entityClassSet.toArray(new Class<?>[0]));
         try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
-            // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
+            // When we have a solution, we can reuse the logic from VariableSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
         }
     }
@@ -95,16 +72,6 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var solutionDescriptor =
                 SolutionDescriptor.buildSolutionDescriptor(Objects.requireNonNull(solutionClass),
                         entityClassList.toArray(new Class<?>[0]));
-        var variableListenerSupport =
-                VariableListenerSupport.create(new InternalScoreDirector.Builder<>(solutionDescriptor).build());
-        var missingShadowVariableTypeList = variableListenerSupport.getSupportedShadowVariableTypes().stream()
-                .filter(type -> !supportedShadowVariableTypes.contains(type))
-                .toList();
-        if (!missingShadowVariableTypeList.isEmpty()) {
-            throw new IllegalStateException(
-                    "Impossible state: The following shadow variable types are not currently supported (%s)."
-                            .formatted(missingShadowVariableTypeList));
-        }
         // No solution, we trigger all supported events manually
         var session = InternalShadowVariableSession.build(solutionDescriptor, entities);
         // Update all built-in shadow variables
@@ -192,7 +159,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 if (values.isEmpty()) {
                     continue;
                 }
-                var entityType = values.get(0).getClass();
+                var entityType = values.getFirst().getClass();
                 for (var i = 0; i < values.size(); i++) {
                     var shadowEntity = values.get(i);
                     // Inverse relation
@@ -306,12 +273,18 @@ public final class ShadowVariableUpdateHelper<Solution_> {
     private static class InternalScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
             extends AbstractScoreDirectorFactory<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>> {
 
-        public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
-            super(solutionDescriptor, environmentMode);
+        public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
+                EnvironmentMode globalEnvironmentMode) {
+            super(solutionDescriptor, globalEnvironmentMode);
         }
 
+        /**
+         * Score directors are built directly through {@link InternalScoreDirector.Builder},
+         * never through this factory; the inherited no-arg variant funnels into this one.
+         */
         @Override
-        public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder() {
+        public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?>
+                createScoreDirectorBuilder(EnvironmentMode environmentMode) {
             throw new UnsupportedOperationException();
         }
     }
@@ -331,17 +304,12 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
 
         @Override
-        public InnerScore<Score_> calculateScore() {
+        public InnerScore<Score_> innerCalculateScore() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Map<Object, Indictment<Score_>> getIndictmentMap() {
+        public Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
             throw new UnsupportedOperationException();
         }
 
@@ -357,7 +325,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
 
             public Builder(SolutionDescriptor<Solution_> solutionDescriptor) {
                 // We use PHASE_ASSERT by default
-                super(new InternalScoreDirectorFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT));
+                super(new InternalScoreDirectorFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT),
+                        EnvironmentMode.PHASE_ASSERT);
                 withConstraintMatchPolicy(DISABLED);
                 withLookUpEnabled(false);
                 withExpectShadowVariablesInCorrectState(false);

@@ -28,8 +28,8 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
     @XmlJavaTypeAdapter(JaxbLocaleAdapter.class)
     private Locale locale = null;
     private SolverRankingType solverRankingType = null;
-    private Class<? extends Comparator<SolverBenchmarkResult>> solverRankingComparatorClass = null;
-    private Class<? extends SolverRankingWeightFactory> solverRankingWeightFactoryClass = null;
+    private String solverRankingComparatorClass = null;
+    private String solverRankingWeightFactoryClass = null;
 
     public BenchmarkReportConfig() {
     }
@@ -55,21 +55,23 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
     }
 
     public @Nullable Class<? extends Comparator<SolverBenchmarkResult>> getSolverRankingComparatorClass() {
-        return solverRankingComparatorClass;
+        return ConfigUtils.resolveClass(solverRankingComparatorClass, "solverRankingComparatorClass", this);
     }
 
     public void setSolverRankingComparatorClass(
             @Nullable Class<? extends Comparator<SolverBenchmarkResult>> solverRankingComparatorClass) {
-        this.solverRankingComparatorClass = solverRankingComparatorClass;
+        this.solverRankingComparatorClass = solverRankingComparatorClass == null ? null
+                : solverRankingComparatorClass.getName();
     }
 
     public @Nullable Class<? extends SolverRankingWeightFactory> getSolverRankingWeightFactoryClass() {
-        return solverRankingWeightFactoryClass;
+        return ConfigUtils.resolveClass(solverRankingWeightFactoryClass, "solverRankingWeightFactoryClass", this);
     }
 
     public void setSolverRankingWeightFactoryClass(
             @Nullable Class<? extends SolverRankingWeightFactory> solverRankingWeightFactoryClass) {
-        this.solverRankingWeightFactoryClass = solverRankingWeightFactoryClass;
+        this.solverRankingWeightFactoryClass = solverRankingWeightFactoryClass == null ? null
+                : solverRankingWeightFactoryClass.getName();
     }
 
     public @Nullable Locale determineLocale() {
@@ -92,13 +94,13 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
 
     public @NonNull BenchmarkReportConfig withSolverRankingComparatorClass(
             @NonNull Class<? extends Comparator<SolverBenchmarkResult>> solverRankingComparatorClass) {
-        this.setSolverRankingComparatorClass(solverRankingComparatorClass);
+        this.solverRankingComparatorClass = solverRankingComparatorClass.getName();
         return this;
     }
 
     public @NonNull BenchmarkReportConfig withSolverRankingWeightFactoryClass(
             @NonNull Class<? extends SolverRankingWeightFactory> solverRankingWeightFactoryClass) {
-        this.setSolverRankingWeightFactoryClass(solverRankingWeightFactoryClass);
+        this.solverRankingWeightFactoryClass = solverRankingWeightFactoryClass.getName();
         return this;
     }
 
@@ -108,9 +110,9 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
         solverRankingType = ConfigUtils.inheritOverwritableProperty(solverRankingType,
                 inheritedConfig.getSolverRankingType());
         solverRankingComparatorClass = ConfigUtils.inheritOverwritableProperty(solverRankingComparatorClass,
-                inheritedConfig.getSolverRankingComparatorClass());
+                inheritedConfig.solverRankingComparatorClass);
         solverRankingWeightFactoryClass = ConfigUtils.inheritOverwritableProperty(solverRankingWeightFactoryClass,
-                inheritedConfig.getSolverRankingWeightFactoryClass());
+                inheritedConfig.solverRankingWeightFactoryClass);
         return this;
     }
 
@@ -121,8 +123,8 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(solverRankingComparatorClass);
-        classVisitor.accept(solverRankingWeightFactoryClass);
+        classVisitor.accept(getSolverRankingComparatorClass());
+        classVisitor.accept(getSolverRankingWeightFactoryClass());
     }
 
 }

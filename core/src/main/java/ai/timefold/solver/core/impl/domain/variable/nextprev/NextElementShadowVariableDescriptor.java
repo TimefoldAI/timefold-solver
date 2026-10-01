@@ -5,9 +5,7 @@ import java.util.Collection;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 
 public final class NextElementShadowVariableDescriptor<Solution_>
         extends AbstractNextPrevElementShadowVariableDescriptor<Solution_> {
@@ -28,14 +26,9 @@ public final class NextElementShadowVariableDescriptor<Solution_>
     }
 
     @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                .formatted(ListVariableStateSupply.class.getSimpleName()));
+                .formatted(ListVariableState.class.getSimpleName()));
     }
 
-    @Override
-    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
-        throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                .formatted(ListVariableStateSupply.class.getSimpleName()));
-    }
 }

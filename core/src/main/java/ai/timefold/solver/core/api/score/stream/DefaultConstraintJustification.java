@@ -6,40 +6,41 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
+import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Default implementation of {@link ConstraintJustification}, returned by {@link ConstraintMatch#getJustification()}
+ * Default implementation of {@link ConstraintJustification},
+ * exposed by {@link MatchAnalysis#justification() score analysis}
  * unless the user defined a custom justification mapping.
  */
+@NullMarked
 public final class DefaultConstraintJustification
         implements ConstraintJustification, Comparable<DefaultConstraintJustification> {
 
-    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object fact) {
+    public static DefaultConstraintJustification of(Score<?> impact, Object fact) {
         return of(impact, Collections.singletonList(fact));
     }
 
-    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB) {
+    public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB) {
         return of(impact, Arrays.asList(factA, factB));
     }
 
-    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC) {
+    public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC) {
         return of(impact, Arrays.asList(factA, factB, factC));
     }
 
-    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC,
-            Object factD) {
+    public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC, Object factD) {
         return of(impact, Arrays.asList(factA, factB, factC, factD));
     }
 
-    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object... facts) {
+    public static DefaultConstraintJustification of(Score<?> impact, Object... facts) {
         return of(impact, Arrays.asList(facts));
     }
 
-    public static @NonNull DefaultConstraintJustification of(Score<?> impact, List<Object> facts) {
+    public static DefaultConstraintJustification of(Score<?> impact, List<Object> facts) {
         return new DefaultConstraintJustification(impact, facts);
     }
 
@@ -55,7 +56,7 @@ public final class DefaultConstraintJustification
         return (Score_) impact;
     }
 
-    public @NonNull List<@Nullable Object> getFacts() {
+    public List<@Nullable Object> getFacts() {
         return facts;
     }
 
@@ -98,7 +99,7 @@ public final class DefaultConstraintJustification
         return 0;
     }
 
-    private static int compareElements(Object left, Object right) {
+    private static int compareElements(@Nullable Object left, @Nullable Object right) {
         if (left == right) {
             return 0;
         } else if (left == null) {

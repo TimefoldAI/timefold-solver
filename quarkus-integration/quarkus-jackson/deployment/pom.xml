@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-quarkus-jackson-parent</artifactId>
-    <version>999-SNAPSHOT</version>
+    <version>${revision}</version>
   </parent>
 
   <artifactId>timefold-solver-quarkus-jackson-deployment</artifactId>
@@ -15,6 +15,10 @@
   <url>https://solver.timefold.ai</url>
 
   <dependencies>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-quarkus-jackson</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-core-deployment</artifactId>
@@ -27,10 +31,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jackson-spi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus-jackson</artifactId>
     </dependency>
   </dependencies>
 

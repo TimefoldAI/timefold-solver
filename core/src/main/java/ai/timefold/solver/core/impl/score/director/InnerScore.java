@@ -40,14 +40,25 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
             throw new IllegalArgumentException("The unassignedCount (%d) must be >= 0."
                     .formatted(unassignedCount));
         }
+        if (raw.structuralScore() > 0) {
+            throw new IllegalArgumentException("The structuralScore (%d) must be <= 0."
+                    .formatted(raw.structuralScore()));
+        }
     }
 
     public boolean isFullyAssigned() {
         return unassignedCount == 0;
     }
 
+    public boolean isStructurallyFlawed() {
+        return raw.structuralScore() < 0;
+    }
+
     @Override
     public int compareTo(InnerScore<Score_> other) {
+        if (raw.structuralScore() != other.raw.structuralScore()) {
+            return Long.compare(raw.structuralScore(), other.raw.structuralScore());
+        }
         var uninitializedCountComparison = Integer.compare(unassignedCount, other.unassignedCount);
         if (uninitializedCountComparison != 0) {
             return -uninitializedCountComparison;

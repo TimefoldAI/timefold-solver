@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.mimic;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -14,7 +15,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -31,7 +31,7 @@ class MimicReplayingValueSelectorTest {
         MimicRecordingValueSelector recordingValueSelector = new MimicRecordingValueSelector(childValueSelector);
         MimicReplayingValueSelector replayingValueSelector = new MimicReplayingValueSelector(recordingValueSelector);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         recordingValueSelector.solvingStarted(solverScope);
         replayingValueSelector.solvingStarted(solverScope);
 

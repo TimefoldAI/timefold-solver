@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.director.stream;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
@@ -14,20 +13,26 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector.Builder;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSessionFactory;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
-public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
-        extends
-        AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>> {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> extends
+        AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>>
+        permits MultiEnvironmentBavetConstraintStreamScoreDirectorFactory {
 
     public static <Solution_, Score_ extends Score<Score_>> BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
-                    EnvironmentMode environmentMode) {
+                    EnvironmentMode globalEnvironmentMode) {
         var providedConstraintProviderClass = config.getConstraintProviderClass();
         if (providedConstraintProviderClass == null
                 || !ConstraintProvider.class.isAssignableFrom(providedConstraintProviderClass)) {
@@ -41,16 +46,20 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
                 Objects.requireNonNullElse(config.getConstraintStreamProfilingEnabled(), false);
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
-        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode,
+        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, globalEnvironmentMode,
                 profilingEnabled);
     }
 
     private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config,
             Class<? extends ConstraintProvider> providedConstraintProviderClass) {
-        if (Boolean.TRUE.equals(config.getConstraintStreamAutomaticNodeSharing())) {
-            var enterpriseService =
-                    TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.AUTOMATIC_NODE_SHARING);
-            return enterpriseService.createNodeSharer().buildNodeSharedConstraintProvider(providedConstraintProviderClass);
+        var automaticNodeSharing = Objects.requireNonNullElse(config.getConstraintStreamAutomaticNodeSharing(),
+                true);
+
+        if (automaticNodeSharing) {
+            return TimefoldSolverEnterpriseService.loadOrDefault(
+                    enterpriseService -> enterpriseService.createNodeSharer()
+                            .buildNodeSharedConstraintProvider(providedConstraintProviderClass),
+                    () -> providedConstraintProviderClass);
         } else {
             return providedConstraintProviderClass;
         }
@@ -60,33 +69,37 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     private final ConstraintMetaModel constraintMetaModel;
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
-        this(solutionDescriptor, constraintProvider, environmentMode, false);
+            ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode) {
+        this(solutionDescriptor, constraintProvider, globalEnvironmentMode, false);
     }
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintProvider constraintProvider, EnvironmentMode environmentMode, boolean profilingEnabled) {
-        super(solutionDescriptor, environmentMode);
-        var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, environmentMode);
+            ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode, boolean profilingEnabled) {
+        super(solutionDescriptor, globalEnvironmentMode);
+        var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, globalEnvironmentMode);
         constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
         constraintSessionFactory =
                 new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
     }
 
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution,
-            ConsistencyTracker<Solution_> consistencyTracker,
-            ConstraintMatchPolicy constraintMatchPolicy,
-            boolean scoreDirectorDerived) {
-        return newSession(workingSolution, consistencyTracker, constraintMatchPolicy, scoreDirectorDerived, null);
+    /**
+     * Create a new factory from one already built for the same environment mode,
+     * sharing the constraint network it built rather than building a second one.
+     */
+    BavetConstraintStreamScoreDirectorFactory(
+            BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> inheritedScoreDirectorFactory) {
+        super(inheritedScoreDirectorFactory.solutionDescriptor, inheritedScoreDirectorFactory.globalEnvironmentMode);
+        this.constraintSessionFactory = inheritedScoreDirectorFactory.constraintSessionFactory;
+        this.constraintMetaModel = inheritedScoreDirectorFactory.constraintMetaModel;
+        this.initializingScoreTrend = inheritedScoreDirectorFactory.initializingScoreTrend;
+        this.assertionScoreDirectorFactory = inheritedScoreDirectorFactory.assertionScoreDirectorFactory;
     }
 
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution,
-            ConsistencyTracker<Solution_> consistencyTracker,
-            ConstraintMatchPolicy constraintMatchPolicy,
-            boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
+    public BavetConstraintSession<Score_> newSession(@Nullable Solution_ workingSolution,
+            ConsistencyTracker<Solution_> consistencyTracker, ConstraintMatchPolicy constraintMatchPolicy,
+            boolean scoreDirectorDerived) {
         return constraintSessionFactory.buildSession(workingSolution, consistencyTracker, constraintMatchPolicy,
-                scoreDirectorDerived,
-                nodeNetworkVisualizationConsumer);
+                scoreDirectorDerived);
     }
 
     @Override
@@ -105,13 +118,16 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     }
 
     @Override
-    public BavetConstraintStreamScoreDirector.Builder<Solution_, Score_> createScoreDirectorBuilder() {
-        return new BavetConstraintStreamScoreDirector.Builder<>(this);
+    public Builder<Solution_, Score_> createScoreDirectorBuilder(EnvironmentMode environmentMode) {
+        return new Builder<>(this, environmentMode);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public AbstractScoreDirector<Solution_, Score_, ?> buildScoreDirector() {
-        return createScoreDirectorBuilder().build();
+    public <Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
+            AbstractScoreDirectorFactory<Solution_, Score_, Factory_>
+            adaptToMultiEnvironmentMode(ScoreDirectorFactoryFactory<Solution_, Score_> scoreDirectorFactoryFactory) {
+        return (AbstractScoreDirectorFactory<Solution_, Score_, Factory_>) new MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<>(
+                scoreDirectorFactoryFactory, this);
     }
-
 }

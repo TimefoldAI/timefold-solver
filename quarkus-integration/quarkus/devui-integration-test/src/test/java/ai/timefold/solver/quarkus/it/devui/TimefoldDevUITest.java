@@ -73,20 +73,20 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
         JsonNode configResponse = super.executeJsonRPCMethod("getConfig");
         String solverConfig = configResponse.get("config").get("default").asText();
         assertThat(solverConfig).isEqualToIgnoringWhitespace(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                        + "<!--Properties that can be set at runtime are not included-->\n"
-                        + "<solver>\n"
-                        + "  <solutionClass>" + TestdataStringLengthShadowSolution.class.getCanonicalName()
-                        + "</solutionClass>\n"
-                        + "  <entityClass>" + TestdataStringLengthShadowEntity.class.getCanonicalName() + "</entityClass>\n"
-                        + "  <scoreDirectorFactory>\n"
-                        + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
-                        + "</constraintProviderClass>\n"
-                        + "  </scoreDirectorFactory>\n"
-                        + "  <termination>\n"
-                        + "    <bestScoreLimit>0hard/5soft</bestScoreLimit>\n"
-                        + "  </termination>\n"
-                        + "</solver>");
+                """
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <!--Properties that can be set at runtime are not included-->
+                        <solver>
+                          <solutionClass>%s</solutionClass>
+                          <entityClass>%s</entityClass>
+                          <scoreDirectorFactory>
+                            <constraintProviderClass>%s</constraintProviderClass>
+                          </scoreDirectorFactory>
+                          <termination />
+                        </solver>""".formatted(
+                        TestdataStringLengthShadowSolution.class.getCanonicalName(),
+                        TestdataStringLengthShadowEntity.class.getCanonicalName(),
+                        TestdataStringLengthConstraintProvider.class.getCanonicalName()));
     }
 
     @Test

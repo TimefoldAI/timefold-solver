@@ -28,6 +28,7 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.random.MockRandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -219,7 +220,7 @@ public class SelectorTestUtils {
             Selector<Solution_>... selectors) {
         SolverScope<Solution_> solverScope = new SolverScope<>();
         solverScope.setScoreDirector(scoreDirector);
-        solverScope.setWorkingRandom(random);
+        solverScope.setWorkingRandom(new MockRandomSource(random));
         listener.solvingStarted(solverScope);
         if (selectors != null) {
             for (var selector : selectors) {

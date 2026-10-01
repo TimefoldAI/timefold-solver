@@ -1,34 +1,31 @@
 package ai.timefold.solver.core.impl.util;
 
+import java.lang.invoke.ConstantCallSite;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.ToIntBiFunction;
-import java.util.function.ToIntFunction;
 import java.util.function.ToLongBiFunction;
 import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.ToIntQuadFunction;
-import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 
 /**
  * A class that holds common lambdas that are guaranteed to be the same across method calls.
  * In most JDK's,
- * stateless lambdas are bound to a {@link java.lang.invoke.ConstantCallSite} inside the method that defined them,
- * but that {@link java.lang.invoke.ConstantCallSite} is not shared across methods,
+ * stateless lambdas are bound to a {@link ConstantCallSite} inside the method that defined them,
+ * but that {@link ConstantCallSite} is not shared across methods,
  * even for methods in the same class.
  * Thus, when lambda reference equality is important (such as for node sharing in Constraint Streams),
  * the lambdas in this class should be used.
  */
 public final class ConstantLambdaUtils {
-    private static final Runnable NO_OP = () -> {
-    };
 
     @SuppressWarnings("rawtypes")
     private static final Function IDENTITY = Function.identity();
@@ -70,9 +67,6 @@ public final class ConstantLambdaUtils {
     private static final ToLongFunction UNI_CONSTANT_ZERO_LONG = a -> 0L;
 
     @SuppressWarnings("rawtypes")
-    private static final ToIntFunction UNI_CONSTANT_ONE = a -> 1;
-
-    @SuppressWarnings("rawtypes")
     private static final ToLongFunction UNI_CONSTANT_ONE_LONG = a -> 1L;
 
     @SuppressWarnings("rawtypes")
@@ -83,9 +77,6 @@ public final class ConstantLambdaUtils {
 
     @SuppressWarnings("rawtypes")
     private static final ToLongBiFunction BI_CONSTANT_ZERO_LONG = (a, b) -> 0L;
-
-    @SuppressWarnings("rawtypes")
-    private static final ToIntBiFunction BI_CONSTANT_ONE = (a, b) -> 1;
 
     @SuppressWarnings("rawtypes")
     private static final ToLongBiFunction BI_CONSTANT_ONE_LONG = (a, b) -> 1L;
@@ -100,9 +91,6 @@ public final class ConstantLambdaUtils {
     private static final ToLongTriFunction TRI_CONSTANT_ZERO_LONG = (a, b, c) -> 0L;
 
     @SuppressWarnings("rawtypes")
-    private static final ToIntTriFunction TRI_CONSTANT_ONE = (a, b, c) -> 1;
-
-    @SuppressWarnings("rawtypes")
     private static final ToLongTriFunction TRI_CONSTANT_ONE_LONG = (a, b, c) -> 1L;
 
     @SuppressWarnings("rawtypes")
@@ -112,13 +100,18 @@ public final class ConstantLambdaUtils {
     private static final ToLongQuadFunction QUAD_CONSTANT_ZERO_LONG = (a, b, c, d) -> 0L;
 
     @SuppressWarnings("rawtypes")
-    private static final ToIntQuadFunction QUAD_CONSTANT_ONE = (a, b, c, d) -> 1;
-
-    @SuppressWarnings("rawtypes")
     private static final ToLongQuadFunction QUAD_CONSTANT_ONE_LONG = (a, b, c, d) -> 1L;
 
     @SuppressWarnings("rawtypes")
     private static final QuadFunction QUAD_CONSTANT_ONE_BIG_DECiMAL = (a, b, c, d) -> BigDecimal.ONE;
+
+    private static final UniNeighborhoodsMapper<Object, Object, Object> NEIGHBORHOODS_UNI_PICK_FIRST = (view, a) -> a;
+
+    private static final BiNeighborhoodsMapper<Object, Object, Object, Object> NEIGHBORHOODS_BI_PICK_FIRST =
+            (view, a, b) -> a;
+
+    private static final BiNeighborhoodsMapper<Object, Object, Object, Object> NEIGHBORHOODS_BI_PICK_SECOND =
+            (view, a, b) -> b;
 
     public static <T, R> Function<T, R> uncheck(ThrowableFunction<T, R> function) {
         return t -> {
@@ -128,15 +121,6 @@ public final class ConstantLambdaUtils {
                 throw new RuntimeException(e);
             }
         };
-    }
-
-    /**
-     * Returns a {@link Runnable} that does nothing.
-     *
-     * @return never null
-     */
-    public static Runnable noop() {
-        return NO_OP;
     }
 
     /**
@@ -261,16 +245,6 @@ public final class ConstantLambdaUtils {
     }
 
     /**
-     * Returns a {@link ToIntFunction} that returns the constant 1.
-     *
-     * @return never null
-     */
-    @SuppressWarnings("unchecked")
-    public static <A> ToIntFunction<A> uniConstantOne() {
-        return UNI_CONSTANT_ONE;
-    }
-
-    /**
      * Returns a {@link ToLongFunction} that returns the constant 0.
      *
      * @return never null
@@ -321,16 +295,6 @@ public final class ConstantLambdaUtils {
     }
 
     /**
-     * Returns a {@link ToIntBiFunction} that returns the constant 1.
-     *
-     * @return never null
-     */
-    @SuppressWarnings("unchecked")
-    public static <A, B> ToIntBiFunction<A, B> biConstantOne() {
-        return BI_CONSTANT_ONE;
-    }
-
-    /**
      * Returns a {@link ToLongBiFunction} that returns the constant 1.
      *
      * @return never null
@@ -371,16 +335,6 @@ public final class ConstantLambdaUtils {
     }
 
     /**
-     * Returns a {@link ToIntTriFunction} that returns the constant 1.
-     *
-     * @return never null
-     */
-    @SuppressWarnings("unchecked")
-    public static <A, B, C> ToIntTriFunction<A, B, C> triConstantOne() {
-        return TRI_CONSTANT_ONE;
-    }
-
-    /**
      * Returns a {@link ToLongTriFunction} that returns the constant 1.
      *
      * @return never null
@@ -411,16 +365,6 @@ public final class ConstantLambdaUtils {
     }
 
     /**
-     * Returns a {@link ToIntQuadFunction} that returns the constant 1.
-     *
-     * @return never null
-     */
-    @SuppressWarnings("unchecked")
-    public static <A, B, C, D> ToIntQuadFunction<A, B, C, D> quadConstantOne() {
-        return QUAD_CONSTANT_ONE;
-    }
-
-    /**
      * Returns a {@link ToLongQuadFunction} that returns the constant 1.
      *
      * @return never null
@@ -438,6 +382,21 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("unchecked")
     public static <A, B, C, D> QuadFunction<A, B, C, D, BigDecimal> quadConstantOneBigDecimal() {
         return QUAD_CONSTANT_ONE_BIG_DECiMAL;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <Solution_, A> UniNeighborhoodsMapper<Solution_, A, A> neighborhoodsUniPickFirst() {
+        return (UniNeighborhoodsMapper<Solution_, A, A>) NEIGHBORHOODS_UNI_PICK_FIRST;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <Solution_, A, B> BiNeighborhoodsMapper<Solution_, A, B, A> neighborhoodsBiPickFirst() {
+        return (BiNeighborhoodsMapper<Solution_, A, B, A>) NEIGHBORHOODS_BI_PICK_FIRST;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <Solution_, A, B> BiNeighborhoodsMapper<Solution_, A, B, B> neighborhoodsBiPickSecond() {
+        return (BiNeighborhoodsMapper<Solution_, A, B, B>) NEIGHBORHOODS_BI_PICK_SECOND;
     }
 
     @FunctionalInterface

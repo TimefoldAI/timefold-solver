@@ -5,7 +5,6 @@ import java.util.UUID;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
@@ -43,7 +42,9 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  * that the class(es) implementing this interface can be serialized into any format
  * which is supported by the {@link SolutionManager} implementation, typically JSON.
  *
- * @see ConstraintMatch#getJustification()
+ * <p>
+ * Note: {@link ScoreAnalysis} in general and constraint justifications in particular
+ * are exclusive to Timefold Solver Enterprise Edition.
  */
 public interface ConstraintJustification {
 

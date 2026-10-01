@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfEntitySelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingOfEntitySelector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -10,14 +11,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
@@ -54,7 +53,7 @@ class FromSolutionEntitySelectorTest {
         when(scoreDirector.isWorkingEntityListDirty(7L)).thenReturn(false);
         FromSolutionEntitySelector entitySelector = new FromSolutionEntitySelector(entityDescriptor, cacheType, false);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         entitySelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
@@ -124,7 +123,7 @@ class FromSolutionEntitySelectorTest {
         FromSolutionEntitySelector entitySelector = new FromSolutionEntitySelector(entityDescriptor,
                 SelectionCacheType.JUST_IN_TIME, false);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         entitySelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
@@ -220,9 +219,9 @@ class FromSolutionEntitySelectorTest {
         when(scoreDirector.isWorkingEntityListDirty(7L)).thenReturn(false);
         FromSolutionEntitySelector entitySelector = new FromSolutionEntitySelector(entityDescriptor, cacheType, true);
 
-        Random workingRandom = new TestRandom(1, 0, 0, 2, 1, 2, 2, 1, 0);
+        var workingRandom = new TestRandom(1, 0, 0, 2, 1, 2, 2, 1, 0);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         entitySelector.solvingStarted(solverScope);
@@ -280,9 +279,9 @@ class FromSolutionEntitySelectorTest {
         FromSolutionEntitySelector entitySelector = new FromSolutionEntitySelector(entityDescriptor,
                 SelectionCacheType.JUST_IN_TIME, true);
 
-        Random workingRandom = new TestRandom(1, 0, 0, 2, 1, 2, 2, 1, 0);
+        var workingRandom = new TestRandom(1, 0, 0, 2, 1, 2, 2, 1, 0);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
         entitySelector.solvingStarted(solverScope);

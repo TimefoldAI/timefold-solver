@@ -19,15 +19,13 @@ final class SessionBasedAssertionBuilder<Solution_, Score_ extends Score<Score_>
             Object... facts) {
         var scoreInliner = constraintStreamScoreDirectorFactory.fireAndForget(facts);
         return new DefaultMultiConstraintAssertion<>(constraintProvider, constraintStreamScoreDirectorFactory,
-                scoreInliner.extractScore(), scoreInliner.getConstraintIdToConstraintMatchTotalMap(),
-                scoreInliner.getIndictmentMap());
+                scoreInliner.extractScore(), scoreInliner.getConstraintMatchTotalMap());
     }
 
     public DefaultSingleConstraintAssertion<Solution_, Score_> singleConstraintGiven(Object... facts) {
         var scoreInliner = constraintStreamScoreDirectorFactory.fireAndForget(facts);
         return new DefaultSingleConstraintAssertion<>(constraintStreamScoreDirectorFactory,
-                scoreInliner.extractScore(), scoreInliner.getConstraintIdToConstraintMatchTotalMap(),
-                scoreInliner.getIndictmentMap());
+                scoreInliner.extractScore(), scoreInliner.getConstraintMatchTotalMap());
     }
 
 }

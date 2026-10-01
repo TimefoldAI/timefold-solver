@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -14,7 +15,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 final class ElementPositionRandomIterator<Solution_> implements Iterator<ElementPosition> {
 
-    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
     private final Iterator<Object> replayingValueIterator;
@@ -23,16 +24,17 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final RandomGenerator workingRandom;
     private final long totalSize;
     private final boolean allowsUnassignedValues;
+    private final boolean maybeMovableValues;
     private Iterator<Object> valueIterator;
     private Object selectedValue;
     private boolean hasNextValue = false;
 
-    public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
+    public ElementPositionRandomIterator(ListVariableState<Solution_, Object, Object> listVariableState,
             EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
             IterableValueSelector<Solution_> valueSelector, RandomGenerator workingRandom, long totalSize,
-            boolean allowsUnassignedValues) {
-        this.listVariableStateSupply = listVariableStateSupply;
-        this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+            boolean allowsUnassignedValues, boolean maybeMovableValues) {
+        this.listVariableState = listVariableState;
+        this.listVariableDescriptor = listVariableState.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
         this.replayingValueIterator = replayingValueIterator;
         this.valueSelector = valueSelector;
@@ -44,6 +46,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                     .formatted(totalSize));
         }
         this.allowsUnassignedValues = allowsUnassignedValues;
+        this.maybeMovableValues = maybeMovableValues;
         this.valueIterator = null;
     }
 
@@ -72,9 +75,16 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                 // and the entity iterator must discard the previous entity
                 tryUpdateEntityIterator();
             }
-            return entityIterator.hasNext();
+            // There will be a valid destination if the entity iterator has a next element 
+            // or if there is at least one non-pinned assigned value,
+            // which would result in an unassigning move.
+            return entityIterator.hasNext() || maybeMovableValues;
         }
-        return selectedValue != null && entityIterator.hasNext();
+        // There will be a valid destination if the entity iterator has a next element
+        // or if there is at least one non-pinned assigned value,
+        // which would result in an unassigning move.
+        return selectedValue != null
+                && (entityIterator.hasNext() || maybeMovableValues);
     }
 
     @Override
@@ -88,6 +98,9 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
 
     @Override
     public ElementPosition next() {
+        if (!hasNextValue) {
+            throw new NoSuchElementException();
+        }
         this.hasNextValue = false;
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
@@ -96,7 +109,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         // to account for the unassigned destination, which is an extra element.
         var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
         var random = RandomUtils.nextLong(workingRandom, allowsUnassignedValues ? totalSize + 1 : totalSize);
-        if (allowsUnassignedValues && random == 0) {
+        if (allowsUnassignedValues && (random == 0 || !entityIterator.hasNext())) {
             // We have already excluded all unassigned elements,
             // the only way to get an unassigned destination is to explicitly add it.
             return ElementPosition.unassigned();
@@ -125,7 +138,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                     return ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
                 }
             } else {
-                var elementPosition = listVariableStateSupply.getElementPosition(value);
+                var elementPosition = listVariableState.getElementPosition(value);
                 if (elementPosition instanceof PositionInList positionInList) {
                     // +1 to include the destination after the final element in the list.
                     return ElementPosition.of(positionInList.entity(), positionInList.index() + 1);

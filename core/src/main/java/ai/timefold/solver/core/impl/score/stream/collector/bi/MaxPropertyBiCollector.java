@@ -5,12 +5,13 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.MinMaxUndoableActionable;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class MaxPropertyBiCollector<A, B, Result_, Property_ extends Comparable<? super Property_>>
-        extends UndoableActionableBiCollector<A, B, Result_, Result_, MinMaxUndoableActionable<Result_, Property_>> {
+        extends AbstractReferenceBasedBiCollector<A, B, Result_, Result_, AbstractMinMaxSlot.State<Result_, Property_>> {
     private final Function<? super Result_, ? extends Property_> propertyMapper;
 
     MaxPropertyBiCollector(BiFunction<? super A, ? super B, ? extends Result_> mapper,
@@ -20,8 +21,41 @@ final class MaxPropertyBiCollector<A, B, Result_, Property_ extends Comparable<?
     }
 
     @Override
-    public @NonNull Supplier<MinMaxUndoableActionable<Result_, Property_>> supplier() {
-        return () -> MinMaxUndoableActionable.maxCalculator(propertyMapper);
+    public @NonNull Supplier<AbstractMinMaxSlot.State<Result_, Property_>> supplier() {
+        return () -> AbstractMinMaxSlot.maxState(propertyMapper);
+    }
+
+    @Override
+    public @NonNull Function<AbstractMinMaxSlot.State<Result_, Property_>, Result_> finisher() {
+        return AbstractMinMaxSlot.State::result;
+    }
+
+    @Override
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(
+            AbstractMinMaxSlot.State<Result_, Property_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractMinMaxSlot<Result_, Property_>
+            implements BiConstraintCollectorValueHandle<A, B> {
+        Slot(AbstractMinMaxSlot.State<Result_, Property_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b) {
+            addMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

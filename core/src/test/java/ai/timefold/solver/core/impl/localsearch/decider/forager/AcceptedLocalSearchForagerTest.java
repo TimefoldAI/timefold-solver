@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.EnumSet;
-import java.util.Random;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
@@ -211,6 +210,27 @@ class AcceptedLocalSearchForagerTest {
         forager.phaseEnded(phaseScope);
     }
 
+    @Test
+    void foragerDoesNotPickARejectedStructurallyFlawedMove() {
+        var forager = new AcceptedLocalSearchForager<TestdataSolution>(new HighestScoreFinalistPodium<>(),
+                LocalSearchPickEarlyType.NEVER, Integer.MAX_VALUE, false);
+        var phaseScope = createPhaseScope();
+        forager.phaseStarted(phaseScope);
+        var stepScope = new LocalSearchStepScope<>(phaseScope);
+        forager.stepStarted(stepScope);
+
+        var flawedMoveScope = new LocalSearchMoveScope<>(stepScope, 0, new SelectorBasedDummyMove());
+        flawedMoveScope.setInitializedScore(new SimpleScoreDefinition().getStructurallyFlawedScore());
+        // As AbstractAcceptor.isAccepted does for every structurally flawed move.
+        flawedMoveScope.setAccepted(false);
+        forager.addMove(flawedMoveScope);
+
+        assertThat(forager.pickMove(stepScope))
+                .withFailMessage("The forager picked a rejected, structurally flawed move as the step.")
+                .isNull();
+        assertThat(stepScope.getSelectedMoveCount()).isZero();
+    }
+
     private static LocalSearchPhaseScope<TestdataSolution> createPhaseScope() {
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
         LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
@@ -218,7 +238,7 @@ class AcceptedLocalSearchForagerTest {
         when(scoreDirector.getSolutionDescriptor()).thenReturn(TestdataSolution.buildSolutionDescriptor());
         when(scoreDirector.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         solverScope.setScoreDirector(scoreDirector);
-        Random workingRandom = new TestRandom(1, 1);
+        var workingRandom = new TestRandom(1, 1);
         solverScope.setWorkingRandom(workingRandom);
         solverScope.setInitializedBestScore(SimpleScore.of(-10));
         solverScope.setSolverMetricSet(EnumSet.of(SolverMetric.MOVE_EVALUATION_COUNT));

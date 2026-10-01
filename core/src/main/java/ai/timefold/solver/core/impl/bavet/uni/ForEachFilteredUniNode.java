@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -14,16 +14,43 @@ import org.jspecify.annotations.Nullable;
 public final class ForEachFilteredUniNode<A>
         extends AbstractForEachUniNode<A> {
 
+    private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
     private final Predicate<A> filter;
+    /**
+     * Counts every fact currently inserted into this node, including those which do not pass the filter.
+     * Only {@link #insert(Object)} and {@link #retract(Object)} may mutate it;
+     * the filter transitions inside {@link #update(Object)} concern facts already counted.
+     */
+    private int tupleCountWithoutFiltering = 0;
 
     public ForEachFilteredUniNode(Class<A> forEachClass, Predicate<A> filter,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
+        this.nextNodesTupleLifecycle = Objects.requireNonNull(nextNodesTupleLifecycle);
         this.filter = Objects.requireNonNull(filter);
     }
 
     @Override
+    public void afterAllFactsInserted(boolean unused) {
+        nextNodesTupleLifecycle.afterAllFactsInserted(tupleCountWithoutFiltering > 0);
+    }
+
+    @Override
+    public boolean isActive() {
+        // The input may change during update,
+        // and therefore the filter may let things propagate which it previously did not.
+        // For this reason, this node must be considered active if it saw at least one input;
+        // only with zero tuples can it be considered inactive, as the filter has nothing to propagate.
+        return tupleCountWithoutFiltering > 0 && nextNodesTupleLifecycle.isActive();
+    }
+
+    @Override
     public void insert(@Nullable A a) {
+        tupleCountWithoutFiltering++;
+        insertIfPassing(a);
+    }
+
+    private void insertIfPassing(@Nullable A a) {
         if (!filter.test(a)) { // Skip inserting the tuple as it does not pass the filter.
             return;
         }
@@ -34,16 +61,21 @@ public final class ForEachFilteredUniNode<A>
     public void update(@Nullable A a) {
         var tuple = tupleMap.get(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
-            insert(a);
+            insertIfPassing(a);
         } else if (filter.test(a)) {
             updateExisting(a, tuple);
-        } else { // Tuple no longer passes the filter.
-            retract(a);
+        } else { // Tuple no longer passes the filter; the fact itself remains inserted.
+            retractIfPresent(a);
         }
     }
 
     @Override
     public void retract(@Nullable A a) {
+        tupleCountWithoutFiltering--;
+        retractIfPresent(a);
+    }
+
+    private void retractIfPresent(@Nullable A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             return;
@@ -52,7 +84,7 @@ public final class ForEachFilteredUniNode<A>
     }
 
     @Override
-    public boolean supports(BavetRootNode.LifecycleOperation lifecycleOperation) {
+    public boolean supports(AbstractRootNode.LifecycleOperation lifecycleOperation) {
         return true;
     }
 
