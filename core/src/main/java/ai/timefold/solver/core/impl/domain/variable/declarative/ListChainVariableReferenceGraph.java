@@ -139,10 +139,15 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             if (elementEntityClass.isInstance(entity)) {
                 recordChangedElement(entity);
             } else if (listEntityClass.isInstance(entity)) {
-                // A pre-chain variable, which outside an update can only be a genuine one:
-                // it has no graph node to reach the chain node through,
+                // A genuine pre-chain variable has no graph node to reach the chain node through,
                 // and the updater walks the whole chain when its value changed.
-                markChainDirty(entity, chainUpdater.getChainState(entity));
+                // Setting another working solution also sends here the consistency of its list entities,
+                // through their first declarative variable, which may be a pre-chain one;
+                // this graph has no chain for them.
+                var chainState = chainUpdater.getChainState(entity);
+                if (chainState != null) {
+                    markChainDirty(entity, chainState);
+                }
             }
         }
         innerGraph.afterVariableChanged(variableReference, entity);

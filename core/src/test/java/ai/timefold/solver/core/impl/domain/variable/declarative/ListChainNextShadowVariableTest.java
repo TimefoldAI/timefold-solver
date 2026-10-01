@@ -12,6 +12,7 @@ import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVisit;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 
@@ -93,6 +94,22 @@ class ListChainNextShadowVariableTest {
                 assertShadowsAreAtFixedPoint(solution);
             }
         }
+    }
+
+    /**
+     * Without an inconsistency field, a vehicle reports its consistency through its first declarative variable,
+     * nextStartTime here, which its visits read through their inverse. Setting a new working solution builds its
+     * graph while the previous one still receives the events, for vehicles the previous graph does not know.
+     * Solving does so for every problem: once for the problem, once for its working clone.
+     */
+    @Test
+    void settingAnotherWorkingSolutionIgnoresItsVehiclesInThePreviousGraph() {
+        var scoreDirector =
+                PlannerTestUtils.mockScoreDirector(TestdataMultiEntityChainNextSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(generateSolution());
+        var solution = generateSolution();
+        scoreDirector.setWorkingSolution(solution);
+        assertShadowsAreAtFixedPoint(solution);
     }
 
     private static TestdataMultiEntityChainNextSolution generateSolution() {
