@@ -16,11 +16,11 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Updates the declarative shadow variables of a planning list variable's elements,
- * which are excluded from the variable reference graph and represented by one block node
- * per list entity instead; see {@link GraphStructure#LIST_ELEMENT_BLOCK}.
+ * which are excluded from the variable reference graph and represented by one chain node
+ * per list entity instead; see {@link GraphStructure#LIST_CHAIN}.
  * <p>
- * A single instance backs every list entity's block node.
- * When a block node is processed, {@link #update(Object, boolean, ChangedVariableNotifier)}
+ * A single instance backs every list entity's chain node.
+ * When a chain node is processed, {@link #update(Object, boolean, ChangedVariableNotifier)}
  * walks the entity's chain the way {@link SingleDirectionalParentVariableReferenceGraph} does:
  * from each element whose source variables changed, in chain order, until an element is unchanged.
  * It reports whether anything changed, which propagates to the entity's post-chain variables
@@ -28,13 +28,13 @@ import org.jspecify.annotations.Nullable;
  * The whole chain is walked when a pre-chain variable changed, since any element may read it,
  * and when no element recorded where the chain changed.
  * Each list entity's {@link ChainState} is allocated once, here;
- * {@link ListElementBlockVariableReferenceGraph}, which tracks the changes, records in it where the chain changed.
+ * {@link ListChainVariableReferenceGraph}, which tracks the changes, records in it where the chain changed.
  * <p>
- * When the block node is part of a dependency loop, the elements follow their entity:
+ * When the chain node is part of a dependency loop, the elements follow their entity:
  * they are marked inconsistent and their variables are set to null.
  */
 @NullMarked
-final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Solution_> {
+final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
 
     // These are immutable.
     private final VariableMetaModel<Solution_, ?, ?> listVariableMetaModel;
@@ -48,12 +48,12 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     private final VariableDescriptor<Solution_>[] preChainVariableDescriptors;
     private final boolean canTerminateEarly;
 
-    // The chain states are mutable, written by ListElementBlockVariableReferenceGraph as it records the changes
+    // The chain states are mutable, written by ListChainVariableReferenceGraph as it records the changes
     // and by this updater as it walks the chains.
     private final IdentityHashMap<Object, ChainState> listEntityToChainStateMap;
 
     @SuppressWarnings("unchecked")
-    ListElementBlockUpdater(
+    ListChainUpdater(
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             boolean isChainInListOrder,
             EntityConsistencyState<Solution_, Object> listEntityConsistencyState,
@@ -87,7 +87,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
 
     @Override
     public Object nodeGroupKey() {
-        // One block node per list entity, which is also how the graph looks them up;
+        // One chain node per list entity, which is also how the graph looks them up;
         // a metamodel never collides with the other updaters, whose keys are their group ids.
         return listVariableMetaModel;
     }
@@ -114,7 +114,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
             chainState.isChainStale = true;
             return markChainInconsistent(elementList, changedVariableNotifier);
         }
-        // The declarative pre-chain nodes come before the block node in the graph's order,
+        // The declarative pre-chain nodes come before the chain node in the graph's order,
         // so they are already up to date for this update; the genuine ones only change through moves.
         var isPreChainChanged = updatePreChainValues(listEntity, chainState);
         if (chainState.isChainStale) {
@@ -187,8 +187,8 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     private boolean markChainInconsistent(List<Object> elementList,
             ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         var anyElementChanged = false;
-        for (var position = 0; position < elementList.size(); position++) {
-            var element = elementAt(elementList, position);
+        // Clearing an element reads none of the others, so the order does not matter.
+        for (var element : elementList) {
             if (elementConsistencyState.isEntityConsistent(element)) {
                 elementConsistencyState.setEntityIsInconsistent(changedVariableNotifier, element, true);
             }
@@ -219,7 +219,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     }
 
     /**
-     * Recomputes an element that left its list, which no block node walks;
+     * Recomputes an element that left its list, which no chain node walks;
      * its suppliers read a null inverse, so it ends up cleared,
      * and re-assigning it to the same position is detected as a change.
      */
@@ -244,7 +244,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
     }
 
     /**
-     * Registers a list entity whose block node this updater backs.
+     * Registers a list entity whose chain node this updater backs.
      */
     void addListEntity(Object listEntity) {
         listEntityToChainStateMap.put(listEntity, new ChainState(preChainVariableDescriptors.length));
@@ -294,7 +294,7 @@ final class ListElementBlockUpdater<Solution_> implements VariableUpdater<Soluti
 
         /**
          * Resets the chain an update dirtied.
-         * An update that gave up on a dependency loop processed no block node, and the graph keeps their
+         * An update that gave up on a dependency loop processed no chain node, and the graph keeps their
          * marks for the next update; the chain is walked whole then, because a legacy composite move
          * may change it again before that update, without undoing first.
          */

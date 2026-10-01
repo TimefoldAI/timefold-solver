@@ -5,6 +5,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -22,6 +23,11 @@ public class TestdataMultiEntityChainSolution {
         return buildSolutionDescriptor().getMetaModel();
     }
 
+    // The departure times a move may give a vehicle; every vehicle's departure time must be one of them.
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    List<Integer> departureTimes = List.of(0, 5, 10, 20);
+
     @PlanningEntityCollectionProperty
     List<TestdataMultiEntityChainVehicle> vehicles;
 
@@ -31,6 +37,14 @@ public class TestdataMultiEntityChainSolution {
 
     @PlanningScore
     SimpleScore score;
+
+    public List<Integer> getDepartureTimes() {
+        return departureTimes;
+    }
+
+    public void setDepartureTimes(List<Integer> departureTimes) {
+        this.departureTimes = departureTimes;
+    }
 
     public List<TestdataMultiEntityChainVehicle> getVehicles() {
         return vehicles;

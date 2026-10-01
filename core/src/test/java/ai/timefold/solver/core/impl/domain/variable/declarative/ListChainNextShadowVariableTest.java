@@ -16,11 +16,11 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.Testdat
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests {@link ListElementBlockVariableReferenceGraph} on a next-directional model,
+ * Tests {@link ListChainVariableReferenceGraph} on a next-directional model,
  * where a vehicle's latest start time is bound by its successor vehicles
  * and propagation walks each route backwards.
  */
-class ListElementBlockNextShadowVariableTest {
+class ListChainNextShadowVariableTest {
 
     @Test
     void changeOnSuccessorVehiclePropagatesBackwards() {

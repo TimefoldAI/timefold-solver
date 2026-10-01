@@ -32,7 +32,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
     boolean isGraphFixed;
     /**
-     * True when a planning list variable has its elements represented by one block node per
+     * True when a planning list variable has its elements represented by one chain node per
      * list entity instead of a node each, so a list element source needs no per-element edges.
      */
     boolean excludesListElements;
@@ -168,7 +168,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     /**
-     * @return a graph of this builder's fixed edges alone, to test candidate edges against
+     * @return a graph of this builder's fixed edges alone, to test for a fixed loop
      */
     DefaultTopologicalOrderGraph newFixedEdgeGraph() {
         var graph = new DefaultTopologicalOrderGraph(nodeList.size());

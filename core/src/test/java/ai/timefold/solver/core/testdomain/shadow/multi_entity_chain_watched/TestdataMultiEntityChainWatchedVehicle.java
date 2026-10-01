@@ -11,7 +11,7 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
  * A vehicle watching a fact collection of visits that may be assigned to other vehicles,
- * which the list element block cannot represent, since its visits are not graph nodes.
+ * which the list chain node cannot represent, since its visits are not graph nodes.
  */
 @PlanningEntity
 public class TestdataMultiEntityChainWatchedVehicle extends TestdataObject {

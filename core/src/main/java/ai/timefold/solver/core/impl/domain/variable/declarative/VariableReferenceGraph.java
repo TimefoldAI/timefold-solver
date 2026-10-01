@@ -6,7 +6,7 @@ import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public sealed interface VariableReferenceGraph
-        permits AbstractVariableReferenceGraph, EmptyVariableReferenceGraph, ListElementBlockVariableReferenceGraph,
+        permits AbstractVariableReferenceGraph, EmptyVariableReferenceGraph, ListChainVariableReferenceGraph,
         SingleDirectionalParentVariableReferenceGraph {
 
     /**

@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.ARBITRARY;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.EMPTY;
-import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.LIST_ELEMENT_BLOCK;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.LIST_CHAIN;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.SINGLE_DIRECTIONAL_PARENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,9 +36,6 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity.TestdataMultiEntit
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_departure.TestdataMultiEntityChainDepartureSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_departure.TestdataMultiEntityChainDepartureVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_departure.TestdataMultiEntityChainDepartureVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVisit;
@@ -164,9 +161,9 @@ class GraphStructureTest {
         var value = new TestdataListElementValue("v1");
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataListElementSolution.buildSolutionDescriptor(), entity, value))
-                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
+                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataListElementValue.class);
+                .hasFieldOrPropertyWithValue("chainElementClass", TestdataListElementValue.class);
     }
 
     @Test
@@ -183,7 +180,7 @@ class GraphStructureTest {
         var entity = new TestdataAlignedListElementEntity("e1");
         var value = new TestdataAlignedListElementValue("v1", "g1");
         // An alignment key updates every entity of its group at once,
-        // which the block node's entity at a time updates cannot do.
+        // which the chain node's entity at a time updates cannot do.
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataAlignedListElementSolution.buildSolutionDescriptor(), entity, value))
                 .hasFieldOrPropertyWithValue("structure", ARBITRARY);
@@ -197,9 +194,9 @@ class GraphStructureTest {
         var visit = new TestdataMultiEntityChainVisit("v1");
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainSolution.buildSolutionDescriptor(), vehicleA, vehicleB, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
+                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainVisit.class);
+                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainVisit.class);
     }
 
     @Test
@@ -208,9 +205,9 @@ class GraphStructureTest {
         var visit = new TestdataMultiEntityChainNextVisit("v1");
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainNextSolution.buildSolutionDescriptor(), vehicle, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
+                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.NEXT)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainNextVisit.class);
+                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainNextVisit.class);
     }
 
     @Test
@@ -230,45 +227,34 @@ class GraphStructureTest {
         var visit = new TestdataMultiEntityChainLoopVisit("v1", 1);
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainLoopSolution.buildSolutionDescriptor(), vehicle, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
+                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainLoopVisit.class);
-    }
-
-    @Test
-    void multiEntityChainWithElementsReadingAGenuineVariableThroughTheInverse() {
-        var vehicle = new TestdataMultiEntityChainDepartureVehicle("A", 0);
-        var visit = new TestdataMultiEntityChainDepartureVisit("v1", 1);
-        assertThat(GraphStructure.determineGraphStructure(
-                TestdataMultiEntityChainDepartureSolution.buildSolutionDescriptor(), vehicle, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
-                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainDepartureVisit.class);
+                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainLoopVisit.class);
     }
 
     @Test
     void multiEntityChainWithElementSourcedEndTime() {
         var vehicle = new TestdataMultiEntityChainElementSourcedVehicle("A", 0);
         var visit = new TestdataMultiEntityChainElementSourcedVisit("v1", 1);
-        // The vehicle's endTime never reads its own startTime, so nothing but the block node's edges
+        // The vehicle's endTime never reads its own startTime, so nothing but the chain node's edges
         // orders it after the route it summarizes.
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainElementSourcedSolution.buildSolutionDescriptor(), vehicle, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
+                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainElementSourcedVisit.class);
+                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainElementSourcedVisit.class);
     }
 
     @Test
     void multiEntityChainWithElementsReadingAPostChainVariable() {
         var vehicle = new TestdataMultiEntityChainSlackVehicle("A");
         var visit = new TestdataMultiEntityChainSlackVisit("v1", 1);
-        // The detection only judges the shape of the model; the loop the block node would close
+        // The detection only judges the shape of the model; the loop the chain node would close
         // with its vehicle's end time is left to the build, which falls back to the arbitrary graph.
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainSlackSolution.buildSolutionDescriptor(), vehicle, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_ELEMENT_BLOCK)
-                .hasFieldOrPropertyWithValue("blockedElementClass", TestdataMultiEntityChainSlackVisit.class);
+                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
+                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainSlackVisit.class);
     }
 
     @Test
@@ -283,7 +269,7 @@ class GraphStructureTest {
         var vehicle = new TestdataMultiEntityChainExtendedVehicle("A", 0);
         var visit = new TestdataMultiEntityChainExtendedVisit("v1", 1);
         var priorityVisit = new TestdataMultiEntityChainExtendedPriorityVisit("p1", 1, 10);
-        // The block node's walk applies every element updater to every element,
+        // The chain node's walk applies every element updater to every element,
         // so a declarative variable declared on a visit subclass falls back to the arbitrary graph.
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainExtendedSolution.buildSolutionDescriptor(), vehicle, visit, priorityVisit))

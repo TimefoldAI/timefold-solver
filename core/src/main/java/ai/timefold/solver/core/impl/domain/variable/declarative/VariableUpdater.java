@@ -11,11 +11,11 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * A node usually carries one {@link VariableUpdaterInfo} per declarative shadow variable,
  * which recomputes a single value for a single entity (or an aligned group of entities).
- * A {@link ListElementBlockUpdater} instead updates a whole planning list variable's
+ * A {@link ListChainUpdater} instead updates a whole planning list variable's
  * elements, whose values differ per element and whose set changes during solving.
  */
 @NullMarked
-public sealed interface VariableUpdater<Solution_> permits VariableUpdaterInfo, ListElementBlockUpdater {
+public sealed interface VariableUpdater<Solution_> permits VariableUpdaterInfo, ListChainUpdater {
 
     /**
      * Identifies the node in {@link AbstractVariableReferenceGraph} lookups

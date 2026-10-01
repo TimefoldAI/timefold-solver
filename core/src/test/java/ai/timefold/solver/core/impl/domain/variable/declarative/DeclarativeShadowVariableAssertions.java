@@ -15,7 +15,6 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
@@ -102,6 +101,8 @@ final class DeclarativeShadowVariableAssertions {
      * Solves under {@link EnvironmentMode#FULL_ASSERT}, with sub list moves that may reverse
      * and ruin and recreate moves on top of the default list moves,
      * so that single moves change a list in several places.
+     * Local search alone assigns the values the list may leave unassigned: the construction heuristic
+     * cannot deduce its configuration when the list entity also has a basic variable.
      */
     static <Solution_> Solution_ solveWithFullAssertAndEveryListMove(Class<Solution_> solutionClass,
             Class<? extends ConstraintProvider> constraintProviderClass, Solution_ problem, Class<?>... entityClasses) {
@@ -112,12 +113,11 @@ final class DeclarativeShadowVariableAssertions {
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(constraintProviderClass))
                 .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L))
-                .withPhases(new ConstructionHeuristicPhaseConfig(),
-                        new LocalSearchPhaseConfig().withMoveSelectorConfig(new UnionMoveSelectorConfig()
-                                .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
-                                        new SubListChangeMoveSelectorConfig().withSelectReversingMoveToo(true),
-                                        new SubListSwapMoveSelectorConfig().withSelectReversingMoveToo(true),
-                                        new KOptListMoveSelectorConfig(), new ListRuinRecreateMoveSelectorConfig())));
+                .withPhases(new LocalSearchPhaseConfig().withMoveSelectorConfig(new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
+                                new SubListChangeMoveSelectorConfig().withSelectReversingMoveToo(true),
+                                new SubListSwapMoveSelectorConfig().withSelectReversingMoveToo(true),
+                                new KOptListMoveSelectorConfig(), new ListRuinRecreateMoveSelectorConfig())));
         return SolverFactory.<Solution_> create(solverConfig).buildSolver().solve(problem);
     }
 

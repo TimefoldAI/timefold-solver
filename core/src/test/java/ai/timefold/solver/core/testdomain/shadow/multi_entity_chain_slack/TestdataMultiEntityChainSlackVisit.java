@@ -9,7 +9,7 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
  * A visit reading the end time of its own vehicle, which is sourced from the visits:
- * a block node standing for all of them would have to be computed both before and after that end time.
+ * a chain node standing for all of them would have to be computed both before and after that end time.
  */
 @PlanningEntity
 public class TestdataMultiEntityChainSlackVisit extends TestdataObject {

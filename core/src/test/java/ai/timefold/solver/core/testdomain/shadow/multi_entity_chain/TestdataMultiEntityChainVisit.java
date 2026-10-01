@@ -41,7 +41,8 @@ public class TestdataMultiEntityChainVisit extends TestdataObject {
         this.chainedToPreviousVehicle = chainedToPreviousVehicle;
     }
 
-    @ShadowSources({ "vehicle", "vehicle.previousEndTime", "previousVisit", "previousVisit.endServiceTime" })
+    @ShadowSources({ "vehicle", "vehicle.previousEndTime", "vehicle.departureTime", "previousVisit",
+            "previousVisit.endServiceTime" })
     public Integer endServiceTimeSupplier() {
         calledCount++;
         if (vehicle == null) {

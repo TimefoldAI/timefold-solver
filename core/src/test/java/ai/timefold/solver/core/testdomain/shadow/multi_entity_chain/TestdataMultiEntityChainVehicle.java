@@ -5,6 +5,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
@@ -18,7 +19,9 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
 
     // Null for a head vehicle, exercising null fact collection support.
     List<TestdataMultiEntityChainVehicle> previousVehicles;
-    int departureTime;
+    // A planning variable, which the visits that are not chained to the previous vehicles read through their inverse.
+    @PlanningVariable
+    Integer departureTime;
     // A vehicle cannot finish before it starts. Unlike the plain last visit's end time,
     // this makes endTime change as soon as previousEndTime does, before the chain has been walked.
     boolean endTimeIncludesPreviousEndTime = false;
@@ -43,7 +46,7 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
         this.departureTime = departureTime;
     }
 
-    @ShadowSources("previousVehicles[].endTime")
+    @ShadowSources({ "previousVehicles[].endTime", "departureTime" })
     public Integer previousEndTimeSupplier() {
         previousEndTimeCalledCount++;
         var max = departureTime;
@@ -80,11 +83,11 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
         this.previousVehicles = previousVehicles;
     }
 
-    public int getDepartureTime() {
+    public Integer getDepartureTime() {
         return departureTime;
     }
 
-    public void setDepartureTime(int departureTime) {
+    public void setDepartureTime(Integer departureTime) {
         this.departureTime = departureTime;
     }
 

@@ -24,9 +24,9 @@ import org.mockito.Mockito;
 
 /**
  * Asserts that a change only recomputes the entities it can reach,
- * which is the point of {@link ListElementBlockVariableReferenceGraph}.
+ * which is the point of {@link ListChainVariableReferenceGraph}.
  */
-class ListElementBlockVariableReferenceGraphTest {
+class ListChainVariableReferenceGraphTest {
 
     private static final int CHAIN_LENGTH = 6;
     private static final int VISITS_PER_VEHICLE = 3;
@@ -50,7 +50,7 @@ class ListElementBlockVariableReferenceGraphTest {
 
         var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor,
                 vehicleA, vehicleB, a1, a2, a3, b1, b2);
-        assertThat(graphStructureAndDirection.blockedElementClass()).isEqualTo(TestdataMultiEntityChainVisit.class);
+        assertThat(graphStructureAndDirection.chainElementClass()).isEqualTo(TestdataMultiEntityChainVisit.class);
 
         var scoreDirector = Mockito.mock(InnerScoreDirector.class);
         var listVariableState = Mockito.mock(ListVariableState.class);
@@ -63,13 +63,13 @@ class ListElementBlockVariableReferenceGraphTest {
         link(listVariableState, vehicleB, b2, b1, 1);
         link(listVariableState, null, a3, null, -1);
 
-        var graph = DefaultShadowVariableSessionFactory.buildListElementBlockGraph(
+        var graph = DefaultShadowVariableSessionFactory.buildListChainGraph(
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(
                         solutionDescriptor, ChangedVariableNotifier.of(scoreDirector),
                         b2, vehicleB, a1, a3, vehicleA, b1, a2),
                 graphStructureAndDirection);
 
-        // The topological order puts vehicle A's block node before vehicle B's,
+        // The topological order puts vehicle A's chain node before vehicle B's,
         // so every element is computed exactly once even at construction.
         assertThat(List.of(a1, a2, b1, b2)).allSatisfy(visit -> assertThat(visit.getCalledCount()).isOne());
         assertThat(a3.getCalledCount()).isOne();
@@ -100,8 +100,8 @@ class ListElementBlockVariableReferenceGraphTest {
         // Pre-chain variables do not depend on the chain, so a chain-only change never recomputes them.
         assertThat(vehicleA.getPreviousEndTimeCalledCount()).isZero();
         // Everything downstream is recomputed exactly once:
-        // the single pass in topological order visits vehicle A's block node,
-        // its endTime, vehicle B's previousEndTime, vehicle B's block node
+        // the single pass in topological order visits vehicle A's chain node,
+        // its endTime, vehicle B's previousEndTime, vehicle B's chain node
         // and finally vehicle B's endTime.
         assertThat(a3.getCalledCount()).isOne();
         assertThat(vehicleA.getEndTimeCalledCount()).isOne();
@@ -114,7 +114,7 @@ class ListElementBlockVariableReferenceGraphTest {
 
     /**
      * A vehicle's endTime that also reads its own previousEndTime changes as soon as its predecessor's
-     * endTime does. Its edge from the block node is what keeps it from being computed before the chain
+     * endTime does. Its edge from the chain node is what keeps it from being computed before the chain
      * it summarizes has been walked, and from running ahead of the walks down the vehicle chain.
      */
     @Test

@@ -22,12 +22,12 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.Testdat
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests {@link ListElementBlockVariableReferenceGraph} on a model whose vehicles chain to each
+ * Tests {@link ListChainVariableReferenceGraph} on a model whose vehicles chain to each
  * other through a planning variable, so the solver can put two of them in a dependency loop.
  * The elements read their vehicle's pre-chain start time, so a looped vehicle's whole route
  * is inconsistent with it and must not be computed.
  */
-class ListElementBlockLoopShadowVariableTest {
+class ListChainLoopShadowVariableTest {
 
     @Test
     void vehicleLoopMarksItsWholeRouteInconsistent() {
@@ -87,7 +87,7 @@ class ListElementBlockLoopShadowVariableTest {
     }
 
     /**
-     * A loop through routes reports their visits, as the arbitrary graph does, rather than the block nodes
+     * A loop through routes reports their visits, as the arbitrary graph does, rather than the chain nodes
      * standing for them: the visits are what the solver unassigns from an initial solution caught in a loop.
      */
     @Test

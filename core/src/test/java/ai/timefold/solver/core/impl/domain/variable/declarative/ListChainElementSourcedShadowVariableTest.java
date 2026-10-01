@@ -21,16 +21,16 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sour
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests {@link ListElementBlockVariableReferenceGraph} on a model whose post-chain variable is
+ * Tests {@link ListChainVariableReferenceGraph} on a model whose post-chain variable is
  * sourced from the route alone, so nothing declares its dependency on the pre-chain variable the
- * route reads. The block node's edges supply that order; without them the post-chain variable is
+ * route reads. The chain node's edges supply that order; without them the post-chain variable is
  * computed before the route has been walked, and a dependency loop running through the route is
  * invisible to the graph.
  * <p>
  * The model declares no inconsistency field, so a dependency loop makes the solution structurally
  * flawed rather than inconsistent.
  */
-class ListElementBlockElementSourcedShadowVariableTest {
+class ListChainElementSourcedShadowVariableTest {
 
     @Test
     void vehicleLoopThroughTheRouteRejectsTheMove() {
@@ -82,7 +82,7 @@ class ListElementBlockElementSourcedShadowVariableTest {
 
     /**
      * A move that both dirties a route and closes a dependency loop. The update gives up on the
-     * loop, possibly before it reached that route's block node, so the route must stay dirty
+     * loop, possibly before it reached that route's chain node, so the route must stay dirty
      * for the update that follows the undo; dropping it would leave the route stale forever.
      */
     @Test
@@ -128,7 +128,7 @@ class ListElementBlockElementSourcedShadowVariableTest {
     }
 
     /**
-     * A failed update keeps the block nodes it did not process marked in the graph. A legacy composite
+     * A failed update keeps the chain nodes it did not process marked in the graph. A legacy composite
      * move changes the same route again in a single update, without an undo in between,
      * which must still walk what the failed update recorded.
      */

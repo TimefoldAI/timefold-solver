@@ -20,21 +20,21 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * A variable reference graph that excludes a planning list variable's elements from the graph
- * and represents each list entity's chain by a single block node instead;
- * see {@link GraphStructure#LIST_ELEMENT_BLOCK}.
+ * and represents each list entity's chain by a single node instead;
+ * see {@link GraphStructure#LIST_CHAIN}.
  * <p>
  * The graph itself covers everything else and is built by the normal machinery,
- * with fixed edges from each entity's declarative pre-chain variables to its block node
- * and from its block node to its post-chain variables;
+ * with fixed edges from each entity's declarative pre-chain variables to its chain node
+ * and from its chain node to its post-chain variables;
  * a single {@link #updateChanged()} pass in topological order therefore walks each dirty chain
  * exactly once, after its pre-chain variables and before its post-chain variables.
- * This wrapper tracks the changes the block nodes need, like any graph tracks its changed nodes:
+ * This wrapper tracks the changes the chain nodes need, like any graph tracks its changed nodes:
  * it records the elements whose source variables changed and the list entities whose list
  * or genuine pre-chain variables changed,
- * classifies the elements by the chain of their entity, into the chain state the block updater walks from,
- * and marks the dirty entities' block nodes before delegating the update.
+ * classifies the elements by the chain of their entity, into the chain state the updater walks from,
+ * and marks the dirty entities' chain nodes before delegating the update.
  * It also marks the list entity's post-chain variables changed on a list change,
- * which the graph derives from the list element locators the block node skips.
+ * which the graph derives from the list element locators the chain node skips.
  * <p>
  * The classification runs before the delegated update, and recomputes the elements that left their
  * list along the way; those writes come back here through the score director. The graph's own
@@ -42,11 +42,11 @@ import org.jspecify.annotations.NullMarked;
  * hence {@link #isUpdating}: without it the classification would add to the list it is iterating.
  */
 @NullMarked
-final class ListElementBlockVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
+final class ListChainVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
 
     // These are immutable.
     private final AbstractVariableReferenceGraph<Solution_, ?> innerGraph;
-    private final ListElementBlockUpdater<Solution_> blockUpdater;
+    private final ListChainUpdater<Solution_> chainUpdater;
     private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final String listVariableName;
     private final Class<?> listEntityClass;
@@ -54,9 +54,9 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
     /**
-     * List entity to block node. Hoisted at construction to save a lookup by variable for every dirty chain.
+     * List entity to chain node. Hoisted at construction to save a lookup by variable for every dirty chain.
      */
-    private final Map<Object, GraphNode<Solution_>> listEntityToBlockNodeMap;
+    private final Map<Object, GraphNode<Solution_>> listEntityToChainNodeMap;
     /**
      * The list variable's after processors, which mark the list entity's post-chain variables changed.
      * Hoisted at construction to save a lookup by variable for every list change.
@@ -70,12 +70,12 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
     // its capacity, which the initial update sizes for every unassigned element of the solution.
     private final Set<Object> recomputedUnassignedElementSet;
     private final List<Object> recomputedUnassignedElementList;
-    private final List<ListElementBlockUpdater.ChainState> dirtyChainStateList;
+    private final List<ListChainUpdater.ChainState> dirtyChainStateList;
     private boolean isUpdating;
 
-    ListElementBlockVariableReferenceGraph(
+    ListChainVariableReferenceGraph(
             AbstractVariableReferenceGraph<Solution_, ?> innerGraph,
-            ListElementBlockUpdater<Solution_> blockUpdater,
+            ListChainUpdater<Solution_> chainUpdater,
             ListVariableState<Solution_, Object, Object> listVariableState,
             VariableMetaModel<Solution_, ?, ?> listVariableMetaModel,
             Class<?> elementEntityClass,
@@ -84,14 +84,14 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             Object[] entities) {
         this.innerGraph = innerGraph;
-        this.blockUpdater = blockUpdater;
+        this.chainUpdater = chainUpdater;
         this.listVariableState = listVariableState;
         this.listVariableName = listVariableMetaModel.name();
         this.listEntityClass = listVariableMetaModel.entity().type();
         this.elementEntityClass = elementEntityClass;
         this.changedVariableNotifier = changedVariableNotifier;
-        // The graph is only built for a solution with at least one list entity, hence one block node.
-        this.listEntityToBlockNodeMap =
+        // The graph is only built for a solution with at least one list entity, hence one chain node.
+        this.listEntityToChainNodeMap =
                 Objects.requireNonNull(innerGraph.variableReferenceToContainingNodeMap.get(listVariableMetaModel));
         this.listVariableAfterProcessorList =
                 innerGraph.variableReferenceToAfterProcessor.getOrDefault(listVariableMetaModel, List.of());
@@ -140,9 +140,9 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
                 recordChangedElement(entity);
             } else if (listEntityClass.isInstance(entity)) {
                 // A pre-chain variable, which outside an update can only be a genuine one:
-                // it has no graph node to reach the block node through,
-                // and the block updater walks the whole chain when its value changed.
-                markChainDirty(entity, blockUpdater.getChainState(entity));
+                // it has no graph node to reach the chain node through,
+                // and the updater walks the whole chain when its value changed.
+                markChainDirty(entity, chainUpdater.getChainState(entity));
             }
         }
         innerGraph.afterVariableChanged(variableReference, entity);
@@ -166,7 +166,7 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
             // The elements whose source variables changed record themselves; when none of them is in this list,
             // as when a forced update of every shadow variable simulates a change on every list,
             // the whole chain is walked.
-            markChainDirty(entity, blockUpdater.getChainState(entity));
+            markChainDirty(entity, chainUpdater.getChainState(entity));
         }
         markPostChainVariablesChanged(entity);
     }
@@ -190,14 +190,14 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
         var innerVariableLoopList = innerGraph.getVariableLoops();
         var variableLoopList = new ArrayList<VariableLoop>(innerVariableLoopList.size());
         for (var innerVariableLoop : innerVariableLoopList) {
-            // A loop that closes through a chain runs through its entity's block node, which the graph
+            // A loop that closes through a chain runs through its entity's chain node, which the graph
             // reports as the list variable; like the arbitrary graph, report the chain's elements instead.
             var involvedVariableSet = new LinkedHashSet<EntityVariablePair>();
             for (var entityVariablePair : innerVariableLoop.involvedVariableSet()) {
                 var entity = entityVariablePair.entity();
                 if (entityVariablePair.variableName().equals(listVariableName)
-                        && listEntityToBlockNodeMap.containsKey(entity)) {
-                    blockUpdater.addElementVariables(entity, involvedVariableSet);
+                        && listEntityToChainNodeMap.containsKey(entity)) {
+                    chainUpdater.addElementVariables(entity, involvedVariableSet);
                 } else {
                     involvedVariableSet.add(entityVariablePair);
                 }
@@ -208,7 +208,7 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
     }
 
     /**
-     * Stands in for the mark the graph derives from the list element locators, which the block node
+     * Stands in for the mark the graph derives from the list element locators, which the chain node
      * skips along with the edges. Without it, removing the list's last element would leave no element
      * to walk and no edge to the entity, so nothing would recompute its post-chain variables.
      */
@@ -225,7 +225,7 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
 
     /**
      * Classifies the recorded elements by the chain of their list entity.
-     * An unassigned element has no block node to walk it, so it is recomputed here.
+     * An unassigned element has no chain node to walk it, so it is recomputed here.
      */
     private void classifyChangedElements() {
         for (var element : changedElementList) {
@@ -234,11 +234,11 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
                 // A move changing an element before unassigning it records it twice, apart.
                 if (recomputedUnassignedElementSet.add(element)) {
                     recomputedUnassignedElementList.add(element);
-                    blockUpdater.recomputeUnassignedElement(element, changedVariableNotifier);
+                    chainUpdater.recomputeUnassignedElement(element, changedVariableNotifier);
                 }
                 continue;
             }
-            var chainState = blockUpdater.getChainState(listEntity);
+            var chainState = chainUpdater.getChainState(listEntity);
             chainState.addChangedElementIndex(listVariableState.getIndexOrFail(element));
             markChainDirty(listEntity, chainState);
         }
@@ -246,11 +246,11 @@ final class ListElementBlockVariableReferenceGraph<Solution_> implements Variabl
         forgetRecomputedUnassignedElements();
     }
 
-    private void markChainDirty(Object listEntity, ListElementBlockUpdater.ChainState chainState) {
+    private void markChainDirty(Object listEntity, ListChainUpdater.ChainState chainState) {
         if (chainState.markDirty()) {
             dirtyChainStateList.add(chainState);
-            // Every list entity of the solution the graph was built for has a block node.
-            innerGraph.markChanged(Objects.requireNonNull(listEntityToBlockNodeMap.get(listEntity)));
+            // Every list entity of the solution the graph was built for has a chain node.
+            innerGraph.markChanged(Objects.requireNonNull(listEntityToChainNodeMap.get(listEntity)));
         }
     }
 
