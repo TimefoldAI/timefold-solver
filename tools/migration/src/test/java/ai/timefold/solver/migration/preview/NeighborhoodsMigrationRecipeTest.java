@@ -4,18 +4,15 @@ import static org.openrewrite.java.Assertions.java;
 
 import java.util.List;
 
+import ai.timefold.solver.migration.AbstractRecipeTest;
 import ai.timefold.solver.migration.NoWildCardImportStyle;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
-@Execution(ExecutionMode.CONCURRENT)
-class NeighborhoodsMigrationRecipeTest implements RewriteTest {
+class NeighborhoodsMigrationRecipeTest extends AbstractRecipeTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
