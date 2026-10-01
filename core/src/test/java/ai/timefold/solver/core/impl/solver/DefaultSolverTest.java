@@ -69,6 +69,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.phase.Phase;
@@ -1167,7 +1168,8 @@ class DefaultSolverTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMultiVarSolution.class, TestdataMultiVarEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
-                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT);
 
         var problem = TestdataMultiVarSolution.generateUninitializedSolution(2, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
@@ -2724,9 +2726,10 @@ class DefaultSolverTest {
         @Override
         protected void execute(VariableDescriptorAwareScoreDirector<TestdataListSolution> scoreDirector) {
             var entity = scoreDirector.getWorkingSolution().getEntityList().getFirst();
-            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            var appendIndex = entity.getValueList().size();
+            scoreDirector.beforeListVariableChanged(entity, "valueList", appendIndex, appendIndex);
             entity.getValueList().add(new TestdataListValue("bad value"));
-            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+            scoreDirector.afterListVariableChanged(entity, "valueList", appendIndex, appendIndex + 1);
         }
     }
 
@@ -2864,7 +2867,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void ensureListVariableStateIsReleased() {
+    void ensureListVariableStateIsReusedAcrossPhases() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
                 TestdataListValue.class);
         var phaseConfigList = new ArrayList<>(solverConfig.getPhaseConfigList());
@@ -2879,20 +2882,24 @@ class DefaultSolverTest {
                 .findEntityDescriptorOrFail(TestdataListEntity.class)
                 .getListVariableDescriptor();
 
-        // Capture the SupplyManager's demand ref count right after each phase ends (CH, LS1, LS2 in order).
-        var countsAfterEachPhase = new ArrayList<Long>();
-        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataListSolution>() {
+        // Capture the state the score director hands out at the end of each phase (CH, LS1, LS2 in order).
+        var statesAfterEachPhase = new ArrayList<ListVariableState<TestdataListSolution, Object, Object>>();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
             @Override
             public void phaseEnded(AbstractPhaseScope<TestdataListSolution> phaseScope) {
-                countsAfterEachPhase.add(phaseScope.getScoreDirector().getSupplyManager()
-                        .getActiveCount(listVariableDescriptor.getStateDemand()));
+                statesAfterEachPhase.add(phaseScope.getScoreDirector().getListVariableState(listVariableDescriptor));
             }
         });
         solver.solve(problem);
-        // Three phases: CS, LS1 and LS2
-        assertThat(countsAfterEachPhase).hasSize(3);
-        // The count of demanded list variable state must be equal for both LS phases
-        assertThat(countsAfterEachPhase.get(2)).isEqualTo(countsAfterEachPhase.get(1));
+        // Three phases: CH, LS1 and LS2
+        assertThat(statesAfterEachPhase).hasSize(3);
+        /*
+         * The score director owns a single state for its entire lifetime.
+         * A phase borrows it in phaseStarted() and drops its reference in phaseEnded()
+         * no phase may acquire a state of its own.
+         */
+        var firstState = statesAfterEachPhase.get(0);
+        assertThat(statesAfterEachPhase).allSatisfy(state -> assertThat(state).isSameAs(firstState));
     }
 
     @NullMarked

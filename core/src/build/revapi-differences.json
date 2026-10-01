@@ -62,6 +62,102 @@
           "oldValue": "{\"terminationConfig\"}",
           "newValue": "{\"environmentMode\", \"terminationConfig\"}",
           "justification": "Environment mode per phase"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method long ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::structuralScore()",
+          "justification": "Score is a sealed interface that only the library's own Score implementations may implement; user code cannot be broken by a new method."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method boolean ai.timefold.solver.core.api.score.analysis.ScoreAnalysis<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::isSolutionStructurallyFlawed()",
+          "justification": "ScoreAnalysis is only ever returned by SolutionManager.analyze(); it is not implemented by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method ai.timefold.solver.core.api.score.analysis.StructuralFlawAnalysis ai.timefold.solver.core.api.score.analysis.ScoreAnalysis<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::structuralFlawAnalysis()",
+          "justification": "ScoreAnalysis is only ever returned by SolutionManager.analyze(); it is not implemented by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "interface ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector<A, B, ResultContainer_, Result_>",
+          "new": "interface ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector<A, B, ResultContainer_, Result_>",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NullMarked only refines JSpecify nullability defaults for static analysis; it adds no members and does not change binary or source compatibility."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "interface ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_>",
+          "new": "interface ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_>",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NullMarked only refines JSpecify nullability defaults for static analysis; it adds no members and does not change binary or source compatibility."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "interface ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector<A, B, C, ResultContainer_, Result_>",
+          "new": "interface ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector<A, B, C, ResultContainer_, Result_>",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NullMarked only refines JSpecify nullability defaults for static analysis; it adds no members and does not change binary or source compatibility."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "interface ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector<A, ResultContainer_, Result_>",
+          "new": "interface ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector<A, ResultContainer_, Result_>",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NullMarked only refines JSpecify nullability defaults for static analysis; it adds no members and does not change binary or source compatibility."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method <S extends ai.timefold.solver.core.api.score.Score<S>> S ai.timefold.solver.core.api.score.stream.test.MultiConstraintAssertion::getScore()",
+          "justification": "MultiConstraintAssertion is a fluent assertion type only ever returned by ConstraintVerifier; it is not implemented by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "interface ai.timefold.solver.core.api.score.stream.test.MultiConstraintAssertion",
+          "new": "interface ai.timefold.solver.core.api.score.stream.test.MultiConstraintAssertion",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NullMarked only refines JSpecify nullability defaults for static analysis; it adds no members and does not change binary or source compatibility."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method java.lang.Number ai.timefold.solver.core.api.score.stream.test.SingleConstraintAssertion::getImpact()",
+          "justification": "SingleConstraintAssertion is a fluent assertion type only ever returned by ConstraintVerifier; it is not implemented by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method <S extends ai.timefold.solver.core.api.score.Score<S>> S ai.timefold.solver.core.api.score.stream.test.SingleConstraintAssertion::getScore()",
+          "justification": "SingleConstraintAssertion is a fluent assertion type only ever returned by ConstraintVerifier; it is not implemented by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "interface ai.timefold.solver.core.api.score.stream.test.SingleConstraintAssertion",
+          "new": "interface ai.timefold.solver.core.api.score.stream.test.SingleConstraintAssertion",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NullMarked only refines JSpecify nullability defaults for static analysis; it adds no members and does not change binary or source compatibility."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method <Result_> Result_ ai.timefold.solver.core.api.solver.phase.PhaseCommandContext<Solution_>::executeTemporarily(ai.timefold.solver.core.preview.api.move.Move<Solution_>, java.util.function.Function<Solution_, Result_>, java.util.function.Function<Solution_, Result_>)",
+          "justification": "PhaseCommandContext is only ever supplied by the solver to PhaseCommand.changeWorkingSolution(context); it is not implemented by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method <Result_> Result_ ai.timefold.solver.core.api.solver.phase.PhaseCommandContext<Solution_>::executeTemporarilyAndCalculateScore(ai.timefold.solver.core.preview.api.move.Move<Solution_>, java.util.function.Function<Solution_, Result_>, java.util.function.Function<Solution_, Result_>)",
+          "justification": "PhaseCommandContext is only ever supplied by the solver to PhaseCommand.changeWorkingSolution(context); it is not implemented by user code."
         }
       ]
     }

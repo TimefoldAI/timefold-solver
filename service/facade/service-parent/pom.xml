@@ -89,7 +89,7 @@
     <!-- Dependencies -->
     <!-- Keep in sync with the build-parent -->
     <!-- ************************************************************************ -->
-    <version.io.quarkus>3.39.2</version.io.quarkus>
+    <version.io.quarkus>3.39.4</version.io.quarkus>
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
 
@@ -100,15 +100,15 @@
     <version.clean.plugin>3.5.0</version.clean.plugin>
     <version.compiler.plugin>3.16.0</version.compiler.plugin>
     <version.dependency.plugin>3.11.0</version.dependency.plugin>
-    <version.deploy.plugin>3.1.4</version.deploy.plugin>
-    <version.exec.plugin>3.6.3</version.exec.plugin>
+    <version.deploy.plugin>3.2.0</version.deploy.plugin>
+    <version.exec.plugin>3.6.4</version.exec.plugin>
     <version.flatten.plugin>1.8.0</version.flatten.plugin>
     <version.google-jib>3.5.2</version.google-jib>
-    <version.install.plugin>3.1.4</version.install.plugin>
+    <version.install.plugin>3.2.0</version.install.plugin>
     <version.jib-layer-filter-extension-maven>0.3.0</version.jib-layer-filter-extension-maven>
     <version.openapi-diff.plugin>2.1.7</version.openapi-diff.plugin>
     <version.openapi-generator.plugin>7.25.0</version.openapi-generator.plugin>
-    <version.spotless.plugin>3.10.1</version.spotless.plugin>
+    <version.spotless.plugin>3.10.2</version.spotless.plugin>
     <version.surefire.plugin>3.6.0</version.surefire.plugin>
 
     <!-- ************************************************************************ -->
@@ -200,6 +200,11 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-maven-plugin</artifactId>
+          <version>${revision}</version>
+        </plugin>
         <plugin>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>

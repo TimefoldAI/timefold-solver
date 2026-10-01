@@ -6,7 +6,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
@@ -19,7 +19,7 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
     private final IterableValueSelector<Solution_> valueSelector;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
-    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final int minimumRuinedCount;
     private final int maximumRuinedCount;
     private final RandomGenerator workingRandom;
@@ -27,13 +27,13 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
     public ListRuinRecreateMoveIterator(IterableValueSelector<Solution_> valueSelector,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
-            ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, int minimumRuinedCount,
+            ListVariableState<Solution_, Object, Object> listVariableState, int minimumRuinedCount,
             int maximumRuinedCount,
             RandomGenerator workingRandom) {
         this.valueSelector = valueSelector;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
-        this.listVariableStateSupply = listVariableStateSupply;
+        this.listVariableState = listVariableState;
         this.minimumRuinedCount = minimumRuinedCount;
         this.maximumRuinedCount = maximumRuinedCount;
         this.workingRandom = workingRandom;
@@ -56,7 +56,7 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
                 var selectedValue = valueIterator.next();
                 if (selectedValueSet.add(selectedValue)) {
                     selectedValueList.add(selectedValue);
-                    var affectedEntity = listVariableStateSupply.getInverseSingleton(selectedValue);
+                    var affectedEntity = listVariableState.getInverseSingleton(selectedValue);
                     if (affectedEntity != null) {
                         affectedEntitySet.add(affectedEntity);
                     }
@@ -70,7 +70,7 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
                 }
             }
         }
-        return new SelectorBasedListRuinRecreateMove<>(listVariableStateSupply.getSourceVariableDescriptor(),
+        return new SelectorBasedListRuinRecreateMove<>(listVariableState.getSourceVariableDescriptor(),
                 constructionHeuristicPhaseBuilder, solverScope, selectedValueList, affectedEntitySet,
                 workingRandom.nextLong());
     }

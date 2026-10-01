@@ -29,7 +29,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListM
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             CountSupplier minimumSelectedCountSupplier, CountSupplier maximumSelectedCountSupplier) {
         super(listVariableDescriptor);
-        this.valueSelector = FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableStateSupply);
+        this.valueSelector = FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableState);
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.minimumSelectedCountSupplier = minimumSelectedCountSupplier;
         this.maximumSelectedCountSupplier = maximumSelectedCountSupplier;
@@ -71,7 +71,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListM
     public Iterator<Move<Solution_>> iterator() {
         var valueSelectorSize = valueSelector.getSize();
         return new ListRuinRecreateMoveIterator<>(valueSelector, constructionHeuristicPhaseBuilder,
-                solverScope, listVariableStateSupply,
+                solverScope, listVariableState,
                 minimumSelectedCountSupplier.applyAsInt(valueSelectorSize),
                 maximumSelectedCountSupplier.applyAsInt(valueSelectorSize),
                 workingRandom);

@@ -18,7 +18,6 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
@@ -136,11 +135,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     @Override
     public Collection<Class<?>> getUpdaterClasses() {
         return Collections.emptyList();
-    }
-
-    @Override
-    public Demand<?> getProvidedDemand() {
-        throw new UnsupportedOperationException("Cascade update element shadow variable cannot be demanded.");
     }
 
     private record ShadowVariableTarget<Solution_>(EntityDescriptor<Solution_> entityDescriptor,

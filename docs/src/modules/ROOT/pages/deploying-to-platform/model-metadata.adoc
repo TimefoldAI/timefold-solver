@@ -30,7 +30,7 @@ The following `application.properties` describe your model's identity on the pla
 | Maturity level of the model. Defaults to `Experimental` if not set.
 |===
 
-Use `timefold.model.maturity-level` to tell consumers how stable a given model is, using the same https://docs.timefold.ai/timefold-platform/latest/models/versioning-and-maturity[maturity levels] Timefold uses for its own models (`Example`, `Experimental`, `Preview`, `Stable`, `Deprecated`).
+Use `timefold.model.maturity-level` to tell consumers how stable a given model is, using the same https://docs.timefold.ai/timefold-platform/latest/models/versioning-and-maturity[maturity levels] Timefold uses for its own models (`Template`, `Experimental`, `Preview`, `Stable`, `Deprecated`).
 This is especially useful once you're xref:deploying-to-platform/introduction.adoc#_integrations[running multiple versions of your model in parallel]: consumers can tell at a glance which version is safe to build on and which is still being validated, instead of having to ask you.
 
 === Logo

@@ -15,6 +15,8 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class TupleList<T extends Tuple> {
 
+    public static final TupleList EMPTY = new TupleList<>(-1, -1);
+
     private final int prevStoreIndex;
     private final int nextStoreIndex;
     private @Nullable T first;

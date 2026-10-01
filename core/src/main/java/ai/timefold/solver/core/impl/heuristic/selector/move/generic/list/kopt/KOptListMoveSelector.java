@@ -5,7 +5,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import java.util.Iterator;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.AbstractGenericListMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
@@ -26,8 +26,8 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
             IterableValueSelector<Solution_> originSelector, IterableValueSelector<Solution_> valueSelector,
             int minK, int maxK, int[] pickedKDistribution) {
         super(listVariableDescriptor);
-        this.originSelector = createEffectiveValueSelector(originSelector, this::getListVariableStateSupply);
-        this.valueSelector = createEffectiveValueSelector(valueSelector, this::getListVariableStateSupply);
+        this.originSelector = createEffectiveValueSelector(originSelector, this::getListVariableState);
+        this.valueSelector = createEffectiveValueSelector(valueSelector, this::getListVariableState);
         this.minK = minK;
         this.maxK = maxK;
         this.pickedKDistribution = pickedKDistribution;
@@ -38,7 +38,7 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
 
     private IterableValueSelector<Solution_> createEffectiveValueSelector(
             IterableValueSelector<Solution_> iterableValueSelector,
-            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
+            Supplier<ListVariableState<Solution_, Object, Object>> listVariableStateSupplier) {
         var filteredValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(iterableValueSelector, listVariableStateSupplier);
         return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupplier);
@@ -68,7 +68,7 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableStateSupply,
+        return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableState,
                 originSelector, valueSelector, minK, maxK, pickedKDistribution);
     }
 

@@ -4,34 +4,46 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableState;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Single source of truth for the inverse relation of a basic {@link PlanningVariable}.
+ * If the {@link InverseRelationShadowVariableDescriptor} is externalized,
+ * there is a field on an entity holding the inverse collection and that field is used.
+ * Otherwise, an internal map is used to track the inverse collection.
+ *
+ * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ */
 @NullMarked
-public final class ExternalizedBasicVariableStateSupply<Solution_> implements BasicVariableStateSupply<Solution_> {
+public final class BasicVariableState<Solution_>
+        implements BasicVariableChangeHandler<Solution_>, CollectionInverseVariableState {
 
     private final VariableDescriptor<Solution_> sourceVariableDescriptor;
     private final Consumer<Object> notifier;
 
     @Nullable
     private InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
+    @SuppressWarnings("rawtypes")
     @Nullable
-    private Map<Object, Set<Object>> inverseEntitySetMap;
+    private Map<Object, Set> inverseEntitySetMap;
 
-    public ExternalizedBasicVariableStateSupply(VariableDescriptor<Solution_> sourceVariableDescriptor,
-            Consumer<Object> notifier) {
+    BasicVariableState(VariableDescriptor<Solution_> sourceVariableDescriptor, Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
         this.notifier = notifier;
     }
 
-    @Override
     public void externalize(InverseRelationShadowVariableDescriptor<Solution_> descriptor) {
         if (shadowVariableDescriptor != null) {
             throw new IllegalStateException(
@@ -94,8 +106,8 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
             if (value == null) {
                 return;
             }
-            var inverseEntitySet = inverseEntitySetMap.computeIfAbsent(value,
-                    k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+            var inverseEntitySet =
+                    inverseEntitySetMap.computeIfAbsent(value, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
             var addSucceeded = inverseEntitySet.add(entity);
             if (!addSucceeded) {
                 throw new IllegalStateException(
@@ -179,13 +191,11 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
     }
 
     @Override
-    public Collection<?> getInverseCollection(Object planningValue) {
+    @SuppressWarnings("unchecked")
+    public <Entity_> Collection<Entity_> getInverseCollection(Object planningValue) {
         if (shadowVariableDescriptor == null) {
             var inverseEntitySet = inverseEntitySetMap.get(planningValue);
-            if (inverseEntitySet == null) {
-                return Collections.emptySet();
-            }
-            return inverseEntitySet;
+            return Objects.requireNonNullElse(inverseEntitySet, Collections.emptySet());
         } else {
             return shadowVariableDescriptor.getValue(planningValue);
         }

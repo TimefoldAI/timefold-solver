@@ -78,7 +78,7 @@ import io.smallrye.reactive.messaging.memory.InMemorySink;
 public class EmployeeScheduleResourceTest {
 
     private static final Duration TEST_AWAIT_TIMEOUT_DURATION = Duration.ofSeconds(60);
-    private static final Duration TEST_POLL_INTERVAL_MILLIS = Duration.ofMillis(500);
+    private static final Duration TEST_POLL_INTERVAL_MILLIS = Duration.ofMillis(200);
 
     private static final LocalDate TOMORROW = LocalDate.now().plusDays(1);
     private static final OffsetDateTime TOMORROW_08_00 = OffsetDateTime.of(TOMORROW, LocalTime.of(8, 0), ZoneOffset.UTC);
@@ -202,6 +202,11 @@ public class EmployeeScheduleResourceTest {
         EmployeeSchedule inputSchedule = createInputEmployeeSchedule();
 
         Metadata<HardMediumSoftScore> uploadMetadata = post(inputSchedule, OperationOnPost.NONE);
+
+        await()
+                .atMost(TEST_AWAIT_TIMEOUT_DURATION)
+                .pollInterval(TEST_POLL_INTERVAL_MILLIS)
+                .until(() -> !datasetComputedSink.received().isEmpty());
 
         ModelResponse<HardMediumSoftScore, EmployeeSchedule, EmployeeScheduleInputMetrics, EmployeeScheduleOutputMetrics> response =
                 getModelResponse(uploadMetadata);

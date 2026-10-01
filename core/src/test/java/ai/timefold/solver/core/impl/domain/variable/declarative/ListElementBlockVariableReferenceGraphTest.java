@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
@@ -48,15 +48,15 @@ class ListElementBlockVariableReferenceGraphTest {
         assertThat(graphStructureAndDirection.blockedElementClass()).isEqualTo(TestdataMultiEntityChainVisit.class);
 
         var scoreDirector = Mockito.mock(InnerScoreDirector.class);
-        var listStateSupply = Mockito.mock(ListVariableStateSupply.class);
-        Mockito.when(scoreDirector.getListVariableStateSupply(Mockito.any())).thenReturn(listStateSupply);
+        var listVariableState = Mockito.mock(ListVariableState.class);
+        Mockito.when(scoreDirector.getListVariableState(Mockito.any())).thenReturn(listVariableState);
 
         // The list variable listeners are not running, so the element shadow variables are set by hand.
-        link(listStateSupply, vehicleA, a1, null, a2, 0);
-        link(listStateSupply, vehicleA, a2, a1, null, 1);
-        link(listStateSupply, vehicleB, b1, null, b2, 0);
-        link(listStateSupply, vehicleB, b2, b1, null, 1);
-        link(listStateSupply, null, a3, null, null, -1);
+        link(listVariableState, vehicleA, a1, null, a2, 0);
+        link(listVariableState, vehicleA, a2, a1, null, 1);
+        link(listVariableState, vehicleB, b1, null, b2, 0);
+        link(listVariableState, vehicleB, b2, b1, null, 1);
+        link(listVariableState, null, a3, null, null, -1);
 
         var graph = DefaultShadowVariableSessionFactory.buildListElementBlockGraph(
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(
@@ -76,8 +76,8 @@ class ListElementBlockVariableReferenceGraphTest {
 
         // Append a3 to the end of vehicle A's route.
         vehicleA.getVisits().add(a3);
-        link(listStateSupply, vehicleA, a3, a2, null, 2);
-        Mockito.when(listStateSupply.getNextElement(a2)).thenReturn(a3);
+        link(listVariableState, vehicleA, a3, a2, null, 2);
+        Mockito.when(listVariableState.getNextElement(a2)).thenReturn(a3);
 
         var visitMetaModel = solutionDescriptor.getMetaModel().entity(TestdataMultiEntityChainVisit.class);
         graph.afterVariableChanged(visitMetaModel.variable("vehicle"), a3);
@@ -197,13 +197,13 @@ class ListElementBlockVariableReferenceGraphTest {
     }
 
     private static void link(
-            ListVariableStateSupply<TestdataMultiEntityChainSolution, TestdataMultiEntityChainVehicle, TestdataMultiEntityChainVisit> listStateSupply,
+            ListVariableState<TestdataMultiEntityChainSolution, TestdataMultiEntityChainVehicle, TestdataMultiEntityChainVisit> listVariableState,
             TestdataMultiEntityChainVehicle vehicle, TestdataMultiEntityChainVisit visit,
             TestdataMultiEntityChainVisit previousVisit, TestdataMultiEntityChainVisit nextVisit, int index) {
         visit.setVehicle(vehicle);
         visit.setPreviousVisit(previousVisit);
-        Mockito.doReturn(index).when(listStateSupply).getIndexOrElse(Mockito.eq(visit), Mockito.anyInt());
-        Mockito.when(listStateSupply.getNextElement(visit)).thenReturn(nextVisit);
-        Mockito.when(listStateSupply.getInverseSingleton(visit)).thenReturn(vehicle);
+        Mockito.doReturn(index).when(listVariableState).getIndexOrElse(Mockito.eq(visit), Mockito.anyInt());
+        Mockito.when(listVariableState.getNextElement(visit)).thenReturn(nextVisit);
+        Mockito.when(listVariableState.getInverseSingleton(visit)).thenReturn(vehicle);
     }
 }

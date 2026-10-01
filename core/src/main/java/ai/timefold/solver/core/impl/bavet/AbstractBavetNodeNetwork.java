@@ -54,9 +54,9 @@ public abstract class AbstractBavetNodeNetwork {
      * Aligned 1:1 with {@link #layeredActivePropagators} (same layer indices):
      * for each layer, the subset of its active nodes that implement {@link DeferredSettleAware}
      * and {@link DeferredSettleAware#canDeferWork()} returns {@code true};
-     * i.e. filtering join and ifExists/ifNotExists nodes.
+     * i.e. filtering join and ifExists/ifNotExists nodes whose two inputs sit far enough apart.
      * Usually small or empty
-     * (non-filtering two-input nodes never enqueue anything and are excluded here at build time)
+     * (two-input nodes that can never defer never enqueue anything and are excluded here at build time)
      * so the common case pays nothing beyond an empty-array iteration in {@link #settleLayer}.
      */
     private DeferredSettleAware @Nullable [][] layeredActiveDeferredNodes;
@@ -104,7 +104,17 @@ public abstract class AbstractBavetNodeNetwork {
     }
 
     public void settle() {
-        if (layeredActivePropagators == null) {
+        // The very first settle fills an empty network.
+        // A session does receive updates and retracts before it (setWorkingSolution updates shadow variables
+        // between inserting the facts and settling), but no root tuple has reached TupleState.OK yet,
+        // so each of those collapses inside the root node's own queue:
+        // an update on a CREATING tuple is dropped, and a retract turns it ABORTING.
+        // Every tuple that reaches a node past the roots therefore arrives exactly once, as an insert,
+        // and none of them can be stale.
+        // The deferring nodes go eager for the duration,
+        // which spares them a second full cross-match walk in prepareForSettle().
+        var preloadingActive = layeredActivePropagators == null;
+        if (preloadingActive) {
             // Remove inactive nodes and settle the layers in one go.
             var initializedRootNodes = Collections.newSetFromMap(new IdentityHashMap<>());
             declaredClassToNodeMap.forEach((declaredClass, rootNodes) -> rootNodes.forEach(rootNode -> {
@@ -137,9 +147,25 @@ public abstract class AbstractBavetNodeNetwork {
                             .map(DeferredSettleAware.class::cast)
                             .toArray(DeferredSettleAware[]::new))
                     .toArray(DeferredSettleAware[][]::new);
+            notifyPreload(true);
         }
         for (var i = 0; i < layeredActivePropagators.length; i++) {
             settleLayer(i);
+        }
+        if (preloadingActive) {
+            notifyPreload(false);
+        }
+    }
+
+    private void notifyPreload(boolean preloadingActive) {
+        for (var layer : layeredActiveDeferredNodes) {
+            for (var node : layer) {
+                if (preloadingActive) {
+                    node.preloadStarted();
+                } else {
+                    node.preloadEnded();
+                }
+            }
         }
     }
 
