@@ -3,34 +3,22 @@ package ai.timefold.solver.service.definition.impl.executionprofile;
 import java.util.Map;
 
 import ai.timefold.solver.service.definition.internal.executionprofile.ExecutionProfile;
-import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 
 /**
- * Writes a thread dump when the solver JVM fails with a {@link OutOfMemoryError}.
+ * Writes a thread dump and a heap dump when the solver runs short of memory, before the container is {@code OOMKilled}.
  * <p>
- * The profile supplies an {@code -XX:OnOutOfMemoryError} hook that sends the JVM a {@code SIGQUIT}, plus VM output logging
- * that captures the resulting thread dump into the run's execution artifacts, through {@code JAVA_TOOL_OPTIONS}.
+ * The profile enables the solver worker's memory watchdog, which checks the process memory against the container limit every
+ * second. The first time it reaches the threshold, the watchdog writes both dumps into the execution-profile artifacts
+ * directory and fails the run, which uploads them. A memory spike that kills the container between two checks is not
+ * captured.
  * <p>
- * The hook only fires on an in-JVM {@code java.lang.OutOfMemoryError}. A container that is {@code OOMKilled} receives a
- * kernel SIGKILL, which gives the JVM no chance to run any error handling, so that case is not covered. The optional
- * {@code maxHeapMb} run option sets {@code -Xmx}, which also lowers the default direct memory limit; a heap well below the
- * container limit makes the JVM run out of memory before the container does. Without it the image's default heap applies.
+ * The profile deliberately leaves the heap size alone, since lowering it could cause out-of-memory errors that would not
+ * otherwise occur. Instead, the watchdog fails the run early, leaving room below the container limit to write the dumps.
  */
 public final class ThreadDumpOnOomExecutionProfile implements ExecutionProfile {
 
-    static final String PARAMETER_MAX_HEAP_MB = "maxHeapMb";
-
-    static final String ENV_JAVA_TOOL_OPTIONS = "JAVA_TOOL_OPTIONS";
-
-    static final String DUMP_DIRECTORY = "${" + EnvironmentVars.ENV_TIMEFOLD_EXECUTION_PROFILE_DIR + ":-"
-            + EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR + "}";
-
-    static final String VM_LOG_FLAGS = "-XX:+UnlockDiagnosticVMOptions -XX:+LogVMOutput -XX:LogFile=/tmp/timefold-jvm-%p.log";
-
-    static final String VM_LOG_FILE = "/tmp/timefold-jvm-pid%p.log";
-
-    static final String ON_OOM_FLAG = "-XX:OnOutOfMemoryError='mkdir -p " + DUMP_DIRECTORY + "; ln -f " + VM_LOG_FILE + " "
-            + DUMP_DIRECTORY + "/thread-dump-%p.log; kill -3 %p'";
+    /** Environment-variable form of {@code ai.timefold.solver.monitoring.memory.enabled}. */
+    static final String ENV_MEMORY_WATCHDOG_ENABLED = "AI_TIMEFOLD_SOLVER_MONITORING_MEMORY_ENABLED";
 
     @Override
     public String id() {
@@ -39,35 +27,17 @@ public final class ThreadDumpOnOomExecutionProfile implements ExecutionProfile {
 
     @Override
     public String name() {
-        return "Thread dump on OOM";
+        return "Thread and heap dump on high memory";
     }
 
     @Override
     public String description() {
-        return "Writes a thread dump to the run's execution artifacts when the JVM runs out of memory. "
-                + "Optionally, the maximum heap size in MiB can be supplied as the '" + PARAMETER_MAX_HEAP_MB + "' run option.";
+        return "Writes a thread dump and a heap dump to the run's execution artifacts and fails the run when memory usage "
+                + "gets close to the limit, before the container is killed.";
     }
 
     @Override
     public Map<String, String> toEnvironment(Map<String, String> options) {
-        String flags = VM_LOG_FLAGS + " " + ON_OOM_FLAG;
-        String maxHeapMb = options == null ? null : options.get(PARAMETER_MAX_HEAP_MB);
-        if (maxHeapMb == null) {
-            return Map.of(ENV_JAVA_TOOL_OPTIONS, flags);
-        }
-        long heapMb;
-        try {
-            heapMb = Long.parseLong(maxHeapMb);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                    "Execution profile '" + id() + "' requires option '" + PARAMETER_MAX_HEAP_MB + "' to be a long, but was: "
-                            + maxHeapMb);
-        }
-        if (heapMb < 1) {
-            throw new IllegalArgumentException(
-                    "Execution profile '" + id() + "' requires option '" + PARAMETER_MAX_HEAP_MB
-                            + "' to be a positive number of MiB, but was: " + maxHeapMb);
-        }
-        return Map.of(ENV_JAVA_TOOL_OPTIONS, "-Xmx" + heapMb + "m " + flags);
+        return Map.of(ENV_MEMORY_WATCHDOG_ENABLED, "true");
     }
 }
