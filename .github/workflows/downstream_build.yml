@@ -32,8 +32,12 @@ jobs:
     permissions:
       contents: read
     concurrency:
-      group: downstream-${{ inputs.repository }}-${{ github.event_name }}-${{ inputs.head_ref }}
+      group: downstream-${{ inputs.repository }}-${{ github.event_name }}-${{ inputs.head_ref }}-${{ matrix.java-version }}
       cancel-in-progress: true
+    strategy:
+      fail-fast: false # A broken JDK must not cancel the others.
+      matrix:
+        java-version: [ 25, 27 ] # Current LTS and latest JDK; replace 27 on each JDK release.
     timeout-minutes: 120
     steps:
       # Clone timefold-solver
@@ -89,10 +93,10 @@ jobs:
           path: ./${{ inputs.repository }}
           fetch-depth: 0
 
-      - name: Setup Temurin 25 and Maven
+      - name: Setup Temurin and Maven
         uses: actions/setup-java@v6.0.1
         with:
-          java-version: '25'
+          java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
           cache: 'maven'
 

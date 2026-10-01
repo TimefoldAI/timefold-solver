@@ -2,15 +2,13 @@ package ai.timefold.solver.migration.v2;
 
 import static org.openrewrite.java.Assertions.java;
 
+import ai.timefold.solver.migration.AbstractRecipeTest;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 
-@Execution(ExecutionMode.CONCURRENT)
-class ConstraintArgRemovalMigrationRecipeTest implements RewriteTest {
+class ConstraintArgRemovalMigrationRecipeTest extends AbstractRecipeTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

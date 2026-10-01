@@ -33,8 +33,7 @@
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
     <version.ch.qos.logback>1.6.4</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
-    <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
-    <version.io.quarkus>3.39.4</version.io.quarkus>
+    <version.io.quarkus>3.39.5</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.26.1</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
@@ -225,11 +224,6 @@
         <groupId>com.networknt</groupId>
         <artifactId>json-schema-validator</artifactId>
         <version>${version.com.networknt.json-schem-validator}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.enterprise</groupId>
-        <artifactId>jakarta.enterprise.cdi-api</artifactId>
-        <version>${version.jakarta.enterprise.cdi-api}</version>
       </dependency>
       <dependency>
         <groupId>org.mapstruct</groupId>
