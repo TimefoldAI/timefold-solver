@@ -139,11 +139,8 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             if (elementEntityClass.isInstance(entity)) {
                 recordChangedElement(entity);
             } else if (listEntityClass.isInstance(entity)) {
-                // A genuine pre-chain variable has no graph node to reach the chain node through,
-                // and the updater walks the whole chain when its value changed.
-                // Setting another working solution also sends here the consistency of its list entities,
-                // through their first declarative variable, which may be a pre-chain one;
-                // this graph has no chain for them.
+                // A genuine pre-chain variable has no graph node to reach the chain node through.
+                // Null for a list entity of another working solution, while its graph is built.
                 var chainState = chainUpdater.getChainState(entity);
                 if (chainState != null) {
                     markChainDirty(entity, chainState);
@@ -171,7 +168,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             // The elements whose source variables changed record themselves; when none of them is in this list,
             // as when a forced update of every shadow variable simulates a change on every list,
             // the whole chain is walked.
-            markChainDirty(entity, chainUpdater.getChainState(entity));
+            markChainDirty(entity, Objects.requireNonNull(chainUpdater.getChainState(entity)));
         }
         markPostChainVariablesChanged(entity);
     }
@@ -243,7 +240,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
                 }
                 continue;
             }
-            var chainState = chainUpdater.getChainState(listEntity);
+            var chainState = Objects.requireNonNull(chainUpdater.getChainState(listEntity));
             chainState.addChangedElementIndex(listVariableState.getIndexOrFail(element));
             markChainDirty(listEntity, chainState);
         }

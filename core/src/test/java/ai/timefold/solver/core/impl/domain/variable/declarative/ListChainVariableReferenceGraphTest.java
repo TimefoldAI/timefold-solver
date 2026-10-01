@@ -50,7 +50,7 @@ class ListChainVariableReferenceGraphTest {
 
         var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor,
                 vehicleA, vehicleB, a1, a2, a3, b1, b2);
-        assertThat(graphStructureAndDirection.chainElementClass()).isEqualTo(TestdataMultiEntityChainVisit.class);
+        assertThat(graphStructureAndDirection.parentMetaModel().entity().type()).isEqualTo(TestdataMultiEntityChainVisit.class);
 
         var scoreDirector = Mockito.mock(InnerScoreDirector.class);
         var listVariableState = Mockito.mock(ListVariableState.class);

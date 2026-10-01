@@ -219,7 +219,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             GraphDescriptor<Solution_> graphDescriptor,
             GraphStructure.GraphStructureAndDirection graphStructureAndDirection) {
         var solutionDescriptor = graphDescriptor.solutionDescriptor();
-        var elementEntityClass = Objects.requireNonNull(graphStructureAndDirection.chainElementClass());
+        var elementEntityClass = Objects.requireNonNull(graphStructureAndDirection.parentMetaModel()).entity().type();
         var allDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         var listVariableDescriptor = Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor());
         // The elements' consistency follows their list entity's, so the chain node reports
@@ -281,7 +281,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var chainUpdater = new ListChainUpdater<>(listVariableDescriptor,
                 graphStructureAndDirection.direction() == ParentVariableType.PREVIOUS, listEntityConsistencyState,
                 elementConsistencyState, sortedElementDescriptors, preChainVariableDescriptorList,
-                hasNoNonDeclarativeSourcesFromParent(elementDescriptorList));
+                canChainWalkTerminateEarly(elementDescriptorList));
 
         var innerGraphDescriptor = new GraphDescriptor<>(graphDescriptor.consistencyTracker(), solutionDescriptor,
                 graphDescriptor.ignoreInconsistentSolutions(), new VariableReferenceGraphBuilder<>(changedVariableNotifier),
@@ -345,16 +345,32 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         }
     }
 
+    /**
+     * Like {@link #hasNoNonDeclarativeSourcesFromParent(List)}, but ignoring the inverse sources:
+     * a change of the pre-chain variable they read, declarative or genuine, walks the whole chain,
+     * so no walk from a changed element needs to reach the elements reading it.
+     */
+    private static <Solution_> boolean canChainWalkTerminateEarly(
+            List<DeclarativeShadowVariableDescriptor<Solution_>> elementDescriptorList) {
+        for (var elementDescriptor : elementDescriptorList) {
+            for (var source : elementDescriptor.getSources()) {
+                if (source.parentVariableType() == ParentVariableType.INVERSE) {
+                    continue;
+                }
+                for (var sourceReference : source.variableSourceReferences()) {
+                    if (!sourceReference.isTopLevel() && !sourceReference.isDeclarative()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     private static <Solution_> boolean hasNoNonDeclarativeSourcesFromParent(
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariables) {
         for (var declarativeShadowVariable : declarativeShadowVariables) {
             for (var source : declarativeShadowVariable.getSources()) {
-                if (source.parentVariableType() == ParentVariableType.INVERSE) {
-                    // Only the chain node accepts such a source, as a pre-chain variable:
-                    // its change walks the whole chain, so no walk from a changed element needs to reach
-                    // the elements reading it.
-                    continue;
-                }
                 for (var sourceReference : source.variableSourceReferences()) {
                     if (!sourceReference.isTopLevel() && !sourceReference.isDeclarative()) {
                         return false;

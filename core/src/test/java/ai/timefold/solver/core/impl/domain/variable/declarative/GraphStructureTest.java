@@ -163,7 +163,8 @@ class GraphStructureTest {
                 TestdataListElementSolution.buildSolutionDescriptor(), entity, value))
                 .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("chainElementClass", TestdataListElementValue.class);
+                .extracting(structure -> structure.parentMetaModel().entity().type())
+                .isEqualTo(TestdataListElementValue.class);
     }
 
     @Test
@@ -196,7 +197,8 @@ class GraphStructureTest {
                 TestdataMultiEntityChainSolution.buildSolutionDescriptor(), vehicleA, vehicleB, visit))
                 .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainVisit.class);
+                .extracting(structure -> structure.parentMetaModel().entity().type())
+                .isEqualTo(TestdataMultiEntityChainVisit.class);
     }
 
     @Test
@@ -207,7 +209,8 @@ class GraphStructureTest {
                 TestdataMultiEntityChainNextSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.NEXT)
-                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainNextVisit.class);
+                .extracting(structure -> structure.parentMetaModel().entity().type())
+                .isEqualTo(TestdataMultiEntityChainNextVisit.class);
     }
 
     @Test
@@ -229,7 +232,8 @@ class GraphStructureTest {
                 TestdataMultiEntityChainLoopSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainLoopVisit.class);
+                .extracting(structure -> structure.parentMetaModel().entity().type())
+                .isEqualTo(TestdataMultiEntityChainLoopVisit.class);
     }
 
     @Test
@@ -242,7 +246,8 @@ class GraphStructureTest {
                 TestdataMultiEntityChainElementSourcedSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
                 .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainElementSourcedVisit.class);
+                .extracting(structure -> structure.parentMetaModel().entity().type())
+                .isEqualTo(TestdataMultiEntityChainElementSourcedVisit.class);
     }
 
     @Test
@@ -254,7 +259,8 @@ class GraphStructureTest {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainSlackSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
-                .hasFieldOrPropertyWithValue("chainElementClass", TestdataMultiEntityChainSlackVisit.class);
+                .extracting(structure -> structure.parentMetaModel().entity().type())
+                .isEqualTo(TestdataMultiEntityChainSlackVisit.class);
     }
 
     @Test

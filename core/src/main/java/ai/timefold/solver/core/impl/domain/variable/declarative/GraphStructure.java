@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.util.MutableInt;
@@ -51,7 +52,7 @@ public enum GraphStructure {
 
     /**
      * A graph structure where the elements of a planning list variable,
-     * of {@link GraphStructureAndDirection#chainElementClass()}, are not graph nodes.
+     * which declare the {@link GraphStructureAndDirection#parentMetaModel()}, are not graph nodes.
      * Each list entity gets a single chain node for its elements instead,
      * ordered after the variables its elements read through their inverse
      * and before the variables sourced from its elements.
@@ -66,14 +67,7 @@ public enum GraphStructure {
 
     public record GraphStructureAndDirection(GraphStructure structure,
             @Nullable VariableMetaModel<?, ?, ?> parentMetaModel,
-            @Nullable ParentVariableType direction,
-            @Nullable Class<?> chainElementClass) {
-
-        public GraphStructureAndDirection(GraphStructure structure,
-                @Nullable VariableMetaModel<?, ?, ?> parentMetaModel,
-                @Nullable ParentVariableType direction) {
-            this(structure, parentMetaModel, direction, null);
-        }
+            @Nullable ParentVariableType direction) {
     }
 
     public static <Solution_> GraphStructureAndDirection determineGraphStructure(
@@ -189,15 +183,13 @@ public enum GraphStructure {
         if (parentMetaModel == null) {
             return null;
         }
-        // The class declaring the directional parent; the elements may be of any
-        // subclass of it, as long as none of them declares a declarative variable.
-        return new GraphStructureAndDirection(LIST_CHAIN, null, direction, parentMetaModel.entity().type());
+        return new GraphStructureAndDirection(LIST_CHAIN, parentMetaModel, direction);
     }
 
     /**
      * Non-null if the planning list variable's elements can be excluded from the variable
      * reference graph and represented by a per-entity chain node instead;
-     * see {@link GraphStructureAndDirection#chainElementClass()}.
+     * see {@link #LIST_CHAIN}.
      * Only the element class's sources and the references towards the element class are
      * checked here: the rest of the model is covered by the graph, whatever its structure.
      */
@@ -212,7 +204,9 @@ public enum GraphStructure {
         if (listChain == null) {
             return null;
         }
-        var elementEntityClass = listChain.chainElementClass();
+        // The class declaring the directional parent; the elements may be of any
+        // subclass of it, as long as none of them declares a declarative variable.
+        var elementEntityClass = Objects.requireNonNull(listChain.parentMetaModel()).entity().type();
         var listEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
         var listEntityClass = listEntityDescriptor.getEntityClass();
         if (!elementEntityClass.isAssignableFrom(listVariableDescriptor.getElementType())

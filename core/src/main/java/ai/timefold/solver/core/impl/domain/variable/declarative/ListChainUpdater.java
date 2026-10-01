@@ -228,6 +228,10 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         updateElement(element, changedVariableNotifier);
     }
 
+    /**
+     * @return null for a list entity of another working solution
+     */
+    @Nullable
     ChainState getChainState(Object listEntity) {
         return listEntityToChainStateMap.get(listEntity);
     }
