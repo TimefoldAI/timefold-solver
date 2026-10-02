@@ -147,6 +147,97 @@ class TimeslotHolidayEnricher : SolverModelEnricher<Timetable> {
 --
 ====
 
+[#transportTypes]
+== Transport types
+
+Models whose solution implements `LocationsAwareSolverModel` are enriched by the built-in `TravelTimeMatrixEnricher`,
+which fetches travel time and distance matrices from the map service and stores them on each `Location`.
+
+Which routing profile those matrices describe is controlled by the transport type:
+
+[cols="1,3"]
+|===
+| Value | Meaning
+
+| `car`
+| The default. Distances follow the road network as driven by a car.
+
+| `bicycle`
+| Distances follow the cycling network.
+
+| `foot`
+| Distances follow the walking network.
+
+| `auto-select`
+| Not a routing profile. The transport types are taken from the dataset instead; see <<autoSelect>>.
+|===
+
+Set it with the `timefold.platform.map-service.transport-type` property.
+A deployment may additionally be restricted to a subset of transport types with
+`timefold.platform.map-service.allowed-transport-types`, a comma-separated list; when it is not set, every transport
+type is allowed.
+
+A dataset that uses a transport type other than the configured one is rejected before any map service call is made,
+because a deployment only has the map for the profile it is configured with.
+
+[#readingMatrices]
+=== Reading travel times and distances
+
+`Location` exposes an overload of each lookup that takes the transport type.
+Use it whenever your model distinguishes between transport types:
+
+[source,java,options="nowrap"]
+----
+TravelTime travelTime = origin.getTravelTimeTo(destination, TransportType.BICYCLE);
+TravelDistance distance = origin.getDistanceTo(destination, TransportType.BICYCLE);
+
+// The traffic-aware overloads take the departure time as well.
+TravelTime atNoon = origin.getTravelTimeTo(destination, departureTime, TransportType.BICYCLE);
+----
+
+The overloads without a transport type keep working and resolve to the primary transport type of the deployment,
+which is defined in <<autoSelect>>.
+
+If your model stores matrices itself rather than relying on the enricher, the setters take the transport type too:
+
+[source,java,options="nowrap"]
+----
+location.setTravelTimeMatrix(TransportType.BICYCLE, travelTimeMatrix);
+location.setDistanceMatrix(TransportType.BICYCLE, distanceMatrix);
+----
+
+[#autoSelect]
+=== Routing one dataset with several transport types
+
+With `timefold.platform.map-service.transport-type=auto-select`, the transport types are not fixed by configuration.
+The enricher asks the solution which ones the dataset actually uses, by overriding `getTransportTypes()`:
+
+[source,java,options="nowrap"]
+----
+@Override
+public List<TransportType> getTransportTypes() {
+    return vehicles.stream()
+            .map(Vehicle::getTransportType)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+}
+----
+
+Each of those transport types is validated against the allowed transport types and then fetched in its own map service
+request, so a dataset using two transport types results in two requests and two sets of matrices per `Location`.
+A dataset that uses a transport type the deployment is not allowed to route with is rejected before any request is made.
+When the solution returns an empty list, the default transport type is used.
+
+One of the transport types is the *primary* one: the configured one when it is fixed, otherwise `car` if the dataset
+uses it, and the first one in declaration order otherwise. The primary transport type is special in two ways:
+
+* The model-level map metadata — the locations that are not in the map, and the resolved map region — comes from its
+request only.
+* Its matrices also back the lookups that do not name a transport type, so those keep answering on a deployment
+configured for a single non-default transport type.
+
+
 [#enrichmentDirector]
 == Controlling enrichment order
 
