@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-class ThreadDumpOnOomExecutionProfileTest {
+class MemoryDumpExecutionProfileTest {
 
-    private final ThreadDumpOnOomExecutionProfile profile = new ThreadDumpOnOomExecutionProfile();
+    private final MemoryDumpExecutionProfile profile = new MemoryDumpExecutionProfile();
 
     @Test
     void enablesMemoryWatchdog() {

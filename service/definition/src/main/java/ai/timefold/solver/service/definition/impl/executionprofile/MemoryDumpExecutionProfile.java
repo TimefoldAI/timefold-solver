@@ -15,14 +15,14 @@ import ai.timefold.solver.service.definition.internal.executionprofile.Execution
  * The profile deliberately leaves the heap size alone, since lowering it could cause out-of-memory errors that would not
  * otherwise occur. Instead, the watchdog fails the run early, leaving room below the container limit to write the dumps.
  */
-public final class ThreadDumpOnOomExecutionProfile implements ExecutionProfile {
+public final class MemoryDumpExecutionProfile implements ExecutionProfile {
 
     /** Environment-variable form of {@code ai.timefold.solver.monitoring.memory.enabled}. */
     static final String ENV_MEMORY_WATCHDOG_ENABLED = "AI_TIMEFOLD_SOLVER_MONITORING_MEMORY_ENABLED";
 
     @Override
     public String id() {
-        return "thread-dump-on-oom";
+        return "memory-dump";
     }
 
     @Override
