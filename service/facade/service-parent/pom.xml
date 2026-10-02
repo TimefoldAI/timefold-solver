@@ -511,22 +511,6 @@
           <artifactId>timefold-solver-enterprise-service</artifactId>
         </dependency>
         <dependency>
-          <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-service-storage-fs</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-service-storage-azure</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-service-storage-gcs</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-service-storage-s3</artifactId>
-        </dependency>
-        <dependency>
           <groupId>ai.timefold.solver</groupId>
           <artifactId>timefold-solver-service-defaults</artifactId>
         </dependency>

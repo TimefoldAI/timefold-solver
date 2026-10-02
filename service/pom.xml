@@ -28,6 +28,7 @@
     <module>build/build-support</module>
     <module>build/config</module>
     <module>definition</module>
+    <module>storage-inmemory</module>
     <module>json</module>
     <module>jackson</module>
     <module>rest</module>
