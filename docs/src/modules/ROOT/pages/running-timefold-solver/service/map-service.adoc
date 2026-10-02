@@ -1,0 +1,401 @@
+[#mapService]
+= Map service
+:description: Let the platform build a travel time and distance matrix for your model and inject it into your locations before every solve.
+:doctype: book
+:sectnums:
+:icons: font
+
+A routing model needs to know how long it takes to drive from one location to another.
+Computing that yourself means either a crude straight-line approximation, or building and
+maintaining an integration with a road-network routing engine.
+
+The Timefold ships a *maps extension* that does this for you.
+Your solver model declares which locations it uses; before every solve, the maps extension builds a
+travel time and distance matrix covering those locations and injects it into them.
+Your domain classes then simply ask a location how far away another location is.
+
+The https://github.com/TimefoldAI/timefold-quickstarts[`vehicle-routing` quickstart^] uses the map
+service exactly this way, and is used as the running example throughout this page.
+
+[#mapServiceLocation]
+== The `Location` type
+
+Every point on the map is an `ai.timefold.solver.service.maps.api.model.Location`, constructed from
+a latitude and a longitude:
+
+[source,java]
+----
+import ai.timefold.solver.service.maps.api.model.Location;
+
+Location location = new Location(51.01, 3.66); // latitude, longitude
+----
+
+A `Location` is more than a coordinate pair: once the map extension has enriched it, it carries a
+reference into the travel time and distance matrix, so it can answer questions about other
+locations in that same matrix:
+
+[source,java]
+----
+TravelTime drivingTime = origin.getDrivingTimeTo(destination);
+TravelDistance distance = origin.getDistanceTo(destination);
+
+long seconds = drivingTime.seconds();
+long meters = distance.meters();
+----
+
+`TravelTime` and `TravelDistance` are records with an explicit notion of reachability.
+A pair of locations that the map service could not connect by road yields
+`TravelTime.UNREACHABLE` rather than a silently wrong number:
+
+[source,java]
+----
+if (!drivingTime.isReachable()) {
+    // No road connection between these two locations.
+}
+----
+
+This is a fail-fast type: `seconds()` on an unreachable `TravelTime` throws
+`IllegalStateException` ("Cannot retrieve an unreachable TravelTime value."), and `meters()` on an
+unreachable `TravelDistance` does the same.
+There is no silent sentinel value that could quietly end up in a score.
+Where a zero is the acceptable answer for an unreachable pair, use `reachableSeconds()` /
+`reachableMeters()`, which return `0` instead of throwing.
+
+A model whose locations are all in the map never sees this, which is why
+<<mapServiceUnreachableLocations>> matters: if you ignore the locations the map service could not
+resolve, the failure surfaces much later, as an exception in the middle of scoring.
+
+[IMPORTANT]
+====
+`getDrivingTimeTo(...)` only works once the matrix has been built and injected.
+Calling it on a `Location` that was never handed to the map extension throws.
+See <<mapServiceTesting>> for how to satisfy this in unit tests, which bypass the
+model pipeline.
+====
+
+[#mapServiceDeclaringLocations]
+== Declaring the locations of your model
+
+To let the map extension build the matrix, your `@PlanningSolution` implements
+`LocationsAwareSolverModel<Score_>` instead of the plain `SolverModel<Score_>`:
+
+[source,java]
+----
+@PlanningSolution
+public class VehicleRoutePlan implements LocationsAwareSolverModel<HardMediumSoftScore> {
+
+    @PlanningEntityCollectionProperty
+    private List<Vehicle> vehicles;
+    @PlanningEntityCollectionProperty
+    @ValueRangeProvider
+    private List<Visit> visits;
+
+    private List<Location> locationsNotInMap = List.of();
+
+    @Override
+    public List<Location> getLocations() { // <1>
+        if (vehicles == null || visits == null) {
+            return List.of();
+        }
+        return Stream.concat(
+                vehicles.stream().map(Vehicle::getHomeLocation),
+                visits.stream().map(Visit::getLocation))
+                .toList();
+    }
+
+    @Override
+    public Optional<String> getLocationSetName() { // <2>
+        return Optional.empty();
+    }
+
+    @Override
+    public void setLocationsNotInMap(List<Location> locationsNotInMap) { // <3>
+        this.locationsNotInMap = locationsNotInMap;
+    }
+
+    @Override
+    public List<Location> getLocationsNotInMap() {
+        return locationsNotInMap;
+    }
+
+    // ...
+}
+----
+<1> Every location the matrix must cover: each vehicle's home location and each visit's location.
+    Return them in any order.
+    Nothing deduplicates this list for you: each `Location` instance you return gets enriched (and
+    counted) individually, even if two of them share the exact same coordinates.
+    If your input can contain the same coordinate many times, share a single `Location` instance
+    per coordinate — `LocationDeduplicator` and `UniqueLocationAccumulator` in
+    `ai.timefold.solver.service.maps.api` are there for exactly that — so the matrix stays as small
+    as the set of distinct sites. Building a matrix is roughly quadratic in the number of locations,
+    so this is not just a memory optimization.
+<2> The name of a reusable location set, or empty to build a one-off matrix for this solve.
+    See <<mapServiceLocationSets>>.
+<3> The map service calls this back with the locations it could not resolve onto the road network,
+    so the model keeps that information instead of silently dropping it.
+    Report those back to the end user, or reject the input.
+
+Under the hood, the platform enriches the model before the solver starts: it calls
+`getLocations()`, requests the matrix from the map service, and injects it into each `Location`.
+No code in your model calls the map service directly.
+This follows the same shape as any other xref:./model-enrichment.adoc#solverModelEnrichment[model
+enrichment]. The map service is simply a built-in enricher the platform provides for you.
+
+
+[#mapServiceLocationAware]
+== Using driving times in the domain
+
+Because the matrix lives inside the `Location` objects, the rest of the domain model reads
+naturally. If you have multiple planning entities or values with a location, you typically want to create a shared interface.
+This makes them interchangeable wherever only a location matters:
+
+[source,java]
+----
+public interface LocationAware {
+
+    Location getLocation();
+}
+----
+
+[#mapServiceNearbySelection]
+== Nearby selection
+
+include::../../commercial-editions/_only-enterprise.adoc[]
+
+Driving time is also the natural distance measure for
+xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection].
+Implement `NearbyDistanceMeter` on top of the same `Location` calls:
+
+[source,java]
+----
+public class LocationDistanceMeter implements NearbyDistanceMeter<Visit, LocationAware> {
+
+    @Override
+    public double getNearbyDistance(Visit origin, LocationAware destination) {
+        return origin.getLocation().getDrivingTimeTo(destination.getLocation()).seconds();
+    }
+}
+----
+
+[source,properties]
+----
+quarkus.timefold.solver.nearby-distance-meter-class=org.acme.vehiclerouting.domain.LocationDistanceMeter
+----
+
+The destination type is `LocationAware` rather than `Visit`, so that a move towards a vehicle's
+home location is measured the same way as a move towards another visit.
+
+[#mapServiceConfiguration]
+== Configuration
+
+The map extension is configured through `application.properties`, under the
+`timefold.platform.map-service` prefix:
+
+[source,properties]
+----
+timefold.platform.map-service.use-remote=false
+timefold.platform.map-service.enable-fallback=true
+----
+
+[cols="2,1,4"]
+|===
+|Property |Default |Description
+
+|`timefold.platform.map-service.use-remote`
+|`true`
+|Use the platform's remote map service, which returns real road-network driving times and
+ distances. Set to `false` to compute the matrix locally instead.
+
+|`timefold.platform.map-service.enable-fallback`
+|`false`
+|Fall back to the local computation when the remote map service is disabled or unavailable,
+ instead of failing the solve.
+
+|`timefold.platform.map-service.provider`
+|
+|The map data provider to request the matrix from, for example `haversine`.
+ See <<mapServiceProviders>>.
+
+|`timefold.platform.map-service.transport-type`
+|
+|The mode of transport the travel times are computed for.
+
+|`timefold.platform.map-service.max-distance-from-road`
+|
+|How far a location may be from the nearest road before it is reported as not in the map.
+
+|`timefold.platform.map-service.use-traffic`
+|`false`
+|Take historical traffic into account, producing a travel time matrix per timeframe rather than a
+ single one.
+|===
+
+When `use-remote=true` (the default), the extension also needs the REST client settings for the
+remote map service it connects to:
+
+[source,properties]
+----
+# Map service endpoint
+timefold.platform.map-service.url=http://localhost:8180
+quarkus.rest-client.map-service.url=${timefold.platform.map-service.url}
+
+# Distance matrix calculation potentially takes a long time, avoid timeouts
+timefold.platform.map-service.read-timeout=3600000
+quarkus.rest-client.map-service.read-timeout=${timefold.platform.map-service.read-timeout}
+----
+
+This map service is not packaged with Timefold Solver, it is only available on the Timefold
+platform.
+
+The local computation is a great-circle (Haversine) distance converted to a driving time at a
+fixed average speed.
+It requires no network access and no map data, which makes it the right choice for development,
+demos and tests, but the times it produces ignore roads entirely, so never benchmark solution
+quality against it and then expect the same numbers in production.
+
+[WARNING]
+====
+`use-remote=false` and `enable-fallback=true`, as shown above, are development settings. They are
+what the `vehicle-routing` https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/vehicle-routing[quickstart] uses to run without any external dependency.
+In production, leave `use-remote` at its default so the solver optimizes against real driving
+times.
+====
+
+[#mapServiceProviders]
+== Map data providers
+
+A *provider* is the thing that actually answers "how long does it take to drive from A to B".
+The map extension is not tied to one: it selects a provider by name, so the same solver model can be
+run against a crude approximation in development and a real road-network engine in production
+without a line of code changing.
+
+[source,properties]
+----
+timefold.platform.map-service.provider=haversine
+----
+
+[cols="1,1,3"]
+|===
+|Provider |Availability |Description
+
+|`haversine`
+|Open source
+|Great-circle distance between the two coordinates, converted to a driving time at a fixed average
+ speed. No map data and no network access, so it is instant and always available — but it ignores
+ roads, water and one-way streets entirely. Suitable for development, demos and tests; never for
+ production planning.
+
+|`osrm`
+|Enterprise
+|Driving time and distance computed from real road-network data by an https://project-osrm.org/[OSRM]
+ instance. Follows roads, water and one-way streets, so it is accurate enough for production planning,
+ but it requires map data to be loaded into the OSRM instance and network access to reach it.
+|===
+
+Any provider other than `haversine` runs on the remote map service, so it also needs the endpoint
+settings described in <<mapServiceConfiguration>>.
+
+[#mapServiceLocationSets]
+== One-off matrices versus named location sets
+
+`getLocationSetName()` decides how the matrix is obtained:
+
+Empty (`Optional.empty()`)::
+Every solve builds its own one-off matrix from the locations the model returns.
+This is the simplest option and the right one when the locations differ from one dataset to the
+next, as they do in the vehicle routing quickstart.
+
+A name (Platform only)::
+A matrix can be stored under a name in the map extension and reused across solves.
+Building a large matrix is expensive, it grows with the square of the number of locations, so a
+fleet that visits the same few thousand sites every day should build the matrix once and name it,
+rather than rebuild it on every run.
+
+> QUESTION: Does the Naming also work with a custom distance matrix?
+
+Creating and populating a named location set is a management operation on the map service, not
+something your solver model does. Consult the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service#location_sets[Timefold Platform documentation] for how to create
+one.
+
+Once created, a named location set has one of three states: `PROCESSING` while the map service
+builds it, `COMPLETED` once it is ready to be used by a solve, or `NOT_FOUND` if the name a solve
+refers to was never created (or was cleared).
+A solve that names a set which is not yet `COMPLETED` cannot use it to enrich locations; make sure
+the set has finished processing before submitting solves that depend on it.
+
+[#mapServiceUnreachableLocations]
+== Locations not in the map
+
+When running with a real map provider, it could happen that a coordinate could not be placed on a road network: a typo in a latitude, a site in the middle of
+a lake, or a location beyond the `max-distance-from-road` threshold.
+Rather than failing the whole solve, the map extension reports these back through
+`setLocationsNotInMap(...)`.
+
+Decide explicitly what that means for your model. Typically one of two actions:
+
+- Reject the input with an actionable error message naming the offending locations.
+- Let the affected visits stay unassigned and surface them in the output.
+
+[WARNING]
+====
+What you must not do is ignore the list.
+Travel times involving those locations are `UNREACHABLE`, and the first `seconds()` call on one (e.g.
+in a constraint, a shadow variable supplier or the output conversion) throws
+`IllegalStateException`, aborting the solve with an error that points at the scoring code rather
+than at the bad input that caused it.
+====
+
+
+[#mapServiceTesting]
+== Testing
+
+`ConstraintVerifier` tests construct planning entities directly, bypassing the model conversion
+pipeline the map extension hooks into.
+The `Location` objects in such a test therefore have no matrix, and the first call to
+`getDrivingTimeTo(...)` fails.
+
+Build the matrix yourself in the test fixture, using the same Haversine provider the platform uses
+for its local computation:
+
+[source,java]
+----
+import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
+import ai.timefold.solver.service.maps.service.test.api.TestDistanceCalculator;
+
+private static final HaversineTravelTimeAndDistanceMatrixProvider PROVIDER =
+        new HaversineTravelTimeAndDistanceMatrixProvider(new ObjectMapper());
+
+public static VehicleRoutePlan initDistanceMap(VehicleRoutePlan plan) {
+    TestDistanceCalculator.initDistanceMaps(plan.getLocations(), // <1>
+            PROVIDER::calculateDistance,
+            PROVIDER::calculateTravelTime);
+    return plan;
+}
+----
+<1> The same `getLocations()` the real map extension would be given, so the test covers exactly the
+    locations the production matrix would.
+
+This also gives tests a way to derive their expected travel times instead of hard-coding magic
+numbers:
+
+[source,java]
+----
+long expectedSeconds = PROVIDER.calculateTravelTime(
+        new Location(51.01, 3.66), new Location(51.02, 3.68));
+----
+
+Add the test support artifact for `TestDistanceCalculator`:
+
+[source,xml]
+----
+<dependency>
+  <groupId>ai.timefold.solver</groupId>
+  <artifactId>timefold-solver-service-maps-service-test</artifactId>
+  <scope>test</scope>
+</dependency>
+----
+
+Integration tests that go through the REST resource need none of this: they exercise the full
+model pipeline, so the enricher builds the matrix for them, against whichever map provider the
+`timefold.platform.map-service.*` properties of the test profile select.
