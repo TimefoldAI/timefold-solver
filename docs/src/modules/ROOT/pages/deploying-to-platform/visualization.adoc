@@ -1,0 +1,161 @@
+[#_platform_visualization]
+= Visualization
+:description: How a model's custom visualization UI is embedded and driven once deployed to Timefold Platform.
+:doctype: book
+:sectnums:
+:icons: font
+
+A model's solution can have a custom visualization UI, rendered inside Timefold Platform as an iframe, instead of consumers only seeing the raw solution data or the generic score analysis view.
+
+include::_preview-note.adoc[]
+
+[CAUTION]
+====
+This page documents how visualization works today, based directly on the current platform implementation.
+The contract described here, including iframe sizing, refresh behavior, asset paths, and page-announcement metadata, is still evolving and may change as the platform's visualization support matures, possibly without a smooth migration path.
+====
+
+[#_building_the_ui]
+== Building the UI
+
+The UI itself is the same set of static files described in xref:running-timefold-solver/service/visualization.adoc[], placed under `src/main/resources/META-INF/resources`.
+Once deployed, the platform repackages and serves these files under a `ui/` prefix, so the entry point the platform loads must be exactly `ui/index.html`.
+
+Asset references in `ui/index.html` must be relative (for example `./assets/main.js`), not root-relative (`/assets/main.js`): the UI isn't served from the domain root, so an absolute path resolves against the platform's own root instead of the `ui/` prefix.
+
+[#_iframe_embedding]
+== How the platform embeds the UI
+
+The platform renders `ui/index.html` inside an iframe that it resizes to your content's reported height, as described in <<_reporting_your_height>>.
+The iframe's `src` always carries `onPlatform=1`, plus a `page` parameter when the model declares visualization pages, as described in <<_announcing_visualization_pages>>.
+
+The iframe has scrolling disabled.
+If your UI never sends a `resize` message, the iframe keeps the browser's default height instead of growing to fit your content, and anything beyond that height is cut off.
+Either report your height, or put your content in a scrollable container of your own.
+
+[#_calling_your_api_from_the_iframe]
+== Calling your model's API from inside the iframe
+
+After the iframe loads, the platform `postMessage`s an `init` message to it, carrying `tenantId`, `runId`, `apiUrl`, `apiKey`, and the user's preferred `unitSystem` (`metric` or `imperial`):
+
+[source,json]
+----
+{
+  "source": "timefold-visualization",
+  "type": "init",
+  "data": {
+    "tenantId": "...",
+    "runId": "...",
+    "apiUrl": "...",
+    "apiKey": "...",
+    "unitSystem": "metric"
+  }
+}
+----
+
+Listen for it, and reply with an `init-response` so the platform knows the UI is handling the handshake:
+
+[source,js]
+----
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data?.source !== "timefold-visualization") return;
+  if (event.data.type !== "init") return;
+
+  const { tenantId, runId, apiUrl, apiKey, unitSystem } = event.data.data;
+  // ...store these for your API calls...
+
+  event.source.postMessage(
+    { source: "timefold-visualization", type: "init-response" },
+    event.origin,
+  );
+});
+----
+
+Reply synchronously from your message handler.
+The platform waits only briefly before falling back to the older query-parameter contract: it reloads the iframe with the same `init` data appended to its `src` URL as query parameters, and makes the iframe scrollable.
+Support that fallback too if you want your UI to keep working against platform versions that don't yet send `init`.
+
+When the user changes their unit preference later, the platform sends a separate message with the new value:
+
+[source,json]
+----
+{
+  "source": "timefold-visualization",
+  "type": "unit-system",
+  "data": { "unitSystem": "imperial" }
+}
+----
+
+Strip any trailing slash from `apiUrl` and prepend it to your own API calls, so they're routed correctly regardless of where the platform proxies from.
+Append the path your model's own REST API is served under, which is the same path you'd hit locally, as described in xref:running-timefold-solver/service/visualization.adoc#_calling_your_api[Calling your REST API from the UI].
+Only the base changes between running locally and running embedded in the platform.
+
+[#_reporting_your_height]
+== Reporting your height
+
+The platform sizes the iframe from what your UI reports, not from a fixed viewport. Post a `resize` message whenever your content's height changes:
+
+[source,js]
+----
+window.parent.postMessage(
+  { source: "timefold-visualization", type: "resize", height: document.body.scrollHeight },
+  window.location.origin,
+);
+----
+
+The reported height is clamped between 200px and 50000px; above that ceiling the platform makes the iframe scrollable instead of growing it further.
+
+[#_refreshing_while_solving]
+== Refreshing while solving
+
+The platform doesn't push updates into the iframe or refresh it automatically.
+Your UI needs to poll its own status or solution endpoint on an interval, and stop polling once the dataset's status leaves the active or solving set.
+
+[#_error_reporting]
+== Error reporting
+
+The platform automatically injects a small error-forwarding script as the first script of the served HTML.
+It reports the following to the platform:
+
+- Uncaught JavaScript errors and unhandled promise rejections.
+- Scripts, stylesheets, and images that fail to load.
+- Output written to `console.error`.
+- A page that still renders nothing visible 5 seconds after it loads.
+
+If `ui/index.html` itself can't be served, the iframe shows an error page instead, and a missing entry point (HTTP 404) gets its own message.
+
+These alerts are shown only to model maintainers, not to the users viewing a dataset.
+Treat them as a debugging aid, and show users your own error state when something goes wrong.
+
+[#_announcing_visualization_pages]
+== Announcing visualization pages
+
+A model can offer multiple types of visualization, for example a map, a table, and a Gantt chart.
+Declaring these as pages is optional.
+
+Without any declared pages, the platform adds a single *Visualization* entry to the dataset's sidebar, which loads `ui/index.html` without a `page` parameter.
+
+With declared pages, the platform adds one sidebar entry per page instead, in the declared order, using each page's label and icon.
+Every entry loads the same `ui/index.html`, with the page's key passed as the `page` query parameter, for example `ui/index.html?onPlatform=1&page=map`.
+Your UI reads `page` from `window.location.search` and renders the matching view.
+
+Visualization entries only appear for datasets that have a solution, and they're not available on mobile.
+
+Declare pages through build-time configuration:
+
+[source,properties,options="nowrap"]
+----
+timefold.model.visualization.pages[0].key=map
+timefold.model.visualization.pages[0].icon=TbMap
+timefold.model.visualization.pages[0].label=Map
+timefold.model.visualization.pages[1].key=gantt
+timefold.model.visualization.pages[1].icon=TbChartGantt
+timefold.model.visualization.pages[1].label=Gantt chart
+----
+
+Each declared page has three required fields; omitting any of them fails the build.
+
+- `key`: a stable identifier for the page, used in the sidebar entry's URL and as the `page` query parameter.
+- `icon`: an icon name from https://tabler.io/icons[Tabler Icons], for example `TbMap` or `IconMap`. An unknown name falls back to a generic icon.
+- `label`: the human-readable name shown to users.
