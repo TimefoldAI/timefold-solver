@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.quad;
 
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
@@ -21,20 +22,20 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     private final int groupAccumulatorIndex;
     private final @Nullable QuadConstraintCollectorAccumulator<ResultContainer_, OldA, OldB, OldC, OldD> incrementalAccumulator;
 
-    protected AbstractGroupQuadNode(int groupStoreIndex, int groupAccumulatorIndex,
+    protected AbstractGroupQuadNode(IntSupplier storeIndexReserver,
             Function<QuadTuple<OldA, OldB, OldC, OldD>, GroupKey_> groupKeyFunction,
             @NonNull QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
+        super(storeIndexReserver, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
-        this.groupAccumulatorIndex = groupAccumulatorIndex;
+        this.groupAccumulatorIndex = storeIndexReserver.getAsInt();
         this.incrementalAccumulator = QuadCollectorUtils.toIncremental(collector.accumulator());
     }
 
-    protected AbstractGroupQuadNode(int groupStoreIndex,
+    protected AbstractGroupQuadNode(IntSupplier storeIndexReserver,
             Function<QuadTuple<OldA, OldB, OldC, OldD>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        super(storeIndexReserver, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
         this.groupAccumulatorIndex = -1;
         this.incrementalAccumulator = null;
     }

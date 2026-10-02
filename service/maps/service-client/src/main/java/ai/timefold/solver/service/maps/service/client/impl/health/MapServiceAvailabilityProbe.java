@@ -24,9 +24,9 @@ public class MapServiceAvailabilityProbe {
 
     @Inject
     public MapServiceAvailabilityProbe(
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
+            @ConfigProperty(name = "timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
             @RestClient MapServiceClient mapService,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.url") Optional<String> mapServiceUrl) {
+            @ConfigProperty(name = "timefold.platform.map-service.url") Optional<String> mapServiceUrl) {
         this.useRemote = useRemote;
         this.mapService = mapService;
         this.mapServiceUrl = mapServiceUrl;
@@ -39,7 +39,7 @@ public class MapServiceAvailabilityProbe {
                 LOGGER.info("Map service is available and accepts requests");
             } else {
                 throw new IllegalStateException(
-                        "Map service is not available but model is configured (via 'ai.timefold.platform.map-service.url' property) to use it. Make sure Map Service is running and is accessible at "
+                        "Map service is not available but model is configured (via 'timefold.platform.map-service.url' property) to use it. Make sure Map Service is running and is accessible at "
                                 + mapServiceUrl());
             }
         }

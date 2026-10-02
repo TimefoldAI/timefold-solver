@@ -14,20 +14,32 @@ import org.jspecify.annotations.NullMarked;
  * creates a move to unassign it (set the variable to null).
  * <p>
  * This provider only applies to planning variables that allow unassigned values.
+ * <p>
+ * {@code ChangeMoveProvider} makes this same move too,
+ * whenever its own {@code crossingNull} is {@code true} -
+ * but there, only with probability {@code 1/(v+1)} per draw
+ * (where {@code v} is the number of registered values),
+ * so it arrives rarely.
+ * This class exists to make it happen often.
+ * <p>
  * For the complementary moves:
  * <ul>
- * <li>Use {@link AssignMoveProvider} to assign a value to currently-unassigned entities.</li>
- * <li>Use {@link ChangeMoveProvider} to change an entity's value to a different non-null value.</li>
+ * <li>Use {@code AssignMoveProvider} to assign a value to currently-unassigned entities.</li>
+ * <li>Use {@code ChangeMoveProvider} to change an entity's value to a different non-null value.</li>
  * </ul>
  * <p>
- * <strong>This class is part of the Neighborhoods API, which is under development and is only offered as a preview
- * feature.</strong>
- * There are no guarantees for backward compatibility;
- * any class, method, or field may change or be removed without prior notice,
- * although we will strive to avoid this as much as possible.
+ * For unassigning several entities at once,
+ * see {@code PillarUnassignMoveProvider} and {@code SubPillarUnassignMoveProvider} (members share a value)
+ * or {@code MassUnassignMoveProvider} (members need not share anything).
+ *
+ * @see ChangeMoveProvider Changing a single entity to a different non-null value too, as one candidate among many.
+ * @see AssignMoveProvider Assigning a value to currently-unassigned entities.
+ * @see PillarUnassignMoveProvider Unassigning the whole pillar of every entity sharing a value at once.
+ * @see SubPillarUnassignMoveProvider A sampler-driven subset of such a pillar.
+ * @see MassUnassignMoveProvider A mixed-value sample with no shared key.
  */
 @NullMarked
-public class UnassignMoveProvider<Solution_, Entity_, Value_>
+public final class UnassignMoveProvider<Solution_, Entity_, Value_>
         implements MoveProvider<Solution_> {
 
     private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;

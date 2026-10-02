@@ -37,7 +37,8 @@ public record RootVariableSource<Entity_, Value_>(
         List<VariableSourceReference> variableSourceReferences,
         String variablePath,
         ParentVariableType parentVariableType,
-        @Nullable ParentVariableType groupParentVariableType) {
+        @Nullable ParentVariableType groupParentVariableType,
+        @Nullable VariableMetaModel<?, ?, ?> listVariableMetaModel) {
 
     public static final String COLLECTION_REFERENCE_SUFFIX = "[]";
     public static final String MEMBER_SEPERATOR_REGEX = "\\.";
@@ -81,15 +82,26 @@ public record RootVariableSource<Entity_, Value_>(
         var factCountSinceLastVariable = 0;
         ParentVariableType parentVariableType = null;
         ParentVariableType groupParentVariableType = null;
+        VariableMetaModel<?, ?, ?> listVariableMetaModel = null;
 
         for (var iterator = pathIterator(rootEntityClass, variablePath); iterator.hasNext();) {
             var pathPart = iterator.next();
             if (pathPart.isCollection()) {
-                if (isVariable(solutionMetaModel, pathPart.member().getDeclaringClass(), pathPart.name())) {
+                var isListVariable =
+                        getAnnotation(pathPart.member().getDeclaringClass(), pathPart.name(),
+                                PlanningListVariable.class) != null
+                                && isVariable(solutionMetaModel, pathPart.member().getDeclaringClass(), pathPart.name());
+                if (!isListVariable
+                        && isVariable(solutionMetaModel, pathPart.member().getDeclaringClass(), pathPart.name())) {
                     throw new IllegalArgumentException(
                             "The source path (%s) starting from root class (%s) accesses a collection (%s[]) via a variable (%s), which is not allowed."
                                     .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name(),
                                             pathPart.name()));
+                }
+                if (isListVariable && !chainToVariable.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "The source path (%s) starting from root class (%s) accesses a planning list variable (%s[]) via another member, which is not allowed. A planning list variable can only be accessed directly from its declaring entity."
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name()));
                 }
                 if (isAfterVariable) {
                     throw new IllegalArgumentException(
@@ -116,7 +128,13 @@ public record RootVariableSource<Entity_, Value_>(
                         memberAccessor.getType(), memberAccessor.getGenericType(), ShadowSources.class,
                         memberAccessor.getName());
 
-                parentVariableType = ParentVariableType.GROUP;
+                if (isListVariable) {
+                    parentVariableType = ParentVariableType.LIST_ELEMENT;
+                    listVariableMetaModel = solutionMetaModel.entity(memberAccessor.getDeclaringClass())
+                            .variable(memberAccessor.getName());
+                } else {
+                    parentVariableType = ParentVariableType.GROUP;
+                }
                 hasListMemberAccessor = true;
             } else {
                 var memberAccessor = getMemberAccessor(pathPart.member(),
@@ -133,9 +151,9 @@ public record RootVariableSource<Entity_, Value_>(
                     throw new IllegalArgumentException(
                             """
                                     The source path (%s) starting from root class (%s) accesses a planning list variable (%s), which is not allowed.
-                                    Maybe remove the source path (%s) from the @%s?"""
+                                    Maybe access a declarative shadow variable of its elements instead, e.g. (%s%s.shadowVariableName)?"""
                                     .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name(),
-                                            variablePath, ShadowSources.class.getSimpleName()));
+                                            pathPart.name(), COLLECTION_REFERENCE_SUFFIX));
                 }
                 chainToVariable.add(memberAccessor);
                 for (var chain : chainStartingFromSourceVariableList) {
@@ -212,6 +230,15 @@ public record RootVariableSource<Entity_, Value_>(
             assertIsValidVariableReference(rootEntityClass, variablePath, variableSourceReference);
         }
 
+        if (parentVariableType == ParentVariableType.LIST_ELEMENT
+                && (variableSourceReferences.size() != 1 || !variableSourceReferences.get(0).isDeclarative())) {
+            throw new IllegalArgumentException(
+                    "The source path (%s) starting from root class (%s) accesses a variable (%s) that is not a declarative shadow variable via a planning list variable (%s[]), which is not allowed. Only declarative shadow variables of the list variable's elements can be used as sources."
+                            .formatted(variablePath, rootEntityClass.getSimpleName(),
+                                    variableSourceReferences.get(0).variableMetaModel().name(),
+                                    listMemberAccessors.get(listMemberAccessors.size() - 1).getName()));
+        }
+
         if (!parentVariableType.isIndirect() && variableSourceReferences.size() == 1) {
             // No variables are accessed from the parent, so there no
             // parent variable.
@@ -237,7 +264,8 @@ public record RootVariableSource<Entity_, Value_>(
                 variableSourceReferences,
                 variablePath,
                 parentVariableType,
-                groupParentVariableType);
+                groupParentVariableType,
+                listVariableMetaModel);
     }
 
     public @NonNull BiConsumer<Object, Consumer<Object>> getEntityVisitor(List<MemberAccessor> chainToEntity) {

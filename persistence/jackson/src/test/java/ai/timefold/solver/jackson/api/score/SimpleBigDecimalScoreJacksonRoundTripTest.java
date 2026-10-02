@@ -18,6 +18,12 @@ class SimpleBigDecimalScoreJacksonRoundTripTest extends AbstractScoreJacksonRoun
         assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new SimpleBigDecimalScore(-1L, new BigDecimal("1234.4321"));
+        assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
+    }
+
     public static class TestSimpleBigDecimalScoreWrapper extends TestScoreWrapper<SimpleBigDecimalScore> {
 
         @JsonSerialize(using = SimpleBigDecimalScoreJacksonSerializer.class)

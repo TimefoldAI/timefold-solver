@@ -57,4 +57,13 @@ class HardSoftBigDecimalScoreDefinitionTest {
                         new Number[] { BigDecimal.ZERO, BigDecimal.ONE }));
     }
 
+    @Test
+    void divideBySanitizedDivisorClampsNegativeScale() {
+        var scoreDefinition = new HardSoftBigDecimalScoreDefinition();
+        var dividend = scoreDefinition.fromLevelNumbers(new Number[] { new BigDecimal("1E+1"), BigDecimal.TEN });
+        var divisor = scoreDefinition.fromLevelNumbers(new Number[] { new BigDecimal("2.00"), BigDecimal.valueOf(2) });
+        assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, divisor))
+                .isEqualTo(scoreDefinition.fromLevelNumbers(new Number[] { BigDecimal.valueOf(5), BigDecimal.valueOf(5) }));
+    }
+
 }

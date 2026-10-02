@@ -10,13 +10,14 @@ import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.tri.PrecomputeTriNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.BavetPrecomputeStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetPrecomputeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeTriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
 public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends BavetAbstractTriConstraintStream<Solution_, A, B, C>
-        implements TupleSource {
+        implements TupleSource, BavetPrecomputeStream {
     private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
     private final Set<Class<?>> entityClassSet;
     private BavetAftBridgeTriConstraintStream<Solution_, A, B, C> aftStream;

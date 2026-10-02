@@ -23,11 +23,21 @@ public final class DatasetComputedEvent extends SolverWorkerEvent {
      */
     private final String resolvedMapLocation;
 
+    /**
+     * The user-configured resources for this run, read from the run configuration: the number of cores (thread count)
+     * and the memory in mebibytes (Mi).
+     */
+    private final Integer configuredCores;
+
+    private final Integer configuredMemory;
+
     public DatasetComputedEvent(Metadata metadata, SolverModel solverModel, String planName, String tenantName,
-            boolean solveRequested, String resolvedMapLocation) {
+            boolean solveRequested, String resolvedMapLocation, Integer configuredCores, Integer configuredMemory) {
         super(metadata, solverModel, null, planName, tenantName, null);
         this.solveRequested = solveRequested;
         this.resolvedMapLocation = resolvedMapLocation;
+        this.configuredCores = configuredCores;
+        this.configuredMemory = configuredMemory;
     }
 
     public boolean isSolveRequested() {
@@ -36,5 +46,13 @@ public final class DatasetComputedEvent extends SolverWorkerEvent {
 
     public String getResolvedMapLocation() {
         return resolvedMapLocation;
+    }
+
+    public Integer getConfiguredCores() {
+        return configuredCores;
+    }
+
+    public Integer getConfiguredMemory() {
+        return configuredMemory;
     }
 }

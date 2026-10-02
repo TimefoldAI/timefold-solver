@@ -1,12 +1,15 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.Map;
 import java.util.function.Function;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * A function that retrieves keys of a composite key for an {@link Indexer}.
  * For example, {@code join(..., equals(), lessThan(), greaterThan())} has 3 keys.
  * Given {@code ("a", 7, 9)} the key unpacker for {@code lessThan()} retrieves {@code 7}.
- * 
+ *
  * @param <Key_>
  */
 @FunctionalInterface
@@ -18,6 +21,24 @@ interface KeyUnpacker<Key_> extends Function<Object, Key_> {
 
     static <Key_> KeyUnpacker<Key_> composite(int index) {
         return a -> ((CompositeKey) a).get(index);
+    }
+
+    /**
+     * Looks up the single downstream indexer keyed by this unpacker's result for {@code queryCompositeKey},
+     * or null if there is none -
+     * either because {@code downstreamIndexerMap} is empty,
+     * or because the unpacked key is absent from it.
+     * Shared by {@code EqualIndexer} and {@code ContainingIndexer},
+     * whose {@code findDownstreamIndexer}, {@code iterator(Object)} and {@code forEach(Object, Consumer)}
+     * otherwise each re-implement this same lookup.
+     */
+    default <T> @Nullable Indexer<T> findDownstream(Map<Key_, Indexer<T>> downstreamIndexerMap,
+            Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return null;
+        }
+        var indexKey = apply(queryCompositeKey);
+        return downstreamIndexerMap.get(indexKey);
     }
 
 }

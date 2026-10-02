@@ -109,7 +109,7 @@ public enum GraphStructure {
                     }
                     // The group variable is unused/always empty
                 }
-                case INDIRECT, INVERSE, VARIABLE -> isArbitrary = true;
+                case INDIRECT, INVERSE, VARIABLE, LIST_ELEMENT -> isArbitrary = true;
                 case NEXT, PREVIOUS -> {
                     if (parentMetaModel == null) {
                         parentMetaModel = variableSource.variableSourceReferences().get(0).variableMetaModel();

@@ -11,6 +11,7 @@ import ai.timefold.solver.service.definition.internal.descriptor.InputMetricDesc
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.OutputMetricDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.UISupport;
+import ai.timefold.solver.service.definition.internal.descriptor.VisualizationPageDescriptor;
 
 public class ModelDescriptor {
 
@@ -65,6 +66,8 @@ public class ModelDescriptor {
     protected UISupport uiSupport = UISupport.NONE;
 
     protected DocumentationDescriptor documentationDescriptor;
+
+    protected List<VisualizationPageDescriptor> visualizationPages = new ArrayList<>();
 
     protected boolean requiresMap = false;
 
@@ -259,6 +262,14 @@ public class ModelDescriptor {
         this.documentationDescriptor = documentationDescriptor;
     }
 
+    public List<VisualizationPageDescriptor> getVisualizationPages() {
+        return visualizationPages;
+    }
+
+    public void setVisualizationPages(List<VisualizationPageDescriptor> visualizationPages) {
+        this.visualizationPages = visualizationPages;
+    }
+
     public boolean isRequiresMap() {
         return requiresMap;
     }
@@ -290,6 +301,7 @@ public class ModelDescriptor {
         copy.setResources(descriptor.getResources());
         copy.setUiSupport(descriptor.getUiSupport());
         copy.setDocumentationDescriptor(descriptor.getDocumentationDescriptor());
+        copy.setVisualizationPages(descriptor.getVisualizationPages());
         copy.setRequiresMap(descriptor.isRequiresMap());
         return copy;
     }

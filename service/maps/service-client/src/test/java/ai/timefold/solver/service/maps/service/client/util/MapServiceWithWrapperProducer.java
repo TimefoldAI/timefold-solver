@@ -44,12 +44,12 @@ public class MapServiceWithWrapperProducer {
 
     @Inject
     public MapServiceWithWrapperProducer(
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
+            @ConfigProperty(name = "timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
             HaversineTravelTimeAndDistanceMatrixProvider travelTimeAndDistanceProvider,
             HaversineWaypointsProvider waypointsProvider,
             @RestClient MapServiceClient mapService,
             @All List<TravelTimeAndDistanceConverter> converters,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback",
+            @ConfigProperty(name = "timefold.platform.map-service.enable-fallback",
                     defaultValue = "false") Boolean fallbackEnabled,
             TimeframeBucketing timeframeBucketing,
             ManagedExecutor managedExecutor,

@@ -38,16 +38,16 @@ public class MapServiceProducer {
 
     @Inject
     public MapServiceProducer(
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
+            @ConfigProperty(name = "timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
             HaversineTravelTimeAndDistanceMatrixProvider travelTimeAndDistanceProvider,
             HaversineWaypointsProvider waypointsProvider,
             @RestClient MapServiceClient mapService,
             @All List<TravelTimeAndDistanceConverter> converters,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback",
+            @ConfigProperty(name = "timefold.platform.map-service.enable-fallback",
                     defaultValue = "false") Boolean fallbackEnabled,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
+            @ConfigProperty(name = "timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
             @ConfigProperty(
-                    name = "ai.timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
+                    name = "timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
             TimeframeBucketing timeframeBucketing,
             ManagedExecutor managedExecutor,
             ObjectMapper mapper) {

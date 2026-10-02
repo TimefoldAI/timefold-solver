@@ -78,23 +78,30 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
     public record GraphDescriptor<Solution_>(ConsistencyTracker<Solution_> consistencyTracker,
             SolutionDescriptor<Solution_> solutionDescriptor,
+            boolean ignoreInconsistentSolutions,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder,
             Object[] entities, IntFunction<TopologicalOrderGraph> graphCreator) {
 
         public GraphDescriptor(SolutionDescriptor<Solution_> solutionDescriptor,
                 ChangedVariableNotifier<Solution_> changedVariableNotifier,
                 Object... entities) {
-            this(new ConsistencyTracker<>(), solutionDescriptor, new VariableReferenceGraphBuilder<>(changedVariableNotifier),
+            this(new ConsistencyTracker<>(), solutionDescriptor, !solutionDescriptor.hasAnyShadowVariablesInconsistentMember(),
+                    new VariableReferenceGraphBuilder<>(changedVariableNotifier),
                     entities, DefaultTopologicalOrderGraph::new);
         }
 
         public GraphDescriptor<Solution_> withGraphCreator(IntFunction<TopologicalOrderGraph> graphCreator) {
-            return new GraphDescriptor<>(consistencyTracker, solutionDescriptor,
+            return new GraphDescriptor<>(consistencyTracker, solutionDescriptor, ignoreInconsistentSolutions,
                     variableReferenceGraphBuilder, entities, graphCreator);
         }
 
         public GraphDescriptor<Solution_> withConsistencyTracker(ConsistencyTracker<Solution_> consistencyTracker) {
-            return new GraphDescriptor<>(consistencyTracker, solutionDescriptor,
+            return new GraphDescriptor<>(consistencyTracker, solutionDescriptor, ignoreInconsistentSolutions,
+                    variableReferenceGraphBuilder, entities, graphCreator);
+        }
+
+        public GraphDescriptor<Solution_> withIgnoreInconsistentSolutions(boolean ignoreInconsistentSolutions) {
+            return new GraphDescriptor<>(consistencyTracker, solutionDescriptor, ignoreInconsistentSolutions,
                     variableReferenceGraphBuilder, entities, graphCreator);
         }
 
@@ -262,17 +269,19 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             InnerScoreDirector<Solution_, ?> scoreDirector, ParentVariableType parentVariableType) {
         return switch (parentVariableType) {
             case PREVIOUS -> {
-                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
-                yield new TopologicalSorter(listStateSupply::getNextElement,
-                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0)),
-                        listStateSupply::getInverseSingleton);
+                var listVariableState = scoreDirector
+                        .getListVariableState(Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor()));
+                yield new TopologicalSorter(listVariableState::getNextElement,
+                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0)),
+                        listVariableState::getInverseSingleton);
             }
             case NEXT -> {
-                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
-                yield new TopologicalSorter(listStateSupply::getPreviousElement,
-                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0))
+                var listVariableState = scoreDirector
+                        .getListVariableState(Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor()));
+                yield new TopologicalSorter(listVariableState::getPreviousElement,
+                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0))
                                 .reversed(),
-                        listStateSupply::getInverseSingleton);
+                        listVariableState::getInverseSingleton);
             }
             default -> throw new IllegalStateException(
                     "Impossible state: expected parentVariableType to be previous or next but was %s."
@@ -315,7 +324,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         // Create the fixed edges in the graph
         createFixedVariableRelationEdges(graphDescriptor.variableReferenceGraphBuilder(), graphDescriptor.entities(),
                 declarativeShadowVariableDescriptors);
-        return graphDescriptor.variableReferenceGraphBuilder().build(graphDescriptor.graphCreator());
+        return graphDescriptor.variableReferenceGraphBuilder().build(graphDescriptor.graphCreator(),
+                graphDescriptor.ignoreInconsistentSolutions());
     }
 
     private record GroupVariableUpdaterInfo<Solution_>(
@@ -334,6 +344,11 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             }
             for (var shadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
                 for (var rootSource : shadowVariableDescriptor.getSources()) {
+                    if (rootSource.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
+                        // Unlike a fact collection, a list variable's contents change during solving,
+                        // so the decision must not depend on its current contents.
+                        return groupedUpdaters;
+                    }
                     if (rootSource.parentVariableType() == ParentVariableType.GROUP) {
                         var visitedCount = new MutableInt();
                         rootSource.valueEntityFunction().accept(entity, ignored -> visitedCount.increment());
@@ -359,10 +374,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var groupVariables = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
         groupIndexToVariables.put(0, groupVariables);
         for (var declarativeShadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
-            // If a @ShadowSources has a group source (i.e. "visitGroup[].arrivalTimes"),
+            // If a @ShadowSources has a group source (i.e. "visitGroup[].arrivalTimes")
+            // or a list element source (i.e. "values[].endTime"),
             // create a new group since it must wait until all members of that group are processed
             var hasGroupSources = Arrays.stream(declarativeShadowVariableDescriptor.getSources())
-                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP);
+                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP
+                            || rootVariableSource.parentVariableType() == ParentVariableType.LIST_ELEMENT);
 
             // If a @ShadowSources has an alignment key,
             // create a new group since multiple entities must be updated for this node
@@ -531,6 +548,10 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
         for (var source : declarativeShadowVariable.getSources()) {
+            if (source.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
+                createListElementSourceProcessors(graphDescriptor, source, fromVariableId);
+                continue;
+            }
             var parentVariableList = new ArrayList<VariableSourceReference>();
             var parentInverseFunctionList = new ArrayList<Function<Object, Collection<Object>>>();
             var parentIsOnRootEntity = false;
@@ -574,7 +595,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             var parentIndex = parentVariableList.size() - 1;
                             var parentVariable = parentVariableList.get(parentIndex).variableMetaModel();
                             var inverseSupply = graphDescriptor.variableReferenceGraphBuilder().changedVariableNotifier
-                                    .getCollectionInverseVariableSupply(parentVariable);
+                                    .getCollectionInverseVariableState(parentVariable);
 
                             if (parentIsOnRootEntity) {
                                 inverseFunction = (Function) inverseSupply::getInverseCollection;
@@ -608,6 +629,32 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 parentVariableList.add(sourcePart);
             }
         }
+    }
+
+    private static <Solution_> void createListElementSourceProcessors(
+            GraphDescriptor<Solution_> graphDescriptor,
+            RootVariableSource<?, ?> source,
+            VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var listVariableId = Objects.requireNonNull(source.listVariableMetaModel());
+        // Mark the target variable changed whenever its list variable changes,
+        // since its dependency set (and possibly its value) changes with the list's contents.
+        // This is also triggered for each entity when the graph is constructed,
+        // guaranteeing an initial computation even for entities with an empty list.
+        graphDescriptor.variableReferenceGraphBuilder()
+                .addAfterProcessor(GraphChangeType.NO_CHANGE, listVariableId,
+                        (graph, entity) -> {
+                            var changed = graph.lookupOrNull(fromVariableId, entity);
+                            if (changed != null) {
+                                graph.markChanged(changed);
+                            }
+                        });
+        // Maintain the fan-in edges (element.sourceVariable -> entity.targetVariable)
+        // when the list variable changes.
+        var elementSource = source.variableSourceReferences().get(0);
+        graphDescriptor.variableReferenceGraphBuilder()
+                .addListElementSourceLocator(listVariableId,
+                        new ListElementSourceLocator(elementSource.variableMetaModel(), fromVariableId,
+                                elementSource.chainFromRootEntityToVariableEntity()));
     }
 
     private static <Solution_> void createAliasToVariableChangeProcessors(
@@ -677,10 +724,18 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     for (var source : sourceRoot.variableSourceReferences()) {
                         if (source.isTopLevel() && source.isDeclarative()) {
                             var fromVariableId = source.variableMetaModel();
+                            // Edges sourced from a list variable's elements reflect its contents when
+                            // the graph is built and are removed/added as it changes during solving,
+                            // so they must not be treated as fixed by the fixed-loop fail-fast.
+                            var isListElementSource = sourceRoot.parentVariableType() == ParentVariableType.LIST_ELEMENT;
                             sourceRoot.valueEntityFunction()
                                     .accept(entity, fromEntity -> {
                                         var from = variableReferenceGraphBuilder.lookupOrError(fromVariableId, fromEntity);
-                                        variableReferenceGraphBuilder.addFixedEdge(from, to);
+                                        if (isListElementSource) {
+                                            variableReferenceGraphBuilder.addInitialDynamicEdge(from, to);
+                                        } else {
+                                            variableReferenceGraphBuilder.addFixedEdge(from, to);
+                                        }
                                     });
                             break;
                         }
@@ -691,18 +746,21 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     public DefaultShadowVariableSession<Solution_> forSolution(ConsistencyTracker<Solution_> consistencyTracker,
-            Solution_ solution) {
+            Solution_ solution,
+            boolean ignoreInconsistentSolutions) {
         var entities = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entities::add);
-        return forEntities(consistencyTracker, entities.toArray());
+        return forEntities(consistencyTracker, ignoreInconsistentSolutions, entities.toArray());
     }
 
     public DefaultShadowVariableSession<Solution_> forEntities(ConsistencyTracker<Solution_> consistencyTracker,
+            boolean ignoreInconsistentSolutions,
             Object... entities) {
         var graph = buildGraph(
                 new GraphDescriptor<>(solutionDescriptor, ChangedVariableNotifier.of(scoreDirector), entities)
                         .withConsistencyTracker(consistencyTracker)
-                        .withGraphCreator(graphCreator));
+                        .withGraphCreator(graphCreator)
+                        .withIgnoreInconsistentSolutions(ignoreInconsistentSolutions));
         return new DefaultShadowVariableSession<>(graph);
     }
 }

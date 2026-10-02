@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -51,12 +52,12 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private final DynamicPropagationQueue<OutTuple_, Group<OutTuple_, ResultContainer_>> propagationQueue;
     private final boolean useAssertingGroupKey;
 
-    protected AbstractGroupNode(int groupStoreIndex, Function<InTuple_, GroupKey_> groupKeyFunction,
+    protected AbstractGroupNode(IntSupplier storeIndexReserver, Function<InTuple_, GroupKey_> groupKeyFunction,
             Supplier<ResultContainer_> supplier,
             Function<ResultContainer_, Result_> finisher,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         super(nextNodesTupleLifecycle);
-        this.groupStoreIndex = groupStoreIndex;
+        this.groupStoreIndex = storeIndexReserver.getAsInt();
         this.groupKeyFunction = groupKeyFunction;
         this.supplier = supplier;
         this.finisher = finisher;
@@ -79,10 +80,10 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         this.useAssertingGroupKey = environmentMode.isStepAssertOrMore();
     }
 
-    protected AbstractGroupNode(int groupStoreIndex,
+    protected AbstractGroupNode(IntSupplier storeIndexReserver,
             Function<InTuple_, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
             EnvironmentMode environmentMode) {
-        this(groupStoreIndex,
+        this(storeIndexReserver,
                 groupKeyFunction, null, null, nextNodesTupleLifecycle,
                 environmentMode);
     }
@@ -130,16 +131,14 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             if (group == null) {
                 group = createGroupWithGroupKey(groupMapKey);
                 groupMap.put(groupMapKey, group);
-            } else {
-                group.parentCount++;
             }
+            group.addContributor();
             return group;
         } else {
             if (singletonGroup == null) {
                 singletonGroup = createGroupWithoutGroupKey();
-            } else {
-                singletonGroup.parentCount++;
             }
+            singletonGroup.addContributor();
             return singletonGroup;
         }
     }
@@ -147,7 +146,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private Group<OutTuple_, ResultContainer_> createGroupWithGroupKey(Object groupMapKey) {
         var userSuppliedKey = extractUserSuppliedKey(groupMapKey);
         var outTuple = createOutTuple(userSuppliedKey);
-        var group = hasCollector ? Group.create(groupMapKey, supplier.get(), outTuple)
+        var group = hasCollector
+                ? Group.create(groupMapKey, supplier.get(), outTuple)
                 : Group.<OutTuple_, ResultContainer_> createWithoutAccumulate(groupMapKey, outTuple);
         propagationQueue.insert(group);
         return group;
@@ -193,14 +193,14 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             if (hasCollector) {
                 groupRetract(tuple);
             }
-            var newParentCount = --oldGroup.parentCount;
-            killOutTuple(oldGroup, newParentCount == 0);
+            oldGroup.removeContributor();
+            killOutTuple(oldGroup);
             createTuple(tuple, newUserSuppliedGroupKey);
         }
     }
 
     private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) {
-        // No need to change parentCount because it is the same group.
+        // No need to change contributors because it is the same group.
         if (hasCollector) {
             groupUpdate(oldGroup.getResultContainer(), tuple);
         }
@@ -219,9 +219,9 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     /**
      *
      * @param group the group which created the outTuple
-     * @param killGroup true if the group should be removed from downstream nodes
      */
-    private void killOutTuple(Group<OutTuple_, ResultContainer_> group, boolean killGroup) {
+    private void killOutTuple(Group<OutTuple_, ResultContainer_> group) {
+        var killGroup = group.isEmpty();
         if (killGroup) {
             var groupKey = hasGroupKeyFunction ? group.getGroupKey() : null;
             var oldGroup = removeGroup(groupKey);
@@ -277,8 +277,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         if (hasCollector) {
             groupRetract(tuple);
         }
-        var newParentCount = --group.parentCount;
-        killOutTuple(group, newParentCount == 0);
+        group.removeContributor();
+        killOutTuple(group);
     }
 
     protected abstract void groupInsert(ResultContainer_ resultContainer, InTuple_ tuple);

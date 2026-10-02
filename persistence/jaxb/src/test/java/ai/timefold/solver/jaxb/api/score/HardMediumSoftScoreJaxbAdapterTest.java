@@ -17,6 +17,12 @@ class HardMediumSoftScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTest {
         assertSerializeAndDeserialize(score, new TestHardMediumSoftScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new HardMediumSoftScore(-1L, 1200L, 30L, 4L);
+        assertSerializeAndDeserialize(score, new TestHardMediumSoftScoreWrapper(score));
+    }
+
     @XmlRootElement
     public static class TestHardMediumSoftScoreWrapper extends TestScoreWrapper<HardMediumSoftScore> {
 

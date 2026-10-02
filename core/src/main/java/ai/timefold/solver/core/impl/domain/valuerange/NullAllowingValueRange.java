@@ -8,8 +8,10 @@ import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
 
     private final AbstractValueRange<T> childValueRange;
@@ -25,7 +27,11 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
         size = childValueRange.getSize() + 1L;
     }
 
-    AbstractValueRange<T> getChildValueRange() {
+    /**
+     *
+     * @return child value range wrapped by this; does not contain null
+     */
+    public AbstractValueRange<T> getChildValueRange() {
         return childValueRange;
     }
 
@@ -35,7 +41,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
     }
 
     @Override
-    public T get(long index) {
+    public @Nullable T get(long index) {
         if (index == 0) { // Consistent with the iterator.
             return null;
         } else {
@@ -44,7 +50,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
     }
 
     @Override
-    public boolean contains(T value) {
+    public boolean contains(@Nullable T value) {
         if (value == null) {
             return true;
         }
@@ -57,7 +63,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
     }
 
     @Override
-    public @NonNull Iterator<T> createOriginalIterator() {
+    public Iterator<T> createOriginalIterator() {
         return new OriginalNullValueRangeIterator(childValueRange.createOriginalIterator());
     }
 
@@ -76,7 +82,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
         }
 
         @Override
-        public T next() {
+        public @Nullable T next() {
             if (!nullReturned) {
                 nullReturned = true;
                 return null;
@@ -87,7 +93,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
     }
 
     @Override
-    public @NonNull Iterator<T> createRandomIterator(@NonNull RandomGenerator workingRandom) {
+    public Iterator<T> createRandomIterator(RandomGenerator workingRandom) {
         return new RandomNullValueRangeIterator(workingRandom);
     }
 
@@ -105,9 +111,8 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
         }
 
         @Override
-        public T next() {
-            long index = RandomUtils.nextLong(workingRandom, size);
-            return get(index);
+        public @Nullable T next() {
+            return get(RandomUtils.nextLong(workingRandom, size));
         }
 
     }

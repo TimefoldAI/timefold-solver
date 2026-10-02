@@ -1,13 +1,8 @@
 package ai.timefold.solver.service.rest.impl;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.Max;
@@ -34,6 +29,7 @@ import ai.timefold.solver.service.definition.api.ModelOutput;
 import ai.timefold.solver.service.definition.api.SolvingStatus;
 import ai.timefold.solver.service.definition.api.domain.Configuration;
 import ai.timefold.solver.service.definition.api.domain.Metadata;
+import ai.timefold.solver.service.definition.api.domain.ModelConfig;
 import ai.timefold.solver.service.definition.api.domain.ModelInputPatchRequest;
 import ai.timefold.solver.service.definition.api.domain.ModelRequest;
 import ai.timefold.solver.service.definition.api.domain.ModelResponse;
@@ -53,18 +49,11 @@ import ai.timefold.solver.service.definition.api.validation.Validated;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationIssueTypes;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
-import ai.timefold.solver.service.definition.impl.log.LoggingConstants;
+import ai.timefold.solver.service.definition.impl.solver.SolverWorkerFacade;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
-import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
-import ai.timefold.solver.service.definition.internal.events.DatasetCreatedEvent;
-import ai.timefold.solver.service.definition.internal.events.DatasetValidateComputeCommand;
-import ai.timefold.solver.service.definition.internal.events.SolveStartCommand;
-import ai.timefold.solver.service.definition.internal.events.SolveTerminateCommand;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
-import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
-import ai.timefold.solver.service.json.internal.patch.JsonPatch;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -76,19 +65,13 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.jboss.resteasy.reactive.ResponseStatus;
 import org.jboss.resteasy.reactive.RestStreamElementType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.reactive.messaging.MutinyEmitter;
 
 @RegisterForReflection
 @SuppressWarnings("unchecked")
@@ -100,17 +83,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
 
     protected final ModelValidator<ModelInput_, ModelConfigurationOverrides_> modelValidator;
 
-    protected AbstractStorageService<ModelInput_, ModelConfigurationOverrides_, InputMetrics_, OutputMetrics_, ModelOutput_, Score_, Justification_> storageService;
-
-    private Emitter<DatasetCreatedEvent> datasetCreatedEventEmitter;
-
-    private Emitter<DatasetValidateComputeCommand> datasetValidateComputeCommandEmitter;
-
-    private Emitter<SolveStartCommand> solveStartCommandEmitter;
-
-    private MutinyEmitter<SolveTerminateCommand> solveTerminateCommandEmitter;
-
-    private ObjectMapper mapper;
+    protected SolverWorkerFacade solverWorkerFacade;
 
     private ValidationIssueTypeCatalog validationIssueTypeCatalog;
 
@@ -123,22 +96,13 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
         modelValidator = null;
     }
 
+    // required for CDI injection
     public AbstractModelAPIResource(
             ModelValidator<ModelInput_, ModelConfigurationOverrides_> modelValidator,
-            AbstractStorageService storageService,
-            Emitter<DatasetCreatedEvent> datasetCreatedEventEmitter,
-            Emitter<DatasetValidateComputeCommand> datasetValidateComputeCommandEmitter,
-            Emitter<SolveStartCommand> solveStartCommandEmitter,
-            MutinyEmitter<SolveTerminateCommand> solveTerminateCommandEmitter,
-            ObjectMapper mapper,
+            SolverWorkerFacade solverWorkerFacade,
             ValidationIssueTypeCatalog validationIssueTypeCatalog) {
         this.modelValidator = modelValidator;
-        this.storageService = storageService;
-        this.datasetCreatedEventEmitter = datasetCreatedEventEmitter;
-        this.datasetValidateComputeCommandEmitter = datasetValidateComputeCommandEmitter;
-        this.solveStartCommandEmitter = solveStartCommandEmitter;
-        this.solveTerminateCommandEmitter = solveTerminateCommandEmitter;
-        this.mapper = mapper;
+        this.solverWorkerFacade = solverWorkerFacade;
         this.validationIssueTypeCatalog = validationIssueTypeCatalog;
     }
 
@@ -178,14 +142,12 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
 
         // if not provided in the request payload, use the query parameter
         runName = runName != null ? runName : name;
-        Metadata<Score_> metadata = new Metadata<>(runName);
-        metadata.setTags(tags);
-        metadata.datasetCreated();
-        storageService.storeProblem(metadata.getId(), request.modelInput(), metadata, request.configuration(),
-                request.configuration());
-        datasetCreatedEventEmitter.send(new DatasetCreatedEvent(metadata));
-        datasetValidateComputeCommandEmitter
-                .send(new DatasetValidateComputeCommand(metadata.getId(), operation == OperationOnPost.SOLVE));
+        var metadata = switch (operation) {
+            case OperationOnPost.NONE ->
+                solverWorkerFacade.createDataset(runName, tags, request.modelInput(), request.configuration());
+            case OperationOnPost.SOLVE ->
+                solverWorkerFacade.createAndSolveDataset(runName, tags, request.modelInput(), request.configuration());
+        };
 
         // The dataset is accepted, even if the validation fails, as on the platform, the validation is an asynchronous process.
         return Response.accepted(metadata).build();
@@ -207,14 +169,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @ResponseStatus(202)
     public Metadata<Score_> solve(
             @Parameter(description = "Unique identifier of the dataset", required = true) @PathParam("id") String id) {
-        Metadata<Score_> metadata = storageService().getMetadata(id); // ensure the dataset exists
-        if (metadata == null) {
-            throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, "Dataset with id " + id + " was not found");
-        }
-
-        solveStartCommandEmitter.send(new SolveStartCommand(id));
-
-        return metadata;
+        return solverWorkerFacade.solveDataset(id);
     }
 
     @APIResponses(value = {
@@ -279,40 +234,18 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
 
         Set<String> tags = null;
         String runName = null;
-        Configuration<ModelConfigurationOverrides_> initialConfiguration = null;
 
         if (configuration != null && configuration.run() != null) {
             RunConfiguration runConfiguration = configuration.run();
             runName = runConfiguration.name();
             tags = runConfiguration.tags();
-            initialConfiguration = configuration;
-        } else if (configuration == null) {
-            configuration = storageService.getConfiguration(id);
-            initialConfiguration = storageService.getUnprocessedConfiguration(id);
         }
+        runName = name == null ? runName : name;
 
-        ModelInput_ input =
-                select == DatasetSelector.UNSOLVED ? storageService.getModelInput(id) : storageService.getSolvedModelInput(id);
-        if (input == null) {
-            throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, id);
-        }
-        ModelRequest<ModelInput_, ModelConfigurationOverrides_> request =
-                new ModelRequest<>(configuration, input);
-        Metadata<Score_> metadata = new Metadata<>(name == null ? runName : name);
-        metadata.setTags(tags);
-        // set parent id to the id this data set is created from
-
-        metadata.setParentId(id);
-        // set origin id based on the origin id of the parent data set
-        Metadata<Score_> parentRun = storageService.getMetadata(id);
-        metadata.setOriginId(parentRun.getOriginId());
-        metadata.datasetCreated();
-        storageService.storeProblem(metadata.getId(), request.modelInput(), metadata, initialConfiguration,
-                request.configuration());
-        datasetCreatedEventEmitter.send(new DatasetCreatedEvent(metadata));
-        datasetValidateComputeCommandEmitter
-                .send(new DatasetValidateComputeCommand(metadata.getId(), operation == OperationOnPost.SOLVE));
-        return metadata;
+        return switch (operation) {
+            case OperationOnPost.NONE -> solverWorkerFacade.createDataset(id, select, runName, tags, configuration);
+            case OperationOnPost.SOLVE -> solverWorkerFacade.createAndSolveDataset(id, select, runName, tags, configuration);
+        };
     }
 
     @APIResponses(value = {
@@ -346,50 +279,15 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
                     description = "Operation to execute on the POST request.") @DefaultValue(OperationOnPost.DEFAULT_OPERATION) @QueryParam("operation") OperationOnPost operation,
             @Validated(nullable = true,
                     operationId = OperationId.FROM_PATCH) ModelInputPatchRequest<ModelConfigurationOverrides_> patchRequest) {
-
-        ModelInput_ input =
-                select == DatasetSelector.UNSOLVED ? storageService.getModelInput(id) : storageService.getSolvedModelInput(id);
-        if (input == null) {
-            throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, id);
-        }
         try {
-            Configuration<ModelConfigurationOverrides_> configuration =
-                    patchRequest.config() != null ? patchRequest.config() : storageService.getConfiguration(id);
-            Configuration<ModelConfigurationOverrides_> initialConfiguration = storageService.getUnprocessedConfiguration(id);
-            if (configuration == null) {
-                configuration = Configuration.empty();
-                initialConfiguration = Configuration.empty();
-            }
-            JsonNode inputTree = mapper.valueToTree(input);
-            ArrayNode patchTree = mapper.valueToTree(patchRequest.patch());
-
-            JsonNode patchedInput = JsonPatch.apply(patchTree, inputTree);
-
-            ModelInput_ patchedModelInput = (ModelInput_) mapper.treeToValue(patchedInput, input.getClass());
-
-            ModelRequest<ModelInput_, ModelConfigurationOverrides_> request =
-                    new ModelRequest<>(configuration, patchedModelInput);
-            Metadata<Score_> metadata = new Metadata<>(name);
-            // set parent id to the id this data set is created from
-            metadata.setParentId(id);
-            // set origin id based on the origin id of the parent data set
-            Metadata<Score_> parentRun = storageService.getMetadata(id);
-            metadata.setOriginId(parentRun.getOriginId());
-            metadata.datasetCreated();
-            storageService.storeProblem(metadata.getId(), request.modelInput(), metadata, initialConfiguration,
-                    request.configuration());
-            datasetCreatedEventEmitter.send(new DatasetCreatedEvent(metadata));
-            datasetValidateComputeCommandEmitter
-                    .send(new DatasetValidateComputeCommand(metadata.getId(), operation == OperationOnPost.SOLVE));
-            return metadata;
-
-        } catch (IllegalStateException e) {
+            return switch (operation) {
+                case OperationOnPost.NONE -> solverWorkerFacade.patchDataset(id, select, name, patchRequest);
+                case OperationOnPost.SOLVE -> solverWorkerFacade.patchAndSolveDataset(id, select, name, patchRequest);
+            };
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
                     .entity(new ValidationErrorInfo(List.of(e.getMessage()))).build());
-        } catch (Exception e) {
-            throw new TimefoldRuntimeException(ErrorCodes.UNKNOWN, UUID.randomUUID().toString(), e);
         }
-
     }
 
     @APIResponses(value = {
@@ -410,8 +308,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Deprecated
     public List<Metadata<Score_>> getSchedules(@QueryParam("page") @DefaultValue("0") @PositiveOrZero int pageNumber,
             @QueryParam("size") @DefaultValue("100") @PositiveOrZero @Max(1000) int pageSize) {
-        // TODO: temporarily use a meta data in the modelOutput
-        return storageService.listRuns(pageNumber, pageSize);
+        return solverWorkerFacade.listRuns(pageNumber, pageSize);
     }
 
     @APIResponses(value = {
@@ -429,7 +326,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public ModelResponse<Score_, ModelOutput_, InputMetrics_, OutputMetrics_> getSchedule(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        return storageService.getModelResponse(id);
+        return solverWorkerFacade.getModelResponse(id);
     }
 
     @APIResponses(value = {
@@ -447,7 +344,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public ModelRequest<ModelInput_, ModelConfigurationOverrides_> getModelRequest(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        return storageService.getModelRequest(id);
+        return solverWorkerFacade.getModelRequest(id);
     }
 
     @APIResponses(value = {
@@ -465,7 +362,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public ModelInput_ getScheduleInput(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        return storageService.getModelInput(id);
+        return (ModelInput_) solverWorkerFacade.getModelInput(id);
     }
 
     @APIResponses(value = {
@@ -506,7 +403,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public Metadata<Score_> getMetadata(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        return storageService.getMetadata(id);
+        return solverWorkerFacade.getMetadata(id);
     }
 
     @APIResponses(value = {
@@ -525,7 +422,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public Configuration<ModelConfigurationOverrides_> getScheduleConfiguration(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        return storageService.getConfiguration(id);
+        return solverWorkerFacade.getConfiguration(id);
     }
 
     @APIResponses(value = {
@@ -542,8 +439,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public ModelResponse<Score_, ModelOutput_, InputMetrics_, OutputMetrics_> terminateSchedule(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        solveTerminateCommandEmitter.sendAndAwait(new SolveTerminateCommand(id));
-        return storageService.getModelResponse(id);
+        return solverWorkerFacade.terminate(id);
     }
 
     @APIResponses(value = {
@@ -562,27 +458,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public LogInfo getScheduleLogs(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-
-        LogInfo podLogInfo = null;
-        LogInfo logs = storageService.getLogs(id);
-        java.nio.file.Path solverLogPath = Paths.get(LoggingConstants.SOLVER_LOG_PATH);
-        if (Files.exists(solverLogPath)) {
-            try {
-                podLogInfo = new LogInfo(
-                        Files.readAllLines(solverLogPath).stream().collect(Collectors.joining(System.lineSeparator())));
-            } catch (IOException e) {
-                LOGGER.warn("Unable to read solver log file at {}: {}", solverLogPath, e.getMessage());
-            }
-        }
-
-        if (podLogInfo != null && logs != null) {
-            podLogInfo.appendPreviousLog(logs.getDetails());
-            return podLogInfo;
-        } else if (podLogInfo != null) {
-            return podLogInfo;
-        } else {
-            return logs;
-        }
+        return solverWorkerFacade.getLogs(id);
     }
 
     @APIResponses(value = {
@@ -608,7 +484,7 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
             @PathParam("id") String id,
             @QueryParam("status") List<SolvingStatus> statusFilter) {
 
-        Metadata<Score_> metadata = storageService.getMetadata(id);
+        Metadata<Score_> metadata = solverWorkerFacade.getMetadata(id);
         if (metadata == null) {
             throw new ItemNotFoundException(ErrorCodes.NOT_FOUND, "Dataset " + id + " was not found");
         }
@@ -656,13 +532,13 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public ValidationResult<ValidationIssue_> getValidationResult(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        ModelInput_ modelInput = storageService.getModelInput(id);
+        ModelInput_ modelInput = (ModelInput_) solverWorkerFacade.getModelInput(id);
         if (modelInput == null) {
             throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, id);
         }
-        var modelConfig = Configuration.getSafeModelConfig(storageService.getConfiguration(id));
+        var modelConfig = Configuration.getSafeModelConfig(solverWorkerFacade.getConfiguration(id));
         ValidationBuilder validationBuilder = new ValidationBuilder();
-        modelValidator.validate(validationBuilder, modelInput, modelConfig);
+        modelValidator.validate(validationBuilder, modelInput, (ModelConfig<ModelConfigurationOverrides_>) modelConfig);
         return validationBuilder.build();
     }
 
@@ -705,9 +581,5 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
             }
         }
         return Response.status(Response.Status.NOT_FOUND).build();
-    }
-
-    public AbstractStorageService storageService() {
-        return storageService;
     }
 }

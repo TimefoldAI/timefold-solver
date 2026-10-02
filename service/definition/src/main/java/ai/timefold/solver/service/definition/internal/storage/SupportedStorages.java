@@ -2,7 +2,7 @@ package ai.timefold.solver.service.definition.internal.storage;
 
 public class SupportedStorages {
 
-    public static final String STORAGE_TYPE_PROPERTY = "ai.timefold.storage.type";
+    public static final String STORAGE_TYPE_PROPERTY = "timefold.storage.type";
     public static final String GOOGLE_CLOUD_STORAGE = "googlecloud";
     public static final String AZURE_STORAGE = "azure";
     public static final String INMEMORY_STORAGE = "inmemory";

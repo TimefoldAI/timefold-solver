@@ -2,7 +2,6 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
@@ -10,10 +9,8 @@ import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -37,21 +34,12 @@ class ListUnassignMoveProviderTest {
         SolutionManager.updateShadowVariables(solution);
         firstEntity.setPinned(true);
 
-        // firstEntity is pinned → firstValue cannot be unassigned from it.
+        // firstEntity is pinned -> firstValue cannot be unassigned from it.
         // Only secondValue from secondEntity can be unassigned.
-        var moveList = NeighborhoodTester.build(new ListUnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution)
-                .getMovesAsList(
-                        move -> (ListUnassignMove<TestdataPinnedAllowsUnassignedValuesListSolution, TestdataPinnedAllowsUnassignedValuesListEntity, TestdataPinnedAllowsUnassignedValuesListValue>) move);
-        assertThat(moveList).hasSize(1);
-
-        var firstMove = moveList.getFirst();
-        assertSoftly(softly -> {
-            softly.assertThat(firstMove.getSourceEntity()).isEqualTo(secondEntity);
-            softly.assertThat(firstMove.getSourceIndex()).isEqualTo(0);
-            softly.assertThat(firstMove.getPlanningEntities()).containsExactly(secondEntity);
-            softly.assertThat(firstMove.getPlanningValues()).containsExactly(secondValue);
-        });
+        var context = NeighborhoodTester.build(new ListUnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        context.producesAllOf(Moves.unassign(variableMetaModel, secondEntity, 0));
+        context.producesNoneOf(Moves.unassign(variableMetaModel, firstEntity, 0));
     }
 
     @Test
@@ -72,35 +60,12 @@ class ListUnassignMoveProviderTest {
         e2.getValueList().add(v3);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodTester.build(new ListUnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
+        NeighborhoodTester.build(new ListUnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
-                .getMovesAsList(
-                        move -> (ListUnassignMove<TestdataAllowsUnassignedValuesListSolution, TestdataAllowsUnassignedValuesListEntity, TestdataAllowsUnassignedValuesListValue>) move);
-        assertThat(moveList).hasSize(3);
-
-        var move1 = moveList.get(0);
-        assertSoftly(softly -> {
-            softly.assertThat(move1.getSourceEntity()).isEqualTo(e1);
-            softly.assertThat(move1.getSourceIndex()).isEqualTo(0);
-            softly.assertThat(move1.getPlanningEntities()).containsExactly(e1);
-            softly.assertThat(move1.getPlanningValues()).containsExactly(v1);
-        });
-
-        var move2 = moveList.get(1);
-        assertSoftly(softly -> {
-            softly.assertThat(move2.getSourceEntity()).isEqualTo(e1);
-            softly.assertThat(move2.getSourceIndex()).isEqualTo(1);
-            softly.assertThat(move2.getPlanningEntities()).containsExactly(e1);
-            softly.assertThat(move2.getPlanningValues()).containsExactly(v2);
-        });
-
-        var move3 = moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(move3.getSourceEntity()).isEqualTo(e2);
-            softly.assertThat(move3.getSourceIndex()).isEqualTo(0);
-            softly.assertThat(move3.getPlanningEntities()).containsExactly(e2);
-            softly.assertThat(move3.getPlanningValues()).containsExactly(v3);
-        });
+                .producesAllOf(
+                        Moves.unassign(variableMetaModel, e1, 0),
+                        Moves.unassign(variableMetaModel, e1, 1),
+                        Moves.unassign(variableMetaModel, e2, 0));
     }
 
     @Test
@@ -110,11 +75,10 @@ class ListUnassignMoveProviderTest {
                 .listVariable();
 
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
-        // All values unassigned, no moves expected.
-        var moveList = NeighborhoodTester.build(new ListUnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution)
-                .getMovesAsList();
-        assertThat(moveList).isEmpty();
+        // All values unassigned; no entity holds a value, so no move can even be named.
+        var context = NeighborhoodTester.build(new ListUnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        assertThat(context.getMovesAsIterator().hasNext()).isFalse();
     }
 
     @Test

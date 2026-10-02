@@ -16,7 +16,7 @@ class HardSoftScoreConverterTest extends AbstractScoreJpaTest {
     @Test
     void persistAndMerge() {
         persistAndMerge(new HardSoftLongScoreConverterTestJpaEntity(HardSoftScore.ZERO), null,
-                HardSoftScore.of(-10L, -2L));
+                HardSoftScore.of(-10L, -2L), new HardSoftScore(-1L, 1200L, 34L));
     }
 
     @Entity

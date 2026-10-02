@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 class MultiConstraintAssertionTest {
 
     @Test
-    void triggerVariableListenersListSingleSolution() {
+    void updateShadowVariablesListSingleSolution() {
         var constraintVerifier = ConstraintVerifier.build(new TestdataListMultipleShadowVariableConstraintProvider(),
                 TestdataListMultipleShadowVariableSolution.class,
                 TestdataListMultipleShadowVariableEntity.class,

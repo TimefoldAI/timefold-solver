@@ -66,7 +66,7 @@ public interface TupleLifecycle<Tuple_ extends Tuple>
     }
 
     static <Stream_ extends BavetStream, Tuple_ extends Tuple> TupleLifecycle<Tuple_> profiling(
-            InnerConstraintProfiler constraintProfiler, long lifecycleId, Stream_ stream,
+            InnerConstraintProfiler constraintProfiler, int lifecycleId, Stream_ stream,
             TupleLifecycle<Tuple_> delegate) {
         if (delegate instanceof AggregatedTupleLifecycle) {
             // Do not profile aggregated tuple lifecycles; that will double

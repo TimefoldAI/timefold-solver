@@ -93,7 +93,7 @@ class SingleConstraintAssertionTest {
     private static final String THERE_SHOULD_BE_NO_IMPACT = "There should be no impact";
 
     @Test
-    void triggerVariableListenersListSingleSolution() {
+    void updateShadowVariablesListSingleSolution() {
         var solution = TestdataListMultipleShadowVariableSolution.generateSolution(2, 1);
 
         // Cascading update

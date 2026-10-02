@@ -18,7 +18,8 @@ class HardSoftBigDecimalScoreConverterTest extends AbstractScoreJpaTest {
     @Test
     void persistAndMerge() {
         persistAndMerge(new HardSoftBigDecimalScoreConverterTestJpaEntity(HardSoftBigDecimalScore.ZERO), null,
-                HardSoftBigDecimalScore.of(new BigDecimal("-10.01000"), new BigDecimal("-2.20000")));
+                HardSoftBigDecimalScore.of(new BigDecimal("-10.01000"), new BigDecimal("-2.20000")),
+                new HardSoftBigDecimalScore(-1L, new BigDecimal("1200.0021"), new BigDecimal("34.4300")));
     }
 
     @Entity

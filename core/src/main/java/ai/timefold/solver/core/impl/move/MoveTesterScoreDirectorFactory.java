@@ -12,13 +12,15 @@ import org.jspecify.annotations.NullMarked;
 final class MoveTesterScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirectorFactory<Solution_, Score_, MoveTesterScoreDirectorFactory<Solution_, Score_>> {
 
-    public MoveTesterScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
-        super(solutionDescriptor, environmentMode);
+    public MoveTesterScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
+            EnvironmentMode globalEnvironmentMode) {
+        super(solutionDescriptor, globalEnvironmentMode);
     }
 
     @Override
-    public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder() {
-        return new MoveTesterScoreDirector.Builder<>(this);
+    public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?>
+            createScoreDirectorBuilder(EnvironmentMode environmentMode) {
+        return new MoveTesterScoreDirector.Builder<>(this, environmentMode);
     }
 
 }

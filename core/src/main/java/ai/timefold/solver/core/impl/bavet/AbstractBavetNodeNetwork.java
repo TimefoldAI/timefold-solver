@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractTwoInputNode;
+import ai.timefold.solver.core.impl.bavet.common.DeferredSettleAware;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.ActivitySupport;
 
@@ -50,7 +51,19 @@ public abstract class AbstractBavetNodeNetwork {
      */
     private Propagator @Nullable [][] layeredActivePropagators;
     /**
-     * For testing only: the set of nodes that remained active after {@link #settle()}; null before settle.
+     * Aligned 1:1 with {@link #layeredActivePropagators} (same layer indices):
+     * for each layer, the subset of its active nodes that implement {@link DeferredSettleAware}
+     * and {@link DeferredSettleAware#canDeferWork()} returns {@code true};
+     * i.e. filtering join and ifExists/ifNotExists nodes whose two inputs sit far enough apart.
+     * Usually small or empty
+     * (two-input nodes that can never defer never enqueue anything and are excluded here at build time)
+     * so the common case pays nothing beyond an empty-array iteration in {@link #settleLayer}.
+     */
+    private DeferredSettleAware @Nullable [][] layeredActiveDeferredNodes;
+    /**
+     * For testing only:
+     * the set of nodes that remained active after {@link #settle()};
+     * null before settle.
      */
     private @Nullable Set<AbstractNode> activeNodeSet;
 
@@ -86,8 +99,22 @@ public abstract class AbstractBavetNodeNetwork {
                 .filter(node -> !isActivationCheckComplete() || activeNodeSet.contains(node));
     }
 
+    public boolean isActivationCheckComplete() {
+        return layeredActivePropagators != null;
+    }
+
     public void settle() {
-        if (layeredActivePropagators == null) {
+        // The very first settle fills an empty network.
+        // A session does receive updates and retracts before it (setWorkingSolution updates shadow variables
+        // between inserting the facts and settling), but no root tuple has reached TupleState.OK yet,
+        // so each of those collapses inside the root node's own queue:
+        // an update on a CREATING tuple is dropped, and a retract turns it ABORTING.
+        // Every tuple that reaches a node past the roots therefore arrives exactly once, as an insert,
+        // and none of them can be stale.
+        // The deferring nodes go eager for the duration,
+        // which spares them a second full cross-match walk in prepareForSettle().
+        var preloadingActive = layeredActivePropagators == null;
+        if (preloadingActive) {
             // Remove inactive nodes and settle the layers in one go.
             var initializedRootNodes = Collections.newSetFromMap(new IdentityHashMap<>());
             declaredClassToNodeMap.forEach((declaredClass, rootNodes) -> rootNodes.forEach(rootNode -> {
@@ -99,26 +126,67 @@ public abstract class AbstractBavetNodeNetwork {
             }));
 
             var activeNodes = Collections.<AbstractNode> newSetFromMap(new IdentityHashMap<>());
-            layeredActivePropagators = Arrays.stream(layeredNodes)
+            var layeredActiveNodes = Arrays.stream(layeredNodes)
                     .map(layer -> Arrays.stream(layer)
                             .filter(s -> switch (s) {
                                 case ActivitySupport activityEnabled -> activityEnabled.isActive();
                                 case AbstractTwoInputNode<?, ?> twoInputNode -> twoInputNode.isActive();
                             })
                             .peek(activeNodes::add)
-                            .map(propagatorFunction).toArray(Propagator[]::new))
-                    .filter(layer -> layer.length > 0).peek(AbstractBavetNodeNetwork::settleLayer).toArray(Propagator[][]::new);
+                            .toArray(AbstractNode[]::new))
+                    .filter(layer -> layer.length > 0)
+                    .toArray(AbstractNode[][]::new);
             this.activeNodeSet = activeNodes;
-            return;
+            layeredActivePropagators = Arrays.stream(layeredActiveNodes)
+                    .map(layer -> Arrays.stream(layer).map(propagatorFunction).toArray(Propagator[]::new))
+                    .toArray(Propagator[][]::new);
+            layeredActiveDeferredNodes = Arrays.stream(layeredActiveNodes)
+                    .map(layer -> Arrays.stream(layer)
+                            .filter(s -> s instanceof DeferredSettleAware deferredSettleAware
+                                    && deferredSettleAware.canDeferWork())
+                            .map(DeferredSettleAware.class::cast)
+                            .toArray(DeferredSettleAware[]::new))
+                    .toArray(DeferredSettleAware[][]::new);
+            notifyPreload(true);
         }
-        // Simplified loop when the layers were already trimmed.
-        for (var layer : layeredActivePropagators) {
-            settleLayer(layer);
+        for (var i = 0; i < layeredActivePropagators.length; i++) {
+            settleLayer(i);
+        }
+        if (preloadingActive) {
+            notifyPreload(false);
         }
     }
 
-    public boolean isActivationCheckComplete() {
-        return layeredActivePropagators != null;
+    private void notifyPreload(boolean preloadingActive) {
+        for (var layer : layeredActiveDeferredNodes) {
+            for (var node : layer) {
+                if (preloadingActive) {
+                    node.preloadStarted();
+                } else {
+                    node.preloadEnded();
+                }
+            }
+        }
+    }
+
+    private void settleLayer(int layerId) {
+        for (var node : layeredActiveDeferredNodes[layerId]) {
+            node.prepareForSettle();
+        }
+        var nodesInLayer = layeredActivePropagators[layerId];
+        if (nodesInLayer.length == 1) { // Avoid iteration.
+            nodesInLayer[0].propagateEverything();
+        } else {
+            for (var node : nodesInLayer) {
+                node.propagateRetracts();
+            }
+            for (var node : nodesInLayer) {
+                node.propagateUpdates();
+            }
+            for (var node : nodesInLayer) {
+                node.propagateInserts();
+            }
+        }
     }
 
     Set<AbstractNode> getActiveNodes() {
@@ -133,22 +201,6 @@ public abstract class AbstractBavetNodeNetwork {
      */
     List<AbstractNode> getNodes() {
         return Arrays.stream(layeredNodes).flatMap(Arrays::stream).toList();
-    }
-
-    private static void settleLayer(Propagator[] nodesInLayer) {
-        if (nodesInLayer.length == 1) { // Avoid iteration.
-            nodesInLayer[0].propagateEverything();
-        } else {
-            for (var node : nodesInLayer) {
-                node.propagateRetracts();
-            }
-            for (var node : nodesInLayer) {
-                node.propagateUpdates();
-            }
-            for (var node : nodesInLayer) {
-                node.propagateInserts();
-            }
-        }
     }
 
     @Override

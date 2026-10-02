@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -50,11 +51,10 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
      * The primary purpose of this method is
      * to enable the {@code ConstraintVerifier}
      * to ignore events related to shadow variables when testing constraints that do not rely on them.
-     *
-     * @see AbstractScoreDirector#clearVariableListenerEvents()
      */
-    public void clearShadowVariablesListenerQueue() {
-        clearVariableListenerEvents();
+    @Override
+    public void clearPendingShadowVariableUpdates() {
+        super.clearPendingShadowVariableUpdates();
     }
 
     /**
@@ -69,14 +69,14 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         var solutionDescriptor = getSolutionDescriptor();
         var entityList = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entityList::add);
-        variableListenerSupport.setConsistencyTracker(ConsistencyTracker.frozen(
+        variableSupport.setConsistencyTracker(ConsistencyTracker.frozen(
                 getSolutionDescriptor(),
                 entityList.toArray()));
     }
 
     @Override
     public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
-        session = scoreDirectorFactory.newSession(workingSolution, variableListenerSupport.getConsistencyTracker(),
+        session = scoreDirectorFactory.newSession(workingSolution, variableSupport.getConsistencyTracker(),
                 constraintMatchPolicy, derived);
         super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, session::insert);
     }
@@ -89,8 +89,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public InnerScore<Score_> calculateScore() {
-        variableListenerSupport.assertNotificationQueuesAreEmpty();
+    public InnerScore<Score_> innerCalculateScore() {
+        variableSupport.assertShadowVariablesAreUpToDate();
         var score = session.calculateScore();
         setCalculatedScore(score);
         return new InnerScore<>(score, -getWorkingInitScore());
@@ -198,7 +198,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     /**
      * Exposed for debugging purposes, so that we can hook into it from tests and while reproducing issues.
-     * 
+     *
      * @return null before first {@link #setWorkingSolutionWithoutUpdatingShadows(Object)} or after {@link #close()}.
      */
     @SuppressWarnings("unused")
@@ -216,8 +216,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
             extends
             AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
-        public Builder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
-            super(scoreDirectorFactory);
+        public Builder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+                EnvironmentMode environmentMode) {
+            super(scoreDirectorFactory, environmentMode);
         }
 
         @Override
@@ -226,8 +227,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         }
 
         @Override
-        public AbstractScoreDirector<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>>
-                buildDerived() {
+        public BavetConstraintStreamScoreDirector<Solution_, Score_> buildDerived() {
             return new BavetConstraintStreamScoreDirector<>(this, true);
         }
     }

@@ -73,11 +73,11 @@ public class MapServiceClientImpl implements MapService {
     @Inject
     public MapServiceClientImpl(@RestClient MapServiceClient mapService,
             @All List<TravelTimeAndDistanceConverter> converters,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback",
+            @ConfigProperty(name = "timefold.platform.map-service.enable-fallback",
                     defaultValue = "false") Boolean fallbackEnabled,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
+            @ConfigProperty(name = "timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
             @ConfigProperty(
-                    name = "ai.timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
+                    name = "timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
             HaversineTravelTimeAndDistanceMatrixProvider travelTimeAndDistanceMatrixProvider,
             HaversineWaypointsProvider haversineWaypointsProvider,
             TimeframeBucketing timeframeBucketing,
@@ -590,7 +590,7 @@ public class MapServiceClientImpl implements MapService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         ("Configured default timeframe '%s' is not one of the supported timeframes %s. " +
-                                "Check the ai.timefold.platform.map-service.default-timeframe property.")
+                                "Check the timefold.platform.map-service.default-timeframe property.")
                                 .formatted(requested, bucketing.allTimeframes())));
     }
 

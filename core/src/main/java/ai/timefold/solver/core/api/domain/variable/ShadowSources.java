@@ -21,7 +21,8 @@ public @interface ShadowSources {
      * <ul>
      * <li>
      * "variableName", for referring any variable on the same planning entity,
-     * except a {@link PlanningListVariable}, which cannot be used as a source.
+     * except a {@link PlanningListVariable}, which can only be used with the
+     * "[]" suffix described below.
      * </li>
      * <li>
      * A list of names seperated by ".", such as "variableOrFact.fact.entity.variable",
@@ -41,6 +42,15 @@ public @interface ShadowSources {
      * and the annotated method uses the "previous" variable of each element in the
      * collection.
      * The collection must not change during solving and may be null.
+     * </li>
+     * <li>
+     * The name of a {@link PlanningListVariable} on the planning entity suffixed by "[].",
+     * followed by a declarative shadow variable on the list variable's elements
+     * (optionally accessed via a fact).
+     * For example, "values[].endTime".
+     * In this case, the annotated method uses the "endTime" declarative shadow variable
+     * of each element currently assigned to the "values" list variable,
+     * and is recomputed whenever the list variable or any of its elements' "endTime" changes.
      * </li>
      * </ul>
      *

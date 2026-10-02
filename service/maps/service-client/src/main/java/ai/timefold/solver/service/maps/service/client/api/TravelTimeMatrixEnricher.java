@@ -41,7 +41,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     @Inject
     public TravelTimeMatrixEnricher(MapService mapService, MapServiceOptionsSupplier optionsSupplier,
             MapEnrichmentContext mapEnrichmentContext,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic) {
+            @ConfigProperty(name = "timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic) {
         this.mapService = mapService;
         this.optionsSupplier = optionsSupplier;
         this.mapEnrichmentContext = mapEnrichmentContext;

@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.common;
 
 /**
- * Defines methods that every constraint stream node sharing test must have. These methods are enforced because they test each
- * method of the API for correctness.
+ * Defines methods that every constraint stream node sharing test must have.
+ * These methods are enforced because they test each method of the API for correctness.
  */
 public interface ConstraintStreamNodeSharingTest {
 
@@ -222,6 +222,8 @@ public interface ConstraintStreamNodeSharingTest {
     void differentSecondSourceConcat();
 
     void sameSourcesConcat();
+
+    void differentPaddingFunctionConcat();
 
     void sameDataPrecompute();
 

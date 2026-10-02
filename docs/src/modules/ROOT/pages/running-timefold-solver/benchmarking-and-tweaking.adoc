@@ -136,6 +136,11 @@ It runs the solver configuration on each of those unsolved solution files.
 The element `name` is optional, because it is generated if absent.
 The `inputSolutionFile` is read by a <<solutionFileIO,SolutionFileIO>>, relative to the working directory.
 
+[IMPORTANT]
+====
+A solver configuration in a benchmark must not override `environmentMode` in any of its phases.
+====
+
 [NOTE]
 ====
 Use a forward slash (``/``) as the file separator (such as in the element ``<inputSolutionFile>``).

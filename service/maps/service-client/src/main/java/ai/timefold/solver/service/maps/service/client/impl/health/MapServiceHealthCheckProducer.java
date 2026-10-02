@@ -14,7 +14,7 @@ public class MapServiceHealthCheckProducer {
     private final MapServiceAvailabilityProbe mapServiceAvailabilityProbe;
 
     public MapServiceHealthCheckProducer(
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
+            @ConfigProperty(name = "timefold.platform.map-service.use-remote", defaultValue = "true") boolean useRemote,
             MapServiceAvailabilityProbe mapServiceAvailabilityProbe) {
         this.useRemote = useRemote;
         this.mapServiceAvailabilityProbe = mapServiceAvailabilityProbe;

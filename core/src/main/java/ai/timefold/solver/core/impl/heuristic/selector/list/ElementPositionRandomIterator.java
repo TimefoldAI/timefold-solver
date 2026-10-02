@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -15,7 +15,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 final class ElementPositionRandomIterator<Solution_> implements Iterator<ElementPosition> {
 
-    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
+    private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
     private final Iterator<Object> replayingValueIterator;
@@ -29,12 +29,12 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private Object selectedValue;
     private boolean hasNextValue = false;
 
-    public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
+    public ElementPositionRandomIterator(ListVariableState<Solution_, Object, Object> listVariableState,
             EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
             IterableValueSelector<Solution_> valueSelector, RandomGenerator workingRandom, long totalSize,
             boolean allowsUnassignedValues, boolean maybeMovableValues) {
-        this.listVariableStateSupply = listVariableStateSupply;
-        this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+        this.listVariableState = listVariableState;
+        this.listVariableDescriptor = listVariableState.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
         this.replayingValueIterator = replayingValueIterator;
         this.valueSelector = valueSelector;
@@ -138,7 +138,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                     return ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
                 }
             } else {
-                var elementPosition = listVariableStateSupply.getElementPosition(value);
+                var elementPosition = listVariableState.getElementPosition(value);
                 if (elementPosition instanceof PositionInList positionInList) {
                     // +1 to include the destination after the final element in the list.
                     return ElementPosition.of(positionInList.entity(), positionInList.index() + 1);

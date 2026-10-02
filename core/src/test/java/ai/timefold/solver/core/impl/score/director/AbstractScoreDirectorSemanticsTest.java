@@ -38,6 +38,18 @@ public abstract class AbstractScoreDirectorSemanticsTest {
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor);
 
     @Test
+    void scoreDirectorFactoriesUseTheGivenSolutionDescriptor() {
+        // Building a SolutionDescriptor is expensive, and the caller's instance is the one the tests work with,
+        // so an implementation must use the one it is given rather than building its own.
+        assertThat(buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor)
+                .getSolutionDescriptor()).isSameAs(constraintConfigurationSolutionDescriptor);
+        assertThat(buildScoreDirectorFactoryWithListVariableEntityPin(pinnedListSolutionDescriptor)
+                .getSolutionDescriptor()).isSameAs(pinnedListSolutionDescriptor);
+        assertThat(buildScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor)
+                .getSolutionDescriptor()).isSameAs(pinnedWithIndexListSolutionDescriptor);
+    }
+
+    @Test
     void independentScoreDirectors() {
         var scoreDirectorFactory =
                 buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
@@ -64,7 +76,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
                 scoreDirector2.beforeEntityRemoved(entity);
                 solution2.getEntityList().remove(entity);
                 scoreDirector2.afterEntityRemoved(entity);
-                scoreDirector2.triggerVariableListeners();
+                scoreDirector2.updateShadowVariables();
                 assertThat(scoreDirector2.calculateScore().raw()).isEqualTo(SimpleScore.of(1));
                 assertThat(scoreDirector1.calculateScore().raw()).isEqualTo(SimpleScore.of(1));
 
@@ -72,7 +84,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
                 scoreDirector1.beforeEntityAdded(entity);
                 solution1.getEntityList().add(entity);
                 scoreDirector1.afterEntityAdded(entity);
-                scoreDirector1.triggerVariableListeners();
+                scoreDirector1.updateShadowVariables();
                 assertThat(scoreDirector1.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
                 assertThat(scoreDirector2.calculateScore().raw()).isEqualTo(SimpleScore.of(1));
             }
@@ -155,7 +167,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.beforeListVariableElementAssigned(secondEntity, "valueList", 0);
             secondEntity.setValueList(List.of(workingSolution.getValueList().get(1)));
             scoreDirector.afterListVariableElementAssigned(secondEntity, "valueList", 0);
-            scoreDirector.triggerVariableListeners();
+            scoreDirector.updateShadowVariables();
             var score2 = scoreDirector.calculateScore();
             assertThat(score2.raw()).isEqualTo(SimpleScore.of(-2));
         }
@@ -182,7 +194,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.beforeListVariableElementAssigned(thirdEntity, "valueList", 0);
             thirdEntity.setValueList(List.of(workingSolution.getValueList().get(2)));
             scoreDirector.afterListVariableElementAssigned(thirdEntity, "valueList", 0);
-            scoreDirector.triggerVariableListeners();
+            scoreDirector.updateShadowVariables();
             var score2 = scoreDirector.calculateScore();
             assertThat(score2.raw()).isEqualTo(SimpleScore.of(-3));
         }

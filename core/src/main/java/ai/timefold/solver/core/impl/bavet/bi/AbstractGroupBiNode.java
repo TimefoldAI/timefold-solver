@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.bi;
 
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
@@ -21,19 +22,19 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     private final int groupAccumulatorIndex;
     private final @Nullable BiConstraintCollectorAccumulator<ResultContainer_, OldA, OldB> incrementalAccumulator;
 
-    protected AbstractGroupBiNode(int groupStoreIndex, int groupAccumulatorIndex,
+    protected AbstractGroupBiNode(IntSupplier storeIndexReserver,
             Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,
             @NonNull BiConstraintCollector<OldA, OldB, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
+        super(storeIndexReserver, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
-        this.groupAccumulatorIndex = groupAccumulatorIndex;
+        this.groupAccumulatorIndex = storeIndexReserver.getAsInt();
         this.incrementalAccumulator = BiCollectorUtils.toIncremental(collector.accumulator());
     }
 
-    protected AbstractGroupBiNode(int groupStoreIndex, Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,
+    protected AbstractGroupBiNode(IntSupplier storeIndexReserver, Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        super(storeIndexReserver, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
         this.groupAccumulatorIndex = -1;
         this.incrementalAccumulator = null;
     }

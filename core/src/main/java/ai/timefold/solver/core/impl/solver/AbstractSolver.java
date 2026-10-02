@@ -1,18 +1,20 @@
 package ai.timefold.solver.core.impl.solver;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
@@ -37,8 +39,10 @@ import org.slf4j.LoggerFactory;
 @NullMarked
 public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
-    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
+    protected final transient Logger LOGGER = LoggerFactory.getLogger(getClass());
 
+    protected final EnvironmentMode globalEnvironmentMode;
+    private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
     private final SolverEventSupport<Solution_> solverEventSupport = new SolverEventSupport<>(this);
     private final PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
@@ -50,16 +54,22 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
     private RandomGenerator.@Nullable SplittableGenerator savedRandom;
 
+    private final SolverContextManager<Solution_, ?> solverContextManager;
+
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    protected AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            UniversalTermination<Solution_> globalTermination, List<Phase<Solution_>> phaseList) {
+    protected AbstractSolver(EnvironmentMode globalEnvironmentMode, ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory,
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, UniversalTermination<Solution_> globalTermination,
+            List<Phase<Solution_>> phaseList) {
+        this.globalEnvironmentMode = globalEnvironmentMode;
+        this.scoreDirectorFactory = scoreDirectorFactory;
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.globalTermination = globalTermination;
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = List.copyOf(phaseList);
+        this.solverContextManager = new SolverContextManager<>(scoreDirectorFactory, bestSolutionRecaller, this.phaseList);
     }
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
@@ -72,20 +82,21 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
                 .getValueRangeManager()
                 .getProblemSizeStatistics();
         solverScope.setProblemSizeStatistics(problemSizeStatistics);
-        for (Phase<Solution_> phase : phaseList) {
+        for (var phase : phaseList) {
             phase.solvingStarted(solverScope);
         }
+        solverContextManager.solvingStarted(solverScope);
     }
 
     protected void runPhases(SolverScope<Solution_> solverScope) {
         if (!solverScope.getSolutionDescriptor().hasMovableEntities(solverScope.getScoreDirector())) {
-            logger.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
+            LOGGER.info("Skipped all phases ({}): out of {} planning entities, none are movable (non-pinned).",
                     phaseList.size(), solverScope.getWorkingEntityCount());
             return;
         }
-        Iterator<Phase<Solution_>> it = phaseList.iterator();
+        var it = phaseList.iterator();
         while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
-            Phase<Solution_> phase = it.next();
+            var phase = it.next();
             phase.solve(solverScope);
             // If there is a next phase, it starts from the best solution, which might differ from the working solution.
             // If there isn't, no need to planning clone the best solution to the working solution.
@@ -96,22 +107,26 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        for (Phase<Solution_> phase : phaseList) {
+        for (var phase : phaseList) {
             phase.solvingEnded(solverScope);
         }
         bestSolutionRecaller.solvingEnded(solverScope);
         globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
+        solverContextManager.solvingEnded(solverScope);
     }
 
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {
+        // Notify first, so listeners still observe the score director in the state the failure left it in.
         phaseLifecycleSupport.fireSolvingError(solverScope, exception);
-        for (Phase<Solution_> phase : phaseList) {
+        for (var phase : phaseList) {
             phase.solvingError(solverScope, exception);
         }
+        solverContextManager.solvingError(solverScope, exception);
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        solverContextManager.phaseStarted(phaseScope);
         bestSolutionRecaller.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
         globalTermination.phaseStarted(phaseScope);
@@ -145,6 +160,10 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         phaseLifecycleSupport.fireStepEnded(stepScope);
         globalTermination.stepEnded(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
+    }
+
+    void prepareForProblemChanges(SolverScope<Solution_> solverScope) {
+        solverContextManager.prepareForProblemChanges(solverScope);
     }
 
     @Override
@@ -183,8 +202,12 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         return bestSolutionRecaller;
     }
 
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
+        return (ScoreDirectorFactory<Solution_, Score_>) scoreDirectorFactory;
+    }
+
     public List<Phase<Solution_>> getPhaseList() {
         return phaseList;
     }
-
 }

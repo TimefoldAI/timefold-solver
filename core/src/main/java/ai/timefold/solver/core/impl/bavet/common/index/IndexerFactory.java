@@ -73,20 +73,18 @@ import ai.timefold.solver.core.impl.util.Triple;
 public final class IndexerFactory<Right_> {
 
     private final AbstractJoiner<Right_> joiner;
-    private final boolean requiresRandomAccess; // Neighborhoods with enumerating joiners require random access.
     /**
-     * The number of leading {@link JoinerType#EQUAL} joiners. The comber reorders joiners equal-first
-     * (see {@code reorderedEqualsFirst()}), so all equal joiners form a single run at the front; this is
-     * its length (0 if the joiner starts with a non-equal joiner). The equal run is merged into one indexer
-     * level (the composite key); every remaining joiner becomes its own single-key level.
+     * The number of leading {@link JoinerType#EQUAL} joiners.
+     * The comber reorders joiners equal-first (see {@code reorderedEqualsFirst()}),
+     * so all equal joiners form a single run at the front;
+     * this is its length (0 if the joiner starts with a non-equal joiner).
+     * The equal run is merged into one indexer level (the composite key);
+     * every remaining joiner becomes its own single-key level.
      */
     private final int equalPrefixLength;
 
     public IndexerFactory(AbstractJoiner<Right_> joiner) {
         this.joiner = joiner;
-        // TODO Code encapsulation: remove the field requiresRandomAccess and call joiner.requireRandomAccess() instead?
-        // TODO It also impacts the flip(). Is requiresRandomAccess a good name?
-        this.requiresRandomAccess = joiner instanceof DefaultBiNeighborhoodsJoiner<?, Right_>;
         var joinerCount = joiner.getJoinerCount();
         var prefix = 0;
         while (prefix < joinerCount && joiner.getJoinerType(prefix) == JoinerType.EQUAL) {
@@ -96,9 +94,11 @@ public final class IndexerFactory<Right_> {
     }
 
     /**
-     * The end-exclusive boundary of each indexer level, top-to-bottom: the merged equal-prefix level
-     * (length {@link #equalPrefixLength}, when {@code >= 1}) followed by one single-joiner level each.
-     * Empty when the joiner has no joiners. For {@code [EQUAL, EQUAL, LESS_THAN]} this is {@code [2, 3]}
+     * The end-exclusive boundary of each indexer level, top-to-bottom:
+     * the merged equal-prefix level (length {@link #equalPrefixLength}, when {@code >= 1})
+     * followed by one single-joiner level each.
+     * Empty when the joiner has no joiners.
+     * For {@code [EQUAL, EQUAL, LESS_THAN]} this is {@code [2, 3]}
      * (one merged level spanning indices 0..1, then a single level at index 2).
      */
     private int[] levelEndIndices() {
@@ -123,8 +123,12 @@ public final class IndexerFactory<Right_> {
         return joiner.getJoinerCount() > 0;
     }
 
+    public <A> Function<A, Object> buildUniLeftFactKeysExtractor() {
+        return buildUniFactKeysExtractor(getMappingExtractor());
+    }
+
     public <A> UniKeysExtractor<A> buildUniLeftKeysExtractor() {
-        return buildUniKeysExtractor(getMappingExtractor());
+        return buildUniTupleKeysExtractor(getMappingExtractor());
     }
 
     private <A> IntFunction<Function<A, Object>> getMappingExtractor() {
@@ -138,14 +142,37 @@ public final class IndexerFactory<Right_> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private <A> UniKeysExtractor<A> buildUniKeysExtractor(IntFunction<Function<A, Object>> mappingExtractor) {
+    private <A> Function<A, Object> buildUniFactKeysExtractor(IntFunction<Function<A, Object>> mappingExtractor) {
+        var joinerCount = joiner.getJoinerCount();
+        if (joinerCount == 0) {
+            return a -> CompositeKey.none();
+        } else if (joinerCount == 1) {
+            var keyFunction = mappingExtractor.apply(0);
+            return a -> CompositeKey.of(keyFunction.apply(a));
+        }
+        return combineFactKeysExtractor(buildLevelKeyFunctionList(mappingExtractor));
+    }
+
+    /**
+     * Tuple-typed counterpart of {@link #buildUniFactKeysExtractor(IntFunction)}.
+     * Kept separate
+     * (instead of wrapping the fact extractor with a {@code tuple -> factExtractor.apply(tuple.getA())} layer)
+     * because this feeds the indexed join/if-exists hot path,
+     * where every tuple insert, update, and retract pays for the extra call.
+     */
+    private <A> UniKeysExtractor<A> buildUniTupleKeysExtractor(IntFunction<Function<A, Object>> mappingExtractor) {
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount == 0) {
             return tuple -> CompositeKey.none();
         } else if (joinerCount == 1) {
-            return toKeysExtractor(mappingExtractor.apply(0));
+            var keyFunction = mappingExtractor.apply(0);
+            return tuple -> CompositeKey.of(keyFunction.apply(tuple.getA()));
         }
+        return combineTupleKeysExtractor(buildLevelKeyFunctionList(mappingExtractor));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <A> List<Function<A, Object>> buildLevelKeyFunctionList(IntFunction<Function<A, Object>> mappingExtractor) {
         var startIndexInclusive = 0;
         var keyFunctionList = new ArrayList<Function<A, Object>>();
         for (var endIndexExclusive : levelEndIndices()) {
@@ -183,7 +210,7 @@ public final class IndexerFactory<Right_> {
             keyFunctionList.add(keyFunction);
             startIndexInclusive = endIndexExclusive;
         }
-        return toKeysExtractor(keyFunctionList);
+        return keyFunctionList;
     }
 
     @SafeVarargs
@@ -198,17 +225,38 @@ public final class IndexerFactory<Right_> {
         };
     }
 
-    private static <A> UniKeysExtractor<A> toKeysExtractor(Function<A, Object> keyFunction) {
-        return tuple -> CompositeKey.of(keyFunction.apply(tuple.getA()));
-    }
-
-    private static <A> UniKeysExtractor<A> toKeysExtractor(List<Function<A, Object>> keyFunctionList) {
+    private static <A> Function<A, Object> combineFactKeysExtractor(List<Function<A, Object>> keyFunctionList) {
         var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionCount) {
-            case 1 -> toKeysExtractor(keyFunctionList.get(0));
+            case 1 -> {
+                var keyFunction = keyFunctionList.getFirst();
+                yield a -> CompositeKey.of(keyFunction.apply(a));
+            }
             case 2 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
+                var keyFunction1 = keyFunctionList.getFirst();
+                var keyFunction2 = keyFunctionList.getLast();
+                yield a -> CompositeKey.of(keyFunction1.apply(a), keyFunction2.apply(a));
+            }
+            default -> a -> {
+                var arr = new Object[keyFunctionCount];
+                for (var i = 0; i < keyFunctionCount; i++) {
+                    arr[i] = keyFunctionList.get(i).apply(a);
+                }
+                return CompositeKey.ofMany(arr);
+            };
+        };
+    }
+
+    private static <A> UniKeysExtractor<A> combineTupleKeysExtractor(List<Function<A, Object>> keyFunctionList) {
+        var keyFunctionCount = keyFunctionList.size();
+        return switch (keyFunctionCount) {
+            case 1 -> {
+                var keyFunction = keyFunctionList.getFirst();
+                yield tuple -> CompositeKey.of(keyFunction.apply(tuple.getA()));
+            }
+            case 2 -> {
+                var keyFunction1 = keyFunctionList.getFirst();
+                var keyFunction2 = keyFunctionList.getLast();
                 yield tuple -> {
                     var a = tuple.getA();
                     return CompositeKey.of(keyFunction1.apply(a), keyFunction2.apply(a));
@@ -281,10 +329,10 @@ public final class IndexerFactory<Right_> {
         }
         var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionCount) {
-            case 1 -> toKeysExtractor(keyFunctionList.get(0));
+            case 1 -> toKeysExtractor(keyFunctionList.getFirst());
             case 2 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
+                var keyFunction1 = keyFunctionList.getFirst();
+                var keyFunction2 = keyFunctionList.getLast();
                 yield tuple -> {
                     var a = tuple.getA();
                     var b = tuple.getB();
@@ -363,10 +411,10 @@ public final class IndexerFactory<Right_> {
         }
         var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionCount) {
-            case 1 -> toKeysExtractor(keyFunctionList.get(0));
+            case 1 -> toKeysExtractor(keyFunctionList.getFirst());
             case 2 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
+                var keyFunction1 = keyFunctionList.getFirst();
+                var keyFunction2 = keyFunctionList.getLast();
                 yield tuple -> {
                     var a = tuple.getA();
                     var b = tuple.getB();
@@ -448,10 +496,10 @@ public final class IndexerFactory<Right_> {
         }
         var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionList.size()) {
-            case 1 -> toKeysExtractor(keyFunctionList.get(0));
+            case 1 -> toKeysExtractor(keyFunctionList.getFirst());
             case 2 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
+                var keyFunction1 = keyFunctionList.getFirst();
+                var keyFunction2 = keyFunctionList.getLast();
                 yield tuple -> {
                     var a = tuple.getA();
                     var b = tuple.getB();
@@ -479,12 +527,12 @@ public final class IndexerFactory<Right_> {
     }
 
     public UniKeysExtractor<Right_> buildRightKeysExtractor() {
-        return buildUniKeysExtractor(joiner::getRightMapping);
+        return buildUniTupleKeysExtractor(joiner::getRightMapping);
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
         Supplier<Indexer<T>> backendSupplier =
-                requiresRandomAccess ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new;
+                joiner.requiresRandomAccess() ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new;
         if (!hasJoiners()) { // NoneJoiner results in a bare backend (NoneIndexer).
             return backendSupplier.get();
         }
@@ -518,7 +566,7 @@ public final class IndexerFactory<Right_> {
                 if (joinerType == JoinerType.EQUAL) {
                     // Fuse the leaf-most equal indexer with its backend.
                     downstreamIndexerSupplier = () -> new EqualIndexer<>(KeyUnpacker.single(),
-                            requiresRandomAccess ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new);
+                            joiner.requiresRandomAccess() ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new);
                 } else {
                     KeyUnpacker<?> keyUnpacker = KeyUnpacker.single();
                     downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
@@ -540,7 +588,7 @@ public final class IndexerFactory<Right_> {
      * and random access is not required.
      */
     public boolean isFusedEqualIndexEligible() {
-        return equalPrefixLength >= 1 && !requiresRandomAccess;
+        return equalPrefixLength >= 1 && !joiner.requiresRandomAccess();
     }
 
     /**
@@ -557,8 +605,7 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         // Pure-equal ⇒ the composite key IS the equal key (KeyUnpacker.single());
         // otherwise it is component 0.
-        KeyUnpacker<Object> topEqualKeyUnpacker =
-                equalPrefixLength == joinerCount ? KeyUnpacker.single() : KeyUnpacker.composite(0);
+        var topEqualKeyUnpacker = equalPrefixLength == joinerCount ? KeyUnpacker.single() : KeyUnpacker.composite(0);
         if (equalPrefixLength == joinerCount) {
             // Pure equal: the per-side downstream is just the tuple list; the bucket is the equal-key group.
             return new FusedEqualIndex<>(topEqualKeyUnpacker, false, LinkedListLeafIndexer::new, LinkedListLeafIndexer::new);
@@ -570,16 +617,16 @@ public final class IndexerFactory<Right_> {
         }
     }
 
-    private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyUnpacker<?> keyUnpacker,
+    /**
+     * A right bridge node stores B, keyed by rightMapping,
+     * and is queried using A's leftMapping-derived key.
+     * The joiner type has to be flipped to translate "leftMapping(A) OP rightMapping(B)"
+     * into the equivalent "storedKey OP' queryKey" relation,
+     * regardless of whether a left bridge also exists to pair with it.
+     */
+    private static <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyUnpacker<?> keyUnpacker,
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
-        // (<A, B> becomes <B, A>.)
-        // This does not apply if random access is required,
-        // because in that case we create a right bridge only,
-        // and we query it from the left.
-        // TODO Does the requiresRandomAccess check make sense?
-        //      Shouldn't a right bridge always flip, even if there is no left bridge?
-        if (!isLeftBridge && !requiresRandomAccess) {
+        if (!isLeftBridge) {
             joinerType = joinerType.flip();
         }
         return switch (joinerType) {

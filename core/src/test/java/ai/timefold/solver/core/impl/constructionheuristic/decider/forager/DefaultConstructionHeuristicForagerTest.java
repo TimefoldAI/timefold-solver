@@ -11,6 +11,7 @@ import ai.timefold.solver.core.config.constructionheuristic.decider.forager.Cons
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
+import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,22 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
         assertThat(forager.isQuitEarly()).isFalse();
         forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(SimpleScore.of(-90), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
+    }
+
+    @Test
+    void foragerDoesNotPickARejectedStructurallyFlawedMove() {
+        var forager = new DefaultConstructionHeuristicForager<Solution_>(ConstructionHeuristicPickEarlyType.NEVER);
+        var stepScope = buildStepScope(InnerScore.withUnassignedCount(SimpleScore.of(-100), 8));
+        forager.stepStarted(stepScope);
+
+        var flawedMoveScope = buildMoveScope(stepScope, InnerScore.withUnassignedCount(new SimpleScore(-1, 0), 7));
+        flawedMoveScope.setInitializedScore(new SimpleScoreDefinition().getStructurallyFlawedScore());
+        forager.addMove(flawedMoveScope);
+
+        assertThat(forager.pickMove(stepScope))
+                .withFailMessage("The forager picked a rejected, structurally flawed move as the step.")
+                .isNull();
+        assertThat(stepScope.getSelectedMoveCount()).isZero();
     }
 
     @Test

@@ -15,6 +15,8 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class TupleList<T extends Tuple> {
 
+    public static final TupleList EMPTY = new TupleList<>(-1, -1);
+
     private final int prevStoreIndex;
     private final int nextStoreIndex;
     private @Nullable T first;
@@ -30,6 +32,12 @@ public final class TupleList<T extends Tuple> {
 
     public void add(T tuple) {
         tuple.setStore(prevStoreIndex, last);
+        // A tuple re-added after a previous membership in this (or another) list ended via clear(Consumer)
+        // still carries that membership's own next pointer,
+        // since clear(Consumer) deliberately leaves member tuples' link slots untouched (see its javadoc).
+        // Reset it explicitly rather than relying on it already being null;
+        // that only holds for a tuple's very first-ever list membership.
+        tuple.setStore(nextStoreIndex, null);
         if (first == null) {
             first = tuple;
         } else {

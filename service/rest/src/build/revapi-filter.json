@@ -1,0 +1,19 @@
+[
+  {
+    "extension": "revapi.filter",
+    "configuration": {
+      "elements": {
+        "include": [
+          "class ai\\.timefold\\.solver\\.service\\.rest\\.api.*",
+          "interface ai\\.timefold\\.solver\\.service\\.rest\\.api.*",
+          "@interface ai\\.timefold\\.solver\\.service\\.rest\\.api.*",
+          "enum ai\\.timefold\\.solver\\.service\\.rest\\.api.*",
+          "class ai\\.timefold\\.solver\\.service\\.rest\\.impl.AbstractModelAPIResource",
+          "interface ai\\.timefold\\.solver\\.service\\.rest\\.impl.AbstractModelAPIResource",
+          "@interface ai\\.timefold\\.solver\\.service\\.rest\\.impl.AbstractModelAPIResource",
+          "enum ai\\.timefold\\.solver\\.service\\.rest\\.impl.AbstractModelAPIResource"
+        ]
+      }
+    }
+  }
+]

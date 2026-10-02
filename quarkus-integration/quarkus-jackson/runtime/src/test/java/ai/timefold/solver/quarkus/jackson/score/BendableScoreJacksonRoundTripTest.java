@@ -16,6 +16,12 @@ class BendableScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTes
         assertSerializeAndDeserialize(score, new TestBendableScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new BendableScore(-1L, new long[] { 1000L, 200L }, new long[] { 34L });
+        assertSerializeAndDeserialize(score, new TestBendableScoreWrapper(score));
+    }
+
     public static class TestBendableScoreWrapper extends TestScoreWrapper<BendableScore> {
 
         @JsonSerialize(using = BendableScoreJacksonSerializer.class)

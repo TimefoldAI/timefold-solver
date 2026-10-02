@@ -4,16 +4,20 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.VariableListener;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableState;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
@@ -116,6 +120,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * Executes a move, finds out its score, and immediately undoes it.
+     * The undo action also restores the working solution score to its original value.
      * If appropriate, consider setting {@link #setAllChangesWillBeUndoneBeforeStepEnds(boolean)} to true beforehand,
      * and resetting it to false afterward.
      * There are performance gains to be made
@@ -168,6 +173,10 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     boolean expectShadowVariablesInCorrectState();
 
+    boolean ignoreInconsistentSolutions();
+
+    void unassignInconsistentEntities();
+
     /**
      * @return never null
      */
@@ -182,6 +191,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return never null
      */
     ScoreDefinition<Score_> getScoreDefinition();
+
+    /**
+     * The environment mode this score director was built for,
+     * which decides which assertions it runs.
+     * It is not necessarily the solver's global environment mode:
+     * a phase may override it,
+     * in which case that phase's score director reports the phase's mode.
+     */
+    EnvironmentMode getEnvironmentMode();
 
     /**
      * Returns a planning clone of the solution,
@@ -209,7 +227,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     void resetCalculationCount();
 
-    void incrementCalculationCount();
+    default void incrementCalculationCount() {
+        incrementCalculationCount(1L);
+    }
+
+    void incrementCalculationCount(long count);
 
     /**
      * @return never null
@@ -220,10 +242,35 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     ValueRangeManager<Solution_> getValueRangeManager();
 
-    <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
-            getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
+    /**
+     * Returns the {@link BasicVariableState}, the single source of truth for the inverse relation
+     * of the given basic {@link PlanningVariable}.
+     *
+     * @param variableDescriptor never null, must not describe a {@link PlanningListVariable}
+     * @return never null
+     */
+    BasicVariableState<Solution_> getBasicVariableState(VariableDescriptor<Solution_> variableDescriptor);
+
+    /**
+     * Returns the {@link ListVariableState}, the single source of truth for all information
+     * about elements inside the given {@link PlanningListVariable}, including its shadow variables.
+     *
+     * @param variableDescriptor never null
+     * @return never null
+     */
+    <Entity_, Value_> ListVariableState<Solution_, Entity_, Value_>
+            getListVariableState(ListVariableDescriptor<Solution_> variableDescriptor);
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
+
+    /**
+     * Asserts that if the {@link Score} is calculated for the parameter solution,
+     * it would be equal to the score of that parameter.
+     *
+     * @param solution never null
+     * @see InnerScoreDirector#assertWorkingScoreFromScratch(InnerScore, Object)
+     */
+    void assertScoreFromScratch(Solution_ solution);
 
     /**
      * Do not waste performance by propagating changes to step (or higher) mechanisms.
@@ -250,7 +297,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction);
 
     /**
-     * Asserts that if all {@link VariableListener}s are forcibly triggered,
+     * Asserts that if all shadow variables are forcibly updated,
      * and therefore all shadow variables are updated if needed,
      * that none of the shadow variables of the {@link PlanningSolution working solution} change,
      * Then also asserts that the {@link Score} calculated for the {@link PlanningSolution working solution} afterwards
@@ -274,7 +321,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction);
 
@@ -288,7 +334,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param predictedScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertPredictedScoreFromScratch(InnerScore<Score_> predictedScore, Object completedAction);
 
@@ -312,11 +357,29 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void close();
 
     /**
-     * Unlike {@link #triggerVariableListeners()} which only triggers notifications already in the queue,
-     * this triggers every variable listener on every genuine variable.
+     * Unlike {@link #updateShadowVariables()} which only triggers notifications already in the queue,
+     * this updates shadow variables on every genuine variable.
      * This is useful in {@link SolutionManager#update(Object)} to fill in shadow variable values.
      */
-    void forceTriggerVariableListeners();
+    void forceUpdateShadowVariables();
+
+    /**
+     * Exists not to break models.
+     * 
+     * @deprecated use {@link #forceUpdateShadowVariables()} directly.
+     */
+    @Deprecated(since = "2.5.0", forRemoval = true)
+    default void forceTriggerVariableListeners() {
+        forceUpdateShadowVariables();
+    }
+
+    /**
+     * @return true if the last {@link #updateShadowVariables()} did not result in a structurally flawed solutions,
+     *         false otherwise.
+     *         <p>
+     *         Note: Planning models with {@link ShadowVariablesInconsistent} will always result in successful updates.
+     */
+    boolean isLastVariableUpdateSuccessful();
 
     /**
      * A derived score director is created from a root score director.
@@ -361,5 +424,4 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void beforeProblemFactRemoved(Object problemFact);
 
     void afterProblemFactRemoved(Object problemFact);
-
 }

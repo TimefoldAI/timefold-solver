@@ -78,7 +78,7 @@ public class MapServiceApiWiremockExtensions implements QuarkusTestResourceLifec
 
         wireMockServer.stubFor(WireMock.get("/q/health").willReturn(WireMock.aResponse()));
 
-        return Map.of("ai.timefold.platform.map-service.url",
+        return Map.of("timefold.platform.map-service.url",
                 "http://" + getAddress() + ":" + wireMockServer.port());
     }
 

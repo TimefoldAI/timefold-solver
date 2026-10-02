@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.test;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -60,12 +61,12 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
             // As a result,
             // any validation using a solution would never work in these cases
             // due to an error when calling calculateScore().
-            // Calling scoreDirector.triggerVariableListeners() runs the custom listeners and clears the queue.
+            // Calling scoreDirector.updateShadowVariables() runs the custom listeners and clears the queue.
             // However, to maintain API consistency,
             // we will only trigger the listeners
             // if the user opts to use settingAllShadowVariables.
             if (bavetConstraintStreamScoreDirector != null) {
-                bavetConstraintStreamScoreDirector.clearShadowVariablesListenerQueue();
+                bavetConstraintStreamScoreDirector.clearPendingShadowVariableUpdates();
             }
             update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap());
             initialized = true;
@@ -85,7 +86,9 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
                         var constraintRef = constraintMatchTotal.getConstraintRef();
                         constraintAnalyses.put(constraintRef, constraintMatchTotal);
                     }
-                    return s.analyze(workingScore, constraintAnalyses, ScoreAnalysisFetchPolicy.FETCH_ALL)
+                    return s.analyze(workingScore, constraintAnalyses, Collections.emptyList(),
+                            null,
+                            ScoreAnalysisFetchPolicy.FETCH_ALL)
                             .summarize();
                 },
                 () -> "Score analysis is only available in Timefold Solver Enterprise Edition.");

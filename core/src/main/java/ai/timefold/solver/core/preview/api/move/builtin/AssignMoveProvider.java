@@ -15,11 +15,18 @@ import org.jspecify.annotations.NullMarked;
  * Assigns a non-null value to each entity whose planning variable is currently unassigned (null).
  * Only generates moves where the value is in range for that entity.
  * <p>
- * For moving an already-assigned entity to a different non-null value, see {@link ChangeMoveProvider}.
- * For moving an already-assigned entity to null (unassigning), see {@code UnassignMoveProvider}.
+ * {@code ChangeMoveProvider} makes this same move too,
+ * whenever its own {@code crossingNull} is {@code true} -
+ * but there, only when the randomly drawn entity happens to already be unassigned,
+ * so it arrives rarely.
+ * This class exists to make it happen often.
  * <p>
  * Requires that the variable {@link PlanningVariableMetaModel#allowsUnassigned() allows unassigned};
  * otherwise the constructor throws {@link IllegalArgumentException}.
+ *
+ * @see ChangeMoveProvider Moving an already-assigned entity to a different value.
+ * @see UnassignMoveProvider Moving an already-assigned entity to null (unassigning).
+ * @see MassAssignMoveProvider Assigning several unassigned entities at once.
  */
 @NullMarked
 public final class AssignMoveProvider<Solution_, Entity_, Value_>

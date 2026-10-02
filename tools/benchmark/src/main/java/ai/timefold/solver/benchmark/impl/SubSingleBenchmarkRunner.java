@@ -1,6 +1,5 @@
 package ai.timefold.solver.benchmark.impl;
 
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -13,13 +12,13 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverTags;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
 
 public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBenchmarkRunner<Solution_>> {
 
@@ -81,9 +80,8 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             solverConfig = new SolverConfig(solverConfig);
             solverConfig.offerRandomSeedFromSubSingleIndex(subSingleBenchmarkResult.getSubSingleBenchmarkIndex());
         }
-        var subSingleBenchmarkTagMap = new HashMap<String, String>();
         var runId = UUID.randomUUID().toString();
-        subSingleBenchmarkTagMap.put("timefold.benchmark.run", runId);
+        var subSingleBenchmarkSolverTags = SolverTags.withProblemId(runId);
         solverConfig = new SolverConfig(solverConfig);
         randomSeed = solverConfig.getRandomSeed();
 
@@ -93,14 +91,14 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         // Register metrics
         var statisticRegistry = new StatisticRegistry<Solution_>(solverFactory.getSolutionDescriptor().getScoreDefinition());
         Metrics.addRegistry(statisticRegistry);
-        var runTag = Tags.of("timefold.benchmark.run", runId);
+        var runTag = subSingleBenchmarkSolverTags.asTags();
         subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap().forEach((statisticType, subSingleStatistic) -> {
             subSingleStatistic.open(statisticRegistry, runTag);
             subSingleStatistic.initPointList();
         });
 
         var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
-        solver.setMonitorTagMap(subSingleBenchmarkTagMap);
+        solver.setMonitorTags(subSingleBenchmarkSolverTags);
         solver.addPhaseLifecycleListener(statisticRegistry);
         var solution = solver.solve(problem);
 

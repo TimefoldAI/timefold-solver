@@ -40,19 +40,19 @@ public class DefaultConfigProfileProcessor {
 
     private static final String DEFAULT_CONFIG_FILE_NAME = "default-config.json";
 
-    private static final String MODEL_CONFIG_NAME = "ai.timefold.model.default-config.name";
-    private static final String MODEL_CONFIG_DESCRIPTION = "ai.timefold.model.default-config.description";
-    private static final String MODEL_CONFIG_MAX_THREAD_COUNT = "ai.timefold.model.default-config.max-thread-count";
-    private static final String MODEL_CONFIG_MAP_LOCATION = "ai.timefold.model.default-config.map.location";
-    private static final String MODEL_CONFIG_MAP_PROVIDER = "ai.timefold.model.default-config.map.provider";
-    private static final String MODEL_CONFIG_MAP_DISTANCE = "ai.timefold.model.default-config.map.max-distance-from-road";
-    private static final String MODEL_CONFIG_MAP_TRANSPORT_TYPE = "ai.timefold.model.default-config.map.transport-type";
-    private static final String MODEL_CONFIG_MAP_USE_TRAFFIC = "ai.timefold.model.default-config.map.use-traffic";
+    private static final String MODEL_CONFIG_NAME = "timefold.model.default-config.name";
+    private static final String MODEL_CONFIG_DESCRIPTION = "timefold.model.default-config.description";
+    private static final String MODEL_CONFIG_MAX_THREAD_COUNT = "timefold.model.default-config.max-thread-count";
+    private static final String MODEL_CONFIG_MAP_LOCATION = "timefold.model.default-config.map.location";
+    private static final String MODEL_CONFIG_MAP_PROVIDER = "timefold.model.default-config.map.provider";
+    private static final String MODEL_CONFIG_MAP_DISTANCE = "timefold.model.default-config.map.max-distance-from-road";
+    private static final String MODEL_CONFIG_MAP_TRANSPORT_TYPE = "timefold.model.default-config.map.transport-type";
+    private static final String MODEL_CONFIG_MAP_USE_TRAFFIC = "timefold.model.default-config.map.use-traffic";
 
     public static final String MODEL_CONFIG_TERMINATION_SPENT_LIMIT =
-            "ai.timefold.model.default-config.termination.spent-limit";
+            "timefold.model.default-config.termination.spent-limit";
     public static final String MODEL_CONFIG_TERMINATION_UNIMPROVED_SPENT_LIMIT =
-            "ai.timefold.model.default-config.termination.unimproved-spent-limit";
+            "timefold.model.default-config.termination.unimproved-spent-limit";
 
     private static final ObjectMapper MAPPER = SdkBuildTimeObjectMapperFactory.create()
             .setDefaultPropertyInclusion(JsonInclude.Include.ALWAYS)

@@ -79,13 +79,13 @@ jobs:
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Install pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
       - name: Use Aikido Sec Safe Chain
         run: |
           pnpm install -g @aikidosec/safe-chain@1.1.7
           safe-chain setup-ci
       - name: Set up NodeJs
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
 
@@ -128,7 +128,7 @@ jobs:
       - name: Deploy Documentation (Preview Mode)
         if: ${{ env.BRANCH_NAME != 'main' }}
         id: deploy
-        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

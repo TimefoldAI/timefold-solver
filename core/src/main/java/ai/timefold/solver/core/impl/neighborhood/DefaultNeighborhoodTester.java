@@ -36,7 +36,7 @@ public final class DefaultNeighborhoodTester<Solution_>
 
     @Override
     public NeighborhoodTestContext<Solution_> using(Solution_ solution) {
-        var repository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, List.of(moveProvider), false);
+        var repository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, List.of(moveProvider));
         var moveTestContext = (DefaultMoveTestContext<Solution_>) moveTester.using(solution);
         var scoreDirector = moveTestContext.getScoreDirector();
         var solverScope = new SolverScope<Solution_>();

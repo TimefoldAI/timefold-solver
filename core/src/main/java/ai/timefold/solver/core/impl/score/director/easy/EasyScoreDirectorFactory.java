@@ -7,9 +7,10 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * Easy implementation of {@link ScoreDirectorFactory}.
@@ -24,7 +25,7 @@ public final class EasyScoreDirectorFactory<Solution_, Score_ extends Score<Scor
 
     public static <Solution_, Score_ extends Score<Score_>> EasyScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
-                    EnvironmentMode environmentMode) {
+                    EnvironmentMode globalEnvironmentMode) {
         var easyScoreCalculatorClass = config.getEasyScoreCalculatorClass();
         if (easyScoreCalculatorClass == null || !EasyScoreCalculator.class.isAssignableFrom(easyScoreCalculatorClass)) {
             throw new IllegalArgumentException(
@@ -35,26 +36,20 @@ public final class EasyScoreDirectorFactory<Solution_, Score_ extends Score<Scor
                 ConfigUtils.newInstance(config, "easyScoreCalculatorClass", easyScoreCalculatorClass);
         ConfigUtils.applyCustomProperties(easyScoreCalculator, "easyScoreCalculatorClass",
                 config.getEasyScoreCalculatorCustomProperties(), "easyScoreCalculatorCustomProperties");
-        return new EasyScoreDirectorFactory<>(solutionDescriptor, easyScoreCalculator, environmentMode);
+        return new EasyScoreDirectorFactory<>(solutionDescriptor, easyScoreCalculator, globalEnvironmentMode);
     }
 
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
     public EasyScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            EasyScoreCalculator<Solution_, Score_> easyScoreCalculator, EnvironmentMode environmentMode) {
-        super(solutionDescriptor, environmentMode);
+            EasyScoreCalculator<Solution_, Score_> easyScoreCalculator, EnvironmentMode globalEnvironmentMode) {
+        super(solutionDescriptor, globalEnvironmentMode);
         this.easyScoreCalculator = easyScoreCalculator;
     }
 
     @Override
-    public EasyScoreDirector.Builder<Solution_, Score_> createScoreDirectorBuilder() {
-        return new EasyScoreDirector.Builder<>(this)
+    public EasyScoreDirector.Builder<Solution_, Score_> createScoreDirectorBuilder(@NonNull EnvironmentMode environmentMode) {
+        return new EasyScoreDirector.Builder<>(this, environmentMode)
                 .withEasyScoreCalculator(easyScoreCalculator);
     }
-
-    @Override
-    public AbstractScoreDirector<Solution_, Score_, ?> buildScoreDirector() {
-        return this.createScoreDirectorBuilder().build();
-    }
-
 }

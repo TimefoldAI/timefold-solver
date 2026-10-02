@@ -37,6 +37,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
  * there is specific test coverage for these corner cases.
  *
  * @see PropagationQueue More information about propagation.
+ * @see DeferredSettleAware Some {@link AbstractTwoInputNode two-input nodes} need special handling.
  */
 public sealed interface Propagator
         permits ProfilingPropagator, PropagationQueue, RecordAndReplayPropagator {

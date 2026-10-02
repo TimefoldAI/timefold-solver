@@ -1,11 +1,18 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
 
+import java.util.function.Function;
+
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.picking.UniPickingStream;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -17,6 +24,32 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * and match if {@link UniNeighborhoodsPredicate#test(SolutionView, Object)} returns true.
      */
     UniEnumeratingStream<Solution_, A> filter(UniNeighborhoodsPredicate<Solution_, A> filter);
+
+    /**
+     * Concatenates the tuples of both enumerating streams into one.
+     * Unlike {@link #join(UniEnumeratingStream) join}, this doesn't create any new combinations,
+     * it just merges the two streams as they are, keeping every tuple from both, including duplicates.
+     * For example, if this stream consists of {@code [A, B, C]}
+     * and {@code otherStream} consists of {@code [C, D, E]},
+     * {@code this.concat(otherStream)} will consist of {@code [A, B, C, C, D, E]}.
+     * <p>
+     * Use {@link #distinct()} afterward if duplicate tuples are undesired.
+     *
+     * @param otherStream the stream to concatenate with this stream
+     * @return a stream containing every tuple of both streams
+     */
+    UniEnumeratingStream<Solution_, A> concat(UniEnumeratingStream<Solution_, A> otherStream);
+
+    /**
+     * As defined by {@link #concat(UniEnumeratingStream)},
+     * except {@code otherStream} has an extra fact per tuple that this stream does not have;
+     * {@code paddingFunction} derives that missing fact from the one this stream does have.
+     *
+     * @param otherStream the stream to concatenate with this stream
+     * @return a stream containing every tuple of both streams
+     */
+    <B> BiEnumeratingStream<Solution_, A, B> concat(BiEnumeratingStream<Solution_, A, B> otherStream,
+            Function<A, B> paddingFunction);
 
     /**
      * As defined by {@link #join(UniEnumeratingStream, BiNeighborhoodsJoiner[])}, with the array being empty.
@@ -66,8 +99,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
     }
 
     /**
-     * Create a new {@link BiEnumeratingStream} for every combination of A and B for which the {@link BiNeighborhoodsJoiner}
-     * is true (for the properties it extracts from both facts).
+     * Create a new {@link BiEnumeratingStream} for every combination of A and B
+     * for which the {@link BiNeighborhoodsJoiner} is true (for the properties it extracts from both facts).
      * <p>
      * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiNeighborhoodsPredicate)
      * filter},
@@ -189,9 +222,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B exists for which all {@link BiNeighborhoodsJoiner}s are
-     * true
-     * (for the properties it extracts from both facts).
+     * Create a new {@link UniEnumeratingStream} for every A where B exists
+     * for which all {@link BiNeighborhoodsJoiner}s are true (for the properties it extracts from both facts).
      *
      * @param <B> the type of the second matched fact
      * @return a stream that matches every A where B exists for which the {@link BiNeighborhoodsJoiner}s are true
@@ -245,9 +277,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B exists for which all {@link BiNeighborhoodsJoiner}s are
-     * true
-     * (for the properties they extract from both facts).
+     * Create a new {@link UniEnumeratingStream} for every A where B exists
+     * for which all {@link BiNeighborhoodsJoiner}s are true (for the properties they extract from both facts).
      *
      * @param <B> the type of the second matched fact
      * @return a stream that matches every A where B exists for which the {@link BiNeighborhoodsJoiner}s are true
@@ -303,9 +334,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s
-     * are true
-     * (for the properties they extract from both facts).
+     * Create a new {@link UniEnumeratingStream} for every A where B does not exist
+     * for which the {@link BiNeighborhoodsJoiner}s are true (for the properties they extract from both facts).
      *
      * @param <B> the type of the second matched fact
      * @return a stream that matches every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s are true
@@ -358,9 +388,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s
-     * are true
-     * (for the properties they extract from both facts).
+     * Create a new {@link UniEnumeratingStream} for every A where B does not exist
+     * for which the {@link BiNeighborhoodsJoiner}s are true (for the properties they extract from both facts).
      *
      * @param <B> the type of the second matched fact
      * @return a stream that matches every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s are true
@@ -399,8 +428,7 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * <p>
      * Simple example: assuming a enumerating stream of tuples of {@code Person}s
      * {@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30)]},
-     * calling {@code map(Person::getAge)} on such stream will produce a stream of {@link Integer}s
-     * {@code [20, 25, 30]},
+     * calling {@code map(Person::getAge)} on such stream will produce a stream of {@link Integer}s {@code [20, 25, 30]},
      *
      * <p>
      * Example with a non-bijective mapping function: assuming a enumerating stream of tuples of {@code Person}s
@@ -472,8 +500,25 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * duplicate copies of the same tuple will be omitted at a performance cost.
      *
      * @return a stream that is guaranteed to have distinct tuples,
-     *         at the cost of increased time and memory usage
+     *         at the cost of increased time and memory usage.
      */
     UniEnumeratingStream<Solution_, A> distinct();
+
+    /**
+     * Terminal operation: materializes this stream as a {@link UniDataset},
+     * kept up to date in memory as the working solution changes.
+     * Use this instead of {@link MoveStreamFactory#pick(UniEnumeratingStream)}
+     * when the dataset is to be consumed from a custom {@link MoveIteratorProvider}.
+     * Resolve the returned handle against a {@link MoveIteratorSession}
+     * inside {@link MoveStreamFactory#buildMoveStream(MoveIteratorProvider)}.
+     * <p>
+     * Repeated calls on the same stream return an equal handle,
+     * and the rows are materialized only once.
+     *
+     * @return Any operations called on the returned instance will not be cached.
+     *         This method creates the boundary the in-memory caching from the just-in-time computations.
+     * @see UniPickingStream For the declarative alternative, which reads from this stream directly.
+     */
+    UniDataset<Solution_, A> asCachedDataset();
 
 }

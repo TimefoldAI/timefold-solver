@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -38,7 +36,6 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
-import ai.timefold.solver.core.preview.api.move.builtin.SwapMove;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
@@ -68,16 +65,17 @@ class NeighborhoodsTest {
 
         var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class).basicVariable();
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        // Random selection otherwise LS gets stuck in an endless loop.
         var moveRepository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
-                List.of(new ChangeMoveProvider<>(variableMetaModel)), true);
+                List.of(new ChangeMoveProvider<>(variableMetaModel)));
 
         var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig().withLateAcceptanceSize(400))
                 .buildAcceptor(heuristicConfigPolicy);
         var forager = LocalSearchForagerFactory
                 .<TestdataSolution> create(new LocalSearchForagerConfig().withAcceptedCountLimit(1)).buildForager();
         var localSearchDecider = new LocalSearchDecider<>("", termination, moveRepository, acceptor, forager);
-        var localSearchPhase = new DefaultLocalSearchPhase.Builder<>(0, "", termination, localSearchDecider).build();
+        var localSearchPhase =
+                new DefaultLocalSearchPhase.Builder<>(0, EnvironmentMode.PHASE_ASSERT, "", termination, localSearchDecider)
+                        .build();
 
         // Generates a solution whose entities' values are all set to the second value.
         // The easy calculator penalizes this.
@@ -150,45 +148,17 @@ class NeighborhoodsTest {
         // - unchangingAssignedEntity <-> secondEntity
         var context = NeighborhoodTester.build(new SwapAssignedAndUnassigned(variableMetaModel), solutionMetaModel)
                 .using(solution);
-        var moveList =
-                context.getMovesAsList(m -> (SwapMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity>) m);
-        assertThat(moveList).hasSize(2);
-        var move1 = moveList.get(0);
-        assertSoftly(softly -> {
-            assertThat(move1.getPlanningEntities())
-                    .containsExactly(firstEntity, secondEntity);
-            assertThat(move1.getPlanningValues())
-                    .containsExactly(firstEntity.getValue(), secondEntity.getValue());
-        });
-        var move2 = moveList.get(1);
-        assertSoftly(softly -> {
-            assertThat(move2.getPlanningEntities())
-                    .containsExactly(unchangingAssignedEntity, secondEntity);
-            assertThat(move2.getPlanningValues())
-                    .containsExactly(unchangingAssignedEntity.getValue(), secondEntity.getValue());
-        });
+        var move1 = Moves.swap(variableMetaModel, firstEntity, secondEntity);
+        context.producesAllOf(move1,
+                Moves.swap(variableMetaModel, unchangingAssignedEntity, secondEntity));
 
         // Execute one swap and verify the new moves:
         // - unchangingAssignedEntity <-> firstEntity
         // - secondEntity <-> firstEntity
         context.getMoveTestContext().execute(move1);
-        moveList = context.getMovesAsList(m -> (SwapMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity>) m);
-        assertThat(moveList).hasSize(2);
-        var move3 = moveList.get(0);
-        assertSoftly(softly -> {
-            assertThat(move3.getPlanningEntities())
-                    .containsExactly(unchangingAssignedEntity, firstEntity);
-            assertThat(move3.getPlanningValues())
-                    .containsExactly(unchangingAssignedEntity.getValue(), firstEntity.getValue());
-        });
-        var move4 = moveList.get(1);
-        assertSoftly(softly -> {
-            assertThat(move4.getPlanningEntities())
-                    .containsExactly(secondEntity, firstEntity);
-            assertThat(move4.getPlanningValues())
-                    .containsExactly(secondEntity.getValue(), firstEntity.getValue());
-        });
-
+        context.producesAllOf(
+                Moves.swap(variableMetaModel, unchangingAssignedEntity, firstEntity),
+                Moves.swap(variableMetaModel, secondEntity, firstEntity));
     }
 
     private record SwapAssignedAndUnassigned(

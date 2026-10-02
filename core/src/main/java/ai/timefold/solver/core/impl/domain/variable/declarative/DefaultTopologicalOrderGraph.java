@@ -117,7 +117,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public void commitChanges(BitSet changed) {
+    public boolean commitChanges(BitSet changed) {
         var index = new MutableInt(1);
         var stackIndex = new MutableInt(0);
         var size = forwardEdges.length;
@@ -126,6 +126,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         var lowMap = new int[size];
         var onStackSet = new boolean[size];
         var components = new ArrayList<BitSet>();
+        var anyLooped = false;
         componentMap.clear();
 
         for (var node = 0; node < size; node++) {
@@ -139,6 +140,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
             var component = components.get(i);
             var componentSize = component.cardinality();
             var isComponentLooped = componentSize != 1;
+            anyLooped |= isComponentLooped;
             var componentNodes = new ArrayList<Integer>(componentSize);
             for (var node = component.nextSetBit(0); node >= 0; node = component.nextSetBit(node + 1)) {
                 nodeIdToTopologicalOrderMap[node] = ordIndex;
@@ -159,6 +161,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
                 }
             }
         }
+        return anyLooped;
     }
 
     private void strongConnect(int node, MutableInt index, MutableInt stackIndex, int[] stack,

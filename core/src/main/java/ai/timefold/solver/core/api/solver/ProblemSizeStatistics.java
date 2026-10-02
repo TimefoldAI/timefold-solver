@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.api.solver;
 
+import java.util.Collections;
 import java.util.Locale;
+import java.util.SequencedMap;
 
 import ai.timefold.solver.core.impl.util.MathUtils;
 
@@ -8,6 +10,8 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * The statistics of a given problem submitted to a {@link Solver}.
+ * <p>
+ * Note: This type isn't meant to be constructed by a user.
  *
  * @param entityCount The number of genuine entities defined by the problem.
  * @param variableCount The number of genuine variables defined by the problem.
@@ -17,9 +21,24 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public record ProblemSizeStatistics(long entityCount,
+        SequencedMap<Class<?>, Long> genuineEntityClassToEntityCount,
         long variableCount,
         long approximateValueCount,
+        SequencedMap<Class<?>, SequencedMap<String, Long>> genuineEntityClassToVariableToValueCount,
         double approximateProblemSizeLog) {
+
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     */
+    @Deprecated(since = "2.6.0", forRemoval = true)
+    public ProblemSizeStatistics(long entityCount,
+            long variableCount,
+            long approximateValueCount,
+            double approximateProblemSizeLog) {
+        this(entityCount, Collections.emptySortedMap(), variableCount,
+                approximateValueCount, Collections.emptySortedMap(),
+                approximateProblemSizeLog);
+    }
 
     /**
      * Return the {@link #approximateProblemSizeLog} as a fixed point integer.

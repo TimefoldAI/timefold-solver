@@ -27,6 +27,10 @@ public final class NeighborhoodsMoveSelector<Solution_> extends AbstractMoveSele
         return moveRepository.isNeverEnding();
     }
 
+    public int getNeighborhoodCount() {
+        return moveRepository.getNeighborhoodCount();
+    }
+
     @Override
     public SelectionCacheType getCacheType() {
         return SelectionCacheType.PHASE;

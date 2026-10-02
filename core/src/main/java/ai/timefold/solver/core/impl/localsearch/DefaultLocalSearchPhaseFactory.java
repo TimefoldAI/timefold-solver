@@ -28,7 +28,6 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.composite.UnionMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.composite.UnionMoveSelectorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
@@ -36,6 +35,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
 import ai.timefold.solver.core.impl.neighborhood.DefaultNeighborhoodProvider;
+import ai.timefold.solver.core.impl.neighborhood.MixedMoveSelector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.MoveSelectorBasedMoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
@@ -49,6 +49,8 @@ import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 
+import org.jspecify.annotations.NonNull;
+
 public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFactory<Solution_, LocalSearchPhaseConfig> {
 
     public DefaultLocalSearchPhaseFactory(LocalSearchPhaseConfig phaseConfig) {
@@ -59,11 +61,12 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
-        var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
+        var environmentMode = resolveEnvironmentMode(solverConfigPolicy);
+        var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy(environmentMode);
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var decider = buildDecider(phaseConfigPolicy, phaseTermination);
-        return new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
-                decider).enableAssertions(phaseConfigPolicy.getEnvironmentMode()).build();
+        return new DefaultLocalSearchPhase.Builder<>(phaseIndex, environmentMode, solverConfigPolicy.getLogIndentation(),
+                phaseTermination, decider).enableAssertions().build();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -122,6 +125,13 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private NeighborhoodsBasedMoveRepository<Solution_> buildNeighborhoodsBasedMoveRepository(
             HeuristicConfigPolicy<Solution_> configPolicy,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
+        if (phaseConfig.getLocalSearchType() == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
+            throw new IllegalArgumentException(
+                    """
+                            The localSearchType (%s) does not support the Neighborhoods API.
+                            Maybe use a different localSearchType."""
+                            .formatted(phaseConfig.getLocalSearchType()));
+        }
         if (!NeighborhoodProvider.class.isAssignableFrom(neighborhoodProviderClass)) {
             throw new IllegalArgumentException("The neighborhoodProviderClass (%s) does not implement %s."
                     .formatted(neighborhoodProviderClass, NeighborhoodProvider.class.getSimpleName()));
@@ -133,33 +143,27 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
         return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
                 ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
-                        .getMoveProviderList(),
-                pickSelectionOrder() == SelectionOrder.RANDOM);
+                        .getMoveProviderList());
     }
 
     private LocalSearchDecider<Solution_> buildMixedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
         var legacyMoveSelector = buildMoveSelector(configPolicy, neighborhoodProviderClass != null);
-        if (legacyMoveSelector instanceof UnionMoveSelector<?> unionMoveSelector
-                && unionMoveSelector.getSelectorProbabilityWeightFactory() != null) {
-            throw new UnsupportedOperationException(
-                    "Probability-weighted move selectors are not supported together with the Neighborhoods API.");
-        } else if (legacyMoveSelector == null) { // There were no move selectors configured.
+        if (legacyMoveSelector == null) { // There were no move selectors configured.
             return buildNeighborhoodsBasedDecider(configPolicy, termination, neighborhoodProviderClass);
         }
         var neighborhoodsMoveSelector =
                 new NeighborhoodsMoveSelector<>(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
-        var moveSelectorList = List.of(legacyMoveSelector, neighborhoodsMoveSelector);
-        var unionMoveSelector = new UnionMoveSelector<>(moveSelectorList, pickSelectionOrder() == SelectionOrder.RANDOM);
-        var moveRepository = new MoveSelectorBasedMoveRepository<>(unionMoveSelector);
+        var moveSelector = new MixedMoveSelector<>(legacyMoveSelector, neighborhoodsMoveSelector);
+        var moveRepository = new MoveSelectorBasedMoveRepository<>(moveSelector);
         return buildDecider(moveRepository, configPolicy, termination);
     }
 
     private LocalSearchDecider<Solution_> buildDecider(MoveRepository<Solution_> moveRepository,
             HeuristicConfigPolicy<Solution_> configPolicy, PhaseTermination<Solution_> termination) {
         var acceptor = buildAcceptor(configPolicy, moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_>);
-        var forager = buildForager(configPolicy);
+        var forager = buildForager();
         if (moveRepository.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("""
                     The move repository (%s) is neverEnding (%s), but the forager (%s) does not support it.
@@ -167,13 +171,12 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     moveRepository.isNeverEnding(), forager));
         }
         var moveThreadCount = configPolicy.getMoveThreadCount();
-        var environmentMode = configPolicy.getEnvironmentMode();
         var decider = moveThreadCount == null
                 ? new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveRepository, acceptor, forager)
                 : TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
-                        .buildLocalSearch(moveThreadCount, termination, moveRepository, acceptor, forager, environmentMode,
-                                configPolicy);
-        decider.enableAssertions(environmentMode);
+                        .buildLocalSearch(moveThreadCount, termination, moveRepository, acceptor, forager,
+                                configPolicy.getEnvironmentMode(), configPolicy);
+        decider.enableAssertions(configPolicy.getEnvironmentMode());
         return decider;
     }
 
@@ -188,27 +191,32 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             }
             return buildAcceptor(acceptorConfig, configPolicy);
         } else {
-            var localSearchType_ = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
-            var acceptorConfig_ = new LocalSearchAcceptorConfig();
-            if (neighborhoodsEnabled && localSearchType_ == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
+            var updatedLocalSearchType = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
+            acceptorConfig = new LocalSearchAcceptorConfig();
+            if (neighborhoodsEnabled && updatedLocalSearchType == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
                 // Maybe works, but never tested.
                 throw new UnsupportedOperationException(
                         "Variable Neighborhood descent is not yet supported with the Neighborhoods API.");
             }
-            var acceptorType = switch (localSearchType_) {
-                case HILL_CLIMBING, VARIABLE_NEIGHBORHOOD_DESCENT -> AcceptorType.HILL_CLIMBING;
-                case TABU_SEARCH -> AcceptorType.ENTITY_TABU;
-                case SIMULATED_ANNEALING -> AcceptorType.SIMULATED_ANNEALING;
-                case LATE_ACCEPTANCE -> AcceptorType.LATE_ACCEPTANCE;
-                case DIVERSIFIED_LATE_ACCEPTANCE -> AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE;
-                case GREAT_DELUGE -> AcceptorType.GREAT_DELUGE;
-            };
-            if (neighborhoodsEnabled && acceptorType.isTabu()) {
-                throw new UnsupportedOperationException("Tabu search is not yet supported with the Neighborhoods API.");
-            }
-            acceptorConfig_.setAcceptorTypeList(Collections.singletonList(acceptorType));
-            return buildAcceptor(acceptorConfig_, configPolicy);
+            var acceptorType = getAcceptorType(neighborhoodsEnabled, updatedLocalSearchType);
+            acceptorConfig.setAcceptorTypeList(Collections.singletonList(acceptorType));
+            return buildAcceptor(acceptorConfig, configPolicy);
         }
+    }
+
+    private static @NonNull AcceptorType getAcceptorType(boolean neighborhoodsEnabled, LocalSearchType localSearchType) {
+        var acceptorType = switch (localSearchType) {
+            case HILL_CLIMBING, VARIABLE_NEIGHBORHOOD_DESCENT -> AcceptorType.HILL_CLIMBING;
+            case TABU_SEARCH -> AcceptorType.ENTITY_TABU;
+            case SIMULATED_ANNEALING -> AcceptorType.SIMULATED_ANNEALING;
+            case LATE_ACCEPTANCE -> AcceptorType.LATE_ACCEPTANCE;
+            case DIVERSIFIED_LATE_ACCEPTANCE -> AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE;
+            case GREAT_DELUGE -> AcceptorType.GREAT_DELUGE;
+        };
+        if (neighborhoodsEnabled && acceptorType.isTabu()) {
+            throw new UnsupportedOperationException("Tabu search is not yet supported with the Neighborhoods API.");
+        }
+        return acceptorType;
     }
 
     private Acceptor<Solution_> buildAcceptor(LocalSearchAcceptorConfig acceptorConfig,
@@ -216,7 +224,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         return AcceptorFactory.<Solution_> create(acceptorConfig).buildAcceptor(configPolicy);
     }
 
-    protected LocalSearchForager<Solution_> buildForager(HeuristicConfigPolicy<Solution_> configPolicy) {
+    protected LocalSearchForager<Solution_> buildForager() {
         LocalSearchForagerConfig foragerConfig_;
         if (phaseConfig.getForagerConfig() != null) {
             if (phaseConfig.getLocalSearchType() != null) {
@@ -237,10 +245,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     // Slow stepping algorithm
                     foragerConfig_.setAcceptedCountLimit(1000);
                     break;
-                case SIMULATED_ANNEALING:
-                case LATE_ACCEPTANCE:
-                case DIVERSIFIED_LATE_ACCEPTANCE:
-                case GREAT_DELUGE:
+                case SIMULATED_ANNEALING, LATE_ACCEPTANCE, DIVERSIFIED_LATE_ACCEPTANCE, GREAT_DELUGE:
                     // Fast stepping algorithm
                     foragerConfig_.setAcceptedCountLimit(1);
                     break;

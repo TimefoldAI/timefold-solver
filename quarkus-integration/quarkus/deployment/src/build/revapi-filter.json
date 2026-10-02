@@ -4,7 +4,10 @@
     "configuration": {
       "elements": {
         "include": [
-          "class ai\\.timefold\\.solver\\.quarkus\\.deployment\\.api.*"
+          "class ai\\.timefold\\.solver\\.quarkus\\.deployment\\.api.*",
+          "interface ai\\.timefold\\.solver\\.quarkus\\.deployment\\.api.*",
+          "@interface ai\\.timefold\\.solver\\.quarkus\\.deployment\\.api.*",
+          "enum ai\\.timefold\\.solver\\.quarkus\\.deployment\\.api.*"
         ]
       }
     }

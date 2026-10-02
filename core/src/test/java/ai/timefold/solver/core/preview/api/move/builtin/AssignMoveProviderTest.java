@@ -1,13 +1,10 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
-import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
@@ -45,24 +42,15 @@ class AssignMoveProviderTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        // firstEntity is pinned → no assign moves. Only secondEntity gets assignments.
-        var moveList = NeighborhoodTester.build(new AssignMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution)
-                .getMovesAsList(
-                        move -> (ChangeMove<TestdataPinnedAllowsUnassignedSolution, TestdataPinnedAllowsUnassignedEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(2);
-
-        var firstMove = moveList.get(0);
-        assertSoftly(softly -> {
-            softly.assertThat(firstMove.getPlanningEntities()).containsExactly(secondEntity);
-            softly.assertThat(firstMove.getPlanningValues()).containsExactly(firstValue);
-        });
-
-        var secondMove = moveList.get(1);
-        assertSoftly(softly -> {
-            softly.assertThat(secondMove.getPlanningEntities()).containsExactly(secondEntity);
-            softly.assertThat(secondMove.getPlanningValues()).containsExactly(secondValue);
-        });
+        // firstEntity is pinned -> no assign moves. Only secondEntity gets assignments.
+        var context = NeighborhoodTester.build(new AssignMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        context.producesAllOf(
+                Moves.change(variableMetaModel, secondEntity, firstValue),
+                Moves.change(variableMetaModel, secondEntity, secondValue));
+        context.producesNoneOf(
+                Moves.change(variableMetaModel, firstEntity, firstValue),
+                Moves.change(variableMetaModel, firstEntity, secondValue));
     }
 
     @Test
@@ -80,35 +68,16 @@ class AssignMoveProviderTest {
         var v3 = secondEntity.getValueRange().get(1);
 
         // Both entities start null; only values in each entity's range are offered.
-        var moveList = NeighborhoodTester.build(new AssignMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution)
-                .getMovesAsList(
-                        move -> (ChangeMove<TestdataAllowsUnassignedEntityProvidingSolution, TestdataAllowsUnassignedEntityProvidingEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(4);
-
-        var firstMove = moveList.get(0);
-        assertSoftly(softly -> {
-            softly.assertThat(firstMove.getPlanningEntities()).containsExactly(firstEntity);
-            softly.assertThat(firstMove.getPlanningValues()).containsExactly(v1);
-        });
-
-        var secondMove = moveList.get(1);
-        assertSoftly(softly -> {
-            softly.assertThat(secondMove.getPlanningEntities()).containsExactly(firstEntity);
-            softly.assertThat(secondMove.getPlanningValues()).containsExactly(v2);
-        });
-
-        var thirdMove = moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(thirdMove.getPlanningEntities()).containsExactly(secondEntity);
-            softly.assertThat(thirdMove.getPlanningValues()).containsExactly(v1);
-        });
-
-        var fourthMove = moveList.get(3);
-        assertSoftly(softly -> {
-            softly.assertThat(fourthMove.getPlanningEntities()).containsExactly(secondEntity);
-            softly.assertThat(fourthMove.getPlanningValues()).containsExactly(v3);
-        });
+        var context = NeighborhoodTester.build(new AssignMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        context.producesAllOf(
+                Moves.change(variableMetaModel, firstEntity, v1),
+                Moves.change(variableMetaModel, firstEntity, v2),
+                Moves.change(variableMetaModel, secondEntity, v1),
+                Moves.change(variableMetaModel, secondEntity, v3));
+        context.producesNoneOf(
+                Moves.change(variableMetaModel, firstEntity, v3), // Not in firstEntity's range.
+                Moves.change(variableMetaModel, secondEntity, v2)); // Not in secondEntity's range.
     }
 
     @Test
@@ -125,43 +94,13 @@ class AssignMoveProviderTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var moveList = NeighborhoodTester.build(new AssignMoveProvider<>(variableMetaModel), solutionMetaModel)
+        NeighborhoodTester.build(new AssignMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
-                .getMovesAsList(
-                        move -> (ChangeMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(4);
-
-        var firstMove = moveList.get(0);
-        assertSoftly(softly -> {
-            softly.assertThat(firstMove.getPlanningEntities())
-                    .containsExactly(firstEntity);
-            softly.assertThat(firstMove.getPlanningValues())
-                    .containsExactly(firstValue);
-        });
-
-        var secondMove = moveList.get(1);
-        assertSoftly(softly -> {
-            softly.assertThat(secondMove.getPlanningEntities())
-                    .containsExactly(firstEntity);
-            softly.assertThat(secondMove.getPlanningValues())
-                    .containsExactly(secondValue);
-        });
-
-        var thirdMove = moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(thirdMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.getPlanningValues())
-                    .containsExactly(firstValue);
-        });
-
-        var fourthMove = moveList.get(3);
-        assertSoftly(softly -> {
-            softly.assertThat(fourthMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(fourthMove.getPlanningValues())
-                    .containsExactly(secondValue);
-        });
+                .producesAllOf(
+                        Moves.change(variableMetaModel, firstEntity, firstValue),
+                        Moves.change(variableMetaModel, firstEntity, secondValue),
+                        Moves.change(variableMetaModel, secondEntity, firstValue),
+                        Moves.change(variableMetaModel, secondEntity, secondValue));
     }
 
 }

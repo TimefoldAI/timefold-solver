@@ -54,7 +54,8 @@ class AcceptorFactoryTest {
         when(heuristicConfigPolicy.getScoreDefinition()).thenReturn(scoreDefinition);
 
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
-        Acceptor<Solution_> acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
+        Acceptor<Solution_> acceptor =
+                acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(acceptor).isExactlyInstanceOf(CompositeAcceptor.class);
         CompositeAcceptor<Solution_> compositeAcceptor = (CompositeAcceptor<Solution_>) acceptor;
         assertThat(compositeAcceptor.acceptorList)
@@ -67,7 +68,9 @@ class AcceptorFactoryTest {
     @Test
     <Solution_> void noAcceptorConfigured_throwsException() {
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(new LocalSearchAcceptorConfig());
-        assertThatIllegalArgumentException().isThrownBy(() -> acceptorFactory.buildAcceptor(mock(HeuristicConfigPolicy.class)))
+        assertThatIllegalArgumentException()
+                .isThrownBy(
+                        () -> acceptorFactory.buildAcceptor(mock(HeuristicConfigPolicy.class)))
                 .withMessageContaining("The acceptor does not specify any acceptorType");
     }
 
@@ -108,11 +111,12 @@ class AcceptorFactoryTest {
                 .withAcceptorTypeList(List.of(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE))
                 .withLateAcceptanceSize(10);
         AcceptorFactory<Solution_> badAcceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
-        assertThatIllegalStateException().isThrownBy(() -> badAcceptorFactory.buildAcceptor(heuristicConfigPolicy));
+        assertThatIllegalStateException()
+                .isThrownBy(() -> badAcceptorFactory.buildAcceptor(heuristicConfigPolicy));
     }
 
     @Test
-    <Solution_> void valueTabuWithoutSizes_throwsException() {
+    void valueTabuWithoutSizes_throwsException() {
         var config = new LocalSearchAcceptorConfig()
                 .withAcceptorTypeList(List.of(AcceptorType.VALUE_TABU));
         var factory = AcceptorFactory.create(config);
@@ -121,7 +125,7 @@ class AcceptorFactoryTest {
     }
 
     @Test
-    <Solution_> void moveTabuWithoutSizes_throwsException() {
+    void moveTabuWithoutSizes_throwsException() {
         var config = new LocalSearchAcceptorConfig()
                 .withAcceptorTypeList(List.of(AcceptorType.MOVE_TABU));
         var factory = AcceptorFactory.create(config);

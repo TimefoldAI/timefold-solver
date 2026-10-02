@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
@@ -48,13 +47,13 @@ public final class RandomAccessLeafIndexer<T> implements LeafIndexer<T> {
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        return new DefaultUniqueRandomIterator<>(tupleList, workingRandom);
+    public RepeatingRandomIterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        return RepeatingRandomIterator.of(tupleList, workingRandom);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
-        return new FilteredUniqueRandomIterator<>(tupleList, workingRandom, filter);
+    public UniqueRandomIterator<T> uniqueRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
+        return UniqueRandomIterator.of(tupleList, workingRandom);
     }
 
     @Override

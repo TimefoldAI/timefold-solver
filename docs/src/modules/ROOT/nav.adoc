@@ -23,10 +23,13 @@
 ** xref:running-timefold-solver/overview.adoc[Overview]
 ** xref:running-timefold-solver/service/overview.adoc[As a service]
 *** xref:running-timefold-solver/service/rest-api.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/model-config-overrides.adoc[Model configuration overrides]
 *** xref:running-timefold-solver/service/model-enrichment.adoc[leveloffset=+1]
-*** xref:running-timefold-solver/service/constraint-overrides.adoc[Constraint weights]
+
 *** xref:running-timefold-solver/service/demo-data.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/exposing-metrics.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/consumer-guide.adoc[Service consumer guide]
+
 ** xref:running-timefold-solver/library/library-integration.adoc[As a library]
 *** xref:running-timefold-solver/library/configuration.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/library/constraint-overrides.adoc[Constraint weights]
@@ -65,16 +68,19 @@
 
 
 * xref:frequently-asked-questions.adoc[leveloffset=+1]
-* https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
+* https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy]
 
 * Upgrading Timefold Solver
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
+** xref:upgrading-timefold-solver/upgrade-to-latest.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
-** https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[Upgrading from OptaPlanner][leveloffset=+1]
+** https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[Upgrading from OptaPlanner]
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
 ** Migration guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 *** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
+*** xref:upgrading-timefold-solver/migration-guides/shadow-variables-inconsistent-to-structural-score.adoc[leveloffset=+1]
+
 * Commercial editions
 ** xref:commercial-editions/commercial-editions.adoc[Overview]
 ** xref:commercial-editions/installation.adoc[Installation]
