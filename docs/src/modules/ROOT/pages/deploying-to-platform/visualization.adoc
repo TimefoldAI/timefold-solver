@@ -26,38 +26,68 @@ Asset references in `ui/index.html` must be relative (for example `./assets/main
 [#_iframe_embedding]
 == How the platform embeds the UI
 
-The platform renders `ui/index.html` inside a fixed-size iframe, sized by the platform's own layout, with no auto-grow or resize mechanism.
+The platform renders `ui/index.html` inside an iframe that it resizes to your content's reported height, as described in <<_reporting_your_height>>.
 
-Design your UI for a fixed viewport, or handle any overflow or scrolling yourself within that fixed area.
+If your UI never sends a `resize` message, the iframe keeps the browser's default height instead of growing to fit your content, so you're responsible for reporting your height or handling overflow and scrolling yourself.
 
 [#_calling_your_api_from_the_iframe]
 == Calling your model's API from inside the iframe
 
-The platform injects the following query parameters into the iframe's `src` URL:
+After the iframe loads, the platform `postMessage`s an `init` message to it, carrying `tenantId`, `runId`, `apiUrl`, and `apiKey`:
 
-[cols="1,3", options="header"]
-|===
-| Parameter | Purpose
+[source,json]
+----
+{
+  "source": "timefold-visualization",
+  "type": "init",
+  "data": {
+    "tenantId": "...",
+    "runId": "...",
+    "apiUrl": "...",
+    "apiKey": "..."
+  }
+}
+----
 
-| `onPlatform`
-| Present when the UI is running embedded in the platform, absent when the UI is opened directly.
+Listen for it, and reply with an `init-response` so the platform knows the UI is handling the handshake:
 
-| `runId`
-| The identifier of the dataset being viewed.
+[source,js]
+----
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data?.source !== "timefold-visualization") return;
+  if (event.data.type !== "init") return;
 
-| `tenantId`
-| The identifier of the tenant the dataset belongs to.
+  const { tenantId, runId, apiUrl, apiKey } = event.data.data;
+  // ...store these for your API calls...
 
-| `apiUrl`
-| The base URL to use for calls to your model's API.
+  event.source.postMessage(
+    { source: "timefold-visualization", type: "init-response" },
+    event.origin,
+  );
+});
+----
 
-| `apiKey`
-| The API key to use for calls to your model's API.
-|===
+Reply within a task of receiving `init` — the platform waits only briefly before falling back to the older query-parameter contract, reloading the iframe with `onPlatform`, `runId`, `tenantId`, `apiUrl`, and `apiKey` appended to its `src` URL instead. Support that fallback too if you want your UI to keep working against platform versions that don't yet send `init`.
 
-Read `apiUrl` from `window.location.search`, strip any trailing slash, and prepend it to your own API calls, so they're routed correctly regardless of where the platform proxies from.
+Strip any trailing slash from `apiUrl` and prepend it to your own API calls, so they're routed correctly regardless of where the platform proxies from.
 Append the path your model's own REST API is served under — the same path you'd hit locally, as described in xref:running-timefold-solver/service/visualization.adoc#_calling_your_api[Calling your REST API from the UI].
 Only the base changes between running locally and running embedded in the platform.
+
+[#_reporting_your_height]
+== Reporting your height
+
+The platform sizes the iframe from what your UI reports, not from a fixed viewport. Post a `resize` message whenever your content's height changes:
+
+[source,js]
+----
+window.parent.postMessage(
+  { source: "timefold-visualization", type: "resize", height: document.body.scrollHeight },
+  window.location.origin,
+);
+----
+
+The reported height is clamped between 200px and 50000px; above that ceiling the platform makes the iframe scrollable instead of growing it further.
 
 [#_refreshing_while_solving]
 == Refreshing while solving
