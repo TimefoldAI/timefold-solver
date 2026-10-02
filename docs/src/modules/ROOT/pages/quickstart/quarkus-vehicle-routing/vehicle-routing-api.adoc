@@ -1,0 +1,387 @@
+[#vrpQuarkusQuickStartApi]
+= Define the API of the service
+:imagesdir: ../..
+
+The domain classes are built for the solver:
+they hold object references, shadow variables and a travel time matrix.
+The users of your service should not have to know about any of that.
+So the service has its own API classes, and a
+xref:running-timefold-solver/service/rest-api.adoc#modelConverter[`ModelConvertor`] translates between the two.
+
+* `ModelInput`: the problem a user submits.
+* `ModelOutput`: the solution the service returns.
+* `ModelConfigOverrides`: the settings a user can change per request, such as constraint weights.
+
+[NOTE]
+====
+In the {vrp-quickstart-url}[complete quickstart], every class and field below also carries a MicroProfile OpenAPI `@Schema` annotation,
+for example `@Schema(description = "Unique identifier of the vehicle.", required = true, minLength = 1)`.
+These annotations only serve to generate the xref:running-timefold-solver/service/rest-api.adoc#openAPISpecification[OpenAPI specification]:
+they describe each field and mark which fields are required and which values are allowed.
+The service module validates incoming requests against that specification,
+so a request with a missing required field or a value out of range is rejected before it reaches your code.
+
+To keep the listings short, this guide leaves the `@Schema` annotations out.
+Add them to your own DTOs to get a documented and validated API.
+====
+
+== The input
+
+In the input, a route is a list of visit IDs.
+A new problem has empty routes, but a user can also submit an existing plan, for example to improve it further.
+A visit that appears in no vehicle's `visitIds` is unassigned.
+
+Create the `src/main/java/org/acme/vehiclerouting/dto/input/LocationInputDTO.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.input;
+
+public record LocationInputDTO(Double latitude, Double longitude) {
+}
+----
+
+Create the `src/main/java/org/acme/vehiclerouting/dto/input/VehicleInputDTO.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.input;
+
+import static java.util.Collections.emptyList;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+public record VehicleInputDTO(
+        String id,
+        Integer capacity,
+        LocationInputDTO homeLocation,
+        OffsetDateTime departureTime,
+        // The visits on this vehicle's route, in order. Empty when the vehicle has no route yet.
+        List<String> visitIds) {
+
+    public VehicleInputDTO {
+        visitIds = visitIds != null ? visitIds : emptyList();
+    }
+
+    public VehicleInputDTO withVisitIds(List<String> visitIds) {
+        return new VehicleInputDTO(id, capacity, homeLocation, departureTime, visitIds);
+    }
+}
+----
+
+Create the `src/main/java/org/acme/vehiclerouting/dto/input/VisitInputDTO.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.input;
+
+import java.time.OffsetDateTime;
+
+public record VisitInputDTO(
+        String id,
+        String name,
+        LocationInputDTO location,
+        Integer demand,
+        OffsetDateTime minStartTime,
+        OffsetDateTime maxEndTime,
+        Integer serviceDurationMinutes) {
+}
+----
+
+Finally, the input itself wraps the vehicles and the visits and implements `ModelInput`.
+Create the `src/main/java/org/acme/vehiclerouting/dto/input/VehicleRoutePlanInput.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.input;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import ai.timefold.solver.service.definition.api.ModelInput;
+
+public record VehicleRoutePlanInput(
+        OffsetDateTime startDateTime,
+        OffsetDateTime endDateTime,
+        List<VehicleInputDTO> vehicles,
+        List<VisitInputDTO> visits)
+        implements
+            ModelInput {
+
+    public VehicleRoutePlanInput withVehicles(List<VehicleInputDTO> vehicles) {
+        return new VehicleRoutePlanInput(startDateTime, endDateTime, vehicles, visits);
+    }
+}
+----
+
+All date-times are `OffsetDateTime`, so the JSON always carries an offset, for example `2026-02-10T07:30:00Z`.
+
+== The configuration overrides
+
+`ModelConfigOverrides` lists what a user can tune per request.
+In this model, that is the weight of the `Minimize travel time` constraint.
+`@ConstraintReference` links the field to that constraint.
+A weight left unset (`null`) is not overridden, so the value from the configuration profile (or the constraint's default) applies.
+Read xref:running-timefold-solver/service/model-config-overrides.adoc[Model configuration overrides] to learn more.
+
+Create the `src/main/java/org/acme/vehiclerouting/dto/input/VehicleRoutePlanConfigOverrides.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.input;
+
+import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.domain.ConstraintReference;
+
+import org.acme.vehiclerouting.domain.VehicleRoutePlanConstraintProperties;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record VehicleRoutePlanConfigOverrides(
+        @ConstraintReference(VehicleRoutePlanConstraintProperties.MINIMIZE_TRAVEL_TIME) Long minimizeTravelTimeWeight)
+        implements
+            ModelConfigOverrides {
+
+    // Required by the service module to generate the default configuration profile.
+    public VehicleRoutePlanConfigOverrides() {
+        this(null);
+    }
+}
+----
+
+== The output
+
+The output mirrors the input.
+For each vehicle, it returns the route as a list of visit IDs, along with its total demand and driving time.
+For each visit, it returns the vehicle that services it and when it does so.
+The fields of an unassigned visit are `null`.
+
+Create the `src/main/java/org/acme/vehiclerouting/dto/output/VehicleOutputDTO.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.output;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.ALWAYS)
+public record VehicleOutputDTO(
+        String id,
+        List<String> visitIds,
+        Integer totalDemand,
+        Long totalDrivingTimeSeconds,
+        OffsetDateTime arrivalTime) {
+}
+----
+
+Create the `src/main/java/org/acme/vehiclerouting/dto/output/VisitOutputDTO.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.output;
+
+import java.time.OffsetDateTime;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.ALWAYS)
+public record VisitOutputDTO(
+        String id,
+        String vehicleId,
+        OffsetDateTime arrivalTime,
+        OffsetDateTime startServiceTime,
+        OffsetDateTime departureTime,
+        Long drivingTimeSecondsFromPreviousStandstill) {
+}
+----
+
+Create the `src/main/java/org/acme/vehiclerouting/dto/output/VehicleRoutePlanOutput.java` record:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.dto.output;
+
+import java.util.List;
+
+import ai.timefold.solver.service.definition.api.ModelOutput;
+
+public record VehicleRoutePlanOutput(
+        List<VehicleOutputDTO> vehicles,
+        List<VisitOutputDTO> visits)
+        implements
+            ModelOutput {
+}
+----
+
+[#vrpQuarkusQuickStartModelConvertor]
+== The model convertor
+
+The `ModelConvertor` connects the API classes to the domain classes.
+The service module calls it at three moments:
+
+* `toSolverModel()`: before solving, to turn the input (and the configuration overrides) into a `VehicleRoutePlan`.
+When the service resumes a run that was interrupted, `lastModelOutput` holds the last known solution,
+so the routes continue from there instead of starting over.
+* `toModelOutput()`: whenever a new best solution is found, to turn the `VehicleRoutePlan` into the output.
+* `applyOutputToInput()`: to overlay a solution on the original input,
+for example to submit the result of one run as the starting point of the next.
+
+Create the `src/main/java/org/acme/vehiclerouting/service/VehicleRoutePlanModelConvertor.java` class:
+
+[source,java,options="nowrap"]
+----
+package org.acme.vehiclerouting.service;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.service.definition.api.ModelConvertor;
+import ai.timefold.solver.service.definition.api.domain.ModelConfig;
+import ai.timefold.solver.service.maps.api.model.Location;
+
+import org.acme.vehiclerouting.domain.Vehicle;
+import org.acme.vehiclerouting.domain.VehicleRoutePlan;
+import org.acme.vehiclerouting.domain.VehicleRoutePlanConstraintProperties;
+import org.acme.vehiclerouting.domain.Visit;
+import org.acme.vehiclerouting.dto.input.LocationInputDTO;
+import org.acme.vehiclerouting.dto.input.VehicleInputDTO;
+import org.acme.vehiclerouting.dto.input.VehicleRoutePlanConfigOverrides;
+import org.acme.vehiclerouting.dto.input.VehicleRoutePlanInput;
+import org.acme.vehiclerouting.dto.input.VisitInputDTO;
+import org.acme.vehiclerouting.dto.output.VehicleOutputDTO;
+import org.acme.vehiclerouting.dto.output.VehicleRoutePlanOutput;
+import org.acme.vehiclerouting.dto.output.VisitOutputDTO;
+
+@ApplicationScoped
+public class VehicleRoutePlanModelConvertor implements
+        ModelConvertor<HardMediumSoftScore, VehicleRoutePlanInput, VehicleRoutePlanConfigOverrides, VehicleRoutePlan, VehicleRoutePlanOutput> {
+
+    @Override
+    public VehicleRoutePlan toSolverModel(VehicleRoutePlanInput modelInput,
+            ModelConfig<VehicleRoutePlanConfigOverrides> modelConfig,
+            Optional<VehicleRoutePlanOutput> lastModelOutput) {
+        Map<String, Visit> visitMap = modelInput.visits().stream()
+                .map(VehicleRoutePlanModelConvertor::toVisit)
+                .collect(Collectors.toMap(Visit::getId, visit -> visit, (first, second) -> first, LinkedHashMap::new));
+        List<Vehicle> vehicles = modelInput.vehicles().stream()
+                .map(VehicleRoutePlanModelConvertor::toVehicle)
+                .toList();
+
+        VehicleRoutePlan routePlan = new VehicleRoutePlan(vehicles, List.copyOf(visitMap.values()));
+        applyConstraintWeightOverrides(routePlan, modelConfig);
+        applyRoutes(vehicles, visitMap, modelInput, lastModelOutput);
+        return routePlan;
+    }
+
+    @Override
+    public VehicleRoutePlanOutput toModelOutput(VehicleRoutePlan solverModel) {
+        List<VehicleOutputDTO> vehicles = solverModel.getVehicles().stream()
+                .map(vehicle -> new VehicleOutputDTO(vehicle.getId(),
+                        vehicle.getVisits().stream().map(Visit::getId).toList(),
+                        vehicle.getTotalDemand(), vehicle.getTotalDrivingTimeSeconds(), vehicle.arrivalTime()))
+                .toList();
+        List<VisitOutputDTO> visits = solverModel.getVisits().stream()
+                .map(visit -> new VisitOutputDTO(visit.getId(),
+                        visit.getVehicle() == null ? null : visit.getVehicle().getId(),
+                        visit.getArrivalTime(), visit.getStartServiceTime(), visit.getDepartureTime(),
+                        visit.getDrivingTimeSecondsFromPreviousStandstillOrNull()))
+                .toList();
+        return new VehicleRoutePlanOutput(vehicles, visits);
+    }
+
+    @Override
+    public VehicleRoutePlanInput applyOutputToInput(VehicleRoutePlanInput modelInput,
+            VehicleRoutePlanOutput modelOutput) {
+        // The assignment is the route list, so overlaying the output means replacing one list per vehicle.
+        Map<String, VehicleOutputDTO> routeByVehicleId = modelOutput.vehicles().stream()
+                .collect(Collectors.toMap(VehicleOutputDTO::id, vehicle -> vehicle));
+        List<VehicleInputDTO> updatedVehicles = modelInput.vehicles().stream()
+                .map(vehicle -> {
+                    VehicleOutputDTO solved = routeByVehicleId.get(vehicle.id());
+                    return solved == null || solved.visitIds() == null ? vehicle : vehicle.withVisitIds(solved.visitIds());
+                })
+                .toList();
+        return modelInput.withVehicles(updatedVehicles);
+    }
+
+    private static Location toLocation(LocationInputDTO dto) {
+        return new Location(dto.latitude(), dto.longitude());
+    }
+
+    private static Vehicle toVehicle(VehicleInputDTO dto) {
+        return new Vehicle(dto.id(), dto.capacity(), toLocation(dto.homeLocation()), dto.departureTime());
+    }
+
+    private static Visit toVisit(VisitInputDTO dto) {
+        return new Visit(dto.id(), dto.name(), toLocation(dto.location()), dto.demand(), dto.minStartTime(),
+                dto.maxEndTime(), Duration.ofMinutes(dto.serviceDurationMinutes()));
+    }
+
+    private static void applyConstraintWeightOverrides(VehicleRoutePlan routePlan,
+            ModelConfig<VehicleRoutePlanConfigOverrides> modelConfig) {
+        if (modelConfig == null || modelConfig.overrides() == null) {
+            return;
+        }
+        // A null weight means the input did not override it,
+        // so the configuration profile value (or the constraint's default) is kept.
+        Long minimizeTravelTimeWeight = modelConfig.overrides().minimizeTravelTimeWeight();
+        if (minimizeTravelTimeWeight != null) {
+            Map<String, HardMediumSoftScore> weights = new HashMap<>();
+            weights.put(VehicleRoutePlanConstraintProperties.MINIMIZE_TRAVEL_TIME,
+                    HardMediumSoftScore.ofSoft(minimizeTravelTimeWeight));
+            routePlan.setConstraintWeightOverrides(ConstraintWeightOverrides.of(weights));
+        }
+    }
+
+    /**
+     * Fills the list variable of every vehicle: from lastModelOutput when a halted run is being
+     * recovered, and from the input's own routes otherwise. The shadow variables are deliberately
+     * not set here - the solver derives them when it loads the solution.
+     */
+    private static void applyRoutes(List<Vehicle> vehicles, Map<String, Visit> visitMap,
+            VehicleRoutePlanInput modelInput, Optional<VehicleRoutePlanOutput> lastModelOutput) {
+        Map<String, List<String>> routeByVehicleId = lastModelOutput
+                .map(output -> output.vehicles().stream()
+                        .filter(vehicle -> vehicle.visitIds() != null)
+                        .collect(Collectors.toMap(VehicleOutputDTO::id, VehicleOutputDTO::visitIds)))
+                .orElseGet(() -> modelInput.vehicles().stream()
+                        .collect(Collectors.toMap(VehicleInputDTO::id, VehicleInputDTO::visitIds)));
+
+        for (Vehicle vehicle : vehicles) {
+            List<String> visitIds = routeByVehicleId.get(vehicle.getId());
+            if (visitIds == null || visitIds.isEmpty()) {
+                continue;
+            }
+            // The solver mutates this list, so it cannot be an immutable copy of the input's.
+            List<Visit> route = new ArrayList<>(visitIds.size());
+            for (String visitId : visitIds) {
+                Visit visit = visitMap.get(visitId);
+                if (visit == null) {
+                    throw new IllegalArgumentException("Unknown visit '%s'.".formatted(visitId));
+                }
+                route.add(visit);
+            }
+            vehicle.setVisits(route);
+        }
+    }
+}
+----
+
+Notice that the convertor does not touch the travel time matrix.
+The service module calls the map service after `toSolverModel()`, as part of model enrichment,
+so the `VehicleRoutePlan` already has its driving times by the time the solver starts.
