@@ -76,6 +76,7 @@ public class EntityDescriptor<Solution_> {
                     ShadowVariable.class, CascadingUpdateShadowVariable.class, ShadowVariablesInconsistent.class };
 
     private final int ordinal;
+    private final int variableOrdinalOffset;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Class<?> entityClass;
     private final List<Class<?>> declaredInheritedEntityClassList = new ArrayList<>();
@@ -128,6 +129,38 @@ public class EntityDescriptor<Solution_> {
         this.solutionDescriptor = solutionDescriptor;
         this.entityClass = entityClass;
         this.declaredInheritedEntityClassList.addAll(extractInheritedClasses(entityClass));
+        this.variableOrdinalOffset = ordinal <= 0 ? 0 : computeVariableOrdinalOffset(solutionDescriptor, ordinal);
+    }
+
+    private static int computeVariableOrdinalOffset(SolutionDescriptor<?> solutionDescriptor, int ordinal) {
+        var previousEntityDescriptor = solutionDescriptor.getEntityDescriptors().getLast();
+        if (previousEntityDescriptor.ordinal != ordinal - 1 || !previousEntityDescriptor.hasProcessedAnnotations()) {
+            throw new IllegalStateException(
+                    "Impossible state: the entity descriptor (%s) must be fully processed before the next one (%d) is created."
+                            .formatted(previousEntityDescriptor, ordinal));
+        }
+        return previousEntityDescriptor.variableOrdinalOffset + previousEntityDescriptor.getDeclaredVariableCount();
+    }
+
+    private boolean hasProcessedAnnotations() {
+        return declaredGenuineVariableDescriptorMap != null && declaredShadowVariableDescriptorMap != null;
+    }
+
+    /**
+     * @return the number of variables declared on this entity class, not counting inherited ones
+     */
+    public int getDeclaredVariableCount() {
+        return declaredGenuineVariableDescriptorMap.size() + declaredShadowVariableDescriptorMap.size();
+    }
+
+    /**
+     * The {@link VariableDescriptor#getGlobalOrdinal() global ordinal} of this entity's first declared variable.
+     * Entities are processed in ordinal order, so all variables of lower ordinals are already numbered.
+     *
+     * @return zero or higher
+     */
+    public int getVariableOrdinalOffset() {
+        return variableOrdinalOffset;
     }
 
     /**
@@ -812,9 +845,5 @@ public class EntityDescriptor<Solution_> {
     @Override
     public String toString() {
         return "%s(%s)".formatted(getClass().getSimpleName(), entityClass.getCanonicalName());
-    }
-
-    public int getMaxVariableOrdinal() {
-        return effectiveVariableDescriptorMap.size();
     }
 }

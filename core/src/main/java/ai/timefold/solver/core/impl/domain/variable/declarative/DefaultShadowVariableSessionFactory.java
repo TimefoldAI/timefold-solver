@@ -525,6 +525,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             GraphDescriptor<Solution_> graphDescriptor,
             DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var fromVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(fromVariableId);
         for (var source : declarativeShadowVariable.getSources()) {
             if (source.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
                 createListElementSourceProcessors(graphDescriptor, source, fromVariableId);
@@ -546,7 +547,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         graphDescriptor.variableReferenceGraphBuilder()
                                 .addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
                                         (graph, entity) -> {
-                                            var changed = graph.lookupOrNull(fromVariableId, entity);
+                                            var changed = graph.lookupOrNull(fromVariableOrdinal, entity);
                                             if (changed != null) {
                                                 graph.markChanged(changed);
                                             }
@@ -594,7 +595,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                 .addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
                                         (graph, entity) -> {
                                             for (var item : inverseFunction.apply(entity)) {
-                                                var changed = graph.lookupOrNull(fromVariableId, item);
+                                                var changed = graph.lookupOrNull(fromVariableOrdinal, item);
                                                 if (changed != null) {
                                                     graph.markChanged(changed);
                                                 }
@@ -613,6 +614,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             GraphDescriptor<Solution_> graphDescriptor,
             RootVariableSource<?, ?> source,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var fromVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(fromVariableId);
         var listVariableId = Objects.requireNonNull(source.listVariableMetaModel());
         // Mark the target variable changed whenever its list variable changes,
         // since its dependency set (and possibly its value) changes with the list's contents.
@@ -621,7 +623,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         graphDescriptor.variableReferenceGraphBuilder()
                 .addAfterProcessor(GraphChangeType.NO_CHANGE, listVariableId,
                         (graph, entity) -> {
-                            var changed = graph.lookupOrNull(fromVariableId, entity);
+                            var changed = graph.lookupOrNull(fromVariableOrdinal, entity);
                             if (changed != null) {
                                 graph.markChanged(changed);
                             }
@@ -638,8 +640,10 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     private static <Solution_> void createAliasToVariableChangeProcessors(
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Set<VariableSourceReference> aliasSet,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var fromVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(fromVariableId);
         for (var alias : aliasSet) {
             var toVariableId = alias.targetVariableMetamodel();
+            var toVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(toVariableId);
             var sourceVariableId = alias.variableMetaModel();
 
             if (!alias.isDeclarative() && alias.affectGraphEdges()) {
@@ -649,7 +653,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             // from/to can be null in extended models
                             // ex: previous is used as a source, but only an extended class
                             // has the to variable
-                            var to = graph.lookupOrNull(toVariableId, toEntity);
+                            var to = graph.lookupOrNull(toVariableOrdinal, toEntity);
                             if (to == null) {
                                 return;
                             }
@@ -658,7 +662,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             if (fromEntity == null) {
                                 return;
                             }
-                            var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                            var from = graph.lookupOrNull(fromVariableOrdinal, fromEntity);
                             if (from == null) {
                                 return;
                             }
@@ -666,7 +670,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         });
                 variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.ADD_EDGE, sourceVariableId,
                         (graph, toEntity) -> {
-                            var to = graph.lookupOrNull(toVariableId, toEntity);
+                            var to = graph.lookupOrNull(toVariableOrdinal, toEntity);
                             if (to == null) {
                                 return;
                             }
@@ -674,7 +678,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             if (fromEntity == null) {
                                 return;
                             }
-                            var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                            var from = graph.lookupOrNull(fromVariableOrdinal, fromEntity);
                             if (from == null) {
                                 return;
                             }

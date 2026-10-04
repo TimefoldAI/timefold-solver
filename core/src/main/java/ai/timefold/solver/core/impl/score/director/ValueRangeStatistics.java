@@ -30,7 +30,10 @@ final class ValueRangeStatistics<Solution_> {
 
     // Negative if not calculated, non-negative if cached
     private long cachedApproximateValueCount = -1L;
-    private long @Nullable [][] cachedValueCountByEntityAndVariableOrdinal;
+    // Indexed by global variable ordinal; value ranges from the solution only.
+    private long @Nullable [] solutionValueCountArray;
+    // Indexed by entity ordinal, then by position in the entity's genuine variable list; value ranges from the entity only.
+    private long @Nullable [][] entityValueCountArray;
     private long @Nullable [] cachedEntityCountByEntityOrdinal;
     private double cachedProblemScale = -1.0;
 
@@ -66,11 +69,15 @@ final class ValueRangeStatistics<Solution_> {
         var maxValueRangeSize = new MutableLong(0L);
 
         cachedEntityCountByEntityOrdinal = new long[solutionDescriptor.getEntityDescriptors().size()];
-        cachedValueCountByEntityAndVariableOrdinal = new long[cachedEntityCountByEntityOrdinal.length][];
-        for (var entityDescriptor : solutionDescriptor.getGenuineEntityDescriptors()) {
-            cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()] =
-                    new long[entityDescriptor.getMaxVariableOrdinal()];
+        var solutionValueCountArray = new long[solutionDescriptor.getVariableDescriptorCount()];
+        var entityDescriptorList = solutionDescriptor.getEntityDescriptors();
+        var entityValueCountArray = new long[entityDescriptorList.size()][];
+        for (var entityDescriptor : entityDescriptorList) {
+            entityValueCountArray[entityDescriptor.getOrdinal()] =
+                    new long[entityDescriptor.getGenuineVariableDescriptorList().size()];
         }
+        this.solutionValueCountArray = solutionValueCountArray;
+        this.entityValueCountArray = entityValueCountArray;
 
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor != null) {
@@ -80,8 +87,7 @@ final class ValueRangeStatistics<Solution_> {
             maxValueRangeSize.setValue(countOnSolution);
             if (listVariableDescriptor.canExtractValueRangeFromSolution()) {
                 approximateValueCount.add(countOnSolution);
-                cachedValueCountByEntityAndVariableOrdinal[listVariableDescriptor.getEntityDescriptor()
-                        .getOrdinal()][listVariableDescriptor.getOrdinal()] += countOnSolution;
+                solutionValueCountArray[listVariableDescriptor.getGlobalOrdinal()] += countOnSolution;
             }
             if (!listVariableDescriptor.allowsUnassignedValues()) {
                 // We count every possibly unassigned element in every list variable.
@@ -90,14 +96,16 @@ final class ValueRangeStatistics<Solution_> {
             }
         }
 
-        for (var basicVariable : solutionDescriptor.getBasicVariableDescriptorList()) {
-            if (basicVariable.canExtractValueRangeFromSolution()) {
-                var countOnSolution = valueRangeManager.countOnSolution(basicVariable.getValueRangeDescriptor(), solution);
-                approximateValueCount.add(countOnSolution);
-                cachedValueCountByEntityAndVariableOrdinal[basicVariable.getEntityDescriptor().getOrdinal()][basicVariable
-                        .getOrdinal()] += countOnSolution;
-                if (maxValueRangeSize.longValue() < countOnSolution) {
-                    maxValueRangeSize.setValue(countOnSolution);
+        for (var entityDescriptor : solutionDescriptor.getGenuineEntityDescriptors()) {
+            for (var genuineVariable : entityDescriptor.getDeclaredGenuineVariableDescriptors()) {
+                if (genuineVariable instanceof BasicVariableDescriptor<Solution_> basicVariable
+                        && basicVariable.canExtractValueRangeFromSolution()) {
+                    var countOnSolution = valueRangeManager.countOnSolution(basicVariable.getValueRangeDescriptor(), solution);
+                    approximateValueCount.add(countOnSolution);
+                    solutionValueCountArray[basicVariable.getGlobalOrdinal()] += countOnSolution;
+                    if (maxValueRangeSize.longValue() < countOnSolution) {
+                        maxValueRangeSize.setValue(countOnSolution);
+                    }
                 }
             }
         }
@@ -124,14 +132,14 @@ final class ValueRangeStatistics<Solution_> {
                 finisher.accept(entity);
             }
 
-            for (var genuineVariable : entityDescriptor.getGenuineVariableDescriptorList()) {
-                if (genuineVariable instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                        && !basicVariableDescriptor.canExtractValueRangeFromSolution()) {
-                    var rangeValueCount =
-                            valueRangeManager.countOnEntity(basicVariableDescriptor.getValueRangeDescriptor(), entity);
+            var genuineVariableList = entityDescriptor.getGenuineVariableDescriptorList();
+            var entityValueCountRow = entityValueCountArray[entityDescriptor.getOrdinal()];
+            for (var i = 0; i < genuineVariableList.size(); i++) {
+                var genuineVariable = genuineVariableList.get(i);
+                if (!genuineVariable.canExtractValueRangeFromSolution()) {
+                    var rangeValueCount = valueRangeManager.countOnEntity(genuineVariable.getValueRangeDescriptor(), entity);
                     approximateValueCount.add(rangeValueCount);
-                    cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][genuineVariable.getOrdinal()] +=
-                            rangeValueCount;
+                    entityValueCountRow[i] += rangeValueCount;
                 }
             }
             if (!entityDescriptor.hasAnyListVariables()) {
@@ -142,12 +150,6 @@ final class ValueRangeStatistics<Solution_> {
             notInAnyListValueCount.subtract(countOnEntity);
             if (!listVariableDescriptor.allowsUnassignedValues() && listVariableEntityDescriptor.matchesEntity(entity)) {
                 unassignedValueCount.subtract(countOnEntity);
-            }
-            if (!listVariableDescriptor.canExtractValueRangeFromSolution()) {
-                var listValueCount = valueRangeManager.countOnEntity(listVariableDescriptor.getValueRangeDescriptor(), entity);
-                approximateValueCount.add(listValueCount);
-                cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][listVariableDescriptor
-                        .getOrdinal()] += listValueCount;
             }
             // TODO maybe detect duplicates and elements that are outside the value range
         });
@@ -203,16 +205,16 @@ final class ValueRangeStatistics<Solution_> {
     }
 
     private LinkedHashMap<String, Long> getVariableToValueCount(EntityDescriptor<Solution_> entityDescriptor) {
+        var solutionValueCountArray = Objects.requireNonNull(this.solutionValueCountArray);
+        var entityValueCountRow = Objects.requireNonNull(entityValueCountArray)[entityDescriptor.getOrdinal()];
         var variableToValueCount = new LinkedHashMap<String, Long>();
-        for (var variableDescriptor : entityDescriptor.getBasicVariableDescriptorList()) {
-            variableToValueCount.put(variableDescriptor.getVariableName(),
-                    cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][variableDescriptor
-                            .getOrdinal()]);
-        }
-        if (entityDescriptor.hasAnyListVariables()) {
-            variableToValueCount.put(entityDescriptor.getListVariableDescriptor().getVariableName(),
-                    cachedValueCountByEntityAndVariableOrdinal[entityDescriptor.getOrdinal()][entityDescriptor
-                            .getListVariableDescriptor().getOrdinal()]);
+        var genuineVariableList = entityDescriptor.getGenuineVariableDescriptorList();
+        for (var i = 0; i < genuineVariableList.size(); i++) {
+            var genuineVariable = genuineVariableList.get(i);
+            variableToValueCount.put(genuineVariable.getVariableName(),
+                    genuineVariable.canExtractValueRangeFromSolution()
+                            ? solutionValueCountArray[genuineVariable.getGlobalOrdinal()]
+                            : entityValueCountRow[i]);
         }
         return variableToValueCount;
     }

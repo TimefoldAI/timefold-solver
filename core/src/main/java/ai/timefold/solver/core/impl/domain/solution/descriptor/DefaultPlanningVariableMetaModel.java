@@ -21,10 +21,7 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
     static final Comparator<VariableMetaModel<?, ?, ?>> VARIABLE_META_MODEL_COMPARATOR =
             Comparator.comparingInt(
                     (VariableMetaModel<?, ?, ?> variableMetaModel) -> ((InnerVariableMetaModel<?>) variableMetaModel)
-                            .variableDescriptor().getEntityDescriptor().getOrdinal())
-                    .thenComparingInt(
-                            (VariableMetaModel<?, ?, ?> variableMetaModel) -> ((InnerVariableMetaModel<?>) variableMetaModel)
-                                    .variableDescriptor().getOrdinal());
+                            .variableDescriptor().getGlobalOrdinal());
 
     @SuppressWarnings("unchecked")
     @Override
