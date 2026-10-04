@@ -38,6 +38,14 @@
           "new": "interface ai.timefold.solver.service.definition.api.ModelConvertor<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>, ModelInput_ extends ai.timefold.solver.service.definition.api.ModelInput, ModelConfigurationOverrides_ extends ai.timefold.solver.service.definition.api.ModelConfigOverrides, SolverModel_ extends ai.timefold.solver.service.definition.api.SolverModel<Score_>, ModelOutput_ extends ai.timefold.solver.service.definition.api.ModelOutput>",
           "annotationType": "org.jspecify.annotations.NullMarked",
           "justification": "Documents existing nullability contract; not a behavioral or binary-incompatible change."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.removed",
+          "old": "class ai.timefold.solver.service.definition.api.domain.RunConfiguration",
+          "new": "class ai.timefold.solver.service.definition.api.domain.RunConfiguration",
+          "annotationType": "org.eclipse.microprofile.openapi.annotations.media.Schema",
+          "justification": "RunConfiguration now carries a free-form options map, so the class-level @Schema(additionalProperties = Schema.False.class) was intentionally removed to allow arbitrary option keys."
         }
       ]
     }
