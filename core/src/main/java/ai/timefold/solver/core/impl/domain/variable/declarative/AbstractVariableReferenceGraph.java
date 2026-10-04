@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerVariableMetaModel;
 import ai.timefold.solver.core.impl.util.DynamicLinearProbeNonNegativeIntCounter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
@@ -26,6 +27,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
+    private final Map<VariableMetaModel<?, ?, ?>, VariableChangeHook> variableReferenceToHookMap;
 
     // These structures are mutable.
     protected final DynamicLinearProbeNonNegativeIntCounter[] edgeCount;
@@ -58,11 +60,16 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
 
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         changeTracker = createChangeTracker(instanceCount);
+        variableReferenceToHookMap = buildHookMap();
+        var initialHookList = variableReferenceToAfterProcessor.keySet()
+                .stream()
+                .map(variableReferenceToHookMap::get)
+                .toList();
         for (var instance : nodeList) {
             var entity = instance.entity();
             if (visited.add(entity)) {
-                for (var variableId : outerGraph.variableReferenceToAfterProcessor.keySet()) {
-                    afterVariableChanged(variableId, entity);
+                for (var hook : initialHookList) {
+                    hook.afterVariableChanged(entity);
                 }
             }
         }
@@ -81,12 +88,9 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     /**
      * As specified by {@link VariableReferenceGraph#updateChanged()}.
      *
-     * @implNote {@link #updateChanged()} sets {{@link #isUpdating}} to true
-     *           so {@link #beforeVariableChanged(VariableMetaModel, Object)}
-     *           and {@link #afterVariableChanged(VariableMetaModel, Object)}
-     *           can short circuit.
-     *
      * @return true if the update successful; false otherwise
+     * @implNote {@link #updateChanged()} sets {{@link #isUpdating}} to true
+     *           so {@link VariableChangeHook}s can short circuit.
      */
     abstract boolean innerUpdateChanged();
 
@@ -109,7 +113,6 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     private BaseTopologicalOrderGraph.NodeTopologicalOrder[] buildNodeTopologicalOrderArray(BaseTopologicalOrderGraph graph,
             int graphSize) {
         var out = new BaseTopologicalOrderGraph.NodeTopologicalOrder[graphSize];
-
         for (var i = 0; i < out.length; i++) {
             out[i] = new BaseTopologicalOrderGraph.NodeTopologicalOrder(i, graph);
         }
@@ -163,106 +166,168 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         markChanged(to);
     }
 
-    @Override
-    public final void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
-        if (isUpdating) {
-            // If we are updating, then the variable that changed is a declarative shadow variable;
-            // We don't need to check for graph modifications/track changes when we are updating, so skip
-            return;
-        }
-        if (variableReference.entity().type().isInstance(entity)) {
-            processEntity(variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
-        }
-    }
-
-    @SuppressWarnings("ForLoopReplaceableByForEach")
-    private void processEntity(List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> processorList,
-            Object entity) {
-        var processorCount = processorList.size();
-        // Avoid creation of iterators on the hot path.
-        // The short-lived instances were observed to cause considerable GC pressure.
-        for (var i = 0; i < processorCount; i++) {
-            processorList.get(i).accept(this, entity);
-        }
-    }
-
-    @Override
-    public final void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
-        if (isUpdating) {
-            // If we are updating, then the variable that changed is a declarative shadow variable;
-            // We don't need to check for graph modifications/track changes when we are updating, so skip
-            return;
-        }
-        if (variableReference.entity().type().isInstance(entity)) {
-            var node = lookupOrNull(variableReference, entity);
-            if (node != null) {
-                markChanged(node);
+    private Map<VariableMetaModel<?, ?, ?>, VariableChangeHook> buildHookMap() {
+        var hookMap = new LinkedHashMap<VariableMetaModel<?, ?, ?>, VariableChangeHook>();
+        for (var variableReferenceSet : List.of(variableReferenceToContainingNodeMap.keySet(),
+                variableReferenceToBeforeProcessor.keySet(), variableReferenceToAfterProcessor.keySet(),
+                listVariableReferenceToElementLocator.keySet())) {
+            for (var variableReference : variableReferenceSet) {
+                hookMap.computeIfAbsent(variableReference, this::buildHook);
             }
-            processEntity(variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
         }
+        return hookMap;
     }
 
-    @Override
-    public final void beforeListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elementList, int fromIndex, int toIndex) {
-        if (isUpdating) {
-            // Declarative shadow variable updates never change a list variable, so this cannot happen.
-            throw new IllegalStateException("Impossible state: list variable changed during shadow variable update.");
-        }
-        updateListElementEdges(variableReference, entity, elementList, fromIndex, toIndex, false);
+    private VariableChangeHook buildHook(VariableMetaModel<?, ?, ?> variableReference) {
+        var nodeMap = variableReferenceToContainingNodeMap.get(variableReference);
+        var beforeProcessorList =
+                variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList());
+        var afterProcessorList =
+                variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList());
+        var locatorList = resolveLocators(listVariableReferenceToElementLocator.get(variableReference));
+        // Equal metamodels may come from different subclasses; the declaring entity class accepts all of them.
+        var entityType = ((InnerVariableMetaModel<?>) variableReference).variableDescriptor().getEntityDescriptor()
+                .getEntityClass();
+        return new ResolvedVariableChangeHook(entityType, nodeMap, beforeProcessorList,
+                afterProcessorList, locatorList);
     }
 
-    @Override
-    public final void afterListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elementList, int fromIndex, int toIndex) {
-        if (isUpdating) {
-            throw new IllegalStateException("Impossible state: list variable changed during shadow variable update.");
-        }
-        updateListElementEdges(variableReference, entity, elementList, fromIndex, toIndex, true);
-    }
-
-    @SuppressWarnings("ForLoopReplaceableByForEach")
-    private void updateListElementEdges(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elementList, int fromIndex, int toIndex, boolean isAdd) {
-        var locatorList = listVariableReferenceToElementLocator.get(variableReference);
+    private List<ResolvedLocator<Solution_>> resolveLocators(@Nullable List<ListElementSourceLocator> locatorList) {
         if (locatorList == null) {
-            return;
+            return Collections.emptyList();
         }
-        var locatorCount = locatorList.size();
-        for (var i = 0; i < locatorCount; i++) {
-            var locator = locatorList.get(i);
-            var to = lookupOrNull(locator.targetVariableId(), entity);
-            if (to == null) {
-                continue;
+        var resolvedLocatorList = new ArrayList<ResolvedLocator<Solution_>>(locatorList.size());
+        for (var locator : locatorList) {
+            var targetNodeMap = variableReferenceToContainingNodeMap.get(locator.targetVariableId());
+            if (targetNodeMap != null) { // Otherwise the target is never found.
+                resolvedLocatorList.add(new ResolvedLocator<>(locator, targetNodeMap,
+                        variableReferenceToContainingNodeMap.get(locator.sourceVariableId())));
             }
-            var sourceNodeMap = variableReferenceToContainingNodeMap.get(locator.sourceVariableId());
-            if (sourceNodeMap != null) {
-                // Do not clamp the range; an out-of-bounds range is a caller bug
-                // that must fail fast instead of silently corrupting the edge counts.
-                for (var elementIndex = fromIndex; elementIndex < toIndex; elementIndex++) {
-                    var sourceEntity = locator.findSourceEntity(elementList.get(elementIndex));
-                    if (sourceEntity == null) {
-                        continue;
-                    }
-                    var from = sourceNodeMap.get(sourceEntity);
-                    if (from == null) {
-                        continue;
-                    }
-                    if (isAdd) {
-                        addEdge(from, to);
-                    } else {
-                        removeEdge(from, to);
+        }
+        return resolvedLocatorList;
+    }
+
+    @Override
+    public final @Nullable VariableChangeHook resolveHookFor(VariableMetaModel<?, ?, ?> variableReference) {
+        return variableReferenceToHookMap.get(variableReference);
+    }
+
+    private final class ResolvedVariableChangeHook implements VariableChangeHook {
+
+        private final Class<?> entityType;
+        private final @Nullable Map<Object, GraphNode<Solution_>> nodeMap;
+        private final List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> beforeProcessorList;
+        private final List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> afterProcessorList;
+        private final List<ResolvedLocator<Solution_>> locatorList;
+
+        private ResolvedVariableChangeHook(Class<?> entityType, @Nullable Map<Object, GraphNode<Solution_>> nodeMap,
+                List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> beforeProcessorList,
+                List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> afterProcessorList,
+                List<ResolvedLocator<Solution_>> locatorList) {
+            this.entityType = entityType;
+            this.nodeMap = nodeMap;
+            this.beforeProcessorList = beforeProcessorList;
+            this.afterProcessorList = afterProcessorList;
+            this.locatorList = locatorList;
+        }
+
+        @Override
+        public void beforeVariableChanged(Object entity) {
+            if (isUpdating) {
+                // If we are updating, then the variable that changed is a declarative shadow variable;
+                // We don't need to check for graph modifications/track changes when we are updating, so skip
+                return;
+            }
+            if (entityType.isInstance(entity)) {
+                processEntity(beforeProcessorList, entity);
+            }
+        }
+
+        @SuppressWarnings("ForLoopReplaceableByForEach")
+        private void processEntity(List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> processorList,
+                Object entity) {
+            var processorCount = processorList.size();
+            // Avoid creation of iterators on the hot path.
+            // The short-lived instances were observed to cause considerable GC pressure.
+            for (var i = 0; i < processorCount; i++) {
+                processorList.get(i).accept(AbstractVariableReferenceGraph.this, entity);
+            }
+        }
+
+        @Override
+        public void afterVariableChanged(Object entity) {
+            if (isUpdating) {
+                // If we are updating, then the variable that changed is a declarative shadow variable;
+                // We don't need to check for graph modifications/track changes when we are updating, so skip
+                return;
+            }
+            if (entityType.isInstance(entity)) {
+                if (nodeMap != null) {
+                    var node = nodeMap.get(entity);
+                    if (node != null) {
+                        markChanged(node);
                     }
                 }
-            }
-            if (isAdd) {
-                // The dependency set changed even if the range is empty (e.g. an element was removed),
-                // so the target variable must always be recomputed.
-                // At graph construction, the same is guaranteed by the after processor registered in
-                // DefaultShadowVariableSessionFactory.createListElementSourceProcessors().
-                markChanged(to);
+                processEntity(afterProcessorList, entity);
             }
         }
+
+        @Override
+        public void beforeListVariableChanged(Object entity, List<Object> elementsBeforeChange, int fromIndex, int toIndex) {
+            updateListElementEdges(locatorList, entity, elementsBeforeChange, fromIndex, toIndex, false);
+        }
+
+        @SuppressWarnings("ForLoopReplaceableByForEach")
+        private void updateListElementEdges(List<ResolvedLocator<Solution_>> locatorList, Object entity,
+                List<Object> elementList, int fromIndex, int toIndex, boolean isAdd) {
+            var locatorCount = locatorList.size();
+            for (var i = 0; i < locatorCount; i++) {
+                var resolvedLocator = locatorList.get(i);
+                var to = resolvedLocator.targetNodeMap().get(entity);
+                if (to == null) {
+                    continue;
+                }
+                var locator = resolvedLocator.locator();
+                var sourceNodeMap = resolvedLocator.sourceNodeMap();
+                if (sourceNodeMap != null) {
+                    // Do not clamp the range; an out-of-bounds range is a caller bug
+                    // that must fail fast instead of silently corrupting the edge counts.
+                    for (var elementIndex = fromIndex; elementIndex < toIndex; elementIndex++) {
+                        var sourceEntity = locator.findSourceEntity(elementList.get(elementIndex));
+                        if (sourceEntity == null) {
+                            continue;
+                        }
+                        var from = sourceNodeMap.get(sourceEntity);
+                        if (from == null) {
+                            continue;
+                        }
+                        if (isAdd) {
+                            addEdge(from, to);
+                        } else {
+                            removeEdge(from, to);
+                        }
+                    }
+                }
+                if (isAdd) {
+                    // The dependency set changed even if the range is empty (e.g. an element was removed),
+                    // so the target variable must always be recomputed.
+                    // At graph construction, the same is guaranteed by the after processor registered in
+                    // DefaultShadowVariableSessionFactory.createListElementSourceProcessors().
+                    markChanged(to);
+                }
+            }
+        }
+
+        @Override
+        public void afterListVariableChanged(Object entity, List<Object> elementsAfterChange, int fromIndex, int toIndex) {
+            updateListElementEdges(locatorList, entity, elementsAfterChange, fromIndex, toIndex, true);
+        }
+
+    }
+
+    private record ResolvedLocator<Solution_>(ListElementSourceLocator locator,
+            Map<Object, GraphNode<Solution_>> targetNodeMap,
+            @Nullable Map<Object, GraphNode<Solution_>> sourceNodeMap) {
     }
 
     @Override
