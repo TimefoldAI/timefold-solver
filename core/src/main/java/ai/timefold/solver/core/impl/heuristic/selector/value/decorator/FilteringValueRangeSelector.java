@@ -24,7 +24,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -36,23 +35,16 @@ import org.jspecify.annotations.Nullable;
  * A value is considered reachable to another value if both exist within their respective entity value ranges.
  * <p>
  * The decorator can only be applied to list variables.
- * <p>
- * <code>
- *
+ * 
+ * <pre>{@code
  * e1 = entity_range[v1, v2, v3]
- *
  * e2 = entity_range[v1, v4]
- *
  * v1 = [v2, v3, v4]
- *
  * v2 = [v1, v3]
- *
  * v3 = [v1, v2]
- *
  * v4 = [v1]
- *
- * </code>
- * <p>
+ * }</pre>
+ * 
  * This node is currently used by the {@link ListChangeMoveSelector} and {@link ListSwapMoveSelector} selectors.
  * To illustrate its usage, let’s assume how moves are generated for the list swap type.
  * Initially, the swap move selector used a left value selector to choose a value.
@@ -280,10 +272,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             currentUpcomingValueList = null;
             if (checkSourceAndDestination) {
                 // Load the current assigned entity of the selected value
-                var position = listVariableState.getElementPosition(currentUpcomingValue);
-                if (position instanceof PositionInList positionInList) {
-                    currentUpcomingEntity = positionInList.entity();
-                }
+                currentUpcomingEntity = (Entity_) listVariableState.getInverseSingleton(currentUpcomingValue);
             }
             currentUpcomingValueList = reachableValues.extractValuesAsList(currentUpcomingValue);
             processUpcomingValue(currentUpcomingValue, currentUpcomingValueList);
@@ -305,11 +294,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         }
 
         boolean isReachable(Value_ destinationValue) {
-            Entity_ destinationEntity = null;
-            var assignedDestinationPosition = listVariableState.getElementPosition(destinationValue);
-            if (assignedDestinationPosition instanceof PositionInList elementPosition) {
-                destinationEntity = elementPosition.entity();
-            }
+            var destinationEntity = (Entity_) listVariableState.getInverseSingleton(destinationValue);
             if (checkSourceAndDestination) {
                 return reachableValues.isEntityReachable(Objects.requireNonNull(currentUpcomingValue), destinationEntity)
                         && reachableValues.isEntityReachable(Objects.requireNonNull(destinationValue), currentUpcomingEntity);

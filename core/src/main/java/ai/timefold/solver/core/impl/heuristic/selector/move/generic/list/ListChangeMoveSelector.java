@@ -8,7 +8,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public final class ListChangeMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
@@ -38,17 +37,7 @@ public final class ListChangeMoveSelector<Solution_> extends AbstractGenericList
             return sourceValueSelector;
         }
         return (IterableValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
-                (scoreDirector, selection) -> {
-                    var listVariableState = listVariableStateSupplier.get();
-                    var elementPosition = listVariableState.getElementPosition(selection);
-                    if (elementPosition instanceof UnassignedElement) {
-                        return true;
-                    }
-                    var elementDestination = elementPosition.ensureAssigned();
-                    var entity = elementDestination.entity();
-                    return !listVariableDescriptor.isElementPinned(scoreDirector.getWorkingSolution(), entity,
-                            elementDestination.index());
-                });
+                (scoreDirector, selection) -> !listVariableStateSupplier.get().isPinned(selection));
     }
 
     @Override
