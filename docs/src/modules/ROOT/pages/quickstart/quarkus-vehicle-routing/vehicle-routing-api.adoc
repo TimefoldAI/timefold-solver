@@ -277,7 +277,9 @@ public class VehicleRoutePlanModelConvertor implements
             Optional<VehicleRoutePlanOutput> lastModelOutput) {
         Map<String, Visit> visitMap = modelInput.visits().stream()
                 .map(VehicleRoutePlanModelConvertor::toVisit)
-                .collect(Collectors.toMap(Visit::getId, visit -> visit, (first, second) -> first, LinkedHashMap::new));
+                .collect(Collectors.toMap(Visit::getId, visit -> visit, (first, second) -> {
+                    throw new IllegalArgumentException("Duplicate visit ID '%s'.".formatted(first.getId()));
+                }, LinkedHashMap::new));
         List<Vehicle> vehicles = modelInput.vehicles().stream()
                 .map(VehicleRoutePlanModelConvertor::toVehicle)
                 .toList();
