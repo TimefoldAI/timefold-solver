@@ -16,6 +16,7 @@
   <description>
     Upgrade your code with a single command.
     This migration replaces all your calls to deleted/deprecated methods of Timefold with their proper alternatives.
+    Only runs on JDK 25 or older, on account of OpenRewrite only supporting LTS Java versions.
   </description>
   <url>https://solver.timefold.ai</url>
 
