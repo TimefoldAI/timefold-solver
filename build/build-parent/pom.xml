@@ -33,7 +33,7 @@
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
     <version.ch.qos.logback>1.6.4</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
-    <version.io.quarkus>3.39.5</version.io.quarkus>
+    <version.io.quarkus>3.40.1</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.26.1</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
