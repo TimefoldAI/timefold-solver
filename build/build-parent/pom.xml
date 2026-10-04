@@ -31,7 +31,7 @@
       The 'revision' property value is conserved by the flatten-maven-plugin, so the model project does not override it.
     -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
-    <version.ch.qos.logback>1.6.4</version.ch.qos.logback>
+    <version.ch.qos.logback>1.6.5</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.io.quarkus>3.39.5</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
@@ -80,7 +80,7 @@
     <version.site.plugin>3.22.0</version.site.plugin> <!-- We don't use site, but maven automatically configure it -->
     <version.sonar.plugin>5.8.0.7211</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
-    <version.spotless.plugin>3.10.2</version.spotless.plugin>
+    <version.spotless.plugin>3.10.3</version.spotless.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin> <!-- 3.6.0 causes strange hangs in Quarkus-related tests. -->
     <version.versions.plugin>2.22.0</version.versions.plugin>
     <version.git-commit-id.plugin>10.0.1</version.git-commit-id.plugin>
