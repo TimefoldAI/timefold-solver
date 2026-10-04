@@ -3,6 +3,7 @@ package ai.timefold.solver.core.api.solver;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -20,6 +21,12 @@ import ai.timefold.solver.core.testdomain.constraintverifier.TestdataConstraintV
 import ai.timefold.solver.core.testdomain.constraintverifier.TestdataConstraintVerifierSecondEntity;
 import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListEntity;
 import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeSolution;
 import ai.timefold.solver.core.testdomain.record.TestdataRecordEntity;
 import ai.timefold.solver.core.testdomain.record.TestdataRecordSolution;
 
@@ -126,6 +133,48 @@ class ProblemSizeStatisticsTest {
                 .containsExactlyEntriesOf(Map.of(TestdataEntity.class, 7L));
         assertThat(statistics.genuineEntityClassToVariableToValueCount().get(TestdataEntity.class))
                 .containsEntry("value", 5L);
+    }
+
+    @Test
+    void inheritedAndDeclaredVariablesHaveSeparateValueCounts() {
+        // The child inherits "value" and declares "value2"; both have local ordinal 0.
+        var solution = TestdataAddVarSolution.generateSolution(5, 3, false);
+        solution.setValueList2(solution.getValueList2().subList(0, 2));
+        var valueRangeManager = ValueRangeManager.of(
+                SolutionDescriptor.buildSolutionDescriptor(TestdataAddVarSolution.class,
+                        TestdataAddVarBaseEntity.class, TestdataAddVarChildEntity.class),
+                solution);
+        var statistics = valueRangeManager.getProblemSizeStatistics();
+
+        assertThat(statistics.genuineEntityClassToVariableToValueCount().get(TestdataAddVarChildEntity.class))
+                .containsEntry("value", 5L)
+                .containsEntry("value2", 2L);
+        // The inherited variable is counted once, not once for each entity class.
+        assertThat(statistics.approximateValueCount()).isEqualTo(7L);
+    }
+
+    @Test
+    void inheritedVariableWithEntityValueRangeIsCountedPerEntityClass() {
+        var solution = new TestdataEntityRangeSolution();
+        var twoValues = List.of("a", "b");
+        var tenValues = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i", "j");
+        solution.setEntityList(List.of(
+                new TestdataEntityRangeBaseEntity(0, twoValues),
+                new TestdataEntityRangeBaseEntity(1, twoValues),
+                new TestdataEntityRangeBaseEntity(2, twoValues),
+                new TestdataEntityRangeChildEntity(3, tenValues),
+                new TestdataEntityRangeChildEntity(4, tenValues)));
+        var valueRangeManager = ValueRangeManager.of(
+                SolutionDescriptor.buildSolutionDescriptor(TestdataEntityRangeSolution.class,
+                        TestdataEntityRangeBaseEntity.class, TestdataEntityRangeChildEntity.class),
+                solution);
+        var statistics = valueRangeManager.getProblemSizeStatistics();
+
+        assertThat(statistics.genuineEntityClassToVariableToValueCount().get(TestdataEntityRangeBaseEntity.class))
+                .containsEntry("value", 6L);
+        assertThat(statistics.genuineEntityClassToVariableToValueCount().get(TestdataEntityRangeChildEntity.class))
+                .containsEntry("value", 20L);
+        assertThat(statistics.approximateValueCount()).isEqualTo(26L);
     }
 
     @Test

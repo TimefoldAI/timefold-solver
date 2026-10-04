@@ -6,6 +6,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
@@ -23,7 +24,8 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     // These structures are immutable.
     protected final List<GraphNode<Solution_>> nodeList;
     protected final BaseTopologicalOrderGraph.NodeTopologicalOrder[] nodeTopologicalOrders;
-    protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
+    // Indexed by the variable's global ordinal.
+    private final @Nullable Map<Object, GraphNode<Solution_>>[] containingNodeMapArray;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
@@ -46,7 +48,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         nodeList = List.copyOf(outerGraph.nodeList);
         var instanceCount = nodeList.size();
         // Often the maps are a singleton; we improve performance by actually making it so.
-        variableReferenceToContainingNodeMap = Map.copyOf(outerGraph.variableReferenceToContainingNodeMap);
+        containingNodeMapArray = buildContainingNodeMapArray(outerGraph.variableReferenceToContainingNodeMap);
         variableReferenceToBeforeProcessor = Map.copyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = Map.copyOf(outerGraph.variableReferenceToAfterProcessor);
         listVariableReferenceToElementLocator = Map.copyOf(outerGraph.listVariableReferenceToElementLocator);
@@ -60,7 +62,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
 
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         changeTracker = createChangeTracker(instanceCount);
-        variableReferenceToHookMap = buildHookMap();
+        variableReferenceToHookMap = buildHookMap(outerGraph.variableReferenceToContainingNodeMap.keySet());
         var initialHookList = variableReferenceToAfterProcessor.keySet()
                 .stream()
                 .map(variableReferenceToHookMap::get)
@@ -128,12 +130,39 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
      */
     protected abstract ChangeTracker_ createChangeTracker(int instanceCount);
 
-    public final @Nullable GraphNode<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        var map = variableReferenceToContainingNodeMap.get(variableId);
-        if (map == null) {
-            return null;
+    @SuppressWarnings("unchecked")
+    private static <Solution_> @Nullable Map<Object, GraphNode<Solution_>>[] buildContainingNodeMapArray(
+            Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap) {
+        var size = 0;
+        for (var variableId : variableReferenceToContainingNodeMap.keySet()) {
+            size = Math.max(size, globalOrdinalOf(variableId) + 1);
         }
-        return map.get(entity);
+        var result = (Map<Object, GraphNode<Solution_>>[]) new Map[size];
+        for (var entry : variableReferenceToContainingNodeMap.entrySet()) {
+            result[globalOrdinalOf(entry.getKey())] = entry.getValue();
+        }
+        return result;
+    }
+
+    static int globalOrdinalOf(VariableMetaModel<?, ?, ?> variableId) {
+        return ((InnerVariableMetaModel<?>) variableId).variableDescriptor().getGlobalOrdinal();
+    }
+
+    private @Nullable Map<Object, GraphNode<Solution_>> getContainingNodeMap(int variableGlobalOrdinal) {
+        return variableGlobalOrdinal < containingNodeMapArray.length ? containingNodeMapArray[variableGlobalOrdinal] : null;
+    }
+
+    private @Nullable Map<Object, GraphNode<Solution_>> getContainingNodeMap(VariableMetaModel<?, ?, ?> variableId) {
+        return getContainingNodeMap(globalOrdinalOf(variableId));
+    }
+
+    /**
+     * @param variableGlobalOrdinal see {@link #globalOrdinalOf(VariableMetaModel)}
+     * @return null if the variable or the entity is not in the graph
+     */
+    public final @Nullable GraphNode<Solution_> lookupOrNull(int variableGlobalOrdinal, Object entity) {
+        var map = getContainingNodeMap(variableGlobalOrdinal);
+        return map == null ? null : map.get(entity);
     }
 
     public final void addEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
@@ -166,9 +195,10 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         markChanged(to);
     }
 
-    private Map<VariableMetaModel<?, ?, ?>, VariableChangeHook> buildHookMap() {
+    private Map<VariableMetaModel<?, ?, ?>, VariableChangeHook>
+            buildHookMap(Set<VariableMetaModel<?, ?, ?>> containingVariableReferenceSet) {
         var hookMap = new LinkedHashMap<VariableMetaModel<?, ?, ?>, VariableChangeHook>();
-        for (var variableReferenceSet : List.of(variableReferenceToContainingNodeMap.keySet(),
+        for (var variableReferenceSet : List.of(containingVariableReferenceSet,
                 variableReferenceToBeforeProcessor.keySet(), variableReferenceToAfterProcessor.keySet(),
                 listVariableReferenceToElementLocator.keySet())) {
             for (var variableReference : variableReferenceSet) {
@@ -179,7 +209,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     }
 
     private VariableChangeHook buildHook(VariableMetaModel<?, ?, ?> variableReference) {
-        var nodeMap = variableReferenceToContainingNodeMap.get(variableReference);
+        var nodeMap = getContainingNodeMap(variableReference);
         var beforeProcessorList =
                 variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList());
         var afterProcessorList =
@@ -198,10 +228,10 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         }
         var resolvedLocatorList = new ArrayList<ResolvedLocator<Solution_>>(locatorList.size());
         for (var locator : locatorList) {
-            var targetNodeMap = variableReferenceToContainingNodeMap.get(locator.targetVariableId());
+            var targetNodeMap = getContainingNodeMap(locator.targetVariableId());
             if (targetNodeMap != null) { // Otherwise the target is never found.
                 resolvedLocatorList.add(new ResolvedLocator<>(locator, targetNodeMap,
-                        variableReferenceToContainingNodeMap.get(locator.sourceVariableId())));
+                        getContainingNodeMap(locator.sourceVariableId())));
             }
         }
         return resolvedLocatorList;

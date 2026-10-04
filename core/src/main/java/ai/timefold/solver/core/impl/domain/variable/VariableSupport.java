@@ -69,9 +69,9 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
 
     /**
      * Everything a change of a basic or shadow variable is dispatched to, resolved once per variable.
-     * Indexed by [{@link EntityDescriptor#getOrdinal()}][{@link VariableDescriptor#getOrdinal()}].
+     * Indexed by {@link VariableDescriptor#getGlobalOrdinal()}.
      */
-    private final VariableDispatch<Solution_>[][] variableDispatchArray;
+    private final VariableDispatch<Solution_>[] variableDispatchArray;
     private final @Nullable ListVariableDescriptor<Solution_> listVariableDescriptor;
     /**
      * The single source of truth for the list variable state, created at first request.
@@ -106,15 +106,11 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
 
         var solutionDescriptor = scoreDirector.getSolutionDescriptor();
-        var entityDescriptorList = solutionDescriptor.getEntityDescriptors();
-        this.variableDispatchArray = new VariableDispatch[entityDescriptorList.size()][];
-        for (var entityDescriptor : entityDescriptorList) {
-            var declaredVariableDescriptorList = entityDescriptor.getDeclaredVariableDescriptors();
-            var dispatchArray = new VariableDispatch[declaredVariableDescriptorList.size()];
-            for (var variableDescriptor : declaredVariableDescriptorList) {
-                dispatchArray[variableDescriptor.getOrdinal()] = new VariableDispatch<>(variableDescriptor);
+        this.variableDispatchArray = new VariableDispatch[solutionDescriptor.getVariableDescriptorCount()];
+        for (var entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
+            for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
+                variableDispatchArray[variableDescriptor.getGlobalOrdinal()] = new VariableDispatch<>(variableDescriptor);
             }
-            variableDispatchArray[entityDescriptor.getOrdinal()] = dispatchArray;
         }
 
         // Fields specific to list variable; will be ignored if not necessary.
@@ -370,7 +366,7 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
     }
 
     private VariableDispatch<Solution_> getVariableDispatch(VariableDescriptor<Solution_> variableDescriptor) {
-        return variableDispatchArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor.getOrdinal()];
+        return variableDispatchArray[variableDescriptor.getGlobalOrdinal()];
     }
 
     private List<BasicVariableChangeHandler<Solution_>>
@@ -406,20 +402,16 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
         for (var handler : listVariableChangeHandlerList) {
             handler.resetWorkingSolution(scoreDirector);
         }
-        for (var dispatchArray : variableDispatchArray) {
-            for (var dispatch : dispatchArray) {
-                for (var handler : dispatch.handlerList) {
-                    handler.resetWorkingSolution(scoreDirector);
-                }
+        for (var dispatch : variableDispatchArray) {
+            for (var handler : dispatch.handlerList) {
+                handler.resetWorkingSolution(scoreDirector);
             }
         }
 
         if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()
                 && !consistencyTracker.isFrozen()) {
-            for (var dispatchArray : variableDispatchArray) {
-                for (var dispatch : dispatchArray) {
-                    dispatch.graphHook = null; // Events sent while the new graph is built must not reach the old one.
-                }
+            for (var dispatch : variableDispatchArray) {
+                dispatch.graphHook = null; // Events sent while the new graph is built must not reach the old one.
             }
             var shadowVariableSessionFactory = new DefaultShadowVariableSessionFactory<>(
                     scoreDirector.getSolutionDescriptor(),
@@ -429,10 +421,8 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
                     scoreDirector.getWorkingSolution(),
                     scoreDirector.ignoreInconsistentSolutions());
             shadowVariableSession = session;
-            for (var dispatchArray : variableDispatchArray) {
-                for (var dispatch : dispatchArray) {
-                    dispatch.graphHook = session.resolveHookFor(dispatch.variableDescriptor);
-                }
+            for (var dispatch : variableDispatchArray) {
+                dispatch.graphHook = session.resolveHookFor(dispatch.variableDescriptor);
             }
         }
     }
@@ -441,11 +431,9 @@ public final class VariableSupport<Solution_> implements TrackerResolver<Solutio
         for (var handler : listVariableChangeHandlerList) {
             handler.close();
         }
-        for (var dispatchArray : variableDispatchArray) {
-            for (var dispatch : dispatchArray) {
-                for (var handler : dispatch.handlerList) {
-                    handler.close();
-                }
+        for (var dispatch : variableDispatchArray) {
+            for (var handler : dispatch.handlerList) {
+                handler.close();
             }
         }
     }
