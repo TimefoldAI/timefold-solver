@@ -5,12 +5,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import jakarta.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
 
-@Singleton
-public final class WaypointsCallControl {
+@ApplicationScoped
+public class WaypointsCallControl {
 
     private final AtomicLong delayMillis = new AtomicLong();
     private final AtomicInteger remainingFailureCount = new AtomicInteger();

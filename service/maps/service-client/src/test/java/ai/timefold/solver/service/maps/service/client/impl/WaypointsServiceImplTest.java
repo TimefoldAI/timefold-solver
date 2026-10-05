@@ -140,69 +140,42 @@ public class WaypointsServiceImplTest {
     void fetchesOnlyTheRequestedRoutes() {
         Location l1 = new Location(0, 0);
         Location l2 = new Location(1, 1);
-
         Location l3 = new Location(2, 2);
         Location l4 = new Location(3, 3);
+        Metadata<?> metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, new SampleModel(List.of(l1, l2, l3, l4)), null, null, null,
+                null));
 
+        assertSingleRoute(enricher.getWaypoints(metadata.getId(), Set.of("id_0")), l1, l2);
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(1);
+
+        assertSingleRoute(enricher.getWaypoints(metadata.getId(), Set.of("id_0")), l1, l2);
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(1);
+
+        assertSingleRoute(enricher.getWaypoints(metadata.getId(), Set.of("id_1")), l3, l4);
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
+
+        assertBothRoutes(enricher.getWaypoints(metadata.getId(), Set.of("id_0", "id_1")), l1, l2, l3, l4);
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
+    }
+
+    @Test
+    void keepsTheRequestedRoutesAfterBestSolutionsWithTheSameStops() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        Location l3 = new Location(2, 2);
+        Location l4 = new Location(3, 3);
         Metadata<?> metadata = new Metadata<>();
         SampleModel sampleModel = new SampleModel(List.of(l1, l2, l3, l4));
-
         enricher.onInitSolution(new InitSolutionEvent(metadata, sampleModel, null, null, null, null));
-        List<Waypoints> waypoints = enricher.getWaypoints(metadata.getId(), Set.of("id_0"));
-
-        Assertions.assertThat(waypoints.size()).isEqualTo(1);
-        Assertions.assertThat(waypoints.getFirst().waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.getFirst().waypoints()).contains(l1, l2);
-        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(1);
-
-        waypoints = enricher.getWaypoints(metadata.getId(), Set.of("id_0"));
-
-        Assertions.assertThat(waypoints.size()).isEqualTo(1);
-        Assertions.assertThat(waypoints.getFirst().waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.getFirst().waypoints()).contains(l1, l2);
-        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(1);
-
-        waypoints = enricher.getWaypoints(metadata.getId(), Set.of("id_1"));
-
-        Assertions.assertThat(waypoints.size()).isEqualTo(1);
-        Assertions.assertThat(waypoints.getFirst().waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.getFirst().waypoints()).contains(l3, l4);
-        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
-
-        waypoints = enricher.getWaypoints(metadata.getId(), Set.of("id_0", "id_1"));
-
-        Assertions.assertThat(waypoints.size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.get(0).waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.get(0).waypoints()).contains(l1, l2);
-
-        Assertions.assertThat(waypoints.get(1).waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.get(1).waypoints()).contains(l3, l4);
-        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
+        enricher.getWaypoints(metadata.getId(), Set.of("id_0", "id_1"));
 
         enricher.onBestSolution(new BestSolutionEvent(metadata, sampleModel, null, null, null, null));
-        waypoints = enricher.getWaypoints(metadata.getId(), Set.of("id_0"));
-
-        Assertions.assertThat(waypoints.size()).isEqualTo(1);
-        Assertions.assertThat(waypoints.getFirst().waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.getFirst().waypoints()).contains(l1, l2);
-        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
-
-        waypoints = enricher.getWaypoints(metadata.getId(), Set.of("id_1"));
-
-        Assertions.assertThat(waypoints.size()).isEqualTo(1);
-        Assertions.assertThat(waypoints.getFirst().waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.getFirst().waypoints()).contains(l3, l4);
-        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
+        assertSingleRoute(enricher.getWaypoints(metadata.getId(), Set.of("id_0")), l1, l2);
+        assertSingleRoute(enricher.getWaypoints(metadata.getId(), Set.of("id_1")), l3, l4);
 
         enricher.onBestSolution(new BestSolutionEvent(metadata, sampleModel, null, null, null, null));
-        waypoints = enricher.getWaypoints(metadata.getId(), Set.of("id_0", "id_1"));
-
-        Assertions.assertThat(waypoints.size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.get(0).waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.get(0).waypoints()).contains(l1, l2);
-
-        Assertions.assertThat(waypoints.get(1).waypoints().size()).isEqualTo(2);
-        Assertions.assertThat(waypoints.get(1).waypoints()).contains(l3, l4);
+        assertBothRoutes(enricher.getWaypoints(metadata.getId(), Set.of("id_0", "id_1")), l1, l2, l3, l4);
         Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
     }
 
@@ -261,9 +234,11 @@ public class WaypointsServiceImplTest {
         enricher.onInitSolution(new InitSolutionEvent(metadata, routes(1), null, null, null, null));
         callControl.failNextCalls(1);
 
-        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(metadata.getId(), Set.of()))
+        var runId = metadata.getId();
+        Set<String> allObjectIdSet = Set.of();
+        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(runId, allObjectIdSet))
                 .isInstanceOf(MapServiceIllegalArgumentException.class);
-        Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of())).hasSize(1);
+        Assertions.assertThat(enricher.getWaypoints(runId, allObjectIdSet)).hasSize(1);
         Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
     }
 
@@ -399,7 +374,9 @@ public class WaypointsServiceImplTest {
 
         enricher.onFailed(new ItemFailed(metadata, new IllegalStateException("Solver failed."), null, null));
 
-        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(metadata.getId(), Set.of()))
+        var runId = metadata.getId();
+        Set<String> allObjectIdSet = Set.of();
+        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(runId, allObjectIdSet))
                 .isInstanceOf(ItemNotFoundException.class);
     }
 
@@ -425,7 +402,9 @@ public class WaypointsServiceImplTest {
 
         enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
 
-        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(metadata.getId(), Set.of()))
+        var runId = metadata.getId();
+        Set<String> allObjectIdSet = Set.of();
+        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(runId, allObjectIdSet))
                 .isInstanceOf(ItemNotFoundException.class);
         Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isZero();
     }
@@ -460,6 +439,18 @@ public class WaypointsServiceImplTest {
 
         Awaitility.await().pollInterval(Duration.ofMillis(10)).during(Duration.ofMillis(500)).atMost(Duration.ofSeconds(2))
                 .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 3);
+    }
+
+    private static void assertSingleRoute(List<Waypoints> waypointsList, Location firstStop, Location lastStop) {
+        Assertions.assertThat(waypointsList).hasSize(1);
+        Assertions.assertThat(waypointsList.getFirst().waypoints()).hasSize(2).contains(firstStop, lastStop);
+    }
+
+    private static void assertBothRoutes(List<Waypoints> waypointsList, Location firstRouteStart, Location firstRouteEnd,
+            Location secondRouteStart, Location secondRouteEnd) {
+        Assertions.assertThat(waypointsList).hasSize(2);
+        Assertions.assertThat(waypointsList.get(0).waypoints()).hasSize(2).contains(firstRouteStart, firstRouteEnd);
+        Assertions.assertThat(waypointsList.get(1).waypoints()).hasSize(2).contains(secondRouteStart, secondRouteEnd);
     }
 
     private static SampleModel twoRoutes(Location lastStop) {

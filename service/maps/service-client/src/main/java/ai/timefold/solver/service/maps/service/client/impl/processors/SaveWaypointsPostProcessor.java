@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.interceptor.Interceptor;
 
 import ai.timefold.solver.service.definition.api.ModelOutput;
@@ -16,7 +16,7 @@ import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 
 @Priority(value = Interceptor.Priority.APPLICATION)
-@ApplicationScoped
+@Singleton
 public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
     private AbstractStorageService<?, ?, ?, ?, ?, ?, ?> storageService;
