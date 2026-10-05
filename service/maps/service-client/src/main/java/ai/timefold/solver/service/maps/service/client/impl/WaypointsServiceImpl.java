@@ -35,6 +35,8 @@ import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.quarkus.runtime.Startup;
 
@@ -42,6 +44,8 @@ import io.quarkus.runtime.Startup;
 @Startup
 @ApplicationScoped
 public class WaypointsServiceImpl implements WaypointsService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WaypointsServiceImpl.class);
 
     private final WaypointsExtractor waypointsExtractor;
 
@@ -156,7 +160,46 @@ public class WaypointsServiceImpl implements WaypointsService {
     private void rebuildBaseWaypoints(String runId, SolverModel solverModel) {
         if (this.waypointsExtractor != null && solverModel != null) {
             List<Waypoints> baseWaypointsList = waypointsExtractor.extractBaseWaypoints(solverModel);
-            runRoutesMap.computeIfAbsent(runId, id -> new RunRoutes()).replaceRoutes(baseWaypointsList);
+            var runRoutes = runRoutesMap.computeIfAbsent(runId, id -> new RunRoutes());
+            runRoutes.replaceRoutes(baseWaypointsList);
+            if (runRoutes.isViewed()) {
+                runRoutes.requestBackgroundFetch();
+                startBackgroundFetchIfIdle(runId, runRoutes);
+            }
+        }
+    }
+
+    private void startBackgroundFetchIfIdle(String runId, RunRoutes runRoutes) {
+        if (!runRoutes.tryStartBackgroundFetch()) {
+            return;
+        }
+        var isCompletionAttached = false;
+        try {
+            fetchAllRoutes(runRoutes).whenComplete((ignored, failure) -> finishBackgroundFetch(runId, runRoutes, failure));
+            isCompletionAttached = true;
+        } catch (RuntimeException e) {
+            LOGGER.warn("Background waypoints fetch failed to start for run {}; the next request retries.", runId, e);
+        } finally {
+            if (!isCompletionAttached) {
+                runRoutes.finishBackgroundFetch();
+            }
+        }
+    }
+
+    private CompletableFuture<Void> fetchAllRoutes(RunRoutes runRoutes) {
+        var waypointsFutureArray = runRoutes.getRouteList(Set.of()).stream()
+                .map(this::fetchOnce)
+                .toArray(CompletableFuture[]::new);
+        return CompletableFuture.allOf(waypointsFutureArray);
+    }
+
+    private void finishBackgroundFetch(String runId, RunRoutes runRoutes, Throwable failure) {
+        if (failure != null) {
+            LOGGER.warn("Background waypoints fetch failed for run {}; the next request retries.", runId, failure);
+        }
+        runRoutes.finishBackgroundFetch();
+        if (runRoutes.isBackgroundFetchRequested()) {
+            startBackgroundFetchIfIdle(runId, runRoutes);
         }
     }
 }
