@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 
@@ -15,13 +16,13 @@ import ai.timefold.solver.service.maps.api.model.Waypoints;
  */
 final class RunRoutes {
 
-    private volatile Map<String, VehicleRoute> vehicleRouteMap = Map.of();
+    private final AtomicReference<Map<String, VehicleRoute>> vehicleRouteMapReference = new AtomicReference<>(Map.of());
     private volatile boolean viewed;
     private final AtomicBoolean backgroundFetchRunning = new AtomicBoolean();
     private final AtomicBoolean backgroundFetchRequested = new AtomicBoolean();
 
     synchronized void replaceRoutes(List<Waypoints> baseWaypointsList) {
-        var previousVehicleRouteMap = vehicleRouteMap;
+        var previousVehicleRouteMap = vehicleRouteMapReference.get();
         var nextVehicleRouteMap = new LinkedHashMap<String, VehicleRoute>();
         for (var baseWaypoints : baseWaypointsList) {
             var previousRoute = previousVehicleRouteMap.get(baseWaypoints.id());
@@ -29,11 +30,11 @@ final class RunRoutes {
                     previousRoute != null && previousRoute.hasSameStops(baseWaypoints) ? previousRoute
                             : new VehicleRoute(baseWaypoints));
         }
-        vehicleRouteMap = Collections.unmodifiableMap(nextVehicleRouteMap);
+        vehicleRouteMapReference.set(Collections.unmodifiableMap(nextVehicleRouteMap));
     }
 
     List<VehicleRoute> getRouteList(Set<String> objectIdSet) {
-        return vehicleRouteMap.entrySet().stream()
+        return vehicleRouteMapReference.get().entrySet().stream()
                 .filter(entry -> objectIdSet.isEmpty() || objectIdSet.contains(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .toList();
