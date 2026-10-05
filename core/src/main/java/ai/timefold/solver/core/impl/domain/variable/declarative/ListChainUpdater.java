@@ -50,7 +50,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
 
     // The chain states are mutable, written by ListChainVariableReferenceGraph as it records the changes
     // and by this updater as it walks the chains.
-    private final IdentityHashMap<Object, ChainState> listEntityToChainStateMap;
+    private final IdentityHashMap<Object, ChainState<Solution_>> listEntityToChainStateMap;
 
     @SuppressWarnings("unchecked")
     ListChainUpdater(
@@ -144,7 +144,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         return anyElementChanged;
     }
 
-    private boolean walkFromChangedElements(List<Object> elementList, ChainState chainState,
+    private boolean walkFromChangedElements(List<Object> elementList, ChainState<Solution_> chainState,
             ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         var changedElementIndexes = chainState.changedElementIndexes;
         var changedElementCount = chainState.changedElementCount;
@@ -206,7 +206,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     /**
      * @return true if a pre-chain variable differs from the value the chain was last walked with
      */
-    private boolean updatePreChainValues(Object listEntity, ChainState chainState) {
+    private boolean updatePreChainValues(Object listEntity, ChainState<Solution_> chainState) {
         var isChanged = false;
         for (var i = 0; i < preChainVariableDescriptors.length; i++) {
             var value = preChainVariableDescriptors[i].getValue(listEntity);
@@ -229,10 +229,10 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     }
 
     /**
-     * @return null for a list entity of another working solution
+     * @return null for anything but a list entity of the working solution the graph was built for
      */
     @Nullable
-    ChainState getChainState(Object listEntity) {
+    ChainState<Solution_> getChainState(Object listEntity) {
         return listEntityToChainStateMap.get(listEntity);
     }
 
@@ -250,18 +250,16 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     /**
      * Registers a list entity whose chain node this updater backs.
      */
-    void addListEntity(Object listEntity) {
-        listEntityToChainStateMap.put(listEntity, new ChainState(preChainVariableDescriptors.length));
+    void addListEntity(Object listEntity, GraphNode<Solution_> chainNode) {
+        listEntityToChainStateMap.put(listEntity, new ChainState<>(chainNode, preChainVariableDescriptors.length));
     }
 
     /**
-     * The dirty state of a list entity's chain.
+     * A list entity's chain node and the dirty state of its chain.
      */
-    static final class ChainState {
+    static final class ChainState<Solution_> {
 
-        // Differs from any value, so that the first update walks the whole chain.
-        private static final Object NOT_WALKED = new Object();
-
+        private final GraphNode<Solution_> chainNode;
         // The list entity's pre-chain values the chain was last walked with; not reset between updates.
         private final @Nullable Object[] preChainValues;
         // The list indexes of the elements whose source variables changed, in no particular order.
@@ -269,13 +267,17 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         private int changedElementCount;
         // Changed since the last update, so in the graph's dirtyChainStateList.
         private boolean isDirty;
-        // A dependency loop marked the chain inconsistent, or an update gave up before walking it,
-        // until an update walks the whole chain; not reset between updates.
-        private boolean isChainStale;
+        // The chain was never walked, a dependency loop marked it inconsistent, or an update gave up
+        // before walking it, until an update walks the whole chain; not reset between updates.
+        private boolean isChainStale = true;
 
-        private ChainState(int preChainVariableCount) {
+        private ChainState(GraphNode<Solution_> chainNode, int preChainVariableCount) {
+            this.chainNode = chainNode;
             this.preChainValues = new Object[preChainVariableCount];
-            Arrays.fill(preChainValues, NOT_WALKED);
+        }
+
+        GraphNode<Solution_> chainNode() {
+            return chainNode;
         }
 
         void addChangedElementIndex(int index) {

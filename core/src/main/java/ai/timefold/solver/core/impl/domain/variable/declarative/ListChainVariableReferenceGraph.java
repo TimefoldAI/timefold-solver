@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -49,14 +48,9 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     private final ListChainUpdater<Solution_> chainUpdater;
     private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final String listVariableName;
-    private final Class<?> listEntityClass;
     private final Class<?> elementEntityClass;
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
-    /**
-     * List entity to chain node. Hoisted at construction to save a lookup by variable for every dirty chain.
-     */
-    private final Map<Object, GraphNode<Solution_>> listEntityToChainNodeMap;
     /**
      * The list variable's after processors, which mark the list entity's post-chain variables changed.
      * Hoisted at construction to save a lookup by variable for every list change.
@@ -70,7 +64,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     // its capacity, which the initial update sizes for every unassigned element of the solution.
     private final Set<Object> recomputedUnassignedElementSet;
     private final List<Object> recomputedUnassignedElementList;
-    private final List<ListChainUpdater.ChainState> dirtyChainStateList;
+    private final List<ListChainUpdater.ChainState<Solution_>> dirtyChainStateList;
     private boolean isUpdating;
 
     ListChainVariableReferenceGraph(
@@ -87,12 +81,8 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
         this.chainUpdater = chainUpdater;
         this.listVariableState = listVariableState;
         this.listVariableName = listVariableMetaModel.name();
-        this.listEntityClass = listVariableMetaModel.entity().type();
         this.elementEntityClass = elementEntityClass;
         this.changedVariableNotifier = changedVariableNotifier;
-        // The graph is only built for a solution with at least one list entity, hence one chain node.
-        this.listEntityToChainNodeMap =
-                Objects.requireNonNull(innerGraph.variableReferenceToContainingNodeMap.get(listVariableMetaModel));
         this.listVariableAfterProcessorList =
                 innerGraph.variableReferenceToAfterProcessor.getOrDefault(listVariableMetaModel, List.of());
         this.changedElementList = new ArrayList<>();
@@ -138,12 +128,12 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
         if (monitoredSourceVariableSet.contains(variableReference)) {
             if (elementEntityClass.isInstance(entity)) {
                 recordChangedElement(entity);
-            } else if (listEntityClass.isInstance(entity)) {
+            } else {
                 // A genuine pre-chain variable has no graph node to reach the chain node through.
-                // Null for a list entity of another working solution, while its graph is built.
+                // Null for anything but a list entity of this graph, such as one of another working solution.
                 var chainState = chainUpdater.getChainState(entity);
                 if (chainState != null) {
-                    markChainDirty(entity, chainState);
+                    markChainDirty(chainState);
                 }
             }
         }
@@ -168,7 +158,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             // The elements whose source variables changed record themselves; when none of them is in this list,
             // as when a forced update of every shadow variable simulates a change on every list,
             // the whole chain is walked.
-            markChainDirty(entity, Objects.requireNonNull(chainUpdater.getChainState(entity)));
+            markChainDirty(Objects.requireNonNull(chainUpdater.getChainState(entity)));
         }
         markPostChainVariablesChanged(entity);
     }
@@ -176,15 +166,11 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     @Override
     public boolean updateChanged() {
         isUpdating = true;
-        var isUpdated = false;
-        try {
-            classifyChangedElements();
-            isUpdated = innerGraph.updateChanged();
-            return isUpdated;
-        } finally {
-            endUpdate(isUpdated);
-            isUpdating = false;
-        }
+        classifyChangedElements();
+        var isUpdated = innerGraph.updateChanged();
+        endUpdate(isUpdated);
+        isUpdating = false;
+        return isUpdated;
     }
 
     @Override
@@ -198,7 +184,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             for (var entityVariablePair : innerVariableLoop.involvedVariableSet()) {
                 var entity = entityVariablePair.entity();
                 if (entityVariablePair.variableName().equals(listVariableName)
-                        && listEntityToChainNodeMap.containsKey(entity)) {
+                        && chainUpdater.getChainState(entity) != null) {
                     chainUpdater.addElementVariables(entity, involvedVariableSet);
                 } else {
                     involvedVariableSet.add(entityVariablePair);
@@ -242,17 +228,16 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             }
             var chainState = Objects.requireNonNull(chainUpdater.getChainState(listEntity));
             chainState.addChangedElementIndex(listVariableState.getIndexOrFail(element));
-            markChainDirty(listEntity, chainState);
+            markChainDirty(chainState);
         }
         changedElementList.clear();
         forgetRecomputedUnassignedElements();
     }
 
-    private void markChainDirty(Object listEntity, ListChainUpdater.ChainState chainState) {
+    private void markChainDirty(ListChainUpdater.ChainState<Solution_> chainState) {
         if (chainState.markDirty()) {
             dirtyChainStateList.add(chainState);
-            // Every list entity of the solution the graph was built for has a chain node.
-            innerGraph.markChanged(Objects.requireNonNull(listEntityToChainNodeMap.get(listEntity)));
+            innerGraph.markChanged(chainState.chainNode());
         }
     }
 

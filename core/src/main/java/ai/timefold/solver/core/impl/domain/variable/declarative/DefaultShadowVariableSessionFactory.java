@@ -334,8 +334,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             // ListChainVariableReferenceGraph's constructor records every element,
             // which marks the chain node of every non-empty list for the initial walk.
             builder.addVariableReferenceEntity(listEntity, chainUpdaterList);
-            chainUpdater.addListEntity(listEntity);
             var chainNode = builder.lookupOrError(listVariableMetaModel, listEntity);
+            chainUpdater.addListEntity(listEntity, chainNode);
             for (var preChainVariableId : declarativePreChainVariableIdList) {
                 builder.addFixedEdge(builder.lookupOrError(preChainVariableId, listEntity), chainNode);
             }
