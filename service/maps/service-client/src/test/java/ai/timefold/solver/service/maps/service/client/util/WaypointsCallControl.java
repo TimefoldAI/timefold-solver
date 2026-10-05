@@ -32,6 +32,10 @@ public class WaypointsCallControl {
         return maxConcurrentCallCount.get();
     }
 
+    public boolean hasCallsInFlight() {
+        return concurrentCallCount.get() > 0;
+    }
+
     public void reset() {
         delayMillis.set(0);
         remainingFailureCount.set(0);
@@ -41,14 +45,20 @@ public class WaypointsCallControl {
 
     void beforeCall() {
         maxConcurrentCallCount.accumulateAndGet(concurrentCallCount.incrementAndGet(), Math::max);
-        sleep(delayMillis.get());
-        if (takeFailure(remainingFailureCount)) {
-            concurrentCallCount.decrementAndGet();
-            throw new MapServiceIllegalArgumentException("TIMEFOLD-TEST", "Injected waypoints failure.", false);
-        }
-        if (takeFailure(remainingRetryableFailureCount)) {
-            concurrentCallCount.decrementAndGet();
-            throw new IllegalStateException("Injected retryable waypoints failure.");
+        var isCallAllowed = false;
+        try {
+            sleep(delayMillis.get());
+            if (takeFailure(remainingFailureCount)) {
+                throw new MapServiceIllegalArgumentException("TIMEFOLD-TEST", "Injected waypoints failure.", false);
+            }
+            if (takeFailure(remainingRetryableFailureCount)) {
+                throw new IllegalStateException("Injected retryable waypoints failure.");
+            }
+            isCallAllowed = true;
+        } finally {
+            if (!isCallAllowed) {
+                concurrentCallCount.decrementAndGet();
+            }
         }
     }
 

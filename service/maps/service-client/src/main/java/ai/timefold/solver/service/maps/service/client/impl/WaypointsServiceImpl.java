@@ -175,10 +175,10 @@ public class WaypointsServiceImpl implements WaypointsService {
         }
         var isCompletionAttached = false;
         try {
-            fetchAllRoutes(runRoutes).whenComplete((ignored, failure) -> finishBackgroundFetch(runId, runRoutes, failure));
+            fetchAllRoutes(runRoutes).whenComplete((ignored, failure) -> onBackgroundFetchComplete(runId, runRoutes, failure));
             isCompletionAttached = true;
         } catch (RuntimeException e) {
-            LOGGER.warn("Background waypoints fetch failed to start for run {}; the next request retries.", runId, e);
+            logBackgroundFetchFailure("failed to start", runId, e);
         } finally {
             if (!isCompletionAttached) {
                 runRoutes.finishBackgroundFetch();
@@ -193,13 +193,19 @@ public class WaypointsServiceImpl implements WaypointsService {
         return CompletableFuture.allOf(waypointsFutureArray);
     }
 
-    private void finishBackgroundFetch(String runId, RunRoutes runRoutes, Throwable failure) {
+    private void onBackgroundFetchComplete(String runId, RunRoutes runRoutes, Throwable failure) {
         if (failure != null) {
-            LOGGER.warn("Background waypoints fetch failed for run {}; the next request retries.", runId, failure);
+            logBackgroundFetchFailure("failed", runId, failure);
         }
         runRoutes.finishBackgroundFetch();
         if (runRoutes.isBackgroundFetchRequested()) {
             startBackgroundFetchIfIdle(runId, runRoutes);
         }
+    }
+
+    private static void logBackgroundFetchFailure(String outcome, String runId, Throwable failure) {
+        LOGGER.warn("Background waypoints fetch {} for run {}: {}. The next request retries.",
+                outcome, runId, failure.getMessage());
+        LOGGER.debug("Stack trace of the background waypoints fetch failure for run {}.", runId, failure);
     }
 }
