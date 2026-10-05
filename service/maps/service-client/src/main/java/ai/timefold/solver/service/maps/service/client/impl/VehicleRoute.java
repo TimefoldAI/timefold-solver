@@ -33,18 +33,28 @@ final class VehicleRoute {
     }
 
     private void startFetch(CompletableFuture<Waypoints> candidateFuture, Supplier<CompletableFuture<Waypoints>> fetcher) {
+        var isFetchAttached = false;
         try {
             fetcher.get().whenComplete((waypoints, failure) -> {
                 if (failure == null) {
                     candidateFuture.complete(waypoints);
                 } else {
-                    waypointsFutureReference.compareAndSet(candidateFuture, null);
-                    candidateFuture.completeExceptionally(failure);
+                    failFetch(candidateFuture, failure);
                 }
             });
-        } catch (RuntimeException e) {
-            waypointsFutureReference.compareAndSet(candidateFuture, null);
-            candidateFuture.completeExceptionally(e);
+            isFetchAttached = true;
+        } finally {
+            if (!isFetchAttached) {
+                failFetch(candidateFuture, new IllegalStateException("""
+                        The waypoints fetch of the route (%s) failed to start.
+                        Maybe see the exception of the request that started it."""
+                        .formatted(baseWaypoints.id())));
+            }
         }
+    }
+
+    private void failFetch(CompletableFuture<Waypoints> candidateFuture, Throwable failure) {
+        waypointsFutureReference.compareAndSet(candidateFuture, null);
+        candidateFuture.completeExceptionally(failure);
     }
 }
