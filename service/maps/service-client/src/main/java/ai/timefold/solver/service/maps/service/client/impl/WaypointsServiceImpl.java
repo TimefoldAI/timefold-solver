@@ -2,13 +2,14 @@ package ai.timefold.solver.service.maps.service.client.impl;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -29,16 +30,15 @@ import ai.timefold.solver.service.maps.service.integration.api.WaypointsExtracto
 import ai.timefold.solver.service.maps.service.integration.api.WaypointsExtractorBase;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.context.ManagedExecutor;
+import org.eclipse.microprofile.context.ThreadContext;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @ApplicationScoped
 public class WaypointsServiceImpl implements WaypointsService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(WaypointsServiceImpl.class);
 
     private final WaypointsExtractor waypointsExtractor;
 
@@ -46,43 +46,68 @@ public class WaypointsServiceImpl implements WaypointsService {
 
     private final MapServiceOptionsSupplier optionsSupplier;
 
-    private final Map<String, Map<String, Waypoints>> runIdsToWaypoints = new ConcurrentHashMap<>();
+    private final ManagedExecutor waypointsExecutor;
 
+    private final Map<String, RunRoutes> runRoutesMap = new ConcurrentHashMap<>();
+
+    /**
+     * @param waypointsParallelism the maximum number of concurrent map-service waypoints calls
+     */
     @Inject
     public WaypointsServiceImpl(MapService mapService,
             Instance<WaypointsExtractorBase> waypointsExtractor,
-            MapServiceOptionsSupplier optionsSupplier) {
+            MapServiceOptionsSupplier optionsSupplier,
+            @ConfigProperty(name = "timefold.platform.map-service.waypoints-parallelism",
+                    defaultValue = "8") int waypointsParallelism) {
+        if (waypointsParallelism <= 0) {
+            throw new IllegalArgumentException("""
+                    The waypointsParallelism (%d) must be positive.
+                    Maybe set timefold.platform.map-service.waypoints-parallelism to 1 or more."""
+                    .formatted(waypointsParallelism));
+        }
         this.waypointsExtractor = waypointsExtractor.isResolvable() ? (WaypointsExtractor) waypointsExtractor.get() : null;
         this.mapService = mapService;
         this.optionsSupplier = optionsSupplier;
+        this.waypointsExecutor = ManagedExecutor.builder()
+                .maxAsync(waypointsParallelism)
+                .propagated(ThreadContext.NONE)
+                .cleared(ThreadContext.ALL_REMAINING)
+                .build();
+    }
+
+    @PreDestroy
+    void shutdownWaypointsExecutor() {
+        waypointsExecutor.shutdownNow();
     }
 
     @Override
-    public synchronized List<Waypoints> getWaypoints(String runId, Set<String> objectIds) {
-
+    public List<Waypoints> getWaypoints(String runId, Set<String> objectIds) {
         if (this.waypointsExtractor == null) {
             return List.of();
         }
-
-        Map<String, Waypoints> calculated = this.runIdsToWaypoints.get(runId);
-
-        if (calculated == null) {
+        var runRoutes = runRoutesMap.get(runId);
+        if (runRoutes == null) {
             throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, "Unable to find data set for id " + runId);
         }
+        runRoutes.markViewed();
+        var waypointsFutureList = runRoutes.getRouteList(objectIds).stream().map(this::fetchOnce).toList();
+        return waypointsFutureList.stream().map(WaypointsServiceImpl::await).toList();
+    }
 
-        LOGGER.debug("Run {} has returned {} waypoints to be calculated with route information with filter by object id {}",
-                runId, calculated.size(), objectIds);
-        for (Entry<String, Waypoints> waypointEntry : calculated.entrySet()) {
-            if (!waypointEntry.getValue().calculated()
-                    && (objectIds.isEmpty() || objectIds.contains(waypointEntry.getKey()))) {
-                LOGGER.debug("Calculating waypoints for {} for run {}", waypointEntry.getValue().id(), runId);
-                Waypoints calculatedWaypoint = calculateWaypoints(waypointEntry.getValue());
-                LOGGER.debug("Successfully calculated waypoints for {} for run {}", waypointEntry.getValue().id(), runId);
-                calculated.put(waypointEntry.getKey(), calculatedWaypoint);
+    private CompletableFuture<Waypoints> fetchOnce(VehicleRoute vehicleRoute) {
+        return vehicleRoute.fetchOnce(() -> CompletableFuture
+                .supplyAsync(() -> calculateWaypoints(vehicleRoute.getBaseWaypoints()), waypointsExecutor));
+    }
+
+    private static Waypoints await(CompletableFuture<Waypoints> waypointsFuture) {
+        try {
+            return waypointsFuture.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof RuntimeException cause) {
+                throw cause;
             }
+            throw e;
         }
-
-        return calculated.values().stream().filter(item -> objectIds.isEmpty() || objectIds.contains(item.id())).toList();
     }
 
     @Retry(maxRetries = 5, delay = 1, delayUnit = ChronoUnit.SECONDS, abortOn = {
@@ -124,15 +149,8 @@ public class WaypointsServiceImpl implements WaypointsService {
 
     private void rebuildBaseWaypoints(String runId, SolverModel solverModel) {
         if (this.waypointsExtractor != null && solverModel != null) {
-            this.runIdsToWaypoints.compute(runId, (key, value) -> {
-                LOGGER.debug("No waypoints have been calculated for run {}, extracting what should be calculated", runId);
-                List<Waypoints> waypoints = waypointsExtractor.extractBaseWaypoints(solverModel);
-                Map<String, Waypoints> map = new LinkedHashMap<>();
-
-                waypoints.forEach(item -> map.put(item.id(), item));
-
-                return map;
-            });
+            List<Waypoints> baseWaypointsList = waypointsExtractor.extractBaseWaypoints(solverModel);
+            runRoutesMap.computeIfAbsent(runId, id -> new RunRoutes()).replaceRoutes(baseWaypointsList);
         }
     }
 }
