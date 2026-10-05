@@ -11,13 +11,18 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.service.definition.api.domain.Metadata;
+import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.FinalBestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;
+import ai.timefold.solver.service.definition.internal.events.ItemCompleted;
+import ai.timefold.solver.service.definition.internal.events.ItemFailed;
+import ai.timefold.solver.service.definition.internal.events.ItemStarted;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
+import ai.timefold.solver.service.maps.service.client.util.DummyStorageService;
 import ai.timefold.solver.service.maps.service.client.util.MapServiceInvocationCounter;
 import ai.timefold.solver.service.maps.service.client.util.RemoteMapServiceConfigurationProfile;
 import ai.timefold.solver.service.maps.service.client.util.SampleModel;
@@ -56,6 +61,9 @@ public class WaypointsServiceImplTest {
 
     @Inject
     MapServiceOptionsSupplier optionsSupplier;
+
+    @Inject
+    DummyStorageService storageService;
 
     @BeforeEach
     public void prepare() {
@@ -271,7 +279,7 @@ public class WaypointsServiceImplTest {
 
     @Test
     void rejectsAParallelismBelowOne() {
-        Assertions.assertThatThrownBy(() -> new WaypointsServiceImpl(null, null, null, 0))
+        Assertions.assertThatThrownBy(() -> new WaypointsServiceImpl(null, null, null, null, 0))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("waypointsParallelism (0)");
     }
@@ -368,7 +376,7 @@ public class WaypointsServiceImplTest {
 
     @Test
     void keepsHandlingBestSolutionsWhenTheBackgroundFetchCannotStart() {
-        var waypointsService = new WaypointsServiceImpl(mapService, waypointsExtractor, optionsSupplier, 1);
+        var waypointsService = new WaypointsServiceImpl(mapService, waypointsExtractor, optionsSupplier, storageService, 1);
         var metadata = new Metadata<>();
         waypointsService.onInitSolution(
                 new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
@@ -380,6 +388,89 @@ public class WaypointsServiceImplTest {
             Assertions.assertThatCode(() -> waypointsService.onBestSolution(bestSolutionEvent))
                     .doesNotThrowAnyException();
         }
+    }
+
+    @Test
+    void readsStoredWaypointsAfterCompletion() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
+        var waypointsList = enricher.getWaypoints(metadata.getId(), Set.of());
+        storageService.storeWaypoints(metadata.getId(), waypointsList);
+
+        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+
+        Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of("id_1")))
+                .extracting(Waypoints::id).containsExactly("id_1");
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
+    }
+
+    @Test
+    void reportsNotFoundForAFailedRunWithoutStoredWaypoints() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
+
+        enricher.onFailed(new ItemFailed(metadata, new IllegalStateException("Solver failed."), null, null));
+
+        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(metadata.getId(), Set.of()))
+                .isInstanceOf(ItemNotFoundException.class);
+    }
+
+    @Test
+    void ignoresABestSolutionThatArrivesAfterCompletion() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
+        storageService.storeWaypoints(metadata.getId(), enricher.getWaypoints(metadata.getId(), Set.of()));
+        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+
+        enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
+
+        Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of("id_1")).getFirst().waypoints())
+                .contains(new Location(3, 3));
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
+    }
+
+    @Test
+    void ignoresABestSolutionThatArrivesAfterFailure() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
+        enricher.onFailed(new ItemFailed(metadata, new IllegalStateException("Solver failed."), null, null));
+
+        enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
+
+        Assertions.assertThatThrownBy(() -> enricher.getWaypoints(metadata.getId(), Set.of()))
+                .isInstanceOf(ItemNotFoundException.class);
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isZero();
+    }
+
+    @Test
+    void tracksAFinishedRunAgainWhenItStartsAgain() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
+        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+
+        enricher.onStarted(new ItemStarted(metadata, null, null, null));
+        enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
+
+        Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of("id_1")).getFirst().waypoints())
+                .contains(new Location(4, 4));
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(1);
+    }
+
+    @Test
+    void doesNotStartATrailingBackgroundFetchForAFinishedRun() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
+        enricher.getWaypoints(metadata.getId(), Set.of());
+        callControl.setDelayMillis(300);
+        enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
+        Awaitility.await().atMost(Duration.ofSeconds(5))
+                .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 3);
+
+        enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(5, 5)), null, null, null, null));
+        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+
+        Awaitility.await().during(Duration.ofMillis(700)).atMost(Duration.ofSeconds(2))
+                .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 3);
     }
 
     private static SampleModel twoRoutes(Location lastStop) {
