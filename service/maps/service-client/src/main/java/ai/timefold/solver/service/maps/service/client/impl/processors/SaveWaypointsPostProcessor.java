@@ -36,6 +36,7 @@ public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
         if (waypoints != null && !waypoints.isEmpty()) {
             storageService.storeWaypoints(id, waypoints);
+            waypointsService.releaseFinishedRun(id);
         }
     }
 

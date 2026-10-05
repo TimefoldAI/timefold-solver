@@ -14,4 +14,9 @@ public interface WaypointsService {
      */
     List<Waypoints> getWaypoints(String runId, Set<String> objectIds);
 
+    /**
+     * Releases the in-memory waypoints of a finished run whose waypoints are stored.
+     */
+    void releaseFinishedRun(String runId);
+
 }
