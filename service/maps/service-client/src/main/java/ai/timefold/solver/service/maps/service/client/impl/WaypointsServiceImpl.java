@@ -49,6 +49,7 @@ import io.quarkus.runtime.Startup;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @Startup
+// why: an @ApplicationScoped bean with only an injection constructor is rewritten by ArC, and JaCoCo loses it
 @Singleton
 public class WaypointsServiceImpl implements WaypointsService {
 

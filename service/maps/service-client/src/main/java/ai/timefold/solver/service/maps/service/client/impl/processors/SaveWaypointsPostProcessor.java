@@ -16,6 +16,7 @@ import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 
 @Priority(value = Interceptor.Priority.APPLICATION)
+// why: an @ApplicationScoped bean with only an injection constructor is rewritten by ArC, and JaCoCo loses it
 @Singleton
 public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
