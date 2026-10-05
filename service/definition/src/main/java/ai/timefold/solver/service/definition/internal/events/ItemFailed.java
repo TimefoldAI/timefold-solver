@@ -14,6 +14,11 @@ public final class ItemFailed extends SolverWorkerEvent {
         this.cause = cause;
     }
 
+    public ItemFailed(String id, Throwable cause, String planName, String tenantName) {
+        super(id, planName, tenantName);
+        this.cause = cause;
+    }
+
     public Throwable getCause() {
         return cause;
     }
