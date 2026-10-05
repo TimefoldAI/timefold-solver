@@ -246,6 +246,36 @@ public class WaypointsServiceImplTest {
     }
 
     @Test
+    void retriesAFailedMapCallInsideOneRequest() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, routes(1), null, null, null, null));
+        callControl.failNextCallsRetryably(1);
+
+        Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of())).hasSize(1);
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
+    }
+
+    @Test
+    void rejectsAParallelismBelowOne() {
+        Assertions.assertThatThrownBy(() -> new WaypointsServiceImpl(null, null, null, 0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("waypointsParallelism (0)");
+    }
+
+    @Test
+    void startsANewFetchAfterTheFetcherThrowsAnError() {
+        var baseWaypoints = new Waypoints("id_0", List.of(new Location(0, 0)));
+        var vehicleRoute = new VehicleRoute(baseWaypoints);
+
+        Assertions.assertThatThrownBy(() -> vehicleRoute.fetchOnce(() -> {
+            throw new AssertionError("Injected fetcher error.");
+        })).isInstanceOf(AssertionError.class);
+
+        Assertions.assertThat(vehicleRoute.fetchOnce(() -> CompletableFuture.completedFuture(baseWaypoints)))
+                .isCompletedWithValue(baseWaypoints);
+    }
+
+    @Test
     void returnsTheNewRouteWhenABestSolutionArrivesDuringAFetch() throws Exception {
         callControl.setDelayMillis(300);
         var metadata = new Metadata<>();

@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -31,12 +33,13 @@ import ai.timefold.solver.service.maps.service.integration.api.WaypointsExtracto
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.context.ManagedExecutor;
-import org.eclipse.microprofile.context.ThreadContext;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
+import io.quarkus.runtime.Startup;
+
 @SuppressWarnings({ "unchecked", "rawtypes" })
+@Startup
 @ApplicationScoped
 public class WaypointsServiceImpl implements WaypointsService {
 
@@ -46,12 +49,18 @@ public class WaypointsServiceImpl implements WaypointsService {
 
     private final MapServiceOptionsSupplier optionsSupplier;
 
-    private final ManagedExecutor waypointsExecutor;
+    private final ExecutorService waypointsExecutor;
 
     private final Map<String, RunRoutes> runRoutesMap = new ConcurrentHashMap<>();
 
     /**
+     * Creates the service with its own pool for map-service waypoints calls.
+     *
+     * @param mapService the map service that calculates the waypoints of a route
+     * @param waypointsExtractor the extractor of the base waypoints from a solver model, if one exists
+     * @param optionsSupplier the supplier of the map-service options
      * @param waypointsParallelism the maximum number of concurrent map-service waypoints calls
+     * @throws IllegalArgumentException if waypointsParallelism is not positive
      */
     @Inject
     public WaypointsServiceImpl(MapService mapService,
@@ -68,11 +77,8 @@ public class WaypointsServiceImpl implements WaypointsService {
         this.waypointsExtractor = waypointsExtractor.isResolvable() ? (WaypointsExtractor) waypointsExtractor.get() : null;
         this.mapService = mapService;
         this.optionsSupplier = optionsSupplier;
-        this.waypointsExecutor = ManagedExecutor.builder()
-                .maxAsync(waypointsParallelism)
-                .propagated(ThreadContext.NONE)
-                .cleared(ThreadContext.ALL_REMAINING)
-                .build();
+        this.waypointsExecutor = Executors.newFixedThreadPool(waypointsParallelism,
+                Thread.ofPlatform().name("waypoints-fetch-", 0).daemon().factory());
     }
 
     @PreDestroy
