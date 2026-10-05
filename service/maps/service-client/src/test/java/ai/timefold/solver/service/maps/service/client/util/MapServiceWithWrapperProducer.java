@@ -41,6 +41,7 @@ public class MapServiceWithWrapperProducer {
     private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
     private final MapServiceInvocationCounter mapServiceInvocationCounter;
+    private final WaypointsCallControl waypointsCallControl;
 
     @Inject
     public MapServiceWithWrapperProducer(
@@ -54,7 +55,8 @@ public class MapServiceWithWrapperProducer {
             TimeframeBucketing timeframeBucketing,
             ManagedExecutor managedExecutor,
             ObjectMapper mapper,
-            MapServiceInvocationCounter mapServiceInvocationCounter) {
+            MapServiceInvocationCounter mapServiceInvocationCounter,
+            WaypointsCallControl waypointsCallControl) {
         this.useRemote = useRemote;
         this.travelTimeAndDistanceProvider = travelTimeAndDistanceProvider;
         this.waypointsProvider = waypointsProvider;
@@ -65,6 +67,7 @@ public class MapServiceWithWrapperProducer {
         this.managedExecutor = managedExecutor;
         this.mapServiceInvocationCounter = mapServiceInvocationCounter;
         this.mapper = mapper;
+        this.waypointsCallControl = waypointsCallControl;
     }
 
     @Produces
@@ -78,7 +81,7 @@ public class MapServiceWithWrapperProducer {
         } else {
             mapService = new MapServiceLocalHaversineImpl(travelTimeAndDistanceProvider, waypointsProvider);
         }
-        return new MapServiceTestWrapper(mapService, mapServiceInvocationCounter);
+        return new MapServiceTestWrapper(mapService, mapServiceInvocationCounter, waypointsCallControl);
     }
 
 }
