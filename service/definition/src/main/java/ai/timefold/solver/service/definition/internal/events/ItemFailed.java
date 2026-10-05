@@ -14,9 +14,16 @@ public final class ItemFailed extends SolverWorkerEvent {
         this.cause = cause;
     }
 
-    public ItemFailed(String id, Throwable cause, String planName, String tenantName) {
+    private ItemFailed(String id, Throwable cause, String planName, String tenantName) {
         super(id, planName, tenantName);
         this.cause = cause;
+    }
+
+    /**
+     * Creates the event for a run whose metadata could not be read; {@link #getMetadata()} then returns null.
+     */
+    public static ItemFailed withoutMetadata(String id, Throwable cause, String planName, String tenantName) {
+        return new ItemFailed(id, cause, planName, tenantName);
     }
 
     public Throwable getCause() {
