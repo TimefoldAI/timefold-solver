@@ -12,6 +12,7 @@ public class WaypointsCallControl {
 
     private final AtomicLong delayMillis = new AtomicLong();
     private final AtomicInteger remainingFailureCount = new AtomicInteger();
+    private final AtomicInteger remainingRetryableFailureCount = new AtomicInteger();
     private final AtomicInteger concurrentCallCount = new AtomicInteger();
     private final AtomicInteger maxConcurrentCallCount = new AtomicInteger();
 
@@ -23,6 +24,10 @@ public class WaypointsCallControl {
         remainingFailureCount.set(failureCount);
     }
 
+    public void failNextCallsRetryably(int failureCount) {
+        remainingRetryableFailureCount.set(failureCount);
+    }
+
     public int getMaxConcurrentCalls() {
         return maxConcurrentCallCount.get();
     }
@@ -30,16 +35,25 @@ public class WaypointsCallControl {
     public void reset() {
         delayMillis.set(0);
         remainingFailureCount.set(0);
+        remainingRetryableFailureCount.set(0);
         maxConcurrentCallCount.set(0);
     }
 
     void beforeCall() {
         maxConcurrentCallCount.accumulateAndGet(concurrentCallCount.incrementAndGet(), Math::max);
         sleep(delayMillis.get());
-        if (remainingFailureCount.getAndUpdate(count -> Math.max(0, count - 1)) > 0) {
+        if (takeFailure(remainingFailureCount)) {
             concurrentCallCount.decrementAndGet();
             throw new MapServiceIllegalArgumentException("TIMEFOLD-TEST", "Injected waypoints failure.", false);
         }
+        if (takeFailure(remainingRetryableFailureCount)) {
+            concurrentCallCount.decrementAndGet();
+            throw new IllegalStateException("Injected retryable waypoints failure.");
+        }
+    }
+
+    private static boolean takeFailure(AtomicInteger remainingCount) {
+        return remainingCount.getAndUpdate(count -> Math.max(0, count - 1)) > 0;
     }
 
     void afterCall() {
