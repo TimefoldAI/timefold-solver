@@ -15,7 +15,6 @@ import ai.timefold.solver.service.definition.internal.error.ItemNotFoundExceptio
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.FinalBestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;
-import ai.timefold.solver.service.definition.internal.events.ItemCompleted;
 import ai.timefold.solver.service.definition.internal.events.ItemFailed;
 import ai.timefold.solver.service.definition.internal.events.ItemStarted;
 import ai.timefold.solver.service.maps.api.model.Location;
@@ -391,16 +390,17 @@ public class WaypointsServiceImplTest {
     }
 
     @Test
-    void readsStoredWaypointsAfterCompletion() {
+    void readsStoredWaypointsAfterTheRunIsReleased() {
         var metadata = new Metadata<>();
         enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
-        var waypointsList = enricher.getWaypoints(metadata.getId(), Set.of());
-        storageService.storeWaypoints(metadata.getId(), waypointsList);
+        enricher.getWaypoints(metadata.getId(), Set.of());
+        storageService.storeWaypoints(metadata.getId(), List.of(new Waypoints("id_0", List.of(new Location(7, 7))),
+                new Waypoints("id_1", List.of(new Location(8, 8)))));
 
-        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+        enricher.releaseFinishedRun(metadata.getId());
 
         Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of("id_1")))
-                .extracting(Waypoints::id).containsExactly("id_1");
+                .singleElement().extracting(Waypoints::waypoints).isEqualTo(List.of(new Location(8, 8)));
         Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(2);
     }
 
@@ -416,11 +416,11 @@ public class WaypointsServiceImplTest {
     }
 
     @Test
-    void ignoresABestSolutionThatArrivesAfterCompletion() {
+    void ignoresABestSolutionThatArrivesAfterTheRunIsReleased() {
         var metadata = new Metadata<>();
         enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
         storageService.storeWaypoints(metadata.getId(), enricher.getWaypoints(metadata.getId(), Set.of()));
-        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+        enricher.releaseFinishedRun(metadata.getId());
 
         enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
 
@@ -443,10 +443,10 @@ public class WaypointsServiceImplTest {
     }
 
     @Test
-    void tracksAFinishedRunAgainWhenItStartsAgain() {
+    void tracksAReleasedRunAgainWhenItStartsAgain() {
         var metadata = new Metadata<>();
         enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
-        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+        enricher.releaseFinishedRun(metadata.getId());
 
         enricher.onStarted(new ItemStarted(metadata, null, null, null));
         enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
@@ -457,19 +457,20 @@ public class WaypointsServiceImplTest {
     }
 
     @Test
-    void doesNotStartATrailingBackgroundFetchForAFinishedRun() {
+    void doesNotStartATrailingBackgroundFetchForAReleasedRun() {
         var metadata = new Metadata<>();
         enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
         enricher.getWaypoints(metadata.getId(), Set.of());
-        callControl.setDelayMillis(300);
+        callControl.holdCalls();
         enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
-        Awaitility.await().atMost(Duration.ofSeconds(5))
-                .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 3);
+        Awaitility.await().pollInterval(Duration.ofMillis(10)).atMost(Duration.ofSeconds(5))
+                .until(callControl::hasCallsInFlight);
 
         enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(5, 5)), null, null, null, null));
-        enricher.onCompleted(new ItemCompleted(metadata.getId()));
+        enricher.releaseFinishedRun(metadata.getId());
+        callControl.releaseHeldCalls();
 
-        Awaitility.await().during(Duration.ofMillis(700)).atMost(Duration.ofSeconds(2))
+        Awaitility.await().pollInterval(Duration.ofMillis(10)).during(Duration.ofMillis(500)).atMost(Duration.ofSeconds(2))
                 .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 3);
     }
 

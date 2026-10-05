@@ -25,7 +25,6 @@ import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeExcep
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.FinalBestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;
-import ai.timefold.solver.service.definition.internal.events.ItemCompleted;
 import ai.timefold.solver.service.definition.internal.events.ItemFailed;
 import ai.timefold.solver.service.definition.internal.events.ItemStarted;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
@@ -133,7 +132,10 @@ public class WaypointsServiceImpl implements WaypointsService {
     private List<Waypoints> getStoredWaypoints(String runId, Set<String> objectIds) {
         List<Waypoints> storedWaypointsList = storageService.getWaypoints(runId, WAYPOINTS_LIST_TYPE);
         if (storedWaypointsList == null) {
-            throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, "Unable to find data set for id " + runId);
+            throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, """
+                    Unable to find the waypoints of the run (%s).
+                    Maybe the run has not produced a solution yet, or its waypoints were not stored."""
+                    .formatted(runId));
         }
         return storedWaypointsList.stream()
                 .filter(waypoints -> objectIds.isEmpty() || objectIds.contains(waypoints.id()))
@@ -198,17 +200,13 @@ public class WaypointsServiceImpl implements WaypointsService {
         rebuildBaseWaypoints(event.getId(), event.getModel());
     }
 
-    @Incoming(SolverChannels.COMPLETED)
-    public void onCompleted(ItemCompleted event) {
-        releaseFinishedRun(event.getId());
-    }
-
     @Incoming(SolverChannels.FAILED)
     public void onFailed(ItemFailed event) {
         releaseFinishedRun(event.getId());
     }
 
-    private void releaseFinishedRun(String runId) {
+    @Override
+    public void releaseFinishedRun(String runId) {
         finishedRunIdSet.add(runId);
         runRoutesMap.remove(runId);
     }
@@ -230,7 +228,7 @@ public class WaypointsServiceImpl implements WaypointsService {
     }
 
     private void startBackgroundFetchIfIdle(String runId, RunRoutes runRoutes) {
-        if (!runRoutes.tryStartBackgroundFetch()) {
+        if (runRoutesMap.get(runId) != runRoutes || !runRoutes.tryStartBackgroundFetch()) {
             return;
         }
         var isCompletionAttached = false;
@@ -258,7 +256,7 @@ public class WaypointsServiceImpl implements WaypointsService {
             logBackgroundFetchFailure("failed", runId, failure);
         }
         runRoutes.finishBackgroundFetch();
-        if (runRoutes.isBackgroundFetchRequested() && runRoutesMap.get(runId) == runRoutes) {
+        if (runRoutes.isBackgroundFetchRequested()) {
             startBackgroundFetchIfIdle(runId, runRoutes);
         }
     }

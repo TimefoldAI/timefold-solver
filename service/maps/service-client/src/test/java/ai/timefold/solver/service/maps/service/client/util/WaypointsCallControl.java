@@ -1,5 +1,7 @@
 package ai.timefold.solver.service.maps.service.client.util;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -15,6 +17,7 @@ public class WaypointsCallControl {
     private final AtomicInteger remainingRetryableFailureCount = new AtomicInteger();
     private final AtomicInteger concurrentCallCount = new AtomicInteger();
     private final AtomicInteger maxConcurrentCallCount = new AtomicInteger();
+    private volatile CountDownLatch callGate = new CountDownLatch(0);
 
     public void setDelayMillis(long delayMillis) {
         this.delayMillis.set(delayMillis);
@@ -28,6 +31,14 @@ public class WaypointsCallControl {
         remainingRetryableFailureCount.set(failureCount);
     }
 
+    public void holdCalls() {
+        callGate = new CountDownLatch(1);
+    }
+
+    public void releaseHeldCalls() {
+        callGate.countDown();
+    }
+
     public int getMaxConcurrentCalls() {
         return maxConcurrentCallCount.get();
     }
@@ -37,6 +48,7 @@ public class WaypointsCallControl {
     }
 
     public void reset() {
+        releaseHeldCalls();
         delayMillis.set(0);
         remainingFailureCount.set(0);
         remainingRetryableFailureCount.set(0);
@@ -47,6 +59,7 @@ public class WaypointsCallControl {
         maxConcurrentCallCount.accumulateAndGet(concurrentCallCount.incrementAndGet(), Math::max);
         var isCallAllowed = false;
         try {
+            awaitGate();
             sleep(delayMillis.get());
             if (takeFailure(remainingFailureCount)) {
                 throw new MapServiceIllegalArgumentException("TIMEFOLD-TEST", "Injected waypoints failure.", false);
@@ -68,6 +81,17 @@ public class WaypointsCallControl {
 
     void afterCall() {
         concurrentCallCount.decrementAndGet();
+    }
+
+    private void awaitGate() {
+        try {
+            if (!callGate.await(10, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("The test held a waypoints call for more than 10 seconds.");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while the test held a waypoints call.", e);
+        }
     }
 
     private static void sleep(long millis) {
