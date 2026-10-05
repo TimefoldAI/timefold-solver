@@ -168,8 +168,7 @@ timefold.platform.map-service.enable-fallback=true
 
 * `use-remote` switches between the remote map service of the Timefold Platform,
 which uses real road-network driving times, and a local computation.
-* `enable-fallback` allows falling back to the local computation when the remote one is disabled or unavailable.
-The local computation estimates driving times from the great-circle (Haversine) distance.
+* `enable-fallback` allows falling back to the local computation when the remote service is unavailable.
 
 Running locally, you use the local computation.
 When you xref:deploying-to-platform/guide.adoc[deploy the model to the Timefold Platform],
