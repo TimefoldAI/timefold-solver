@@ -16,7 +16,7 @@ public abstract sealed class AbstractDatasetEvent extends AbstractEvent
         this.metadata = new Metadata<>(metadata);
     }
 
-    protected AbstractDatasetEvent(String id) {
+    AbstractDatasetEvent(String id) {
         super(id);
         this.metadata = null;
     }

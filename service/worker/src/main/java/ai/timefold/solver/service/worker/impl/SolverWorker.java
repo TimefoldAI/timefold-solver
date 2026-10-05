@@ -803,8 +803,9 @@ public class SolverWorker {
             }
 
             try {
-                sendEvent(scheduleFailedEmitter, metadata == null ? new ItemFailed(problemId, throwable, planName, tenantName)
-                        : new ItemFailed(metadata, throwable, planName, tenantName));
+                sendEvent(scheduleFailedEmitter,
+                        metadata == null ? ItemFailed.withoutMetadata(problemId, throwable, planName, tenantName)
+                                : new ItemFailed(metadata, throwable, planName, tenantName));
             } finally {
                 completionStatus.completed(problemId);
                 // shutdown has to be executed last to ensure everything executed before pod shuts down
