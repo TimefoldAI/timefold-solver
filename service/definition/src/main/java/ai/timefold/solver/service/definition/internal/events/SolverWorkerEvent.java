@@ -30,7 +30,7 @@ public abstract sealed class SolverWorkerEvent extends AbstractDatasetEvent perm
         this.eventProducerId = eventProducerId;
     }
 
-    protected SolverWorkerEvent(String id, String planName, String tenantName) {
+    SolverWorkerEvent(String id, String planName, String tenantName) {
         super(id);
         this.model = null;
         this.job = null;
