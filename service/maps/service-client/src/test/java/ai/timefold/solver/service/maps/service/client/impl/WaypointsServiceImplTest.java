@@ -59,6 +59,7 @@ public class WaypointsServiceImplTest {
 
     @BeforeEach
     public void prepare() {
+        Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> !callControl.hasCallsInFlight());
         mapServiceInvocationCounter.resetWaypointsInvocationCounter();
         callControl.reset();
     }
@@ -339,8 +340,9 @@ public class WaypointsServiceImplTest {
         }
 
         Awaitility.await().atMost(Duration.ofSeconds(5))
-                .until(() -> enricher.getWaypoints(metadata.getId(), Set.of("id_1")).getFirst().waypoints()
-                        .contains(new Location(8, 8)));
+                .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 4);
+        Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of("id_1")).getFirst().waypoints())
+                .contains(new Location(8, 8));
         Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(4);
     }
 
@@ -357,6 +359,11 @@ public class WaypointsServiceImplTest {
                 .until(() -> enricher.getWaypoints(metadata.getId(), Set.of("id_1")).getFirst().waypoints()
                         .contains(new Location(4, 4)));
         Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(4);
+
+        enricher.onBestSolution(new BestSolutionEvent(metadata, twoRoutes(new Location(5, 5)), null, null, null, null));
+
+        Awaitility.await().atMost(Duration.ofSeconds(5))
+                .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 5);
     }
 
     @Test
