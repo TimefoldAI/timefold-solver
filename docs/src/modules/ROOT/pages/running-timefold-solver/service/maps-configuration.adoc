@@ -1,0 +1,62 @@
+[#mapsConfiguration]
+= Maps service configuration
+:description: Configuration properties for the maps service client of a routing model.
+:doctype: book
+:sectnums:
+:icons: font
+
+A routing model gets travel times, distances, and waypoints from the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service[maps service].
+Set these properties in the `application.properties` of the model.
+
+[cols="2,1,4", options="header"]
+|===
+| Property | Default | Description
+
+| `timefold.platform.map-service.use-remote`
+| `true`
+| When `true`, the model checks at startup that the maps service is available, and stops if it isn't.
+When `false`, the model doesn't call the maps service.
+It calculates travel times, distances, and waypoints locally with the Haversine formula (straight-line distance).
+
+| `timefold.platform.map-service.url`
+|
+| The URL of the maps service, shown in the startup error when the maps service isn't available.
+The REST client reads `quarkus.rest-client.map-service.url`, so set both, for example `+quarkus.rest-client.map-service.url=${timefold.platform.map-service.url}+`.
+
+| `timefold.platform.map-service.provider`
+|
+| The map provider, sent to the maps service as the `provider` option.
+
+| `timefold.platform.map-service.location`
+|
+| The map location, sent to the maps service as the `location` option.
+
+| `timefold.platform.map-service.max-distance-from-road`
+|
+| Sent to the maps service as the `maxDistanceFromRoad` option.
+
+| `timefold.platform.map-service.transport-type`
+|
+| Sent to the maps service as the `transportType` option.
+
+| `timefold.platform.map-service.enable-fallback`
+| `false`
+| When `true` and a call to the maps service fails, the model uses the Haversine formula for that call instead of failing.
+
+| `timefold.platform.map-service.use-traffic`
+| `false`
+| When `true`, the model gets a travel time matrix for each timeframe of the day: `morning` (06:00 to 12:00), `afternoon` (12:00 to 18:00), and `night` (18:00 to 06:00).
+
+| `timefold.platform.map-service.default-timeframe`
+| `morning`
+| The timeframe for a request that doesn't name one, when `use-traffic` is `true`.
+Allowed values are `morning`, `afternoon`, and `night` (not case-sensitive).
+Another value stops the model at startup.
+
+| `timefold.platform.map-service.waypoints-parallelism`
+| `8`
+| The maximum number of waypoints calls to the maps service at the same time, for all datasets of one model instance.
+The value must be greater than zero, or the model stops at startup.
+|===
+
+`enable-fallback`, `use-traffic`, and `default-timeframe` have no effect when `use-remote` is `false`.
