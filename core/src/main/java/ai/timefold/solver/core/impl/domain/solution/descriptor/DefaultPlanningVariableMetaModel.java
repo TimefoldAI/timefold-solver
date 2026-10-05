@@ -19,7 +19,9 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
             InnerGenuineVariableMetaModel<Solution_> {
 
     static final Comparator<VariableMetaModel<?, ?, ?>> VARIABLE_META_MODEL_COMPARATOR =
-            Comparator.comparing((VariableMetaModel<?, ?, ?> variableMetaModel) -> variableMetaModel.entity())
+            Comparator.comparingInt(
+                    (VariableMetaModel<?, ?, ?> variableMetaModel) -> ((InnerVariableMetaModel<?>) variableMetaModel)
+                            .variableDescriptor().getEntityDescriptor().getOrdinal())
                     .thenComparingInt(
                             (VariableMetaModel<?, ?, ?> variableMetaModel) -> ((InnerVariableMetaModel<?>) variableMetaModel)
                                     .variableDescriptor().getOrdinal());
@@ -47,9 +49,7 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
 
     @Override
     public boolean equals(Object o) {
-        // Do not use entity in equality checks;
-        // If an entity is subclassed,
-        // that subclass will have it own distinct VariableMetaModel
+        // Equal when describing the same variable, regardless of entity view; see VariableMetaModel.
         if (o instanceof DefaultPlanningVariableMetaModel<?, ?, ?> that) {
             return Objects.equals(variableDescriptor, that.variableDescriptor);
         }
@@ -69,7 +69,7 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
     @Override
     public String toString() {
         return "Genuine Variable '%s %s.%s' (allowsUnassigned: %b)"
-                .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassigned());
+                .formatted(type(), entity.type().getSimpleName(), name(), allowsUnassigned());
     }
 
 }
