@@ -9,9 +9,9 @@ import ai.timefold.solver.service.maps.service.integration.internal.model.Travel
 
 public class MapServiceTestWrapper implements MapService {
 
-    private MapService delegate;
-    private MapServiceInvocationCounter mapServiceInvocationCounter;
-    private WaypointsCallControl waypointsCallControl;
+    private final MapService delegate;
+    private final MapServiceInvocationCounter mapServiceInvocationCounter;
+    private final WaypointsCallControl waypointsCallControl;
 
     public MapServiceTestWrapper(MapService delegate, MapServiceInvocationCounter mapServiceInvocationCounter,
             WaypointsCallControl waypointsCallControl) {

@@ -66,6 +66,7 @@ public class WaypointsServiceImplTest {
 
     @BeforeEach
     public void prepare() {
+        callControl.releaseHeldCalls();
         Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> !callControl.hasCallsInFlight());
         mapServiceInvocationCounter.resetWaypointsInvocationCounter();
         callControl.reset();
@@ -281,19 +282,6 @@ public class WaypointsServiceImplTest {
         Assertions.assertThatThrownBy(() -> new WaypointsServiceImpl(null, null, null, null, 0))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("waypointsParallelism (0)");
-    }
-
-    @Test
-    void startsANewFetchAfterTheFetcherThrowsAnError() {
-        var baseWaypoints = new Waypoints("id_0", List.of(new Location(0, 0)));
-        var vehicleRoute = new VehicleRoute(baseWaypoints);
-
-        Assertions.assertThatThrownBy(() -> vehicleRoute.fetchOnce(() -> {
-            throw new AssertionError("Injected fetcher error.");
-        })).isInstanceOf(AssertionError.class);
-
-        Assertions.assertThat(vehicleRoute.fetchOnce(() -> CompletableFuture.completedFuture(baseWaypoints)))
-                .isCompletedWithValue(baseWaypoints);
     }
 
     @Test

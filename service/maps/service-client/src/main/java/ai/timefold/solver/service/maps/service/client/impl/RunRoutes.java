@@ -9,6 +9,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 
+/**
+ * The cached routes of one run and its background-fetch flags. Order matters: start sets {@code running} (CAS), then clears
+ * {@code requested}, then snapshots the routes; finish releases {@code running}, then reads {@code requested}.
+ */
 final class RunRoutes {
 
     private volatile Map<String, VehicleRoute> vehicleRouteMap = Map.of();

@@ -50,6 +50,7 @@ class SaveWaypointsPostProcessorTest {
 
     @BeforeEach
     void prepare() {
+        callControl.releaseHeldCalls();
         Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> !callControl.hasCallsInFlight());
         mapServiceInvocationCounter.resetWaypointsInvocationCounter();
         callControl.reset();
