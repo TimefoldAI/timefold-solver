@@ -72,7 +72,8 @@ class SaveWaypointsPostProcessorTest {
         var metadata = startRun(new SampleModel(List.of(new Location(0, 0), new Location(1, 1))));
         callControl.failNextCalls(1);
 
-        Assertions.assertThatThrownBy(() -> postProcessor.process(null, null, metadata.getId()))
+        var runId = metadata.getId();
+        Assertions.assertThatThrownBy(() -> postProcessor.process(null, null, runId))
                 .isInstanceOf(MapServiceIllegalArgumentException.class);
 
         Assertions.assertThat(waypointsService.getWaypoints(metadata.getId(), Set.of()))

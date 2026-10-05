@@ -14,9 +14,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import jakarta.annotation.PreDestroy;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
@@ -49,7 +49,7 @@ import io.quarkus.runtime.Startup;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @Startup
-@ApplicationScoped
+@Singleton
 public class WaypointsServiceImpl implements WaypointsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WaypointsServiceImpl.class);
@@ -215,11 +215,11 @@ public class WaypointsServiceImpl implements WaypointsService {
         if (this.waypointsExtractor == null || solverModel == null) {
             return;
         }
-        List<Waypoints> baseWaypointsList = waypointsExtractor.extractBaseWaypoints(solverModel);
         var runRoutes = runRoutesMap.computeIfAbsent(runId, id -> finishedRunIdSet.contains(id) ? null : new RunRoutes());
         if (runRoutes == null) {
             return;
         }
+        List<Waypoints> baseWaypointsList = waypointsExtractor.extractBaseWaypoints(solverModel);
         runRoutes.replaceRoutes(baseWaypointsList);
         if (runRoutes.isViewed()) {
             runRoutes.requestBackgroundFetch();
@@ -262,8 +262,10 @@ public class WaypointsServiceImpl implements WaypointsService {
     }
 
     private static void logBackgroundFetchFailure(String outcome, String runId, Throwable failure) {
-        LOGGER.warn("Background waypoints fetch {} for run {}: {}. The next request retries.",
-                outcome, runId, failure.toString());
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Background waypoints fetch {} for run {}: {}. The next request retries.",
+                    outcome, runId, failure.toString());
+        }
         LOGGER.debug("Stack trace of the background waypoints fetch failure for run {}.", runId, failure);
     }
 }
