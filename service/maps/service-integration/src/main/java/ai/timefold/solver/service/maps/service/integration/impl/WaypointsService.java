@@ -15,7 +15,10 @@ public interface WaypointsService {
     List<Waypoints> getWaypoints(String runId, Set<String> objectIds);
 
     /**
-     * Releases the in-memory waypoints of a finished run whose waypoints are stored.
+     * Releases the in-memory waypoints of a run that finished, after its waypoints are stored or after it failed;
+     * later solution events for that id are ignored until the run starts again.
+     *
+     * @param runId the id of the finished run
      */
     void releaseFinishedRun(String runId);
 

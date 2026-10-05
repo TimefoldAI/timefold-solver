@@ -10,7 +10,7 @@ import jakarta.inject.Singleton;
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
 
 @Singleton
-public class WaypointsCallControl {
+public final class WaypointsCallControl {
 
     private final AtomicLong delayMillis = new AtomicLong();
     private final AtomicInteger remainingFailureCount = new AtomicInteger();

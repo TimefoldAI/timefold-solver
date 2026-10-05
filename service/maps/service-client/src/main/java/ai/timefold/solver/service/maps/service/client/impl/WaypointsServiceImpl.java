@@ -263,7 +263,7 @@ public class WaypointsServiceImpl implements WaypointsService {
 
     private static void logBackgroundFetchFailure(String outcome, String runId, Throwable failure) {
         LOGGER.warn("Background waypoints fetch {} for run {}: {}. The next request retries.",
-                outcome, runId, failure.getMessage());
+                outcome, runId, failure.toString());
         LOGGER.debug("Stack trace of the background waypoints fetch failure for run {}.", runId, failure);
     }
 }

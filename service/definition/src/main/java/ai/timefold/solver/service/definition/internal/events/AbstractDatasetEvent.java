@@ -2,6 +2,8 @@ package ai.timefold.solver.service.definition.internal.events;
 
 import ai.timefold.solver.service.definition.api.domain.Metadata;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Event referencing the associated {@link Metadata}.
  */
@@ -22,9 +24,11 @@ public abstract sealed class AbstractDatasetEvent extends AbstractEvent
     }
 
     /**
-     * The run metadata; null only for an {@link ItemFailed} whose run metadata could not be read.
+     * The run metadata.
+     *
+     * @return the metadata; null only for an event made by {@link ItemFailed#withoutMetadata}
      */
-    public Metadata getMetadata() {
+    public @Nullable Metadata getMetadata() {
         return metadata;
     }
 
