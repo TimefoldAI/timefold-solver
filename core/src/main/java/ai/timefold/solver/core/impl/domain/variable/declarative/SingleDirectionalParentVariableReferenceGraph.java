@@ -5,14 +5,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
+import ai.timefold.solver.core.impl.util.ShrinkingIdentityHashMap;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -29,7 +28,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     // This is a field to avoid allocating a new list every update
     private final List<Object> sortedChangedEntities;
     private final Class<?> monitoredEntityClass;
-    private final Map<Object, Object> keyToLastProcessedObject;
+    private final ShrinkingIdentityHashMap<Object, Object> keyToLastProcessedObject;
     private final boolean canTerminateEarly;
     private boolean isUpdating;
 
@@ -46,7 +45,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         monitoredSourceVariableSet = new HashSet<>();
         changedEntities = new LinkedIdentityHashSet<>();
         sortedChangedEntities = new ArrayList<>();
-        keyToLastProcessedObject = new IdentityHashMap<>();
+        keyToLastProcessedObject = new ShrinkingIdentityHashMap<>();
         isUpdating = false;
 
         this.canTerminateEarly = canTerminateEarly;
