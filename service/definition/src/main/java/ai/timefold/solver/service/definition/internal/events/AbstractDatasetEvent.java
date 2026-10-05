@@ -16,6 +16,14 @@ public abstract sealed class AbstractDatasetEvent extends AbstractEvent
         this.metadata = new Metadata<>(metadata);
     }
 
+    protected AbstractDatasetEvent(String id) {
+        super(id);
+        this.metadata = null;
+    }
+
+    /**
+     * The run metadata; null only for an {@link ItemFailed} whose run metadata could not be read.
+     */
     public Metadata getMetadata() {
         return metadata;
     }
