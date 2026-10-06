@@ -190,6 +190,10 @@ public class SolverScope<Solution_> {
         return scoreDirector.getWorkingSolution();
     }
 
+    public Solution_ cloneWorkingSolution() {
+        return scoreDirector.cloneWorkingSolution();
+    }
+
     public int getWorkingEntityCount() {
         return scoreDirector.getWorkingGenuineEntityCount();
     }
@@ -349,7 +353,7 @@ public class SolverScope<Solution_> {
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(initialSolution));
 
         // Set the best solution to the solution with shadow variable updated.
-        setBestSolution(scoreDirector.cloneSolution(scoreDirector.getWorkingSolution()));
+        setBestSolution(scoreDirector.cloneWorkingSolution());
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {

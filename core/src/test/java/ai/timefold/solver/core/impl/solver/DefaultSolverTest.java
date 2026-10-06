@@ -79,6 +79,8 @@ import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.DefaultSolverJob.FirstInitializedSolutionPhaseLifecycleListener;
+import ai.timefold.solver.core.impl.solver.DefaultSolverJob.StartSolverJobPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
@@ -2900,6 +2902,87 @@ class DefaultSolverTest {
          */
         var firstState = statesAfterEachPhase.get(0);
         assertThat(statesAfterEachPhase).allSatisfy(state -> assertThat(state).isSameAs(firstState));
+    }
+
+    @Test
+    void firstInitializedSolutionDoesNotChangeWorkingSolution() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataInverseRelationSolution.class)
+                .withEntityClasses(TestdataInverseRelationEntity.class, TestdataInverseRelationValue.class)
+                .withConstraintProviderClass(TestdataInverseRelationConstraintProvider.class)
+                // We want to ensure the solution is asserted at the end of the phase
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
+        var solverFactory = SolverFactory.<TestdataInverseRelationSolution> create(solverConfig);
+        var solver = (DefaultSolver<TestdataInverseRelationSolution>) solverFactory.buildSolver();
+        var changeProcessed = new CountDownLatch(1);
+        try (var currentConsumerSupport = new ConsumerSupport<TestdataInverseRelationSolution, Object>(1L, null, null,
+                event -> makeSolutionInvalid(event.solution(), changeProcessed), null, (problemId, throwable) -> {
+                }, new BestSolutionHolder<>())) {
+            // We add a phase event for the first initialized solution
+            // to ensure that the same solution instance is not passed as the score director
+            solver.addPhaseLifecycleListener(
+                    new FirstInitializedSolutionPhaseLifecycleListener<>(solver, 1L, currentConsumerSupport));
+            // Now we add a phase listener to ensure the solution has been updated by the first solution listener
+            solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+                @Override
+                public void phaseEnded(AbstractPhaseScope<TestdataInverseRelationSolution> phaseScope) {
+                    try {
+                        changeProcessed.await();
+                    } catch (InterruptedException e) {
+                    }
+                }
+            });
+            var solution = solver.solve(TestdataInverseRelationSolution.generateSolution(50, 2000));
+            assertThat(solution.getEntityList()).isNotNull();
+            assertThat(solution.getValueList()).isNotNull();
+
+        }
+    }
+
+    @Test
+    void solverStartedDoesNotChangeWorkingSolution() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataInverseRelationSolution.class)
+                .withEntityClasses(TestdataInverseRelationEntity.class, TestdataInverseRelationValue.class)
+                .withConstraintProviderClass(TestdataInverseRelationConstraintProvider.class)
+                // We want to ensure the solution is asserted at the end of the phase
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
+        var solverFactory = SolverFactory.<TestdataInverseRelationSolution> create(solverConfig);
+        var solver = (DefaultSolver<TestdataInverseRelationSolution>) solverFactory.buildSolver();
+        var changeProcessed = new CountDownLatch(1);
+        try (var currentConsumerSupport = new ConsumerSupport<TestdataInverseRelationSolution, Object>(1L, null, null, null,
+                event -> makeSolutionInvalid(event.solution(), changeProcessed), (problemId, throwable) -> {
+                }, new BestSolutionHolder<>())) {
+            // We add a phase event for the solver process start
+            // to ensure that the same solution instance is not passed as the score director
+            solver.addPhaseLifecycleListener(
+                    new StartSolverJobPhaseLifecycleListener<>(currentConsumerSupport));
+            // Now we add a phase listener to ensure the solution has been updated by the first solution listener
+            solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+                @Override
+                public void phaseEnded(AbstractPhaseScope<TestdataInverseRelationSolution> phaseScope) {
+                    try {
+                        changeProcessed.await();
+                    } catch (InterruptedException e) {
+                    }
+                }
+            });
+            var solution = solver.solve(TestdataInverseRelationSolution.generateSolution(50, 2000));
+            assertThat(solution.getEntityList()).isNotNull();
+            assertThat(solution.getValueList()).isNotNull();
+        }
+    }
+
+    private static void makeSolutionInvalid(TestdataInverseRelationSolution solution, CountDownLatch changeProcessed) {
+        // The solution instance must not be the same as the one from the score director
+        // or the assertion logic will fail with IllegalStateException
+        solution.setEntityList(null);
+        solution.setValueList(null);
+        changeProcessed.countDown();
     }
 
     @NullMarked
