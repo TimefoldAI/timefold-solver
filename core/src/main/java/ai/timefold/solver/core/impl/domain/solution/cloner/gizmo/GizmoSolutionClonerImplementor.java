@@ -237,6 +237,7 @@ public class GizmoSolutionClonerImplementor {
         // why: an unsized map rehashes ~log2(n) times per clone, once per best solution of a large dataset
         var lastCloneObjectCountField = clonerDescriptor.classCreator.field(LAST_CLONE_OBJECT_COUNT, field -> {
             field.private_();
+            field.volatile_();
             field.setType(int.class);
         });
         clonerDescriptor.classCreator.method("cloneSolution", methodCreator -> {
