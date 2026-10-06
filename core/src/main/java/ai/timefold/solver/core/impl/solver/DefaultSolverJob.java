@@ -428,8 +428,9 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
                 // The Solver thread calls the method,
                 // but the consumption is done asynchronously by the Consumer thread.
                 // Only happens if the phase initializes the solution.
-                // We clone the working solution to prevent sharing the instance of the current working solution.
-                consumerSupport.consumeFirstInitializedSolution(phaseScope.cloneWorkingSolution(), phaseScope.getPhaseId(),
+                // The working solution is only cloned if there is a consumer,
+                // to avoid sharing its instance.
+                consumerSupport.consumeFirstInitializedSolution(phaseScope::cloneWorkingSolution, phaseScope.getPhaseId(),
                         possiblyInitializingPhase.getTerminationStatus().early());
             }
         }
@@ -448,8 +449,9 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
 
         @Override
         public void solvingStarted(SolverScope<Solution_> solverScope) {
-            // We clone the working solution to prevent sharing the instance of the current working solution.
-            consumerSupport.consumeStartSolverJob(solverScope.cloneWorkingSolution());
+            // The working solution is only cloned if there is a consumer,
+            // to avoid sharing its instance.
+            consumerSupport.consumeStartSolverJob(solverScope::cloneWorkingSolution);
         }
     }
 }

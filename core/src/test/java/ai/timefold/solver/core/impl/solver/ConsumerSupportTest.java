@@ -134,6 +134,52 @@ class ConsumerSupportTest {
         assertThatExceptionOfType(CancellationException.class).isThrownBy(pendingProblemChange::get);
     }
 
+    @Test
+    @Timeout(60)
+    void solutionNotSupplied_withoutStartAndFirstInitializedConsumers() {
+        consumerSupport = new ConsumerSupport<>(1L, null, null, null, null, null, new BestSolutionHolder<>());
+
+        consumerSupport.consumeStartSolverJob(() -> fail("Solution supplied without a solver job started consumer."));
+        consumerSupport.consumeFirstInitializedSolution(
+                () -> fail("Solution supplied without a first initialized solution consumer."),
+                EventProducerId.constructionHeuristic(0), false);
+        // Must not block, as no lock was acquired by the calls above.
+        consumerSupport.consumeFinalBestSolution(TestdataSolution.generateSolution());
+    }
+
+    @Test
+    @Timeout(60)
+    void solutionSuppliedOnCallerThread_withStartAndFirstInitializedConsumers() throws InterruptedException {
+        var consumed = new CountDownLatch(2);
+        var startedSolutionRef = new AtomicReference<TestdataSolution>();
+        var firstInitializedSolutionRef = new AtomicReference<TestdataSolution>();
+        consumerSupport = new ConsumerSupport<>(1L, null, null,
+                event -> {
+                    firstInitializedSolutionRef.set(event.solution());
+                    consumed.countDown();
+                },
+                event -> {
+                    startedSolutionRef.set(event.solution());
+                    consumed.countDown();
+                }, null, new BestSolutionHolder<>());
+
+        var callerThread = Thread.currentThread();
+        var startedSolution = TestdataSolution.generateSolution();
+        consumerSupport.consumeStartSolverJob(() -> {
+            assertThat(Thread.currentThread()).isSameAs(callerThread);
+            return startedSolution;
+        });
+        var firstInitializedSolution = TestdataSolution.generateSolution();
+        consumerSupport.consumeFirstInitializedSolution(() -> {
+            assertThat(Thread.currentThread()).isSameAs(callerThread);
+            return firstInitializedSolution;
+        }, EventProducerId.constructionHeuristic(0), false);
+
+        consumed.await();
+        assertThat(startedSolutionRef.get()).isSameAs(startedSolution);
+        assertThat(firstInitializedSolutionRef.get()).isSameAs(firstInitializedSolution);
+    }
+
     private CompletableFuture<Void> addProblemChange(BestSolutionHolder<TestdataSolution> bestSolutionHolder) {
         return bestSolutionHolder.addProblemChange(mock(Solver.class), List.of(mock(ProblemChange.class)));
     }
