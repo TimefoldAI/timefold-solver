@@ -124,10 +124,15 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         // Obtained on the Solver thread, so that the Consumer thread never sees the working solution.
         // Reachable more than once; problem change triggers restart.
-        this.firstInitializedSolution.getAndSet(solutionSupplier.get());
+        try {
+            this.firstInitializedSolution.getAndSet(solutionSupplier.get());
+        } catch (Exception e) {
+            // If the supplier fails, we release the lock
+            firstSolutionConsumption.release();
+            throw e;
+        }
         scheduleConsumption(s -> consumer.accept(new FirstInitializedSolutionEventImpl<>(s, producerId, isTerminatedEarly)),
-                firstInitializedSolution.get())
-                .whenComplete((unused, throwable) -> firstSolutionConsumption.release());
+                firstInitializedSolution.get()).whenComplete((unused, throwable) -> firstSolutionConsumption.release());
     }
 
     /**
@@ -161,7 +166,13 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         // Obtained on the Solver thread, so that the Consumer thread never sees the working solution.
         // Reachable more than once; problem change triggers restart.
-        this.initialSolution.getAndSet(solutionSupplier.get());
+        try {
+            this.initialSolution.getAndSet(solutionSupplier.get());
+        } catch (Exception e) {
+            // If the supplier fails, we release the lock
+            startSolverJobConsumption.release();
+            throw e;
+        }
         scheduleConsumption(s -> consumer.accept(new SolverJobStartedEventImpl<>(s)), initialSolution.get())
                 .whenComplete((unused, throwable) -> startSolverJobConsumption.release());
     }
