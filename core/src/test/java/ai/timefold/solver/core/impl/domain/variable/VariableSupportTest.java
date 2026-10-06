@@ -26,7 +26,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.GraphNode;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
-import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
+import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdater;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.violation.BasicVariableTracker;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -76,7 +76,7 @@ class VariableSupportTest {
             nodeToEntities = nodes.stream().map(GraphNode::entity).toArray(Object[]::new);
             nodeToVariableMetamodel = nodes.stream()
                     .map(e -> e.variableReferences().stream()
-                            .map(VariableUpdaterInfo::id)
+                            .map(VariableUpdater::id)
                             .toArray(VariableMetaModel[]::new))
                     .toArray(VariableMetaModel[][]::new);
         }

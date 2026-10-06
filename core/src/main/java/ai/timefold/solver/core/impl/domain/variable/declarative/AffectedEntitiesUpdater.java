@@ -148,7 +148,7 @@ final class AffectedEntitiesUpdater<Solution_>
         }
 
         for (var shadowVariableReference : shadowVariableReferences) {
-            anyChanged |= updateShadowVariable(isVariableInconsistent, shadowVariableReference, entity);
+            anyChanged |= shadowVariableReference.update(entity, isVariableInconsistent, changedVariableNotifier);
         }
 
         return anyChanged;
@@ -166,15 +166,6 @@ final class AffectedEntitiesUpdater<Solution_>
         // for that entity to be marked as changed, not just the first node the
         // updater encounters
         return loopedTracker.didEntityInconsistentStatusChange(entityId);
-    }
-
-    private boolean updateShadowVariable(boolean isLooped,
-            VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity) {
-        if (isLooped) {
-            return shadowVariableReference.updateIfChanged(entity, null, changedVariableNotifier);
-        } else {
-            return shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
-        }
     }
 
     /**

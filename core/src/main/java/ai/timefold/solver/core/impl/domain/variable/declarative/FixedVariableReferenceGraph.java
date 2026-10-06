@@ -45,7 +45,7 @@ public final class FixedVariableReferenceGraph<Solution_>
                 }
             } else {
                 for (var shadowEntity : outerGraph.entityToEntityId.keySet()) {
-                    if (variableReference.variableDescriptor().getEntityDescriptor().getEntityClass()
+                    if (variableReference.id().entity().type()
                             .isInstance(shadowEntity)) {
                         entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier,
                                 shadowEntity, false);
@@ -81,7 +81,7 @@ public final class FixedVariableReferenceGraph<Solution_>
             var entity = entityVariable.entity();
             var shadowVariableReferences = entityVariable.variableReferences();
             for (var shadowVariableReference : shadowVariableReferences) {
-                var isVariableChanged = shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
+                var isVariableChanged = shadowVariableReference.update(entity, false, changedVariableNotifier);
                 if (isVariableChanged) {
                     for (var nextNode : cachedComponentForwardEdges[changedNodeId]) {
                         changeTracker.offer(nextNode);

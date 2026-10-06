@@ -176,7 +176,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     }
 
     @SuppressWarnings("ForLoopReplaceableByForEach")
-    private void processEntity(List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> processorList,
+    void processEntity(List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> processorList,
             Object entity) {
         var processorCount = processorList.size();
         // Avoid creation of iterators on the hot path.
