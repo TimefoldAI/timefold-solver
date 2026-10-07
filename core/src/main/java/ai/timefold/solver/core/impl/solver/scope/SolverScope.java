@@ -47,6 +47,7 @@ public class SolverScope<Solution_> {
     private final AtomicLong startingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
     private final AtomicLong endingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
 
+    private Solution_ initialSolution;
     private Set<SolverMetric> solverMetricSet = Collections.emptySet();
     private boolean anyMetricConstraintMatchBased;
     private Tags monitoringTags;
@@ -349,11 +350,17 @@ public class SolverScope<Solution_> {
     }
 
     public void setInitialSolution(Solution_ initialSolution) {
+        this.initialSolution = initialSolution;
+
         // The workingSolution must never be the same instance as the bestSolution.
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(initialSolution));
 
         // Set the best solution to the solution with shadow variable updated.
         setBestSolution(scoreDirector.cloneWorkingSolution());
+    }
+
+    public Solution_ getInitialSolution() {
+        return initialSolution;
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {

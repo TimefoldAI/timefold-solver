@@ -451,7 +451,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
         public void solvingStarted(SolverScope<Solution_> solverScope) {
             // The working solution is only cloned if there is a consumer,
             // to avoid sharing its instance.
-            consumerSupport.consumeStartSolverJob(solverScope::cloneWorkingSolution);
+            consumerSupport.consumeStartSolverJob(solverScope::getInitialSolution);
         }
     }
 }
