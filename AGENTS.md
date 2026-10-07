@@ -15,7 +15,7 @@ If a rule here conflicts with the constitution, the constitution wins.
 - Do not add yourself as a co-author to the commit.
 - Do not create public issues for security problems.
 - Before you edit a package, find its stability level in the constitution (*Package Structure and API Stability*).
-  A change to `*.api.*` or `*.config.*` must stay backwards compatible.
+  A change to `*.api.*` or `*.config.*` must stay backwards compatible. A change to `*.internal.*` should stay backwards compatible unless there is no other option.
 - Do not add production dependencies. Ask first.
 - Write a test for each change, in a red-green fashion. Use AssertJ only.
 - Keep comments short. Comments describe the current code, not its history. History goes in the commit message.

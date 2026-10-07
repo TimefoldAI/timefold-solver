@@ -183,8 +183,9 @@ MUST use:
 | Package type      | Stability                                                                     |
 |-------------------|-------------------------------------------------------------------------------|
 | `*.api.*`         | 100% backwards compatible; breaking only in major versions                    |
-| `*.preview.api.*` | Best-effort backwards compatibility; may break in minor versions if necessary |
 | `*.config.*`      | 100% backwards compatible; breaking only in major versions                    |
+| `*.preview.api.*` | Best-effort compatibility; may break in minor versions if necessary           |
+| `*.internal.*`    | Stable but may break without public notice; for internal Timefold tools only  |
 | All others        | No guarantees                                                                 |
 
 **Versioning**: MAJOR = breaking API/config change; MINOR = new backwards-compat feature; PATCH = bug fix.
