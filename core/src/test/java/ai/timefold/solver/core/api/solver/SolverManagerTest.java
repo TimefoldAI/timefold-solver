@@ -1172,6 +1172,42 @@ class SolverManagerTest {
 
     @Test
     @Timeout(60)
+    void addProblemChangeRestartsWithUpdatedInitialSolution() throws InterruptedException {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setDaemon(true);
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problemId = 1L;
+            var entityAndValueCount = 4;
+            // The solver starts once, and restarts once after the problem change
+            var startedEventsConsumed = new CountDownLatch(2);
+            var startedSolutionList = Collections.synchronizedList(new ArrayList<TestdataSolution>());
+            solverManager.solveBuilder()
+                    .withProblemId(problemId)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", entityAndValueCount))
+                    .withSolverJobStartedEventConsumer(event -> {
+                        startedSolutionList.add(event.solution());
+                        startedEventsConsumed.countDown();
+                    })
+                    .run();
+
+            // Without a best solution consumer, the problem change future never completes,
+            // so we wait for the restart event instead.
+            // We add an entity, as the entity list is cloned and the original problem does not see the change.
+            solverManager.addProblemChange(problemId,
+                    (workingSolution, problemChangeDirector) -> problemChangeDirector.addEntity(
+                            new TestdataEntity("addedEntity"),
+                            workingSolution.getEntityList()::add));
+            startedEventsConsumed.await();
+            assertThat(startedSolutionList).hasSize(2);
+            assertThat(startedSolutionList.get(0).getEntityList()).hasSize(entityAndValueCount);
+            // The restart must not deliver the stale initial solution
+            assertThat(startedSolutionList.get(1)).isNotSameAs(startedSolutionList.get(0));
+            assertThat(startedSolutionList.get(1).getEntityList()).hasSize(entityAndValueCount + 1);
+        }
+    }
+
+    @Test
+    @Timeout(60)
     void addProblemChangeToNonExistingProblem_failsFast() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
