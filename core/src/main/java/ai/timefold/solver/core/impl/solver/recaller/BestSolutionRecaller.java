@@ -132,20 +132,22 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope) {
         updateBestSolutionWithoutFiring(solverScope);
-        // The best solution should never be shared with external consumers, 
-        // as they can change it and make the internal state inconsistent.
-        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(),
-                solverScope.getScoreDirector().cloneSolution(solverScope.getBestSolution()));
+        // The best solution instance is shared with the external consumer,
+        // and we assume the user won't change it (see NewBestSolutionEvent).
+        // We could simply clone it to avoid side effects,
+        // but cloning can be expensive.
+        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), solverScope.getBestSolution());
     }
 
     public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope,
             EventProducerId eventProducerId) {
         updateBestSolutionWithoutFiring(solverScope);
         if (solverScope.isBestSolutionInitialized()) {
-            // The best solution should never be shared with external consumers, 
-            // as they can change it and make the internal state inconsistent.
-            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId,
-                    solverScope.getScoreDirector().cloneSolution(solverScope.getBestSolution()));
+            // The best solution instance is shared with the external consumer,
+            // and we assume the user won't change it (see NewBestSolutionEvent).
+            // We could simply clone it to avoid side effects,
+            // but cloning can be expensive.
+            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution());
         }
     }
 
@@ -153,6 +155,10 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             InnerScore<?> bestScore,
             Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
+        // The best solution instance is shared with the external consumer,
+        // and we assume the user won't change it (see NewBestSolutionEvent).
+        // We could simply clone it to avoid side effects,
+        // but cloning can be expensive.
         solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), bestSolution);
     }
 

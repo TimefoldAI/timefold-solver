@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -28,11 +27,9 @@ import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
-import ai.timefold.solver.core.api.solver.event.SolverEventListener;
 import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
-import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -72,10 +69,6 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     private final AtomicReference<@Nullable Future<Solution_>> finalBestSolutionFuture = new AtomicReference<>();
     private final AtomicReference<@Nullable ConsumerSupport<Solution_, Object>> consumerSupport = new AtomicReference<>();
 
-    // Only testing purposes
-    private final List<SolverEventListener<Solution_>> solverEventListenerList = new ArrayList<>();
-    private final List<PhaseLifecycleListener<Solution_>> phaseEventListenerList = new ArrayList<>();
-
     public DefaultSolverJob(DefaultSolverManager<Solution_> solverManager, Solver<Solution_> solver, Object problemId,
             Function<? super Object, ? extends Solution_> problemFinder,
             @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
@@ -106,14 +99,6 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             throw new IllegalStateException("Impossible state: the finalBestSolutionFuture was already set to (%s)."
                     .formatted(oldFuture));
         }
-    }
-
-    void addSolverEventListener(SolverEventListener<Solution_> eventListener) {
-        solverEventListenerList.add(eventListener);
-    }
-
-    void addPhaseEventListener(PhaseLifecycleListener<Solution_> phasesListener) {
-        phaseEventListenerList.add(phasesListener);
     }
 
     @Override
@@ -154,13 +139,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
                     new FirstInitializedSolutionPhaseLifecycleListener<>(solver, problemId, currentConsumerSupport));
             // add a phase lifecycle listener once when the solver starts its execution
             solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener(currentConsumerSupport));
-            // add additional phase listeners to enable the validation of specific edge cases
-            phaseEventListenerList.forEach(solver::addPhaseLifecycleListener);
-
             solver.addEventListener(this::onBestSolutionChangedEvent);
-            // add additional event listeners to enable the validation of specific edge cases
-            solverEventListenerList.forEach(solver::addEventListener);
-
             final var finalBestSolution = solver.solve(problem);
             currentConsumerSupport.consumeFinalBestSolution(finalBestSolution);
             return finalBestSolution;
@@ -470,8 +449,6 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
 
         @Override
         public void solvingStarted(SolverScope<Solution_> solverScope) {
-            // The working solution is only cloned if there is a consumer,
-            // to avoid sharing its instance.
             consumerSupport.consumeStartSolverJob(solverScope::getInitialSolution);
         }
     }
