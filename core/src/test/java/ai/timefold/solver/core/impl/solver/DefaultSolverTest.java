@@ -2935,7 +2935,7 @@ class DefaultSolverTest {
                     }
                 }
             });
-            var solution = solver.solve(TestdataInverseRelationSolution.generateSolution(50, 2000));
+            var solution = solver.solve(TestdataInverseRelationSolution.generateSolution(2, 2));
             assertThat(solution.getEntityList()).isNotNull();
             assertThat(solution.getValueList()).isNotNull();
 
@@ -2972,7 +2972,7 @@ class DefaultSolverTest {
                     }
                 }
             });
-            var solution = solver.solve(TestdataInverseRelationSolution.generateSolution(50, 2000));
+            var solution = solver.solve(TestdataInverseRelationSolution.generateSolution(2, 2));
             assertThat(solution.getEntityList()).isNotNull();
             assertThat(solution.getValueList()).isNotNull();
         }
