@@ -132,14 +132,20 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope) {
         updateBestSolutionWithoutFiring(solverScope);
-        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), solverScope.getBestSolution());
+        // The best solution should never be shared with external consumers, 
+        // as they can change it and make the internal state inconsistent.
+        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(),
+                solverScope.getScoreDirector().cloneSolution(solverScope.getBestSolution()));
     }
 
     public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope,
             EventProducerId eventProducerId) {
         updateBestSolutionWithoutFiring(solverScope);
         if (solverScope.isBestSolutionInitialized()) {
-            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution());
+            // The best solution should never be shared with external consumers, 
+            // as they can change it and make the internal state inconsistent.
+            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId,
+                    solverScope.getScoreDirector().cloneSolution(solverScope.getBestSolution()));
         }
     }
 

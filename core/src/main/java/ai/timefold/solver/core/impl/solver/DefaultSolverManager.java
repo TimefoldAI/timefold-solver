@@ -97,11 +97,29 @@ public final class DefaultSolverManager<Solution_> implements SolverManager<Solu
             @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
             @Nullable BiConsumer<? super Object, ? super Throwable> exceptionHandler,
             SolverConfigOverride configOverride) {
+        var solverJob = buildJob(problemId, problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
+                initializedSolutionConsumer, solverJobStartedConsumer, exceptionHandler, configOverride);
+        return solve(solverJob);
+    }
+
+    SolverJob<Solution_> solve(DefaultSolverJob<Solution_> solverJob) {
+        var future = solverThreadPool.submit(solverJob);
+        solverJob.setFinalBestSolutionFuture(future);
+        return solverJob;
+    }
+
+    DefaultSolverJob<Solution_> buildJob(Object problemId, Function<? super Object, ? extends Solution_> problemFinder,
+            @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
+            @Nullable Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
+            @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer,
+            @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
+            @Nullable BiConsumer<? super Object, ? super Throwable> exceptionHandler,
+            SolverConfigOverride configOverride) {
         var solver = solverFactory.buildSolver(configOverride);
         ((DefaultSolver<Solution_>) solver).setMonitorTags(SolverTags.withProblemId(problemId));
         BiConsumer<? super Object, ? super Throwable> finalExceptionHandler =
                 (exceptionHandler != null) ? exceptionHandler : defaultExceptionHandler;
-        var solverJob = problemIdToSolverJobMap.compute(problemId, (key, oldSolverJob) -> {
+        return problemIdToSolverJobMap.compute(problemId, (key, oldSolverJob) -> {
             if (oldSolverJob != null) {
                 // TODO Future features: automatically restart solving by calling reloadProblem()
                 throw new IllegalStateException("The problemId (%s) is already solving.".formatted(problemId));
@@ -111,9 +129,6 @@ public final class DefaultSolverManager<Solution_> implements SolverManager<Solu
                         finalExceptionHandler);
             }
         });
-        var future = solverThreadPool.submit(solverJob);
-        solverJob.setFinalBestSolutionFuture(future);
-        return solverJob;
     }
 
     @Override
