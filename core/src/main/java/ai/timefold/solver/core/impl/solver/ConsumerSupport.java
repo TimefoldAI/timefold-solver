@@ -125,7 +125,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         // Obtained on the Solver thread, so that the Consumer thread never sees the working solution.
         // Reachable more than once; problem change triggers restart.
         try {
-            this.firstInitializedSolution.getAndSet(solutionSupplier.get());
+            this.firstInitializedSolution.set(solutionSupplier.get());
         } catch (Exception e) {
             // If the supplier fails, we release the lock
             firstSolutionConsumption.release();
@@ -167,7 +167,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         // Obtained on the Solver thread, so that the Consumer thread never sees the working solution.
         // Reachable more than once; problem change triggers restart.
         try {
-            this.initialSolution.getAndSet(solutionSupplier.get());
+            this.initialSolution.set(solutionSupplier.get());
         } catch (Exception e) {
             // If the supplier fails, we release the lock
             startSolverJobConsumption.release();

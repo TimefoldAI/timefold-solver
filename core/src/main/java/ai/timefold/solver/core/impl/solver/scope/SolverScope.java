@@ -349,9 +349,24 @@ public class SolverScope<Solution_> {
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
-    public void setInitialSolution(Solution_ initialSolution, boolean updateScoreDirector) {
+    /**
+     * Sets the solution that the solver starts or restarts from,
+     * as returned by {@link #getInitialSolution()} and delivered with the solver job started event.
+     * <p>
+     * The instance is stored as given, without being cloned.
+     * When solving starts, it is the problem passed to the solver, which belongs to the caller.
+     * After real-time problem changes, it is a clone of the working solution,
+     * so the event emitted on restart reflects those changes instead of the stale original problem.
+     *
+     * @param initialSolution never null; the solution to start or restart from
+     * @param updateInternalState true to also reset the working and best solutions from {@code initialSolution},
+     *        which is required when solving starts;
+     *        false when the working solution is already up to date,
+     *        such as after problem changes have been applied to it
+     */
+    public void setInitialSolution(Solution_ initialSolution, boolean updateInternalState) {
         this.initialSolution = initialSolution;
-        if (updateScoreDirector) {
+        if (updateInternalState) {
             // The workingSolution must never be the same instance as the bestSolution.
             scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(initialSolution));
             // Set the best solution to the solution with shadow variable updated.

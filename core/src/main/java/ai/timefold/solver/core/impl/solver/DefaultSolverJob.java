@@ -449,6 +449,10 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
 
         @Override
         public void solvingStarted(SolverScope<Solution_> solverScope) {
+            // Sharing the initial solution with the consumer is safe without cloning it,
+            // because the solver never reads it after SolverScope.setInitialSolution():
+            // the working and best solutions are planning clones of it,
+            // and on restart it is replaced by a fresh clone of the working solution.
             consumerSupport.consumeStartSolverJob(solverScope::getInitialSolution);
         }
     }
