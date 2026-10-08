@@ -437,11 +437,13 @@ This is useful for debugging infeasible solutions or explaining results to end u
   "score": "0hard/-3soft",
   "constraints": [
     {
+      "id": "roomConflict",
       "name": "Room conflict",
       "score": "0hard",
       "matchCount": 0
     },
     {
+      "id": "teacherTimePreference",
       "name": "Teacher time preference",
       "score": "-3soft",
       "matchCount": 3
