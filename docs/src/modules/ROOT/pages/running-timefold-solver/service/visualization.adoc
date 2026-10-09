@@ -1,0 +1,57 @@
+[#_visualization]
+= Visualization
+:page-aliases: service/visualization.adoc
+:description: How to build a custom visualization UI for your model and serve it locally.
+:doctype: book
+:sectnums:
+:icons: font
+
+A model's solution is often easier to understand as a rendered UI than as raw JSON.
+This page describes how to build a custom visualization UI for your model and serve it from the service module while running locally.
+
+See xref:deploying-to-platform/visualization.adoc[] for how this same UI is embedded once your model is deployed to Timefold Platform.
+
+[#_serving_a_ui_locally]
+== Serving a UI locally
+
+Any static file placed under `src/main/resources/META-INF/resources` is served by Quarkus at the site root.
+For example, an `index.html` and `app.js` placed there are served at `http://localhost:8080/index.html` and `http://localhost:8080/app.js`.
+
+This static-resource handling is independent of your REST API path configuration: the UI files and the API endpoints are served from the same Quarkus instance, but the UI does not sit under whatever `@Path` your `ModelRest` interface declares.
+
+[#_ui_support_property]
+== Enabling the UI in the model descriptor archive
+
+Whether the archive generated around your xref:deploying-to-platform/guide.adoc#_what_happens_on_deploy[model descriptor] (`model-descriptor.zip`) bundles a UI is controlled by the build-time `timefold.model.ui-support` property, which accepts one of two values:
+
+- `NONE`: no UI is bundled.
+- `APP_JS`: the files under `src/main/resources/META-INF/resources` are bundled as the model's UI.
+
+If you don't set this property explicitly, it's auto-detected: if `src/main/resources/META-INF/resources` exists and contains at least one file, `APP_JS` is used; otherwise, `NONE` is used.
+
+[#_tips]
+== Tips
+
+[#_relative_asset_paths]
+=== Use relative asset paths
+
+When deployed to Timefold Platform, the same `META-INF/resources` files are repackaged and served under a `ui/` prefix instead of the site root (see xref:deploying-to-platform/visualization.adoc[]).
+A root-absolute reference like `<script src="/app.js">` breaks once moved under that prefix; a relative one like `<script src="./app.js">` still resolves correctly.
+Use relative asset paths in your `index.html` for this reason.
+
+[#_cors]
+=== Enable CORS for external dev servers
+
+The service module doesn't configure CORS for you.
+To run your UI on a separate dev server (Vite, webpack, ...), add: `quarkus.http.cors=true`.
+
+See the https://quarkus.io/guides/http-reference#cors-filter[Quarkus CORS guide] for how to restrict allowed origins, methods, or headers.
+
+[#_calling_your_api]
+== Calling your REST API from the UI
+
+Your UI calls your model's REST API the same way any other client would.
+
+Open the Swagger UI at `http://localhost:8080/q/swagger-ui/`, introduced in xref:quickstart/service/getting-started.adoc[Getting started: building a service], to check the exact path, rather than assuming a fixed prefix.
+
+See xref:deploying-to-platform/visualization.adoc[] for how to target your API from inside the platform's iframe.
