@@ -9,7 +9,7 @@ A routing model needs to know how long it takes to drive from one location to an
 Computing that yourself means either a crude straight-line approximation, or building and
 maintaining an integration with a road-network routing engine.
 
-The Timefold ships a *maps extension* that does this for you.
+Timefold Solver ships a *maps extension* that does this for you.
 Your solver model declares which locations it uses; before every solve, the maps extension builds a
 travel time and distance matrix covering those locations and injects it into them.
 Your domain classes then simply ask a location how far away another location is.
@@ -36,7 +36,7 @@ locations in that same matrix:
 
 [source,java]
 ----
-TravelTime drivingTime = origin.getDrivingTimeTo(destination);
+TravelTime drivingTime = origin.getTravelTimeTo(destination);
 TravelDistance distance = origin.getDistanceTo(destination);
 
 long seconds = drivingTime.seconds();
@@ -209,8 +209,8 @@ timefold.platform.map-service.enable-fallback=true
 
 |`timefold.platform.map-service.enable-fallback`
 |`false`
-|Fall back to the local computation when the remote map service is disabled or unavailable,
- instead of failing the solve.
+|Fall back to local computation when a remote request fails after application startup.
+ This does not bypass the startup availability check and has no effect when `use-remote=false`.
 
 |`timefold.platform.map-service.provider`
 |
@@ -307,7 +307,7 @@ This is the simplest option and the right one when the locations differ from one
 next, as they do in the vehicle routing quickstart.
 
 A name (Platform only)::
-A matrix can be stored under a name in the map extension and reused across solves.
+A matrix can be stored under a name in the map service and reused across solves.
 Building a large matrix is expensive, it grows with the square of the number of locations, so a
 fleet that visits the same few thousand sites every day should build the matrix once and name it,
 rather than rebuild it on every run.

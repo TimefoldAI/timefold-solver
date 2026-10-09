@@ -153,7 +153,7 @@ class TimeslotHolidayEnricher : SolverModelEnricher<Timetable> {
 When you have multiple enrichers, register a `SolverModelEnrichmentDirector` to control the order in which they run.
 This matters when one enricher builds on the output of another.
 
-The xref:./map-service.adoc[map service] is a good example of this: it enriches
+The xref:./map-service.adoc[maps extension] is a good example of this: it enriches
 `LocationsAwareSolverModel` implementations with a travel time and distance matrix before every
 solve, without any code in your model calling it directly.
 
