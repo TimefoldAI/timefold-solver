@@ -9,7 +9,8 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import org.jspecify.annotations.Nullable;
 
 public sealed interface VariableReferenceGraph
-        permits AbstractVariableReferenceGraph, EmptyVariableReferenceGraph, SingleDirectionalParentVariableReferenceGraph {
+        permits AbstractVariableReferenceGraph, EmptyVariableReferenceGraph, ListElementCascadeVariableReferenceGraph,
+        SingleDirectionalParentVariableReferenceGraph {
 
     /**
      * Update all declarative {@link ShadowVariable} that has

@@ -20,12 +20,34 @@ import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerSoluti
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementEntity;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementSolution;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementValue;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementEntity;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementSolution;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementValue;
 import ai.timefold.solver.core.testdomain.shadow.multi_directional_parent.TestdataMultiDirectionConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.multi_directional_parent.TestdataMultiDirectionConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_directional_parent.TestdataMultiDirectionConcurrentValue;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity.TestdataMultiEntityDependencyEntity;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity.TestdataMultiEntityDependencySolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity.TestdataMultiEntityDependencyValue;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fact.TestdataFactChainSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fact.TestdataFactChainVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fact.TestdataFactChainVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_fallback.TestdataWatchedVisitsVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataChainLoopVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_non_owner.TestdataNonOwnerDepot;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_non_owner.TestdataNonOwnerSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_non_owner.TestdataNonOwnerVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_non_owner.TestdataNonOwnerVisit;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListSolution;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
 
@@ -132,7 +154,99 @@ class GraphStructureTest {
         var value = new TestdataListElementValue("v1");
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataListElementSolution.buildSolutionDescriptor(), entity, value))
+                .hasFieldOrPropertyWithValue("structure", GraphStructure.NO_DYNAMIC_EDGES)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataListElementValue.class);
+    }
+
+    @Test
+    void listElementStructureWithGenuineVariableOnElement() {
+        var entity = new TestdataMixedListElementEntity("e1");
+        var value = new TestdataMixedListElementValue("v1");
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataMixedListElementSolution.buildSolutionDescriptor(), entity, value))
                 .hasFieldOrPropertyWithValue("structure", ARBITRARY);
+    }
+
+    @Test
+    void multiEntityChainStructure() {
+        var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
+        var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);
+        vehicleB.setPreviousVehicles(List.of(vehicleA));
+        var visit = new TestdataMultiEntityChainVisit("v1");
+        // The visits are cascaded; the vehicles' fact collection dependency is the inner graph's.
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataMultiEntityChainSolution.buildSolutionDescriptor(), vehicleA, vehicleB, visit))
+                .hasFieldOrPropertyWithValue("structure",
+                        GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataMultiEntityChainVisit.class);
+    }
+
+    @Test
+    void multiEntityChainWithFactChainedVehicles() {
+        var vehicleA = new TestdataFactChainVehicle("A", 0);
+        var vehicleB = new TestdataFactChainVehicle("B", 0);
+        vehicleB.setPreviousVehicle(vehicleA);
+        var visit = new TestdataFactChainVisit("v1");
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataFactChainSolution.buildSolutionDescriptor(), vehicleA, vehicleB, visit))
+                .hasFieldOrPropertyWithValue("structure",
+                        GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataFactChainVisit.class);
+    }
+
+    @Test
+    void multiEntityChainNextStructure() {
+        var vehicle = new TestdataMultiEntityChainNextVehicle("A", 100);
+        var visit = new TestdataMultiEntityChainNextVisit("v1");
+        // The vehicle's fact collection is empty, so the inner graph has no dynamic edges.
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataMultiEntityChainNextSolution.buildSolutionDescriptor(), vehicle, visit))
+                .hasFieldOrPropertyWithValue("structure", GraphStructure.NO_DYNAMIC_EDGES)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.NEXT)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataMultiEntityChainNextVisit.class);
+    }
+
+    @Test
+    void multiEntityChainWithFactCollectionOfElements() {
+        var vehicle = new TestdataWatchedVisitsVehicle("A", 0);
+        var watcher = new TestdataWatchedVisitsVehicle("W", 0);
+        var visit = new TestdataWatchedVisitsVisit("v1", 1);
+        watcher.getWatchedVisits().add(visit);
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataWatchedVisitsSolution.buildSolutionDescriptor(), vehicle, watcher, visit))
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", null);
+    }
+
+    @Test
+    void multiEntityChainWithNonListOwnerEntity() {
+        var vehicle = new TestdataNonOwnerVehicle("A", 0);
+        var visit = new TestdataNonOwnerVisit("v1", 1);
+        var depot = new TestdataNonOwnerDepot("D", 0);
+        // The depots' dependencies do not involve the visits nor the vehicles,
+        // so the visits are cascaded and the inner graph only covers the depots.
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataNonOwnerSolution.buildSolutionDescriptor(), vehicle, visit, depot))
+                .hasFieldOrPropertyWithValue("structure", GraphStructure.NO_DYNAMIC_EDGES)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataNonOwnerVisit.class);
+    }
+
+    @Test
+    void multiEntityChainWithPlanningVariableChainedVehicles() {
+        var vehicle = new TestdataChainLoopVehicle("A", 0);
+        var visit = new TestdataChainLoopVisit("v1", 1);
+        // The vehicles chain through a planning variable, so the inner graph has dynamic edges;
+        // that does not concern the visits, which are still cascaded.
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataChainLoopSolution.buildSolutionDescriptor(), vehicle, visit))
+                .hasFieldOrPropertyWithValue("structure",
+                        GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
+                .hasFieldOrPropertyWithValue("cascadedElementClass", TestdataChainLoopVisit.class);
     }
 
     @Test
