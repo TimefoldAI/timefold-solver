@@ -23,7 +23,11 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 - Requires a platform personal access token, taken from the `TIMEFOLD_PAT` environment variable or from an encrypted `<server>` entry in your Maven settings (see "Authentication" below)
 - If a single namespace is returned by the platform and `timefold.namespace` wasn't provided, the plugin will use it. The platform reports the namespaces either as `namespaces` or, before the migration to that name is complete, as `accountIds`; both are accepted
 - Fails the build when the namespace can neither be taken from `timefold.namespace` nor derived from the platform response, i.e. when the personal access token is associated with no namespace or with several of them. In the latter case `timefold.namespace` has to be set explicitly
-- Writes a properties file at `target/generated-resources/timefold-build.properties` with entries such as:
+- Writes a properties file at `${project.build.directory}/generated-resources/timefold-build.properties`,
+i.e. inside the build directory of the module the goal runs for,
+so that a multi-module build or a build started from a parent directory puts the file in the right module.
+The absolute location is published to the Quarkus build through the `timefold.build.properties.location` System property.
+Entries include:
 ** `quarkus.container-image.registry` — value taken from platform config.containerRegistry
 ** `quarkus.container-image.group` — the namespace used
 ** `quarkus.container-image.push` — set to `true`
@@ -205,7 +209,14 @@ When using shared models, also set `-Dtimefold.model.tenants=tenant1,tenant2` (o
 
 == Generated files
 
-- `target/generated-resources/timefold-build.properties` — produced by `timefold:configure`. This file contains image registry/group/push configuration that can be picked up by your build (Quarkus or image-building workflows).
+- `${project.build.directory}/generated-resources/timefold-build.properties` — produced by `timefold:configure`.
+This file contains image registry/group/push configuration
+that can be picked up by your build (Quarkus or image-building workflows).
+The file is written into the build directory of the module the goal runs for,
+not relative to the working directory,
+so multi-module builds and builds started from a parent directory place the file correctly.
+The absolute location is published as the `timefold.build.properties.location` System property
+so that the Quarkus extension can find it regardless of the working directory.
 
 == Implementation notes / tips for contributors
 

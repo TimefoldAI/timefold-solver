@@ -32,9 +32,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.project.MavenProject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 
@@ -55,6 +57,10 @@ public class ConfigureMojoTest {
     void setUp() {
         log.clear();
         wm1.resetAll();
+        // Ensure a clean state for the system properties that ConfigureMojo mutates.
+        System.clearProperty(ConfigureMojo.BUILD_PROPERTIES_LOCATION);
+        System.clearProperty("quarkus.container-image.username");
+        System.clearProperty("quarkus.container-image.password");
 
         // successful authentication
         wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
@@ -180,6 +186,13 @@ public class ConfigureMojoTest {
                                 """)));
     }
 
+    @AfterEach
+    void tearDown() {
+        System.clearProperty(ConfigureMojo.BUILD_PROPERTIES_LOCATION);
+        System.clearProperty("quarkus.container-image.username");
+        System.clearProperty("quarkus.container-image.password");
+    }
+
     @Test
     @MojoParameter(name = "skip", value = "true")
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
@@ -206,10 +219,10 @@ public class ConfigureMojoTest {
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
 
         // assert that plugin executed and produced expected logs
-        log.assertContains("Configured Timefold Platform integration", Level.INFO);
+        log.assertContains("Configured Timefold Platform integration; build properties written to", Level.INFO);
 
         // load configured build properties and assert expected entry
-        assertThat(readBuildProperties())
+        assertThat(readBuildProperties(mojo))
                 // test is returned from aboutme endpoint as this is the namespace that access token grants
                 .containsEntry("quarkus.container-image.group", "test")
                 .containsEntry("quarkus.container-image.registry", "test.registry.com")
@@ -232,7 +245,7 @@ public class ConfigureMojoTest {
         log.assertContains("Configured Timefold Platform integration", Level.INFO);
 
         // the namespace is resolved from the migrated field name exactly like it is from accountIds
-        assertThat(readBuildProperties()).containsEntry("quarkus.container-image.group", "test");
+        assertThat(readBuildProperties(mojo)).containsEntry("quarkus.container-image.group", "test");
     }
 
     @Test
@@ -250,7 +263,7 @@ public class ConfigureMojoTest {
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
 
         // assert that plugin executed and produced expected logs
-        log.assertContains("Configured Timefold Platform integration", Level.INFO);
+        log.assertContains("Configured Timefold Platform integration; build properties written to", Level.INFO);
     }
 
     @Test
@@ -289,7 +302,7 @@ public class ConfigureMojoTest {
         log.assertContains("Configured Timefold Platform integration", Level.INFO);
 
         // load configured build properties and assert expected entry
-        assertThat(readBuildProperties())
+        assertThat(readBuildProperties(mojo))
                 // test is returned from aboutme endpoint as this is the namespace that access token grants
                 .containsEntry("quarkus.container-image.group", "test")
                 .containsEntry("quarkus.container-image.registry", "test.registry.com")
@@ -464,7 +477,7 @@ public class ConfigureMojoTest {
 
         log.assertContains("Configured Timefold Platform integration", Level.INFO);
 
-        assertThat(readBuildProperties()).containsEntry("quarkus.container-image.group", "company");
+        assertThat(readBuildProperties(mojo)).containsEntry("quarkus.container-image.group", "company");
     }
 
     @Test
@@ -532,7 +545,7 @@ public class ConfigureMojoTest {
         mojo.execute();
 
         wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
-        log.assertContains("Configured Timefold Platform integration", Level.INFO);
+        log.assertContains("Configured Timefold Platform integration; build properties written to", Level.INFO);
     }
 
     @Test
@@ -591,7 +604,7 @@ public class ConfigureMojoTest {
         mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
         mojo.execute();
 
-        log.assertContains("Configured Timefold Platform integration", Level.INFO);
+        log.assertContains("Configured Timefold Platform integration; build properties written to", Level.INFO);
     }
 
     @Test
@@ -606,9 +619,9 @@ public class ConfigureMojoTest {
         wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
     }
 
-    private static Properties readBuildProperties() throws IOException {
-        Path buildProperties = Paths.get("target", "generated-resources", "timefold-build.properties");
-        assertThat(Files.exists(buildProperties)).isTrue();
+    private static Properties readBuildProperties(ConfigureMojo mojo) throws IOException {
+        Path buildProperties = Paths.get(mojo.buildDirectory, "generated-resources", "timefold-build.properties");
+        assertThat(buildProperties).exists();
 
         Properties props = new Properties();
         try (InputStream in = Files.newInputStream(buildProperties)) {
@@ -650,5 +663,89 @@ public class ConfigureMojoTest {
         parent.setArtifactId(artifactId);
         parent.setVersion("1.0.0");
         return parent;
+    }
+
+    // --- New tests for issue #2629 ---
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureWritesIntoTheModuleBuildDirectory(ConfigureMojo mojo, @TempDir Path tempDir)
+            throws Exception {
+        Path moduleBuildDirectory = tempDir.resolve("submodule").resolve("target");
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.buildDirectory = moduleBuildDirectory.toString();
+
+        mojo.execute();
+
+        Path expected = moduleBuildDirectory.resolve("generated-resources").resolve("timefold-build.properties");
+        assertThat(expected).exists();
+        assertThat(System.getProperty(ConfigureMojo.BUILD_PROPERTIES_LOCATION))
+                .isEqualTo(expected.toAbsolutePath().normalize().toString());
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureDoesNotWriteOutsideModuleBuildDirectory(ConfigureMojo mojo, @TempDir Path tempDir)
+            throws Exception {
+        Path moduleBuildDirectory = tempDir.resolve("submodule").resolve("target");
+
+        // Delete the working directory's target/generated-resources/timefold-build.properties if it exists,
+        // so we can assert it was not created during this execution.
+        Path workingDirProperties = Paths.get("target", "generated-resources", "timefold-build.properties");
+        Files.deleteIfExists(workingDirProperties);
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.buildDirectory = moduleBuildDirectory.toString();
+
+        mojo.execute();
+
+        // The file must land in the module build directory, not in the working directory's target.
+        assertThat(workingDirProperties).doesNotExist();
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testLocationPropertyClearedWhenDeployNotRequested(ConfigureMojo mojo) throws Exception {
+        // Seed a stale property from a hypothetical previous module in the reactor.
+        System.setProperty(ConfigureMojo.BUILD_PROPERTIES_LOCATION, "/stale/from/previous/module");
+
+        // Neither the parent nor the enterprise artifacts are set, and deploy is not requested.
+        mojo.setLog(log);
+        mojo.execute();
+
+        assertThat(System.getProperty(ConfigureMojo.BUILD_PROPERTIES_LOCATION)).isNull();
+    }
+
+    @Test
+    @MojoParameter(name = "skip", value = "true")
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testLocationPropertyClearedWhenConfigurationSkipped(ConfigureMojo mojo) throws Exception {
+        // Seed a stale property from a hypothetical previous module in the reactor.
+        System.setProperty(ConfigureMojo.BUILD_PROPERTIES_LOCATION, "/stale/from/previous/module");
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+        mojo.setLog(log);
+        mojo.execute();
+
+        assertThat(System.getProperty(ConfigureMojo.BUILD_PROPERTIES_LOCATION)).isNull();
+    }
+
+    /**
+     * Guards the cross-module literal that must stay in sync with
+     * {@code ai.timefold.solver.service.quarkus.deployment.config.TimefoldBuildConfigOverrides#BUILD_PROPERTIES_LOCATION}.
+     */
+    @Test
+    public void testBuildPropertiesLocationLiteral() {
+        assertThat(ConfigureMojo.BUILD_PROPERTIES_LOCATION).isEqualTo("timefold.build.properties.location");
     }
 }

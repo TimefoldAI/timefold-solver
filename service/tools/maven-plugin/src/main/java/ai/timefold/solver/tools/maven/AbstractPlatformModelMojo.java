@@ -63,7 +63,8 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
     private AccessTokenProvider accessTokenProvider;
 
     /**
-     * URL to the platform that model should be deployed to
+     * The build output directory of the module being built,
+     * defaulting to {@code ${project.build.directory}} (usually {@code target}).
      */
     @Parameter(defaultValue = "${project.build.directory}", required = false)
     protected String buildDirectory;
