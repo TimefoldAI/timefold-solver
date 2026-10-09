@@ -141,6 +141,9 @@ public final class SolutionDescriptor<Solution_> {
             entityDescriptor.processAnnotations(descriptorPolicy);
         }
         solutionDescriptor.afterAnnotationsProcessed(descriptorPolicy);
+        if (enabledPreviewFeatureSet != null && enabledPreviewFeatureSet.contains(PreviewFeature.TIERED_SCORE_CALCULATION)) {
+            solutionDescriptor.isTieredScoreCalculationEnabled = true;
+        }
         return solutionDescriptor;
     }
 
@@ -263,6 +266,7 @@ public final class SolutionDescriptor<Solution_> {
     private ListVariableDescriptor<Solution_> listVariableDescriptor;
     @Nullable
     private List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptorList;
+    private boolean isTieredScoreCalculationEnabled = false;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -657,6 +661,10 @@ public final class SolutionDescriptor<Solution_> {
     @Nullable
     public SolutionCloner<Solution_> getSolutionCloner() {
         return solutionCloner;
+    }
+
+    public boolean isTieredScoreCalculationEnabled() {
+        return isTieredScoreCalculationEnabled;
     }
 
     public PlanningSolutionMetaModel<Solution_> getMetaModel() {
