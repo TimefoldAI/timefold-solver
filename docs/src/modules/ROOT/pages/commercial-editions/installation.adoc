@@ -36,6 +36,14 @@ Take care that the file name matches exactly, including letter case and the line
 * Name the file `timefold-license.pem` and place it in the user's home directory.
 * Name the file `timefold-license.pem` and place it in the root of your application classpath.
 
+[#licenseValidation]
+== Extend license validation
+
+Enterprise Edition discovers implementations of `ai.timefold.solver.enterprise.core.license.LicenseValidator` using Java's `ServiceLoader`.
+Use this extension point to perform additional license checks after the signature, validity period, and product ID have been verified.
+The validator receives an `ai.timefold.solver.enterprise.core.license.LicenseDetails` instance and can inspect certificate extensions with `getExtension(String)`.
+Throw `SecurityException` to reject the license.
+
 [#enterpriseArtifacts]
 == Use the enterprise artifacts
 
