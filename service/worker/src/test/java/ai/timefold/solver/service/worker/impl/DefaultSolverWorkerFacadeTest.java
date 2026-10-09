@@ -12,6 +12,7 @@ import ai.timefold.solver.service.definition.api.domain.Configuration;
 import ai.timefold.solver.service.definition.api.domain.Metadata;
 import ai.timefold.solver.service.definition.api.domain.ModelInputPatchRequest;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
+import ai.timefold.solver.service.definition.impl.storage.StorageObjectMapperWrapper;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.events.DatasetCreatedEvent;
 import ai.timefold.solver.service.definition.internal.events.DatasetValidateComputeCommand;
@@ -40,8 +41,9 @@ class DefaultSolverWorkerFacadeTest {
 
     @BeforeEach
     void setUp() {
-        var mapper = new ObjectMapper();
-        storageService = new TestdataStorageService(new TestdataStorage(mapper));
+        // register the Java time module, so that the metadata timestamps can be (de)serialized by the storage
+        var mapper = new ObjectMapper().findAndRegisterModules();
+        storageService = new TestdataStorageService(new TestdataStorage(), new StorageObjectMapperWrapper(mapper));
 
         datasetCreatedEmitter = new RecordingEmitter<>();
         validateComputeEmitter = new RecordingEmitter<>();

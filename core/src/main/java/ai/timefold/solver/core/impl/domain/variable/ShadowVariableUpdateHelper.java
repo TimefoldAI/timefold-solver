@@ -224,10 +224,14 @@ public final class ShadowVariableUpdateHelper<Solution_> {
             if (solutionDescriptor.getDeclarativeShadowVariableDescriptors().isEmpty() && variableDescriptor != null) {
                 variableDescriptor.setValue(destination, value);
             } else if (variableDescriptor != null) {
-                var variableMetamodel = solutionDescriptor.getMetaModel().entity(destination.getClass()).variable(variableName);
-                graph.beforeVariableChanged(variableMetamodel, destination);
-                variableDescriptor.setValue(destination, value);
-                graph.afterVariableChanged(variableMetamodel, destination);
+                var hook = graph.resolveHookFor(variableDescriptor.getVariableMetaModel());
+                if (hook == null) {
+                    variableDescriptor.setValue(destination, value);
+                } else {
+                    hook.beforeVariableChanged(destination);
+                    variableDescriptor.setValue(destination, value);
+                    hook.afterVariableChanged(destination);
+                }
             }
         }
 
