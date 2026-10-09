@@ -1,1 +1,2 @@
 ai.timefold.solver.service.definition.impl.executionprofile.SeedExecutionProfile
+ai.timefold.solver.service.definition.impl.executionprofile.MemoryDumpExecutionProfile
