@@ -312,8 +312,6 @@ Building a large matrix is expensive, it grows with the square of the number of 
 fleet that visits the same few thousand sites every day should build the matrix once and name it,
 rather than rebuild it on every run.
 
-> QUESTION: Does the Naming also work with a custom distance matrix?
-
 Creating and populating a named location set is a management operation on the map service, not
 something your solver model does. Consult the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service#location_sets[Timefold Platform documentation] for how to create
 one.
