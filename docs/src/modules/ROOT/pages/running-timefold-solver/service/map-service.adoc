@@ -355,8 +355,37 @@ pipeline the map extension hooks into.
 The `Location` objects in such a test therefore have no matrix, and the first call to
 `getDrivingTimeTo(...)` fails.
 
-Build the matrix yourself in the test fixture, using the same Haversine provider the platform uses
-for its local computation:
+Build the matrix yourself in the test fixture with `TestDistanceCalculator.initDistanceMaps(...)`.
+It takes the locations to cover, a distance function and a travel time function.
+Any function works: the matrix does not have to come from a real map.
+
+For constraint tests, fixed values are usually the clearest choice, because the expected penalties
+are easy to verify by hand:
+
+[source,java]
+----
+import ai.timefold.solver.service.maps.service.test.api.TestDistanceCalculator;
+
+private static final Location LOCATION_1 = new Location(51.01, 3.66);
+private static final Location LOCATION_2 = new Location(51.02, 3.68);
+private static final Location DISTANT_LOCATION = new Location(50.85, 4.35);
+
+@BeforeAll
+static void initDistanceMaps() {
+    TestDistanceCalculator.initDistanceMaps(List.of(LOCATION_1, LOCATION_2, DISTANT_LOCATION),
+            (Location from, Location to) -> fixedValue(from, to), // distance function
+            (Location from, Location to) -> fixedValue(from, to)); // travel time function, in seconds
+}
+
+private static long fixedValue(Location from, Location to) {
+    if (from.equals(to)) {
+        return 0;
+    }
+    return from.equals(DISTANT_LOCATION) || to.equals(DISTANT_LOCATION) ? 3600 : 1;
+}
+----
+
+To test with more realistic values instead, use the Haversine provider and pass in all the locations in the `PlanningSolution`:
 
 [source,java]
 ----
@@ -367,16 +396,14 @@ private static final HaversineTravelTimeAndDistanceMatrixProvider PROVIDER =
         new HaversineTravelTimeAndDistanceMatrixProvider(new ObjectMapper());
 
 public static VehicleRoutePlan initDistanceMap(VehicleRoutePlan plan) {
-    TestDistanceCalculator.initDistanceMaps(plan.getLocations(), // <1>
+    TestDistanceCalculator.initDistanceMaps(plan.getLocations(),
             PROVIDER::calculateDistance,
             PROVIDER::calculateTravelTime);
     return plan;
 }
 ----
-<1> The same `getLocations()` the real map extension would be given, so the test covers exactly the
-    locations the production matrix would.
 
-This also gives tests a way to derive their expected travel times instead of hard-coding magic
+In that case, derive the expected travel times from the provider instead of hard-coding magic
 numbers:
 
 [source,java]
