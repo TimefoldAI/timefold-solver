@@ -326,6 +326,7 @@ For enhancing the SolverModel, use the xref:./model-enrichment.adoc#solverModelE
 == Validating REST input
 
 By default, validation on the input is based on the xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification annotations].
+Most of the structural validations (e.g. required fields, minimum number of items in collections, etc.) should be implemented using those annotations.
 Additional validations can be added by implementing the `ModelValidator` interface.
 
 [#timetableValidatorExample]
@@ -542,7 +543,11 @@ A specification file is automatically generated from the https://download.eclips
 [TIP]
 For more info on which annotations are available and how they relate to the generated OpenAPI specification, check out the official https://download.eclipse.org/microprofile/microprofile-open-api-1.0/microprofile-openapi-spec.html[MicroProfile OpenAPI specification here].
 
-// IDEA: We could have a small guide on OpenAPI Specification generation using those annotations instead of linking to another location.
+The most common way to influence the generated specification is to annotate the fields of your `ModelInput` and `ModelOutput` classes, as shown in the `TimetableDto` example above.
+The `@Schema` annotation lets you document a field (`description`), and its attributes such as `required`, `pattern`, `minimum` and `maximum` are also enforced at runtime: an incoming request that violates them is rejected with a `400` response before it reaches your model.
+
+Alternatively, you can express the same constraints using https://jakarta.ee/specifications/bean-validation/[Jakarta Bean Validation] annotations (such as `@NotNull`, `@Size` or `@Min`/`@Max`) instead of, or in combination with, `@Schema`.
+Quarkus picks these up as well: they are reflected in the generated OpenAPI specification and enforced in the same way.
 
 After building the model with `mvn verify`, the generated API spec can be found in the `target` folder: `target/openapi-schema/openapi.json`.
 
