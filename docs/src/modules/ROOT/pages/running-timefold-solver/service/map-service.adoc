@@ -79,7 +79,7 @@ model pipeline.
 To let the map extension build the matrix, your `@PlanningSolution` implements
 `LocationsAwareSolverModel<Score_>` instead of the plain `SolverModel<Score_>`:
 
-[source,java]
+[source,java,options="nowrap"]]
 ----
 @PlanningSolution
 public class VehicleRoutePlan implements LocationsAwareSolverModel<HardMediumSoftScore> {
@@ -167,7 +167,7 @@ Driving time is also the natural distance measure for
 xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection].
 Implement `NearbyDistanceMeter` on top of the same `Location` calls:
 
-[source,java]
+[source,java,options="nowrap"]]
 ----
 public class LocationDistanceMeter implements NearbyDistanceMeter<Visit, LocationAware> {
 
@@ -234,7 +234,7 @@ timefold.platform.map-service.enable-fallback=true
 When `use-remote=true` (the default), the extension also needs the REST client settings for the
 remote map service it connects to:
 
-[source,properties]
+[source,properties,options="nowrap"]]
 ----
 # Map service endpoint
 timefold.platform.map-service.url=http://localhost:8180
@@ -362,7 +362,7 @@ Any function works: the matrix does not have to come from a real map.
 For constraint tests, fixed values are usually the clearest choice, because the expected penalties
 are easy to verify by hand:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 import ai.timefold.solver.service.maps.service.test.api.TestDistanceCalculator;
 
@@ -387,7 +387,7 @@ private static long fixedValue(Location from, Location to) {
 
 To test with more realistic values instead, use the Haversine provider and pass in all the locations in the `PlanningSolution`:
 
-[source,java]
+[source,java,options="nowrap"]]
 ----
 import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
 import ai.timefold.solver.service.maps.service.test.api.TestDistanceCalculator;
