@@ -772,11 +772,16 @@ public class SolverWorker {
 
             // update run status only as failed
             metadata = storageService.getMetadata(problemId);
-            metadata.updateStatusOnFailure(throwable.getMessage());
-            storageService.storeMetadata(problemId, metadata);
+            if (metadata == null) {
+                LOGGER.warn("No metadata found for the failed run {}; sending the failure without it.", problemId);
+            } else {
+                metadata.updateStatusOnFailure(throwable.getMessage());
+                storageService.storeMetadata(problemId, metadata);
 
-            processor.onNext(metadata);
-            sendEvent(failedSolutionEmitter, new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
+                processor.onNext(metadata);
+                sendEvent(failedSolutionEmitter,
+                        new FailedSolutionEvent(metadata, solverJob, throwable, planName, tenantName));
+            }
         } finally {
 
             for (var processor : modelPostProcessors) {
@@ -798,7 +803,9 @@ public class SolverWorker {
             }
 
             try {
-                sendEvent(scheduleFailedEmitter, new ItemFailed(metadata, throwable, planName, tenantName));
+                sendEvent(scheduleFailedEmitter,
+                        metadata == null ? ItemFailed.withoutMetadata(problemId, throwable, planName, tenantName)
+                                : new ItemFailed(metadata, throwable, planName, tenantName));
             } finally {
                 completionStatus.completed(problemId);
                 // shutdown has to be executed last to ensure everything executed before pod shuts down

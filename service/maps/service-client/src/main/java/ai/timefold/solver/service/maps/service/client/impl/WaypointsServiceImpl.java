@@ -2,16 +2,21 @@ package ai.timefold.solver.service.maps.service.client.impl;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
@@ -20,7 +25,10 @@ import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeExcep
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.FinalBestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;
+import ai.timefold.solver.service.definition.internal.events.ItemFailed;
+import ai.timefold.solver.service.definition.internal.events.ItemStarted;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
+import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
@@ -29,16 +37,28 @@ import ai.timefold.solver.service.maps.service.integration.api.WaypointsExtracto
 import ai.timefold.solver.service.maps.service.integration.api.WaypointsExtractorBase;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import io.quarkus.runtime.Startup;
+
 @SuppressWarnings({ "unchecked", "rawtypes" })
-@ApplicationScoped
+@Startup
+// why: an @ApplicationScoped bean with only an injection constructor is rewritten by ArC, and JaCoCo loses it
+@Singleton
 public class WaypointsServiceImpl implements WaypointsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WaypointsServiceImpl.class);
+
+    private static final TypeReference<List<Waypoints>> WAYPOINTS_LIST_TYPE = new TypeReference<>() {
+    };
+
+    private static final int FINISHED_RUN_ID_CAPACITY = 1024;
 
     private final WaypointsExtractor waypointsExtractor;
 
@@ -46,43 +66,97 @@ public class WaypointsServiceImpl implements WaypointsService {
 
     private final MapServiceOptionsSupplier optionsSupplier;
 
-    private final Map<String, Map<String, Waypoints>> runIdsToWaypoints = new ConcurrentHashMap<>();
+    private final AbstractStorageService<?, ?, ?, ?, ?, ?, ?> storageService;
 
+    private final ExecutorService waypointsExecutor;
+
+    private final Map<String, RunRoutes> runRoutesMap = new ConcurrentHashMap<>();
+
+    private final Set<String> finishedRunIdSet = Collections.synchronizedSet(Collections.newSetFromMap(
+            new LinkedHashMap<String, Boolean>() {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldestEntry) {
+                    return size() > FINISHED_RUN_ID_CAPACITY;
+                }
+            }));
+
+    /**
+     * Creates the service with its own pool for map-service waypoints calls.
+     *
+     * @param mapService the map service that calculates the waypoints of a route
+     * @param waypointsExtractor the extractor of the base waypoints from a solver model, if one exists
+     * @param optionsSupplier the supplier of the map-service options
+     * @param storageService the storage that serves the stored waypoints of a finished run
+     * @param waypointsParallelism the maximum number of concurrent map-service waypoints calls
+     * @throws IllegalArgumentException if waypointsParallelism is not positive
+     */
     @Inject
     public WaypointsServiceImpl(MapService mapService,
             Instance<WaypointsExtractorBase> waypointsExtractor,
-            MapServiceOptionsSupplier optionsSupplier) {
+            MapServiceOptionsSupplier optionsSupplier,
+            AbstractStorageService<?, ?, ?, ?, ?, ?, ?> storageService,
+            @ConfigProperty(name = "timefold.platform.map-service.waypoints-parallelism",
+                    defaultValue = "8") int waypointsParallelism) {
+        if (waypointsParallelism <= 0) {
+            throw new IllegalArgumentException("""
+                    The waypointsParallelism (%d) must be positive.
+                    Maybe set timefold.platform.map-service.waypoints-parallelism to 1 or more."""
+                    .formatted(waypointsParallelism));
+        }
         this.waypointsExtractor = waypointsExtractor.isResolvable() ? (WaypointsExtractor) waypointsExtractor.get() : null;
         this.mapService = mapService;
         this.optionsSupplier = optionsSupplier;
+        this.storageService = storageService;
+        this.waypointsExecutor = Executors.newFixedThreadPool(waypointsParallelism,
+                Thread.ofPlatform().name("waypoints-fetch-", 0).daemon().factory());
+    }
+
+    @PreDestroy
+    void shutdownWaypointsExecutor() {
+        waypointsExecutor.shutdownNow();
     }
 
     @Override
-    public synchronized List<Waypoints> getWaypoints(String runId, Set<String> objectIds) {
-
+    public List<Waypoints> getWaypoints(String runId, Set<String> objectIds) {
         if (this.waypointsExtractor == null) {
             return List.of();
         }
-
-        Map<String, Waypoints> calculated = this.runIdsToWaypoints.get(runId);
-
-        if (calculated == null) {
-            throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, "Unable to find data set for id " + runId);
+        var runRoutes = runRoutesMap.get(runId);
+        if (runRoutes == null) {
+            return getStoredWaypoints(runId, objectIds);
         }
+        runRoutes.markViewed();
+        var waypointsFutureList = runRoutes.getRouteList(objectIds).stream().map(this::fetchOnce).toList();
+        return waypointsFutureList.stream().map(WaypointsServiceImpl::await).toList();
+    }
 
-        LOGGER.debug("Run {} has returned {} waypoints to be calculated with route information with filter by object id {}",
-                runId, calculated.size(), objectIds);
-        for (Entry<String, Waypoints> waypointEntry : calculated.entrySet()) {
-            if (!waypointEntry.getValue().calculated()
-                    && (objectIds.isEmpty() || objectIds.contains(waypointEntry.getKey()))) {
-                LOGGER.debug("Calculating waypoints for {} for run {}", waypointEntry.getValue().id(), runId);
-                Waypoints calculatedWaypoint = calculateWaypoints(waypointEntry.getValue());
-                LOGGER.debug("Successfully calculated waypoints for {} for run {}", waypointEntry.getValue().id(), runId);
-                calculated.put(waypointEntry.getKey(), calculatedWaypoint);
+    private List<Waypoints> getStoredWaypoints(String runId, Set<String> objectIds) {
+        List<Waypoints> storedWaypointsList = storageService.getWaypoints(runId, WAYPOINTS_LIST_TYPE);
+        if (storedWaypointsList == null) {
+            throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, """
+                    Unable to find the waypoints of the run (%s).
+                    Maybe the run has not produced a solution yet, or its waypoints were not stored."""
+                    .formatted(runId));
+        }
+        return storedWaypointsList.stream()
+                .filter(waypoints -> objectIds.isEmpty() || objectIds.contains(waypoints.id()))
+                .toList();
+    }
+
+    private CompletableFuture<Waypoints> fetchOnce(VehicleRoute vehicleRoute) {
+        return vehicleRoute.fetchOnce(() -> CompletableFuture
+                .supplyAsync(() -> calculateWaypoints(vehicleRoute.getBaseWaypoints()), waypointsExecutor));
+    }
+
+    private static Waypoints await(CompletableFuture<Waypoints> waypointsFuture) {
+        try {
+            return waypointsFuture.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof RuntimeException cause) {
+                throw cause;
             }
+            throw e;
         }
-
-        return calculated.values().stream().filter(item -> objectIds.isEmpty() || objectIds.contains(item.id())).toList();
     }
 
     @Retry(maxRetries = 5, delay = 1, delayUnit = ChronoUnit.SECONDS, abortOn = {
@@ -107,6 +181,11 @@ public class WaypointsServiceImpl implements WaypointsService {
         return new Waypoints(waypoints.id(), locations.stream().toList(), true);
     }
 
+    @Incoming(SolverChannels.STARTED)
+    public void onStarted(ItemStarted event) {
+        finishedRunIdSet.remove(event.getId());
+    }
+
     @Incoming(SolverChannels.INIT_SOLUTION)
     public void onInitSolution(InitSolutionEvent event) {
         rebuildBaseWaypoints(event.getId(), event.getModel());
@@ -122,17 +201,72 @@ public class WaypointsServiceImpl implements WaypointsService {
         rebuildBaseWaypoints(event.getId(), event.getModel());
     }
 
+    @Incoming(SolverChannels.FAILED)
+    public void onFailed(ItemFailed event) {
+        releaseFinishedRun(event.getId());
+    }
+
+    @Override
+    public void releaseFinishedRun(String runId) {
+        finishedRunIdSet.add(runId);
+        runRoutesMap.remove(runId);
+    }
+
     private void rebuildBaseWaypoints(String runId, SolverModel solverModel) {
-        if (this.waypointsExtractor != null && solverModel != null) {
-            this.runIdsToWaypoints.compute(runId, (key, value) -> {
-                LOGGER.debug("No waypoints have been calculated for run {}, extracting what should be calculated", runId);
-                List<Waypoints> waypoints = waypointsExtractor.extractBaseWaypoints(solverModel);
-                Map<String, Waypoints> map = new LinkedHashMap<>();
-
-                waypoints.forEach(item -> map.put(item.id(), item));
-
-                return map;
-            });
+        if (this.waypointsExtractor == null || solverModel == null) {
+            return;
         }
+        var runRoutes = runRoutesMap.computeIfAbsent(runId, id -> finishedRunIdSet.contains(id) ? null : new RunRoutes());
+        if (runRoutes == null) {
+            return;
+        }
+        List<Waypoints> baseWaypointsList = waypointsExtractor.extractBaseWaypoints(solverModel);
+        runRoutes.replaceRoutes(baseWaypointsList);
+        if (runRoutes.isViewed()) {
+            runRoutes.requestBackgroundFetch();
+            startBackgroundFetchIfIdle(runId, runRoutes);
+        }
+    }
+
+    private void startBackgroundFetchIfIdle(String runId, RunRoutes runRoutes) {
+        if (runRoutesMap.get(runId) != runRoutes || !runRoutes.tryStartBackgroundFetch()) {
+            return;
+        }
+        var isCompletionAttached = false;
+        try {
+            fetchAllRoutes(runRoutes).whenComplete((ignored, failure) -> onBackgroundFetchComplete(runId, runRoutes, failure));
+            isCompletionAttached = true;
+        } catch (RuntimeException e) {
+            logBackgroundFetchFailure("failed to start", runId, e);
+        } finally {
+            if (!isCompletionAttached) {
+                runRoutes.finishBackgroundFetch();
+            }
+        }
+    }
+
+    private CompletableFuture<Void> fetchAllRoutes(RunRoutes runRoutes) {
+        var waypointsFutureArray = runRoutes.getRouteList(Set.of()).stream()
+                .map(this::fetchOnce)
+                .toArray(CompletableFuture[]::new);
+        return CompletableFuture.allOf(waypointsFutureArray);
+    }
+
+    private void onBackgroundFetchComplete(String runId, RunRoutes runRoutes, Throwable failure) {
+        if (failure != null) {
+            logBackgroundFetchFailure("failed", runId, failure);
+        }
+        runRoutes.finishBackgroundFetch();
+        if (runRoutes.isBackgroundFetchRequested()) {
+            startBackgroundFetchIfIdle(runId, runRoutes);
+        }
+    }
+
+    private static void logBackgroundFetchFailure(String outcome, String runId, Throwable failure) {
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Background waypoints fetch {} for run {}: {}. The next request retries.",
+                    outcome, runId, failure.toString());
+        }
+        LOGGER.debug("Stack trace of the background waypoints fetch failure for run {}.", runId, failure);
     }
 }

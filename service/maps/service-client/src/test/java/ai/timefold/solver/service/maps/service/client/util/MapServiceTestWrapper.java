@@ -9,12 +9,15 @@ import ai.timefold.solver.service.maps.service.integration.internal.model.Travel
 
 public class MapServiceTestWrapper implements MapService {
 
-    private MapService delegate;
-    private MapServiceInvocationCounter mapServiceInvocationCounter;
+    private final MapService delegate;
+    private final MapServiceInvocationCounter mapServiceInvocationCounter;
+    private final WaypointsCallControl waypointsCallControl;
 
-    public MapServiceTestWrapper(MapService delegate, MapServiceInvocationCounter mapServiceInvocationCounter) {
+    public MapServiceTestWrapper(MapService delegate, MapServiceInvocationCounter mapServiceInvocationCounter,
+            WaypointsCallControl waypointsCallControl) {
         this.delegate = delegate;
         this.mapServiceInvocationCounter = mapServiceInvocationCounter;
+        this.waypointsCallControl = waypointsCallControl;
     }
 
     @Override
@@ -31,7 +34,12 @@ public class MapServiceTestWrapper implements MapService {
     @Override
     public List<Location> getWaypoints(List<Location> locations, String options) {
         mapServiceInvocationCounter.incrementWaypointsInvocationCounter();
-        return delegate.getWaypoints(locations, options);
+        waypointsCallControl.beforeCall();
+        try {
+            return delegate.getWaypoints(locations, options);
+        } finally {
+            waypointsCallControl.afterCall();
+        }
     }
 
     @Override

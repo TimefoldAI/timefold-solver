@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.interceptor.Interceptor;
 
 import ai.timefold.solver.service.definition.api.ModelOutput;
@@ -16,7 +16,8 @@ import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 
 @Priority(value = Interceptor.Priority.APPLICATION)
-@ApplicationScoped
+// why: an @ApplicationScoped bean with only an injection constructor is rewritten by ArC, and JaCoCo loses it
+@Singleton
 public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
     private AbstractStorageService<?, ?, ?, ?, ?, ?, ?> storageService;
@@ -36,6 +37,7 @@ public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
         if (waypoints != null && !waypoints.isEmpty()) {
             storageService.storeWaypoints(id, waypoints);
+            waypointsService.releaseFinishedRun(id);
         }
     }
 
