@@ -29,6 +29,10 @@ public abstract class ScoreContext<Score_ extends Score<Score_>, ScoreInliner_ e
         return constraintWeight;
     }
 
+    public void setInvolvedNodeIds(long[] involvedNodeIds) {
+        constraint.setInvolvedNodeIds(involvedNodeIds);
+    }
+
     protected final ScoreImpact<Score_> possiblyAddConstraintMatch(ScoreImpact<Score_> scoreImpact,
             @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         if (!inliner.constraintMatchPolicy.isEnabled()) {

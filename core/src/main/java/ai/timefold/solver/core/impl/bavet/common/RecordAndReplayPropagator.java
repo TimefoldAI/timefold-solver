@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -41,7 +40,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
 
     private final Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier;
     private final UnaryOperator<Tuple_> internalTupleToOutputTupleMapper;
-    private final Map<Object, List<Tuple_>> objectToOutputTuplesMap;
+    private final Map<Object, RecordedTupleList<Tuple_>> objectToOutputTuplesMap;
     /**
      * Output tuples which depend only on problem facts.
      * Unlike entity-derived output, these are not stored per-source
@@ -50,10 +49,10 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
      * Retained between recalculations so they can be retracted on cache invalidation.
      */
     private final List<Tuple_> factOutputTupleList = new ArrayList<>();
-    private final Set<Object> alreadyUpdatingSet = Collections.newSetFromMap(new IdentityHashMap<>());
     private final Map<Class<?>, Boolean> objectClassToIsEntitySourceClassMap;
 
     private final StaticPropagationQueue<Tuple_> propagationQueue;
+    private long updateEpoch = 0;
 
     public RecordAndReplayPropagator(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
             UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
@@ -91,18 +90,15 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     }
 
     public void update(Object object) {
-        if (!alreadyUpdatingSet.add(object)) {
-            // The list was already sent to the propagation queue.
-            // Don't iterate over it again, even though the queue would deduplicate its contents.
-            return;
-        }
         // Updates happen very frequently, so we optimize by avoiding the update queue
         // and going straight to the propagation queue.
-        // The propagation queue deduplicates updates internally.
-        var outTupleList = objectToOutputTuplesMap.get(object);
-        if (outTupleList != null) {
-            outTupleList.forEach(propagationQueue::update);
+        var recordedTupleList = objectToOutputTuplesMap.get(object);
+        if (recordedTupleList == null || recordedTupleList.lastUpdateEpoch == updateEpoch) {
+            // Null: the object produces no tuples. Same epoch: already queued in this cycle.
+            return;
         }
+        recordedTupleList.lastUpdateEpoch = updateEpoch;
+        recordedTupleList.forEach(propagationQueue::update);
     }
 
     public void retract(Object object) {
@@ -176,7 +172,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     @Override
     public void propagateUpdates() {
         propagationQueue.propagateUpdates();
-        alreadyUpdatingSet.clear();
+        updateEpoch++;
     }
 
     @Override
@@ -222,7 +218,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
         var internalTupleToOutputTupleMap =
                 new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size() + seenFactSet.size());
         for (var invalidated : seenEntitySet) {
-            var mappedTuples = new ArrayList<Tuple_>();
+            var mappedTuples = new RecordedTupleList<Tuple_>();
             try (var unusedActiveRecordingLifecycle = recordingTupleLifecycle.recordInto(
                     new TupleRecorder<>(mappedTuples, internalTupleToOutputTupleMapper, internalTupleToOutputTupleMap))) {
                 // Do a fake update on the object and settle the network; this will update precisely the
@@ -259,6 +255,12 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
             }
             factOutputTupleList.forEach(this::insertIfAbsent);
         }
+    }
+
+    private static final class RecordedTupleList<Tuple_> extends ArrayList<Tuple_> {
+
+        private long lastUpdateEpoch = -1;
+
     }
 
 }
