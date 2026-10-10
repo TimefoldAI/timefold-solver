@@ -135,7 +135,8 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             // add a phase lifecycle listener that unlock the solver status lock when solving started
             solver.addPhaseLifecycleListener(new UnlockLockPhaseLifecycleListener());
             // add a phase lifecycle listener that consumes the first initialized solution
-            solver.addPhaseLifecycleListener(new FirstInitializedSolutionPhaseLifecycleListener(currentConsumerSupport));
+            solver.addPhaseLifecycleListener(
+                    new FirstInitializedSolutionPhaseLifecycleListener<>(solver, problemId, currentConsumerSupport));
             // add a phase lifecycle listener once when the solver starts its execution
             solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener(currentConsumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
@@ -400,11 +401,17 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     /**
      * A listener that consumes the solution from a phase only if the phase first initializes the solution.
      */
-    private final class FirstInitializedSolutionPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
+    static final class FirstInitializedSolutionPhaseLifecycleListener<Solution_>
+            extends PhaseLifecycleListenerAdapter<Solution_> {
 
+        private final DefaultSolver<Solution_> solver;
+        private final Object problemId;
         private final ConsumerSupport<Solution_, Object> consumerSupport;
 
-        public FirstInitializedSolutionPhaseLifecycleListener(ConsumerSupport<Solution_, Object> consumerSupport) {
+        public FirstInitializedSolutionPhaseLifecycleListener(DefaultSolver<Solution_> solver, Object problemId,
+                ConsumerSupport<Solution_, Object> consumerSupport) {
+            this.solver = solver;
+            this.problemId = problemId;
             this.consumerSupport = consumerSupport;
         }
 
@@ -421,7 +428,9 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
                 // The Solver thread calls the method,
                 // but the consumption is done asynchronously by the Consumer thread.
                 // Only happens if the phase initializes the solution.
-                consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution(), phaseScope.getPhaseId(),
+                // The working solution is only cloned if there is a consumer,
+                // to avoid sharing its instance.
+                consumerSupport.consumeFirstInitializedSolution(phaseScope::cloneWorkingSolution, phaseScope.getPhaseId(),
                         possiblyInitializingPhase.getTerminationStatus().early());
             }
         }
@@ -430,7 +439,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     /**
      * A listener that is triggered once when the solver starts the solving process.
      */
-    private final class StartSolverJobPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
+    static final class StartSolverJobPhaseLifecycleListener<Solution_> extends PhaseLifecycleListenerAdapter<Solution_> {
 
         private final ConsumerSupport<Solution_, Object> consumerSupport;
 
@@ -440,7 +449,11 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
 
         @Override
         public void solvingStarted(SolverScope<Solution_> solverScope) {
-            consumerSupport.consumeStartSolverJob(solverScope.getWorkingSolution());
+            // Sharing the initial solution with the consumer is safe without cloning it,
+            // because the solver never reads it after SolverScope.setInitialSolution():
+            // the working and best solutions are planning clones of it,
+            // and on restart it is replaced by a fresh clone of the working solution.
+            consumerSupport.consumeStartSolverJob(solverScope::getInitialSolution);
         }
     }
 }
