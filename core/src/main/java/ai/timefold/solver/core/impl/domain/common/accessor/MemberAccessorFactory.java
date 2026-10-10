@@ -138,6 +138,9 @@ public final class MemberAccessorFactory {
                 case VOID_METHOD:
                     memberAccessor = new ReflectionMethodMemberAccessor(method);
                     break;
+                case VOID_METHOD_WITH_PARAMETER:
+                    memberAccessor = new ReflectionVoidMethodWithParameterMemberAccessor(method);
+                    break;
                 default:
                     throw new IllegalStateException("The memberAccessorType (%s) is not implemented."
                             .formatted(memberAccessorType));
