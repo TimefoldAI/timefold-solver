@@ -15,4 +15,8 @@ public record DemoMetaData(String id, String shortDescription, String longDescri
     public DemoMetaData(String id, String shortDescription) {
         this(id, shortDescription, null, List.of(), List.of());
     }
+
+    public DemoMetaData(String id, String shortDescription, String longDescription, List<String> tags) {
+        this(id, shortDescription, longDescription, tags, List.of());
+    }
 }

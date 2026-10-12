@@ -5,11 +5,13 @@ import ai.timefold.solver.service.maps.service.integration.internal.MapManagemen
 import ai.timefold.solver.service.maps.service.integration.internal.MapServiceApi;
 import ai.timefold.solver.service.maps.service.integration.internal.MapServiceHealthCheckApi;
 
+import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @RegisterRestClient(configKey = "map-service")
 @RegisterProvider(MapServiceExceptionMapper.class)
+@RegisterClientHeaders(ServiceAccountTokenHeadersFactory.class)
 public interface MapServiceClient extends MapServiceApi, MapServiceHealthCheckApi, MapManagementApi {
 
 }

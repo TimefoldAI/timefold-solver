@@ -11,7 +11,14 @@ public interface LocationsAwareSolverModel<Score_ extends Score<Score_>> extends
 
     List<Location> getLocations();
 
-    Optional<String> getLocationSetName();
+    /**
+     * Returns the optional name of the location set used for map-service requests.
+     *
+     * @return the location-set name, or {@link Optional#empty()} when no name is configured
+     */
+    default Optional<String> getLocationSetName() {
+        return Optional.empty();
+    }
 
     void setLocationsNotInMap(List<Location> locationsNotInMap);
 

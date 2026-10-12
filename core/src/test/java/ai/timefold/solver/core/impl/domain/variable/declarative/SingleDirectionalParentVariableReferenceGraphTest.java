@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -113,11 +114,13 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         var previousVariableMetamodel =
                 solutionDescriptor.getMetaModel().entity(TestdataCountingValue.class).variable("previous");
         var entityVariableMetamodel = solutionDescriptor.getMetaModel().entity(TestdataCountingValue.class).variable("entity");
+        var previousHook = Objects.requireNonNull(graph.resolveHookFor(previousVariableMetamodel));
+        var entityHook = Objects.requireNonNull(graph.resolveHookFor(entityVariableMetamodel));
 
-        graph.afterVariableChanged(previousVariableMetamodel, value2);
-        graph.afterVariableChanged(previousVariableMetamodel, value3);
-        graph.afterVariableChanged(entityVariableMetamodel, value5);
-        graph.afterVariableChanged(previousVariableMetamodel, value4);
+        previousHook.afterVariableChanged(value2);
+        previousHook.afterVariableChanged(value3);
+        entityHook.afterVariableChanged(value5);
+        previousHook.afterVariableChanged(value4);
 
         assertThatCode(graph::updateChanged).doesNotThrowAnyException();
 
@@ -213,17 +216,19 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         var metaModel = solutionDescriptor.getMetaModel().entity(TestdataCountingValue.class);
         var previousVariableMetamodel = metaModel.variable("previous");
         var entityVariableMetamodel = metaModel.variable("entity");
+        var previousHook = Objects.requireNonNull(graph.resolveHookFor(previousVariableMetamodel));
+        var entityHook = Objects.requireNonNull(graph.resolveHookFor(entityVariableMetamodel));
 
         // A real unassign fires afterListVariableElementUnassigned, which changes both parent
         // variables; countSupplier fails if it's called twice for the same element.
         scoreDirector.afterListVariableElementUnassigned(entity, "values", value2);
-        graph.afterVariableChanged(entityVariableMetamodel, value2);
-        graph.afterVariableChanged(previousVariableMetamodel, value2);
+        entityHook.afterVariableChanged(value2);
+        previousHook.afterVariableChanged(value2);
         scoreDirector.afterListVariableElementUnassigned(entity, "values", value3);
-        graph.afterVariableChanged(entityVariableMetamodel, value3);
-        graph.afterVariableChanged(previousVariableMetamodel, value3);
+        entityHook.afterVariableChanged(value3);
+        previousHook.afterVariableChanged(value3);
         // value4's previous changed too: from value3 to value1.
-        graph.afterVariableChanged(previousVariableMetamodel, value4);
+        previousHook.afterVariableChanged(value4);
 
         graph.updateChanged();
 
