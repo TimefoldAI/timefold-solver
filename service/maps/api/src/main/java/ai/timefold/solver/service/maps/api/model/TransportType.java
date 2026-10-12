@@ -35,6 +35,9 @@ public enum TransportType {
     @JsonCreator
     public static TransportType of(String value) {
         Objects.requireNonNull(value, "TransportType value must not be null.");
+        if (value.trim().isEmpty()) {
+            throw new IllegalArgumentException("TransportType value must not be blank.");
+        }
         // Both the wire value ("auto-select") and the enum name ("AUTO_SELECT") are accepted.
         return TransportType.valueOf(value.trim().toUpperCase().replace('-', '_'));
     }
