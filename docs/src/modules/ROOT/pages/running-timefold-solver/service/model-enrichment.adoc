@@ -198,14 +198,6 @@ TravelTime atNoon = origin.getTravelTimeTo(destination, departureTime, Transport
 The overloads without a transport type keep working and resolve to the primary transport type of the deployment,
 which is defined in <<autoSelect>>.
 
-If your model stores matrices itself rather than relying on the enricher, the setters take the transport type too:
-
-[source,java,options="nowrap"]
-----
-location.setTravelTimeMatrix(TransportType.BICYCLE, travelTimeMatrix);
-location.setDistanceMatrix(TransportType.BICYCLE, distanceMatrix);
-----
-
 [#autoSelect]
 === Routing one dataset with several transport types
 
