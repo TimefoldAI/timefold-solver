@@ -87,37 +87,53 @@ public class MapServiceOptionsSupplier {
     }
 
     public String getOptions() {
-        return getOptions((String) null);
+        return options().build();
     }
 
-    public String getOptions(String locationSetName) {
-        return getOptions(locationSetName, getDefaultTransportType());
+
+    public OptionsBuilder options() {
+        return new OptionsBuilder();
     }
 
-    public String getOptions(TransportType transportType) {
-        return getOptions((String) null, transportType);
-    }
+    public final class OptionsBuilder {
 
-    public String getOptions(String locationSetName, TransportType transportType) {
-        String providerOption = provider.map(MapServiceOptions::getProviderOption).orElse("");
-        String locationOption = location.map(MapServiceOptions::getLocationOption).orElse("");
-        String modelOption = model.map(MapServiceOptions::getModelOption).orElse("");
-        String modelVersionOption = modelVersion.map(MapServiceOptions::getModelVersionOption).orElse("");
-        String modelResourceOption = modelResource.map(MapServiceOptions::getModelResourceOption).orElse("");
-        String tenantIdOption = tenantId.map(MapServiceOptions::getTenantIdOption).orElse("");
-        String locationSetNameOption =
-                locationSetName == null ? "" : MapServiceOptions.getLocationSetNameOption(locationSetName);
-        String maxDistanceFromRoadOption = maxDistanceFromRoad.map(MapServiceOptions::getMaxDistanceFromRoadOption).orElse("");
-        String transportTypeOption = transportType == null || transportType.isAutoSelect()
-                ? ""
-                : MapServiceOptions.getTransportTypeOption(transportType.value());
-        String options = Stream
-                .of(providerOption, locationOption, modelOption, modelVersionOption, modelResourceOption, tenantIdOption,
-                        locationSetNameOption,
-                        maxDistanceFromRoadOption, transportTypeOption)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.joining(","));
-        return options.isEmpty() ? "" : options;
+        private String locationSetName;
+
+        private TransportType transportType = getDefaultTransportType();
+
+        private OptionsBuilder() {
+        }
+
+        public OptionsBuilder locationSetName(String locationSetName) {
+            this.locationSetName = locationSetName;
+            return this;
+        }
+
+        public OptionsBuilder transportType(TransportType transportType) {
+            this.transportType = transportType;
+            return this;
+        }
+
+        public String build() {
+            String providerOption = provider.map(MapServiceOptions::getProviderOption).orElse("");
+            String locationOption = location.map(MapServiceOptions::getLocationOption).orElse("");
+            String modelOption = model.map(MapServiceOptions::getModelOption).orElse("");
+            String modelVersionOption = modelVersion.map(MapServiceOptions::getModelVersionOption).orElse("");
+            String modelResourceOption = modelResource.map(MapServiceOptions::getModelResourceOption).orElse("");
+            String tenantIdOption = tenantId.map(MapServiceOptions::getTenantIdOption).orElse("");
+            String locationSetNameOption =
+                    locationSetName == null ? "" : MapServiceOptions.getLocationSetNameOption(locationSetName);
+            String maxDistanceFromRoadOption =
+                    maxDistanceFromRoad.map(MapServiceOptions::getMaxDistanceFromRoadOption).orElse("");
+            String transportTypeOption = transportType == null || transportType.isAutoSelect()
+                    ? ""
+                    : MapServiceOptions.getTransportTypeOption(transportType.value());
+            return Stream
+                    .of(providerOption, locationOption, modelOption, modelVersionOption, modelResourceOption,
+                            tenantIdOption, locationSetNameOption, maxDistanceFromRoadOption, transportTypeOption)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.joining(","));
+        }
     }
 
     private static TransportType resolveTransportType(Optional<String> transportType) {
