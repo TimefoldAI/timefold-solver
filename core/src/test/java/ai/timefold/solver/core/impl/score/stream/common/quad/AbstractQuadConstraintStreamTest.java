@@ -129,7 +129,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatch(entity4, entity5, entity4, entity4));
+        assertScore(scoreDirector, assertMatch(entity4, entity5, entity4, entity4).withIndictedObjects(entity4, entity5));
 
         // Remove entity
         scoreDirector.beforeEntityRemoved(entity4);
@@ -175,7 +175,8 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue(),
-                        solution.getFirstEntity()));
+                        solution.getFirstEntity()).withIndictedObjects(solution.getFirstEntity(),
+                                solution.getFirstEntityGroup(), solution.getFirstValue()));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(valueGroup);
@@ -209,9 +210,15 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity2, entity1, entityGroup, solution.getFirstValue()),
-                assertMatch(entity2, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue()),
-                assertMatch(entity1, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue()));
+                assertMatch(entity2, entity1, entityGroup, solution.getFirstValue())
+                        .withIndictedObjects(entity2, entity1, entityGroup, solution.getFirstValue(),
+                                solution.getFirstValue().getValueGroup()),
+                assertMatch(entity2, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue())
+                        .withIndictedObjects(entity2, solution.getFirstEntity(), solution.getFirstEntityGroup(),
+                                solution.getFirstValue(), solution.getFirstValue().getValueGroup()),
+                assertMatch(entity1, solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue())
+                        .withIndictedObjects(entity1, solution.getFirstEntity(), solution.getFirstEntityGroup(),
+                                solution.getFirstValue(), solution.getFirstValue().getValueGroup()));
 
         // Incremental
         var toRemove = solution.getFirstValueGroup();
@@ -343,7 +350,8 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterProblemFactRemoved(valueGroup);
         assertScore(scoreDirector,
                 assertMatch(solution.getFirstEntity(), solution.getFirstEntityGroup(), solution.getFirstValue(),
-                        solution.getFirstEntity()));
+                        solution.getFirstEntity()).withIndictedObjects(solution.getFirstEntity(),
+                                solution.getFirstEntityGroup(), solution.getFirstValue()));
     }
 
     @Override
@@ -489,21 +497,21 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, 1L, 1L));
+                assertMatch(1L, 1L, 1L, 1L).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value2);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(2L, 2L, 2L, 2L));
+                assertMatch(2L, 2L, 2L, 2L).withIndictedObjects(entity1, entity2));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity2);
         solution.getEntityList().remove(entity2);
         scoreDirector.afterEntityRemoved(entity2);
         assertScore(scoreDirector,
-                assertMatch(1L, 1L, 1L, 1L));
+                assertMatch(1L, 1L, 1L, 1L).withIndictedObjects(entity1));
     }
 
     @Override
@@ -526,10 +534,17 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE, count -> count)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
+
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-5, 5L)); // E1 G1 V1 E1, E1 G1 V1 E3, E2 G2 V2 E2, E3 G1 V1 E1, E3 G1 V1 E3
+                assertMatchWithScore(-5, 5L).withIndictedObjects( // E1 G1 V1 E1, E1 G1 V1 E3, E2 G2 V2 E2, E3 G1 V1 E1, E3 G1 V1 E3
+                        entity1, solution.getFirstEntityGroup(), solution.getFirstValue(),
+                        entity2, solution.getEntityGroupList().get(1), solution.getValueList().get(1),
+                        entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -537,7 +552,9 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, 2L)); // E2 G2 V2 E2, E3 G1 V1 E3
+                assertMatchWithScore(-2, 2L).withIndictedObjects( // E2 G2 V2 E2, E3 G1 V1 E3
+                        entity2, solution.getEntityGroupList().get(1), solution.getValueList().get(1),
+                        entity3, solution.getFirstEntityGroup(), solution.getFirstValue()));
     }
 
     @Override
@@ -554,16 +571,18 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 3L, 2L));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 3L, 2L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 1L, 1L));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 1L, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -592,14 +611,14 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 3L, 0L, 1L));
+                assertMatchWithScore(-1, 3L, 0L, 1L).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 1L, 1L, 1L));
+                assertMatchWithScore(-1, 1L, 1L, 1L).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -629,14 +648,14 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 3L, 0L, 1L, asSet(entity1, entity2)));
+                assertMatchWithScore(-1, 3L, 0L, 1L, asSet(entity1, entity2)).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
         solution.getEntityList().remove(entity1);
         scoreDirector.afterEntityRemoved(entity1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, 1L, 1L, 1L, asSet(entity2)));
+                assertMatchWithScore(-1, 1L, 1L, 1L, asSet(entity2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -659,8 +678,10 @@ public abstract class AbstractQuadConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value2),
-                assertMatchWithScore(-1, value1));
+                assertMatchWithScore(-1, value2).withIndictedObjects(solution.getEntityList().get(1),
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, value1).withIndictedObjects(solution.getFirstEntity(), solution.getFirstEntityGroup(),
+                        solution.getFirstValue(), solution.getEntityList().get(2)));
     }
 
     @Override
@@ -678,14 +699,19 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE, (group, count) -> count)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var value1 = solution.getFirstValue();
         var value2 = solution.getValueList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value2, 1L),
-                assertMatchWithScore(-4, value1, 4L));
+                assertMatchWithScore(-1, value2, 1L).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-4, value1, 4L).withIndictedObjects(entity1, solution.getFirstEntityGroup(), value1,
+                        entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -693,8 +719,9 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value2, 1L),
-                assertMatchWithScore(-1, value1, 1L));
+                assertMatchWithScore(-1, value2, 1L).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, value1, 1L).withIndictedObjects(entity3, solution.getFirstEntityGroup(), value1));
     }
 
     @Override
@@ -714,12 +741,14 @@ public abstract class AbstractQuadConstraintStreamTest
 
         var entity1 = solution.getFirstEntity();
         var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity1.toString(), 2L, singleton(entity1)),
-                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)));
+                assertMatchWithScore(-1, entity1.toString(), 2L, singleton(entity1)).withIndictedObjects(entity1, entity2,
+                        entity3),
+                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)).withIndictedObjects(entity2, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -727,7 +756,7 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)));
+                assertMatchWithScore(-1, entity2.toString(), 1L, singleton(entity2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -752,14 +781,15 @@ public abstract class AbstractQuadConstraintStreamTest
         entity1.setLongProperty(Long.MAX_VALUE);
         var entity2 = solution.getEntityList().get(1);
         entity2.setLongProperty(Long.MIN_VALUE);
+        var entity3 = solution.getEntityList().get(2);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entity1.toString(), Long.MAX_VALUE, Long.MAX_VALUE,
-                        singleton(entity1)),
+                        singleton(entity1)).withIndictedObjects(entity1, entity2, entity3),
                 assertMatchWithScore(-1, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
-                        singleton(entity2)));
+                        singleton(entity2)).withIndictedObjects(entity2, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -768,7 +798,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
-                        singleton(entity2)));
+                        singleton(entity2)).withIndictedObjects(entity2, entity3));
     }
 
     @Override
@@ -785,6 +815,9 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -793,8 +826,9 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2),
-                assertMatchWithScore(-1, group1, value1));
+                assertMatchWithScore(-1, group2, value2).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, value1).withIndictedObjects(entity1, group1, value1, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -802,8 +836,9 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2),
-                assertMatchWithScore(-1, group1, value1));
+                assertMatchWithScore(-1, group2, value2).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, value1).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -822,6 +857,9 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE, (group, value, count) -> count)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -830,8 +868,9 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2, 1L),
-                assertMatchWithScore(-4, group1, value1, 4L));
+                assertMatchWithScore(-1, group2, value2, 1L).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-4, group1, value1, 4L).withIndictedObjects(entity1, group1, value1, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -839,8 +878,9 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2, 1L),
-                assertMatchWithScore(-1, group1, value1, 1L));
+                assertMatchWithScore(-1, group2, value2, 1L).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, value1, 1L).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -859,6 +899,9 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE, (group, value, count, sameCount) -> count + sameCount)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -867,8 +910,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, group2, value2, 1L, 1L),
-                assertMatchWithScore(-8, group1, value1, 4L, 4L));
+                assertMatchWithScore(-2, group2, value2, 1L, 1L).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-8, group1, value1, 4L, 4L).withIndictedObjects(entity1, group1, value1, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -876,8 +919,8 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, group2, value2, 1L, 1L),
-                assertMatchWithScore(-2, group1, value1, 1L, 1L));
+                assertMatchWithScore(-2, group2, value2, 1L, 1L).withIndictedObjects(entity2, group2, value2),
+                assertMatchWithScore(-2, group1, value1, 1L, 1L).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -897,6 +940,9 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -905,8 +951,9 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group2, value2),
-                assertMatchWithScore(-1, group1, group1, value1));
+                assertMatchWithScore(-1, group2, group2, value2).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, group1, value1).withIndictedObjects(entity1, group1, value1, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -914,8 +961,9 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, value2, value2),
-                assertMatchWithScore(-1, group1, value1, value1));
+                assertMatchWithScore(-1, group2, value2, value2).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, value1, value1).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -935,14 +983,19 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group2, group2, 1L),
-                assertMatchWithScore(-1, group1, group1, group1, 4L));
+                assertMatchWithScore(-1, group2, group2, group2, 1L).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, group1, group1, 4L).withIndictedObjects(entity1, group1,
+                        solution.getFirstValue(), entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -950,8 +1003,10 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group2, group2, 1L),
-                assertMatchWithScore(-1, group1, group1, group1, 1L));
+                assertMatchWithScore(-1, group2, group2, group2, 1L).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, group1, group1, 1L).withIndictedObjects(entity3, group1,
+                        solution.getFirstValue()));
     }
 
     @Override
@@ -972,6 +1027,9 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_ID));
 
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
         var value1 = solution.getFirstValue();
@@ -980,8 +1038,9 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group2, group2, value2),
-                assertMatchWithScore(-1, group1, group1, group1, value1));
+                assertMatchWithScore(-1, group2, group2, group2, value2).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, group1, group1, value1).withIndictedObjects(entity1, group1, value1, entity3));
 
         // Incremental
         var entity = solution.getFirstEntity();
@@ -989,8 +1048,9 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, group2, group2, group2, value2),
-                assertMatchWithScore(-1, group1, group1, group1, value1));
+                assertMatchWithScore(-1, group2, group2, group2, value2).withIndictedObjects(entity2,
+                        solution.getEntityGroupList().get(1), solution.getValueList().get(1)),
+                assertMatchWithScore(-1, group1, group1, group1, value1).withIndictedObjects(entity3, group1, value1));
     }
 
     @Override
@@ -1017,7 +1077,7 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(entity1, entity2, group1, group2),
-                assertMatch(entity1, entity3, group1, group1),
+                assertMatch(entity1, entity3, group1, group1).withIndictedObjects(entity1, entity3, group1),
                 assertMatch(entity2, entity3, group2, group1));
     }
 
@@ -1036,22 +1096,24 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, group1, group2),
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity2, entity3, group2, group1),
+                assertMatch(asSet(group1)).withIndictedObjects(entity, entity3, group1));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity2, entity3, group2, group1));
     }
 
     @Override
@@ -1074,7 +1136,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(solution.getFirstEntity(),
+                        solution.getEntityList().get(1), group1, group2));
 
         var entity = solution.getFirstEntity();
 
@@ -1101,21 +1164,23 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var entity3 = solution.getEntityList().get(2);
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)),
-                assertMatch(asSet(group1)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity, entity2, group1, group2, entity3),
+                assertMatch(asSet(group1)).withIndictedObjects(entity, entity3, group1));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(entity2, entity3, group2, group1));
     }
 
     @Override
@@ -1139,7 +1204,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(asSet(group1, group2)));
+                assertMatch(asSet(group1, group2)).withIndictedObjects(solution.getFirstEntity(),
+                        solution.getEntityList().get(1), group1, group2));
 
         var entity = solution.getFirstEntity();
 
@@ -1168,7 +1234,9 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1)));
+                assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1)).withIndictedObjects(
+                        solution.getFirstEntity(), solution.getEntityList().get(1), solution.getFirstEntityGroup(),
+                        solution.getEntityGroupList().get(1)));
 
         var entity = solution.getFirstEntity();
 
@@ -1199,7 +1267,9 @@ public abstract class AbstractQuadConstraintStreamTest
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(solution.getFirstEntity(), solution.getEntityList().get(1),
-                        solution.getFirstEntity().getLongProperty() + solution.getEntityList().get(1).getLongProperty()));
+                        solution.getFirstEntity().getLongProperty() + solution.getEntityList().get(1).getLongProperty())
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1),
+                                solution.getFirstEntityGroup(), solution.getEntityGroupList().get(1)));
 
         var entity = solution.getFirstEntity();
 
@@ -1232,7 +1302,9 @@ public abstract class AbstractQuadConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatchWithScore(-1, solution.getFirstEntity().getCode(),
                         solution.getEntityList().get(1).getCode(), solution.getFirstEntityGroup().getCode(),
-                        solution.getEntityGroupList().get(1).getCode()));
+                        solution.getEntityGroupList().get(1).getCode())
+                        .withIndictedObjects(solution.getFirstEntity(), solution.getEntityList().get(1),
+                                solution.getFirstEntityGroup(), solution.getEntityGroupList().get(1)));
 
         var entity = solution.getFirstEntity();
 
@@ -1264,15 +1336,15 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, group1),
-                assertMatch(entity1, entity2, entity3, group1),
-                assertMatch(entity1, entity2, entity3, group2),
-                assertMatch(entity1, entity3, entity2, group1),
-                assertMatch(entity1, entity3, entity2, group1),
-                assertMatch(entity1, entity3, entity2, group2),
-                assertMatch(entity2, entity3, entity1, group1),
-                assertMatch(entity2, entity3, entity1, group1),
-                assertMatch(entity2, entity3, entity1, group2));
+                assertMatch(entity1, entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, group1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity1, entity3, entity2, group1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity1, entity3, entity2, group2).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity2, entity3, entity1, group1).withIndictedObjects(entity2, entity3, entity1),
+                assertMatch(entity2, entity3, entity1, group1).withIndictedObjects(entity2, entity3, entity1),
+                assertMatch(entity2, entity3, entity1, group2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1302,12 +1374,12 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, group1),
-                assertMatch(entity1, entity2, entity3, group2),
-                assertMatch(entity1, entity3, entity2, group1),
-                assertMatch(entity1, entity3, entity2, group2),
-                assertMatch(entity2, entity3, entity1, group1),
-                assertMatch(entity2, entity3, entity1, group2));
+                assertMatch(entity1, entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, group1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity1, entity3, entity2, group2).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity2, entity3, entity1, group1).withIndictedObjects(entity2, entity3, entity1),
+                assertMatch(entity2, entity3, entity1, group2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1338,12 +1410,12 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, group1),
-                assertMatch(entity1, entity2, entity3, group2),
-                assertMatch(entity1, entity3, entity2, group1),
-                assertMatch(entity1, entity3, entity2, group2),
-                assertMatch(entity2, entity3, entity1, group1),
-                assertMatch(entity2, entity3, entity1, group2));
+                assertMatch(entity1, entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, group1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity1, entity3, entity2, group2).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity2, entity3, entity1, group1).withIndictedObjects(entity2, entity3, entity1),
+                assertMatch(entity2, entity3, entity1, group2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1374,12 +1446,12 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, group1),
-                assertMatch(entity1, entity2, entity3, group2),
-                assertMatch(entity1, entity3, entity2, group1),
-                assertMatch(entity1, entity3, entity2, group2),
-                assertMatch(entity2, entity3, entity1, group1),
-                assertMatch(entity2, entity3, entity1, group2));
+                assertMatch(entity1, entity2, entity3, group1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, group2).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity3, entity2, group1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity1, entity3, entity2, group2).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity2, entity3, entity1, group1).withIndictedObjects(entity2, entity3, entity1),
+                assertMatch(entity2, entity3, entity1, group2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity1);
@@ -1422,8 +1494,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, null, null, null));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, null, null, null).withIndictedObjects(entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1434,8 +1506,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, null, null, null));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, null, null, null).withIndictedObjects(entity3));
     }
 
     @Override
@@ -1473,8 +1545,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, null, null, null));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, null, null, null).withIndictedObjects(entity2));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1485,8 +1557,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, null, null, null));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, null, null, null).withIndictedObjects(entity3));
     }
 
     @Override
@@ -1525,8 +1597,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, null, null));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, null, null).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1537,8 +1609,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, null, null));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, null, null).withIndictedObjects(entity3, entity2));
     }
 
     @Override
@@ -1578,8 +1650,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, null, null));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, null, null).withIndictedObjects(entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1590,8 +1662,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, null, null));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, null, null).withIndictedObjects(entity3, entity2));
     }
 
     @Override
@@ -1632,8 +1704,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, null));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, null).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1644,8 +1716,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, null));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, entity1, null).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -1687,8 +1759,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, null));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, null).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1699,8 +1771,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, null));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, entity1, null).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -1743,8 +1815,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, entity2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1755,8 +1827,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, entity1, entity3).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -1799,8 +1871,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity1, entity2, entity3, entity1));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1811,8 +1883,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity1, entity3, entity2, entity1));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2));
     }
 
     @Override
@@ -1856,8 +1928,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1),
-                assertMatch(entity2, entity3, entity1, entity2));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3),
+                assertMatch(entity2, entity3, entity1, entity2).withIndictedObjects(entity2, entity3, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1868,8 +1940,8 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1),
-                assertMatch(entity3, entity2, entity1, entity3));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2),
+                assertMatch(entity3, entity2, entity1, entity3).withIndictedObjects(entity3, entity2, entity1));
     }
 
     @Override
@@ -1913,7 +1985,7 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, entity2, entity3, entity1));
+                assertMatch(entity1, entity2, entity3, entity1).withIndictedObjects(entity1, entity2, entity3));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1924,7 +1996,7 @@ public abstract class AbstractQuadConstraintStreamTest
         entity2.setValue(value3);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, entity3, entity2, entity1));
+                assertMatch(entity1, entity3, entity2, entity1).withIndictedObjects(entity1, entity3, entity2));
     }
 
     @Override
@@ -1971,8 +2043,10 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value1, value2, value3.getCode() + value1.getCode(), 1L),
-                assertMatchWithScore(-1, value3, value2, value1.getCode() + value3.getCode(), 1L));
+                assertMatchWithScore(-1, value1, value2, value3.getCode() + value1.getCode(), 1L).withIndictedObjects(entity1,
+                        entity2, entity3),
+                assertMatchWithScore(-1, value3, value2, value1.getCode() + value3.getCode(), 1L).withIndictedObjects(entity3,
+                        entity2, entity1));
 
         // Incremental
         scoreDirector.beforeVariableChanged(entity3, "value");
@@ -1988,8 +2062,10 @@ public abstract class AbstractQuadConstraintStreamTest
         entity3.setValue(value1);
         scoreDirector.afterVariableChanged(entity3, "value");
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, value1, value2, value3.getCode() + value1.getCode(), 1L),
-                assertMatchWithScore(-1, value3, value2, value1.getCode() + value3.getCode(), 1L));
+                assertMatchWithScore(-1, value1, value2, value3.getCode() + value1.getCode(), 1L).withIndictedObjects(entity1,
+                        entity2, entity3),
+                assertMatchWithScore(-1, value3, value2, value1.getCode() + value3.getCode(), 1L).withIndictedObjects(entity3,
+                        entity2, entity1));
     }
 
     @Override
@@ -2024,18 +2100,18 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(entity1, 0, 1, 2),
-                assertMatch(entity2, Integer.MAX_VALUE, -1, 0),
-                assertMatch(entity3, Integer.MAX_VALUE, -1, 0));
+                assertMatch(entity1, 0, 1, 2).withIndictedObjects(entity1),
+                assertMatch(entity2, Integer.MAX_VALUE, -1, 0).withIndictedObjects(entity2),
+                assertMatch(entity3, Integer.MAX_VALUE, -1, 0).withIndictedObjects(entity3));
 
         // Incremental; all entities are still present, but the indexes are different.
         scoreDirector.beforeVariableChanged(entity2, "value");
         entity2.setValue(value1);
         scoreDirector.afterVariableChanged(entity2, "value");
         assertScore(scoreDirector,
-                assertMatch(entity1, 0, 1, 2),
-                assertMatch(entity2, 0, 1, 2),
-                assertMatch(entity3, Integer.MAX_VALUE, -1, 0));
+                assertMatch(entity1, 0, 1, 2).withIndictedObjects(entity1),
+                assertMatch(entity2, 0, 1, 2).withIndictedObjects(entity2),
+                assertMatch(entity3, Integer.MAX_VALUE, -1, 0).withIndictedObjects(entity3));
     }
 
     @Override

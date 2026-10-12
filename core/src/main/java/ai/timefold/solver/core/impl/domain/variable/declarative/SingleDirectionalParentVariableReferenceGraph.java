@@ -5,15 +5,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
+import ai.timefold.solver.core.impl.util.ShrinkingIdentityHashMap;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
+
+import org.jspecify.annotations.Nullable;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
 
@@ -29,8 +30,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     // This is a field to avoid allocating a new list every update
     private final List<Object> sortedChangedEntities;
     private final Class<?> monitoredEntityClass;
-    private final Map<Object, Object> keyToLastProcessedObject;
+    private final ShrinkingIdentityHashMap<Object, Object> keyToLastProcessedObject;
     private final boolean canTerminateEarly;
+    private final MonitoredVariableChangeHook monitoredVariableChangeHook = new MonitoredVariableChangeHook();
     private boolean isUpdating;
 
     @SuppressWarnings("unchecked")
@@ -41,12 +43,12 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             boolean canTerminateEarly,
             Object[] entities) {
-        monitoredEntityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
+        monitoredEntityClass = sortedDeclarativeShadowVariableDescriptors.getFirst().getEntityDescriptor().getEntityClass();
         sortedVariableUpdaterInfos = new VariableUpdaterInfo[sortedDeclarativeShadowVariableDescriptors.size()];
         monitoredSourceVariableSet = new HashSet<>();
         changedEntities = new LinkedIdentityHashSet<>();
         sortedChangedEntities = new ArrayList<>();
-        keyToLastProcessedObject = new IdentityHashMap<>();
+        keyToLastProcessedObject = new ShrinkingIdentityHashMap<>();
         isUpdating = false;
 
         this.canTerminateEarly = canTerminateEarly;
@@ -58,7 +60,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
                 .sorted(topologicalOrderComparator).toArray();
         var entityConsistencyState =
                 consistencyTracker.getDeclarativeEntityConsistencyState(
-                        sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor());
+                        sortedDeclarativeShadowVariableDescriptors.getFirst().getEntityDescriptor());
 
         var updaterIndex = 0;
         for (var variableDescriptor : sortedDeclarativeShadowVariableDescriptors) {
@@ -141,15 +143,29 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     }
 
     @Override
-    public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
-        // Do nothing
+    public boolean hasPendingChanges() {
+        return !changedEntities.isEmpty();
     }
 
     @Override
-    public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
-        if (!isUpdating && monitoredSourceVariableSet.contains(variableReference) && monitoredEntityClass.isInstance(entity)) {
-            changedEntities.add(entity);
+    public @Nullable VariableChangeHook resolveHookFor(VariableMetaModel<?, ?, ?> variableReference) {
+        return monitoredSourceVariableSet.contains(variableReference) ? monitoredVariableChangeHook : null;
+    }
+
+    private final class MonitoredVariableChangeHook implements VariableChangeHook {
+
+        @Override
+        public void beforeVariableChanged(Object entity) {
+            // Do nothing
         }
+
+        @Override
+        public void afterVariableChanged(Object entity) {
+            if (!isUpdating && monitoredEntityClass.isInstance(entity)) {
+                changedEntities.add(entity);
+            }
+        }
+
     }
 
     @Override

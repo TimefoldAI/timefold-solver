@@ -76,7 +76,8 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
 
     private void enrichSingleMatrix(LocationsAwareSolverModel<?> solverModel, TransportType transportType,
             boolean primary) {
-        List<Location> locations = solverModel.getLocations(); // Get all the locations from the model only once.
+        // Get all the locations from the model only once.
+        List<Location> locations = Objects.requireNonNull(solverModel.getLocations(), "List of locations cannot be null.");
         TravelTimeAndDistanceWithMetadata travelTimeAndDistance;
         try {
             travelTimeAndDistance =
@@ -112,7 +113,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
 
     private void enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel, TransportType transportType,
             boolean primary) {
-        List<Location> locations = solverModel.getLocations();
+        List<Location> locations = Objects.requireNonNull(solverModel.getLocations(), "List of locations cannot be null.");
         TravelTimesByTimeframeWithMetadata result;
         try {
             result = mapService.getTravelTimeAndDistanceByTimeframe(locations,
