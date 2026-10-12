@@ -195,8 +195,7 @@ TravelDistance distance = origin.getDistanceTo(destination, TransportType.BICYCL
 TravelTime atNoon = origin.getTravelTimeTo(destination, departureTime, TransportType.BICYCLE);
 ----
 
-The overloads without a transport type keep working and resolve to the primary transport type of the deployment,
-which is defined in <<autoSelect>>.
+The overloads without a transport type keep working and use the default transport type.
 
 [#autoSelect]
 === Routing one dataset with several transport types
@@ -216,18 +215,10 @@ public List<TransportType> getTransportTypes() {
 }
 ----
 
-Each of those transport types is validated against the allowed transport types and then fetched in its own map service
-request, so a dataset using two transport types results in two requests and two sets of matrices per `Location`.
+Each of those transport types is fetched in its own map service request, so a dataset using two transport types
+results in two sets of matrices per `Location`.
 A dataset that uses a transport type the tenant is not allowed to route with is rejected before any request is made.
 When the solution returns an empty list, the default transport type is used.
-
-One of the transport types is the *primary* one: the configured one when it is fixed, otherwise `car` if the dataset
-uses it, and the first one in declaration order otherwise. The primary transport type is special in two ways:
-
-* The model-level map metadata — the locations that are not in the map, and the resolved map region — comes from its
-request only.
-* Its matrices also back the lookups that do not name a transport type, so those keep answering on a deployment
-configured for a single non-default transport type.
 
 
 [#enrichmentDirector]
