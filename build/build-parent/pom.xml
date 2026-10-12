@@ -47,7 +47,7 @@
     <version.org.testcontainers>2.0.5</version.org.testcontainers>
     <version.org.springframework.boot>4.1.1</version.org.springframework.boot>
     <version.org.wiremock>3.13.2</version.org.wiremock>
-    <version.ow2.asm>9.10.1</version.ow2.asm>
+    <version.ow2.asm>9.11</version.ow2.asm>
     <!-- Upgrade Jackson and its annotations together; otherwise there may be runtime errors. -->
     <version.tools.jackson>3.2.3</version.tools.jackson>
     <version.com.fasterxml.jackson.core>2.22</version.com.fasterxml.jackson.core>
