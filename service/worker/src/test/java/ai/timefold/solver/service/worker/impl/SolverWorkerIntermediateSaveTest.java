@@ -14,8 +14,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Solutions found while solving are superseded by the next one, so a storage that cannot be reached for a while only
- * costs those, not the whole run.
+ * Intermediate solutions are superseded by later solutions.
+ * Thus, transient storage failures can lose an intermediate solution without failing the run.
  */
 class SolverWorkerIntermediateSaveTest {
 

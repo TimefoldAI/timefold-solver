@@ -691,9 +691,10 @@ public class SolverWorker {
 
     /**
      * Stores a solution found while solving, which is superseded by the next one and in the end by the final solution.
-     * A storage that keeps failing past its retries therefore does not fail the run: only storing the solution is
-     * skipped, the event announcing it is still sent, as it carries the solution itself. The final solution is stored
-     * strictly, as is everything else.
+     * A storage that keeps failing after all retries does not fail the run.
+     * Only the save is skipped.
+     * The event is still sent because it carries the solution.
+     * The final solution and all other data are stored strictly.
      *
      * @return true when the solution was stored, false when it was skipped
      */
