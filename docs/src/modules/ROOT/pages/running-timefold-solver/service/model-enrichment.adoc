@@ -172,10 +172,10 @@ Which routing profile those matrices describe is controlled by the transport typ
 | Not a routing profile. The transport types are taken from the dataset instead; see <<autoSelect>>.
 |===
 
-Set it with the `timefold.platform.map-service.transport-type` property.
-A deployment may additionally be restricted to a subset of transport types with
-`timefold.platform.map-service.allowed-transport-types`, a comma-separated list; when it is not set, every transport
-type is allowed.
+The platform sets the transport type per deployment.
+A model can declare its default with `timefold.model.default-config.map.transport-type`,
+see xref:deploying-to-platform/model-metadata.adoc[model metadata].
+The platform may also restrict which transport types a tenant can use; the model does not configure this.
 
 A dataset that uses a transport type other than the configured one is rejected before any map service call is made,
 because a deployment only has the map for the profile it is configured with.
@@ -209,7 +209,7 @@ location.setDistanceMatrix(TransportType.BICYCLE, distanceMatrix);
 [#autoSelect]
 === Routing one dataset with several transport types
 
-With `timefold.platform.map-service.transport-type=auto-select`, the transport types are not fixed by configuration.
+With the transport type set to `auto-select`, the transport types are not fixed by configuration.
 The enricher asks the solution which ones the dataset actually uses, by overriding `getTransportTypes()`:
 
 [source,java,options="nowrap"]
@@ -226,7 +226,7 @@ public List<TransportType> getTransportTypes() {
 
 Each of those transport types is validated against the allowed transport types and then fetched in its own map service
 request, so a dataset using two transport types results in two requests and two sets of matrices per `Location`.
-A dataset that uses a transport type the deployment is not allowed to route with is rejected before any request is made.
+A dataset that uses a transport type the tenant is not allowed to route with is rejected before any request is made.
 When the solution returns an empty list, the default transport type is used.
 
 One of the transport types is the *primary* one: the configured one when it is fixed, otherwise `car` if the dataset
