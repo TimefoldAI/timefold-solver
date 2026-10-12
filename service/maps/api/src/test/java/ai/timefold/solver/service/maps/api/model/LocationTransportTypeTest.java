@@ -245,7 +245,7 @@ class LocationTransportTypeTest {
     @Test
     void defaultTransportTypeTimeframeMatricesFeedTheTransportTypeLessLookups() {
         from.setTravelTimeMatrices(TransportType.CAR, timeframes(100L, 110L), INDEX_RESOLVER);
-        from.setDistanceMatrices((TransportType) null, timeframes(1_000L, 1_100L), INDEX_RESOLVER);
+        from.setDistanceMatrices(null, timeframes(1_000L, 1_100L), INDEX_RESOLVER);
 
         assertThat(from.getTravelTimeTo(to, AFTERNOON_AT)).isEqualTo(TravelTime.of(110L));
         assertThat(from.getDistanceTo(to, AFTERNOON_AT)).isEqualTo(TravelDistance.of(1_100L));
