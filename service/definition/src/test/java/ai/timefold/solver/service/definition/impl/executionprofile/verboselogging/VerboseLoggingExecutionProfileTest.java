@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.impl.executionprofile;
+package ai.timefold.solver.service.definition.impl.executionprofile.verboselogging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,9 +61,9 @@ class VerboseLoggingExecutionProfileTest {
 
     @Test
     void raisesOnlyTheSolverCategoryNotTheRootLogger() {
-        Map<String, String> environment = profile.toEnvironment(Map.of());
-        assertThat(environment).containsEntry(VerboseLoggingExecutionProfile.ENV_QUARKUS_LOG_CATEGORY_SOLVER_LEVEL, "DEBUG");
-        // No blanket root-logger level bump.
-        assertThat(environment).doesNotContainKey("QUARKUS_LOG_LEVEL");
+        assertThat(profile.toEnvironment(Map.of()))
+                .containsEntry(VerboseLoggingExecutionProfile.ENV_QUARKUS_LOG_CATEGORY_SOLVER_LEVEL, "DEBUG")
+                // No blanket root-logger level bump.
+                .doesNotContainKey("QUARKUS_LOG_LEVEL");
     }
 }
