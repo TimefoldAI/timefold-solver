@@ -95,6 +95,31 @@ public class MapServiceOptionsSupplier {
         return new OptionsBuilder();
     }
 
+    private static TransportType resolveTransportType(Optional<String> transportType) {
+        return transportType
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .map(TransportType::of)
+                .orElse(TransportType.CAR);
+    }
+
+    private static List<TransportType> resolveAllowedTransportTypes(Optional<String> allowedTransportTypes) {
+        List<TransportType> allowed = allowedTransportTypes
+                .map(value -> Arrays.stream(value.split(","))
+                        .map(String::trim)
+                        .filter(part -> !part.isEmpty())
+                        .map(TransportType::of)
+                        .distinct()
+                        .toList())
+                .orElseGet(List::of);
+        if (allowed.stream().anyMatch(TransportType::isAutoSelect)) {
+            throw new IllegalArgumentException(
+                    "The transport type (%s) cannot be part of the allowed transport types (%s); it is not a routing profile."
+                            .formatted(TransportType.AUTO_SELECT, allowed));
+        }
+        return allowed;
+    }
+
     public final class OptionsBuilder {
 
         private String locationSetName;
@@ -134,31 +159,6 @@ public class MapServiceOptionsSupplier {
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.joining(","));
         }
-    }
-
-    private static TransportType resolveTransportType(Optional<String> transportType) {
-        return transportType
-                .map(String::trim)
-                .filter(value -> !value.isEmpty())
-                .map(TransportType::of)
-                .orElse(TransportType.CAR);
-    }
-
-    private static List<TransportType> resolveAllowedTransportTypes(Optional<String> allowedTransportTypes) {
-        List<TransportType> allowed = allowedTransportTypes
-                .map(value -> Arrays.stream(value.split(","))
-                        .map(String::trim)
-                        .filter(part -> !part.isEmpty())
-                        .map(TransportType::of)
-                        .distinct()
-                        .toList())
-                .orElseGet(List::of);
-        if (allowed.stream().anyMatch(TransportType::isAutoSelect)) {
-            throw new IllegalArgumentException(
-                    "The transport type (%s) cannot be part of the allowed transport types (%s); it is not a routing profile."
-                            .formatted(TransportType.AUTO_SELECT, allowed));
-        }
-        return allowed;
     }
 
 }
