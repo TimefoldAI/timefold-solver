@@ -167,18 +167,15 @@ Which routing profile those matrices describe is controlled by the transport typ
 
 | `foot`
 | Distances follow the walking network.
-
-| `auto-select`
-| Not a routing profile. The transport types are taken from the dataset instead; see <<autoSelect>>.
 |===
 
 The platform sets the transport type per deployment.
 A model can declare its default with `timefold.model.default-config.map.transport-type`,
 see xref:deploying-to-platform/model-metadata.adoc[model metadata].
-The platform may also restrict which transport types a tenant can use; the model does not configure this.
 
-A dataset that uses a transport type other than the configured one is rejected before any map service call is made,
+When the deployment fixes a transport type, a dataset that uses another one is rejected before any map service call is made,
 because a deployment only has the map for the profile it is configured with.
+Otherwise, the transport types can be taken from the dataset; see <<multipleTransportTypes>>.
 
 [#readingMatrices]
 === Reading travel times and distances
@@ -197,10 +194,10 @@ TravelTime atNoon = origin.getTravelTimeTo(destination, departureTime, Transport
 
 The overloads without a transport type keep working and use the default transport type.
 
-[#autoSelect]
+[#multipleTransportTypes]
 === Routing one dataset with several transport types
 
-With the transport type set to `auto-select`, the transport types are not fixed by configuration.
+When the deployment does not fix a transport type, the transport types come from the dataset.
 The enricher asks the solution which ones the dataset actually uses, by overriding `getTransportTypes()`:
 
 [source,java,options="nowrap"]
