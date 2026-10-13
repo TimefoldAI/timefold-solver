@@ -90,7 +90,6 @@ public class MapServiceOptionsSupplier {
         return options().build();
     }
 
-
     public OptionsBuilder options() {
         return new OptionsBuilder();
     }
