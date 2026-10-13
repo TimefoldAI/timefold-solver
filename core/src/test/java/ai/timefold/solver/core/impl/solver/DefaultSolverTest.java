@@ -2969,6 +2969,7 @@ class DefaultSolverTest {
                     try {
                         changeProcessed.await();
                     } catch (InterruptedException e) {
+                        throw new AssertionError("Interrupted while waiting for event consumption.", e);
                     }
                 }
             });
