@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
+import ai.timefold.solver.service.definition.impl.enrichment.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;

@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
+import ai.timefold.solver.service.definition.impl.enrichment.MapEnrichmentContext;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.api.model.travel.TravelDistance;
 import ai.timefold.solver.service.maps.api.model.travel.TravelTime;
