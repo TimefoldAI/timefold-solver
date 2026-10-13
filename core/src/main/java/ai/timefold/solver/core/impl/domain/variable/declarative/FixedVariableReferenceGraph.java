@@ -70,6 +70,11 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
+    public boolean hasPendingChanges() {
+        return !changeTracker.isEmpty();
+    }
+
+    @Override
     boolean innerUpdateChanged() {
         // A fixed graph is acyclic - assertNoFixedLoops() rejects a looped one at build time -
         // and no edge is added or removed afterwards, so every edge runs strictly forward in

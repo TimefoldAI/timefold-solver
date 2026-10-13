@@ -16,6 +16,9 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedBaseValue;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedSolution;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedSubclassValue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -280,6 +283,27 @@ class PlanningSolutionMetaModelTest {
             }
 
         }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test
+    void inheritedVariableIsEqualAcrossEntities() {
+        var solutionMetaModel = TestdataDeclarativeExtendedSolution.buildSolutionDescriptor().getMetaModel();
+        var baseEntityMetaModel = solutionMetaModel.entity(TestdataDeclarativeExtendedBaseValue.class);
+        var subclassEntityMetaModel = solutionMetaModel.entity(TestdataDeclarativeExtendedSubclassValue.class);
+        var baseVariableMetaModel = baseEntityMetaModel.variable("previous");
+        var subclassVariableMetaModel = subclassEntityMetaModel.variable("previous");
+        var subclassOwnVariableMetaModel = subclassEntityMetaModel.variable("codeSum");
+
+        assertSoftly(softly -> {
+            softly.assertThat(subclassVariableMetaModel).isEqualTo(baseVariableMetaModel);
+            softly.assertThat(subclassVariableMetaModel).hasSameHashCodeAs(baseVariableMetaModel);
+            softly.assertThat(((Comparable) subclassVariableMetaModel).compareTo(baseVariableMetaModel)).isZero();
+            softly.assertThat(subclassVariableMetaModel.entity()).isSameAs(subclassEntityMetaModel);
+            softly.assertThat(baseVariableMetaModel.entity()).isSameAs(baseEntityMetaModel);
+            // Ordinals restart for each declaring entity; comparison must still tell these apart.
+            softly.assertThat(((Comparable) subclassVariableMetaModel).compareTo(subclassOwnVariableMetaModel)).isNotZero();
+        });
     }
 
 }

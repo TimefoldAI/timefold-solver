@@ -25,6 +25,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     private final ScoreImpactType scoreImpactType;
     // Constraint is not generic in uni/bi/..., therefore these can not be typed.
     private final @Nullable Object justificationMapping;
+    protected long @Nullable [] involvedNodeIds;
 
     /**
      *
@@ -42,6 +43,14 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         this.defaultConstraintWeight = defaultConstraintWeight;
         this.scoreImpactType = Objects.requireNonNull(scoreImpactType);
         this.justificationMapping = justificationMapping; // May be omitted in test code.
+    }
+
+    public long @Nullable [] getInvolvedNodeIds() {
+        return involvedNodeIds;
+    }
+
+    public void setInvolvedNodeIds(long @Nullable [] involvedNodeIds) {
+        this.involvedNodeIds = involvedNodeIds;
     }
 
     @SuppressWarnings("unchecked")

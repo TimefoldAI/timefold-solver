@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.bi;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -11,7 +13,6 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamPrecomputeTest;
-import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
@@ -354,9 +355,27 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
                 assertMatch(entity2, entity3));
     }
 
+    record Expected<A, B>(A a, B b, Object... indicted) {
+        Expected<A, B> addIndicted(Object indictedObject) {
+            for (var object : indicted) {
+                if (object == indictedObject) {
+                    return this;
+                }
+            }
+            var newIndictments = Arrays.copyOf(indicted, indicted.length + 1);
+            newIndictments[indicted.length] = indictedObject;
+            return new Expected<>(a, b, newIndictments);
+        }
+    }
+
+    <A, B> Expected<A, B> expect(A a, B b, Object... indicted) {
+        return new Expected<>(a, b, indicted);
+    }
+
     private <A, B> void assertPrecompute(TestdataLavishSolution solution,
-            List<Pair<A, B>> expectedValues,
+            List<Expected<A, B>> expectedValues,
             Function<PrecomputeFactory, BiConstraintStream<A, B>> entityStreamSupplier) {
+        expectedValues = new ArrayList<>(expectedValues);
         var scoreDirector =
                 buildScoreDirector(factory -> factory.precompute(entityStreamSupplier)
                         .ifExists(TestdataLavishEntity.class)
@@ -371,11 +390,16 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
             scoreDirector.beforeVariableChanged(entity, "value");
             entity.setValue(solution.getFirstValue());
             scoreDirector.afterVariableChanged(entity, "value");
+            var listIterator = expectedValues.listIterator();
+            while (listIterator.hasNext()) {
+                var expected = listIterator.next();
+                listIterator.set(expected.addIndicted(entity));
+            }
         }
 
         assertScore(scoreDirector, expectedValues.stream()
-                .map(pair -> new Object[] { pair.key(), pair.value() })
-                .map(AbstractConstraintStreamTest::assertMatch)
+                .map(expected -> assertMatch(expected.a, expected.b)
+                        .withIndictedObjects(expected.indicted))
                 .toArray(AssertableMatch[]::new));
     }
 
@@ -384,15 +408,19 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
     public void ifExists() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
+        entityWithoutGroup.setCode("A");
         var entityWithGroup = new TestdataLavishEntity();
+        entityWithGroup.setCode("B");
         var entityGroup = new TestdataLavishEntityGroup();
+        entityGroup.setCode("C");
         entityWithGroup.setEntityGroup(entityGroup);
         solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
         solution.getEntityGroupList().add(entityGroup);
         var value = new TestdataLavishValue();
+        value.setCode("D");
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityWithGroup, value)),
+        assertPrecompute(solution, List.of(expect(entityWithGroup, value, entityWithGroup, value, entityGroup)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .ifExists(TestdataLavishEntityGroup.class, Joiners.equal(
@@ -413,7 +441,7 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityWithoutGroup, value)),
+        assertPrecompute(solution, List.of(expect(entityWithoutGroup, value, entityWithoutGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .ifNotExists(TestdataLavishEntityGroup.class, Joiners.equal(
@@ -434,7 +462,7 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityGroup, 1L)),
+        assertPrecompute(solution, List.of(expect(entityGroup, 1L)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() != null)
                         .groupBy(TestdataLavishEntity::getEntityGroup, ConstraintCollectors.count()));
@@ -453,8 +481,8 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityWithoutGroup, entityWithoutGroup),
-                new Pair<>(entityWithGroup, entityWithoutGroup)),
+        assertPrecompute(solution, List.of(expect(entityWithoutGroup, entityWithoutGroup),
+                expect(entityWithGroup, entityWithoutGroup)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .flatten(List::of));
     }
@@ -475,8 +503,8 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entity1, new ValueHolder(entity1.getIntegerProperty())),
-                new Pair<>(entity2, new ValueHolder(entity2.getIntegerProperty()))),
+        assertPrecompute(solution, List.of(expect(entity1, new ValueHolder(entity1.getIntegerProperty())),
+                expect(entity2, new ValueHolder(entity2.getIntegerProperty()))),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .flatten(entity -> List.of(new ValueHolder(entity.getIntegerProperty()))));
     }
@@ -494,8 +522,8 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityWithoutGroup, value),
-                new Pair<>(entityWithGroup, value)),
+        assertPrecompute(solution, List.of(expect(entityWithoutGroup, value, entityWithoutGroup, value),
+                expect(entityWithGroup, value, entityWithGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .groupBy(ConstraintCollectors.toList())
                         .flattenLast(entityList -> entityList)
@@ -518,8 +546,8 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(new ValueHolder(1), value),
-                new Pair<>(new ValueHolder(2), value)),
+        assertPrecompute(solution, List.of(expect(new ValueHolder(1), value, entity1, value),
+                expect(new ValueHolder(2), value, entity2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .groupBy(ConstraintCollectors.toList())
                         .flattenLast(entityList -> entityList
@@ -544,8 +572,8 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityGroup, value),
-                new Pair<>(entityGroup, value)),
+        assertPrecompute(solution, List.of(expect(entityGroup, value, entityWithGroup1, value),
+                expect(entityGroup, value, entityWithGroup2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .filter((entity, joinedValue) -> entity.getEntityGroup() != null)
@@ -558,15 +586,21 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
     public void concat() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
+        entityWithoutGroup.setCode("A");
         var entityWithGroup = new TestdataLavishEntity();
+        entityWithGroup.setCode("B");
         var entityGroup = new TestdataLavishEntityGroup();
+        entityGroup.setCode("C");
         entityWithGroup.setEntityGroup(entityGroup);
         solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
         solution.getEntityGroupList().add(entityGroup);
         var value = new TestdataLavishValue();
+        value.setCode("D");
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityWithoutGroup, value), new Pair<>(entityWithGroup, value)),
+        assertPrecompute(solution, List.of(
+                expect(entityWithoutGroup, value, entityWithoutGroup, value),
+                expect(entityWithGroup, value, entityWithGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .filter((entity, joinedValue) -> entity.getEntityGroup() == null)
@@ -590,7 +624,7 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityGroup, value)),
+        assertPrecompute(solution, List.of(expect(entityGroup, value, entityWithGroup1, entityWithGroup2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .filter((entity, joinedValue) -> entity.getEntityGroup() != null)
@@ -615,9 +649,9 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         solution.getValueList().add(value);
 
         assertPrecompute(solution, List.of(
-                new Pair<>(entityWithGroup1, value),
-                new Pair<>(entityWithGroup2, value),
-                new Pair<>(entityWithoutGroup, null)),
+                expect(entityWithGroup1, value, entityWithGroup1, value),
+                expect(entityWithGroup2, value, entityWithGroup2, value),
+                expect(entityWithoutGroup, null, entityWithoutGroup)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .filter((entity, joinedValue) -> entity.getEntityGroup() != null)

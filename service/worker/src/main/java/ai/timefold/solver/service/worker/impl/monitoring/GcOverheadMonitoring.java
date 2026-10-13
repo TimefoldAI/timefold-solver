@@ -34,7 +34,7 @@ import io.quarkus.runtime.StartupEvent;
 /**
  * Fails the run when the JVM spends too much time in garbage collection.
  * <p>
- * When the memory watchdog is enabled ({@code ai.timefold.solver.monitoring.memory.enabled}, set by an execution profile), it
+ * When the memory watchdog is enabled ({@code timefold.platform.monitoring.memory.enabled}, set by an execution profile), it
  * also checks the process memory against the container memory limit at a short interval. The first time it reaches the
  * threshold, it writes a thread dump and a heap dump into the execution-profile artifacts directory and fails the run, which
  * uploads the artifacts. This happens before the container would be {@code OOMKilled}, so there is still room to write the
@@ -69,11 +69,11 @@ public class GcOverheadMonitoring {
             @ConfigProperty(name = "ai.timefold.solver.monitoring.gc.thresholdPct",
                     defaultValue = "100") Integer gcThresholdPct,
             @ConfigProperty(name = "ai.timefold.solver.monitoring.gc.delaySeconds", defaultValue = "10") Integer delaySeconds,
-            @ConfigProperty(name = "ai.timefold.solver.monitoring.memory.enabled",
+            @ConfigProperty(name = "timefold.platform.monitoring.memory.enabled",
                     defaultValue = "false") Boolean memoryWatchdogEnabled,
-            @ConfigProperty(name = "ai.timefold.solver.monitoring.memory.thresholdPct",
+            @ConfigProperty(name = "timefold.platform.monitoring.memory.threshold-pct",
                     defaultValue = "90") Integer memoryThresholdPct,
-            @ConfigProperty(name = "ai.timefold.solver.monitoring.memory.intervalMillis",
+            @ConfigProperty(name = "timefold.platform.monitoring.memory.interval-millis",
                     defaultValue = "1000") Integer memoryIntervalMillis) {
         this.solverWorker = solverWorker;
         this.gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
