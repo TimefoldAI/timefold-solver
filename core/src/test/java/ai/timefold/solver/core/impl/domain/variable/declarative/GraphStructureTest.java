@@ -36,6 +36,9 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity.TestdataMultiEntit
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_departure.TestdataMultiEntityChainDepartureSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_departure.TestdataMultiEntityChainDepartureVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_departure.TestdataMultiEntityChainDepartureVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedPriorityVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedVehicle;
@@ -226,6 +229,15 @@ class GraphStructureTest {
         watcher.getWatchedVisits().add(visit);
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainWatchedSolution.buildSolutionDescriptor(), vehicle, watcher, visit))
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY);
+    }
+
+    @Test
+    void multiEntityChainWithElementsReadingAGenuineVariableThroughTheInverse() {
+        var vehicle = new TestdataMultiEntityChainDepartureVehicle("A", 0);
+        var visit = new TestdataMultiEntityChainDepartureVisit("v1");
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataMultiEntityChainDepartureSolution.buildSolutionDescriptor(), vehicle, visit))
                 .hasFieldOrPropertyWithValue("structure", ARBITRARY);
     }
 

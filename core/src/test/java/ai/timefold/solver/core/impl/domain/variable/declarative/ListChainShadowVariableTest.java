@@ -198,57 +198,16 @@ class ListChainShadowVariableTest {
     }
 
     /**
-     * The visits not chained to the previous vehicles read their vehicle's departure time, a planning variable.
-     * Unlike a declarative variable of the vehicle, it has no graph node to reach the chain node through,
-     * so its change marks the chain node directly. B's previousEndTime is bound by A's end time,
-     * so the departure time is the only change reaching B's route.
-     */
-    @Test
-    void departureTimeChangeShiftsTheWholeRoute() {
-        var a1 = new TestdataMultiEntityChainVisit("a1", 20);
-        var b1 = new TestdataMultiEntityChainVisit("b1", 2, false);
-        var b2 = new TestdataMultiEntityChainVisit("b2", 3, false);
-        var b3 = new TestdataMultiEntityChainVisit("b3", 4, false);
-
-        var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
-        var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);
-        vehicleB.setPreviousVehicles(List.of(vehicleA));
-        vehicleA.setVisits(new ArrayList<>(List.of(a1)));
-        vehicleB.setVisits(new ArrayList<>(List.of(b1, b2, b3)));
-
-        var solution = new TestdataMultiEntityChainSolution();
-        solution.setVehicles(List.of(vehicleA, vehicleB));
-        solution.setVisits(List.of(a1, b1, b2, b3));
-
-        var solutionMetaModel = TestdataMultiEntityChainSolution.buildMetaModel();
-        var departureTimeMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainVehicle.class)
-                .basicVariable("departureTime", Integer.class);
-        var context = MoveTester.build(solutionMetaModel).using(solution);
-        // B departs at 0 -> [2, 5, 9].
-        assertThat(vehicleB.getPreviousEndTime()).isEqualTo(20);
-        assertThat(b3.getEndServiceTime()).isEqualTo(9);
-        assertThat(vehicleB.getEndTime()).isEqualTo(9);
-
-        // Only the first visit reads the departure time; the rest of the route follows it.
-        context.execute(Moves.change(departureTimeMetaModel, vehicleB, 10));
-        assertThat(vehicleB.getPreviousEndTime()).isEqualTo(20);
-        assertThat(b1.getEndServiceTime()).isEqualTo(12);
-        assertThat(b2.getEndServiceTime()).isEqualTo(15);
-        assertThat(b3.getEndServiceTime()).isEqualTo(19);
-        assertThat(vehicleB.getEndTime()).isEqualTo(19);
-        assertShadowsAreAtFixedPoint(solution);
-    }
-
-    /**
      * The list change records the visits it moves, from which the chain node would walk the route;
-     * the departure time change in the same update is what makes it walk from the head of the route instead.
+     * the pre-chain change in the same update, B's later departure raising its previousEndTime,
+     * is what makes it walk from the head of the route instead.
      */
     @Test
-    void departureTimeAndListChangeInOneUpdateWalkTheWholeRoute() {
-        var a1 = new TestdataMultiEntityChainVisit("a1", 20);
-        var b1 = new TestdataMultiEntityChainVisit("b1", 2, false);
-        var b2 = new TestdataMultiEntityChainVisit("b2", 3, false);
-        var b3 = new TestdataMultiEntityChainVisit("b3", 4, false);
+    void preChainAndListChangeInOneUpdateWalkTheWholeRoute() {
+        var a1 = new TestdataMultiEntityChainVisit("a1", 2);
+        var b1 = new TestdataMultiEntityChainVisit("b1", 2);
+        var b2 = new TestdataMultiEntityChainVisit("b2", 3);
+        var b3 = new TestdataMultiEntityChainVisit("b3", 4);
 
         var vehicleA = new TestdataMultiEntityChainVehicle("A", 0);
         var vehicleB = new TestdataMultiEntityChainVehicle("B", 0);

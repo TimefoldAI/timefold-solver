@@ -30,8 +30,7 @@ import org.jspecify.annotations.Nullable;
  * a single {@link #updateChanged()} pass in topological order therefore walks each dirty chain
  * exactly once, after its pre-chain variables and before its post-chain variables.
  * This wrapper tracks the changes the chain nodes need, like any graph tracks its changed nodes:
- * it records the elements whose source variables changed and the list entities whose list
- * or genuine pre-chain variables changed,
+ * it records the elements whose source variables changed and the list entities whose list changed,
  * classifies the elements by the chain of their entity, into the chain state the updater walks from,
  * and marks the dirty entities' chain nodes before delegating the update.
  * It also marks the list entity's post-chain variables changed on a list change,
@@ -237,17 +236,9 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             if (isUpdating) {
                 return;
             }
-            if (isMonitoredSource) {
-                if (elementEntityClass.isInstance(entity)) {
-                    recordChangedElement(entity);
-                } else {
-                    // A genuine pre-chain variable has no graph node to reach the chain node through.
-                    // Null for anything but a list entity of this graph, such as one of another working solution.
-                    var chainState = chainUpdater.getChainState(entity);
-                    if (chainState != null) {
-                        markChainDirty(chainState);
-                    }
-                }
+            // A pre-chain variable of the list entity, also a source, only changes during an update.
+            if (isMonitoredSource && elementEntityClass.isInstance(entity)) {
+                recordChangedElement(entity);
             }
             if (innerHook != null) {
                 innerHook.afterVariableChanged(entity);

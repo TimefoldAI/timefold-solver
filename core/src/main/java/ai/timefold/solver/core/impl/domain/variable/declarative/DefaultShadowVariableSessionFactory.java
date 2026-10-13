@@ -262,8 +262,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
         // The pre-chain variables the elements read through their inverse:
         // when one of them changes, its entity's whole list must be walked, since any element may read it.
-        // The detection only accepts declarative ones, which an edge orders before the chain node,
-        // and genuine ones, which have no graph node: their change marks the chain node instead.
+        // The detection only accepts declarative ones, which an edge orders before the chain node.
         var preChainVariableIdSet = new LinkedHashSet<VariableMetaModel<?, ?, ?>>();
         for (var descriptor : elementDescriptorList) {
             for (var source : descriptor.getSources()) {
@@ -275,13 +274,10 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var preChainVariableDescriptorList = preChainVariableIdSet.stream()
                 .map(variableId -> Objects.requireNonNull(listEntityDescriptor.getVariableDescriptor(variableId.name())))
                 .toList();
-        var declarativePreChainVariableIdList = preChainVariableIdSet.stream()
-                .filter(variableId -> !variableId.isGenuine())
-                .toList();
         var chainUpdater = new ListChainUpdater<>(listVariableDescriptor,
                 graphStructureAndDirection.direction() == ParentVariableType.PREVIOUS, listEntityConsistencyState,
                 elementConsistencyState, sortedElementDescriptors, preChainVariableDescriptorList,
-                canChainWalkTerminateEarly(elementDescriptorList));
+                hasNoNonDeclarativeSourcesFromParent(elementDescriptorList));
 
         var innerGraphDescriptor = new GraphDescriptor<>(graphDescriptor.consistencyTracker(), solutionDescriptor,
                 graphDescriptor.ignoreInconsistentSolutions(), new VariableReferenceGraphBuilder<>(changedVariableNotifier),
@@ -294,7 +290,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         populateArbitraryGraph(innerGraphDescriptor, innerDescriptorList);
 
         addChainNodes(builder, graphDescriptor.entities(), listEntityClass, listVariableMetaModel, chainUpdater,
-                declarativePreChainVariableIdList, postChainVariableIdList);
+                preChainVariableIdSet, postChainVariableIdList);
         if (!builder.isGraphFixed) {
             // A dynamic edge, such as one from a planning variable chaining the list entities,
             // could close a dependency loop through a chain node while solving.
@@ -323,12 +319,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
     /**
      * Adds one chain node per list entity, with the fixed edges ordering it after its entity's
-     * declarative pre-chain variables and before its post-chain variables.
+     * pre-chain variables and before its post-chain variables.
      */
     private static <Solution_> void addChainNodes(
             VariableReferenceGraphBuilder<Solution_> builder, Object[] entities, Class<?> listEntityClass,
             VariableMetaModel<Solution_, ?, ?> listVariableMetaModel, ListChainUpdater<Solution_> chainUpdater,
-            List<VariableMetaModel<?, ?, ?>> declarativePreChainVariableIdList,
+            Set<VariableMetaModel<?, ?, ?>> preChainVariableIdSet,
             List<VariableMetaModel<?, ?, ?>> postChainVariableIdList) {
         // Every chain node shares the updater, keyed by the list variable itself,
         // so that a lookup by variable and entity finds it.
@@ -342,35 +338,13 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             builder.addVariableReferenceEntity(listEntity, chainUpdaterList);
             var chainNode = builder.lookupOrError(listVariableMetaModel, listEntity);
             chainUpdater.addListEntity(listEntity, chainNode);
-            for (var preChainVariableId : declarativePreChainVariableIdList) {
+            for (var preChainVariableId : preChainVariableIdSet) {
                 builder.addFixedEdge(builder.lookupOrError(preChainVariableId, listEntity), chainNode);
             }
             for (var postChainVariableId : postChainVariableIdList) {
                 builder.addFixedEdge(chainNode, builder.lookupOrError(postChainVariableId, listEntity));
             }
         }
-    }
-
-    /**
-     * Like {@link #hasNoNonDeclarativeSourcesFromParent(List)}, but ignoring the inverse sources:
-     * a change of the pre-chain variable they read, declarative or genuine, walks the whole chain,
-     * so no walk from a changed element needs to reach the elements reading it.
-     */
-    private static <Solution_> boolean canChainWalkTerminateEarly(
-            List<DeclarativeShadowVariableDescriptor<Solution_>> elementDescriptorList) {
-        for (var elementDescriptor : elementDescriptorList) {
-            for (var source : elementDescriptor.getSources()) {
-                if (source.parentVariableType() == ParentVariableType.INVERSE) {
-                    continue;
-                }
-                for (var sourceReference : source.variableSourceReferences()) {
-                    if (!sourceReference.isTopLevel() && !sourceReference.isDeclarative()) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
     }
 
     private static <Solution_> boolean hasNoNonDeclarativeSourcesFromParent(

@@ -38,7 +38,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     private final boolean isChainInListOrder;
     private final EntityConsistencyState<Solution_, Object> listEntityConsistencyState;
     private final VariableUpdaterInfo<Solution_>[] elementUpdaters;
-    // The list entity's variables its elements read through their inverse, declarative or genuine.
+    // The list entity's declarative variables its elements read through their inverse.
     private final VariableDescriptor<Solution_>[] preChainVariableDescriptors;
     private final boolean canTerminateEarly;
 
@@ -104,7 +104,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         var elementList = listVariableDescriptor.getValue(listEntity);
         var chainState = listEntityToChainStateMap.get(listEntity);
         // The declarative pre-chain nodes come before the chain node in the graph's order,
-        // so they are already up to date for this update; the genuine ones only change through moves.
+        // so they are already up to date for this update.
         var isPreChainChanged = updatePreChainValues(listEntity, chainState);
         if (chainState.isChainStale || isPreChainChanged || chainState.changedElementCount == 0) {
             chainState.isChainStale = false;

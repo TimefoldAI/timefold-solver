@@ -19,7 +19,7 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
 
     // Null for a head vehicle, exercising null fact collection support.
     List<TestdataMultiEntityChainVehicle> previousVehicles;
-    // A planning variable, which the visits that are not chained to the previous vehicles read through their inverse.
+    // A planning variable, the earliest previousEndTime of the vehicle.
     @PlanningVariable
     Integer departureTime;
     // A vehicle cannot finish before it starts. Unlike the plain last visit's end time,

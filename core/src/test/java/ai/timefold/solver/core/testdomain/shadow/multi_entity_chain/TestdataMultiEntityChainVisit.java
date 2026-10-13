@@ -17,6 +17,7 @@ public class TestdataMultiEntityChainVisit extends TestdataObject {
     TestdataMultiEntityChainVisit previousVisit;
 
     int duration = 1;
+    // An unchained visit does not read its vehicle's previousEndTime: the first one of a route starts at 0.
     boolean chainedToPreviousVehicle = true;
 
     @ShadowVariable(supplierName = "endServiceTimeSupplier")
@@ -41,7 +42,7 @@ public class TestdataMultiEntityChainVisit extends TestdataObject {
         this.chainedToPreviousVehicle = chainedToPreviousVehicle;
     }
 
-    @ShadowSources({ "vehicle", "vehicle.previousEndTime", "vehicle.departureTime", "previousVisit",
+    @ShadowSources({ "vehicle", "vehicle.previousEndTime", "previousVisit",
             "previousVisit.endServiceTime" })
     public Integer endServiceTimeSupplier() {
         calledCount++;
@@ -54,7 +55,7 @@ public class TestdataMultiEntityChainVisit extends TestdataObject {
                 // Null when a predecessor vehicle has no end time.
                 base = vehicle.getPreviousEndTime();
             } else {
-                base = vehicle.getDepartureTime();
+                base = 0;
             }
         } else {
             var previousEnd = previousVisit.getEndServiceTime();
