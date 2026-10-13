@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListUnassignMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
@@ -300,7 +301,7 @@ class ListChainVariableReferenceGraphTest {
             TestdataMultiEntityChainVisit previousVisit, int index) {
         visit.setVehicle(vehicle);
         visit.setPreviousVisit(previousVisit);
-        Mockito.doReturn(index).when(listVariableState).getIndexOrFail(visit);
-        Mockito.when(listVariableState.getInverseSingleton(visit)).thenReturn(vehicle);
+        var position = vehicle == null ? ElementPosition.unassigned() : ElementPosition.of(vehicle, index);
+        Mockito.when(listVariableState.getElementPosition(visit)).thenReturn(position);
     }
 }

@@ -1,10 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +14,8 @@ import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
 import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph.VariableChangeHook;
+import ai.timefold.solver.core.impl.util.ShrinkingIdentityHashMap;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -67,10 +67,8 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     private final Map<VariableMetaModel<?, ?, ?>, @Nullable VariableChangeHook> variableReferenceToHookMap;
     private final List<Object> changedElementList;
     // The unassigned elements the classification in progress recomputed, so that each is recomputed once.
-    // The set finds them; the list empties the set one element at a time, since clearing it would cost
-    // its capacity, which the initial update sizes for every unassigned element of the solution.
-    private final Set<Object> recomputedUnassignedElementSet;
-    private final List<Object> recomputedUnassignedElementList;
+    // Its clear() keeps the update cheap even after the initial update, which records every unassigned element.
+    private final ShrinkingIdentityHashMap<Object, Boolean> recomputedUnassignedElementMap;
     private final List<ListChainUpdater.ChainState<Solution_>> dirtyChainStateList;
     private boolean isUpdating;
 
@@ -95,8 +93,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
                 innerGraph.variableReferenceToAfterProcessor.getOrDefault(listVariableMetaModel, List.of());
         this.variableReferenceToHookMap = new HashMap<>();
         this.changedElementList = new ArrayList<>();
-        this.recomputedUnassignedElementSet = Collections.newSetFromMap(new IdentityHashMap<>());
-        this.recomputedUnassignedElementList = new ArrayList<>();
+        this.recomputedUnassignedElementMap = new ShrinkingIdentityHashMap<>();
         this.dirtyChainStateList = new ArrayList<>();
         this.isUpdating = false;
 
@@ -199,21 +196,19 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
      */
     private void classifyChangedElements() {
         for (var element : changedElementList) {
-            var listEntity = listVariableState.getInverseSingleton(element);
-            if (listEntity == null) {
+            if (!(listVariableState.getElementPosition(element) instanceof PositionInList positionInList)) {
                 // A move changing an element before unassigning it records it twice, apart.
-                if (recomputedUnassignedElementSet.add(element)) {
-                    recomputedUnassignedElementList.add(element);
+                if (recomputedUnassignedElementMap.put(element, Boolean.TRUE) == null) {
                     chainUpdater.recomputeUnassignedElement(element, changedVariableNotifier);
                 }
                 continue;
             }
-            var chainState = Objects.requireNonNull(chainUpdater.getChainState(listEntity));
-            chainState.addChangedElementIndex(listVariableState.getIndexOrFail(element));
+            var chainState = Objects.requireNonNull(chainUpdater.getChainState(positionInList.entity()));
+            chainState.addChangedElementIndex(positionInList.index());
             markChainDirty(chainState);
         }
         changedElementList.clear();
-        forgetRecomputedUnassignedElements();
+        recomputedUnassignedElementMap.clear();
     }
 
     private void markChainDirty(ListChainUpdater.ChainState<Solution_> chainState) {
@@ -221,15 +216,6 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             dirtyChainStateList.add(chainState);
             innerGraph.markChanged(chainState.chainNode());
         }
-    }
-
-    @SuppressWarnings("ForLoopReplaceableByForEach")
-    private void forgetRecomputedUnassignedElements() {
-        // Avoid creation of iterators on the hot path.
-        for (var i = 0; i < recomputedUnassignedElementList.size(); i++) {
-            recomputedUnassignedElementSet.remove(recomputedUnassignedElementList.get(i));
-        }
-        recomputedUnassignedElementList.clear();
     }
 
     private void endUpdate(boolean isUpdated) {
