@@ -9,18 +9,18 @@ import ai.timefold.solver.service.maps.api.model.Waypoints;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class VehicleRouteTest {
+class RouteTest {
 
     @Test
     void startsANewFetchAfterTheFetcherThrowsAnError() {
         var baseWaypoints = new Waypoints("id_0", List.of(new Location(0, 0)));
-        var vehicleRoute = new VehicleRoute(baseWaypoints);
+        var route = new Route(baseWaypoints);
 
-        Assertions.assertThatThrownBy(() -> vehicleRoute.fetchOnce(() -> {
+        Assertions.assertThatThrownBy(() -> route.fetchOnce(() -> {
             throw new AssertionError("Injected fetcher error.");
         })).isInstanceOf(AssertionError.class);
 
-        Assertions.assertThat(vehicleRoute.fetchOnce(() -> CompletableFuture.completedFuture(baseWaypoints)))
+        Assertions.assertThat(route.fetchOnce(() -> CompletableFuture.completedFuture(baseWaypoints)))
                 .isCompletedWithValue(baseWaypoints);
     }
 }

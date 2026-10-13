@@ -193,7 +193,7 @@ public class WaypointsServiceImplTest {
     }
 
     @Test
-    void dropsAVehicleThatLeavesTheSolution() {
+    void dropsARouteThatLeavesTheSolution() {
         var metadata = new Metadata<>();
         enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
         enricher.onBestSolution(new BestSolutionEvent(metadata,

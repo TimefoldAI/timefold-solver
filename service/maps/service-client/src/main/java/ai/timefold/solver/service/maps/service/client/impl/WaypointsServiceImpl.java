@@ -49,7 +49,7 @@ import io.quarkus.runtime.Startup;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @Startup
-// why: an @ApplicationScoped bean with only an injection constructor is rewritten by ArC, and JaCoCo loses it
+// ArC rewrites an @ApplicationScoped bean with only an injection constructor, and JaCoCo then loses it.
 @Singleton
 public class WaypointsServiceImpl implements WaypointsService {
 
@@ -117,20 +117,20 @@ public class WaypointsServiceImpl implements WaypointsService {
     }
 
     @Override
-    public List<Waypoints> getWaypoints(String runId, Set<String> objectIds) {
+    public List<Waypoints> getWaypoints(String runId, Set<String> routeIdSet) {
         if (this.waypointsExtractor == null) {
             return List.of();
         }
         var runRoutes = runRoutesMap.get(runId);
         if (runRoutes == null) {
-            return getStoredWaypoints(runId, objectIds);
+            return getStoredWaypoints(runId, routeIdSet);
         }
         runRoutes.markViewed();
-        var waypointsFutureList = runRoutes.getRouteList(objectIds).stream().map(this::fetchOnce).toList();
+        var waypointsFutureList = runRoutes.getRouteList(routeIdSet).stream().map(this::fetchOnce).toList();
         return waypointsFutureList.stream().map(WaypointsServiceImpl::await).toList();
     }
 
-    private List<Waypoints> getStoredWaypoints(String runId, Set<String> objectIds) {
+    private List<Waypoints> getStoredWaypoints(String runId, Set<String> routeIdSet) {
         List<Waypoints> storedWaypointsList = storageService.getWaypoints(runId, WAYPOINTS_LIST_TYPE);
         if (storedWaypointsList == null) {
             throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, """
@@ -139,19 +139,20 @@ public class WaypointsServiceImpl implements WaypointsService {
                     .formatted(runId));
         }
         return storedWaypointsList.stream()
-                .filter(waypoints -> objectIds.isEmpty() || objectIds.contains(waypoints.id()))
+                .filter(waypoints -> routeIdSet.isEmpty() || routeIdSet.contains(waypoints.id()))
                 .toList();
     }
 
-    private CompletableFuture<Waypoints> fetchOnce(VehicleRoute vehicleRoute) {
-        return vehicleRoute.fetchOnce(() -> CompletableFuture
-                .supplyAsync(() -> calculateWaypoints(vehicleRoute.getBaseWaypoints()), waypointsExecutor));
+    private CompletableFuture<Waypoints> fetchOnce(Route route) {
+        return route.fetchOnce(() -> CompletableFuture
+                .supplyAsync(() -> calculateWaypoints(route.getBaseWaypoints()), waypointsExecutor));
     }
 
     private static Waypoints await(CompletableFuture<Waypoints> waypointsFuture) {
         try {
             return waypointsFuture.join();
         } catch (CompletionException e) {
+            // The cause reaches the same exception mappers as before the fetch ran on the pool.
             if (e.getCause() instanceof RuntimeException cause) {
                 throw cause;
             }
