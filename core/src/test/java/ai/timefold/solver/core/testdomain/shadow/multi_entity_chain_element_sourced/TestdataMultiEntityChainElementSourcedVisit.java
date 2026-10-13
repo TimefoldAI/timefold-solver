@@ -8,8 +8,7 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
- * A visit reading its vehicle's pre-chain start time, so a vehicle caught in a dependency loop
- * takes its whole route down with it.
+ * A visit reading its vehicle's pre-chain start time.
  */
 @PlanningEntity
 public class TestdataMultiEntityChainElementSourcedVisit extends TestdataObject {

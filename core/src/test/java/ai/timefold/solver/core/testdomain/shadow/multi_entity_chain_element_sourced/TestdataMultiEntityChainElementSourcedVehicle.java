@@ -12,13 +12,8 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 
 /**
  * A vehicle that starts where its predecessor ends, where the predecessor is a planning variable
- * instead of a fact. The solver can therefore chain two vehicles to each other, which is a
- * dependency loop it can break again; a loop between facts would fail fast at build time instead.
- * <p>
- * Unlike {@code TestdataMultiEntityChainLoopVehicle}, its endTime is sourced from its route alone and never
- * reads its own startTime, so nothing declares the dependency of the endTime on the startTime.
- * The chain node's edges have to supply that dependency, or the endTime is computed before the route
- * it summarizes has been walked, and the loop through the route goes undetected.
+ * instead of a fact, so the graph around the chain nodes is not fixed: the solver could chain two vehicles
+ * to each other, closing a dependency loop through their routes.
  */
 @PlanningEntity
 public class TestdataMultiEntityChainElementSourcedVehicle extends TestdataObject {

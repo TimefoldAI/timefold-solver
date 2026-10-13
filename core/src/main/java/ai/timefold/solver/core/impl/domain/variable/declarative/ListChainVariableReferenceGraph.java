@@ -3,14 +3,12 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
-import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
 import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph.VariableChangeHook;
@@ -52,7 +50,6 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     private final ListChainUpdater<Solution_> chainUpdater;
     private final ListVariableState<Solution_, Object, Object> listVariableState;
     private final VariableMetaModel<Solution_, ?, ?> listVariableMetaModel;
-    private final String listVariableName;
     private final Class<?> elementEntityClass;
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
@@ -86,7 +83,6 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
         this.chainUpdater = chainUpdater;
         this.listVariableState = listVariableState;
         this.listVariableMetaModel = listVariableMetaModel;
-        this.listVariableName = listVariableMetaModel.name();
         this.elementEntityClass = elementEntityClass;
         this.changedVariableNotifier = changedVariableNotifier;
         this.listVariableAfterProcessorList =
@@ -143,31 +139,15 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
         isUpdating = true;
         classifyChangedElements();
         var isUpdated = innerGraph.updateChanged();
-        endUpdate(isUpdated);
+        endUpdate();
         isUpdating = false;
         return isUpdated;
     }
 
     @Override
     public List<VariableLoop> getVariableLoops() {
-        var innerVariableLoopList = innerGraph.getVariableLoops();
-        var variableLoopList = new ArrayList<VariableLoop>(innerVariableLoopList.size());
-        for (var innerVariableLoop : innerVariableLoopList) {
-            // A loop that closes through a chain runs through its entity's chain node, which the graph
-            // reports as the list variable; like the arbitrary graph, report the chain's elements instead.
-            var involvedVariableSet = new LinkedHashSet<EntityVariablePair>();
-            for (var entityVariablePair : innerVariableLoop.involvedVariableSet()) {
-                var entity = entityVariablePair.entity();
-                if (entityVariablePair.variableName().equals(listVariableName)
-                        && chainUpdater.getChainState(entity) != null) {
-                    chainUpdater.addElementVariables(entity, involvedVariableSet);
-                } else {
-                    involvedVariableSet.add(entityVariablePair);
-                }
-            }
-            variableLoopList.add(new VariableLoop(involvedVariableSet));
-        }
-        return variableLoopList;
+        // The wrapped graph is fixed, so it has none.
+        return innerGraph.getVariableLoops();
     }
 
     /**
@@ -218,9 +198,9 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
         }
     }
 
-    private void endUpdate(boolean isUpdated) {
+    private void endUpdate() {
         for (var chainState : dirtyChainStateList) {
-            chainState.endUpdate(isUpdated);
+            chainState.endUpdate();
         }
         dirtyChainStateList.clear();
     }

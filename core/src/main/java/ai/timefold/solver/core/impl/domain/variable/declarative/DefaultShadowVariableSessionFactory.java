@@ -224,8 +224,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var elementEntityClass = Objects.requireNonNull(graphStructureAndDirection.parentMetaModel()).entity().type();
         var allDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         var listVariableDescriptor = Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor());
-        // The elements' consistency follows their list entity's, so the chain node reports
-        // its looped status through the list entity's consistency state.
         var listEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
         var listEntityClass = listEntityDescriptor.getEntityClass();
         if (Arrays.stream(graphDescriptor.entities()).noneMatch(listEntityClass::isInstance)) {

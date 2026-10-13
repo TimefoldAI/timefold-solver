@@ -36,16 +36,10 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity.TestdataMultiEntit
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedPriorityVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_extended.TestdataMultiEntityChainExtendedVisit;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopSolution;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopVehicle;
-import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_loop.TestdataMultiEntityChainLoopVisit;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVisit;
@@ -233,32 +227,6 @@ class GraphStructureTest {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataMultiEntityChainWatchedSolution.buildSolutionDescriptor(), vehicle, watcher, visit))
                 .hasFieldOrPropertyWithValue("structure", ARBITRARY);
-    }
-
-    @Test
-    void multiEntityChainWithPlanningVariableChainedVehicles() {
-        var vehicle = new TestdataMultiEntityChainLoopVehicle("A", 0);
-        var visit = new TestdataMultiEntityChainLoopVisit("v1", 1);
-        assertThat(GraphStructure.determineGraphStructure(
-                TestdataMultiEntityChainLoopSolution.buildSolutionDescriptor(), vehicle, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
-                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .extracting(structure -> structure.parentMetaModel().entity().type())
-                .isEqualTo(TestdataMultiEntityChainLoopVisit.class);
-    }
-
-    @Test
-    void multiEntityChainWithElementSourcedEndTime() {
-        var vehicle = new TestdataMultiEntityChainElementSourcedVehicle("A", 0);
-        var visit = new TestdataMultiEntityChainElementSourcedVisit("v1", 1);
-        // The vehicle's endTime never reads its own startTime, so nothing but the chain node's edges
-        // orders it after the route it summarizes.
-        assertThat(GraphStructure.determineGraphStructure(
-                TestdataMultiEntityChainElementSourcedSolution.buildSolutionDescriptor(), vehicle, visit))
-                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
-                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
-                .extracting(structure -> structure.parentMetaModel().entity().type())
-                .isEqualTo(TestdataMultiEntityChainElementSourcedVisit.class);
     }
 
     @Test

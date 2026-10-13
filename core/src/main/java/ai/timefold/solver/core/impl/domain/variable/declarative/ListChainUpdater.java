@@ -4,9 +4,7 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
-import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -29,9 +27,6 @@ import org.jspecify.annotations.Nullable;
  * and when no element recorded where the chain changed.
  * Each list entity's {@link ChainState} is allocated once, here;
  * {@link ListChainVariableReferenceGraph}, which tracks the changes, records in it where the chain changed.
- * <p>
- * When the chain node is part of a dependency loop, the elements follow their entity:
- * they are marked inconsistent and their variables are set to null.
  */
 @NullMarked
 final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
@@ -42,7 +37,6 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     // A previous element parent orders the chain as the list; a next element parent reverses it.
     private final boolean isChainInListOrder;
     private final EntityConsistencyState<Solution_, Object> listEntityConsistencyState;
-    private final EntityConsistencyState<Solution_, Object> elementConsistencyState;
     private final VariableUpdaterInfo<Solution_>[] elementUpdaters;
     // The list entity's variables its elements read through their inverse, declarative or genuine.
     private final VariableDescriptor<Solution_>[] preChainVariableDescriptors;
@@ -66,7 +60,6 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         this.listVariableDescriptor = listVariableDescriptor;
         this.isChainInListOrder = isChainInListOrder;
         this.listEntityConsistencyState = listEntityConsistencyState;
-        this.elementConsistencyState = elementConsistencyState;
         this.canTerminateEarly = canTerminateEarly;
         this.listEntityToChainStateMap = new IdentityHashMap<>();
 
@@ -105,32 +98,16 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     @Override
     public boolean update(Object listEntity, boolean isEntityInconsistent,
             ChangedVariableNotifier<Solution_> changedVariableNotifier) {
+        // A chain node is only ever part of a fixed graph, which has no dependency loop
+        // and therefore never reports a list entity inconsistent.
         // The list cannot change while the graph updates, so it is read once.
         var elementList = listVariableDescriptor.getValue(listEntity);
         var chainState = listEntityToChainStateMap.get(listEntity);
-        if (isEntityInconsistent) {
-            // The list entity is part of a dependency loop the solver may break later;
-            // its elements read its pre-chain variables, so they are inconsistent with it.
-            chainState.isChainStale = true;
-            return markChainInconsistent(elementList, changedVariableNotifier);
-        }
         // The declarative pre-chain nodes come before the chain node in the graph's order,
         // so they are already up to date for this update; the genuine ones only change through moves.
         var isPreChainChanged = updatePreChainValues(listEntity, chainState);
-        if (chainState.isChainStale) {
+        if (chainState.isChainStale || isPreChainChanged || chainState.changedElementCount == 0) {
             chainState.isChainStale = false;
-            for (var element : elementList) {
-                markConsistent(element, changedVariableNotifier);
-            }
-            return walkWholeChain(elementList, changedVariableNotifier);
-        }
-        // Outside a stale chain, an inconsistent element came from one since the last update. A dependency loop
-        // only reaches a chain through the pre-chain variables its elements read through their inverse,
-        // so the inverse is a source variable, and its change recorded the element.
-        for (var i = 0; i < chainState.changedElementCount; i++) {
-            markConsistent(elementList.get(chainState.changedElementIndexes[i]), changedVariableNotifier);
-        }
-        if (isPreChainChanged || chainState.changedElementCount == 0) {
             return walkWholeChain(elementList, changedVariableNotifier);
         }
         return walkFromChangedElements(elementList, chainState, changedVariableNotifier);
@@ -178,27 +155,6 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         return isElementChanged;
     }
 
-    private void markConsistent(Object element, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
-        if (!elementConsistencyState.isEntityConsistent(element)) {
-            elementConsistencyState.setEntityIsInconsistent(changedVariableNotifier, element, false);
-        }
-    }
-
-    private boolean markChainInconsistent(List<Object> elementList,
-            ChangedVariableNotifier<Solution_> changedVariableNotifier) {
-        var anyElementChanged = false;
-        // Clearing an element reads none of the others, so the order does not matter.
-        for (var element : elementList) {
-            if (elementConsistencyState.isEntityConsistent(element)) {
-                elementConsistencyState.setEntityIsInconsistent(changedVariableNotifier, element, true);
-            }
-            for (var updater : elementUpdaters) {
-                anyElementChanged |= updater.updateIfChanged(element, null, changedVariableNotifier);
-            }
-        }
-        return anyElementChanged;
-    }
-
     private Object elementAt(List<Object> elementList, int position) {
         return elementList.get(isChainInListOrder ? position : elementList.size() - 1 - position);
     }
@@ -224,7 +180,6 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
      * and re-assigning it to the same position is detected as a change.
      */
     void recomputeUnassignedElement(Object element, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
-        markConsistent(element, changedVariableNotifier);
         updateElement(element, changedVariableNotifier);
     }
 
@@ -234,17 +189,6 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     @Nullable
     ChainState<Solution_> getChainState(Object listEntity) {
         return listEntityToChainStateMap.get(listEntity);
-    }
-
-    /**
-     * Adds every declarative variable of every element of the list entity's chain.
-     */
-    void addElementVariables(Object listEntity, Set<EntityVariablePair> entityVariablePairSet) {
-        for (var element : listVariableDescriptor.getValue(listEntity)) {
-            for (var updater : elementUpdaters) {
-                entityVariablePairSet.add(new EntityVariablePair(element, updater.id().name()));
-            }
-        }
     }
 
     /**
@@ -267,8 +211,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         private int changedElementCount;
         // Changed since the last update, so in the graph's dirtyChainStateList.
         private boolean isDirty;
-        // The chain was never walked, a dependency loop marked it inconsistent, or an update gave up
-        // before walking it, until an update walks the whole chain; not reset between updates.
+        // The chain was never walked, until an update walks it whole.
         private boolean isChainStale = true;
 
         private ChainState(GraphNode<Solution_> chainNode, int preChainVariableCount) {
@@ -300,14 +243,8 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
 
         /**
          * Resets the chain an update dirtied.
-         * An update that gave up on a dependency loop processed no chain node, and the graph keeps their
-         * marks for the next update; the chain is walked whole then, because a legacy composite move
-         * may change it again before that update, without undoing first.
          */
-        void endUpdate(boolean isUpdated) {
-            if (!isUpdated) {
-                isChainStale = true;
-            }
+        void endUpdate() {
             changedElementCount = 0;
             isDirty = false;
         }
