@@ -56,6 +56,11 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
+    public boolean hasPendingChanges() {
+        return !changeTracker.isEmpty();
+    }
+
+    @Override
     boolean innerUpdateChanged() {
         if (changeTracker.isEmpty()) {
             return true;

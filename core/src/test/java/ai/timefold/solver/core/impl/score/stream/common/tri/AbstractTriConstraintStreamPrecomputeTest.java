@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.tri;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -162,9 +164,27 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
                 (entity, value, entityGroup) -> new Triple<>(value, entityGroup, entity));
     }
 
+    record ExpectedTri<A, B, C>(A a, B b, C c, Object... indicted) {
+        ExpectedTri<A, B, C> withIndictedObject(Object indictedObject) {
+            for (var obj : indicted) {
+                if (obj == indictedObject) {
+                    return this;
+                }
+            }
+            var newIndicted = Arrays.copyOf(indicted, indicted.length + 1);
+            newIndicted[indicted.length] = indictedObject;
+            return new ExpectedTri<>(a, b, c, newIndicted);
+        }
+    }
+
+    <A, B, C> ExpectedTri<A, B, C> expected(A a, B b, C c, Object... indicted) {
+        return new ExpectedTri<>(a, b, c, indicted);
+    }
+
     private <A, B, C> void assertPrecompute(TestdataLavishSolution solution,
-            List<Triple<A, B, C>> expectedValues,
+            List<ExpectedTri<A, B, C>> expectedValues,
             Function<PrecomputeFactory, TriConstraintStream<A, B, C>> entityStreamSupplier) {
+        expectedValues = new ArrayList<>(expectedValues);
         var scoreDirector =
                 buildScoreDirector(factory -> factory.precompute(entityStreamSupplier)
                         .ifExists(TestdataLavishEntity.class)
@@ -179,11 +199,16 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
             scoreDirector.beforeVariableChanged(entity, "value");
             entity.setValue(solution.getFirstValue());
             scoreDirector.afterVariableChanged(entity, "value");
+            var listIterator = expectedValues.listIterator();
+            while (listIterator.hasNext()) {
+                var expected = listIterator.next();
+                listIterator.set(expected.withIndictedObject(entity));
+            }
         }
 
         assertScore(scoreDirector, expectedValues.stream()
-                .map(triple -> new Object[] { triple.a(), triple.b(), triple.c() })
-                .map(AbstractConstraintStreamTest::assertMatch)
+                .map(expected -> assertMatch(expected.a, expected.b, expected.c)
+                        .withIndictedObjects(expected.indicted))
                 .toArray(AssertableMatch[]::new));
     }
 
@@ -200,7 +225,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityWithGroup, value, value)),
+        assertPrecompute(solution, List.of(expected(entityWithGroup, value, value, entityWithGroup, value, entityGroup)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -222,7 +247,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityWithoutGroup, value, value)),
+        assertPrecompute(solution, List.of(expected(entityWithoutGroup, value, value, entityWithoutGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -244,7 +269,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityGroup, 1L, 1L)),
+        assertPrecompute(solution, List.of(expected(entityGroup, 1L, 1L)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() != null)
                         .groupBy(TestdataLavishEntity::getEntityGroup,
@@ -265,8 +290,9 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityWithoutGroup, entityWithoutGroup, value),
-                new Triple<>(entityWithGroup, entityWithoutGroup, value)),
+        assertPrecompute(solution, List.of(
+                expected(entityWithoutGroup, entityWithoutGroup, value, entityWithoutGroup, value),
+                expected(entityWithGroup, entityWithoutGroup, value, entityWithGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .flatten(List::of)
                         .join(TestdataLavishValue.class));
@@ -288,8 +314,9 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entity1, new ValueHolder(entity1.getIntegerProperty()), value),
-                new Triple<>(entity2, new ValueHolder(entity2.getIntegerProperty()), value)),
+        assertPrecompute(solution, List.of(
+                expected(entity1, new ValueHolder(entity1.getIntegerProperty()), value, entity1, value),
+                expected(entity2, new ValueHolder(entity2.getIntegerProperty()), value, entity2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .flatten(entity -> List.of(new ValueHolder(entity.getIntegerProperty())))
                         .join(TestdataLavishValue.class));
@@ -308,8 +335,9 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityWithoutGroup, value, value),
-                new Triple<>(entityWithGroup, value, value)),
+        assertPrecompute(solution, List.of(
+                expected(entityWithoutGroup, value, value, entityWithoutGroup, value),
+                expected(entityWithGroup, value, value, entityWithGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .groupBy(ConstraintCollectors.toList())
                         .flattenLast(entityList -> entityList)
@@ -333,8 +361,9 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(new ValueHolder(1), value, value),
-                new Triple<>(new ValueHolder(2), value, value)),
+        assertPrecompute(solution, List.of(
+                expected(new ValueHolder(1), value, value, entity1, value),
+                expected(new ValueHolder(2), value, value, entity2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .groupBy(ConstraintCollectors.toList())
                         .flattenLast(entityList -> entityList
@@ -360,8 +389,9 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityGroup, value, value),
-                new Triple<>(entityGroup, value, value)),
+        assertPrecompute(solution, List.of(
+                expected(entityGroup, value, value, entityWithGroup1, value),
+                expected(entityGroup, value, value, entityWithGroup2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -385,7 +415,8 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         solution.getValueList().add(value);
 
         assertPrecompute(solution,
-                List.of(new Triple<>(entityWithoutGroup, value, value), new Triple<>(entityWithGroup, value, value)),
+                List.of(expected(entityWithoutGroup, value, value, entityWithoutGroup, value),
+                        expected(entityWithGroup, value, value, entityWithGroup, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -411,7 +442,8 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityGroup, value, value)),
+        assertPrecompute(solution, List.of(
+                expected(entityGroup, value, value, entityWithGroup1, entityWithGroup2, value)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)
@@ -438,9 +470,9 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         solution.getValueList().add(value);
 
         assertPrecompute(solution, List.of(
-                new Triple<>(entityWithGroup1, value, value),
-                new Triple<>(entityWithGroup2, value, value),
-                new Triple<>(entityWithoutGroup, null, null)),
+                expected(entityWithGroup1, value, value, entityWithGroup1, value),
+                expected(entityWithGroup2, value, value, entityWithGroup2, value),
+                expected(entityWithoutGroup, null, null, entityWithoutGroup)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .join(TestdataLavishValue.class)

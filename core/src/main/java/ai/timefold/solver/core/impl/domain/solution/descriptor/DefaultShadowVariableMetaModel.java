@@ -37,8 +37,7 @@ public record DefaultShadowVariableMetaModel<Solution_, Entity_, Value_>(
 
     @Override
     public boolean equals(Object o) {
-        // Do not use entity in equality checks;
-        // If an entity is subclassed, that subclass will have it own distinct VariableMetaModel
+        // Equal when describing the same variable, regardless of entity view; see VariableMetaModel.
         if (o instanceof DefaultShadowVariableMetaModel<?, ?, ?> that) {
             return Objects.equals(variableDescriptor, that.variableDescriptor);
         }

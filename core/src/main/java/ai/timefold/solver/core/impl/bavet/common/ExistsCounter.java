@@ -31,7 +31,7 @@ public final class ExistsCounter<Tuple_ extends Tuple>
 
     @Override
     public String toString() {
-        return "Counter(" + leftTuple + ")";
+        return "Counter(%s)".formatted(leftTuple);
     }
 
 }

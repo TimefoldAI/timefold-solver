@@ -2,10 +2,12 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -13,9 +15,11 @@ import java.util.function.BiConsumer;
 import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
 import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
+import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph.VariableChangeHook;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A variable reference graph that excludes a planning list variable's elements from the graph
@@ -47,6 +51,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     private final AbstractVariableReferenceGraph<Solution_, ?> innerGraph;
     private final ListChainUpdater<Solution_> chainUpdater;
     private final ListVariableState<Solution_, Object, Object> listVariableState;
+    private final VariableMetaModel<Solution_, ?, ?> listVariableMetaModel;
     private final String listVariableName;
     private final Class<?> elementEntityClass;
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
@@ -58,6 +63,8 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     private final List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> listVariableAfterProcessorList;
 
     // These are mutable.
+    // Resolved once per variable, as the graph it wraps does.
+    private final Map<VariableMetaModel<?, ?, ?>, @Nullable VariableChangeHook> variableReferenceToHookMap;
     private final List<Object> changedElementList;
     // The unassigned elements the classification in progress recomputed, so that each is recomputed once.
     // The set finds them; the list empties the set one element at a time, since clearing it would cost
@@ -80,11 +87,13 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
         this.innerGraph = innerGraph;
         this.chainUpdater = chainUpdater;
         this.listVariableState = listVariableState;
+        this.listVariableMetaModel = listVariableMetaModel;
         this.listVariableName = listVariableMetaModel.name();
         this.elementEntityClass = elementEntityClass;
         this.changedVariableNotifier = changedVariableNotifier;
         this.listVariableAfterProcessorList =
                 innerGraph.variableReferenceToAfterProcessor.getOrDefault(listVariableMetaModel, List.of());
+        this.variableReferenceToHookMap = new HashMap<>();
         this.changedElementList = new ArrayList<>();
         this.recomputedUnassignedElementSet = Collections.newSetFromMap(new IdentityHashMap<>());
         this.recomputedUnassignedElementList = new ArrayList<>();
@@ -112,55 +121,24 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
     }
 
     @Override
-    public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
-        if (isUpdating) {
-            // A reentrant event of this graph's own update.
-            return;
+    public @Nullable VariableChangeHook resolveHookFor(VariableMetaModel<?, ?, ?> variableReference) {
+        return variableReferenceToHookMap.computeIfAbsent(variableReference, this::buildHook);
+    }
+
+    private @Nullable VariableChangeHook buildHook(VariableMetaModel<?, ?, ?> variableReference) {
+        var innerHook = innerGraph.resolveHookFor(variableReference);
+        var isMonitoredSource = monitoredSourceVariableSet.contains(variableReference);
+        var isListVariable = variableReference.equals(listVariableMetaModel);
+        if (innerHook == null && !isMonitoredSource && !isListVariable) {
+            return null;
         }
-        innerGraph.beforeVariableChanged(variableReference, entity);
+        return new ListChainVariableChangeHook(innerHook, isMonitoredSource, isListVariable);
     }
 
     @Override
-    public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
-        if (isUpdating) {
-            return;
-        }
-        if (monitoredSourceVariableSet.contains(variableReference)) {
-            if (elementEntityClass.isInstance(entity)) {
-                recordChangedElement(entity);
-            } else {
-                // A genuine pre-chain variable has no graph node to reach the chain node through.
-                // Null for anything but a list entity of this graph, such as one of another working solution.
-                var chainState = chainUpdater.getChainState(entity);
-                if (chainState != null) {
-                    markChainDirty(chainState);
-                }
-            }
-        }
-        innerGraph.afterVariableChanged(variableReference, entity);
-    }
-
-    @Override
-    public void beforeListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elementList, int fromIndex, int toIndex) {
-        // Nothing is recorded here: the list variable state changes the inverse and the previous or next
-        // element of the elements that leave the list, and afterVariableChanged records them from those.
-        innerGraph.beforeListVariableChanged(variableReference, entity, elementList, fromIndex, toIndex);
-    }
-
-    @Override
-    public void afterListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
-            List<Object> elementList, int fromIndex, int toIndex) {
-        // Delegated first, so that the graph fails fast on a list change during an update
-        // before anything is recorded.
-        innerGraph.afterListVariableChanged(variableReference, entity, elementList, fromIndex, toIndex);
-        if (fromIndex < toIndex) {
-            // The elements whose source variables changed record themselves; when none of them is in this list,
-            // as when a forced update of every shadow variable simulates a change on every list,
-            // the whole chain is walked.
-            markChainDirty(Objects.requireNonNull(chainUpdater.getChainState(entity)));
-        }
-        markPostChainVariablesChanged(entity);
+    public boolean hasPendingChanges() {
+        // A dirty chain has its chain node marked in the graph.
+        return !changedElementList.isEmpty() || innerGraph.hasPendingChanges();
     }
 
     @Override
@@ -200,8 +178,12 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
      * skips along with the edges. Without it, removing the list's last element would leave no element
      * to walk and no edge to the entity, so nothing would recompute its post-chain variables.
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     private void markPostChainVariablesChanged(Object entity) {
-        innerGraph.processEntity(listVariableAfterProcessorList, entity);
+        // Avoid creation of iterators on the hot path.
+        for (var i = 0; i < listVariableAfterProcessorList.size(); i++) {
+            listVariableAfterProcessorList.get(i).accept(innerGraph, entity);
+        }
     }
 
     private void recordChangedElement(Object element) {
@@ -255,5 +237,83 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             chainState.endUpdate(isUpdated);
         }
         dirtyChainStateList.clear();
+    }
+
+    /**
+     * Records the changes the chain nodes need, then passes the event on to the graph.
+     */
+    private final class ListChainVariableChangeHook implements VariableChangeHook {
+
+        private final @Nullable VariableChangeHook innerHook;
+        private final boolean isMonitoredSource;
+        private final boolean isListVariable;
+
+        private ListChainVariableChangeHook(@Nullable VariableChangeHook innerHook, boolean isMonitoredSource,
+                boolean isListVariable) {
+            this.innerHook = innerHook;
+            this.isMonitoredSource = isMonitoredSource;
+            this.isListVariable = isListVariable;
+        }
+
+        @Override
+        public void beforeVariableChanged(Object entity) {
+            if (isUpdating) {
+                // A reentrant event of this graph's own update.
+                return;
+            }
+            if (innerHook != null) {
+                innerHook.beforeVariableChanged(entity);
+            }
+        }
+
+        @Override
+        public void afterVariableChanged(Object entity) {
+            if (isUpdating) {
+                return;
+            }
+            if (isMonitoredSource) {
+                if (elementEntityClass.isInstance(entity)) {
+                    recordChangedElement(entity);
+                } else {
+                    // A genuine pre-chain variable has no graph node to reach the chain node through.
+                    // Null for anything but a list entity of this graph, such as one of another working solution.
+                    var chainState = chainUpdater.getChainState(entity);
+                    if (chainState != null) {
+                        markChainDirty(chainState);
+                    }
+                }
+            }
+            if (innerHook != null) {
+                innerHook.afterVariableChanged(entity);
+            }
+        }
+
+        @Override
+        public void beforeListVariableChanged(Object entity, List<Object> elementsBeforeChange, int fromIndex,
+                int toIndex) {
+            // Nothing is recorded here: the list variable state changes the inverse and the previous or next
+            // element of the elements that leave the list, and afterVariableChanged records them from those.
+            if (innerHook != null) {
+                innerHook.beforeListVariableChanged(entity, elementsBeforeChange, fromIndex, toIndex);
+            }
+        }
+
+        @Override
+        public void afterListVariableChanged(Object entity, List<Object> elementsAfterChange, int fromIndex,
+                int toIndex) {
+            if (innerHook != null) {
+                innerHook.afterListVariableChanged(entity, elementsAfterChange, fromIndex, toIndex);
+            }
+            if (!isListVariable) {
+                return;
+            }
+            if (fromIndex < toIndex) {
+                // The elements whose source variables changed record themselves; when none of them is in this list,
+                // as when a forced update of every shadow variable simulates a change on every list,
+                // the whole chain is walked.
+                markChainDirty(Objects.requireNonNull(chainUpdater.getChainState(entity)));
+            }
+            markPostChainVariablesChanged(entity);
+        }
     }
 }

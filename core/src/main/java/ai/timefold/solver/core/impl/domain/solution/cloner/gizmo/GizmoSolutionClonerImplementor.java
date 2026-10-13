@@ -46,6 +46,7 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class GizmoSolutionClonerImplementor {
     private static final String FALLBACK_CLONER = "fallbackCloner";
+    private static final String LAST_CLONE_OBJECT_COUNT = "lastCloneObjectCount";
     public static final boolean DEBUG = false;
 
     /**
@@ -233,17 +234,27 @@ public class GizmoSolutionClonerImplementor {
 
     private static void createCloneSolution(ClonerDescriptor clonerDescriptor) {
         var solutionClass = clonerDescriptor.solutionDescriptor.getSolutionClass();
+        // why: an unsized map rehashes ~log2(n) times per clone, once per best solution of a large dataset
+        var lastCloneObjectCountField = clonerDescriptor.classCreator.field(LAST_CLONE_OBJECT_COUNT, field -> {
+            field.private_();
+            field.volatile_();
+            field.setType(int.class);
+        });
         clonerDescriptor.classCreator.method("cloneSolution", methodCreator -> {
             methodCreator.returning(Object.class);
             var original = methodCreator.parameter("original", Object.class);
+            var lastCloneObjectCount = methodCreator.this_().field(lastCloneObjectCountField);
             methodCreator.body(blockCreator -> {
+                var cloneMap = blockCreator.localVar("cloneMap",
+                        blockCreator.new_(ConstructorDesc.of(IdentityHashMap.class, int.class), lastCloneObjectCount));
                 var clone = blockCreator.invokeStatic(
                         ClassMethodDesc.of(
                                 ClassDesc.of(
                                         GizmoSolutionClonerFactory.getGeneratedClassName(clonerDescriptor.solutionDescriptor)),
                                 "cloneSolutionRun", solutionClass, solutionClass, Map.class),
                         original,
-                        blockCreator.new_(IdentityHashMap.class));
+                        cloneMap);
+                blockCreator.set(lastCloneObjectCount, blockCreator.withMap(cloneMap).size());
                 blockCreator.return_(clone);
             });
         });

@@ -1,59 +1,97 @@
 package ai.timefold.solver.service.rest.impl.stats;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.LongSupplier;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.enterprise.event.Observes;
 
-import ai.timefold.solver.service.definition.internal.stats.StatisticsCollector;
+import ai.timefold.solver.service.definition.impl.stats.StatisticsCollector;
 
-import org.jboss.resteasy.reactive.server.ServerRequestFilter;
-import org.jboss.resteasy.reactive.server.ServerResponseFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.vertx.ext.web.Router;
+
+/**
+ * Tracks in-flight HTTP requests at the Vert.x router level.
+ * <p>
+ * Completion is detected via {@link io.vertx.ext.web.RoutingContext#addEndHandler}, which fires once the response
+ * has been sent, or the connection was closed or reset, regardless of how the request was processed.
+ * Thanks to that a request can never stay registered as in-flight after it is gone.
+ */
 @ApplicationScoped
 public class StatisticsCollectorImpl implements StatisticsCollector {
 
-    private static final String TF_REQUEST_ID_PROP = "tf_request_id";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsCollectorImpl.class);
-    private AtomicLong lastRequest = new AtomicLong(0);
-    private List<UUID> inflightRequests = Collections.synchronizedList(new ArrayList<>());
 
-    @ServerRequestFilter(preMatching = true)
-    public void preMatchingFilter(ContainerRequestContext requestContext) {
+    // run before the body handler, so that the time spent uploading the request body counts as in-flight
+    private static final int ROUTE_ORDER = Integer.MIN_VALUE;
 
-        UUID requestId = UUID.randomUUID();
-        LOGGER.debug("Request start {}", requestId);
-        requestContext.setProperty(TF_REQUEST_ID_PROP, requestId);
-        inflightRequests.add(requestId);
-        // record request as negative number to indicate it is a in-flight request
-        this.lastRequest.set(System.currentTimeMillis() * -1);
+    private static final String NON_APPLICATION_PATH = "/q";
+    private static final String EVENT_STREAM_PATH_SUFFIX = "/events";
+
+    private final AtomicInteger inflightRequests = new AtomicInteger();
+    private final AtomicLong lastActivity = new AtomicLong(0);
+    private final LongSupplier currentTimeMillis;
+
+    public StatisticsCollectorImpl() {
+        this(System::currentTimeMillis);
     }
 
-    @ServerResponseFilter
-    public void postMatchingFilter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+    StatisticsCollectorImpl(LongSupplier currentTimeMillis) {
+        this.currentTimeMillis = currentTimeMillis;
+    }
 
-        UUID requestId = (UUID) requestContext.getProperty(TF_REQUEST_ID_PROP);
-        LOGGER.debug("Request end {}", requestId);
-        inflightRequests.remove(requestId);
+    void registerTracking(@Observes Router router) {
+        router.route().order(ROUTE_ORDER).handler(routingContext -> {
+            if (isTracked(routingContext.normalizedPath())) {
+                requestStarted();
+                routingContext.addEndHandler(ignored -> requestEnded());
+            }
+            routingContext.next();
+        });
+    }
 
-        if (inflightRequests.isEmpty()) {
-            LOGGER.debug("Recording as last request completed {}", requestId);
-            // record current timestamp as last request completion time
-            this.lastRequest.set(System.currentTimeMillis());
+    /**
+     * Health probes and metric scrapes (under {@code /q}) are periodic and must not keep the runtime alive.
+     * Event streams stay open until the client disconnects and must not block the shutdown.
+     */
+    static boolean isTracked(String path) {
+        if (path == null) {
+            return true;
         }
+        return !(path.equals(NON_APPLICATION_PATH)
+                || path.startsWith(NON_APPLICATION_PATH + "/")
+                || path.endsWith(EVENT_STREAM_PATH_SUFFIX)
+                || path.endsWith(EVENT_STREAM_PATH_SUFFIX + "/"));
+    }
+
+    void requestStarted() {
+        var inflight = inflightRequests.incrementAndGet();
+        recordActivity();
+        LOGGER.trace("Request started, {} in-flight", inflight);
+    }
+
+    void requestEnded() {
+        recordActivity();
+        var inflight = inflightRequests.decrementAndGet();
+        LOGGER.trace("Request ended, {} in-flight", inflight);
+    }
+
+    private void recordActivity() {
+        lastActivity.accumulateAndGet(currentTimeMillis.getAsLong(), Math::max);
     }
 
     @Override
-    public long lastRequestTimestamp() {
-        return lastRequest.get();
+    public long lastActivityTimestamp() {
+        return lastActivity.get();
+    }
+
+    @Override
+    public int inflightRequestCount() {
+        return inflightRequests.get();
     }
 
 }

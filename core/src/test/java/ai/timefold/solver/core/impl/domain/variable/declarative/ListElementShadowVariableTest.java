@@ -106,6 +106,41 @@ class ListElementShadowVariableTest {
     }
 
     @Test
+    void unassignUpdatesShadowVariables() {
+        var value1 = new TestdataListElementValue("v1");
+        var value2 = new TestdataListElementValue("v2");
+        var value3 = new TestdataListElementValue("v3");
+
+        var entity = new TestdataListElementEntity("A", 0);
+        entity.setValues(new ArrayList<>(List.of(value1, value2, value3)));
+
+        var solution = new TestdataListElementSolution();
+        solution.setEntities(List.of(entity));
+        solution.setValues(List.of(value1, value2, value3));
+
+        var solutionMetaModel = TestdataListElementSolution.buildMetaModel();
+        var listVariableMetaModel = solutionMetaModel.genuineEntity(TestdataListElementEntity.class)
+                .listVariable("values", TestdataListElementValue.class);
+        var context = MoveTester.build(solutionMetaModel).using(solution);
+        assertThat(value3.getEndTime()).isEqualTo(3);
+
+        // Unassign from the middle: the successor moves up.
+        context.execute(Moves.unassign(listVariableMetaModel, entity, 1));
+        assertThat(value2.getStartTime()).isNull();
+        assertThat(value2.getEndTime()).isNull();
+        assertThat(value3.getStartTime()).isEqualTo(1);
+        assertThat(value3.getEndTime()).isEqualTo(2);
+        assertThat(entity.getLastEndTime()).isEqualTo(2);
+
+        // Unassign the last element: only the aggregate changes.
+        context.execute(Moves.unassign(listVariableMetaModel, entity, 1));
+        assertThat(value3.getStartTime()).isNull();
+        assertThat(value3.getEndTime()).isNull();
+        assertThat(value1.getEndTime()).isEqualTo(1);
+        assertThat(entity.getLastEndTime()).isEqualTo(1);
+    }
+
+    @Test
     void basicVariableChangeRetriggersAggregateWithoutListChange() {
         var value1 = new TestdataMixedListElementValue("v1");
         var value2 = new TestdataMixedListElementValue("v2");

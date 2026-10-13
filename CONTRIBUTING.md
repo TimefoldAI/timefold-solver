@@ -5,6 +5,13 @@ We are happy to have you here!
 
 All types of contributions are encouraged and valued. In this file, we list different ways you can help the project and details about how this project handles them.
 
+We welcome AI-assisted contributions as well.
+However, we reserve the right to ask inquisitive questions
+to ensure that you understand the problem and the solution you are proposing.
+Pull requests which are entirely managed by agents will not be entertained - 
+ultimately, humans are responsible for their agents, 
+and we want to talk to humans, not machines.
+
 ## Q&A 
 
 ### "I have a question"

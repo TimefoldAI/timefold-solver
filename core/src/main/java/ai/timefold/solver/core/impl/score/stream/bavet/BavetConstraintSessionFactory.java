@@ -117,13 +117,17 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         }
         return new BavetConstraintSession<>(scoreInliner,
                 buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner, constraintProfiler,
-                        scoreDirectorDerived));
+                        constraintMatchPolicy.isIndictmentsEnabled(), scoreDirectorDerived));
     }
 
     private ConstraintStreamsBavetNodeNetwork buildNodeNetwork(Solution_ workingSolution,
             ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
-            AbstractScoreInliner<Score_> scoreInliner, InnerConstraintProfiler profiler, boolean scoreDirectorDerived) {
-        var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, profiler);
+            AbstractScoreInliner<Score_> scoreInliner, InnerConstraintProfiler profiler,
+            boolean indictmentsEnabled,
+            boolean scoreDirectorDerived) {
+        var buildHelper =
+                new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, indictmentsEnabled,
+                        profiler);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractRootNode<?>>>();
         var nodeList =
                 buildHelper.buildNodeList(constraintStreamSet, buildHelper, BavetAbstractConstraintStream::buildNode, node -> {

@@ -41,6 +41,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     private final AbstractScoreInliner<Score_> scoreInliner;
     private final ConsistencyTracker<Solution_> consistencyTracker;
     private final @Nullable InnerConstraintProfiler constraintProfiler;
+    private final boolean indictmentsEnabled;
     private final Map<EntityDescriptor<Solution_>, Map<ForEachFilteringCriteria, @Nullable Predicate<Object>>> entityDescriptorToForEachCriteriaToPredicateMap;
     private final Map<BavetAbstractConstraintStream<Solution_>, List<Set<ConstraintNodeProfileId>>> streamToProfileIdSets;
     private final Map<BavetScoringConstraintStream<Solution_>, Scorer<?>> streamToScorers = new HashMap<>();
@@ -49,11 +50,13 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
 
     public ConstraintNodeBuildHelper(ConsistencyTracker<Solution_> consistencyTracker,
             Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet, AbstractScoreInliner<Score_> scoreInliner,
+            boolean indictmentsEnabled,
             @Nullable InnerConstraintProfiler profiler) {
         super(activeStreamSet);
         this.consistencyTracker = consistencyTracker;
         this.scoreInliner = scoreInliner;
         this.constraintProfiler = profiler;
+        this.indictmentsEnabled = indictmentsEnabled;
         this.entityDescriptorToForEachCriteriaToPredicateMap = new HashMap<>();
         this.streamToProfileIdSets = HashMap.newHashMap(Math.max(16, activeStreamSet.size() / 2));
     }
@@ -132,6 +135,14 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     public ConstraintStreamsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
             Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
             Map<BavetConstraint<Solution_>, Scorer<?>> constraintToScorerMap, boolean scoreDirectorDerived) {
+        for (var scorerEntry : constraintToScorerMap.entrySet()) {
+            var scorerParentNodes = getParentNodeList(
+                    (BavetAbstractConstraintStream<Solution_>) scorerEntry.getKey().getScoringConstraintStream());
+            var scorerNodeIds = scorerParentNodes.stream()
+                    .mapToLong(AbstractNode::getId)
+                    .toArray();
+            scorerEntry.getValue().setNodeIds(scorerNodeIds);
+        }
         return ConstraintStreamsBavetNodeNetwork.of(nodeList, declaredClassToNodeMap, (Map) constraintToScorerMap, node -> {
             if (constraintProfiler == null) {
                 return node.getPropagator();
@@ -153,4 +164,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         return buildNodeNetwork(nodeList, declaredClassToNodeMap, Collections.emptyMap(), true); // Reduces logging.
     }
 
+    public boolean isIndictmentEnabled() {
+        return indictmentsEnabled;
+    }
 }

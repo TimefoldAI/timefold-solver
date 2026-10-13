@@ -15,8 +15,8 @@ public final class ForEachUnfilteredUniNode<A>
     private boolean isActive;
 
     public ForEachUnfilteredUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            int outputStoreSize) {
-        super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
+            boolean indictmentsEnabled, int outputStoreSize) {
+        super(forEachClass, nextNodesTupleLifecycle, indictmentsEnabled, outputStoreSize);
         this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
     }
 

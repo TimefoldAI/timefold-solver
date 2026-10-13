@@ -57,6 +57,8 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_watched.Test
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_watched.TestdataMultiEntityChainWatchedVisit;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListSolution;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
+import ai.timefold.solver.core.testdomain.shadow.simple_list_next.TestdataDeclarativeSimpleNextListSolution;
+import ai.timefold.solver.core.testdomain.shadow.simple_list_next.TestdataDeclarativeSimpleNextListValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +68,15 @@ class GraphStructureTest {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataDeclarativeSimpleListSolution.buildSolutionDescriptor()))
                 .hasFieldOrPropertyWithValue("structure", EMPTY);
+    }
+
+    @Test
+    void simpleNextListStructure() {
+        var entity = new TestdataDeclarativeSimpleNextListValue();
+        assertThat(GraphStructure.determineGraphStructure(
+                TestdataDeclarativeSimpleNextListSolution.buildSolutionDescriptor(), entity))
+                .hasFieldOrPropertyWithValue("structure", SINGLE_DIRECTIONAL_PARENT)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.NEXT);
     }
 
     @Test

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.util;
 
 import java.util.AbstractSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 
 import org.jspecify.annotations.NullMarked;
@@ -15,12 +14,11 @@ import org.jspecify.annotations.NullMarked;
 public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
     private final ElementAwareLinkedList<V> delegate;
-    private final IdentityHashMap<V, ElementAwareLinkedList.Entry<V>> identityMap;
+    private final ShrinkingIdentityHashMap<V, ElementAwareLinkedList.Entry<V>> identityMap = new ShrinkingIdentityHashMap<>();
     private int size = 0; // Avoid method calls to underlying collections.
 
     public LinkedIdentityHashSet() {
         this.delegate = new ElementAwareLinkedList<>();
-        this.identityMap = new IdentityHashMap<>();
     }
 
     @Override
@@ -71,8 +69,8 @@ public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
         if (size == 0) { // Micro-optimization; clearing empty maps is not entirely free.
             return;
         }
-        this.identityMap.clear();
         this.delegate.clear();
+        identityMap.clear();
         size = 0;
     }
 }

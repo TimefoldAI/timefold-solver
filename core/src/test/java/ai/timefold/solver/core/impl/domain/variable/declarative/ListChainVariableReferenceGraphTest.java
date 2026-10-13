@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
@@ -83,15 +84,18 @@ class ListChainVariableReferenceGraphTest {
         var visitsMetaModel = solutionDescriptor.getMetaModel().entity(TestdataMultiEntityChainVehicle.class)
                 .variable("visits");
         var visitList = solutionDescriptor.getListVariableDescriptor().getValue(vehicleA);
-        graph.beforeListVariableChanged(visitsMetaModel, vehicleA, visitList, 2, 2);
+        var visitsHook = Objects.requireNonNull(graph.resolveHookFor(visitsMetaModel));
+        visitsHook.beforeListVariableChanged(vehicleA, visitList, 2, 2);
         vehicleA.getVisits().add(a3);
         var visitMetaModel = solutionDescriptor.getMetaModel().entity(TestdataMultiEntityChainVisit.class);
-        graph.beforeVariableChanged(visitMetaModel.variable("vehicle"), a3);
-        graph.beforeVariableChanged(visitMetaModel.variable("previousVisit"), a3);
+        var vehicleHook = Objects.requireNonNull(graph.resolveHookFor(visitMetaModel.variable("vehicle")));
+        var previousVisitHook = Objects.requireNonNull(graph.resolveHookFor(visitMetaModel.variable("previousVisit")));
+        vehicleHook.beforeVariableChanged(a3);
+        previousVisitHook.beforeVariableChanged(a3);
         link(listVariableState, vehicleA, a3, a2, 2);
-        graph.afterVariableChanged(visitMetaModel.variable("vehicle"), a3);
-        graph.afterVariableChanged(visitMetaModel.variable("previousVisit"), a3);
-        graph.afterListVariableChanged(visitsMetaModel, vehicleA, visitList, 2, 3);
+        vehicleHook.afterVariableChanged(a3);
+        previousVisitHook.afterVariableChanged(a3);
+        visitsHook.afterListVariableChanged(vehicleA, visitList, 2, 3);
         graph.updateChanged();
 
         // The elements before the insertion point are unreachable from it and are left alone.

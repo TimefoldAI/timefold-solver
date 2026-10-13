@@ -48,16 +48,17 @@ public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
     Class<Entity_> type();
 
     /**
-     * Returns the variables declared by the entity, both genuine and shadow.
+     * Returns the variables of the entity, both genuine and shadow, including inherited ones.
+     * Inherited variables have this entity as their {@link VariableMetaModel#entity()}.
      *
-     * @return Variables declared by the entity.
+     * @return Variables of the entity.
      */
     List<? extends VariableMetaModel<Solution_, Entity_, ?>> variables();
 
     /**
-     * Returns the genuine variables declared by the entity.
+     * Returns the genuine variables of the entity, including inherited ones.
      *
-     * @return Genuine variables declared by the entity.
+     * @return Genuine variables of the entity.
      */
     default List<? extends GenuineVariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
         return variables().stream()
@@ -72,7 +73,7 @@ public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
      * use {@link GenuineEntityMetaModel#genuineVariable(String)}
      * or {@link GenuineEntityMetaModel#listVariable(String)} when possible.
      *
-     * @return A variable declared by the entity.
+     * @return A variable of the entity, possibly inherited; see {@link #variables()}.
      */
     @SuppressWarnings("unchecked")
     default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName) {
@@ -92,7 +93,7 @@ public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
      * use {@link GenuineEntityMetaModel#genuineVariable(String, Class)}
      * or {@link GenuineEntityMetaModel#listVariable(String, Class)} when possible.
      *
-     * @return A variable declared by the entity.
+     * @return A variable of the entity, possibly inherited; see {@link #variables()}.
      */
     @SuppressWarnings("unchecked")
     default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName, Class<Value_> variableClass) {

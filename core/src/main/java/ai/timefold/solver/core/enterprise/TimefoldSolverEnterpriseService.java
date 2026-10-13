@@ -229,7 +229,7 @@ public interface TimefoldSolverEnterpriseService {
 
     /**
      * @param variableLoops the variable loops in the solution
-     * @param scoreDefinition can be null if variableLoops is known to be empty
+     * @param scoreDefinition can be null if variableLoops is known to be empty and indictments are not fetched
      */
     <Score_ extends Score<Score_>> ScoreAnalysis<Score_> analyze(InnerScore<Score_> state,
             Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
