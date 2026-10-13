@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListChangeMove;
@@ -21,6 +22,9 @@ import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMult
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack.TestdataMultiEntityChainSlackSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack.TestdataMultiEntityChainSlackVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_slack.TestdataMultiEntityChainSlackVisit;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.jspecify.annotations.Nullable;
@@ -45,15 +49,36 @@ class ListChainVariableReferenceGraphTest {
         var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor, vehicle, visit);
         assertThat(graphStructureAndDirection.structure()).isEqualTo(GraphStructure.LIST_CHAIN);
 
+        // The previous vehicle is a planning variable: its dynamic edges could close a loop through a chain node.
+        assertThat(buildListChainGraph(solutionDescriptor, graphStructureAndDirection, vehicle, visit))
+                .isInstanceOf(DefaultVariableReferenceGraph.class);
+    }
+
+    /**
+     * A visit reads the end time of its own vehicle, which the visits source:
+     * the chain node would have to be computed both before and after that end time.
+     */
+    @Test
+    void elementsReadingAPostChainVariableFallBack() {
+        var solutionDescriptor = TestdataMultiEntityChainSlackSolution.buildSolutionDescriptor();
+        var vehicle = new TestdataMultiEntityChainSlackVehicle("A");
+        var visit = new TestdataMultiEntityChainSlackVisit("v1", 1);
+        vehicle.setVisits(new ArrayList<>(List.of(visit)));
+        var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor, vehicle, visit);
+        assertThat(graphStructureAndDirection.structure()).isEqualTo(GraphStructure.LIST_CHAIN);
+
+        assertThat(buildListChainGraph(solutionDescriptor, graphStructureAndDirection, vehicle, visit))
+                .isNotInstanceOf(ListChainVariableReferenceGraph.class);
+    }
+
+    private static <Solution_> VariableReferenceGraph buildListChainGraph(SolutionDescriptor<Solution_> solutionDescriptor,
+            GraphStructure.GraphStructureAndDirection graphStructureAndDirection, Object... entities) {
         var scoreDirector = Mockito.mock(InnerScoreDirector.class);
         Mockito.when(scoreDirector.getListVariableState(Mockito.any())).thenReturn(Mockito.mock(ListVariableState.class));
-        var graph = DefaultShadowVariableSessionFactory.buildListChainGraph(
+        return DefaultShadowVariableSessionFactory.buildListChainGraph(
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
-                        ChangedVariableNotifier.of(scoreDirector), vehicle, visit),
+                        ChangedVariableNotifier.of(scoreDirector), entities),
                 graphStructureAndDirection);
-
-        // The previous vehicle is a planning variable: its dynamic edges could close a loop through a chain node.
-        assertThat(graph).isInstanceOf(DefaultVariableReferenceGraph.class);
     }
 
     @Test

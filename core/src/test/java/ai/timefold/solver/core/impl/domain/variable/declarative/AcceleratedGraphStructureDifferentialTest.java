@@ -14,6 +14,12 @@ import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentVa
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySolution;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyValue;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_next.TestdataMultiEntityChainNextVisit;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListEntity;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListSolution;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
@@ -73,6 +79,55 @@ class AcceleratedGraphStructureDifferentialTest {
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataDeclarativeSimpleNextListEntity.class)
                         .listVariable("values", TestdataDeclarativeSimpleNextListValue.class),
                 TestdataDeclarativeSimpleNextListEntity::getValues, entityList, valueList, true, MOVE_COUNT);
+    }
+
+    @Test
+    void listChainPreviousParent() {
+        var entityList = new ArrayList<TestdataMultiEntityChainVehicle>();
+        for (var i = 0; i < ENTITY_COUNT; i++) {
+            var entity = new TestdataMultiEntityChainVehicle("e" + i, 5 * i);
+            if (i > 0) { // Each vehicle starts where the previous one ends.
+                entity.setPreviousVehicles(List.of(entityList.get(i - 1)));
+            }
+            entityList.add(entity);
+        }
+        var valueList = new ArrayList<TestdataMultiEntityChainVisit>();
+        for (var i = 0; i < VALUE_COUNT; i++) {
+            valueList.add(new TestdataMultiEntityChainVisit("v" + i, 1 + i % 3, i % 4 != 3));
+        }
+        assignInitially(entityList, valueList, TestdataMultiEntityChainVehicle::getVisits);
+        var solution = new TestdataMultiEntityChainSolution();
+        solution.setVehicles(entityList);
+        solution.setVisits(valueList);
+        var solutionDescriptor = TestdataMultiEntityChainSolution.buildSolutionDescriptor();
+        assertRandomListMovesMatchArbitraryGraph(solutionDescriptor, solution, GraphStructure.LIST_CHAIN,
+                solutionDescriptor.getMetaModel().genuineEntity(TestdataMultiEntityChainVehicle.class)
+                        .listVariable("visits", TestdataMultiEntityChainVisit.class),
+                TestdataMultiEntityChainVehicle::getVisits, entityList, valueList, true, MOVE_COUNT);
+    }
+
+    @Test
+    void listChainNextParent() {
+        var entityList = new ArrayList<TestdataMultiEntityChainNextVehicle>();
+        for (var i = 0; i < ENTITY_COUNT; i++) {
+            entityList.add(new TestdataMultiEntityChainNextVehicle("e" + i, 100));
+        }
+        for (var i = 0; i < ENTITY_COUNT - 1; i++) { // Each vehicle ends where the next one starts.
+            entityList.get(i).getNextVehicles().add(entityList.get(i + 1));
+        }
+        var valueList = new ArrayList<TestdataMultiEntityChainNextVisit>();
+        for (var i = 0; i < VALUE_COUNT; i++) {
+            valueList.add(new TestdataMultiEntityChainNextVisit("v" + i, 1 + i % 3));
+        }
+        assignInitially(entityList, valueList, TestdataMultiEntityChainNextVehicle::getVisits);
+        var solution = new TestdataMultiEntityChainNextSolution();
+        solution.setVehicles(entityList);
+        solution.setVisits(valueList);
+        var solutionDescriptor = TestdataMultiEntityChainNextSolution.buildSolutionDescriptor();
+        assertRandomListMovesMatchArbitraryGraph(solutionDescriptor, solution, GraphStructure.LIST_CHAIN,
+                solutionDescriptor.getMetaModel().genuineEntity(TestdataMultiEntityChainNextVehicle.class)
+                        .listVariable("visits", TestdataMultiEntityChainNextVisit.class),
+                TestdataMultiEntityChainNextVehicle::getVisits, entityList, valueList, true, MOVE_COUNT);
     }
 
     @Test

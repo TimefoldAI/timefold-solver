@@ -1,11 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import static ai.timefold.solver.core.impl.domain.variable.declarative.ListChainShadowVariableAssertions.executeRandomListMove;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.assertMatchesArbitraryGraph;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
@@ -76,27 +75,6 @@ class ListChainNextShadowVariableTest {
     }
 
     /**
-     * Differential test: after every random move, the incrementally maintained shadow
-     * variables must equal a from-scratch recomputation, which uses the arbitrary graph.
-     */
-    @Test
-    void randomMovesStayAtFixedPoint() {
-        for (var seed = 0; seed < 30; seed++) {
-            var random = new Random(seed);
-            var solution = generateSolution();
-            var solutionMetaModel = TestdataMultiEntityChainNextSolution.buildMetaModel();
-            var listVariableMetaModel = solutionMetaModel.genuineEntity(TestdataMultiEntityChainNextVehicle.class)
-                    .listVariable("visits", TestdataMultiEntityChainNextVisit.class);
-            var context = MoveTester.build(solutionMetaModel).using(solution);
-            for (var moveIndex = 0; moveIndex < 40; moveIndex++) {
-                executeRandomListMove(context, listVariableMetaModel, TestdataMultiEntityChainNextVehicle::getVisits,
-                        solution.getVehicles(), solution.getVisits(), random);
-                assertShadowsAreAtFixedPoint(solution);
-            }
-        }
-    }
-
-    /**
      * Without an inconsistency field, a vehicle reports its consistency through its first declarative variable,
      * nextStartTime here, which its visits read through their inverse. Setting a new working solution builds its
      * graph while the previous one still receives the events, for vehicles the previous graph does not know.
@@ -131,8 +109,7 @@ class ListChainNextShadowVariableTest {
     }
 
     private static void assertShadowsAreAtFixedPoint(TestdataMultiEntityChainNextSolution solution) {
-        ListChainShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
-                s -> s.getVehicles().stream().map(TestdataMultiEntityChainNextVehicle::getStartTime).toList(),
-                s -> s.getVisits().stream().map(TestdataMultiEntityChainNextVisit::getLatestStartTime).toList());
+        assertMatchesArbitraryGraph(TestdataMultiEntityChainNextSolution.buildSolutionDescriptor(), solution,
+                "Shadow variables");
     }
 }
