@@ -75,8 +75,48 @@ final class DeclarativeShadowVariableAssertions {
     }
 
     /**
-     * Returns a random list move: an assignment, an unassignment of one or several values if unassigning,
-     * a change, a swap, a sub list change or swap that may reverse, or a reversal.
+     * The kinds of list move drawn, each one the move the named provider produces.
+     * The providers are not used themselves, since the ones that unassign refuse a list variable
+     * that does not allow unassigned values, which ruin and recreate does anyway.
+     */
+    private enum ListMoveType {
+        /** {@code ListAssignMoveProvider}: an unassigned value goes to any position of any list. */
+        ASSIGN,
+        /** {@code ListUnassignMoveProvider}: one value leaves its list. */
+        UNASSIGN_VALUE,
+        /** {@code SubListUnassignMoveProvider}: several consecutive values leave their list under one event. */
+        UNASSIGN_SUB_LIST,
+        /** {@code ListChangeMoveProvider}: one value moves to another position, in the same list or another. */
+        CHANGE,
+        /** {@code ListSwapMoveProvider}: two values exchange their positions. */
+        SWAP,
+        /** {@code SubListChangeMoveProvider}: a sub list moves to another position, possibly reversed. */
+        SUB_LIST_CHANGE,
+        /** {@code SubListSwapMoveProvider}: two sub lists of two different lists exchange places, possibly reversed. */
+        SUB_LIST_SWAP,
+        /** {@code TwoOptListMoveProvider}: a sub list is reversed in place. */
+        REVERSE
+    }
+
+    private static final List<ListMoveType> NON_UNASSIGNING_MOVE_TYPE_LIST = List.of(ListMoveType.CHANGE, ListMoveType.SWAP,
+            ListMoveType.SUB_LIST_CHANGE, ListMoveType.SUB_LIST_SWAP, ListMoveType.REVERSE);
+
+    /**
+     * A random sub list of an assigned entity's list: the values from fromIndex (inclusive) to toIndex (exclusive).
+     */
+    private record SubList<Entity_>(Entity_ entity, int fromIndex, int toIndex, int listSize) {
+        Range<Entity_> range() {
+            return new Range<>(entity, fromIndex, toIndex);
+        }
+
+        int length() {
+            return toIndex - fromIndex;
+        }
+    }
+
+    /**
+     * Returns a random list move of one of the {@link ListMoveType}s,
+     * excluding those that unassign values unless unassigning.
      * Returns null when the solution has no room for the move picked.
      */
     private static <Solution_, Entity_, Value_> @Nullable Move<Solution_> randomListMove(
@@ -92,8 +132,10 @@ final class DeclarativeShadowVariableAssertions {
                 assignedEntityList.add(entity);
             }
         }
-        var moveType = unassigning ? random.nextInt(9) : 3 + random.nextInt(6);
-        if (moveType == 0 || assignedEntityList.isEmpty()) {
+        var moveTypeList = unassigning ? List.of(ListMoveType.values()) : NON_UNASSIGNING_MOVE_TYPE_LIST;
+        var moveType = assignedEntityList.isEmpty() ? ListMoveType.ASSIGN
+                : moveTypeList.get(random.nextInt(moveTypeList.size()));
+        if (moveType == ListMoveType.ASSIGN) {
             var unassignedValueList = valueList.stream().filter(value -> !assignedValueSet.contains(value)).toList();
             if (unassignedValueList.isEmpty()) {
                 return null;
@@ -102,37 +144,43 @@ final class DeclarativeShadowVariableAssertions {
             return Moves.assign(listVariableMetaModel, unassignedValueList.get(random.nextInt(unassignedValueList.size())),
                     entity, random.nextInt(listFunction.apply(entity).size() + 1));
         }
-        var source = assignedEntityList.get(random.nextInt(assignedEntityList.size()));
-        var sourceSize = listFunction.apply(source).size();
-        var sourceIndex = random.nextInt(sourceSize);
-        var sourceToIndex = sourceIndex + 1 + random.nextInt(sourceSize - sourceIndex);
+        var source = randomSubList(assignedEntityList, listFunction, random);
         var destination = entityList.get(random.nextInt(entityList.size()));
         var destinationSize = listFunction.apply(destination).size();
-        var other = assignedEntityList.get(random.nextInt(assignedEntityList.size()));
-        var otherSize = listFunction.apply(other).size();
-        var otherIndex = random.nextInt(otherSize);
-        var otherToIndex = otherIndex + 1 + random.nextInt(otherSize - otherIndex);
+        var other = randomSubList(assignedEntityList, listFunction, random);
         return switch (moveType) {
-            case 1 -> Moves.unassign(listVariableMetaModel, source, sourceIndex);
-            case 2 -> Moves.unassign(listVariableMetaModel, new Range<>(source, sourceIndex, sourceToIndex));
-            case 3 -> {
-                var destinationIndex = random.nextInt(destination == source ? sourceSize : destinationSize + 1);
-                yield destination == source && destinationIndex == sourceIndex ? null
-                        : Moves.change(listVariableMetaModel, source, sourceIndex, destination, destinationIndex);
+            case UNASSIGN_VALUE -> Moves.unassign(listVariableMetaModel, source.entity(), source.fromIndex());
+            case UNASSIGN_SUB_LIST -> Moves.unassign(listVariableMetaModel, source.range());
+            case CHANGE -> {
+                var destinationIndex =
+                        random.nextInt(destination == source.entity() ? source.listSize() : destinationSize + 1);
+                var unchanged = destination == source.entity() && destinationIndex == source.fromIndex();
+                yield unchanged ? null
+                        : Moves.change(listVariableMetaModel, source.entity(), source.fromIndex(), destination,
+                                destinationIndex);
             }
-            case 4 -> other == source && otherIndex == sourceIndex ? null
-                    : Moves.swap(listVariableMetaModel, source, sourceIndex, other, otherIndex);
-            case 5, 6 -> {
-                var remainingSize = destination == source ? sourceSize - (sourceToIndex - sourceIndex) : destinationSize;
-                yield Moves.change(listVariableMetaModel, new Range<>(source, sourceIndex, sourceToIndex),
+            case SWAP -> source.entity() == other.entity() && source.fromIndex() == other.fromIndex() ? null
+                    : Moves.swap(listVariableMetaModel, source.entity(), source.fromIndex(), other.entity(),
+                            other.fromIndex());
+            case SUB_LIST_CHANGE -> {
+                // The destination index counts the values left once the sub list has been removed.
+                var remainingSize = destination == source.entity() ? source.listSize() - source.length() : destinationSize;
+                yield Moves.change(listVariableMetaModel, source.range(),
                         ElementPosition.of(destination, random.nextInt(remainingSize + 1)), random.nextBoolean());
             }
-            case 7 -> other == source ? null
-                    : Moves.swap(listVariableMetaModel, new Range<>(source, sourceIndex, sourceToIndex),
-                            new Range<>(other, otherIndex, otherToIndex), random.nextBoolean());
-            default -> sourceToIndex - sourceIndex < 2 ? null
-                    : Moves.reverse(listVariableMetaModel, new Range<>(source, sourceIndex, sourceToIndex));
+            case SUB_LIST_SWAP -> source.entity() == other.entity() ? null
+                    : Moves.swap(listVariableMetaModel, source.range(), other.range(), random.nextBoolean());
+            case REVERSE -> source.length() < 2 ? null : Moves.reverse(listVariableMetaModel, source.range());
+            case ASSIGN -> throw new IllegalStateException("Impossible state: ASSIGN is handled above.");
         };
+    }
+
+    private static <Entity_, Value_> SubList<Entity_> randomSubList(List<Entity_> assignedEntityList,
+            Function<Entity_, List<Value_>> listFunction, Random random) {
+        var entity = assignedEntityList.get(random.nextInt(assignedEntityList.size()));
+        var listSize = listFunction.apply(entity).size();
+        var fromIndex = random.nextInt(listSize);
+        return new SubList<>(entity, fromIndex, fromIndex + 1 + random.nextInt(listSize - fromIndex), listSize);
     }
 
     private DeclarativeShadowVariableAssertions() {
