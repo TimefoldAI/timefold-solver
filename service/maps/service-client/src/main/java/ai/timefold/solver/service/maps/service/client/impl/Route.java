@@ -6,12 +6,12 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 
-final class VehicleRoute {
+final class Route {
 
     private final Waypoints baseWaypoints;
     private final AtomicReference<CompletableFuture<Waypoints>> waypointsFutureReference = new AtomicReference<>();
 
-    VehicleRoute(Waypoints baseWaypoints) {
+    Route(Waypoints baseWaypoints) {
         this.baseWaypoints = baseWaypoints;
     }
 

@@ -11,31 +11,33 @@ import java.util.concurrent.atomic.AtomicReference;
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 
 /**
- * The cached routes of one run and its background-fetch flags. Order matters: start sets {@code running} (CAS), then clears
- * {@code requested}, then snapshots the routes; finish releases {@code running}, then reads {@code requested}.
+ * The cached routes of one run and its background-fetch flags.
+ * The order of the flag updates matters:
+ * a start sets {@code running} with a compare-and-set, then clears {@code requested}, then snapshots the routes;
+ * a finish releases {@code running}, then reads {@code requested}.
  */
 final class RunRoutes {
 
-    private final AtomicReference<Map<String, VehicleRoute>> vehicleRouteMapReference = new AtomicReference<>(Map.of());
+    private final AtomicReference<Map<String, Route>> routeMapReference = new AtomicReference<>(Map.of());
     private volatile boolean viewed;
     private final AtomicBoolean backgroundFetchRunning = new AtomicBoolean();
     private final AtomicBoolean backgroundFetchRequested = new AtomicBoolean();
 
     synchronized void replaceRoutes(List<Waypoints> baseWaypointsList) {
-        var previousVehicleRouteMap = vehicleRouteMapReference.get();
-        var nextVehicleRouteMap = new LinkedHashMap<String, VehicleRoute>();
+        var previousRouteMap = routeMapReference.get();
+        var nextRouteMap = new LinkedHashMap<String, Route>();
         for (var baseWaypoints : baseWaypointsList) {
-            var previousRoute = previousVehicleRouteMap.get(baseWaypoints.id());
-            nextVehicleRouteMap.put(baseWaypoints.id(),
+            var previousRoute = previousRouteMap.get(baseWaypoints.id());
+            nextRouteMap.put(baseWaypoints.id(),
                     previousRoute != null && previousRoute.hasSameStops(baseWaypoints) ? previousRoute
-                            : new VehicleRoute(baseWaypoints));
+                            : new Route(baseWaypoints));
         }
-        vehicleRouteMapReference.set(Collections.unmodifiableMap(nextVehicleRouteMap));
+        routeMapReference.set(Collections.unmodifiableMap(nextRouteMap));
     }
 
-    List<VehicleRoute> getRouteList(Set<String> objectIdSet) {
-        return vehicleRouteMapReference.get().entrySet().stream()
-                .filter(entry -> objectIdSet.isEmpty() || objectIdSet.contains(entry.getKey()))
+    List<Route> getRouteList(Set<String> routeIdSet) {
+        return routeMapReference.get().entrySet().stream()
+                .filter(entry -> routeIdSet.isEmpty() || routeIdSet.contains(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .toList();
     }
