@@ -16,7 +16,7 @@ import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;
 
 @Priority(value = Interceptor.Priority.APPLICATION)
-// why: an @ApplicationScoped bean with only an injection constructor is rewritten by ArC, and JaCoCo loses it
+// ArC rewrites an @ApplicationScoped bean with only an injection constructor, and JaCoCo then loses it.
 @Singleton
 public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
@@ -37,6 +37,7 @@ public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
         if (waypoints != null && !waypoints.isEmpty()) {
             storageService.storeWaypoints(id, waypoints);
+            // Not in a finally block: a run released before its waypoints are stored returns 404 until a restart.
             waypointsService.releaseFinishedRun(id);
         }
     }

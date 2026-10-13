@@ -20,7 +20,8 @@ public final class ItemFailed extends SolverWorkerEvent {
     }
 
     /**
-     * Creates the event for a run whose metadata could not be read; {@link #getMetadata()} then returns null.
+     * Creates the event for a run whose metadata could not be read.
+     * {@link #getMetadata()} then returns null.
      *
      * @param id the id of the failed run
      * @param cause the failure
