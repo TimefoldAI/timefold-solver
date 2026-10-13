@@ -18,6 +18,9 @@ import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainSolution;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVehicle;
 import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain.TestdataMultiEntityChainVisit;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedSolution;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVehicle;
+import ai.timefold.solver.core.testdomain.shadow.multi_entity_chain_element_sourced.TestdataMultiEntityChainElementSourcedVisit;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.jspecify.annotations.Nullable;
@@ -33,6 +36,25 @@ class ListChainVariableReferenceGraphTest {
     private static final int CHAIN_LENGTH = 6;
     private static final int VISITS_PER_VEHICLE = 3;
     private static final int LONG_VISIT_DURATION = 100;
+
+    @Test
+    void listEntitiesChainedThroughAPlanningVariableFallBack() {
+        var solutionDescriptor = TestdataMultiEntityChainElementSourcedSolution.buildSolutionDescriptor();
+        var vehicle = new TestdataMultiEntityChainElementSourcedVehicle("A", 0);
+        var visit = new TestdataMultiEntityChainElementSourcedVisit("v1", 1);
+        var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor, vehicle, visit);
+        assertThat(graphStructureAndDirection.structure()).isEqualTo(GraphStructure.LIST_CHAIN);
+
+        var scoreDirector = Mockito.mock(InnerScoreDirector.class);
+        Mockito.when(scoreDirector.getListVariableState(Mockito.any())).thenReturn(Mockito.mock(ListVariableState.class));
+        var graph = DefaultShadowVariableSessionFactory.buildListChainGraph(
+                new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
+                        ChangedVariableNotifier.of(scoreDirector), vehicle, visit),
+                graphStructureAndDirection);
+
+        // The previous vehicle is a planning variable: its dynamic edges could close a loop through a chain node.
+        assertThat(graph).isInstanceOf(DefaultVariableReferenceGraph.class);
+    }
 
     @Test
     void onlyReachableEntitiesAreRecomputed() {

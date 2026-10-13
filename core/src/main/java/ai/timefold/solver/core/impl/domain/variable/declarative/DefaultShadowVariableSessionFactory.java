@@ -297,6 +297,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
         addChainNodes(builder, graphDescriptor.entities(), listEntityClass, listVariableMetaModel, chainUpdater,
                 declarativePreChainVariableIdList, postChainVariableIdList);
+        if (!builder.isGraphFixed) {
+            // A dynamic edge, such as one from a planning variable chaining the list entities,
+            // could close a dependency loop through a chain node while solving.
+            LOGGER.trace("The graph around the chain nodes is not fixed; falling back to the arbitrary graph.");
+            return buildArbitraryGraph(graphDescriptor);
+        }
         // The arbitrary graph may not have a loop through the chain edges: there, each element variable has
         // a node of its own, reached through the dynamic edges of a LIST_ELEMENT source, which a move can change.
         // The chain node stands for every variable of every element of its list entity instead,
