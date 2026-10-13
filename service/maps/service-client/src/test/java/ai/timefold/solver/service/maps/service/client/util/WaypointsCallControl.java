@@ -9,6 +9,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
 
+/**
+ * Test control over the fake map-service waypoints calls.
+ * A test delays, holds, or fails the next calls, and reads how many ran at the same time.
+ * The fake map service calls {@link #beforeCall()} and {@link #afterCall()} around each waypoints call.
+ */
 @ApplicationScoped
 public class WaypointsCallControl {
 
