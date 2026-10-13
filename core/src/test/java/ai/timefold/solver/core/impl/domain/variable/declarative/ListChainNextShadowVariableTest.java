@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.executeRandomListMove;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.ListChainShadowVariableAssertions.executeRandomListMove;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -131,7 +131,7 @@ class ListChainNextShadowVariableTest {
     }
 
     private static void assertShadowsAreAtFixedPoint(TestdataMultiEntityChainNextSolution solution) {
-        DeclarativeShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
+        ListChainShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
                 s -> s.getVehicles().stream().map(TestdataMultiEntityChainNextVehicle::getStartTime).toList(),
                 s -> s.getVisits().stream().map(TestdataMultiEntityChainNextVisit::getLatestStartTime).toList());
     }

@@ -178,7 +178,7 @@ class ListChainElementSourcedShadowVariableTest {
     }
 
     private static void assertShadowsAreAtFixedPoint(TestdataMultiEntityChainElementSourcedSolution solution) {
-        DeclarativeShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
+        ListChainShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
                 s -> s.getVehicles().stream().map(TestdataMultiEntityChainElementSourcedVehicle::getStartTime).toList(),
                 s -> s.getVehicles().stream().map(TestdataMultiEntityChainElementSourcedVehicle::getEndTime).toList(),
                 s -> s.getVisits().stream().map(TestdataMultiEntityChainElementSourcedVisit::getEndServiceTime).toList());

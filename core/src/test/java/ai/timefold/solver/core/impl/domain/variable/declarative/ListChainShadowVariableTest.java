@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.executeRandomListMove;
-import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.solveWithFullAssertAndEveryListMove;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.ListChainShadowVariableAssertions.executeRandomListMove;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.ListChainShadowVariableAssertions.solveWithFullAssertAndEveryListMove;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -355,7 +355,7 @@ class ListChainShadowVariableTest {
         context.execute(Moves.change(listVariableMetaModel, vehicleA, 0, vehicleB, 0));
         assertThat(vehicleB.getEndTime()).isEqualTo(2);
         assertThat(v1.getSlack()).isZero();
-        DeclarativeShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
+        ListChainShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
                 s -> s.getVehicles().stream().map(TestdataMultiEntityChainSlackVehicle::getEndTime).toList(),
                 s -> s.getVisits().stream().map(TestdataMultiEntityChainSlackVisit::getEndServiceTime).toList(),
                 s -> s.getVisits().stream().map(TestdataMultiEntityChainSlackVisit::getSlack).toList());
@@ -418,7 +418,7 @@ class ListChainShadowVariableTest {
     }
 
     private static void assertShadowsAreAtFixedPoint(TestdataMultiEntityChainSolution solution) {
-        DeclarativeShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
+        ListChainShadowVariableAssertions.assertShadowsAreAtFixedPoint(solution,
                 s -> s.getVehicles().stream().map(TestdataMultiEntityChainVehicle::getEndTime).toList(),
                 s -> s.getVisits().stream().map(TestdataMultiEntityChainVisit::getEndServiceTime).toList());
     }
