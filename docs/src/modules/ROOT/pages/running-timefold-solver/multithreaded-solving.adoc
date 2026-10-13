@@ -309,6 +309,15 @@ add the `solutionPartitionerCustomProperties` element and use xref:running-timef
   </partitionedSearch>
 ----
 
+[IMPORTANT]
+====
+For list-variable models,
+the partitioned search requires that the initial solution is uninitialized,
+or the algorithm will fail when trying to merge the solutions from the partitions into the main solution.
+It is also worth noting that when partitioning the solution,
+the partitions cannot share planning entities or planning values.
+====
+
 [#runnablePartThreadLimit]
 ==== Runnable part thread limit
 
