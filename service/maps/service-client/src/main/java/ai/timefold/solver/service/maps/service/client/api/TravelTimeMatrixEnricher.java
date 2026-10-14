@@ -181,7 +181,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         List<TransportType> datasetTransportTypes = solverModel.getTransportTypes().stream()
                 .filter(Objects::nonNull)
                 .distinct()
-                .sorted(Comparator.comparing((TransportType type) -> type != TransportType.defaultType())
+                .sorted(Comparator.comparingInt((TransportType type) -> type == TransportType.defaultType() ? 0 : 1)
                         .thenComparing(Comparator.naturalOrder()))
                 .toList();
         if (!optionsSupplier.isAutoSelectTransportType()) {
