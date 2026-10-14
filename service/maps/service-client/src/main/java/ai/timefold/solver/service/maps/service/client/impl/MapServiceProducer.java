@@ -11,6 +11,7 @@ import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDist
 import ai.timefold.solver.service.maps.haversine.impl.HaversineWaypointsProvider;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.TimeframeBucketing;
+import ai.timefold.solver.service.maps.service.client.impl.recording.RecordingMapService;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceConverter;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -35,6 +36,7 @@ public class MapServiceProducer {
     private final TimeframeBucketing timeframeBucketing;
     private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
+    private final boolean recordingEnabled;
 
     @Inject
     public MapServiceProducer(
@@ -50,7 +52,9 @@ public class MapServiceProducer {
                     name = "timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
             TimeframeBucketing timeframeBucketing,
             ManagedExecutor managedExecutor,
-            ObjectMapper mapper) {
+            ObjectMapper mapper,
+            @ConfigProperty(name = "timefold.platform.map-service.recording.enabled",
+                    defaultValue = "false") boolean recordingEnabled) {
         this.useRemote = useRemote;
         this.travelTimeAndDistanceProvider = travelTimeAndDistanceProvider;
         this.waypointsProvider = waypointsProvider;
@@ -62,10 +66,18 @@ public class MapServiceProducer {
         this.timeframeBucketing = timeframeBucketing;
         this.managedExecutor = managedExecutor;
         this.mapper = mapper;
+        this.recordingEnabled = recordingEnabled;
     }
 
     @Produces
     public MapService mapServiceProducer() {
+        MapService mapService = createMapService();
+        return recordingEnabled
+                ? RecordingMapService.inExecutionProfileDir(mapService, timeframeBucketing, mapper)
+                : mapService;
+    }
+
+    private MapService createMapService() {
         if (useRemote) {
             return new MapServiceClientImpl(mapService, converters, fallbackEnabled, useTraffic, defaultTimeframeOverride,
                     travelTimeAndDistanceProvider, waypointsProvider, timeframeBucketing, managedExecutor, mapper);
