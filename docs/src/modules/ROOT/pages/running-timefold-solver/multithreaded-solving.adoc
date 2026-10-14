@@ -311,10 +311,9 @@ add the `solutionPartitionerCustomProperties` element and use xref:running-timef
 
 [IMPORTANT]
 ====
-For basic-variable models,
-ensure that partitions do not share planning entities.
-As for list-variable models,
-make sure the partitions don't share planning entities or values.
+Each planning entity must belong to exactly one partition.
+If the model has a planning list variable,
+each planning value must also belong to exactly one partition.
 ====
 
 [#runnablePartThreadLimit]
