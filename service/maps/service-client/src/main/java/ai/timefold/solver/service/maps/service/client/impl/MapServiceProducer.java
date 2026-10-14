@@ -8,6 +8,7 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
+import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineWaypointsProvider;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
@@ -57,7 +58,7 @@ public class MapServiceProducer {
             TimeframeBucketing timeframeBucketing,
             ManagedExecutor managedExecutor,
             ObjectMapper mapper,
-            @ConfigProperty(name = "timefold.platform.map-service.recording.enabled",
+            @ConfigProperty(name = EnvironmentVars.PROPERTY_MAP_SERVICE_RECORDING_ENABLED,
                     defaultValue = "false") boolean recordingEnabled,
             @ConfigProperty(name = "timefold.platform.map-service.replay.enabled",
                     defaultValue = "false") boolean replayEnabled,
@@ -81,7 +82,8 @@ public class MapServiceProducer {
     @Produces
     public MapService mapServiceProducer() {
         MapService mapService = createMapService();
-        return recordingEnabled
+        // A replay run is never re-recorded, which could overwrite the recordings it reads.
+        return recordingEnabled && !replayEnabled
                 ? RecordingMapService.inExecutionProfileDir(mapService, timeframeBucketing, mapper)
                 : mapService;
     }

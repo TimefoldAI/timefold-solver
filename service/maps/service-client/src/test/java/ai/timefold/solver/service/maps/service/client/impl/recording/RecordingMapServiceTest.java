@@ -165,6 +165,54 @@ class RecordingMapServiceTest {
         }
     }
 
+    @Test
+    void recordsTheSameRequestOnce() throws IOException {
+        var result = new TravelTimeAndDistanceWithMetadata(
+                new TravelTimeAndDistance(matrix(0, 1, 1, 0), matrix(0, 1, 1, 0)), List.of());
+        var service = recordingService(new StubMapService() {
+            @Override
+            public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
+                return result;
+            }
+        });
+
+        service.getTravelTimeAndDistance(List.of(a, b), OPTIONS);
+        // Equal coordinates in new instances are the same request.
+        service.getTravelTimeAndDistance(List.of(new Location(1.0, 2.0), new Location(3.0, 4.0)), OPTIONS);
+        service.getTravelTimeAndDistance(List.of(b, a), OPTIONS);
+
+        try (Stream<Path> files = Files.list(tempDir)) {
+            // The reordered request is a different request.
+            assertThat(files.filter(path -> path.getFileName().toString().endsWith("-distances.json"))).hasSize(2);
+        }
+    }
+
+    @Test
+    void keepsRecordingsOfAnEarlierRun() throws IOException {
+        var stub = new StubMapService() {
+            @Override
+            public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
+                return List.of();
+            }
+        };
+        recordingService(stub).getLocationsOutOfMap(List.of(a), OPTIONS);
+        Path earlier = singleFile("locations-out-of-map.json");
+        String earlierContent = Files.readString(earlier);
+        // The next file name of the sequence is already taken, as after a restart of the process.
+        String taken = String.format("%05d-locations-out-of-map.json",
+                Long.parseLong(earlier.getFileName().toString().substring(0, 5)) + 1);
+        Files.writeString(tempDir.resolve(taken), "earlier run");
+
+        recordingService(stub).getLocationsOutOfMap(List.of(b), OPTIONS);
+
+        assertThat(Files.readString(earlier)).isEqualTo(earlierContent);
+        assertThat(Files.readString(tempDir.resolve(taken))).isEqualTo("earlier run");
+        try (Stream<Path> files = Files.list(tempDir)) {
+            assertThat(files.filter(path -> path.getFileName().toString().endsWith("locations-out-of-map.json")))
+                    .hasSize(3);
+        }
+    }
+
     /**
      * Fills a 2x2 matrix for {@code a} and {@code b}, using separate location instances, like the converters do.
      */

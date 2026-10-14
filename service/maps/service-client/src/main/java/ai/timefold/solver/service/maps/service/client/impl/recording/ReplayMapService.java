@@ -39,9 +39,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * <p>
  * A request is answered by the first recording of the same kind and transport type that contains every requested
  * location; locations are matched by coordinates, so the request may use a subset of the recorded locations, in any
- * order. Other options (tenant, provider, location set, ...) are ignored, as they typically differ between the recorded
- * environment and a local run. A request that no recording can answer fails, rather than silently falling back to
- * another source of travel times.
+ * order. Other options (tenant, provider, location set, max distance from road, ...) are ignored: they only affect how
+ * the maps service computes a matrix, and typically differ between the recorded environment and a local run. A request
+ * that no recording can answer fails, rather than silently falling back to another source of travel times.
  * <p>
  * Waypoints are not recorded and are delegated to the given fallback.
  */
@@ -59,6 +59,7 @@ public final class ReplayMapService implements MapService {
     private final ObjectMapper mapper;
 
     private List<Recording> recordings;
+    private final Map<String, Map<LocationKey, Boolean>> outOfMapByTransportType = new HashMap<>();
 
     public ReplayMapService(Path directory, TimeframeBucketing timeframeBucketing, MapService waypointsFallback,
             ObjectMapper mapper) {
@@ -74,6 +75,7 @@ public final class ReplayMapService implements MapService {
     public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
         Recording recording = find(KIND_DISTANCES, locations, options);
         int[] indexes = recording.indexesOf(locations);
+        List<Location> keys = RecordingMapService.keys(locations);
         List<Integer> locationsNotInMap = new ArrayList<>();
         for (int i = 0; i < indexes.length; i++) {
             if (recording.locationsNotInMap().contains(indexes[i])) {
@@ -81,8 +83,8 @@ public final class ReplayMapService implements MapService {
             }
         }
         return new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(
-                recording.travelTimes()[0].toDistanceMatrix(locations, indexes),
-                recording.distances()[0].toDistanceMatrix(locations, indexes)),
+                recording.travelTimes()[0].toDistanceMatrix(keys, indexes),
+                recording.distances()[0].toDistanceMatrix(keys, indexes)),
                 locationsNotInMap, recording.resolvedMapLocation());
     }
 
@@ -92,12 +94,13 @@ public final class ReplayMapService implements MapService {
         Recording recording = find(KIND_DISTANCES_BY_TIMEFRAME, locations, options);
         ToIntFunction<OffsetDateTime> resolver = timeframeResolver(recording);
         int[] indexes = recording.indexesOf(locations);
+        List<Location> keys = RecordingMapService.keys(locations);
         int timeframeCount = recording.travelTimes().length;
         DistanceMatrix[] travelTimes = new DistanceMatrix[timeframeCount];
         DistanceMatrix[] distances = new DistanceMatrix[timeframeCount];
         for (int timeframe = 0; timeframe < timeframeCount; timeframe++) {
-            travelTimes[timeframe] = recording.travelTimes()[timeframe].toDistanceMatrix(locations, indexes);
-            distances[timeframe] = recording.distances()[timeframe].toDistanceMatrix(locations, indexes);
+            travelTimes[timeframe] = recording.travelTimes()[timeframe].toDistanceMatrix(keys, indexes);
+            distances[timeframe] = recording.distances()[timeframe].toDistanceMatrix(keys, indexes);
         }
         List<Location> locationsNotInMap = new ArrayList<>();
         for (int i = 0; i < indexes.length; i++) {
@@ -132,30 +135,43 @@ public final class ReplayMapService implements MapService {
     }
 
     /**
-     * Prefers recorded calls of this method; otherwise uses the locations the recorded matrices could not route.
+     * Answers from the locations the recorded matrices could not route, preferring recorded calls of this method.
+     * Only recordings of the requested transport type are considered.
      */
     @Override
     public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
+        String transportType = transportType(options);
+        Map<LocationKey, Boolean> outOfMap = outOfMap(transportType);
         List<Integer> result = new ArrayList<>();
         for (int i = 0; i < locations.size(); i++) {
-            if (isOutOfMap(locations.get(i))) {
+            Boolean isOutOfMap = outOfMap.get(key(locations.get(i)));
+            if (isOutOfMap == null) {
+                throw new IllegalStateException(
+                        "The location (%s) is not in any recording for transport type (%s) in the directory (%s)."
+                                .formatted(locations.get(i), transportType, directory));
+            }
+            if (isOutOfMap) {
                 result.add(i);
             }
         }
         return result;
     }
 
-    private boolean isOutOfMap(Location location) {
-        Stream<Recording> outOfMapFirst = Stream.concat(
-                recordings().stream().filter(recording -> recording.kind().equals(KIND_LOCATIONS_OUT_OF_MAP)),
-                recordings().stream().filter(recording -> !recording.kind().equals(KIND_LOCATIONS_OUT_OF_MAP)));
-        return outOfMapFirst
-                .filter(recording -> recording.locationIndex().containsKey(key(location)))
-                .findFirst()
-                .map(recording -> recording.locationsNotInMap().contains(recording.locationIndex().get(key(location))))
-                .orElseThrow(() -> new IllegalStateException(
-                        "The location (%s) is not in any recording in the directory (%s).".formatted(location,
-                                directory)));
+    /** Merged once per transport type, so that each lookup is a single map access. */
+    private synchronized Map<LocationKey, Boolean> outOfMap(String transportType) {
+        return outOfMapByTransportType.computeIfAbsent(transportType, type -> {
+            Map<LocationKey, Boolean> merged = new HashMap<>();
+            List<Recording> candidates = recordings().stream()
+                    .filter(recording -> Objects.equals(recording.transportType(), type))
+                    .toList();
+            // Recorded calls of getLocationsOutOfMap first, then the matrices' locations that could not be routed.
+            Stream.concat(
+                    candidates.stream().filter(recording -> recording.kind().equals(KIND_LOCATIONS_OUT_OF_MAP)),
+                    candidates.stream().filter(recording -> !recording.kind().equals(KIND_LOCATIONS_OUT_OF_MAP)))
+                    .forEach(recording -> recording.locationIndex().forEach((location, index) -> merged
+                            .putIfAbsent(location, recording.locationsNotInMap().contains(index))));
+            return merged;
+        });
     }
 
     private Recording find(String kind, List<Location> locations, String options) {
@@ -249,6 +265,12 @@ public final class ReplayMapService implements MapService {
         for (int i = 0; i < locations.size(); i++) {
             locationIndex.putIfAbsent(key(locations.get(i)), i);
         }
+        if (!kind.equals(KIND_LOCATIONS_OUT_OF_MAP)
+                && (travelTimes.length == 0 || travelTimes.length != distances.length)) {
+            throw new IllegalStateException(("Invalid distance matrix recording (%s): expected the same, non-zero number "
+                    + "of travel time and distance matrices but found %d and %d.")
+                    .formatted(file, travelTimes.length, distances.length));
+        }
         return new Recording(file, kind, transportType(options), resolvedMapLocation, locations, locationIndex,
                 locationsNotInMap, timeframes, travelTimes, distances);
     }
@@ -288,7 +310,10 @@ public final class ReplayMapService implements MapService {
         return matrices.toArray(Matrix[]::new);
     }
 
-    /** Expects the parser on the matrix's {@code START_ARRAY}. */
+    /**
+     * Expects the parser on the matrix's {@code START_ARRAY}. Values are kept as longs: unreachable routes are recorded
+     * as {@link Long#MAX_VALUE}, which the model relies on.
+     */
     private static Matrix readMatrix(JsonParser parser) throws IOException {
         List<long[]> rows = new ArrayList<>();
         while (parser.nextToken() == JsonToken.START_ARRAY) {
@@ -323,12 +348,9 @@ public final class ReplayMapService implements MapService {
 
     record Matrix(long[][] values) {
 
-        DistanceMatrix toDistanceMatrix(List<Location> locations, int[] indexes) {
-            DistanceMatrix matrix = DistanceMatrix.getInstance(locations.size());
-            // Fill with fresh location instances, like the converters do, so the model's locations stay untouched.
-            List<Location> keys = locations.stream()
-                    .map(location -> new Location(location.getLatitude(), location.getLongitude()))
-                    .toList();
+        /** The keys are fresh location instances, like the converters use, so the model's locations stay untouched. */
+        DistanceMatrix toDistanceMatrix(List<Location> keys, int[] indexes) {
+            DistanceMatrix matrix = DistanceMatrix.getInstance(keys.size());
             for (int from = 0; from < keys.size(); from++) {
                 long[] row = values[indexes[from]];
                 for (int to = 0; to < keys.size(); to++) {
@@ -339,8 +361,8 @@ public final class ReplayMapService implements MapService {
         }
     }
 
-    record Recording(Path file, String kind, String transportType, String resolvedMapLocation,
-            List<Location> locations, Map<LocationKey, Integer> locationIndex, Set<Integer> locationsNotInMap,
+    record Recording(Path file, String kind, String transportType, String resolvedMapLocation, List<Location> locations,
+            Map<LocationKey, Integer> locationIndex, Set<Integer> locationsNotInMap,
             List<String> timeframes, Matrix[] travelTimes, Matrix[] distances) {
 
         boolean containsAll(List<Location> requested) {

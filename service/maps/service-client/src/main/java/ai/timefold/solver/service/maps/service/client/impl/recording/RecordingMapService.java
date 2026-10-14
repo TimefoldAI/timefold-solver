@@ -7,6 +7,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
@@ -52,6 +53,9 @@ public final class RecordingMapService implements MapService {
     /** Shared across instances, because the map service is produced once per injection point. */
     private static final AtomicLong SEQUENCE = new AtomicLong();
 
+    /** Requests already recorded by this instance; the same request is not written twice. */
+    private final Set<List<Object>> recorded = ConcurrentHashMap.newKeySet();
+
     private final MapService delegate;
     private final TimeframeBucketing timeframeBucketing;
     private final Path directory;
@@ -75,7 +79,7 @@ public final class RecordingMapService implements MapService {
     @Override
     public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
         var result = delegate.getTravelTimeAndDistance(locations, options);
-        record("distances", generator -> {
+        record("distances", options, locations, generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsNotInMap", result.locationsNotInMapIdx());
@@ -91,7 +95,7 @@ public final class RecordingMapService implements MapService {
     public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
             String options) {
         var result = delegate.getTravelTimeAndDistanceByTimeframe(locations, options);
-        record("distances-by-timeframe", generator -> {
+        record("distances-by-timeframe", options, locations, generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsNotInMap", indexesOf(result.locationsNotInMap(), locations));
@@ -111,7 +115,7 @@ public final class RecordingMapService implements MapService {
     @Override
     public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
         var result = delegate.getLocationsOutOfMap(locations, options);
-        record("locations-out-of-map", generator -> {
+        record("locations-out-of-map", options, locations, generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsOutOfMap", result);
@@ -124,11 +128,15 @@ public final class RecordingMapService implements MapService {
      */
     private List<String> timeframeNames(int matrixCount) {
         List<Timeframe> timeframes = timeframeBucketing.allTimeframes();
-        return timeframes.size() == matrixCount ? timeframes.stream().map(Timeframe::name).toList() : null;
+        return matrixCount > 1 && timeframes.size() == matrixCount ? timeframes.stream().map(Timeframe::name).toList()
+                : null;
     }
 
-    private void record(String kind, JsonWriter content) {
-        Path file = directory.resolve(String.format("%05d-%s.json", SEQUENCE.incrementAndGet(), kind));
+    private void record(String kind, String options, List<Location> locations, JsonWriter content) {
+        if (!recorded.add(List.of(kind, String.valueOf(options), keys(locations)))) {
+            return;
+        }
+        Path file = nextFile(kind);
         try {
             Files.createDirectories(directory);
             // Write to a temporary file first, so a partially written file never ends up in the artifacts.
@@ -140,7 +148,7 @@ public final class RecordingMapService implements MapService {
                     content.write(generator);
                     generator.writeEndObject();
                 }
-                Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE);
             } finally {
                 Files.deleteIfExists(tmp);
             }
@@ -148,6 +156,15 @@ public final class RecordingMapService implements MapService {
         } catch (IOException | RuntimeException e) {
             LOGGER.warn("Could not record distance matrix ({}).", file, e);
         }
+    }
+
+    /** Skips sequence numbers already taken, so that files of an earlier run in the same directory are kept. */
+    private Path nextFile(String kind) {
+        Path file;
+        do {
+            file = directory.resolve(String.format("%05d-%s.json", SEQUENCE.incrementAndGet(), kind));
+        } while (Files.exists(file));
+        return file;
     }
 
     private static void writeLocations(JsonGenerator generator, String field, List<Location> locations)
@@ -202,7 +219,7 @@ public final class RecordingMapService implements MapService {
      * Matrices are looked up by coordinates. Fresh copies keep the lookup from caching matrix indexes on the model's
      * own locations.
      */
-    private static List<Location> keys(List<Location> locations) {
+    static List<Location> keys(List<Location> locations) {
         return locations.stream().map(location -> new Location(location.getLatitude(), location.getLongitude()))
                 .toList();
     }

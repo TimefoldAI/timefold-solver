@@ -123,6 +123,39 @@ class ReplayMapServiceTest {
     }
 
     @Test
+    void replaysUnreachableRoutes() {
+        long unreachable = Long.MAX_VALUE;
+        record(new StubMapService() {
+            @Override
+            public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
+                DistanceMatrix travelTime = matrix(abc, 1);
+                travelTime.put(new Location(1.0, 2.0), new Location(5.0, 6.0), unreachable);
+                return new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(travelTime, matrix(abc, 1)),
+                        List.of());
+            }
+        }).getTravelTimeAndDistance(abc, CAR);
+
+        DistanceMatrix travelTime = replay().getTravelTimeAndDistance(abc, CAR).travelTimeAndDistance().travelTime();
+
+        assertThat(travelTime.get(new Location(1.0, 2.0), new Location(5.0, 6.0))).isEqualTo(unreachable);
+        assertThat(travelTime.get(new Location(5.0, 6.0), new Location(1.0, 2.0))).isEqualTo(expected(c, a, 1));
+    }
+
+    @Test
+    void ignoresMaxDistanceFromRoad() {
+        record(new StubMapService() {
+            @Override
+            public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
+                return new TravelTimeAndDistanceWithMetadata(
+                        new TravelTimeAndDistance(matrix(abc, 1), matrix(abc, 1)), List.of());
+            }
+        }).getTravelTimeAndDistance(abc, CAR + ",maxDistanceFromRoad:999.0");
+
+        // Set by the platform, typically not locally.
+        assertMatrix(replay().getTravelTimeAndDistance(abc, CAR_LOCALLY).travelTimeAndDistance().travelTime(), abc, 1);
+    }
+
+    @Test
     void failsOnUnrecordedLocation() {
         record(new StubMapService() {
             @Override
