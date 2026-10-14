@@ -126,7 +126,6 @@ public class GcOverheadMonitoring {
                     + "it will not trigger.", EnvironmentVars.K8S_INFO_MEMORY_LIMIT);
             return;
         }
-        var containerLimit = containerLimitOpt.getAsLong();
         if (MemoryPressure.readRssBytes().isEmpty()) {
             LOGGER.warn("Memory watchdog enabled but the process memory cannot be read ({}); it will not trigger.",
                     MemoryPressure.PROC_SELF_STATUS);
@@ -135,7 +134,7 @@ public class GcOverheadMonitoring {
         LOGGER.info("Memory watchdog enabled: dumping and failing the run at {}% memory usage", memoryThresholdPct);
         executor.scheduleAtFixedRate(() -> {
             try {
-                checkMemory(id, containerLimit);
+                checkMemory(id, containerLimitOpt.getAsLong());
             } catch (Throwable e) {
                 // An exception would cancel the scheduled task, so keep the watchdog alive.
                 LOGGER.warn("Memory watchdog check failed due to {}", e.getMessage());
@@ -167,8 +166,8 @@ public class GcOverheadMonitoring {
     }
 
     private static Path createDumpDirectory() {
-        String dir = System.getenv(EnvironmentVars.ENV_TIMEFOLD_EXECUTION_PROFILE_DIR);
-        Path dumpDir = Path.of(dir != null && !dir.isBlank() ? dir : EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR)
+        var dir = System.getenv(EnvironmentVars.ENV_TIMEFOLD_EXECUTION_PROFILE_DIR);
+        var dumpDir = Path.of(dir != null && !dir.isBlank() ? dir : EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR)
                 .toAbsolutePath();
         try {
             return Files.createDirectories(dumpDir);
