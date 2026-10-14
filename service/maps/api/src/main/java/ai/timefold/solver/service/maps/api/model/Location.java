@@ -410,7 +410,7 @@ public class Location {
     }
 
     private static boolean isDefaultMode(TransportType transportType) {
-        return transportType == null || TransportType.CAR == transportType;
+        return transportType == null || TransportType.defaultType() == transportType;
     }
 
     private DistanceMatrix travelTimeMatrixForMode(TransportType transportType) {
@@ -459,7 +459,7 @@ public class Location {
 
     private long lookup(DistanceMatrix matrix, Location to, TransportType transportType, String what,
             OffsetDateTime departureTime) {
-        TransportType resolvedMode = transportType == null ? TransportType.CAR : transportType;
+        TransportType resolvedMode = transportType == null ? TransportType.defaultType() : transportType;
         if (matrix == null) {
             throw new IllegalStateException(
                     "No %s matrix configured for a location (%s) and transport type (%s).".formatted(what, this,

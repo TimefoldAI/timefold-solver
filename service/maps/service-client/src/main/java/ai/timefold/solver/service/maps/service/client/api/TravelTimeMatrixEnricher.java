@@ -2,6 +2,7 @@ package ai.timefold.solver.service.maps.service.client.api;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -180,7 +181,8 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         List<TransportType> datasetTransportTypes = solverModel.getTransportTypes().stream()
                 .filter(Objects::nonNull)
                 .distinct()
-                .sorted() // Deterministic order; CAR, when used, comes first and is therefore the primary one.
+                .sorted(Comparator.comparing((TransportType type) -> type != TransportType.defaultType())
+                        .thenComparing(Comparator.naturalOrder()))
                 .toList();
         if (!optionsSupplier.isAutoSelectTransportType()) {
             var configuredTransportType = optionsSupplier.getTransportType();

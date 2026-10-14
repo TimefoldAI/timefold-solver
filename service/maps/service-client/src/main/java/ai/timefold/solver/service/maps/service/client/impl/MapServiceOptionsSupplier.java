@@ -80,8 +80,8 @@ public class MapServiceOptionsSupplier {
         if (!isAutoSelectTransportType()) {
             return transportType;
         }
-        if (isAllowed(TransportType.CAR)) {
-            return TransportType.CAR;
+        if (isAllowed(TransportType.defaultType())) {
+            return TransportType.defaultType();
         }
         return allowedTransportTypes.getFirst();
     }
@@ -99,7 +99,7 @@ public class MapServiceOptionsSupplier {
                 .map(String::trim)
                 .filter(value -> !value.isEmpty())
                 .map(TransportType::of)
-                .orElse(TransportType.CAR);
+                .orElse(TransportType.defaultType());
     }
 
     private static List<TransportType> resolveAllowedTransportTypes(Optional<String> allowedTransportTypes) {

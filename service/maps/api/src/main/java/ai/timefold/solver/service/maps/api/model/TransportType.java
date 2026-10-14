@@ -42,6 +42,10 @@ public enum TransportType {
         return TransportType.valueOf(value.trim().toUpperCase().replace('-', '_'));
     }
 
+    public static TransportType defaultType() {
+        return CAR;
+    }
+
     @JsonValue
     public String value() {
         return value;
