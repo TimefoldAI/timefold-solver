@@ -212,11 +212,6 @@ When using shared models, also set `-Dtimefold.model.tenants=tenant1,tenant2` (o
 - `${project.build.directory}/generated-resources/timefold-build.properties` — produced by `timefold:configure`.
 This file contains image registry/group/push configuration
 that can be picked up by your build (Quarkus or image-building workflows).
-The file is written into the build directory of the module the goal runs for,
-not relative to the working directory,
-so multi-module builds and builds started from a parent directory place the file correctly.
-The absolute location is published as the `timefold.build.properties.location` System property
-so that the Quarkus extension can find it regardless of the working directory.
 
 == Implementation notes / tips for contributors
 
