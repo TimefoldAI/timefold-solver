@@ -137,7 +137,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         for (var variableId : variableReferenceToContainingNodeMap.keySet()) {
             size = Math.max(size, globalOrdinalOf(variableId) + 1);
         }
-        var result = (Map<Object, GraphNode<Solution_>>[]) new Map[size];
+        var result = new Map[size];
         for (var entry : variableReferenceToContainingNodeMap.entrySet()) {
             result[globalOrdinalOf(entry.getKey())] = entry.getValue();
         }

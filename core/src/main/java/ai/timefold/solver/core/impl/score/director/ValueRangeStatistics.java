@@ -68,16 +68,16 @@ final class ValueRangeStatistics<Solution_> {
         var approximateValueCount = new MutableLong();
         var maxValueRangeSize = new MutableLong(0L);
 
-        cachedEntityCountByEntityOrdinal = new long[solutionDescriptor.getEntityDescriptors().size()];
-        var solutionValueCountArray = new long[solutionDescriptor.getVariableDescriptorCount()];
+        var entityDescriptorCount = solutionDescriptor.getEntityDescriptors().size();
+        this.cachedEntityCountByEntityOrdinal = new long[entityDescriptorCount];
+        this.solutionValueCountArray = new long[solutionDescriptor.getVariableDescriptorCount()];
+
         var entityDescriptorList = solutionDescriptor.getEntityDescriptors();
-        var entityValueCountArray = new long[entityDescriptorList.size()][];
+        this.entityValueCountArray = new long[entityDescriptorCount][];
         for (var entityDescriptor : entityDescriptorList) {
             entityValueCountArray[entityDescriptor.getOrdinal()] =
                     new long[entityDescriptor.getGenuineVariableDescriptorList().size()];
         }
-        this.solutionValueCountArray = solutionValueCountArray;
-        this.entityValueCountArray = entityValueCountArray;
 
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor != null) {
@@ -253,12 +253,12 @@ final class ValueRangeStatistics<Solution_> {
                     ? valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(), solution)
                     : valueRangeManager.countOnEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             switch (variableDescriptor) {
-                case BasicVariableDescriptor<Solution_> basicVariableDescriptor -> {
+                case BasicVariableDescriptor<Solution_> ignored -> {
                     if (entityDescriptor.isMovable(solution, entity)) {
                         tracker.addBasicProblemScale(valueCount);
                     }
                 }
-                case ListVariableDescriptor<Solution_> listVariableDescriptor -> {
+                case ListVariableDescriptor<Solution_> ignored -> {
                     // Intentionally empty, we don't need to process it here
                 }
                 default -> throw new IllegalStateException("Unhandled subclass of %s encountered (%s)."
