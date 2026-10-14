@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
@@ -37,7 +38,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final ProblemId_ problemId;
     private final @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
     private final Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
-    private final Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer;
+    private final @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer;
     private final @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
@@ -58,8 +59,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer == null ? finalBestSolution -> {
         } : finalBestSolutionConsumer;
-        this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer == null ? event -> {
-        } : firstInitializedSolutionConsumer;
+        this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
         this.solverJobStartedConsumer = solverJobStartedConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
@@ -110,21 +110,29 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }, consumerExecutor);
     }
 
-    void consumeFirstInitializedSolution(Solution_ solution, EventProducerId producerId, boolean isTerminatedEarly) {
+    void consumeFirstInitializedSolution(Supplier<Solution_> solutionSupplier, EventProducerId producerId,
+            boolean isTerminatedEarly) {
+        var consumer = firstInitializedSolutionConsumer;
+        if (consumer == null) {
+            return; // Nobody listens; avoid cloning the working solution.
+        }
         try { // During the solving process, this lock is called once, and it won't block the Solver thread
             firstSolutionConsumption.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted when waiting for the first initialized solution consumption.");
         }
-        this.firstInitializedSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
-        scheduleFirstInitializedSolutionConsumption(s -> firstInitializedSolutionConsumer
-                .accept(new FirstInitializedSolutionEventImpl<>(s, producerId, isTerminatedEarly)))
-                .whenComplete((unused, throwable) -> firstSolutionConsumption.release());
-    }
-
-    private CompletableFuture<Void> scheduleFirstInitializedSolutionConsumption(Consumer<? super Solution_> solutionConsumer) {
-        return scheduleConsumption(solutionConsumer, firstInitializedSolution.get());
+        // Obtained on the Solver thread, so that the Consumer thread never sees the working solution.
+        // Reachable more than once; problem change triggers restart.
+        try {
+            this.firstInitializedSolution.set(solutionSupplier.get());
+        } catch (Exception e) {
+            // If the supplier fails, we release the lock
+            firstSolutionConsumption.release();
+            throw e;
+        }
+        scheduleConsumption(s -> consumer.accept(new FirstInitializedSolutionEventImpl<>(s, producerId, isTerminatedEarly)),
+                firstInitializedSolution.get()).whenComplete((unused, throwable) -> firstSolutionConsumption.release());
     }
 
     /**
@@ -145,22 +153,28 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }, consumerExecutor);
     }
 
-    void consumeStartSolverJob(Solution_ solution) {
+    void consumeStartSolverJob(Supplier<Solution_> solutionSupplier) {
+        var consumer = solverJobStartedConsumer;
+        if (consumer == null) {
+            return; // Nobody listens; avoid cloning the working solution.
+        }
         try { // During the solving process, this lock is called once, and it won't block the Solver thread
             startSolverJobConsumption.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted when waiting for the start solver job consumption.");
         }
-        this.initialSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
-        scheduleStartJobConsumption().whenComplete((unused, throwable) -> startSolverJobConsumption.release());
-    }
-
-    private CompletableFuture<Void> scheduleStartJobConsumption() {
-        return scheduleConsumption(
-                solverJobStartedConsumer == null ? null
-                        : solution -> solverJobStartedConsumer.accept(new SolverJobStartedEventImpl<>(solution)),
-                initialSolution.get());
+        // Obtained on the Solver thread, so that the Consumer thread never sees the working solution.
+        // Reachable more than once; problem change triggers restart.
+        try {
+            this.initialSolution.set(solutionSupplier.get());
+        } catch (Exception e) {
+            // If the supplier fails, we release the lock
+            startSolverJobConsumption.release();
+            throw e;
+        }
+        scheduleConsumption(s -> consumer.accept(new SolverJobStartedEventImpl<>(s)), initialSolution.get())
+                .whenComplete((unused, throwable) -> startSolverJobConsumption.release());
     }
 
     void consumeFinalBestSolution(Solution_ solution) { // Called on the Solver thread, after solving is finished.

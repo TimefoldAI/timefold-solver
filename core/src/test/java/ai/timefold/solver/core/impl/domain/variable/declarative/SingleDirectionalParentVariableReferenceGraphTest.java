@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingEntity;
 import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingSolution;
 import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingValue;
@@ -41,33 +42,37 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         value1.setEntity(entity1);
         value1.setPrevious(null);
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(null);
         Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity1);
+        Mockito.when(listVariableState.getElementPosition(value1)).thenReturn(ElementPosition.of(entity1, 0));
 
         value2.setEntity(entity2);
         value2.setPrevious(null);
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value2)).thenReturn(value3);
         Mockito.when(listVariableState.getInverseSingleton(value2)).thenReturn(entity2);
+        Mockito.when(listVariableState.getElementPosition(value2)).thenReturn(ElementPosition.of(entity2, 0));
 
         value3.setEntity(entity2);
         value3.setPrevious(value2);
         Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(value4);
         Mockito.when(listVariableState.getInverseSingleton(value3)).thenReturn(entity2);
+        Mockito.when(listVariableState.getElementPosition(value3)).thenReturn(ElementPosition.of(entity2, 1));
 
         value4.setEntity(entity2);
         value4.setPrevious(value3);
         Mockito.doReturn(2).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
         Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity2);
+        Mockito.when(listVariableState.getElementPosition(value4)).thenReturn(ElementPosition.of(entity2, 2));
 
         value5.setEntity(null);
         value5.setPrevious(null);
         Mockito.doReturn(-1).when(listVariableState).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value5)).thenReturn(null);
+        Mockito.when(listVariableState.getSourceVariableDescriptor())
+                .thenReturn(solutionDescriptor.getListVariableDescriptor());
         Mockito.when(listVariableState.getInverseSingleton(value5)).thenReturn(null);
+        Mockito.when(listVariableState.getElementPosition(value5)).thenReturn(ElementPosition.unassigned());
 
+        entity1.setValues(List.of(value1));
+        entity2.setValues(List.of(value2, value3, value4));
         var values = List.of(value1, value2, value3, value4, value5);
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -92,24 +97,26 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         value4.setPrevious(value2);
 
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(null);
         Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity1);
+        Mockito.when(listVariableState.getElementPosition(value1)).thenReturn(ElementPosition.of(entity1, 0));
 
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value5)).thenReturn(value3);
         Mockito.when(listVariableState.getInverseSingleton(value5)).thenReturn(entity2);
+        Mockito.when(listVariableState.getElementPosition(value5)).thenReturn(ElementPosition.of(entity2, 0));
 
         Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(value2);
         Mockito.when(listVariableState.getInverseSingleton(value3)).thenReturn(entity2);
+        Mockito.when(listVariableState.getElementPosition(value3)).thenReturn(ElementPosition.of(entity2, 1));
 
         Mockito.doReturn(2).when(listVariableState).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value2)).thenReturn(value4);
         Mockito.when(listVariableState.getInverseSingleton(value2)).thenReturn(entity2);
+        Mockito.when(listVariableState.getElementPosition(value2)).thenReturn(ElementPosition.of(entity2, 2));
 
         Mockito.doReturn(3).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
         Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity2);
+        Mockito.when(listVariableState.getElementPosition(value4)).thenReturn(ElementPosition.of(entity2, 3));
+
+        entity2.setValues(List.of(value5, value3, value2, value4));
 
         var previousVariableMetamodel =
                 solutionDescriptor.getMetaModel().entity(TestdataCountingValue.class).variable("previous");
@@ -151,29 +158,32 @@ class SingleDirectionalParentVariableReferenceGraphTest {
                 .thenReturn(listVariableState);
 
         // The entity's list variable is [value1, value2, value3, value4].
+        entity.setValues(List.of(value1, value2, value3, value4));
         value1.setEntity(entity);
         value1.setPrevious(null);
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(value2);
         Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity);
+        Mockito.when(listVariableState.getElementPosition(value1)).thenReturn(ElementPosition.of(entity, 0));
 
         value2.setEntity(entity);
         value2.setPrevious(value1);
         Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value2)).thenReturn(value3);
         Mockito.when(listVariableState.getInverseSingleton(value2)).thenReturn(entity);
+        Mockito.when(listVariableState.getElementPosition(value2)).thenReturn(ElementPosition.of(entity, 1));
 
         value3.setEntity(entity);
         value3.setPrevious(value2);
         Mockito.doReturn(2).when(listVariableState).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value3)).thenReturn(value4);
         Mockito.when(listVariableState.getInverseSingleton(value3)).thenReturn(entity);
+        Mockito.when(listVariableState.getElementPosition(value3)).thenReturn(ElementPosition.of(entity, 2));
 
         value4.setEntity(entity);
         value4.setPrevious(value3);
         Mockito.doReturn(3).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
+        Mockito.when(listVariableState.getSourceVariableDescriptor())
+                .thenReturn(solutionDescriptor.getListVariableDescriptor());
         Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity);
+        Mockito.when(listVariableState.getElementPosition(value4)).thenReturn(ElementPosition.of(entity, 3));
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         var graph = DefaultShadowVariableSessionFactory.buildSingleDirectionalParentGraph(
@@ -191,6 +201,7 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         Mockito.reset(listVariableState);
 
         // Unassigns value2 and value3 in one move, leaving [value1, value4] - value4 now follows value1.
+        entity.setValues(List.of(value1, value4));
         value2.setEntity(null);
         value2.setPrevious(null);
         value3.setEntity(null);
@@ -198,18 +209,16 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         value4.setPrevious(value1);
 
         Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value1)).thenReturn(value4);
         Mockito.when(listVariableState.getInverseSingleton(value1)).thenReturn(entity);
+        Mockito.when(listVariableState.getElementPosition(value1)).thenReturn(ElementPosition.of(entity, 0));
 
         Mockito.doReturn(1).when(listVariableState).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
-        Mockito.when(listVariableState.getNextElement(value4)).thenReturn(null);
         Mockito.when(listVariableState.getInverseSingleton(value4)).thenReturn(entity);
+        Mockito.when(listVariableState.getElementPosition(value4)).thenReturn(ElementPosition.of(entity, 1));
 
-        // An unassigned element has no index, so getIndexOrElse gives back its default,
-        // no next element, and no inverse entity.
+        // An unassigned element has no index, so getIndexOrElse gives back its default, and no inverse entity.
         for (var unassignedValue : List.of(value2, value3)) {
             Mockito.doReturn(0).when(listVariableState).getIndexOrElse(Mockito.eq(unassignedValue), Mockito.anyInt());
-            Mockito.when(listVariableState.getNextElement(unassignedValue)).thenReturn(null);
             Mockito.when(listVariableState.getInverseSingleton(unassignedValue)).thenReturn(null);
         }
 

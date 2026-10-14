@@ -143,7 +143,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         var solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
         var errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
-        solverScope.setInitialSolution(Objects.requireNonNull(problem, "The problem must not be null."));
+        solverScope.setInitialSolution(Objects.requireNonNull(problem, "The problem must not be null."), true);
         solverScope.setSolver(this);
         outerSolvingStarted(solverScope);
 
@@ -337,6 +337,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             // Everything is fine, proceed.
             var score = scoreDirector.calculateScore();
             basicPlumbingTermination.endProblemChangesProcessing();
+            // We update the initial solution to ensure the related events use an updated instance
+            solverScope.setInitialSolution(solverScope.cloneWorkingSolution(), false);
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
                     EventProducerId.problemChange());
             LOGGER.info("Real-time problem fact changes done: step total ({}), new best score ({}).",

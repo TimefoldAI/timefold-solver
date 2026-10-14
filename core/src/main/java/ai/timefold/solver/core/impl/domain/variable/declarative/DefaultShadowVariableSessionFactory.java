@@ -197,21 +197,23 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
     static <Solution_> VariableReferenceGraph buildSingleDirectionalParentGraph(
             GraphDescriptor<Solution_> graphDescriptor, GraphStructure.GraphStructureAndDirection graphStructureAndDirection) {
+        var forward = switch (Objects.requireNonNull(graphStructureAndDirection.direction())) {
+            case PREVIOUS -> true;
+            case NEXT -> false;
+            default -> throw new IllegalStateException(
+                    "Impossible state: expected parentVariableType to be previous or next but was %s."
+                            .formatted(graphStructureAndDirection.direction()));
+        };
+
         var declarativeShadowVariables = graphDescriptor.solutionDescriptor().getDeclarativeShadowVariableDescriptors();
         var sortedDeclarativeVariables = topologicallySortedDeclarativeShadowVariables(declarativeShadowVariables);
-
+        var listVariableDescriptor = Objects.requireNonNull(graphDescriptor.solutionDescriptor().getListVariableDescriptor());
+        var listVariableState = Objects.requireNonNull(graphDescriptor.changedVariableNotifier().innerScoreDirector())
+                .getListVariableState(listVariableDescriptor);
         var canTerminateEarly = hasNoNonDeclarativeSourcesFromParent(declarativeShadowVariables);
-
-        var topologicalSorter =
-                getTopologicalSorter(graphDescriptor.solutionDescriptor(),
-                        Objects.requireNonNull(graphDescriptor.changedVariableNotifier().innerScoreDirector()),
-                        Objects.requireNonNull(graphStructureAndDirection.direction()));
-
         return new SingleDirectionalParentVariableReferenceGraph<>(graphDescriptor.consistencyTracker(),
-                sortedDeclarativeVariables,
-                topologicalSorter, graphDescriptor.changedVariableNotifier(),
-                canTerminateEarly,
-                graphDescriptor.entities());
+                sortedDeclarativeVariables, listVariableState, forward, graphDescriptor.changedVariableNotifier(),
+                canTerminateEarly, graphDescriptor.entities());
     }
 
     private static <Solution_> boolean hasNoNonDeclarativeSourcesFromParent(
@@ -263,30 +265,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 variable -> graph.getTopologicalOrder(nameToIndex.get(variable.getVariableName())))
                 .thenComparing(VariableDescriptor::getVariableName));
         return sortedDeclarativeVariables;
-    }
-
-    private static <Solution_> TopologicalSorter getTopologicalSorter(SolutionDescriptor<Solution_> solutionDescriptor,
-            InnerScoreDirector<Solution_, ?> scoreDirector, ParentVariableType parentVariableType) {
-        return switch (parentVariableType) {
-            case PREVIOUS -> {
-                var listVariableState = scoreDirector
-                        .getListVariableState(Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor()));
-                yield new TopologicalSorter(listVariableState::getNextElement,
-                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0)),
-                        listVariableState::getInverseSingleton);
-            }
-            case NEXT -> {
-                var listVariableState = scoreDirector
-                        .getListVariableState(Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor()));
-                yield new TopologicalSorter(listVariableState::getPreviousElement,
-                        Comparator.comparingInt(entity -> listVariableState.getIndexOrElse(entity, 0))
-                                .reversed(),
-                        listVariableState::getInverseSingleton);
-            }
-            default -> throw new IllegalStateException(
-                    "Impossible state: expected parentVariableType to be previous or next but was %s."
-                            .formatted(parentVariableType));
-        };
     }
 
     private static <Solution_> VariableReferenceGraph buildArbitraryGraph(GraphDescriptor<Solution_> graphDescriptor) {

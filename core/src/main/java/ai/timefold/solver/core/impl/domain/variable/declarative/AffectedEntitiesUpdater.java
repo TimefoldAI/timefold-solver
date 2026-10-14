@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.BitSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -56,20 +55,14 @@ final class AffectedEntitiesUpdater<Solution_>
             }
         }
         int[][] out = new int[entityCount][];
-        var entityToNodes = new IdentityHashMap<Integer, int[]>();
         var entityIdPairSet = nodeList.stream()
                 .map(node -> new EntityIdPair(node.entity(), node.entityId()))
                 .collect(Collectors.toSet());
         for (var entityIdPair : entityIdPairSet) {
-            entityToNodes.put(entityIdPair.entityId(),
-                    entityToContainingNode.apply(entityIdPair.entity).stream().mapToInt(GraphNode::graphNodeId)
-                            .toArray());
+            out[entityIdPair.entityId()] = entityToContainingNode.apply(entityIdPair.entity).stream()
+                    .mapToInt(GraphNode::graphNodeId)
+                    .toArray();
         }
-
-        for (var entry : entityToNodes.entrySet()) {
-            out[entry.getKey()] = entry.getValue();
-        }
-
         return out;
     }
 
