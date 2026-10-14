@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
@@ -29,7 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * <ul>
  * <li>{@code <seq>-distances.json}: {@code options}, {@code locations}, {@code locationsNotInMap} (indexes into
  * {@code locations}), {@code resolvedMapLocation}, and the {@code travelTime} and {@code distance} matrices.</li>
- * <li>{@code <seq>-distances-by-timeframe.json}: {@code options}, {@code locations}, {@code locationsNotInMap},
+ * <li>{@code <seq>-distances-by-timeframe.json}: {@code options}, {@code locations}, {@code locationsNotInMap}
+ * (indexes into {@code locations}),
  * {@code timeframes} (the bucket names, in the order of the matrices) and the {@code travelTimes} and
  * {@code distances} matrices, one per timeframe.</li>
  * <li>{@code <seq>-locations-out-of-map.json}: {@code options}, {@code locations} and the {@code locationsOutOfMap}
@@ -90,7 +94,7 @@ public final class RecordingMapService implements MapService {
         record("distances-by-timeframe", generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
-            writeLocations(generator, "locationsNotInMap", result.locationsNotInMap());
+            generator.writeObjectField("locationsNotInMap", indexesOf(result.locationsNotInMap(), locations));
             generator.writeObjectField("timeframes", timeframeNames(result.travelTimesByTimeframe().length));
             var keys = keys(locations);
             writeMatrices(generator, "travelTimes", result.travelTimesByTimeframe(), keys);
@@ -184,6 +188,14 @@ public final class RecordingMapService implements MapService {
             generator.writeEndArray();
         }
         generator.writeEndArray();
+    }
+
+    private static List<Integer> indexesOf(List<Location> subset, List<Location> locations) {
+        Set<Location> subsetSet = new HashSet<>(subset);
+        return IntStream.range(0, locations.size())
+                .filter(index -> subsetSet.contains(locations.get(index)))
+                .boxed()
+                .toList();
     }
 
     /**

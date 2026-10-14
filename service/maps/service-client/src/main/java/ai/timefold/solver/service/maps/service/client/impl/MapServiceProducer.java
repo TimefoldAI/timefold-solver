@@ -1,5 +1,6 @@
 package ai.timefold.solver.service.maps.service.client.impl;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ import ai.timefold.solver.service.maps.haversine.impl.HaversineWaypointsProvider
 import ai.timefold.solver.service.maps.service.client.api.MapService;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.TimeframeBucketing;
 import ai.timefold.solver.service.maps.service.client.impl.recording.RecordingMapService;
+import ai.timefold.solver.service.maps.service.client.impl.recording.ReplayMapService;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceConverter;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -37,6 +39,8 @@ public class MapServiceProducer {
     private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
     private final boolean recordingEnabled;
+    private final boolean replayEnabled;
+    private final Optional<String> replayDirectory;
 
     @Inject
     public MapServiceProducer(
@@ -54,7 +58,10 @@ public class MapServiceProducer {
             ManagedExecutor managedExecutor,
             ObjectMapper mapper,
             @ConfigProperty(name = "timefold.platform.map-service.recording.enabled",
-                    defaultValue = "false") boolean recordingEnabled) {
+                    defaultValue = "false") boolean recordingEnabled,
+            @ConfigProperty(name = "timefold.platform.map-service.replay.enabled",
+                    defaultValue = "false") boolean replayEnabled,
+            @ConfigProperty(name = "timefold.platform.map-service.replay.directory") Optional<String> replayDirectory) {
         this.useRemote = useRemote;
         this.travelTimeAndDistanceProvider = travelTimeAndDistanceProvider;
         this.waypointsProvider = waypointsProvider;
@@ -67,6 +74,8 @@ public class MapServiceProducer {
         this.managedExecutor = managedExecutor;
         this.mapper = mapper;
         this.recordingEnabled = recordingEnabled;
+        this.replayEnabled = replayEnabled;
+        this.replayDirectory = replayDirectory;
     }
 
     @Produces
@@ -78,6 +87,13 @@ public class MapServiceProducer {
     }
 
     private MapService createMapService() {
+        if (replayEnabled) {
+            Path directory = Path.of(replayDirectory.orElseThrow(() -> new IllegalStateException(
+                    "The property timefold.platform.map-service.replay.directory is required when "
+                            + "timefold.platform.map-service.replay.enabled is true.")));
+            return new ReplayMapService(directory, timeframeBucketing,
+                    new MapServiceLocalHaversineImpl(travelTimeAndDistanceProvider, waypointsProvider), mapper);
+        }
         if (useRemote) {
             return new MapServiceClientImpl(mapService, converters, fallbackEnabled, useTraffic, defaultTimeframeOverride,
                     travelTimeAndDistanceProvider, waypointsProvider, timeframeBucketing, managedExecutor, mapper);

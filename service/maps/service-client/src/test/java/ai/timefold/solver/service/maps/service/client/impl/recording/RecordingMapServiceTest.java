@@ -72,7 +72,7 @@ class RecordingMapServiceTest {
 
         JsonNode json = mapper.readTree(singleFile("distances-by-timeframe.json").toFile());
         assertThat(json.get("timeframes").toString()).isEqualTo("[\"morning\",\"afternoon\",\"night\"]");
-        assertThat(json.get("locationsNotInMap").get(0).get("longitude").asDouble()).isEqualTo(4.0);
+        assertThat(json.get("locationsNotInMap").toString()).isEqualTo("[1]");
         assertThat(json.get("travelTimes").toString()).isEqualTo("[[[0,1],[2,0]],[[0,3],[4,0]],[[0,5],[6,0]]]");
         assertThat(json.get("distances").get(2).toString()).isEqualTo("[[0,7],[8,0]]");
     }
