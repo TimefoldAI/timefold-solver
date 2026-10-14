@@ -207,12 +207,12 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWithMetadataReturnsSameSolutionAsSolve() {
+    void solveAndSummarizeReturnsSameSolutionAsSolve() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
         var solution = solver.solve(TestdataSolution.generateSolution(3, 4));
-        var result = solver.solveWithMetadata(TestdataSolution.generateSolution(3, 4));
+        var result = solver.solveAndSummarize(TestdataSolution.generateSolution(3, 4));
 
         assertThat(result.solution().getScore()).isEqualTo(solution.getScore());
         assertThat(result.solution().getEntityList())
@@ -223,7 +223,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWithMetadata() throws InterruptedException, ExecutionException {
+    void solveAndSummarize() throws InterruptedException, ExecutionException {
         var clock = new MockClock(Clock.systemDefaultZone());
         var solverConfig = new SolverConfig(clock)
                 .withSolutionClass(TestdataSolution.class)
@@ -246,22 +246,22 @@ class DefaultSolverTest {
 
         var executor = Executors.newSingleThreadExecutor();
         try {
-            var future = executor.submit(() -> solver.solveWithMetadata(solution));
+            var future = executor.submit(() -> solver.solveAndSummarize(solution));
             assertThat(localSearchStepEnded.await(10, TimeUnit.SECONDS)).isTrue();
             clock.tick(Duration.ofMillis(1001));
             await().atMost(Duration.ofSeconds(1)).until(future::isDone);
 
-            var metadata = future.get();
+            var summary = future.get();
             assertSoftly(softly -> {
-                softly.assertThat(metadata.solvingDuration()).isEqualTo(Duration.ofMillis(1001));
-                softly.assertThat(metadata.moveEvaluationCount()).isPositive();
-                softly.assertThat(metadata.moveEvaluationSpeed())
-                        .isEqualTo(MathUtils.getSpeed(metadata.moveEvaluationCount(), 1001));
-                softly.assertThat(metadata.scoreCalculationCount()).isPositive();
-                softly.assertThat(metadata.scoreCalculationSpeed())
-                        .isEqualTo(MathUtils.getSpeed(metadata.scoreCalculationCount(), 1001));
-                softly.assertThat(metadata.solutionInitialized()).isTrue();
-                softly.assertThat(metadata.problemSizeStatistics()).isNotNull();
+                softly.assertThat(summary.solvingDuration()).isEqualTo(Duration.ofMillis(1001));
+                softly.assertThat(summary.moveEvaluationCount()).isPositive();
+                softly.assertThat(summary.moveEvaluationSpeed())
+                        .isEqualTo(MathUtils.getSpeed(summary.moveEvaluationCount(), 1001));
+                softly.assertThat(summary.scoreCalculationCount()).isPositive();
+                softly.assertThat(summary.scoreCalculationSpeed())
+                        .isEqualTo(MathUtils.getSpeed(summary.scoreCalculationCount(), 1001));
+                softly.assertThat(summary.isSolutionInitialized()).isTrue();
+                softly.assertThat(summary.problemSizeStatistics()).isNotNull();
             });
         } finally {
             executor.shutdownNow();
@@ -269,7 +269,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWithMetadataUninitialized() {
+    void solveAndSummarizeUninitialized() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig())
                 .withTerminationConfig(new TerminationConfig().withStepCountLimit(1));
@@ -277,29 +277,29 @@ class DefaultSolverTest {
         solution.getEntityList().forEach(entity -> entity.setValue(null));
         var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
-        var metadata = solver.solveWithMetadata(solution);
-        assertThat(metadata.solutionInitialized()).isFalse();
+        var summary = solver.solveAndSummarize(solution);
+        assertThat(summary.isSolutionInitialized()).isFalse();
     }
 
     @Test
-    void solveWithMetadataFails() {
+    void solveAndSummarizeFails() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
                         .withCustomPhaseCommands(new ThrowingCommand()));
         var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
-        assertThatThrownBy(() -> solver.solveWithMetadata(TestdataSolution.generateSolution(2, 2)))
+        assertThatThrownBy(() -> solver.solveAndSummarize(TestdataSolution.generateSolution(2, 2)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(ThrowingCommand.MESSAGE);
     }
 
     @Test
-    void solveWithMetadataTwiceDoesNotAccumulate() {
+    void solveAndSummarizeTwiceDoesNotAccumulate() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
-        var first = solver.solveWithMetadata(TestdataSolution.generateSolution(3, 4));
-        var second = solver.solveWithMetadata(TestdataSolution.generateSolution(3, 4));
+        var first = solver.solveAndSummarize(TestdataSolution.generateSolution(3, 4));
+        var second = solver.solveAndSummarize(TestdataSolution.generateSolution(3, 4));
 
         assertThat(first.scoreCalculationCount()).isPositive();
         assertThat(second.scoreCalculationCount()).isEqualTo(first.scoreCalculationCount());

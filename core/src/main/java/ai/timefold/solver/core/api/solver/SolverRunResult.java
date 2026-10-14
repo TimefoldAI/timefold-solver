@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public interface SolveResult<Solution_> extends SolverRunMetadata {
+public interface SolverRunResult<Solution_> extends SolverRunSummary {
 
     /**
      * @return the {@link PlanningSolution best solution} found by the solver

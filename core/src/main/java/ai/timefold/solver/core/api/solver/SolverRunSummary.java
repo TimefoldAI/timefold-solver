@@ -16,7 +16,7 @@ import org.jspecify.annotations.NullMarked;
  * so their values can be smaller.
  */
 @NullMarked
-public interface SolverRunMetadata {
+public interface SolverRunSummary {
 
     /**
      * @return the sum of the time spent in the entire run;
@@ -49,7 +49,7 @@ public interface SolverRunMetadata {
     /**
      * @return true if every planning variable of the final best solution is assigned
      */
-    boolean solutionInitialized();
+    boolean isSolutionInitialized();
 
     /**
      * @return the size statistics of the problem in its final state

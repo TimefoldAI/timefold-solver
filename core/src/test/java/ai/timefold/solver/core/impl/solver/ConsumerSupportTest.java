@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.api.solver.SolverRunMetadata;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Timeout;
 
 class ConsumerSupportTest {
 
-    private static final SolverRunMetadata METADATA = mock(SolverRunMetadata.class);
+    private static final SolverRunSummary SUMMARY = mock(SolverRunSummary.class);
 
     private ConsumerSupport<TestdataSolution, Long> consumerSupport;
 
@@ -91,7 +91,7 @@ class ConsumerSupportTest {
         consumeIntermediateBestSolution(TestdataSolution.generateSolution());
         assertThat(futureProblemChange).isNotCompleted();
         TestdataSolution finalBestSolution = TestdataSolution.generateSolution();
-        consumerSupport.consumeFinalBestSolution(new DefaultSolveResult<>(finalBestSolution, METADATA));
+        consumerSupport.consumeFinalBestSolution(new DefaultSolverRunResult<>(finalBestSolution, SUMMARY));
         futureProblemChange.get();
         assertThat(finalBestSolutionRef.get()).isSameAs(finalBestSolution);
         assertThat(futureProblemChange).isCompleted();
@@ -131,7 +131,7 @@ class ConsumerSupportTest {
         assertThat(futureProblemChange).isNotCompleted();
 
         CompletableFuture<Void> pendingProblemChange = addProblemChange(bestSolutionHolder);
-        consumerSupport.consumeFinalBestSolution(new DefaultSolveResult<>(TestdataSolution.generateSolution(), METADATA));
+        consumerSupport.consumeFinalBestSolution(new DefaultSolverRunResult<>(TestdataSolution.generateSolution(), SUMMARY));
         futureProblemChange.get();
         assertThat(futureProblemChange).isCompleted();
 
@@ -154,7 +154,7 @@ class ConsumerSupportTest {
         }, EventProducerId.constructionHeuristic(0), false);
         assertThat(consumerCalled).isFalse();
         // Must not block, as no lock was acquired by the calls above.
-        consumerSupport.consumeFinalBestSolution(new DefaultSolveResult<>(TestdataSolution.generateSolution(), METADATA));
+        consumerSupport.consumeFinalBestSolution(new DefaultSolverRunResult<>(TestdataSolution.generateSolution(), SUMMARY));
     }
 
     @Test

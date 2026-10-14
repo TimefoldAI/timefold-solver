@@ -3,51 +3,51 @@ package ai.timefold.solver.core.impl.solver;
 import java.time.Duration;
 
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
-import ai.timefold.solver.core.api.solver.SolveResult;
-import ai.timefold.solver.core.api.solver.SolverRunMetadata;
+import ai.timefold.solver.core.api.solver.SolverRunResult;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public record DefaultSolveResult<Solution_>(Solution_ solution, SolverRunMetadata metadata)
+public record DefaultSolverRunResult<Solution_>(Solution_ solution, SolverRunSummary summary)
         implements
-            SolveResult<Solution_>,
+            SolverRunResult<Solution_>,
             FinalBestSolutionEvent<Solution_> {
 
     @Override
     public Duration solvingDuration() {
-        return metadata.solvingDuration();
+        return summary.solvingDuration();
     }
 
     @Override
     public long scoreCalculationCount() {
-        return metadata.scoreCalculationCount();
+        return summary.scoreCalculationCount();
     }
 
     @Override
     public long scoreCalculationSpeed() {
-        return metadata.scoreCalculationSpeed();
+        return summary.scoreCalculationSpeed();
     }
 
     @Override
     public long moveEvaluationCount() {
-        return metadata.moveEvaluationCount();
+        return summary.moveEvaluationCount();
     }
 
     @Override
     public long moveEvaluationSpeed() {
-        return metadata.moveEvaluationSpeed();
+        return summary.moveEvaluationSpeed();
     }
 
     @Override
-    public boolean solutionInitialized() {
-        return metadata.solutionInitialized();
+    public boolean isSolutionInitialized() {
+        return summary.isSolutionInitialized();
     }
 
     @Override
     public ProblemSizeStatistics problemSizeStatistics() {
-        return metadata.problemSizeStatistics();
+        return summary.problemSizeStatistics();
     }
 
 }

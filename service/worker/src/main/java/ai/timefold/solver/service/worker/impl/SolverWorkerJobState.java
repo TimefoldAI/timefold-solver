@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutionException;
 
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.SolverJob;
-import ai.timefold.solver.core.api.solver.SolverRunMetadata;
+import ai.timefold.solver.core.api.solver.SolverRunResult;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.service.definition.api.SolverModel;
@@ -78,7 +78,7 @@ public class SolverWorkerJobState implements SolverJob<SolverModel> {
     }
 
     @Override
-    public SolverRunMetadata getFinalRunMetadata() {
+    public SolverRunResult<SolverModel> getResult() throws InterruptedException, ExecutionException {
         return null;
     }
 

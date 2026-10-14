@@ -13,7 +13,7 @@ public final class SolverRunStatisticsTracker {
     private long scoreCalculationCount = 0L;
     private long moveEvaluationCount = 0L;
 
-    public void runStarted() {
+    public void solvingStarted() {
         timeMillisSpent = 0L;
         scoreCalculationCount = 0L;
         moveEvaluationCount = 0L;

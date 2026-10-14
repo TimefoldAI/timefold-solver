@@ -494,17 +494,16 @@ The names and format of the metrics vary depending on the registry.
 `timefold.solver.solve.duration.seconds-max`:: Run time of the longest-running currently active solver.
 `timefold.solver.solve.duration.seconds-duration-sum`:: The sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
 
-[#solverRunMetadata]
-=== Statistics of a finished run
+[#solverRunSummary]
+=== Summary of a finished run
 
-When a run ends, `SolverRunMetadata` gives its statistics:
+When a run ends, `SolverRunSummary` gives its statistics:
 the solving duration, the score calculation count and speed,
 the move evaluation count and speed,
 whether the final best solution is initialized,
 and the problem size statistics.
-Get it from `SolverJob.getFinalRunMetadata()`.
-The result of `Solver.solveWithMetadata()` and the `FinalBestSolutionEvent`
-are also a `SolverRunMetadata`.
+The result of `Solver.solveAndSummarize()` and of `SolverJob.getResult()`,
+and the `FinalBestSolutionEvent`, are all a `SolverRunSummary`.
 
 The counts, speeds and duration are totals for the whole run.
 After a xref:responding-to-change/real-time-planning.adoc[problem change], the solver restarts,

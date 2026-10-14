@@ -41,10 +41,10 @@ public interface Solver<Solution_> {
      * @param problem a {@link PlanningSolution}, usually its planning variables are uninitialized
      * @return can return the original, uninitialized {@link PlanningSolution} with a null {@link Score}.
      * @see #terminateEarly()
-     * @see #solveWithMetadata(Object)
+     * @see #solveAndSummarize(Object)
      */
     default Solution_ solve(Solution_ problem) {
-        return solveWithMetadata(problem).solution();
+        return solveAndSummarize(problem).solution();
     }
 
     /**
@@ -56,7 +56,7 @@ public interface Solver<Solution_> {
      * @return the best solution, as returned by {@link #solve(Object)}, and the statistics of the run
      * @see #terminateEarly()
      */
-    SolveResult<Solution_> solveWithMetadata(Solution_ problem);
+    SolverRunResult<Solution_> solveAndSummarize(Solution_ problem);
 
     /**
      * Notifies the solver that it should stop at its earliest convenience.

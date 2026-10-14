@@ -140,11 +140,11 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public final Solution_ solve(Solution_ problem) {
-        return solveWithMetadata(problem).solution();
+        return solveAndSummarize(problem).solution();
     }
 
     @Override
-    public final DefaultSolveResult<Solution_> solveWithMetadata(Solution_ problem) {
+    public final DefaultSolverRunResult<Solution_> solveAndSummarize(Solution_ problem) {
         // No tags for these metrics; they are global
         var solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
         var errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
@@ -174,7 +174,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             restartSolver = checkProblemChanges();
         }
         outerSolvingEnded(solverScope);
-        return new DefaultSolveResult<>(solverScope.getBestSolution(), DefaultSolverRunMetadata.of(solverScope));
+        return new DefaultSolverRunResult<>(solverScope.getBestSolution(), DefaultSolverRunSummary.of(solverScope));
     }
 
     public void outerSolvingStarted(SolverScope<Solution_> solverScope) {
@@ -182,7 +182,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         basicPlumbingTermination.resetTerminateEarly();
         solverScope.setStartingSolverCount(0);
         solverScope.setWorkingRandom(randomFactory.get());
-        solverScope.getRunStatistics().runStarted();
+        solverScope.getSolverStatistics().solvingStarted();
     }
 
     @Override
@@ -305,13 +305,13 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
-        var runStatistics = solverScope.getRunStatistics();
-        var timeMillisSpent = runStatistics.getTimeMillisSpent();
+        var solverStatistics = solverScope.getSolverStatistics();
+        var timeMillisSpent = solverStatistics.getTimeMillisSpent();
         LOGGER.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 timeMillisSpent,
                 solverScope.getBestScore().raw(),
-                MathUtils.getSpeed(runStatistics.getMoveEvaluationCount(), timeMillisSpent),
+                MathUtils.getSpeed(solverStatistics.getMoveEvaluationCount(), timeMillisSpent),
                 phaseList.size(),
                 globalEnvironmentMode.name(),
                 moveThreadCountDescription);

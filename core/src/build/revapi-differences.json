@@ -168,13 +168,13 @@
         {
           "ignore": true,
           "code": "java.method.addedToInterface",
-          "new": "method ai.timefold.solver.core.api.solver.SolveResult<Solution_> ai.timefold.solver.core.api.solver.Solver<Solution_>::solveWithMetadata(Solution_)",
+          "new": "method ai.timefold.solver.core.api.solver.SolverRunResult<Solution_> ai.timefold.solver.core.api.solver.Solver<Solution_>::solveAndSummarize(Solution_)",
           "justification": "Return end-of-run statistics; Solver is implemented by the solver, not by user code."
         },
         {
           "ignore": true,
           "code": "java.method.addedToInterface",
-          "new": "method ai.timefold.solver.core.api.solver.SolverRunMetadata ai.timefold.solver.core.api.solver.SolverJob<Solution_>::getFinalRunMetadata()",
+          "new": "method ai.timefold.solver.core.api.solver.SolverRunResult<Solution_> ai.timefold.solver.core.api.solver.SolverJob<Solution_>::getResult() throws java.lang.InterruptedException, java.util.concurrent.ExecutionException",
           "justification": "Return end-of-run statistics; SolverJob is implemented by the solver, not by user code."
         }
       ]

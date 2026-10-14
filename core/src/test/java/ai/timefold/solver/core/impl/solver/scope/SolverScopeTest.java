@@ -21,8 +21,8 @@ class SolverScopeTest {
         InnerScoreDirector<TestdataSolution, ?> scoreDirector = mock(InnerScoreDirector.class);
         var solverScope = new SolverScope<TestdataSolution>(clock);
         solverScope.setScoreDirector(scoreDirector);
-        var runStatistics = solverScope.getRunStatistics();
-        runStatistics.runStarted();
+        var solverStatistics = solverScope.getSolverStatistics();
+        solverStatistics.solvingStarted();
 
         solverScope.startingNow();
         when(scoreDirector.getCalculationCount()).thenReturn(10L);
@@ -38,14 +38,14 @@ class SolverScopeTest {
         clock.tick(Duration.ofMillis(50));
         solverScope.endingNow();
 
-        assertThat(runStatistics.getTimeMillisSpent()).isEqualTo(150L);
-        assertThat(runStatistics.getScoreCalculationCount()).isEqualTo(22L);
-        assertThat(runStatistics.getMoveEvaluationCount()).isEqualTo(5L);
+        assertThat(solverStatistics.getTimeMillisSpent()).isEqualTo(150L);
+        assertThat(solverStatistics.getScoreCalculationCount()).isEqualTo(22L);
+        assertThat(solverStatistics.getMoveEvaluationCount()).isEqualTo(5L);
 
-        runStatistics.runStarted();
-        assertThat(runStatistics.getTimeMillisSpent()).isZero();
-        assertThat(runStatistics.getScoreCalculationCount()).isZero();
-        assertThat(runStatistics.getMoveEvaluationCount()).isZero();
+        solverStatistics.solvingStarted();
+        assertThat(solverStatistics.getTimeMillisSpent()).isZero();
+        assertThat(solverStatistics.getScoreCalculationCount()).isZero();
+        assertThat(solverStatistics.getMoveEvaluationCount()).isZero();
     }
 
 }

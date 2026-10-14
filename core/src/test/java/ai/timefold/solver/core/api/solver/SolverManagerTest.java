@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
@@ -1276,7 +1277,7 @@ class SolverManagerTest {
             var result = solverJob.getFinalBestSolution();
             assertThat(result).isNotNull();
             assertThat(solverJob.isTerminatedEarly()).isTrue();
-            assertThat(solverJob.getFinalRunMetadata()).isNotNull();
+            assertThat(solverJob.getResult().solution()).isSameAs(result);
         }
     }
 
@@ -1304,64 +1305,62 @@ class SolverManagerTest {
 
     @Test
     @Timeout(60)
-    void finalRunMetadata() throws InterruptedException, ExecutionException {
+    void result() throws InterruptedException, ExecutionException {
         var solvingPausedLatch = new CountDownLatch(1);
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig(solvingPausedLatch), new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
-            var eventMetadata = new AtomicReference<SolverRunMetadata>();
+            var eventSummary = new AtomicReference<SolverRunSummary>();
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
-                    .withFinalBestSolutionEventConsumer(eventMetadata::set)
+                    .withFinalBestSolutionEventConsumer(eventSummary::set)
                     .run();
-            assertThat(solverJob.getFinalRunMetadata()).isNull();
-
             solvingPausedLatch.countDown();
-            solverJob.getFinalBestSolution();
-            var metadata = solverJob.getFinalRunMetadata();
-            assertThat(metadata).isNotNull();
-            await().atMost(Duration.ofSeconds(10)).until(() -> eventMetadata.get() != null);
-            var event = eventMetadata.get();
+            var summary = solverJob.getResult();
+            assertThat(summary.solution()).isSameAs(solverJob.getFinalBestSolution());
+            await().atMost(Duration.ofSeconds(10)).until(() -> eventSummary.get() != null);
+            var event = eventSummary.get();
             assertThat(List.<Object> of(event.solvingDuration(), event.scoreCalculationCount(), event.moveEvaluationCount(),
-                    event.solutionInitialized(), event.problemSizeStatistics()))
-                    .containsExactly(metadata.solvingDuration(), metadata.scoreCalculationCount(),
-                            metadata.moveEvaluationCount(), metadata.solutionInitialized(),
-                            metadata.problemSizeStatistics());
+                    event.isSolutionInitialized(), event.problemSizeStatistics()))
+                    .containsExactly(summary.solvingDuration(), summary.scoreCalculationCount(),
+                            summary.moveEvaluationCount(), summary.isSolutionInitialized(),
+                            summary.problemSizeStatistics());
             assertSoftly(softly -> {
-                softly.assertThat(metadata.solvingDuration()).isEqualTo(solverJob.getSolvingDuration());
-                softly.assertThat(metadata.scoreCalculationCount()).isEqualTo(solverJob.getScoreCalculationCount());
-                softly.assertThat(metadata.scoreCalculationSpeed()).isEqualTo(solverJob.getScoreCalculationSpeed());
-                softly.assertThat(metadata.moveEvaluationCount()).isEqualTo(solverJob.getMoveEvaluationCount());
-                softly.assertThat(metadata.moveEvaluationSpeed()).isEqualTo(solverJob.getMoveEvaluationSpeed());
-                softly.assertThat(metadata.problemSizeStatistics()).isEqualTo(solverJob.getProblemSizeStatistics());
-                softly.assertThat(metadata.solutionInitialized()).isTrue();
+                softly.assertThat(summary.solvingDuration()).isEqualTo(solverJob.getSolvingDuration());
+                softly.assertThat(summary.scoreCalculationCount()).isEqualTo(solverJob.getScoreCalculationCount());
+                softly.assertThat(summary.scoreCalculationSpeed()).isEqualTo(solverJob.getScoreCalculationSpeed());
+                softly.assertThat(summary.moveEvaluationCount()).isEqualTo(solverJob.getMoveEvaluationCount());
+                softly.assertThat(summary.moveEvaluationSpeed()).isEqualTo(solverJob.getMoveEvaluationSpeed());
+                softly.assertThat(summary.problemSizeStatistics()).isEqualTo(solverJob.getProblemSizeStatistics());
+                softly.assertThat(summary.isSolutionInitialized()).isTrue();
             });
         }
     }
 
     @Test
     @Timeout(60)
-    void finalRunMetadataIsNullWhenTerminatedBeforeStart() throws InterruptedException, ExecutionException {
+    void resultThrowsWhenTerminatedBeforeStart() throws InterruptedException, ExecutionException {
         var solvingPausedLatch = new CountDownLatch(1);
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig(solvingPausedLatch), new ConstructionHeuristicPhaseConfig());
         // Allow only a single active solver.
         try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
             solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
-            var solverJob = solverManager.solve(2L, PlannerTestUtils.generateTestdataSolution("s2", 4));
+            var inputProblem = PlannerTestUtils.generateTestdataSolution("s2", 4);
+            var solverJob = solverManager.solve(2L, inputProblem);
 
             solverJob.terminateEarly(); // Never started.
-            solverJob.getFinalBestSolution();
-            assertThat(solverJob.getFinalRunMetadata()).isNull();
+            assertThatThrownBy(solverJob::getResult).isInstanceOf(CancellationException.class);
+            assertThat(solverJob.getFinalBestSolution()).isSameAs(inputProblem);
             solvingPausedLatch.countDown();
         }
     }
 
     @Test
     @Timeout(60)
-    void finalRunMetadataIsNullWhenSolvingFails() {
+    void resultThrowsWhenSolvingFails() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(context -> {
                     throw new IllegalStateException("Solving failed on purpose.");
@@ -1374,14 +1373,14 @@ class SolverManagerTest {
                     })
                     .run();
 
+            assertThatThrownBy(solverJob::getResult).isInstanceOf(ExecutionException.class);
             assertThatThrownBy(solverJob::getFinalBestSolution).isInstanceOf(ExecutionException.class);
-            assertThat(solverJob.getFinalRunMetadata()).isNull();
         }
     }
 
     @Test
     @Timeout(60)
-    void finalRunMetadataSumsSegmentsAfterProblemChange() throws InterruptedException, ExecutionException {
+    void resultSumsSegmentsAfterProblemChange() throws InterruptedException, ExecutionException {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverConfig.setDaemon(true);
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
@@ -1399,13 +1398,11 @@ class SolverManagerTest {
                             workingSolution.getValueList()::add));
             startedEventsConsumed.await();
             solverJob.terminateEarly();
-            solverJob.getFinalBestSolution();
 
-            var metadata = solverJob.getFinalRunMetadata();
-            assertThat(metadata).isNotNull();
+            var summary = solverJob.getResult();
             // The live getters cover only the segment after the problem change.
-            assertThat(metadata.scoreCalculationCount()).isGreaterThan(solverJob.getScoreCalculationCount());
-            assertThat(metadata.solvingDuration()).isGreaterThanOrEqualTo(solverJob.getSolvingDuration());
+            assertThat(summary.scoreCalculationCount()).isGreaterThan(solverJob.getScoreCalculationCount());
+            assertThat(summary.solvingDuration()).isGreaterThanOrEqualTo(solverJob.getSolvingDuration());
         }
     }
 
