@@ -28,11 +28,11 @@ class MemoryPressureTest {
     }
 
     @Test
-    void treatsUnlimitedAsNoLimit() {
-        assertThat(MemoryPressure.parseLimitBytes("max\n")).isEmpty(); // cgroup v2
-        assertThat(MemoryPressure.parseLimitBytes("9223372036854771712")).isEmpty(); // cgroup v1
+    void treatsMissingOrInvalidLimitAsUnknown() {
         assertThat(MemoryPressure.parseLimitBytes(null)).isEmpty();
         assertThat(MemoryPressure.parseLimitBytes("")).isEmpty();
+        assertThat(MemoryPressure.parseLimitBytes("1Gi")).isEmpty();
+        assertThat(MemoryPressure.parseLimitBytes("0")).isEmpty();
     }
 
     @Test

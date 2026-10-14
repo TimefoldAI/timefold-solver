@@ -18,11 +18,6 @@ import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 final class MemoryPressure {
 
     static final Path PROC_SELF_STATUS = Path.of("/proc/self/status");
-    static final Path CGROUP_V2_MEMORY_MAX = Path.of("/sys/fs/cgroup/memory.max");
-    static final Path CGROUP_V1_MEMORY_LIMIT = Path.of("/sys/fs/cgroup/memory/memory.limit_in_bytes");
-
-    /** cgroup v1 reports an unlimited container as a value close to {@link Long#MAX_VALUE}. */
-    private static final long UNLIMITED_THRESHOLD = 1L << 60;
 
     private MemoryPressure() {
     }
@@ -51,21 +46,7 @@ final class MemoryPressure {
     }
 
     static OptionalLong containerMemoryLimitBytes() {
-        OptionalLong fromEnv = parseLimitBytes(System.getenv(EnvironmentVars.K8S_INFO_MEMORY_LIMIT));
-        if (fromEnv.isPresent()) {
-            return fromEnv;
-        }
-        for (Path path : List.of(CGROUP_V2_MEMORY_MAX, CGROUP_V1_MEMORY_LIMIT)) {
-            try {
-                OptionalLong limit = parseLimitBytes(Files.readString(path));
-                if (limit.isPresent()) {
-                    return limit;
-                }
-            } catch (IOException | RuntimeException e) {
-                // Try the next location.
-            }
-        }
-        return OptionalLong.empty();
+        return parseLimitBytes(System.getenv(EnvironmentVars.K8S_INFO_MEMORY_LIMIT));
     }
 
     static OptionalLong parseLimitBytes(String value) {
@@ -74,9 +55,8 @@ final class MemoryPressure {
         }
         try {
             long limit = Long.parseLong(value.trim());
-            return limit > 0 && limit < UNLIMITED_THRESHOLD ? OptionalLong.of(limit) : OptionalLong.empty();
+            return limit > 0 ? OptionalLong.of(limit) : OptionalLong.empty();
         } catch (NumberFormatException e) {
-            // cgroup v2 reports an unlimited container as "max".
             return OptionalLong.empty();
         }
     }
