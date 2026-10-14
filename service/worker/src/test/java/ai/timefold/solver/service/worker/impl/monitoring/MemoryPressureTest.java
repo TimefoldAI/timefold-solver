@@ -3,7 +3,6 @@ package ai.timefold.solver.service.worker.impl.monitoring;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.OptionalLong;
 
 import org.junit.jupiter.api.Test;
 
