@@ -32,9 +32,9 @@ final class MemoryPressure {
     }
 
     static OptionalLong parseRssBytes(List<String> statusLines) {
-        for (String line : statusLines) {
+        for (var line : statusLines) {
             if (line.startsWith("VmRSS:")) {
-                String[] parts = line.substring("VmRSS:".length()).trim().split("\\s+");
+                var parts = line.substring("VmRSS:".length()).trim().split("\\s+");
                 try {
                     return OptionalLong.of(Long.parseLong(parts[0]) * 1024);
                 } catch (NumberFormatException e) {
@@ -54,7 +54,7 @@ final class MemoryPressure {
             return OptionalLong.empty();
         }
         try {
-            long limit = Long.parseLong(value.trim());
+            var limit = Long.parseLong(value.trim());
             return limit > 0 ? OptionalLong.of(limit) : OptionalLong.empty();
         } catch (NumberFormatException e) {
             return OptionalLong.empty();
@@ -64,11 +64,10 @@ final class MemoryPressure {
     /**
      * @return a description of the memory usage if it reached the threshold, or null otherwise
      */
-    static String exceededReason(OptionalLong rss, OptionalLong containerLimit, int thresholdPct) {
-        if (rss.isPresent() && containerLimit.isPresent()
-                && rss.getAsLong() * 100 >= containerLimit.getAsLong() * thresholdPct) {
-            return "process memory " + toMiB(rss.getAsLong()) + " MiB of container limit "
-                    + toMiB(containerLimit.getAsLong()) + " MiB";
+    static String exceededReason(long rss, long containerLimit, int thresholdPct) {
+        if (rss * 100 >= containerLimit * thresholdPct) {
+            return "process memory " + toMiB(rss) + " MiB of container limit "
+                    + toMiB(containerLimit) + " MiB";
         }
         return null;
     }

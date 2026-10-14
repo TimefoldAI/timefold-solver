@@ -37,22 +37,12 @@ class MemoryPressureTest {
 
     @Test
     void belowThreshold() {
-        assertThat(MemoryPressure.exceededReason(OptionalLong.of(899 * MIB), OptionalLong.of(1000 * MIB), 90)).isNull();
+        assertThat(MemoryPressure.exceededReason(899 * MIB, 1000 * MIB, 90)).isNull();
     }
 
     @Test
     void processMemoryReachesThreshold() {
-        assertThat(MemoryPressure.exceededReason(OptionalLong.of(900 * MIB), OptionalLong.of(1000 * MIB), 90))
+        assertThat(MemoryPressure.exceededReason(900 * MIB, 1000 * MIB, 90))
                 .isEqualTo("process memory 900 MiB of container limit 1000 MiB");
-    }
-
-    @Test
-    void ignoredWithoutContainerLimit() {
-        assertThat(MemoryPressure.exceededReason(OptionalLong.of(5000 * MIB), OptionalLong.empty(), 90)).isNull();
-    }
-
-    @Test
-    void ignoredWithoutRss() {
-        assertThat(MemoryPressure.exceededReason(OptionalLong.empty(), OptionalLong.of(1000 * MIB), 90)).isNull();
     }
 }

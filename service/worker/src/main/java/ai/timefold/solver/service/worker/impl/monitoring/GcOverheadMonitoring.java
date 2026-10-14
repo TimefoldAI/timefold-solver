@@ -120,12 +120,13 @@ public class GcOverheadMonitoring {
     }
 
     private void startMemoryWatchdog(String id) {
-        OptionalLong containerLimit = MemoryPressure.containerMemoryLimitBytes();
-        if (containerLimit.isEmpty()) {
+        OptionalLong containerLimitOpt = MemoryPressure.containerMemoryLimitBytes();
+        if (containerLimitOpt.isEmpty()) {
             LOGGER.warn("Memory watchdog enabled but no container memory limit is known ({} is not set or invalid); "
                     + "it will not trigger.", EnvironmentVars.K8S_INFO_MEMORY_LIMIT);
             return;
         }
+        var containerLimit = containerLimitOpt.getAsLong();
         if (MemoryPressure.readRssBytes().isEmpty()) {
             LOGGER.warn("Memory watchdog enabled but the process memory cannot be read ({}); it will not trigger.",
                     MemoryPressure.PROC_SELF_STATUS);
@@ -142,16 +143,19 @@ public class GcOverheadMonitoring {
         }, memoryIntervalMillis, memoryIntervalMillis, TimeUnit.MILLISECONDS);
     }
 
-    private void checkMemory(String id, OptionalLong containerLimit) {
-        OptionalLong rss = MemoryPressure.readRssBytes();
+    private void checkMemory(String id, long containerLimit) {
+        var rss = MemoryPressure.readRssBytes();
+        if (rss.isEmpty()) {
+            return;
+        }
 
-        String reason = MemoryPressure.exceededReason(rss, containerLimit, memoryThresholdPct);
+        var reason = MemoryPressure.exceededReason(rss.getAsLong(), containerLimit, memoryThresholdPct);
         if (reason == null || !memoryWatchdogTriggered.compareAndSet(false, true)) {
             return;
         }
         LOGGER.error("Memory usage exceeded {}% ({}) - writing thread and heap dumps and shutting down",
                 memoryThresholdPct, reason);
-        Path dumpDir = createDumpDirectory();
+        var dumpDir = createDumpDirectory();
         if (dumpDir != null) {
             writeDumps(dumpDir);
         }
