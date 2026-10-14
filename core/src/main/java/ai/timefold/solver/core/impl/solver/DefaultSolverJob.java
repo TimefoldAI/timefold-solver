@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverRunMetadata;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
@@ -65,6 +66,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     private final AtomicBoolean terminatedEarly = new AtomicBoolean(false);
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
     private final AtomicReference<@Nullable ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
+    private final AtomicReference<@Nullable SolverRunMetadata> finalRunMetadata = new AtomicReference<>();
     private final AtomicReference<SolverStatus> solverStatus = new AtomicReference<>(SolverStatus.SOLVING_SCHEDULED);
     private final AtomicReference<@Nullable Future<Solution_>> finalBestSolutionFuture = new AtomicReference<>();
     private final AtomicReference<@Nullable ConsumerSupport<Solution_, Object>> consumerSupport = new AtomicReference<>();
@@ -138,12 +140,14 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             solver.addPhaseLifecycleListener(
                     new FirstInitializedSolutionPhaseLifecycleListener<>(solver, problemId, currentConsumerSupport));
             // add a phase lifecycle listener once when the solver starts its execution
-            solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener(currentConsumerSupport));
+            solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener<>(currentConsumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
-            final var finalBestSolution = solver.solve(problem);
-            currentConsumerSupport.consumeFinalBestSolution(finalBestSolution);
-            return finalBestSolution;
+            var result = solver.solveWithMetadata(problem);
+            finalRunMetadata.set(result.metadata());
+            currentConsumerSupport.consumeFinalBestSolution(result);
+            return result.solution();
         } catch (Throwable e) {
+            finalRunMetadata.set(null);
             exceptionHandler.accept(problemId, e);
             bestSolutionHolder.cancelPendingChanges();
             throw new IllegalStateException("Solving failed for problemId (%s)."
@@ -284,6 +288,11 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
                     "terminateEarly() has been called before the solver job started solving. Retrieving the input problem instead.");
             return problemFinder.apply(problemId);
         }
+    }
+
+    @Override
+    public @Nullable SolverRunMetadata getFinalRunMetadata() {
+        return finalRunMetadata.get();
     }
 
     @Override

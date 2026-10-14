@@ -10,6 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -718,14 +720,7 @@ class SolverManagerTest {
     @Timeout(60)
     void testProblemSizeStatisticsForWaitingJob() throws InterruptedException, ExecutionException {
         var solvingPausedLatch = new CountDownLatch(1);
-        var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                context -> {
-                    try {
-                        solvingPausedLatch.await();
-                    } catch (InterruptedException e) {
-                        fail("CountDownLatch failed.");
-                    }
-                });
+        var pausedPhaseConfig = pausedPhaseConfig(solvingPausedLatch);
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
@@ -1232,14 +1227,7 @@ class SolverManagerTest {
     @Timeout(60)
     void addProblemChangeToWaitingSolver() throws InterruptedException, ExecutionException {
         var solvingPausedLatch = new CountDownLatch(1);
-        var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                context -> {
-                    try {
-                        solvingPausedLatch.await();
-                    } catch (InterruptedException e) {
-                        fail("CountDownLatch failed.");
-                    }
-                });
+        var pausedPhaseConfig = pausedPhaseConfig(solvingPausedLatch);
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
@@ -1288,6 +1276,7 @@ class SolverManagerTest {
             var result = solverJob.getFinalBestSolution();
             assertThat(result).isNotNull();
             assertThat(solverJob.isTerminatedEarly()).isTrue();
+            assertThat(solverJob.getFinalRunMetadata()).isNotNull();
         }
     }
 
@@ -1295,14 +1284,7 @@ class SolverManagerTest {
     @Timeout(60)
     void terminateScheduledSolverJobEarly_returnsInputProblem() throws ExecutionException, InterruptedException {
         var solvingPausedLatch = new CountDownLatch(1);
-        var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                context -> {
-                    try {
-                        solvingPausedLatch.await();
-                    } catch (InterruptedException e) {
-                        fail("CountDownLatch failed.");
-                    }
-                });
+        var pausedPhaseConfig = pausedPhaseConfig(solvingPausedLatch);
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
@@ -1318,6 +1300,124 @@ class SolverManagerTest {
             assertThat(result).isSameAs(inputProblem);
             assertThat(solverJob.isTerminatedEarly()).isTrue();
         }
+    }
+
+    @Test
+    @Timeout(60)
+    void finalRunMetadata() throws InterruptedException, ExecutionException {
+        var solvingPausedLatch = new CountDownLatch(1);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(pausedPhaseConfig(solvingPausedLatch), new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var eventMetadata = new AtomicReference<SolverRunMetadata>();
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                    .withFinalBestSolutionEventConsumer(eventMetadata::set)
+                    .run();
+            assertThat(solverJob.getFinalRunMetadata()).isNull();
+
+            solvingPausedLatch.countDown();
+            solverJob.getFinalBestSolution();
+            var metadata = solverJob.getFinalRunMetadata();
+            assertThat(metadata).isNotNull();
+            await().atMost(Duration.ofSeconds(10)).until(() -> eventMetadata.get() != null);
+            var event = eventMetadata.get();
+            assertThat(List.<Object> of(event.solvingDuration(), event.scoreCalculationCount(), event.moveEvaluationCount(),
+                    event.solutionInitialized(), event.problemSizeStatistics()))
+                    .containsExactly(metadata.solvingDuration(), metadata.scoreCalculationCount(),
+                            metadata.moveEvaluationCount(), metadata.solutionInitialized(),
+                            metadata.problemSizeStatistics());
+            assertSoftly(softly -> {
+                softly.assertThat(metadata.solvingDuration()).isEqualTo(solverJob.getSolvingDuration());
+                softly.assertThat(metadata.scoreCalculationCount()).isEqualTo(solverJob.getScoreCalculationCount());
+                softly.assertThat(metadata.scoreCalculationSpeed()).isEqualTo(solverJob.getScoreCalculationSpeed());
+                softly.assertThat(metadata.moveEvaluationCount()).isEqualTo(solverJob.getMoveEvaluationCount());
+                softly.assertThat(metadata.moveEvaluationSpeed()).isEqualTo(solverJob.getMoveEvaluationSpeed());
+                softly.assertThat(metadata.problemSizeStatistics()).isEqualTo(solverJob.getProblemSizeStatistics());
+                softly.assertThat(metadata.solutionInitialized()).isTrue();
+            });
+        }
+    }
+
+    @Test
+    @Timeout(60)
+    void finalRunMetadataIsNullWhenTerminatedBeforeStart() throws InterruptedException, ExecutionException {
+        var solvingPausedLatch = new CountDownLatch(1);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(pausedPhaseConfig(solvingPausedLatch), new ConstructionHeuristicPhaseConfig());
+        // Allow only a single active solver.
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
+            var solverJob = solverManager.solve(2L, PlannerTestUtils.generateTestdataSolution("s2", 4));
+
+            solverJob.terminateEarly(); // Never started.
+            solverJob.getFinalBestSolution();
+            assertThat(solverJob.getFinalRunMetadata()).isNull();
+            solvingPausedLatch.countDown();
+        }
+    }
+
+    @Test
+    @Timeout(60)
+    void finalRunMetadataIsNullWhenSolvingFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(context -> {
+                    throw new IllegalStateException("Solving failed on purpose.");
+                }));
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                    .withExceptionHandler((id, throwable) -> {
+                    })
+                    .run();
+
+            assertThatThrownBy(solverJob::getFinalBestSolution).isInstanceOf(ExecutionException.class);
+            assertThat(solverJob.getFinalRunMetadata()).isNull();
+        }
+    }
+
+    @Test
+    @Timeout(60)
+    void finalRunMetadataSumsSegmentsAfterProblemChange() throws InterruptedException, ExecutionException {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setDaemon(true);
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problemId = 1L;
+            // The solver starts once, and restarts once after the problem change.
+            var startedEventsConsumed = new CountDownLatch(2);
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(problemId)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                    .withSolverJobStartedEventConsumer(event -> startedEventsConsumed.countDown())
+                    .run();
+            solverManager.addProblemChange(problemId,
+                    (workingSolution, problemChangeDirector) -> problemChangeDirector.addProblemFact(
+                            new TestdataValue("addedValue"),
+                            workingSolution.getValueList()::add));
+            startedEventsConsumed.await();
+            solverJob.terminateEarly();
+            solverJob.getFinalBestSolution();
+
+            var metadata = solverJob.getFinalRunMetadata();
+            assertThat(metadata).isNotNull();
+            // The live getters cover only the segment after the problem change.
+            assertThat(metadata.scoreCalculationCount()).isGreaterThan(solverJob.getScoreCalculationCount());
+            assertThat(metadata.solvingDuration()).isGreaterThanOrEqualTo(solverJob.getSolvingDuration());
+        }
+    }
+
+    private static CustomPhaseConfig pausedPhaseConfig(CountDownLatch solvingPausedLatch) {
+        return new CustomPhaseConfig().withCustomPhaseCommands(
+                context -> {
+                    try {
+                        solvingPausedLatch.await();
+                    } catch (InterruptedException e) {
+                        fail("CountDownLatch failed.");
+                    }
+                });
     }
 
     public static class CustomThreadFactory implements ThreadFactory {

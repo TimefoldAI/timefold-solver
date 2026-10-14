@@ -65,6 +65,8 @@ public class SolverScope<Solution_> {
 
     private long moveEvaluationCount = 0L;
 
+    private final SolverRunStatisticsTracker runStatistics = new SolverRunStatisticsTracker();
+
     private Score<?> startingInitializedScore;
 
     private Long bestSolutionTimeMillis;
@@ -287,6 +289,7 @@ public class SolverScope<Solution_> {
         startingSystemTimeMillis.set(getClock().millis());
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
         this.moveEvaluationCount = 0L;
+        this.childThreadsScoreCalculationCount = 0L;
     }
 
     public Long getBestSolutionTimeMillisSpent() {
@@ -295,6 +298,11 @@ public class SolverScope<Solution_> {
 
     public void endingNow() {
         endingSystemTimeMillis.set(getClock().millis());
+        runStatistics.addSegment(getTimeMillisSpent(), getScoreCalculationCount(), getMoveEvaluationCount());
+    }
+
+    public SolverRunStatisticsTracker getRunStatistics() {
+        return runStatistics;
     }
 
     public boolean isBestSolutionInitialized() {

@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a {@link PlanningSolution problem} that has been submitted to solve on the {@link SolverManager}.
@@ -87,12 +88,28 @@ public interface SolverJob<Solution_> {
     Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException;
 
     /**
+     * Returns the statistics of the finished run, without waiting.
+     * The values are totals for the whole run, including every restart after a problem change;
+     * see {@link SolverRunMetadata}.
+     *
+     * @return null until the run ends with a final best solution;
+     *         stays null if the job is terminated before solving starts, or if solving fails or is cancelled
+     */
+    @Nullable
+    SolverRunMetadata getFinalRunMetadata();
+
+    /**
      * Returns the {@link Duration} spent solving since the last start.
      * If it hasn't started it yet, it returns {@link Duration#ZERO}.
      * If it hasn't ended yet, it returns the time between the last start and now.
      * If it has ended already, it returns the time between the last start and the ending.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getFinalRunMetadata()}.
      *
      * @return the {@link Duration} spent solving since the last (re)start, at least 0
+     * @see #getFinalRunMetadata()
      */
     Duration getSolvingDuration();
 
@@ -101,8 +118,13 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the number of score calculations so far.
      * If it has ended already, it returns the total number of score calculations that occurred during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getFinalRunMetadata()}.
      *
      * @return the number of score calculations that had occurred during solving since the last (re)start, at least 0
+     * @see #getFinalRunMetadata()
      */
     long getScoreCalculationCount();
 
@@ -111,8 +133,13 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the number of moves evaluations so far.
      * If it has ended already, it returns the total number of move evaluations that occurred during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getFinalRunMetadata()}.
      *
      * @return the number of move evaluations that had occurred during solving since the last (re)start, at least 0
+     * @see #getFinalRunMetadata()
      */
     long getMoveEvaluationCount();
 
@@ -120,6 +147,7 @@ public interface SolverJob<Solution_> {
      * Return the {@link ProblemSizeStatistics} for the {@link PlanningSolution problem} submitted to the
      * {@link SolverManager}.
      *
+     * @see #getFinalRunMetadata()
      */
     ProblemSizeStatistics getProblemSizeStatistics();
 
@@ -128,9 +156,14 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the average number of score calculations per second so far.
      * If it has ended already, it returns the average number of score calculations per second during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getFinalRunMetadata()}.
      *
      * @return the average number of score calculations per second that had occurred during solving
      *         since the last (re)start, at least 0
+     * @see #getFinalRunMetadata()
      */
     long getScoreCalculationSpeed();
 
@@ -139,9 +172,14 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the average number of move evaluations per second so far.
      * If it has ended already, it returns the average number of move evaluations per second during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getFinalRunMetadata()}.
      *
      * @return the average number of move evaluations per second that had occurred during solving
      *         since the last (re)start, at least 0
+     * @see #getFinalRunMetadata()
      */
     long getMoveEvaluationSpeed();
 }
