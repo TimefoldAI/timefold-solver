@@ -24,6 +24,7 @@ updates:
       openrewrite:
         patterns:
           - "org.openrewrite.maven:*"
+          - "org.openrewrite:*"
           - "org.openrewrite.recipe:*"
       # Everything else can be grouped together to minimize the number of PRs.
       # If any dependency ever breaks our code, it will be ungrouped.
