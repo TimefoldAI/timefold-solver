@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.api.solver;
 
-import static ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy.FETCH_ALL;
+import static ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy.FETCH_JUSTIFICATIONS;
 import static ai.timefold.solver.core.api.solver.SolutionUpdatePolicy.UPDATE_ALL;
 
 import java.util.List;
@@ -118,10 +118,10 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
 
     /**
      * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
-     * using {@link SolutionUpdatePolicy#UPDATE_ALL} and {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
+     * using {@link SolutionUpdatePolicy#UPDATE_ALL} and {@link ScoreAnalysisFetchPolicy#FETCH_JUSTIFICATIONS}.
      */
     default ScoreAnalysis<Score_> analyze(Solution_ solution) {
-        return analyze(solution, FETCH_ALL, UPDATE_ALL);
+        return analyze(solution, FETCH_JUSTIFICATIONS, UPDATE_ALL);
     }
 
     /**
@@ -179,12 +179,12 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
 
     /**
      * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
-     * with {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
+     * with {@link ScoreAnalysisFetchPolicy#FETCH_JUSTIFICATIONS}.
      */
     default <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
             Solution_ solution, EntityOrElement_ evaluatedEntityOrElement,
             Function<EntityOrElement_, @Nullable Proposition_> propositionFunction) {
-        return recommendAssignment(solution, evaluatedEntityOrElement, propositionFunction, FETCH_ALL);
+        return recommendAssignment(solution, evaluatedEntityOrElement, propositionFunction, FETCH_JUSTIFICATIONS);
     }
 
     /**

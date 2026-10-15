@@ -156,9 +156,9 @@ Represents the entire planning solution.
 It gives access to individual planning entity and planning variable metamodels.
 `PlanningEntityMetaModel`::
 Represents a planning entity class.
-It gives access to its planning variable metamodels, both genuine and shadow.
+It gives access to its planning variable metamodels, both genuine and shadow, including inherited variables.
 `VariableMetaModel`::
-Represents a planning variable on a planning entity class.
+Represents a planning variable on a planning entity class, which may be inherited from another entity class.
 It further specializes into `PlanningVariableMetaModel` for a xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[basic planning variable],
 `PlanningListVariableMetaModel` for a xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[list variable],
 and `ShadowVariableMetaModel` for a xref:domain-modeling/modeling-planning-problems.adoc#shadowPlanningVariables[shadow variable].

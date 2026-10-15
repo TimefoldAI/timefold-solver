@@ -206,6 +206,10 @@ public abstract class AbstractPhaseScope<Solution_> {
         return solverScope.getWorkingSolution();
     }
 
+    public Solution_ cloneWorkingSolution() {
+        return solverScope.cloneWorkingSolution();
+    }
+
     public int getWorkingEntityCount() {
         return solverScope.getWorkingEntityCount();
     }

@@ -33,7 +33,9 @@ public class ConstraintStreamTestExtension implements TestTemplateInvocationCont
     @Override
     public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext context) {
         return Stream
-                .of(ConstraintMatchPolicy.ENABLED, ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS,
+                .of(ConstraintMatchPolicy.ENABLED,
+                        ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS,
+                        ConstraintMatchPolicy.ENABLED_WITHOUT_INDICTMENTS,
                         ConstraintMatchPolicy.DISABLED)
                 .map(ConstraintStreamTestExtension::invocationContext);
     }

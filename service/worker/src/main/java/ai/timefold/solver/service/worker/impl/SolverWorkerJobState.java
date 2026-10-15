@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverRunResult;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.service.definition.api.SolverModel;
@@ -73,6 +74,11 @@ public class SolverWorkerJobState implements SolverJob<SolverModel> {
 
     @Override
     public SolverModel getFinalBestSolution() throws InterruptedException, ExecutionException {
+        return null;
+    }
+
+    @Override
+    public SolverRunResult<SolverModel> getResult() throws InterruptedException, ExecutionException {
         return null;
     }
 

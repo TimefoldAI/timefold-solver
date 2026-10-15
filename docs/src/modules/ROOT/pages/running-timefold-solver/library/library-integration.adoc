@@ -39,6 +39,26 @@ Use the returned instance instead, which is most likely xref:domain-modeling/mod
 
 NOTE: The input may be partially or fully initialized, which is common in xref:responding-to-change/real-time-planning.adoc[repeated planning].
 
+To also get the statistics of the run,
+such as the solving duration and the move evaluation speed,
+use `solveAndSummarize()` instead:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+SolverRunResult<Timetable> result = solver.solveAndSummarize(problem);
+Timetable bestSolution = result.solution();
+long moveEvaluationSpeed = result.moveEvaluationSpeed();
+----
+====
+
+If solving fails, `solveAndSummarize()` throws the same exception as `solve()`
+and gives no statistics.
+See xref:running-timefold-solver/solver-diagnostics.adoc#solverRunSummary[Statistics of a finished run].
+
 However, `Solver.solve()` *blocks the calling thread* for the entire duration of solving.
 This makes it unsuitable for use in REST endpoints or anywhere you need to handle multiple problems concurrently.
 `SolverManager` solves both problems.
@@ -96,17 +116,27 @@ Java::
 VehicleRoutePlan problem1 = ...;
 String problemId = UUID.randomUUID().toString();
 // Returns immediately
-SolverJob<VehicleRoutePlan, String> solverJob = solverManager.solve(problemId, problem1);
+SolverJob<VehicleRoutePlan> solverJob = solverManager.solve(problemId, problem1);
 ...
 
 try {
     // Returns only after solving terminates
-    VehicleRoutePlan solution1 = solverJob.getFinalBestSolution();
-} catch (InterruptedException | ExecutionException e) {
+    SolverRunResult<VehicleRoutePlan> result1 = solverJob.getResult();
+    VehicleRoutePlan solution1 = result1.solution();
+} catch (InterruptedException | ExecutionException | CancellationException e) {
     throw ...;
 }
 ----
 ====
+
+`SolverJob.getResult()` waits until solving terminates.
+It gives the final best solution together with the summary of the run.
+If solving fails, it throws an `ExecutionException`.
+If the job is terminated before solving starts, it throws a `CancellationException`;
+use `SolverJob.getFinalBestSolution()` to get the input problem in that case instead.
+The live getters on `SolverJob`, such as `getMoveEvaluationCount()`,
+cover only the time since the last problem change;
+see xref:running-timefold-solver/solver-diagnostics.adoc#solverRunSummary[Statistics of a finished run].
 
 However, there are better approaches, both for solving batch problems before an end-user needs the solution
 as well as for live solving while an end-user is actively waiting for the solution, as explained below.
@@ -187,6 +217,7 @@ it can be consumed by configuring it with `withBestSolutionEventConsumer(...)`.
 The final best solution consumer,
 which is called at the end of the solving process,
 can be set using `withFinalBestSolutionEventConsumer(...)`.
+Its event also gives the summary of the run, such as move evaluation speed.
 Additionally,
 an improved solution consumer capable of throttling events is available in the <<throttlingBestSolutionEvents,Enterprise Edition>> of the Timefold Solver.
 

@@ -88,7 +88,7 @@ Using score analysis, you can find out:
 [NOTE]
 ====
 For performance reasons and especially with large datasets that you'll later need to serialize, you may choose to use `ScoreAnalysis` without justifications, while still maintaining the count of constraint matches.
-In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
+In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_JUSTIFICATIONS` when calling `SolutionManager.analyze(...)`.
 ====
 
 NOTE: The score analysis of structurally flawed solutions has a structural flaw analysis,
@@ -165,6 +165,98 @@ constraintAnalysis.matches().forEach(matchAnalysis -> {
 Each match is accompanied by the score difference it caused, and a justification object (see above).
 Typically, the scoring engine creates justification objects automatically by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustifications[Constraint Streams' `justifyWith(...)` call].
 
+[#scoreAnalysisIndictments]
+=== Finding how entities and problem facts contributed to the score
+
+When you fetch a `ScoreAnalysis` instance with `ScoreAnalysisFetchPolicy.FETCH_ALL`, you can find out how each problem fact and entity contributed to the score:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+ScoreAnalysis<HardSoftScore> scoreAnalysis = solutionManager.analyze(solution, ScoreAnalysisFetchPolicy.FETCH_ALL);
+scoreAnalysis.indictmentMap().forEach((classId, indictments) -> {
+   for (IndictmentAnalysis<HardSoftScore> analysis : indictments) {
+       Object indictedObject = analysis.indictee();
+       HardSoftScore constraintMatchScoreSum = analysis.score();
+       for (MatchAnalysis<HardSoftScore> match : analysis.matches()) {
+           ...
+       }
+   }
+});
+----
+====
+
+IMPORTANT: When a `ScoreAnalysisFetchPolicy` is not passed to `analyze`, indictments are not fetched, and `indictmentMap()` will return an empty map.
+
+[NOTE]
+====
+The key in the indictment map is by default the canonical name of the class.
+You can customize it by making your domain objects implement `Indictable`:
+
+[tabs]
+=====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class Shift implements Indictable {
+    ...
+    @Override
+    public String getIndictmentClassId() {
+        return "Shift";
+    }
+}
+----
+=====
+
+You can also optionally override `getIndictedObject()` to change the `indictee` of an `IndictmentAnalysis`:
+
+[tabs]
+=====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class SolverShift implements Indictable {
+    ...
+    @Override
+    public Object getIndictedObject() {
+        return new ShiftDTO(start, end, ...);
+    }
+}
+----
+=====
+====
+
+A problem fact or entity is considered to contributed to a constraint match when:
+
+- It is in the tuple initially produced by a `forEach` or `join` for the match.
+It does not matter if the tuple was modified by another operation like `expand` or `map`. For example, for the constraint
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+Constraint missingRequiredSkill(ConstriantFactory constraintFactory) {
+    record EmployeeSkillPair(Employee employee, Skill skill) {}
+    return constraintFactory.forEach(Shift.class)
+        .map(shift -> new EmployeeSkillPair(shift.getEmployee(), shift.getRequiredSkill()))
+        .filter(pair -> !pair.employee().getSkillSet().contains(pair.skill()))
+         .penalize(HardSoftScore.ONE_HARD)
+         .asConstraint("Missing required skill");
+}
+----
+====
+the `Shift` will be the indicted object, and not `EmployeeSkillPair`.
+
+- It satisfies an `ifExists` the match's tuple passed through.
+
+- It contributed to an aggregation performed by `groupBy`.
+
 [#scoreAnalysisDiff]
 === Identifying changes between two solutions
 
@@ -217,6 +309,7 @@ To succeed at this, `ScoreAnalysis` is JSON-friendly and can be easily sent over
 * or if you directly included the `timefold-solver-jackson` module in your project.
 
 If you implemented `ConstraintJustication` to provide custom justification objects, you are responsible for making them JSON-friendly yourself.
+Similarly, if you fetched indictments in your `ScoreAnalysis` instance, you are responsible for making the indicted objects JSON-friendly.
 
 [NOTE]
 ====
@@ -227,7 +320,7 @@ and registering it with Jackson's `ObjectMapper`.
 ====
 
 With large datasets, you may choose to use `ScoreAnalysis` without justifications, while still maintaining the count of constraint matches.
-In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
+In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_JUSTIFICATIONS` when calling `SolutionManager.analyze(...)`.
 
 
 [#solutionDiff]
