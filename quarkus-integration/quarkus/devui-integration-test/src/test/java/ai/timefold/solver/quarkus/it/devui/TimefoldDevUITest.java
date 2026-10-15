@@ -86,9 +86,7 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
                         + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
                         + "</constraintProviderClass>\n"
                         + "  </scoreDirectorFactory>\n"
-                        + "  <termination>\n"
-                        + "    <bestScoreLimit>0hard/5soft</bestScoreLimit>\n"
-                        + "  </termination>\n"
+                        + "  <termination/>\n"
                         + "</solver>");
     }
 
