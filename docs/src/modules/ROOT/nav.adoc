@@ -73,10 +73,10 @@
 .Upgrading
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy]
 * Upgrade guides
-** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
-** xref:upgrading-timefold-solver/upgrade-to-latest.adoc[leveloffset=+1]
-** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
-** xref:upgrading-timefold-solver/upgrade-from-optaplanner.adoc[leveloffset=+1]
+** xref:upgrading-timefold-solver/overview.adoc[Overview]
+** xref:upgrading-timefold-solver/upgrade-to-latest.adoc[Upgrade to latest]
+** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[From 1.x to 2.x]
+** xref:upgrading-timefold-solver/upgrade-from-optaplanner.adoc[From OptaPlanner]
 * Feature migrations
 ** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
