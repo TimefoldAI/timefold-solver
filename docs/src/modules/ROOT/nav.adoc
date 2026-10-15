@@ -1,4 +1,5 @@
 .Getting started
+* xref:introduction.adoc[Introduction]
 * xref:quickstart/overview.adoc[Overview]
 * xref:quickstart/service/getting-started.adoc[Build as a service]
 * Embed as a library

@@ -16,6 +16,7 @@ in our GitHub repository,
 read https://timefold.ai/blog[our blog],
 or subscribe to our newsletter.
 
+[#backwardsCompatibility]
 == Backwards compatibility
 
 Timefold Solver separates its API from its implementation:
