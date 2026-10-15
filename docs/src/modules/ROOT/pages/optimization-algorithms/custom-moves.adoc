@@ -84,13 +84,13 @@ by implementing the `MoveIteratorFactory` interface:
 
 [source,java,options="nowrap"]
 ----
-public interface MoveIteratorFactory<Solution_> {
+public interface MoveIteratorFactory<Solution_, Move_ extends Move<Solution_>> {
 
     long getSize(ScoreDirector<Solution_> scoreDirector);
 
-    Iterator<Move> createOriginalMoveIterator(ScoreDirector<Solution_> scoreDirector);
+    Iterator<Move_> createOriginalMoveIterator(ScoreDirector<Solution_> scoreDirector);
 
-    Iterator<Move> createRandomMoveIterator(ScoreDirector<Solution_> scoreDirector, Random workingRandom);
+    Iterator<Move_> createRandomMoveIterator(ScoreDirector<Solution_> scoreDirector, RandomGenerator workingRandom);
 
 }
 ----
@@ -177,7 +177,7 @@ public class PossibleAssignmentsOnlyMoveIteratorFactory implements MoveIteratorF
 
     @Override
     public Iterator<MyChangeMove> createRandomMoveIterator(ScoreDirector<MyPlanningSolution> scoreDirector,
-            Random workingRandom) {
+            RandomGenerator workingRandom) {
         // Not needed if selectionOrder is ORIGINAL or if it is cached
         var solution = scoreDirector.getWorkingSolution();
         var entities = solution.getEntities();
