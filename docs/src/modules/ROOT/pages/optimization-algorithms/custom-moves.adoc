@@ -35,7 +35,7 @@ The easiest way to generate custom moves is by implementing the interface ``Move
 ----
 public interface MoveListFactory<Solution_> {
 
-    List<Move> createMoveList(Solution_ solution);
+    List<? extends Move<Solution_>> createMoveList(Solution_ solution);
 
 }
 ----
@@ -62,7 +62,7 @@ Advanced configuration:
     </moveListFactory>
 ----
 
-Because the `MoveListFactory` generates all moves at once in a ``List<Move>``,
+Because the `MoveListFactory` generates all moves at once in a ``List<? extends Move<Solution_>>``,
 it does not support `cacheType` ``JUST_IN_TIME``.
 Therefore, `moveListFactory` uses `cacheType` ``STEP`` by default and it scales badly.
 
@@ -102,7 +102,7 @@ The `createRandomMoveIterator` method is called for `selectionOrder` ``RANDOM`` 
 
 [IMPORTANT]
 ====
-Don't create a collection (array, list, set or map) of ``Move``s when creating the ``Iterator<Move>``:
+Don't create a collection (array, list, set or map) of ``Move``s when creating the ``Iterator<Move_>``:
 the whole purpose of `MoveIteratorFactory` over `MoveListFactory` is to create a `Move` just in time
 in a custom ``Iterator.next()``.
 ====
