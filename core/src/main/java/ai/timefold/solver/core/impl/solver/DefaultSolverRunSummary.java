@@ -4,25 +4,31 @@ import java.time.Duration;
 
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.SolverRunSummary;
+import ai.timefold.solver.core.api.solver.phase.PhaseId;
+import ai.timefold.solver.core.api.solver.termination.TerminationId;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.MathUtils;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public record DefaultSolverRunSummary(Duration solvingDuration, long scoreCalculationCount, long moveEvaluationCount,
-        boolean isSolutionInitialized, ProblemSizeStatistics problemSizeStatistics)
+        boolean isSolutionInitialized, ProblemSizeStatistics problemSizeStatistics, boolean isTerminatedEarly,
+        @Nullable TerminationId termination, @Nullable PhaseId lastPhase, Duration timeToBestSolution)
         implements
             SolverRunSummary {
 
     /**
      * Call only after the run ended.
      */
-    public static SolverRunSummary of(SolverScope<?> solverScope) {
+    public static SolverRunSummary of(SolverScope<?> solverScope, boolean terminatedEarly) {
         var solverStatistics = solverScope.getSolverStatistics();
         return new DefaultSolverRunSummary(Duration.ofMillis(solverStatistics.getTimeMillisSpent()),
                 solverStatistics.getScoreCalculationCount(), solverStatistics.getMoveEvaluationCount(),
-                solverScope.isBestSolutionInitialized(), solverScope.getProblemSizeStatistics());
+                solverScope.isBestSolutionInitialized(), solverScope.getProblemSizeStatistics(), terminatedEarly,
+                terminatedEarly ? null : solverScope.getLastTerminationId(), solverScope.getLastPhase(),
+                Duration.ofMillis(solverStatistics.getTimeToBestSolutionMillis()));
     }
 
     @Override

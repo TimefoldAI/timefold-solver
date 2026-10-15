@@ -70,7 +70,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     protected DefaultConstructionHeuristicPhaseBuilder<Solution_> createBuilder(
             HeuristicConfigPolicy<Solution_> phaseConfigPolicy, SolverTermination<Solution_> solverTermination, int phaseIndex,
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
-        var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
+        var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination, phaseIndex);
         return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
                 phaseConfigPolicy.getEnvironmentMode(), phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination))

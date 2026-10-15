@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.solver.termination;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -71,6 +72,11 @@ final class BestScoreFeasibleTermination<Solution_>
         }
         return BestScoreTermination.calculateTimeGradient(totalDiffNumbers, scoreDiffNumbers,
                 timeGradientWeightFeasibleNumbers, feasibleLevelsSize);
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.BEST_SCORE_FEASIBLE;
     }
 
     @Override

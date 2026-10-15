@@ -95,7 +95,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             return;
         }
         var it = phaseList.iterator();
-        while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
+        while (it.hasNext() && !globalTermination.isSolverTerminated(solverScope)) {
             var phase = it.next();
             phase.solve(solverScope);
             // If there is a next phase, it starts from the best solution, which might differ from the working solution.

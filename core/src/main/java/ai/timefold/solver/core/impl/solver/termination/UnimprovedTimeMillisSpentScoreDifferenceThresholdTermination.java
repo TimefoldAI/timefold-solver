@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -168,6 +169,11 @@ final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solutio
     public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
         return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
                 || phaseScopeClass == CustomPhaseScope.class);
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.UNIMPROVED_SCORE_DIFFERENCE_THRESHOLD;
     }
 
     @Override

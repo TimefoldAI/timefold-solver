@@ -4,6 +4,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhase;
@@ -105,7 +106,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         phaseScope.startingNow();
         phaseScope.reset();
         if (!isNested()) {
-            var solver = phaseScope.getSolverScope().getSolver();
+            var solverScope = phaseScope.getSolverScope();
+            solverScope.setLastTerminationId(null);
+            solverScope.setLastPhase(new DefaultPhaseId(getPhaseType(), phaseIndex));
+            var solver = solverScope.getSolver();
             solver.phaseStarted(phaseScope);
         }
         phaseTermination.phaseStarted(phaseScope);
@@ -141,7 +145,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                 // as the assertion will need to reallocate the solution range,
                 // and it may lead to OOM errors.
                 phaseScope.getScoreDirector().getValueRangeManager().reset(null);
-                phaseScope.assertWorkingScoreFromScratch(score, getPhaseType() + " phase ended");
+                phaseScope.assertWorkingScoreFromScratch(score, getPhaseType().getPhaseName() + " phase ended");
             } catch (ScoreCorruptionException | VariableCorruptionException e) {
                 throw new IllegalStateException("""
                         Solver corruption was detected. Solutions provided by this solver can not be trusted.
@@ -245,7 +249,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                                 %s phase (%d) needs to start from an initialized solution, but there are (%d) uninitialized entities.
                                 Maybe there is no Construction Heuristic configured before this phase to initialize the solution.
                                 Or maybe the getter/setters of your planning variables in your domain classes aren't implemented correctly."""
-                                .formatted(getPhaseType(), phaseIndex, uninitializedEntityCount));
+                                .formatted(getPhaseType().getPhaseName(), phaseIndex, uninitializedEntityCount));
             }
             var unassignedValueCount = initializationStatistics.unassignedValueCount();
             if (unassignedValueCount > 0) {
@@ -254,7 +258,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                                 %s phase (%d) needs to start from an initialized solution, \
                                 but planning list variable (%s) has (%d) unexpected unassigned values.
                                 Maybe there is no Construction Heuristic configured before this phase to initialize the solution."""
-                                .formatted(getPhaseType(), phaseIndex, solutionDescriptor.getListVariableDescriptor(),
+                                .formatted(getPhaseType().getPhaseName(), phaseIndex,
+                                        solutionDescriptor.getListVariableDescriptor(),
                                         unassignedValueCount));
             }
         }

@@ -13,6 +13,11 @@ final class OrCompositeTermination<Solution_>
         extends AbstractCompositeTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
+    /**
+     * If true, the id of the first child that is true goes to {@link SolverScope#setLastTerminationId}.
+     */
+    private boolean recording = true;
+
     public OrCompositeTermination(List<Termination<Solution_>> terminationList) {
         super(terminationList);
     }
@@ -23,6 +28,23 @@ final class OrCompositeTermination<Solution_>
     }
 
     /**
+     * Called by a built {@link AndCompositeTermination} above this one, because its children can be true while it is false.
+     */
+    void stopRecording() {
+        recording = false;
+    }
+
+    private void record(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
+        if (!recording) {
+            return;
+        }
+        var terminationId = termination.getTerminationId();
+        if (terminationId != null) {
+            solverScope.setLastTerminationId(terminationId);
+        }
+    }
+
+    /**
      * @param solverScope never null
      * @return true if any one of the terminations is terminated.
      */
@@ -30,6 +52,7 @@ final class OrCompositeTermination<Solution_>
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         for (var termination : solverTerminationList) {
             if (termination.isSolverTerminated(solverScope)) {
+                record(solverScope, termination);
                 return true;
             }
         }
@@ -46,6 +69,7 @@ final class OrCompositeTermination<Solution_>
                 continue;
             }
             if (termination.isPhaseTerminated(phaseScope)) {
+                record(phaseScope.getSolverScope(), termination);
                 return true;
             }
         }
