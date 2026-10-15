@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverRunResult;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
@@ -45,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, Callable<Solution_> {
+public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, Callable<@Nullable SolverRunResult<Solution_>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolverJob.class);
     private static final Duration EARLY_TERMINATION_TIMEOUT = Duration.ofMinutes(1);
@@ -66,7 +67,8 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
     private final AtomicReference<@Nullable ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
     private final AtomicReference<SolverStatus> solverStatus = new AtomicReference<>(SolverStatus.SOLVING_SCHEDULED);
-    private final AtomicReference<@Nullable Future<Solution_>> finalBestSolutionFuture = new AtomicReference<>();
+    private final AtomicReference<@Nullable Future<@Nullable SolverRunResult<Solution_>>> finalBestSolutionFuture =
+            new AtomicReference<>();
     private final AtomicReference<@Nullable ConsumerSupport<Solution_, Object>> consumerSupport = new AtomicReference<>();
 
     public DefaultSolverJob(DefaultSolverManager<Solution_> solverManager, Solver<Solution_> solver, Object problemId,
@@ -93,7 +95,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
         this.solverStatusModifyingLock = new ReentrantLock();
     }
 
-    public void setFinalBestSolutionFuture(Future<Solution_> finalBestSolutionFuture) {
+    public void setFinalBestSolutionFuture(Future<@Nullable SolverRunResult<Solution_>> finalBestSolutionFuture) {
         var oldFuture = this.finalBestSolutionFuture.getAndSet(finalBestSolutionFuture);
         if (oldFuture != null) { // We set this, and we should only set it once.
             throw new IllegalStateException("Impossible state: the finalBestSolutionFuture was already set to (%s)."
@@ -112,13 +114,17 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     }
 
     @Override
-    public Solution_ call() {
+    public @Nullable SolverRunResult<Solution_> call() {
         solverStatusModifyingLock.lock();
-        if (solverStatus.get() != SolverStatus.SOLVING_SCHEDULED) {
-            // This job has been canceled before it started,
-            // or it is already solving
+        var status = solverStatus.get();
+        if (status != SolverStatus.SOLVING_SCHEDULED) {
             solverStatusModifyingLock.unlock();
-            return problemFinder.apply(problemId);
+            if (status == SolverStatus.SOLVING_ACTIVE) {
+                throw new IllegalStateException(
+                        "Impossible state: the solver job for problemId (%s) is already solving.".formatted(problemId));
+            } else { // Terminated before solving started.
+                return null;
+            }
         }
         try {
             solverStatus.set(SolverStatus.SOLVING_ACTIVE);
@@ -138,11 +144,11 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             solver.addPhaseLifecycleListener(
                     new FirstInitializedSolutionPhaseLifecycleListener<>(solver, problemId, currentConsumerSupport));
             // add a phase lifecycle listener once when the solver starts its execution
-            solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener(currentConsumerSupport));
+            solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener<>(currentConsumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
-            final var finalBestSolution = solver.solve(problem);
-            currentConsumerSupport.consumeFinalBestSolution(finalBestSolution);
-            return finalBestSolution;
+            var result = solver.solveAndSummarize(problem);
+            currentConsumerSupport.consumeFinalBestSolution(result);
+            return result;
         } catch (Throwable e) {
             exceptionHandler.accept(problemId, e);
             bestSolutionHolder.cancelPendingChanges();
@@ -272,18 +278,28 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     @Override
     public Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
         try {
-            var future = finalBestSolutionFuture.get();
-            if (future == null) { // We set this; we messed up.
-                throw new IllegalStateException(
-                        "Impossible state: the finalBestSolutionFuture is not set yet for problemId (%s)."
-                                .formatted(problemId));
-            }
-            return future.get();
+            return getResult().solution();
         } catch (CancellationException cancellationException) {
             LOGGER.debug(
                     "terminateEarly() has been called before the solver job started solving. Retrieving the input problem instead.");
             return problemFinder.apply(problemId);
         }
+    }
+
+    @Override
+    public SolverRunResult<Solution_> getResult() throws InterruptedException, ExecutionException {
+        var future = finalBestSolutionFuture.get();
+        if (future == null) { // We set this; we messed up.
+            throw new IllegalStateException(
+                    "Impossible state: the finalBestSolutionFuture is not set yet for problemId (%s)."
+                            .formatted(problemId));
+        }
+        var result = future.get();
+        if (result == null) { // Terminated before solving started, but after the future was submitted.
+            throw new CancellationException(
+                    "The solver job for problemId (%s) was terminated before solving started.".formatted(problemId));
+        }
+        return result;
     }
 
     @Override

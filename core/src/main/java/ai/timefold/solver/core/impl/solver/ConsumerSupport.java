@@ -177,7 +177,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                 .whenComplete((unused, throwable) -> startSolverJobConsumption.release());
     }
 
-    void consumeFinalBestSolution(Solution_ solution) { // Called on the Solver thread, after solving is finished.
+    void consumeFinalBestSolution(FinalBestSolutionEvent<Solution_> result) { // Called on the Solver thread, after solving is finished.
         try {
             acquireAll();
         } catch (InterruptedException e) {
@@ -190,14 +190,14 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         if (bestSolutionConsumer != null) {
             scheduleIntermediateBestSolutionConsumption();
         }
-        scheduleFinalBestSolutionConsumption(solution)
+        scheduleFinalBestSolutionConsumption(result)
                 .whenComplete((unused, throwable) -> releaseAll());
     }
 
-    private CompletableFuture<Void> scheduleFinalBestSolutionConsumption(Solution_ solution) {
+    private CompletableFuture<Void> scheduleFinalBestSolutionConsumption(FinalBestSolutionEvent<Solution_> result) {
         return CompletableFuture.runAsync(() -> {
             try {
-                finalBestSolutionConsumer.accept(new FinalBestSolutionEventImpl<>(solution));
+                finalBestSolutionConsumer.accept(result);
             } catch (Throwable throwable) {
                 exceptionHandler.accept(problemId, throwable);
             }
@@ -258,9 +258,6 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     record FirstInitializedSolutionEventImpl<Solution_>(Solution_ solution, EventProducerId producerId,
             boolean isTerminatedEarly) implements FirstInitializedSolutionEvent<Solution_> {
-    }
-
-    record FinalBestSolutionEventImpl<Solution_>(Solution_ solution) implements FinalBestSolutionEvent<Solution_> {
     }
 
     record SolverJobStartedEventImpl<Solution_>(Solution_ solution) implements SolverJobStartedEvent<Solution_> {

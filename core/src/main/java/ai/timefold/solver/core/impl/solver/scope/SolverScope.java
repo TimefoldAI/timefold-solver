@@ -65,6 +65,8 @@ public class SolverScope<Solution_> {
 
     private long moveEvaluationCount = 0L;
 
+    private final SolverRunStatisticsTracker solverRunStatistics = new SolverRunStatisticsTracker();
+
     private Score<?> startingInitializedScore;
 
     private Long bestSolutionTimeMillis;
@@ -287,6 +289,7 @@ public class SolverScope<Solution_> {
         startingSystemTimeMillis.set(getClock().millis());
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
         this.moveEvaluationCount = 0L;
+        this.childThreadsScoreCalculationCount = 0L;
     }
 
     public Long getBestSolutionTimeMillisSpent() {
@@ -295,6 +298,11 @@ public class SolverScope<Solution_> {
 
     public void endingNow() {
         endingSystemTimeMillis.set(getClock().millis());
+        solverRunStatistics.addSegment(getTimeMillisSpent(), getScoreCalculationCount(), getMoveEvaluationCount());
+    }
+
+    public SolverRunStatisticsTracker getSolverStatistics() {
+        return solverRunStatistics;
     }
 
     public boolean isBestSolutionInitialized() {
@@ -330,16 +338,14 @@ public class SolverScope<Solution_> {
      * @return at least 0, per second
      */
     public long getScoreCalculationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getScoreCalculationCount(), timeMillisSpent);
+        return getSpeed(getScoreCalculationCount(), getTimeMillisSpent());
     }
 
     /**
      * @return at least 0, per second
      */
     public long getMoveEvaluationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
+        return getSpeed(getMoveEvaluationCount(), getTimeMillisSpent());
     }
 
     public void setWorkingSolutionFromBestSolution() {
