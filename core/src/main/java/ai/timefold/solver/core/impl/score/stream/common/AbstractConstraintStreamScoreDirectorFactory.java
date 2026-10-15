@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * FP streams implementation of {@link ScoreDirectorFactory}.
  *
@@ -16,12 +18,13 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInl
  * @param <Score_> the score type to go with the solution
  * @see ScoreDirectorFactory
  */
+@NullMarked
 public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, Factory_>>
         extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_> {
 
     protected AbstractConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            EnvironmentMode environmentMode) {
-        super(solutionDescriptor, environmentMode);
+            EnvironmentMode globalEnvironmentMode) {
+        super(solutionDescriptor, globalEnvironmentMode);
     }
 
     /**

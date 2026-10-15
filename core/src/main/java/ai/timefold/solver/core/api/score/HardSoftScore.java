@@ -2,6 +2,7 @@ package ai.timefold.solver.core.api.score;
 
 import static ai.timefold.solver.core.impl.score.ScoreUtil.HARD_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.SOFT_LABEL;
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
@@ -17,7 +18,7 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record HardSoftScore(long hardScore, long softScore) implements Score<HardSoftScore> {
+public record HardSoftScore(long structuralScore, long hardScore, long softScore) implements Score<HardSoftScore> {
 
     public static final HardSoftScore ZERO = new HardSoftScore(0L, 0L);
     public static final HardSoftScore ONE_HARD = new HardSoftScore(1L, 0L);
@@ -25,11 +26,22 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
     private static final HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0L, -1L);
     private static final HardSoftScore MINUS_ONE_HARD = new HardSoftScore(-1L, 0L);
 
+    public HardSoftScore(long hardScore, long softScore) {
+        this(0L, hardScore, softScore);
+    }
+
     public static HardSoftScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
-        var hardScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[0]);
-        var softScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[1]);
-        return of(hardScore, softScore);
+        if (scoreTokens.length == 2) {
+            var hardScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[0]);
+            var softScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[1]);
+            return of(hardScore, softScore);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[0]);
+            var hardScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[1]);
+            var softScore = ScoreUtil.parseLevelAsLong(HardSoftScore.class, scoreString, scoreTokens[2]);
+            return new HardSoftScore(structuralScore, hardScore, softScore);
+        }
     }
 
     public static HardSoftScore of(long hardScore, long softScore) {
@@ -81,7 +93,7 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public boolean isFeasible() {
-        return hardScore >= 0L;
+        return structuralScore >= 0 && hardScore >= 0L;
     }
 
     @Override
@@ -131,8 +143,9 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof HardSoftScore(var otherHardScore, var otherSoftScore)) {
-            return hardScore == otherHardScore
+        if (o instanceof HardSoftScore(var otherStructuralScore, var otherHardScore, var otherSoftScore)) {
+            return structuralScore == otherStructuralScore
+                    && hardScore == otherHardScore
                     && softScore == otherSoftScore;
         }
         return false;
@@ -140,7 +153,9 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public int compareTo(HardSoftScore other) {
-        if (hardScore != other.hardScore()) {
+        if (structuralScore != other.structuralScore()) {
+            return Long.compare(structuralScore, other.structuralScore());
+        } else if (hardScore != other.hardScore()) {
             return Long.compare(hardScore, other.hardScore());
         } else {
             return Long.compare(softScore, other.softScore());
@@ -154,7 +169,9 @@ public record HardSoftScore(long hardScore, long softScore) implements Score<Har
 
     @Override
     public String toString() {
-        return hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
+        return (structuralScore < 0)
+                ? "%d%s/%d%s/%d%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, softScore, SOFT_LABEL)
+                : "%d%s/%d%s".formatted(hardScore, HARD_LABEL, softScore, SOFT_LABEL);
     }
 
 }

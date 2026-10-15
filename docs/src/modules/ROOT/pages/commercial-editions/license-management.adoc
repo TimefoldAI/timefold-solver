@@ -3,6 +3,7 @@
 :icons: font
 
 The https://licenses.timefold.ai/[Timefold License Manager] is where you register for a free trial, add and download license files, and manage your team's access to Timefold Solver Enterprise Edition.
+You log in to the License Manager with your Timefold Platform credentials, so you don't need a separate login.
 
 == Register and free trial
 
@@ -10,6 +11,8 @@ The https://licenses.timefold.ai/[Timefold License Manager] is where you registe
 . Log in with your company email address.
 Public email domains (Gmail, Hotmail, Yahoo, and similar) aren't accepted.
 You must use a work email.
+If you already use Timefold Platform, log in with your existing Timefold Platform credentials.
+If you don't have Timefold Platform credentials yet, see https://docs.timefold.ai/timefold-platform/latest/how-tos/member-management-and-roles#_register_on_timefold_platform[Register on Timefold Platform].
 . Fill in the registration form: company name and website URL, the scheduling problem you're solving, the scale of your problem, and how you currently solve it.
 . Accept the terms of service and click *Register*.
 

@@ -46,6 +46,7 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class GizmoSolutionClonerImplementor {
     private static final String FALLBACK_CLONER = "fallbackCloner";
+    private static final String LAST_CLONE_OBJECT_COUNT = "lastCloneObjectCount";
     public static final boolean DEBUG = false;
 
     /**
@@ -233,17 +234,27 @@ public class GizmoSolutionClonerImplementor {
 
     private static void createCloneSolution(ClonerDescriptor clonerDescriptor) {
         var solutionClass = clonerDescriptor.solutionDescriptor.getSolutionClass();
+        // why: an unsized map rehashes ~log2(n) times per clone, once per best solution of a large dataset
+        var lastCloneObjectCountField = clonerDescriptor.classCreator.field(LAST_CLONE_OBJECT_COUNT, field -> {
+            field.private_();
+            field.volatile_();
+            field.setType(int.class);
+        });
         clonerDescriptor.classCreator.method("cloneSolution", methodCreator -> {
             methodCreator.returning(Object.class);
             var original = methodCreator.parameter("original", Object.class);
+            var lastCloneObjectCount = methodCreator.this_().field(lastCloneObjectCountField);
             methodCreator.body(blockCreator -> {
+                var cloneMap = blockCreator.localVar("cloneMap",
+                        blockCreator.new_(ConstructorDesc.of(IdentityHashMap.class, int.class), lastCloneObjectCount));
                 var clone = blockCreator.invokeStatic(
                         ClassMethodDesc.of(
                                 ClassDesc.of(
                                         GizmoSolutionClonerFactory.getGeneratedClassName(clonerDescriptor.solutionDescriptor)),
                                 "cloneSolutionRun", solutionClass, solutionClass, Map.class),
                         original,
-                        blockCreator.new_(IdentityHashMap.class));
+                        cloneMap);
+                blockCreator.set(lastCloneObjectCount, blockCreator.withMap(cloneMap).size());
                 blockCreator.return_(clone);
             });
         });
@@ -516,7 +527,7 @@ public class GizmoSolutionClonerImplementor {
      */
     private static void writeDeepCloneInstructions(ClonerDescriptor clonerDescriptor,
             ClonerMethodDescriptor clonerMethodDescriptor,
-            Class<?> deeplyClonedFieldClass, java.lang.reflect.Type type, Var toClone,
+            Class<?> deeplyClonedFieldClass, Type type, Var toClone,
             Var cloneResultHolder) {
         BlockCreator blockCreator = clonerMethodDescriptor.blockCreator;
 
@@ -593,7 +604,7 @@ public class GizmoSolutionClonerImplementor {
      **/
     private static void writeDeepCloneCollectionInstructions(ClonerDescriptor clonerDescriptor,
             ClonerMethodDescriptor clonerMethodDescriptor,
-            Class<?> deeplyClonedFieldClass, java.lang.reflect.Type type, Var toClone,
+            Class<?> deeplyClonedFieldClass, Type type, Var toClone,
             Var cloneResultHolder) {
         var blockCreator = clonerMethodDescriptor.blockCreator;
 
@@ -607,7 +618,7 @@ public class GizmoSolutionClonerImplementor {
                 blockCreator.localVar(toClone.name() + "$Iterator", blockCreator.withCollection(toClone).iterator());
         blockCreator.while_(condition -> condition.yield(condition.withIterator(iterator).hasNext()), whileLoopBlock -> {
             Class<?> elementClass;
-            java.lang.reflect.Type elementClassType;
+            Type elementClassType;
             if (type instanceof ParameterizedType parameterizedType) {
                 // Assume Collection follow Collection<T> convention of first type argument = element class
                 elementClassType = parameterizedType.getActualTypeArguments()[0];
@@ -688,7 +699,7 @@ public class GizmoSolutionClonerImplementor {
      **/
     private static void writeDeepCloneMapInstructions(ClonerDescriptor clonerDescriptor,
             ClonerMethodDescriptor clonerMethodDescriptor,
-            Class<?> deeplyClonedFieldClass, java.lang.reflect.Type type, Var toClone,
+            Class<?> deeplyClonedFieldClass, Type type, Var toClone,
             Var cloneResultHolder) {
         var blockCreator = clonerMethodDescriptor.blockCreator;
 
@@ -705,8 +716,8 @@ public class GizmoSolutionClonerImplementor {
         blockCreator.while_(condition -> condition.yield(condition.withIterator(iterator).hasNext()), whileLoopBlock -> {
             Class<?> keyClass;
             Class<?> elementClass;
-            java.lang.reflect.Type keyType;
-            java.lang.reflect.Type elementClassType;
+            Type keyType;
+            Type elementClassType;
             if (type instanceof ParameterizedType parameterizedType) {
                 // Assume Map follow Map<K,V> convention of second type argument = value class
                 keyType = parameterizedType.getActualTypeArguments()[0];

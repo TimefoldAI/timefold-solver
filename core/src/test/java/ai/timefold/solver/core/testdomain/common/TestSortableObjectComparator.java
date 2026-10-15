@@ -9,6 +9,6 @@ public class TestSortableObjectComparator implements Comparator<TestSortableObje
 
     @Override
     public int compare(TestSortableObject v1, TestSortableObject v2) {
-        return v1.getComparatorValue() - v2.getComparatorValue();
+        return Integer.compare(v1.getComparatorValue(), v2.getComparatorValue());
     }
 }

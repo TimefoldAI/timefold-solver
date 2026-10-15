@@ -19,6 +19,13 @@ class HardMediumSoftBigDecimalScoreJacksonRoundTripTest extends AbstractScoreJac
         assertSerializeAndDeserialize(score, new TestHardMediumSoftBigDecimalScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new HardMediumSoftBigDecimalScore(-1L, new BigDecimal("1200.0021"),
+                new BigDecimal("-3.1415"), new BigDecimal("34.4300"));
+        assertSerializeAndDeserialize(score, new TestHardMediumSoftBigDecimalScoreWrapper(score));
+    }
+
     public static class TestHardMediumSoftBigDecimalScoreWrapper extends TestScoreWrapper<HardMediumSoftBigDecimalScore> {
 
         @JsonSerialize(using = HardMediumSoftBigDecimalScoreJacksonSerializer.class)

@@ -1,7 +1,8 @@
 package ai.timefold.solver.core.api.score;
 
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
+
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
@@ -15,25 +16,32 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBigDecimalScore> {
+public record SimpleBigDecimalScore(long structuralScore, BigDecimal score) implements Score<SimpleBigDecimalScore> {
 
     public static final SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(BigDecimal.ZERO);
     public static final SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(BigDecimal.ONE);
 
+    public SimpleBigDecimalScore(BigDecimal score) {
+        this(0L, score);
+    }
+
     public static SimpleBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
-        var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
-        return of(score);
+        if (scoreTokens.length == 1) {
+            var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
+            return of(score);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[1]);
+            return new SimpleBigDecimalScore(structuralScore, score);
+        }
     }
 
     public static SimpleBigDecimalScore of(BigDecimal score) {
-        if (score.signum() == 0) {
+        if (ScoreUtil.isZero(score)) {
             return ZERO;
-        } else if (score.equals(BigDecimal.ONE)) {
-            return ONE;
-        } else {
-            return new SimpleBigDecimalScore(score);
         }
+        return new SimpleBigDecimalScore(score);
     }
 
     @Override
@@ -48,31 +56,17 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public SimpleBigDecimalScore multiply(double multiplicand) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
-        // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
-        return of(score.multiply(multiplicandBigDecimal).setScale(score.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.multiply(score, multiplicand));
     }
 
     @Override
     public SimpleBigDecimalScore divide(double divisor) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var divisorBigDecimal = BigDecimal.valueOf(divisor);
-        // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
-        return of(score.divide(divisorBigDecimal, score.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.divide(score, divisor));
     }
 
     @Override
     public SimpleBigDecimalScore power(double exponent) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var exponentBigDecimal = BigDecimal.valueOf(exponent);
-        // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
-        // TODO FIXME remove .intValue() so non-integer exponents produce correct results
-        // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
-        return of(score.pow(exponentBigDecimal.intValue()).setScale(score.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.power(score, exponent));
     }
 
     @Override
@@ -87,7 +81,7 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public boolean isFeasible() {
-        return true;
+        return structuralScore >= 0;
     }
 
     @Override
@@ -97,30 +91,34 @@ public record SimpleBigDecimalScore(BigDecimal score) implements Score<SimpleBig
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof SimpleBigDecimalScore(var otherScore)) {
-            return score.stripTrailingZeros().equals(otherScore.stripTrailingZeros());
+        if (o instanceof SimpleBigDecimalScore(var otherStructuralScore, var otherScore)) {
+            return structuralScore == otherStructuralScore
+                    && ScoreUtil.equalsIgnoringScale(score, otherScore);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return score.stripTrailingZeros().hashCode();
+        return Long.hashCode(structuralScore) ^ ScoreUtil.hashCodeIgnoringScale(score);
     }
 
     @Override
     public int compareTo(SimpleBigDecimalScore other) {
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         return score.compareTo(other.score());
     }
 
     @Override
     public String toShortString() {
-        return ScoreUtil.buildShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0, "");
+        return ScoreUtil.buildShortString(this, ScoreUtil.BIG_DECIMAL_NOT_ZERO, "");
     }
 
     @Override
     public String toString() {
-        return score.toString();
+        return (structuralScore < 0) ? "%d%s/%s".formatted(structuralScore, STRUCTURAL_LABEL, score) : score.toString();
     }
 
 }

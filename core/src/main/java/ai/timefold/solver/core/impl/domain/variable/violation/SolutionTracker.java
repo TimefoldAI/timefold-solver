@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class SolutionTracker<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -24,22 +23,19 @@ public final class SolutionTracker<Solution_> {
     VariableSnapshotTotal<Solution_> undoFromScratchVariables;
     VariableSnapshotTotal<Solution_> beforeFromScratchVariables;
 
-    public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor,
-            SupplyManager supplyManager) {
+    public SolutionTracker(SolutionDescriptor<Solution_> solutionDescriptor, TrackerResolver<Solution_> trackerResolver) {
         this.solutionDescriptor = solutionDescriptor;
         basicVariableTrackers = new ArrayList<>();
         listVariableTrackers = new ArrayList<>();
         for (var entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
             for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
                 if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                    listVariableTrackers.add(new ListVariableTracker<>(listVariableDescriptor));
+                    listVariableTrackers.add(trackerResolver.getListVariableTracker(listVariableDescriptor));
                 } else {
-                    basicVariableTrackers.add(new BasicVariableTracker<>(variableDescriptor));
+                    basicVariableTrackers.add(trackerResolver.getBasicVariableTracker(variableDescriptor));
                 }
             }
         }
-        basicVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
-        listVariableTrackers.forEach(tracker -> supplyManager.demand(tracker.demand()));
     }
 
     public Solution_ getBeforeMoveSolution() {
@@ -107,6 +103,11 @@ public final class SolutionTracker<Solution_> {
             out.addAll(listVariableTracker.getEntitiesMissingBeforeAfterEvents(changes));
         }
         return out;
+    }
+
+    // Test purposes
+    List<BasicVariableTracker<Solution_>> getBasicVariableTrackers() {
+        return basicVariableTrackers;
     }
 
     public record SolutionCorruptionResult(boolean isCorrupted, String message) {

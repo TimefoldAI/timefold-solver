@@ -63,7 +63,8 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
     private AccessTokenProvider accessTokenProvider;
 
     /**
-     * URL to the platform that model should be deployed to
+     * The build output directory of the module being built,
+     * defaulting to {@code ${project.build.directory}} (usually {@code target}).
      */
     @Parameter(defaultValue = "${project.build.directory}", required = false)
     protected String buildDirectory;
@@ -124,9 +125,13 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
             if (authResponse.statusCode() == 200) {
                 return mapper.readValue(authResponse.body(), PlatformIdentityInfo.class);
             } else {
-                getLog().debug(authResponse.body());
-                throw new MojoExecutionException("Platform authentication failed with " + authResponse.statusCode()
-                        + " status code: " + readErrorMessage(authResponse.body()));
+                if (getLog().isDebugEnabled()) {
+                    getLog().debug(
+                            "Platform authentication failure, status code %d, body %s".formatted(authResponse.statusCode(),
+                                    authResponse.body()));
+                }
+                throw new MojoExecutionException(
+                        "Platform authentication failed — please verify your PAT and tenant access, or contact support if the problem persists");
             }
         } catch (MojoExecutionException e) {
             throw e;

@@ -23,8 +23,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link BiDatasetInstance} produced by {@code UniDataset.join}:
- * the join is not materialized in Bavet but computed just in time inside this instance,
- * out of a left and a right {@code UniDataset}.
+ * the join is not materialized in Bavet
+ * but computed just in time inside this instance, out of a left and a right {@code UniDataset}.
  */
 @NullMarked
 public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDatasetInstance<A, B> {
@@ -120,8 +120,8 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
     }
 
     /**
-     * Holds the pending/current-tuple state and the retirement walk shared by
-     * {@link RepeatingRandomBiIterator} and {@link UniqueRandomBiIterator}:
+     * Holds the pending/current-tuple state and the retirement walk
+     * shared by {@link RepeatingRandomBiIterator} and {@link UniqueRandomBiIterator}:
      * {@code retire()} is never called by either subclass directly,
      * it happens entirely inside {@link RetiringBiWalk#advance},
      * driven by {@link #leftTupleIterator}.
@@ -207,8 +207,8 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
             if (filter == null) {
                 return rightTupleIterator;
             }
-            // RetiringBiWalk.advance() retries this call up to PROBE_ATTEMPT_COUNT times before retiring the
-            // left, since a single bail-out is a false negative, not proof of emptiness.
+            // RetiringBiWalk.advance() retries this call up to PROBE_ATTEMPT_COUNT times before retiring the left,
+            // since a single bail-out is a false negative, not proof of emptiness.
             var bailOutSize = rightDatasetInstance.size(compositeKey) * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
             return new FilteringIterator<>(rightTupleIterator,
                     rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()), bailOutSize);

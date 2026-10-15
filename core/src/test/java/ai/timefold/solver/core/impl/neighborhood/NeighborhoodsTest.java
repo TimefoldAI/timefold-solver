@@ -73,7 +73,9 @@ class NeighborhoodsTest {
         var forager = LocalSearchForagerFactory
                 .<TestdataSolution> create(new LocalSearchForagerConfig().withAcceptedCountLimit(1)).buildForager();
         var localSearchDecider = new LocalSearchDecider<>("", termination, moveRepository, acceptor, forager);
-        var localSearchPhase = new DefaultLocalSearchPhase.Builder<>(0, "", termination, localSearchDecider).build();
+        var localSearchPhase =
+                new DefaultLocalSearchPhase.Builder<>(0, EnvironmentMode.PHASE_ASSERT, "", termination, localSearchDecider)
+                        .build();
 
         // Generates a solution whose entities' values are all set to the second value.
         // The easy calculator penalizes this.

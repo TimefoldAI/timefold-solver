@@ -1,14 +1,18 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
+import java.util.function.Function;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.AbstractBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.JoinBiEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.UniConcatBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.NeighborhoodsGroupNodeConstructor;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
@@ -38,6 +42,34 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
     @Override
     public final UniEnumeratingStream<Solution_, A> filter(UniNeighborhoodsPredicate<Solution_, A> filter) {
         return shareAndAddChild(new FilterUniEnumeratingStream<>(enumeratingStreamFactory, this, filter));
+    }
+
+    @Override
+    public UniEnumeratingStream<Solution_, A> concat(UniEnumeratingStream<Solution_, A> otherStream) {
+        var other = (AbstractUniEnumeratingStream<Solution_, A>) otherStream;
+        var leftBridge = new ForeBridgeUniEnumeratingStream<Solution_, A>(enumeratingStreamFactory, this);
+        var rightBridge = new ForeBridgeUniEnumeratingStream<Solution_, A>(enumeratingStreamFactory, other);
+        var concatStream = new UniConcatUniEnumeratingStream<>(enumeratingStreamFactory, leftBridge, rightBridge);
+        return enumeratingStreamFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream, as it is an actual new concat.
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
+    public <B> BiEnumeratingStream<Solution_, A, B> concat(BiEnumeratingStream<Solution_, A, B> otherStream,
+            Function<A, B> paddingFunction) {
+        var other = (AbstractBiEnumeratingStream<Solution_, A, B>) otherStream;
+        var leftBridge = new ForeBridgeUniEnumeratingStream<Solution_, A>(enumeratingStreamFactory, this);
+        var rightBridge = new ForeBridgeBiEnumeratingStream<Solution_, A, B>(enumeratingStreamFactory, other);
+        var concatStream =
+                new UniConcatBiEnumeratingStream<>(enumeratingStreamFactory, leftBridge, rightBridge, paddingFunction);
+        return enumeratingStreamFactory.share(concatStream, concatStream_ -> {
+            // Connect the bridges upstream, as it is an actual new concat.
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
     }
 
     @Override

@@ -9,6 +9,7 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
@@ -32,6 +33,10 @@ public abstract class AbstractPhaseFactory<Solution_, PhaseConfig_ extends Phase
 
     public AbstractPhaseFactory(PhaseConfig_ phaseConfig) {
         this.phaseConfig = phaseConfig;
+    }
+
+    protected EnvironmentMode resolveEnvironmentMode(HeuristicConfigPolicy<Solution_> phaseConfigPolicy) {
+        return Objects.requireNonNullElse(phaseConfig.getEnvironmentMode(), phaseConfigPolicy.getEnvironmentMode());
     }
 
     protected PhaseTermination<Solution_> buildPhaseTermination(HeuristicConfigPolicy<Solution_> configPolicy,

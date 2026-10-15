@@ -3,13 +3,15 @@ package ai.timefold.solver.core.impl.solver;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -43,6 +45,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBase
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverTags;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -55,11 +58,12 @@ import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Metrics;
@@ -67,6 +71,15 @@ import io.micrometer.core.instrument.Tags;
 
 @ExtendWith(SoftAssertionsExtension.class)
 class SolverMetricsIT extends AbstractMeterTest {
+    private static final Instant SOLVE_START_TIME = Instant.EPOCH;
+    private static final String PROBLEM_ID = SOLVE_START_TIME.atOffset(ZoneOffset.UTC).toString();
+    private Clock mockClock;
+
+    @BeforeEach
+    void setUp() {
+        mockClock = Mockito.mock(Clock.class);
+        when(mockClock.instant()).thenReturn(SOLVE_START_TIME);
+    }
 
     @Test
     void checkDefaultMeters() {
@@ -75,6 +88,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
@@ -102,32 +116,32 @@ class SolverMetricsIT extends AbstractMeterTest {
                                         null,
                                         Meter.Type.COUNTER),
                                 new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
-                                        Tags.empty(),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE));
@@ -136,18 +150,14 @@ class SolverMetricsIT extends AbstractMeterTest {
             latch.countDown();
         });
         solver.solve(solution);
-
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
         // make it return the average, and the solver holds
         // onto the solver scope, meaning it won't automatically
         // be deregistered.
+        // Prometheus requires the tag set to be constant, so everything except global meters gets a problem id
         assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
                 .containsExactlyInAnyOrder(
                         new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
@@ -168,10 +178,10 @@ class SolverMetricsIT extends AbstractMeterTest {
         Metrics.addRegistry(meterRegistry);
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        solver.setMonitorTagMap(Map.of("tag.key", "tag.value"));
         meterRegistry.publish();
         assertThat(meterRegistry.getMeters().stream().map(Meter::getId)).isEmpty();
 
@@ -183,6 +193,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         var latch = new CountDownLatch(1);
         solver.addEventListener(event -> {
             if (!updatedTime.get()) {
+                // Prometheus requires the tag set to be constant, so everything except global meters gets a problem id
                 assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
                         .containsExactlyInAnyOrder(
                                 new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
@@ -196,32 +207,32 @@ class SolverMetricsIT extends AbstractMeterTest {
                                         null,
                                         Meter.Type.COUNTER),
                                 new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
+                                        Tags.of("problem.id", PROBLEM_ID),
                                         null,
                                         null,
                                         Meter.Type.GAUGE));
@@ -231,11 +242,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solver.solve(solution);
 
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
@@ -263,10 +270,11 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+        ((DefaultSolver<TestdataSolution>) solver).setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
@@ -298,11 +306,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solution = solver.solve(solution);
 
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
@@ -322,6 +326,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
@@ -395,6 +400,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataHardSoftScoreSolution.class, TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         solverConfig.setScoreDirectorFactoryConfig(
                 new ScoreDirectorFactoryConfig().withEasyScoreCalculatorClass(BestScoreMetricEasyScoreCalculator.class));
         solverConfig.setTerminationConfig(new TerminationConfig().withBestScoreLimit("0hard/2soft"));
@@ -415,7 +421,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solver = solverFactory.buildSolver();
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+                .setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         meterRegistry.publish();
         var solution = new TestdataHardSoftScoreSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("none"), new TestdataValue("reward")));
@@ -451,11 +457,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         });
         solution = solver.solve(solution);
 
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            fail("Failed waiting for the event to happen.", e);
-        }
+        assertThatCode(() -> latch.await(10, TimeUnit.SECONDS)).doesNotThrowAnyException();
         assertThat(step.get()).isEqualTo(2);
         meterRegistry.publish();
         assertThat(solution).isNotNull();
@@ -488,6 +490,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataHardSoftScoreSolution.class, TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         solverConfig.setScoreDirectorFactoryConfig(
                 new ScoreDirectorFactoryConfig().withEasyScoreCalculatorClass(BestScoreMetricEasyScoreCalculator.class));
         solverConfig.setTerminationConfig(new TerminationConfig().withBestScoreLimit("0hard/3soft"));
@@ -522,7 +525,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solver = solverFactory.buildSolver();
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+                .setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         var step = new AtomicInteger(-1);
 
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
@@ -599,10 +602,11 @@ class SolverMetricsIT extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withScoreDirectorFactory(
                         new ScoreDirectorFactoryConfig().withEasyScoreCalculatorClass(ErrorThrowingEasyScoreCalculator.class));
+        solverConfig.setClock(mockClock);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+        ((DefaultSolver<TestdataSolution>) solver).setMonitorTags(SolverTags.withProblemId(UUID.randomUUID().toString()));
         meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
@@ -629,6 +633,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig())
                 .withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.MOVE_COUNT_PER_TYPE)));
+        solverConfig.setClock(mockClock);
 
         var problem = new TestdataSolution("s1");
         var v1 = new TestdataValue("v1");
@@ -668,6 +673,7 @@ class SolverMetricsIT extends AbstractMeterTest {
                 .buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig())
                 .withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.MOVE_COUNT_PER_TYPE)));
+        solverConfig.setClock(mockClock);
 
         var problem = new TestdataListSolution();
         var v1 = new TestdataListValue("v1");
@@ -702,6 +708,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class,
                 TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         solverConfig.setPhaseConfigList(Collections.singletonList(new ExhaustiveSearchPhaseConfig()));
 
         var problem = new TestdataSolution("s1");
@@ -748,6 +755,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class,
                 TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         solverConfig.withPhases(new ExhaustiveSearchPhaseConfig())
                 .withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.MOVE_COUNT_PER_TYPE)));
 
@@ -786,6 +794,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         Metrics.addRegistry(meterRegistry);
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverConfig.setClock(mockClock);
         var phaseConfig = new LocalSearchPhaseConfig();
         phaseConfig.setTerminationConfig(new TerminationConfig().withStepCountLimit(20));
         solverConfig.withPhases(phaseConfig)
@@ -835,6 +844,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
+        solverConfig.setClock(mockClock);
         var phaseConfig = new LocalSearchPhaseConfig();
         phaseConfig.setTerminationConfig(new TerminationConfig().withScoreCalculationCountLimit(20L));
         solverConfig.withPhases(phaseConfig)

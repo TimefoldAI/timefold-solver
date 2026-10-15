@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
-import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.nthTriangle;
+import static ai.timefold.solver.core.impl.util.TriangularNumbers.nthTriangle;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.listSize;
@@ -89,7 +89,8 @@ class RandomSubListSwapMoveSelectorTest {
                 9, 0,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount,
                 "{A[0+4]} <-> {A[0+4]}",
@@ -162,7 +163,8 @@ class RandomSubListSwapMoveSelectorTest {
                 3, 0, 1,
                 0, 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount * 2,
                 "{A[0+3]} <-reversing-> {B[1+1]}",
@@ -222,7 +224,8 @@ class RandomSubListSwapMoveSelectorTest {
                 4, 0,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount,
                 "{A[0+3]} <-> {A[0+3]}",
@@ -317,7 +320,8 @@ class RandomSubListSwapMoveSelectorTest {
                 1, 1,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, subListCount * subListCount,
                 "{A[0+2]} <-> {A[0+2]}",
@@ -375,7 +379,8 @@ class RandomSubListSwapMoveSelectorTest {
                 0, 0, 0, 1, 0, 2, 0, 0,
                 0, 0);
 
-        solvingStarted(moveSelector, scoreDirector, random);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector, (long) subListCount * subListCount,
                 "{A[0+2]} <-> {A[0+2]}",
@@ -534,8 +539,9 @@ class RandomSubListSwapMoveSelectorTest {
         moveSelector.phaseEnded(phaseScope);
         moveSelector.solvingEnded(solverScope);
 
-        // The invocation counts are multiplied for the entity selector because it is used by both left and right
-        // subList selectors and each registers the entity selector to its phaseLifecycleSupport.
+        // The invocation counts are multiplied for the entity selector
+        // because it is used by both left and right subList selectors
+        // and each registers the entity selector to its phaseLifecycleSupport.
         verifyPhaseLifecycle(entitySelector, 2, 2, 4);
         verifyPhaseLifecycle(leftValueSelector, 1, 1, 2);
         verifyPhaseLifecycle(rightValueSelector, 1, 1, 2);

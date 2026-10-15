@@ -7,12 +7,29 @@ import java.util.Map;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode.LifecycleOperation;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork> {
+
+    @SuppressWarnings("unchecked")
+    private static final AbstractRootNode<Object>[] EMPTY_NODE_ARRAY = new AbstractRootNode[0];
 
     protected final Network_ nodeNetwork;
     private final Map<Class<?>, AbstractRootNode<Object>[]> insertEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, AbstractRootNode<Object>[]> updateEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, AbstractRootNode<Object>[]> retractEffectiveClassToNodeArrayMap;
+    /**
+     * The fact class of the most recent operation, and the nodes it resolved to.
+     * Consecutive operations typically carry the same class, in which case the map read is skipped.
+     */
+    private @Nullable Class<?> lastInsertClass;
+    private @Nullable Class<?> lastUpdateClass;
+    private @Nullable Class<?> lastRetractClass;
+    private AbstractRootNode<Object>[] lastInsertNodeArray = EMPTY_NODE_ARRAY;
+    private AbstractRootNode<Object>[] lastUpdateNodeArray = EMPTY_NODE_ARRAY;
+    private AbstractRootNode<Object>[] lastRetractNodeArray = EMPTY_NODE_ARRAY;
     private boolean initialized = false;
     private boolean settled = false;
 
@@ -25,10 +42,17 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
 
     public final void insert(Object fact) {
         settled = false;
-        var factClass = fact.getClass();
-        for (var node : findNodes(factClass, AbstractRootNode.LifecycleOperation.INSERT)) {
+        for (var node : getInsertNodes(fact.getClass())) {
             node.insert(fact);
         }
+    }
+
+    private AbstractRootNode<Object>[] getInsertNodes(Class<?> factClass) {
+        if (factClass != lastInsertClass) {
+            lastInsertNodeArray = findNodes(factClass, LifecycleOperation.INSERT);
+            lastInsertClass = factClass;
+        }
+        return lastInsertNodeArray;
     }
 
     @SuppressWarnings("unchecked")
@@ -51,18 +75,32 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
 
     public final void update(Object fact) {
         settled = false;
-        var factClass = fact.getClass();
-        for (var node : findNodes(factClass, AbstractRootNode.LifecycleOperation.UPDATE)) {
+        for (var node : getUpdateNodes(fact.getClass())) {
             node.update(fact);
         }
     }
 
+    private AbstractRootNode<Object>[] getUpdateNodes(Class<?> factClass) {
+        if (factClass != lastUpdateClass) {
+            lastUpdateNodeArray = findNodes(factClass, LifecycleOperation.UPDATE);
+            lastUpdateClass = factClass;
+        }
+        return lastUpdateNodeArray;
+    }
+
     public final void retract(Object fact) {
         settled = false;
-        var factClass = fact.getClass();
-        for (var node : findNodes(factClass, AbstractRootNode.LifecycleOperation.RETRACT)) {
+        for (var node : getRetractNodes(fact.getClass())) {
             node.retract(fact);
         }
+    }
+
+    private AbstractRootNode<Object>[] getRetractNodes(Class<?> factClass) {
+        if (factClass != lastRetractClass) {
+            lastRetractNodeArray = findNodes(factClass, LifecycleOperation.RETRACT);
+            lastRetractClass = factClass;
+        }
+        return lastRetractNodeArray;
     }
 
     public final void settle() {
@@ -74,6 +112,9 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
             removeInactiveRootNodes(insertEffectiveClassToNodeArrayMap);
             removeInactiveRootNodes(updateEffectiveClassToNodeArrayMap);
             removeInactiveRootNodes(retractEffectiveClassToNodeArrayMap);
+            lastInsertClass = null; // The cached arrays may include nodes which are now inactive.
+            lastUpdateClass = null;
+            lastRetractClass = null;
             initialized = true;
         }
         settled = true;

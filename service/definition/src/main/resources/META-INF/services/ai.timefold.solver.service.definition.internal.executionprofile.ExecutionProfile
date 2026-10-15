@@ -1,0 +1,3 @@
+ai.timefold.solver.service.definition.impl.executionprofile.seed.SeedExecutionProfile
+ai.timefold.solver.service.definition.impl.executionprofile.verboselogging.VerboseLoggingExecutionProfile
+ai.timefold.solver.service.definition.impl.executionprofile.memorydump.MemoryDumpExecutionProfile

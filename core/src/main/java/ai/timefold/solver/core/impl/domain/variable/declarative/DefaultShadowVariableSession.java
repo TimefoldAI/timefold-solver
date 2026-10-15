@@ -1,11 +1,15 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import java.util.List;
+
+import ai.timefold.solver.core.api.score.analysis.VariableLoop;
+import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph.VariableChangeHook;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class DefaultShadowVariableSession<Solution_> implements Supply {
@@ -15,39 +19,23 @@ public final class DefaultShadowVariableSession<Solution_> implements Supply {
         this.graph = graph;
     }
 
-    public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        beforeVariableChanged(variableDescriptor.getVariableMetaModel(),
-                entity);
+    /**
+     * @return null if changes to the variable never affect the declarative shadow variables
+     * @see VariableReferenceGraph#resolveHookFor(VariableMetaModel)
+     */
+    public @Nullable VariableChangeHook resolveHookFor(VariableDescriptor<Solution_> variableDescriptor) {
+        return graph.resolveHookFor(variableDescriptor.getVariableMetaModel());
     }
 
-    public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        afterVariableChanged(variableDescriptor.getVariableMetaModel(),
-                entity);
+    public boolean hasPendingChanges() {
+        return graph.hasPendingChanges();
     }
 
-    public void beforeVariableChanged(VariableMetaModel<Solution_, ?, ?> variableMetaModel, Object entity) {
-        graph.beforeVariableChanged(variableMetaModel,
-                entity);
+    public boolean updateVariables() {
+        return graph.updateChanged();
     }
 
-    public void afterVariableChanged(VariableMetaModel<Solution_, ?, ?> variableMetaModel, Object entity) {
-        graph.afterVariableChanged(variableMetaModel,
-                entity);
-    }
-
-    public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
-            int fromIndex, int toIndex) {
-        graph.beforeListVariableChanged(variableDescriptor.getVariableMetaModel(), entity,
-                variableDescriptor.getValue(entity), fromIndex, toIndex);
-    }
-
-    public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-            int toIndex) {
-        graph.afterListVariableChanged(variableDescriptor.getVariableMetaModel(), entity,
-                variableDescriptor.getValue(entity), fromIndex, toIndex);
-    }
-
-    public void updateVariables() {
-        graph.updateChanged();
+    public List<VariableLoop> getVariableLoops() {
+        return graph.getVariableLoops();
     }
 }

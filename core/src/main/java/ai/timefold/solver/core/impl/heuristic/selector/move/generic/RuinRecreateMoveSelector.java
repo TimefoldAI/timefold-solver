@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+final class RuinRecreateMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
 
     private final EntitySelector<Solution_> entitySelector;
     private final GenuineVariableDescriptor<Solution_> variableDescriptor;

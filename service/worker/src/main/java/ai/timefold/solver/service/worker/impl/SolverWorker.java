@@ -7,6 +7,7 @@ import static ai.timefold.solver.service.definition.internal.platform.Environmen
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -50,7 +52,7 @@ import ai.timefold.solver.service.definition.api.validation.LegacyValidationResu
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
-import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
+import ai.timefold.solver.service.definition.impl.enrichment.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
@@ -82,6 +84,7 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,6 +101,9 @@ import io.smallrye.reactive.messaging.annotations.Broadcast;
 public class SolverWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverWorker.class);
+
+    private static final Set<String> TRANSIENT_STORAGE_ERROR_CODES =
+            Set.of(ErrorCodes.STORAGE_UNABLE_TO_READ, ErrorCodes.STORAGE_UNABLE_TO_WRITE, ErrorCodes.STORAGE_UNKNOWN);
     private static final long COMPLETION_TIMEOUT = 60_000;
     private static final long EMITTER_TIMEOUT = 5;
     private static final long JOB_REGISTRATION_TIMEOUT_MS = 5_000;
@@ -177,7 +183,7 @@ public class SolverWorker {
             ModelConvertorBase modelConvertor,
             SolverModelEnricherService enricherService,
             SolverModelEnrichmentDirectorService enrichmentDirectorService,
-            MapEnrichmentContext mapEnrichmentContext,
+            Instance<MapEnrichmentContext> mapEnrichmentContext,
             TerminationService terminationService,
             ShutdownExecutor shutdownExecutor,
             ShutdownOnTerminate shutdownOnTerminate,
@@ -204,7 +210,8 @@ public class SolverWorker {
         this.modelConvertor = (ModelConvertor) modelConvertor;
         this.enricherService = enricherService;
         this.enrichmentDirectorService = enrichmentDirectorService;
-        this.mapEnrichmentContext = mapEnrichmentContext;
+        this.mapEnrichmentContext =
+                mapEnrichmentContext.isResolvable() ? mapEnrichmentContext.get() : new MapEnrichmentContext();
         this.terminationService = terminationService;
         this.shutdownExecutor = shutdownExecutor;
         this.shutdownOnTerminate = shutdownOnTerminate;
@@ -621,8 +628,9 @@ public class SolverWorker {
 
     private SolverModel createSolverModel(ModelInput modelInput, ModelConfig modelConfig, ModelOutput modelOutput) {
         try {
+            var safeModelConfig = modelConfig == null ? ModelConfig.empty() : modelConfig;
             var solverModel =
-                    modelConvertor.toSolverModel(modelInput, modelConfig, Optional.ofNullable(modelOutput));
+                    modelConvertor.toSolverModel(modelInput, safeModelConfig, Optional.ofNullable(modelOutput));
             return enrichModel(solverModel);
         } catch (TimefoldRuntimeException e) {
             throw e;
@@ -650,14 +658,14 @@ public class SolverWorker {
             LOGGER.warn("Initial solution for id {} incomplete because terminated early", id);
         }
 
-        var metadata = storageService.getMetadata(id);
+        var metadata = skipOnTransientStorageFailure(id, () -> storageService.getMetadata(id));
         var solverJob = resolveJob(solverJobs.get(id));
         if (metadata != null && SolvingStatus.SOLVING_ACTIVE == metadata.getSolverStatus() && solverJob != null) {
             var modelOutput = convertToModelOutput(id, solverModel);
 
             metadata.updateStatusOnSave(SolvingStatus.SOLVING_ACTIVE, solverModel.getScore());
-            storageService.updateSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
-                    extractOutputMetrics(solverModel));
+            saveIntermediateSolution(id, () -> storageService.updateSolution(id, modelOutput, metadata,
+                    extractInputMetrics(solverModel), extractOutputMetrics(solverModel)));
             sendEvent(initSolutionEmitter, new InitSolutionEvent(metadata, solverModel,
                     new SolverWorkerJobState(SolverStatus.SOLVING_ACTIVE, solverJob), planName, tenantName,
                     eventProducerId.producerId()));
@@ -666,20 +674,61 @@ public class SolverWorker {
 
     protected void notifyOnSave(String id, SolverModel solverModel, EventProducerId eventProducerId) {
         LOGGER.debug("Notify run save for id {}", id);
-        var metadata = storageService.getMetadata(id);
+        var metadata = skipOnTransientStorageFailure(id, () -> storageService.getMetadata(id));
         var solverJob = resolveJob(solverJobs.get(id));
         if (metadata != null && SolvingStatus.SOLVING_ACTIVE == metadata.getSolverStatus() && solverJob != null) {
             processor.onNext(metadata);
             var modelOutput = convertToModelOutput(id, solverModel);
 
             metadata.updateStatusOnSave(SolvingStatus.SOLVING_ACTIVE, solverModel.getScore());
-            storageService.updateSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
-                    extractOutputMetrics(solverModel));
+            saveIntermediateSolution(id, () -> storageService.updateSolution(id, modelOutput, metadata,
+                    extractInputMetrics(solverModel), extractOutputMetrics(solverModel)));
 
             sendEvent(bestSolutionEmitter, new BestSolutionEvent(metadata, solverModel,
                     new SolverWorkerJobState(SolverStatus.SOLVING_ACTIVE, solverJob), planName, tenantName,
                     eventProducerId.producerId()));
         }
+    }
+
+    /**
+     * Stores a solution found while solving, which is superseded by the next one and in the end by the final solution.
+     * A storage that keeps failing after all retries does not fail the run.
+     * Only the save is skipped.
+     * The event is still sent because it carries the solution.
+     * The final solution and all other data are stored strictly.
+     *
+     * @return true when the solution was stored, false when it was skipped
+     */
+    static boolean saveIntermediateSolution(String id, Runnable save) {
+        return skipOnTransientStorageFailure(id, () -> {
+            save.run();
+            return Boolean.TRUE;
+        }) != null;
+    }
+
+    /**
+     * @return what the storage returned, null when it failed in a way that may pass, which is only reported
+     */
+    static <T> @Nullable T skipOnTransientStorageFailure(String id, Supplier<T> storageOperation) {
+        try {
+            return storageOperation.get();
+        } catch (TimefoldRuntimeException e) {
+            if (!isTransientStorageFailure(e)) {
+                throw e;
+            }
+            LOGGER.warn("""
+                    The intermediate solution for id {} is skipped, as the storage could not be reached: {}
+                    The next solution, or the final one, is stored instead.""", id, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Failing to read or write the storage, or to get hold of the data set in time, may well pass. A data set that does
+     * not exist any more, or any failure the storage reported as permanent, does not.
+     */
+    static boolean isTransientStorageFailure(TimefoldRuntimeException e) {
+        return e.isRecoverable() && TRANSIENT_STORAGE_ERROR_CODES.contains(e.getCode());
     }
 
     protected void notifyOnComplete(String id, SolverModel solverModel) {

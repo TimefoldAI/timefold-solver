@@ -1,76 +1,169 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
+import ai.timefold.solver.core.impl.solver.EnvironmentModeUtil;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Turns a {@link ScoreDirectorFactoryConfig} into the {@link ScoreDirectorFactory} it describes.
+ * Note that this is a builder,
+ * not a {@link ScoreDirectorFactory} itself.
+ * <p>
+ * It validates the config,
+ * picks the one score director implementation the config selected:
+ * ({@link EasyScoreDirectorFactory}, {@link IncrementalScoreDirectorFactory} or
+ * {@link BavetConstraintStreamScoreDirectorFactory}).
+ * <p>
+ * A score director factory is built for exactly one {@link EnvironmentMode}.
+ * A solver config whose phases all run in the solver's own mode therefore needs only one,
+ * and gets the concrete factory.
+ * If multiple environment modes are needed,
+ * {@link #buildScoreDirectorFactory(EnvironmentMode, SolutionDescriptor)} provides a factory capable of handling multiple
+ * environments.
+ * 
+ * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Score_> the score type to go with the solution
+ */
+@NullMarked
 public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>> {
 
-    private final ScoreDirectorFactoryConfig config;
+    private final ScoreDirectorFactoryConfig scoreDirectorFactoryConfig;
+    private final boolean useMultipleEnvironmentModes;
 
-    public ScoreDirectorFactoryFactory(ScoreDirectorFactoryConfig config) {
-        this.config = config;
+    public ScoreDirectorFactoryFactory(SolverConfig solverConfig) {
+        this(solverConfig,
+                Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(), ScoreDirectorFactoryConfig::new));
     }
 
+    public ScoreDirectorFactoryFactory(ScoreDirectorFactoryConfig scoreDirectorFactoryConfig) {
+        this(null, scoreDirectorFactoryConfig);
+    }
+
+    private ScoreDirectorFactoryFactory(@Nullable SolverConfig solverConfig,
+            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig) {
+        this.scoreDirectorFactoryConfig = Objects.requireNonNull(scoreDirectorFactoryConfig);
+        assertCorrectDirectorFactory(scoreDirectorFactoryConfig);
+        // Without a solver config there are no phases, and therefore only ever the one environment mode asked for.
+        this.useMultipleEnvironmentModes = solverConfig != null && needsMultipleEnvironmentModes(solverConfig);
+    }
+
+    /**
+     * Whether some phase runs in an environment mode other than the solver's,
+     * which is what makes the solver need more than one score director factory.
+     * <p>
+     * Note that a phase which does not override the mode contributes the solver's own,
+     * so this is false when no phase overrides it, and true as soon as one does.
+     * A phase which restates the solver's own mode is not an override in this sense.
+     */
+    private static boolean needsMultipleEnvironmentModes(SolverConfig solverConfig) {
+        var globalEnvironmentMode = EnvironmentModeUtil.resolve(solverConfig);
+        return EnvironmentModeUtil.resolvePhases(solverConfig, true).stream()
+                .anyMatch(phaseEnvironmentMode -> phaseEnvironmentMode != globalEnvironmentMode);
+    }
+
+    /**
+     * @return a factory for the given environment mode, adapted to serve multiple environment modes as well
+     *         when the config requires distinct environments modes.
+     */
     public ScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(EnvironmentMode environmentMode,
             SolutionDescriptor<Solution_> solutionDescriptor) {
-        var scoreDirectorFactory = decideMultipleScoreDirectorFactories(solutionDescriptor, environmentMode);
-        var assertionScoreDirectorFactory = config.getAssertionScoreDirectorFactory();
-        if (assertionScoreDirectorFactory != null) {
-            if (assertionScoreDirectorFactory.getAssertionScoreDirectorFactory() != null) {
+        var factory = buildConcreteScoreDirectorFactory(environmentMode, solutionDescriptor);
+        if (useMultipleEnvironmentModes) {
+            return factory.adaptToMultiEnvironmentMode(this);
+        }
+        return factory;
+    }
+
+    /**
+     * The factory the configured score director implies, built for the given mode and never adapted.
+     */
+    public AbstractScoreDirectorFactory<Solution_, Score_, ?> buildConcreteScoreDirectorFactory(EnvironmentMode environmentMode,
+            SolutionDescriptor<Solution_> solutionDescriptor) {
+        var factory = decideScoreDirectorFactory(solutionDescriptor, environmentMode);
+        var assertionScoreDirectorFactoryConfig = scoreDirectorFactoryConfig.getAssertionScoreDirectorFactory();
+        if (assertionScoreDirectorFactoryConfig != null) {
+            if (assertionScoreDirectorFactoryConfig.getAssertionScoreDirectorFactory() != null) {
                 throw new IllegalArgumentException(
                         "A assertionScoreDirectorFactory (%s) cannot have a non-null assertionScoreDirectorFactory (%s)."
-                                .formatted(assertionScoreDirectorFactory,
-                                        assertionScoreDirectorFactory.getAssertionScoreDirectorFactory()));
+                                .formatted(assertionScoreDirectorFactoryConfig,
+                                        assertionScoreDirectorFactoryConfig.getAssertionScoreDirectorFactory()));
             }
             if (environmentMode.compareTo(EnvironmentMode.STEP_ASSERT) > 0) {
                 throw new IllegalArgumentException(
                         "A non-null assertionScoreDirectorFactory (%s) requires an environmentMode (%s) of %s or lower."
-                                .formatted(assertionScoreDirectorFactory, environmentMode, EnvironmentMode.STEP_ASSERT));
+                                .formatted(assertionScoreDirectorFactoryConfig, environmentMode, EnvironmentMode.STEP_ASSERT));
             }
-            var assertionScoreDirectorFactoryFactory =
-                    new ScoreDirectorFactoryFactory<Solution_, Score_>(assertionScoreDirectorFactory);
-            scoreDirectorFactory.setAssertionScoreDirectorFactory(assertionScoreDirectorFactoryFactory
-                    .buildScoreDirectorFactory(EnvironmentMode.NON_REPRODUCIBLE, solutionDescriptor));
+            // Built from its own config, which has no phases, so this is always a concrete factory:
+            // the code reading an assertion factory expects one it can use directly.
+            var assertScoreDirectorFactory =
+                    new ScoreDirectorFactoryFactory<Solution_, Score_>(assertionScoreDirectorFactoryConfig);
+            factory.setAssertionScoreDirectorFactory(
+                    assertScoreDirectorFactory.buildScoreDirectorFactory(EnvironmentMode.NON_REPRODUCIBLE, solutionDescriptor));
         }
-        scoreDirectorFactory.setInitializingScoreTrend(InitializingScoreTrend.parseTrend(
-                config.getInitializingScoreTrend() == null ? InitializingScoreTrendLevel.ANY.name()
-                        : config.getInitializingScoreTrend(),
-                solutionDescriptor.getScoreDefinition().getLevelsSize()));
-        if (environmentMode.isFullyAsserted()) {
-            scoreDirectorFactory.setAssertClonedSolution(true);
-        }
-        if (environmentMode.isTracking()) {
-            scoreDirectorFactory.setTrackingWorkingSolution(true);
-        }
-        return scoreDirectorFactory;
+        factory.setInitializingScoreTrend(decideInitializingScoreTrend(scoreDirectorFactoryConfig, solutionDescriptor));
+        return factory;
     }
 
-    protected AbstractScoreDirectorFactory<Solution_, Score_, ?> decideMultipleScoreDirectorFactories(
-            SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
-        assertCorrectDirectorFactory(config);
+    private static <Solution_> InitializingScoreTrend decideInitializingScoreTrend(ScoreDirectorFactoryConfig config,
+            SolutionDescriptor<Solution_> solutionDescriptor) {
+        var initializingScoreTrend = config.getInitializingScoreTrend() == null ? InitializingScoreTrendLevel.ANY.name()
+                : config.getInitializingScoreTrend();
+        return InitializingScoreTrend.parseTrend(initializingScoreTrend,
+                solutionDescriptor.getScoreDefinition().getLevelsSize());
+    }
 
-        // At this point, we are guaranteed to have at most one score director factory selected.
-        if (config.getEasyScoreCalculatorClass() != null) {
-            return EasyScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config, environmentMode);
-        } else if (config.getIncrementalScoreCalculatorClass() != null) {
-            return IncrementalScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config, environmentMode);
-        } else if (config.getConstraintProviderClass() != null) {
-            return BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config,
+    /**
+     * Picks the one implementation the config selected; {@link #assertCorrectDirectorFactory} has already
+     * rejected a config selecting more than one.
+     */
+    private AbstractScoreDirectorFactory<Solution_, Score_, ?> decideScoreDirectorFactory(
+            SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
+        if (scoreDirectorFactoryConfig.getEasyScoreCalculatorClass() != null) {
+            return EasyScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, scoreDirectorFactoryConfig,
+                    environmentMode);
+        } else if (scoreDirectorFactoryConfig.getIncrementalScoreCalculatorClass() != null) {
+            return IncrementalScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, scoreDirectorFactoryConfig,
+                    environmentMode);
+        } else if (scoreDirectorFactoryConfig.getConstraintProviderClass() != null) {
+            return BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor,
+                    scoreDirectorFactoryConfig,
                     environmentMode);
         } else {
             throw new IllegalArgumentException(
                     "The scoreDirectorFactory lacks configuration for either constraintProviderClass, " +
                             "easyScoreCalculatorClass or incrementalScoreCalculatorClass.");
         }
+    }
+
+    /**
+     * Whether the score directors built for the given environment mode have to track constraint matches,
+     * which carries a performance penalty.
+     *
+     * @param environmentMode the environment mode the score director will run in,
+     *        which for a phase running in its own mode is that phase's
+     */
+    public static <Solution_> ConstraintMatchPolicy decideConstraintMatchPolicy(SolverScope<Solution_> solverScope,
+            EnvironmentMode environmentMode) {
+        return solverScope.isAnyMetricConstraintMatchBased() || environmentMode.isStepAssertOrMore()
+                ? ConstraintMatchPolicy.ENABLED
+                : ConstraintMatchPolicy.DISABLED;
     }
 
     private static void assertCorrectDirectorFactory(ScoreDirectorFactoryConfig config) {

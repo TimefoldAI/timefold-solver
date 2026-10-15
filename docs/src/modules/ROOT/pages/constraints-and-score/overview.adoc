@@ -165,6 +165,32 @@ such as xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore]
 and xref:constraints-and-score/overview.adoc#hardMediumSoftScore[HardMediumSoftScore].
 
 
+[#structuralScore]
+=== Structural score
+
+All `Score` implementations have an implicit xref:constraints-and-score/overview.adoc#structuralScore[structural] component that outranks every score level.
+It is `0` if the solution is structurally sound and negative if the solution is structurally flawed.
+A solution is structurally flawed when some of its xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables] form a dependency loop and cannot be calculated
+(see xref:domain-modeling/modeling-planning-problems.adoc#detectingInconsistencies[Detecting Inconsistencies in Shadow Variables]).
+
+Because the structural component is compared before every other level,
+a score with a negative structural component is worse than any score with a `0` structural component,
+no matter how many score constraints are broken.
+It therefore behaves like a super hard score level,
+and a score with a negative structural component is not xref:#scoreLevel[feasible].
+
+During solving, the structural component is always `0`,
+because Timefold Solver never accepts a structurally flawed solution.
+A negative structural component only appears on solutions that were modified outside of a solver step,
+such as a solution modified by a xref:optimization-algorithms/overview.adoc#customSolverPhase[custom phase]
+or a solution passed to `Solver.solve(...)`.
+
+When it is not `0`, the structural component is printed as the leading `structural` level of the score string,
+for example ``-1structural/0hard/-5soft``.
+When it is `0`, it is omitted,
+so a structurally sound score is printed as usual, for example ``0hard/-5soft``.
+
+
 [#paretoScoring]
 === Pareto scoring (AKA multi-objective optimization scoring)
 

@@ -6,3 +6,4 @@
 
 include::chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
 include::variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
+include::shadow-variables-inconsistent-to-structural-score.adoc[leveloffset=+1]

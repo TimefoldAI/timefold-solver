@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
@@ -20,7 +21,7 @@ import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 public final class ListVariableExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
         extends AbstractExhaustiveSearchDecider<Solution_, Score_> {
 
-    private ListVariableStateSupply<Solution_, ?, ?> listVariableState;
+    private ListVariableState<Solution_, ?, ?> listVariableState;
 
     public ListVariableExhaustiveSearchDecider(String logIndentation, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             PhaseTermination<Solution_> termination, EntitySelector<Solution_> sourceEntitySelector,
@@ -158,9 +159,8 @@ public final class ListVariableExhaustiveSearchDecider<Solution_, Score_ extends
     @Override
     public void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        var listVariableDescriptor = phaseScope.getSolutionDescriptor().getListVariableDescriptor();
-        this.listVariableState =
-                phaseScope.getSolverScope().getScoreDirector().getListVariableStateSupply(listVariableDescriptor);
+        var listVariableDescriptor = Objects.requireNonNull(phaseScope.getSolutionDescriptor().getListVariableDescriptor());
+        this.listVariableState = phaseScope.getScoreDirector().getListVariableState(listVariableDescriptor);
     }
 
     @Override

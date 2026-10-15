@@ -1,0 +1,17 @@
+[
+  {
+    "extension": "revapi.differences",
+    "configuration": {
+      "differences": [
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeChanged",
+          "old": "parameter void ai.timefold.solver.service.maps.service.client.api.TravelTimeMatrixEnricher::<init>(ai.timefold.solver.service.maps.service.client.api.MapService, ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier, ===ai.timefold.solver.service.definition.internal.MapEnrichmentContext===, java.lang.Boolean)",
+          "new": "parameter void ai.timefold.solver.service.maps.service.client.api.TravelTimeMatrixEnricher::<init>(ai.timefold.solver.service.maps.service.client.api.MapService, ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier, ===ai.timefold.solver.service.definition.impl.enrichment.MapEnrichmentContext===, java.lang.Boolean)",
+          "parameterIndex": "2",
+          "justification": "TravelTimeMatrixEnricher constructor does not belong to a public API."
+        }
+      ]
+    }
+  }
+]

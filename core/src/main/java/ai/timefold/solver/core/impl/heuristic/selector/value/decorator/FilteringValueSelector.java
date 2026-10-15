@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
@@ -36,24 +36,24 @@ public class FilteringValueSelector<Solution_>
     }
 
     public static <Solution_> ValueSelector<Solution_> ofAssigned(ValueSelector<Solution_> valueSelector,
-            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
+            Supplier<ListVariableState<Solution_, Object, Object>> listVariableStateSupplier) {
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         if (!listVariableDescriptor.allowsUnassignedValues()) {
             return valueSelector;
         }
         // We need to filter out unassigned vars.
         return FilteringValueSelector.of(valueSelector, (scoreDirector, selection) -> {
-            var listVariableStateSupply = listVariableStateSupplier.get();
-            if (listVariableStateSupply.getUnassignedCount() == 0) {
+            var listVariableState = listVariableStateSupplier.get();
+            if (listVariableState.getUnassignedCount() == 0) {
                 return true;
             }
-            return listVariableStateSupply.isAssigned(selection);
+            return listVariableState.isAssigned(selection);
         });
     }
 
     public static <Solution_> IterableValueSelector<Solution_> ofAssigned(
             IterableValueSelector<Solution_> iterableValueSelector,
-            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
+            Supplier<ListVariableState<Solution_, Object, Object>> listVariableStateSupplier) {
         return (IterableValueSelector<Solution_>) ofAssigned((ValueSelector<Solution_>) iterableValueSelector,
                 listVariableStateSupplier);
     }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.move.UniformRandomUnionMoveIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.InnerMoveStream;
@@ -108,7 +109,8 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
     }
 
     public Iterator<Move<Solution_>> iterator(RandomGenerator random) { // For testing only.
-        return new RandomOrderNeighborhoodIterator<>(Objects.requireNonNull(moveIterableList), random);
+        var iterableList = Objects.requireNonNull(moveIterableList);
+        return UniformRandomUnionMoveIterator.of(random, iterableList, MoveIterable::iterator);
     }
 
 }

@@ -3,13 +3,9 @@ package ai.timefold.solver.migration;
 import static org.openrewrite.maven.Assertions.pomXml;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.test.RecipeSpec;
-import org.openrewrite.test.RewriteTest;
 
-@Execution(ExecutionMode.CONCURRENT)
-class ChangeVersionRecipeTest implements RewriteTest {
+class ChangeVersionRecipeTest extends AbstractRecipeTest {
 
     private final ChangeVersionRecipe recipe = new ChangeVersionRecipe();
 

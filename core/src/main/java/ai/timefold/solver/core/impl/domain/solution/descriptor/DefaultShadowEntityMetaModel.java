@@ -1,11 +1,14 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
+import static ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultGenuineEntityMetaModel.ENTITY_META_MODEL_COMPARATOR;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
@@ -59,6 +62,11 @@ public final class DefaultShadowEntityMetaModel<Solution_, Entity_>
                     .formatted(variable.name(), type.getCanonicalName()));
         }
         variables.add(shadowVariable);
+    }
+
+    @Override
+    public int compareTo(PlanningEntityMetaModel<Solution_, Entity_> other) {
+        return ENTITY_META_MODEL_COMPARATOR.compare(this, other);
     }
 
     @Override

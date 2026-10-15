@@ -19,12 +19,16 @@
   <properties>
     <!-- TODO Quarkus is riddled with duplicate classes, see https://github.com/quarkusio/quarkus/issues/9834 -->
     <enforcer.failOnDuplicatedClasses>false</enforcer.failOnDuplicatedClasses>
+
+    <!-- Override the old version for Revapi check as solver-service has been introduced later. -->
+    <revapi.oldTimefoldVersion>2.6.0</revapi.oldTimefoldVersion>
   </properties>
 
   <modules>
     <module>build/build-support</module>
     <module>build/config</module>
     <module>definition</module>
+    <module>storage-in-memory</module>
     <module>json</module>
     <module>jackson</module>
     <module>rest</module>
@@ -64,27 +68,5 @@
       </modules>
     </profile>
   </profiles>
-
-  <repositories>
-    <repository>
-      <id>timefold</id>
-      <name>Timefold JFrog releases repository</name>
-      <url>https://timefold.jfrog.io/artifactory/releases/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <name>Timefold GitHub Packages</name>
-      <url>https://maven.pkg.github.com/TimefoldAI/timefold-models-sdk</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </distributionManagement>
 
 </project>

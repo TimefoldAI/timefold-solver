@@ -13,13 +13,14 @@ Key words per [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html): **MUST** 
 
 **Documentation**:
 
-1. **Public API** (MUST): All public classes/interfaces/methods MUST have Javadoc with `@param`, `@return`, `@throws` (omit NPE for null params; omit if present on referenced overload). `@since` optional.
-2. **User-facing** (MUST): 
+1. **Public API**: All public classes/interfaces/methods MUST have Javadoc with `@param`, `@return`, `@throws` (omit NPE for null params; omit if present on referenced overload). `@since` optional.
+2. **User-facing**: 
    - New features → user guide; 
    - Config changes → reference docs; 
    - Breaking changes → migration guides.
-3. **Examples** (SHOULD): Docs SHOULD include code examples; quickstart examples SHOULD be added externally.
-4. **Implementation** (SHOULD): Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments.
+3. **Examples**: Docs SHOULD include code examples; quickstart examples SHOULD be added externally.
+4. **Implementation**: Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments. Comments SHOULD be kept short and to the point, unless a description of a complex mechanism is required.
+5. **Formatting**: Any form of documentation (being source code comments, Javadoc, or user documentation) must follow [Semantic Line Breaks](https://sembr.org).
 
 ### II. Consistent Terminology
 
@@ -70,7 +71,7 @@ throw new IllegalStateException("""
 
 ### V. Automated Testing
 
-All code MUST have tests before merging. Methodology (TDD etc.) is discretionary.
+All code MUST have tests before merging. Write the tests red-green: the test fails first, then the change makes it pass.
 
 **Naming** (required for Maven Surefire/Failsafe):
 - Unit tests: `*Test` (e.g., `ScoreCalculatorTest`) — Surefire, `test` phase
@@ -88,11 +89,10 @@ Performance/stress tests are in other repositories; not applicable here.
 **Style**:
 1. Newlines: formatter preserves them; use sparingly to separate logical blocks
 2. Field access order in methods SHOULD match declaration order
-3. Imports MUST be used; no fully qualified names in source (exception: disambiguating same simple name)
-4. `var` preferred over diamond; diamond MUST be used when `var` not used and type is inferable
+3. `var` preferred over diamond; diamond MUST be used when `var` not used and type is inferable
    - ✅ `var list = new ArrayList<String>();`; ✅ `List<String> list = new ArrayList<>();`
    - ❌ `var list = new ArrayList<>();` (compiler error); ❌ `List<String> list = new ArrayList<String>();`
-5. Asterisk imports MUST NOT be used
+4. Asterisk imports MUST NOT be used
 
 **SonarCloud Quality Gates** (MUST):
 - Reliability and Maintainability grades MUST be B or better; PRs worsening below B fail CI
@@ -154,6 +154,8 @@ public class ScoreCalculator {
 4. Explicitly ratified exceptions in this constitution
 
 Code reviews MUST reject unauthorized production dependencies.
+All dependencies of the project MUST either use Apache Software License 2.0 or compatible licenses.
+Strong copyleft dependencies (GPL, AGPL) MUST NOT be used; weak copyleft (EPL, MPL, LGPL) is permitted.
 
 ### III. Test Infrastructure
 
@@ -178,11 +180,13 @@ MUST use:
 
 ## Package Structure and API Stability
 
-| Package type | Stability |
-|---|---|
-| `*.api.*` | 100% backwards compatible; breaking only in major versions |
-| `*.config.*` | 100% backwards compatible; breaking only in major versions |
-| All others | No guarantees |
+| Package type      | Stability                                                                     |
+|-------------------|-------------------------------------------------------------------------------|
+| `*.api.*`         | 100% backwards compatible; breaking only in major versions                    |
+| `*.config.*`      | 100% backwards compatible; breaking only in major versions                    |
+| `*.preview.api.*` | Best-effort compatibility; may break in minor versions if necessary           |
+| `*.internal.*`    | Stable but may break without public notice; for internal Timefold tools only  |
+| All others        | No guarantees                                                                 |
 
 **Versioning**: MAJOR = breaking API/config change; MINOR = new backwards-compat feature; PATCH = bug fix.
 

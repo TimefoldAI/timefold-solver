@@ -62,6 +62,15 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
     }
 
     @Override
+    public @Nullable <Result_> Result_ executeTemporarily(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> temporarySolutionConsumer,
+            Function<Solution_, @Nullable Result_> structurallyFlawedSolutionConsumer) {
+        return moveDirector.executeTemporaryHandlingStructurallyFlawedSolutions(move,
+                temporarySolutionConsumer, structurallyFlawedSolutionConsumer,
+                false);
+    }
+
+    @Override
     public <Score_ extends Score<Score_>> Score_ executeTemporarily(Move<Solution_> move) {
         Score_ score = executeTemporarily(move, solution -> moveDirector.getScoreDirector()
                 .getSolutionDescriptor()
@@ -73,6 +82,15 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
     public @Nullable <Result_> Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer) {
         return moveDirector.executeTemporary(move, temporarySolutionConsumer, true);
+    }
+
+    @Override
+    public @Nullable <Result_> Result_ executeTemporarilyAndCalculateScore(
+            Move<Solution_> move, Function<Solution_, @Nullable Result_> temporarySolutionConsumer,
+            Function<Solution_, @Nullable Result_> structurallyFlawedSolutionConsumer) {
+        return moveDirector.executeTemporaryHandlingStructurallyFlawedSolutions(move,
+                temporarySolutionConsumer, structurallyFlawedSolutionConsumer,
+                true);
     }
 
     @Override

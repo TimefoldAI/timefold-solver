@@ -52,8 +52,8 @@ public final class CollectionUtils {
         }
     }
 
-    public static <T> List<T> concat(List<T> left, List<T> right) {
-        List<T> result = new ArrayList<>(left.size() + right.size());
+    public static <T> List<T> concat(List<? extends T> left, List<? extends T> right) {
+        var result = new ArrayList<T>(left.size() + right.size());
         result.addAll(left);
         result.addAll(right);
         return result;

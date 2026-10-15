@@ -10,6 +10,9 @@ import org.jspecify.annotations.NullMarked;
  * Represents the meta-model of an entity.
  * Gives access to the entity's variable meta-models.
  * <p>
+ * Instances are {@link Comparable},
+ * so that they can be sorted in a predictable iteration order.
+ * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
@@ -27,6 +30,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
+        extends Comparable<PlanningEntityMetaModel<Solution_, Entity_>>
         permits GenuineEntityMetaModel, ShadowEntityMetaModel {
 
     /**
@@ -44,11 +48,24 @@ public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
     Class<Entity_> type();
 
     /**
-     * Returns the variables declared by the entity, both genuine and shadow.
+     * Returns the variables of the entity, both genuine and shadow, including inherited ones.
+     * Inherited variables have this entity as their {@link VariableMetaModel#entity()}.
      *
-     * @return Variables declared by the entity.
+     * @return Variables of the entity.
      */
     List<? extends VariableMetaModel<Solution_, Entity_, ?>> variables();
+
+    /**
+     * Returns the genuine variables of the entity, including inherited ones.
+     *
+     * @return Genuine variables of the entity.
+     */
+    default List<? extends GenuineVariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
+        return variables().stream()
+                .filter(VariableMetaModel::isGenuine)
+                .map(v -> (GenuineVariableMetaModel<Solution_, Entity_, ?>) v)
+                .toList();
+    }
 
     /**
      * Returns a {@link VariableMetaModel} for a variable with the given name.
@@ -56,7 +73,7 @@ public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
      * use {@link GenuineEntityMetaModel#genuineVariable(String)}
      * or {@link GenuineEntityMetaModel#listVariable(String)} when possible.
      *
-     * @return A variable declared by the entity.
+     * @return A variable of the entity, possibly inherited; see {@link #variables()}.
      */
     @SuppressWarnings("unchecked")
     default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName) {
@@ -76,7 +93,7 @@ public sealed interface PlanningEntityMetaModel<Solution_, Entity_>
      * use {@link GenuineEntityMetaModel#genuineVariable(String, Class)}
      * or {@link GenuineEntityMetaModel#listVariable(String, Class)} when possible.
      *
-     * @return A variable declared by the entity.
+     * @return A variable of the entity, possibly inherited; see {@link #variables()}.
      */
     @SuppressWarnings("unchecked")
     default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName, Class<Value_> variableClass) {

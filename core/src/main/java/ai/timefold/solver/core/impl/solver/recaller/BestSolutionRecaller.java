@@ -4,12 +4,16 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Remembers the {@link PlanningSolution best solution} that a {@link Solver} encounters.
@@ -18,38 +22,44 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  */
 public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapter<Solution_> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BestSolutionRecaller.class);
     protected boolean assertInitialScoreFromScratch = false;
     protected boolean assertShadowVariablesAreNotStale = false;
     protected boolean assertBestScoreIsUnmodified = false;
 
     protected SolverEventSupport<Solution_> solverEventSupport;
 
-    public void setAssertInitialScoreFromScratch(boolean assertInitialScoreFromScratch) {
-        this.assertInitialScoreFromScratch = assertInitialScoreFromScratch;
-    }
-
-    public void setAssertShadowVariablesAreNotStale(boolean assertShadowVariablesAreNotStale) {
-        this.assertShadowVariablesAreNotStale = assertShadowVariablesAreNotStale;
-    }
-
-    public void setAssertBestScoreIsUnmodified(boolean assertBestScoreIsUnmodified) {
-        this.assertBestScoreIsUnmodified = assertBestScoreIsUnmodified;
-    }
-
     public void setSolverEventSupport(SolverEventSupport<Solution_> solverEventSupport) {
         this.solverEventSupport = solverEventSupport;
+    }
+
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        assertInitialScoreFromScratch = environmentMode.isFullyAsserted();
+        assertShadowVariablesAreNotStale = environmentMode.isFullyAsserted();
+        assertBestScoreIsUnmodified = environmentMode.isFullyAsserted();
     }
 
     // ************************************************************************
     // Worker methods
     // ************************************************************************
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
+    @SuppressWarnings("unchecked")
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         // Starting bestSolution is already set by Solver.solve(Solution)
         var scoreDirector = solverScope.getScoreDirector();
+        @SuppressWarnings("rawtypes")
         InnerScore innerScore = scoreDirector.calculateScore();
+        if (innerScore.isStructurallyFlawed()) {
+            LOGGER.warn("The initial solution passed to the solver is inconsistent. Unassigning involved entities.");
+            scoreDirector.unassignInconsistentEntities();
+            innerScore = scoreDirector.calculateScore();
+            if (innerScore.isStructurallyFlawed()) {
+                // If there were a fixed dependency loop, the shadow variable session would fail fast before here
+                throw new IllegalStateException(
+                        "Impossible state: The initial solution passed to the solver is inconsistent even after unassigning involved entities.");
+            }
+        }
         var score = innerScore.raw();
         solverScope.setBestScore(innerScore);
         solverScope.setBestSolutionTimeMillis(solverScope.getClock().millis());
@@ -122,6 +132,10 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope) {
         updateBestSolutionWithoutFiring(solverScope);
+        // The best solution instance is shared with the external consumer,
+        // and we assume the user won't change it (see NewBestSolutionEvent).
+        // We could simply clone it to avoid side effects,
+        // but cloning can be expensive.
         solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), solverScope.getBestSolution());
     }
 
@@ -129,6 +143,10 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             EventProducerId eventProducerId) {
         updateBestSolutionWithoutFiring(solverScope);
         if (solverScope.isBestSolutionInitialized()) {
+            // The best solution instance is shared with the external consumer,
+            // and we assume the user won't change it (see NewBestSolutionEvent).
+            // We could simply clone it to avoid side effects,
+            // but cloning can be expensive.
             solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution());
         }
     }
@@ -137,6 +155,10 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             InnerScore<?> bestScore,
             Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
+        // The best solution instance is shared with the external consumer,
+        // and we assume the user won't change it (see NewBestSolutionEvent).
+        // We could simply clone it to avoid side effects,
+        // but cloning can be expensive.
         solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), bestSolution);
     }
 

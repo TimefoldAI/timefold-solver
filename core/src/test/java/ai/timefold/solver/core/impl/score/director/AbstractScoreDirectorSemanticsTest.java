@@ -38,6 +38,18 @@ public abstract class AbstractScoreDirectorSemanticsTest {
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor);
 
     @Test
+    void scoreDirectorFactoriesUseTheGivenSolutionDescriptor() {
+        // Building a SolutionDescriptor is expensive, and the caller's instance is the one the tests work with,
+        // so an implementation must use the one it is given rather than building its own.
+        assertThat(buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor)
+                .getSolutionDescriptor()).isSameAs(constraintConfigurationSolutionDescriptor);
+        assertThat(buildScoreDirectorFactoryWithListVariableEntityPin(pinnedListSolutionDescriptor)
+                .getSolutionDescriptor()).isSameAs(pinnedListSolutionDescriptor);
+        assertThat(buildScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor)
+                .getSolutionDescriptor()).isSameAs(pinnedWithIndexListSolutionDescriptor);
+    }
+
+    @Test
     void independentScoreDirectors() {
         var scoreDirectorFactory =
                 buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);

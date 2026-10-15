@@ -25,7 +25,8 @@ public record ConsistencyTracker<Solution_>(
     public static <Solution_> ConsistencyTracker<Solution_> frozen(SolutionDescriptor<Solution_> solutionDescriptor,
             Object[] entityOrFacts) {
         var out = new ConsistencyTracker<Solution_>(true);
-        out.setUnknownConsistencyFromEntityShadowVariablesInconsistent(solutionDescriptor, entityOrFacts);
+        out.setUnknownConsistencyValues(solutionDescriptor,
+                entityOrFacts);
         return out;
     }
 
@@ -45,7 +46,7 @@ public record ConsistencyTracker<Solution_>(
      * either true or false, then that value determines if the entity is consistent or not
      * (regardless of its actual consistency in the graph).
      */
-    void setUnknownConsistencyFromEntityShadowVariablesInconsistent(SolutionDescriptor<Solution_> solutionDescriptor,
+    void setUnknownConsistencyValues(SolutionDescriptor<Solution_> solutionDescriptor,
             Object[] entityOrFacts) { // Not private so DefaultVariableReferenceGraph javadoc can reference it.
         var entities = Arrays.stream(entityOrFacts)
                 .filter(maybeEntity -> solutionDescriptor.hasEntityDescriptor(maybeEntity.getClass()))

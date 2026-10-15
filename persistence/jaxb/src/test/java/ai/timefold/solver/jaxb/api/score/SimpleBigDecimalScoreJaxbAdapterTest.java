@@ -19,6 +19,12 @@ class SimpleBigDecimalScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTest 
         assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
     }
 
+    @Test
+    void serializeAndDeserializeWithNegativeStructuralScore() {
+        var score = new SimpleBigDecimalScore(-1L, new BigDecimal("1234.4321"));
+        assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
+    }
+
     @XmlRootElement
     public static class TestSimpleBigDecimalScoreWrapper extends TestScoreWrapper<SimpleBigDecimalScore> {
 

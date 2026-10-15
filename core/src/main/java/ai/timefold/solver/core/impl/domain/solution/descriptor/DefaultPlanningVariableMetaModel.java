@@ -1,20 +1,30 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
-        PlanningEntityMetaModel<Solution_, Entity_> entity,
+        GenuineEntityMetaModel<Solution_, Entity_> entity,
         BasicVariableDescriptor<Solution_> variableDescriptor)
         implements
             PlanningVariableMetaModel<Solution_, Entity_, Value_>,
             InnerGenuineVariableMetaModel<Solution_> {
+
+    static final Comparator<VariableMetaModel<?, ?, ?>> VARIABLE_META_MODEL_COMPARATOR =
+            Comparator.comparingInt(
+                    (VariableMetaModel<?, ?, ?> variableMetaModel) -> ((InnerVariableMetaModel<?>) variableMetaModel)
+                            .variableDescriptor().getEntityDescriptor().getOrdinal())
+                    .thenComparingInt(
+                            (VariableMetaModel<?, ?, ?> variableMetaModel) -> ((InnerVariableMetaModel<?>) variableMetaModel)
+                                    .variableDescriptor().getOrdinal());
 
     @SuppressWarnings("unchecked")
     @Override
@@ -33,10 +43,13 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
     }
 
     @Override
+    public boolean isValueRangeOnSolution() {
+        return variableDescriptor.canExtractValueRangeFromSolution();
+    }
+
+    @Override
     public boolean equals(Object o) {
-        // Do not use entity in equality checks;
-        // If an entity is subclassed, that subclass will have it
-        // own distinct VariableMetaModel
+        // Equal when describing the same variable, regardless of entity view; see VariableMetaModel.
         if (o instanceof DefaultPlanningVariableMetaModel<?, ?, ?> that) {
             return Objects.equals(variableDescriptor, that.variableDescriptor);
         }
@@ -49,9 +62,14 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
     }
 
     @Override
+    public int compareTo(VariableMetaModel<Solution_, Entity_, Value_> other) {
+        return VARIABLE_META_MODEL_COMPARATOR.compare(this, other);
+    }
+
+    @Override
     public String toString() {
         return "Genuine Variable '%s %s.%s' (allowsUnassigned: %b)"
-                .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassigned());
+                .formatted(type(), entity.type().getSimpleName(), name(), allowsUnassigned());
     }
 
 }

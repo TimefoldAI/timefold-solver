@@ -1559,6 +1559,10 @@
           "zero" : {
             "type" : "boolean"
           },
+          "structuralScore" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
           "hardScore" : {
             "format" : "int64",
             "type" : "integer"

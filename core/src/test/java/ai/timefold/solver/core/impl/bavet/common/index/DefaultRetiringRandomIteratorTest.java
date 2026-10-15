@@ -4,10 +4,12 @@ import static ai.timefold.solver.core.impl.bavet.common.index.AbstractIndexerTes
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
@@ -91,6 +93,55 @@ class DefaultRetiringRandomIteratorTest {
 
         assertThatExceptionOfType(NoSuchElementException.class)
                 .isThrownBy(set::next);
+    }
+
+    /**
+     * Every other test here uses few enough elements
+     * that {@code SlotReservationMap}'s cap is {@code slotCount / 2};
+     * this one is large enough for its {@code MAX_SPARSE_ENTRY_COUNT}
+     * to be the binding cap, so the drain crosses into the dense stage.
+     */
+    @Test
+    void retireAllElementsAcrossUpgradeThreshold() {
+        var list = IntStream.range(0, 100).boxed().toList();
+        var set = new DefaultRetiringRandomIterator<>(toEntries(list), new Random(0));
+
+        var drainedElements = new HashSet<Integer>();
+        for (int i = 0; i < 100; i++) {
+            assertThat(set.hasNext()).isTrue();
+            drainedElements.add(set.next());
+            set.retire();
+        }
+
+        assertThat(set.hasNext()).isFalse();
+        assertThat(drainedElements).containsExactlyInAnyOrderElementsOf(list);
+    }
+
+    /**
+     * The shuffle runs over physical slots, so a gapped list makes it draw slots which hold nothing.
+     * Those must be rejected and redrawn, never returned and never counted as an element.
+     */
+    @Test
+    void drainSkipsGapsAndReturnsEveryLiveElementOnce() {
+        var source = new ElementAwareArrayList<Integer>();
+        var entryList = IntStream.range(0, 100)
+                .mapToObj(source::addEntry)
+                .toList();
+        // Remove every fifth element, staying under the list's own compaction threshold so the gaps survive.
+        for (var i = 0; i < 100; i += 5) {
+            entryList.get(i).remove();
+        }
+        var liveElements = IntStream.range(0, 100).boxed().filter(i -> i % 5 != 0).toList();
+        assertThat(source.slotCount()).isGreaterThan(source.size()); // Gaps really are present.
+
+        var set = new DefaultRetiringRandomIterator<>(source, new Random(0));
+        var drainedElements = new ArrayList<Integer>();
+        while (set.hasNext()) {
+            drainedElements.add(set.next());
+            set.retire();
+        }
+
+        assertThat(drainedElements).containsExactlyInAnyOrderElementsOf(liveElements);
     }
 
 }

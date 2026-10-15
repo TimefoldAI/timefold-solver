@@ -273,13 +273,13 @@ public class TestdataDomainImplementor {
             // private List<TestdataValue> valueList;
             var valueListField = classCreator.field("valueList", fieldCreator -> {
                 fieldCreator.private_();
-                fieldCreator.setType(java.util.List.class);
+                fieldCreator.setType(List.class);
             });
 
             // private List<TestdataEntity> entityList;
             var entityListField = classCreator.field("entityList", fieldCreator -> {
                 fieldCreator.private_();
-                fieldCreator.setType(java.util.List.class);
+                fieldCreator.setType(List.class);
             });
 
             // private SimpleScore score;
@@ -311,7 +311,7 @@ public class TestdataDomainImplementor {
             // @ValueRangeProvider(id = "valueRange") @ProblemFactCollectionProperty public List<TestdataValue> getValueList()
             classCreator.method("getValueList", methodCreator -> {
                 methodCreator.public_();
-                methodCreator.returning(GenericType.of(java.util.List.class, List.of(TypeArgument.of(valueClassDesc))));
+                methodCreator.returning(GenericType.of(List.class, List.of(TypeArgument.of(valueClassDesc))));
                 methodCreator.addAnnotation(ValueRangeProvider.class,
                         annotationCreator -> annotationCreator.add("id", "valueRange"));
                 methodCreator.addAnnotation(ProblemFactCollectionProperty.class);
@@ -322,7 +322,7 @@ public class TestdataDomainImplementor {
             classCreator.method("setValueList", methodCreator -> {
                 methodCreator.public_();
                 methodCreator.returning(void.class);
-                var valueList = methodCreator.parameter("valueList", java.util.List.class);
+                var valueList = methodCreator.parameter("valueList", List.class);
                 methodCreator.body(blockCreator -> {
                     blockCreator.set(methodCreator.this_().field(valueListField), valueList);
                     blockCreator.return_();
@@ -332,7 +332,7 @@ public class TestdataDomainImplementor {
             // @PlanningEntityCollectionProperty public List<TestdataEntity> getEntityList()
             classCreator.method("getEntityList", methodCreator -> {
                 methodCreator.public_();
-                methodCreator.returning(GenericType.of(java.util.List.class, List.of(TypeArgument.of(entityClassDesc))));
+                methodCreator.returning(GenericType.of(List.class, List.of(TypeArgument.of(entityClassDesc))));
                 methodCreator.addAnnotation(PlanningEntityCollectionProperty.class);
                 methodCreator.body(blockCreator -> blockCreator.return_(methodCreator.this_().field(entityListField)));
             });
@@ -341,7 +341,7 @@ public class TestdataDomainImplementor {
             classCreator.method("setEntityList", methodCreator -> {
                 methodCreator.public_();
                 methodCreator.returning(void.class);
-                var entityList = methodCreator.parameter("entityList", java.util.List.class);
+                var entityList = methodCreator.parameter("entityList", List.class);
                 methodCreator.body(blockCreator -> {
                     blockCreator.set(methodCreator.this_().field(entityListField), entityList);
                     blockCreator.return_();

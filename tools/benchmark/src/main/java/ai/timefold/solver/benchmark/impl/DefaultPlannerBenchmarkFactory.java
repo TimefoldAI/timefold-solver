@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,6 +20,7 @@ import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReportFactory;
 import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.solver.EnvironmentModeUtil;
 import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
 import org.jspecify.annotations.NonNull;
@@ -114,6 +116,35 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
                 && ConfigUtils.isEmptyCollection(plannerBenchmarkConfig.getSolverBenchmarkConfigList())) {
             throw new IllegalArgumentException(
                     "Configure at least 1 <solverBenchmark> (or 1 <solverBenchmarkBluePrint>) in the <plannerBenchmark> configuration.");
+        }
+        // Overriding the phase environment is not allowed in benchmark mode.
+        var allSolverBenchmarkConfigList = new ArrayList<SolverBenchmarkConfig>();
+        var solverBenchmarkConfigList = plannerBenchmarkConfig.getSolverBenchmarkConfigList();
+        if (solverBenchmarkConfigList != null) {
+            allSolverBenchmarkConfigList.addAll(solverBenchmarkConfigList);
+        }
+        var solverBenchmarkBluePrintConfigList = plannerBenchmarkConfig.getSolverBenchmarkBluePrintConfigList();
+        if (solverBenchmarkBluePrintConfigList != null) {
+            for (var bluePrintConfig : solverBenchmarkBluePrintConfigList) {
+                allSolverBenchmarkConfigList.addAll(bluePrintConfig.buildSolverBenchmarkConfigList());
+            }
+        }
+        var inheritedSolverBenchmarkConfig = plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig();
+        if (inheritedSolverBenchmarkConfig != null) {
+            allSolverBenchmarkConfigList.add(inheritedSolverBenchmarkConfig);
+        }
+        for (var solverBenchmarkConfig : allSolverBenchmarkConfigList) {
+            var solverConfig = solverBenchmarkConfig.getSolverConfig();
+            if (solverConfig == null) {
+                continue;
+            }
+            var phaseEnvironmentList = EnvironmentModeUtil.resolvePhases(solverConfig, false);
+            if (!phaseEnvironmentList.isEmpty()) {
+                throw new IllegalStateException("""
+                        The phases cannot override the environment mode when in benchmark mode.
+                        Maybe remove the environmentMode setting from the benchmark configuration (%s)."""
+                        .formatted(Objects.requireNonNullElse(solverBenchmarkConfig.getName(), "<unnamed>")));
+            }
         }
     }
 

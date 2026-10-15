@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.score.analysis;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.SequencedMap;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -87,6 +88,23 @@ public interface ScoreAnalysis<Score_ extends Score<Score_>> {
     boolean isSolutionInitialized();
 
     /**
+     * Indicates whether the solution was structurally flawed at the time of analysis.
+     *
+     * @see Score#structuralScore()
+     * @return isSolutionStructurallyFlawed true if the solution was structurally flawed at the time of analysis.
+     */
+    boolean isSolutionStructurallyFlawed();
+
+    /**
+     * Returns an analysis of the structural flaws of a structurally flawed solution.
+     *
+     * @see Score#structuralScore()
+     * @return null if the solution was not structurally flawed at the time of analysis.
+     */
+    @Nullable
+    StructuralFlawAnalysis structuralFlawAnalysis();
+
+    /**
      * Performs a lookup on {@link #constraintMap()}.
      * Equivalent to {@code constraintMap().get(constraintRef)}.
      *
@@ -136,6 +154,17 @@ public interface ScoreAnalysis<Score_ extends Score<Score_>> {
      * @return equivalent to {@code constraintMap().values()}
      */
     Collection<ConstraintAnalysis<Score_>> constraintAnalyses();
+
+    /**
+     * Returns a map from indicted classes to a list of {@link IndictmentAnalysis} that contributed to at least one constraint
+     * match in the {@link ScoreAnalysis}. By default, the key is the canonical name of the class, but can be controlled
+     * by implementing {@link Indictable}. The lists are sorted by the absolute value of their total score contribution, in
+     * descending order.
+     *
+     * @return a map from indicted class to a list of {@link IndictmentAnalysis} linking planning entities and problem facts
+     *         to their impact in this {@link ScoreAnalysis}
+     */
+    SequencedMap<String, List<IndictmentAnalysis<Score_>>> indictmentMap();
 
     /**
      * Returns a diagnostic text that explains the solution through the {@link ConstraintAnalysis} API to identify which

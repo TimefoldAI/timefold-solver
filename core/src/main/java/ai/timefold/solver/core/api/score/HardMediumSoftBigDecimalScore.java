@@ -3,9 +3,9 @@ package ai.timefold.solver.core.api.score;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.HARD_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.MEDIUM_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.SOFT_LABEL;
+import static ai.timefold.solver.core.impl.score.ScoreUtil.STRUCTURAL_LABEL;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -24,89 +24,68 @@ import org.jspecify.annotations.NullMarked;
  * @see Score
  */
 @NullMarked
-public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal mediumScore,
+public record HardMediumSoftBigDecimalScore(long structuralScore, BigDecimal hardScore, BigDecimal mediumScore,
         BigDecimal softScore) implements Score<HardMediumSoftBigDecimalScore> {
 
     public static final HardMediumSoftBigDecimalScore ZERO = new HardMediumSoftBigDecimalScore(BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardMediumSoftBigDecimalScore ONE_HARD = new HardMediumSoftBigDecimalScore(BigDecimal.ONE,
             BigDecimal.ZERO, BigDecimal.ZERO);
-    private static final HardMediumSoftBigDecimalScore MINUS_ONE_HARD =
-            new HardMediumSoftBigDecimalScore(BigDecimal.ONE.negate(),
-                    BigDecimal.ZERO, BigDecimal.ZERO);
     public static final HardMediumSoftBigDecimalScore ONE_MEDIUM =
             new HardMediumSoftBigDecimalScore(BigDecimal.ZERO,
                     BigDecimal.ONE, BigDecimal.ZERO);
-    private static final HardMediumSoftBigDecimalScore MINUS_ONE_MEDIUM =
-            new HardMediumSoftBigDecimalScore(BigDecimal.ZERO,
-                    BigDecimal.ONE.negate(), BigDecimal.ZERO);
     public static final HardMediumSoftBigDecimalScore ONE_SOFT = new HardMediumSoftBigDecimalScore(BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ONE);
-    private static final HardMediumSoftBigDecimalScore MINUS_ONE_SOFT =
-            new HardMediumSoftBigDecimalScore(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE.negate());
+
+    public HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal mediumScore,
+            BigDecimal softScore) {
+        this(0L, hardScore, mediumScore, softScore);
+    }
 
     public static HardMediumSoftBigDecimalScore parseScore(String scoreString) {
         var scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftBigDecimalScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
-        var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
-        var mediumScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
-        var softScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
-        return of(hardScore, mediumScore, softScore);
+        if (scoreTokens.length == 3) {
+            var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var mediumScore =
+                    ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
+            var softScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
+            return of(hardScore, mediumScore, softScore);
+        } else {
+            var structuralScore = ScoreUtil.parseLevelAsLong(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
+            var hardScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
+            var mediumScore =
+                    ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[2]);
+            var softScore = ScoreUtil.parseLevelAsBigDecimal(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[3]);
+            return new HardMediumSoftBigDecimalScore(structuralScore, hardScore, mediumScore, softScore);
+        }
     }
 
     public static HardMediumSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal mediumScore,
             BigDecimal softScore) {
-        if (Objects.equals(hardScore, BigDecimal.ONE.negate()) && mediumScore.signum() == 0 && softScore.signum() == 0) {
-            return MINUS_ONE_HARD;
-        } else if (hardScore.signum() == 0) {
-            if (Objects.equals(mediumScore, BigDecimal.ONE.negate()) && softScore.signum() == 0) {
-                return MINUS_ONE_MEDIUM;
-            } else if (mediumScore.signum() == 0) {
-                if (Objects.equals(softScore, BigDecimal.ONE.negate())) {
-                    return MINUS_ONE_SOFT;
-                } else if (softScore.signum() == 0) {
-                    return ZERO;
-                } else if (Objects.equals(softScore, BigDecimal.ONE)) {
-                    return ONE_SOFT;
-                }
-            } else if (Objects.equals(mediumScore, BigDecimal.ONE) && softScore.signum() == 0) {
-                return ONE_MEDIUM;
-            }
-        } else if (Objects.equals(hardScore, BigDecimal.ONE) && mediumScore.signum() == 0 && softScore.signum() == 0) {
-            return ONE_HARD;
+        if (ScoreUtil.isZero(hardScore) && ScoreUtil.isZero(mediumScore) && ScoreUtil.isZero(softScore)) {
+            return ZERO;
         }
         return new HardMediumSoftBigDecimalScore(hardScore, mediumScore, softScore);
     }
 
     public static HardMediumSoftBigDecimalScore ofHard(BigDecimal hardScore) {
-        if (Objects.equals(hardScore, BigDecimal.ONE.negate())) {
-            return MINUS_ONE_HARD;
-        } else if (hardScore.signum() == 0) {
+        if (ScoreUtil.isZero(hardScore)) {
             return ZERO;
-        } else if (Objects.equals(hardScore, BigDecimal.ONE)) {
-            return ONE_HARD;
         }
         return new HardMediumSoftBigDecimalScore(hardScore, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
     public static HardMediumSoftBigDecimalScore ofMedium(BigDecimal mediumScore) {
-        if (Objects.equals(mediumScore, BigDecimal.ONE.negate())) {
-            return MINUS_ONE_MEDIUM;
-        } else if (mediumScore.signum() == 0) {
+        if (ScoreUtil.isZero(mediumScore)) {
             return ZERO;
-        } else if (Objects.equals(mediumScore, BigDecimal.ONE)) {
-            return ONE_MEDIUM;
         }
         return new HardMediumSoftBigDecimalScore(BigDecimal.ZERO, mediumScore, BigDecimal.ZERO);
     }
 
     public static HardMediumSoftBigDecimalScore ofSoft(BigDecimal softScore) {
-        if (Objects.equals(softScore, BigDecimal.ONE.negate())) {
-            return MINUS_ONE_SOFT;
-        } else if (softScore.signum() == 0) {
+        if (ScoreUtil.isZero(softScore)) {
             return ZERO;
-        } else if (Objects.equals(softScore, BigDecimal.ONE)) {
-            return ONE_SOFT;
         }
         return new HardMediumSoftBigDecimalScore(BigDecimal.ZERO, BigDecimal.ZERO, softScore);
     }
@@ -118,7 +97,7 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
      */
     @Override
     public boolean isFeasible() {
-        return hardScore.compareTo(BigDecimal.ZERO) >= 0;
+        return structuralScore >= 0 && !ScoreUtil.isNegative(hardScore);
     }
 
     @Override
@@ -137,33 +116,20 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
 
     @Override
     public HardMediumSoftBigDecimalScore multiply(double multiplicand) {
-        // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
-        // because together with the floor rounding it gives unwanted behaviour
-        var multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
-        // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
-        return of(hardScore.multiply(multiplicandBigDecimal).setScale(hardScore.scale(), RoundingMode.FLOOR),
-                mediumScore.multiply(multiplicandBigDecimal).setScale(mediumScore.scale(), RoundingMode.FLOOR),
-                softScore.multiply(multiplicandBigDecimal).setScale(softScore.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.multiply(hardScore, multiplicand), ScoreUtil.multiply(mediumScore, multiplicand),
+                ScoreUtil.multiply(softScore, multiplicand));
     }
 
     @Override
     public HardMediumSoftBigDecimalScore divide(double divisor) {
-        var divisorBigDecimal = BigDecimal.valueOf(divisor);
-        // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
-        return of(hardScore.divide(divisorBigDecimal, hardScore.scale(), RoundingMode.FLOOR),
-                mediumScore.divide(divisorBigDecimal, mediumScore.scale(), RoundingMode.FLOOR),
-                softScore.divide(divisorBigDecimal, softScore.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.divide(hardScore, divisor), ScoreUtil.divide(mediumScore, divisor),
+                ScoreUtil.divide(softScore, divisor));
     }
 
     @Override
     public HardMediumSoftBigDecimalScore power(double exponent) {
-        var exponentBigDecimal = BigDecimal.valueOf(exponent);
-        // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
-        // TODO FIXME remove .intValue() so non-integer exponents produce correct results
-        // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
-        return of(hardScore.pow(exponentBigDecimal.intValue()).setScale(hardScore.scale(), RoundingMode.FLOOR),
-                mediumScore.pow(exponentBigDecimal.intValue()).setScale(mediumScore.scale(), RoundingMode.FLOOR),
-                softScore.pow(exponentBigDecimal.intValue()).setScale(softScore.scale(), RoundingMode.FLOOR));
+        return of(ScoreUtil.power(hardScore, exponent), ScoreUtil.power(mediumScore, exponent),
+                ScoreUtil.power(softScore, exponent));
     }
 
     @Override
@@ -183,21 +149,26 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof HardMediumSoftBigDecimalScore(var otherHardScore, var otherMediumScore, var otherSoftScore)) {
-            return hardScore.stripTrailingZeros().equals(otherHardScore.stripTrailingZeros())
-                    && mediumScore.stripTrailingZeros().equals(otherMediumScore.stripTrailingZeros())
-                    && softScore.stripTrailingZeros().equals(otherSoftScore.stripTrailingZeros());
+        if (o instanceof HardMediumSoftBigDecimalScore(var otherStructuralScore, var otherHardScore, var otherMediumScore, var otherSoftScore)) {
+            return structuralScore == otherStructuralScore
+                    && ScoreUtil.equalsIgnoringScale(hardScore, otherHardScore)
+                    && ScoreUtil.equalsIgnoringScale(mediumScore, otherMediumScore)
+                    && ScoreUtil.equalsIgnoringScale(softScore, otherSoftScore);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hardScore.stripTrailingZeros(), mediumScore.stripTrailingZeros(), softScore.stripTrailingZeros());
+        return Objects.hash(structuralScore, ScoreUtil.hashCodeIgnoringScale(hardScore),
+                ScoreUtil.hashCodeIgnoringScale(mediumScore), ScoreUtil.hashCodeIgnoringScale(softScore));
     }
 
     @Override
     public int compareTo(HardMediumSoftBigDecimalScore other) {
+        if (structuralScore != other.structuralScore) {
+            return Long.compare(structuralScore, other.structuralScore);
+        }
         var hardScoreComparison = hardScore.compareTo(other.hardScore());
         if (hardScoreComparison != 0) {
             return hardScoreComparison;
@@ -212,13 +183,17 @@ public record HardMediumSoftBigDecimalScore(BigDecimal hardScore, BigDecimal med
 
     @Override
     public String toShortString() {
-        return ScoreUtil.buildShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0,
+        return ScoreUtil.buildShortString(this, ScoreUtil.BIG_DECIMAL_NOT_ZERO,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
     }
 
     @Override
     public String toString() {
-        return hardScore + HARD_LABEL + "/" + mediumScore + MEDIUM_LABEL + "/" + softScore + SOFT_LABEL;
+        return (structuralScore < 0)
+                ? "%d%s/%s%s/%s%s/%s%s".formatted(structuralScore, STRUCTURAL_LABEL, hardScore, HARD_LABEL, mediumScore,
+                        MEDIUM_LABEL,
+                        softScore, SOFT_LABEL)
+                : "%s%s/%s%s/%s%s".formatted(hardScore, HARD_LABEL, mediumScore, MEDIUM_LABEL, softScore, SOFT_LABEL);
     }
 
 }

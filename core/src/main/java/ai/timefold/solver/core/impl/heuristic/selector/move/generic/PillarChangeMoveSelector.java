@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+public class PillarChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
 
     protected final PillarSelector<Solution_> pillarSelector;
     protected final ValueSelector<Solution_> valueSelector;

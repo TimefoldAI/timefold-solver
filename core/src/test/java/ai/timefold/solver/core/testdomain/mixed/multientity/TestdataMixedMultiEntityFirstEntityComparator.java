@@ -6,6 +6,6 @@ public class TestdataMixedMultiEntityFirstEntityComparator implements Comparator
     @Override
     public int compare(TestdataMixedMultiEntityFirstEntity v1, TestdataMixedMultiEntityFirstEntity v2) {
         // ASC sort
-        return v1.getDifficulty() - v2.getDifficulty();
+        return Integer.compare(v1.getDifficulty(), v2.getDifficulty());
     }
 }

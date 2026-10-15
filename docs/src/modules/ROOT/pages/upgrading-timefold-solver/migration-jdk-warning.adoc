@@ -1,0 +1,1 @@
+NOTE: The migration tool only works on JDK 25 or earlier, because OpenRewrite only supports LTS versions of Java.

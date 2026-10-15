@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 
 /**
@@ -50,8 +51,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         } else {
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced leftTuple happens to be in.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
-            enqueuePendingLeft(leftTuple);
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
+            crossMatchLeft(leftTuple);
         }
     }
 
@@ -70,10 +71,10 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             updateUnchangedCounterLeft(counter);
         } else {
             // Eager own-side cleanup, then defer the re-walk of the opposite side.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
             clearLeftTrackerList(leftTuple);
             counter.countRight = 0;
-            enqueuePendingLeft(leftTuple);
+            crossMatchLeft(leftTuple);
         }
     }
 
@@ -101,12 +102,18 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         rightTuple.setStore(inputStoreIndexRightEntry, rightTupleList.add(rightTuple));
         if (!isFiltering) {
-            counterList.forEach(this::incrementCounterRight);
+            // To prevent creating a dynamic lambda on the hot path,
+            // only call the 2-args version when indictments are enabled
+            if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                counterList.forEach(this::incrementCounterRight);
+            } else {
+                counterList.forEach(counter -> incrementCounterRightUpdatingIndictment(counter, rightTuple));
+            }
         } else {
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced rightTuple happens to be in.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
-            enqueuePendingRight(rightTuple);
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
+            crossMatchRight(rightTuple);
         }
     }
 
@@ -120,9 +127,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         if (isFiltering) {
             // Eager own-side cleanup, then defer the re-walk of the opposite side.
-            // See AbstractIfExistsNode's pendingLeft/pendingRight javadoc.
+            // See AbstractCrossMatchNode's pendingLeft/pendingRight javadoc.
             clearRightTrackerList(rightTuple);
-            enqueuePendingRight(rightTuple);
+            crossMatchRight(rightTuple);
         }
     }
 
@@ -136,7 +143,13 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         rightEntry.remove();
         if (!isFiltering) {
-            counterList.forEach(this::decrementCounterRight);
+            // To prevent creating a dynamic lambda on the hot path,
+            // only call the 2-args version when indictments are enabled
+            if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                counterList.forEach(this::decrementCounterRight);
+            } else {
+                counterList.forEach(counter -> decrementCounterRightUpdatingIndictment(counter, rightTuple));
+            }
         } else {
             clearRightTrackerList(rightTuple);
         }

@@ -210,6 +210,27 @@ class AcceptedLocalSearchForagerTest {
         forager.phaseEnded(phaseScope);
     }
 
+    @Test
+    void foragerDoesNotPickARejectedStructurallyFlawedMove() {
+        var forager = new AcceptedLocalSearchForager<TestdataSolution>(new HighestScoreFinalistPodium<>(),
+                LocalSearchPickEarlyType.NEVER, Integer.MAX_VALUE, false);
+        var phaseScope = createPhaseScope();
+        forager.phaseStarted(phaseScope);
+        var stepScope = new LocalSearchStepScope<>(phaseScope);
+        forager.stepStarted(stepScope);
+
+        var flawedMoveScope = new LocalSearchMoveScope<>(stepScope, 0, new SelectorBasedDummyMove());
+        flawedMoveScope.setInitializedScore(new SimpleScoreDefinition().getStructurallyFlawedScore());
+        // As AbstractAcceptor.isAccepted does for every structurally flawed move.
+        flawedMoveScope.setAccepted(false);
+        forager.addMove(flawedMoveScope);
+
+        assertThat(forager.pickMove(stepScope))
+                .withFailMessage("The forager picked a rejected, structurally flawed move as the step.")
+                .isNull();
+        assertThat(stepScope.getSelectedMoveCount()).isZero();
+    }
+
     private static LocalSearchPhaseScope<TestdataSolution> createPhaseScope() {
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
         LocalSearchPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
