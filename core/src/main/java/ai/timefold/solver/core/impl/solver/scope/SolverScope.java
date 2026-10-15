@@ -338,16 +338,14 @@ public class SolverScope<Solution_> {
      * @return at least 0, per second
      */
     public long getScoreCalculationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getScoreCalculationCount(), timeMillisSpent);
+        return getSpeed(getScoreCalculationCount(), getTimeMillisSpent());
     }
 
     /**
      * @return at least 0, per second
      */
     public long getMoveEvaluationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
+        return getSpeed(getMoveEvaluationCount(), getTimeMillisSpent());
     }
 
     public void setWorkingSolutionFromBestSolution() {
