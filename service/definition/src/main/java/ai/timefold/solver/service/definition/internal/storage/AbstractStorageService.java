@@ -682,15 +682,15 @@ public abstract non-sealed class AbstractStorageService<ModelInput_ extends Mode
         }
     }
 
-    public void storeExecutionArtifacts(String id, InputStream input) {
-        storeExecutionArtifacts(null, id, input);
+    public void storeExecutionArtifacts(String id, InputStream input, long length) {
+        storeExecutionArtifacts(null, id, input, length);
     }
 
-    public void storeExecutionArtifacts(StorageAddress storageAddress, String id, InputStream input) {
+    public void storeExecutionArtifacts(StorageAddress storageAddress, String id, InputStream input, long length) {
         acquireLock(id);
         try {
             SubModelKind kind = SubModelKind.EXECUTION_ARTIFACTS;
-            var content = new StorageContent(input, -1, Map.of());
+            var content = new StorageContent(input, length, Map.of());
             writeWithRetry(id, "store the submodel (" + kind + ")", content,
                     () -> storage.storeSubModel(storageAddress, id, kind, content));
         } finally {
