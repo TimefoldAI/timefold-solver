@@ -73,6 +73,7 @@
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy]
 * Upgrade guides
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
+** xref:upgrading-timefold-solver/upgrade-to-latest.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-from-optaplanner.adoc[leveloffset=+1]
 * Feature migrations

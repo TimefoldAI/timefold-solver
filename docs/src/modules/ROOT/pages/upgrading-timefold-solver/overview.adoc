@@ -1,5 +1,6 @@
 [#upgradingTimefoldSolverOverview]
 = Upgrading Timefold Solver: Overview
+:page-aliases: upgrading-timefold-solver/backwards-compatibility.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -30,7 +31,7 @@ Timefold Solver separates its API from its implementation:
 They will change in future major or minor releases,
 but probably not in hotfix releases.
 
-Backwards incompatible changes for a new major version are clearly documented in xref:upgrading-timefold-solver/upgrade-from-v1.adoc#manualUpgrade[the upgrade recipe].
+Backwards incompatible changes for a new major version are clearly documented in xref:upgrading-timefold-solver/upgrade-from-v1.adoc#manualUpgrade1to2[the upgrade recipe].
 
 [#previewFeatures]
 == Preview features
