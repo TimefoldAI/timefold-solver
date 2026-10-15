@@ -6,8 +6,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.termination.TerminationId;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -30,10 +33,18 @@ public final class TerminationFactory<Solution_> {
         this.terminationConfig = terminationConfig;
     }
 
-    @SuppressWarnings("unchecked")
     public <Termination_ extends Termination<Solution_>> Termination_
             buildTermination(HeuristicConfigPolicy<Solution_> configPolicy, Termination_ chainedTermination) {
-        var termination = buildTermination(configPolicy);
+        return buildTermination(configPolicy, chainedTermination, null);
+    }
+
+    /**
+     * @param phaseIndex null for the solver termination
+     */
+    @SuppressWarnings("unchecked")
+    public <Termination_ extends Termination<Solution_>> Termination_ buildTermination(
+            HeuristicConfigPolicy<Solution_> configPolicy, Termination_ chainedTermination, @Nullable Integer phaseIndex) {
+        var termination = buildTermination(configPolicy, null, 0, phaseIndex);
         if (termination == null) {
             return chainedTermination;
         }
@@ -43,12 +54,28 @@ public final class TerminationFactory<Solution_> {
     }
 
     /**
-     * @param configPolicy never null
+     * Builds the root level of the solver termination.
+     *
+     * @return sometimes null
+     */
+    public @Nullable Termination<Solution_> buildTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
+        return buildTermination(configPolicy, null, 0, null);
+    }
+
+    /**
+     * See {@link TerminationId} for the id model.
+     *
+     * @param parent null for the root level
+     * @param ordinal the index of this level in its parent; 0 for the root level
+     * @param phaseIndex null for the solver termination
      * @return sometimes null
      */
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> @Nullable Termination<Solution_> buildTermination(
-            HeuristicConfigPolicy<Solution_> configPolicy) {
+            HeuristicConfigPolicy<Solution_> configPolicy, @Nullable TerminationId parent, int ordinal,
+            @Nullable Integer phaseIndex) {
+        var levelType = getCompositionStyle() == TerminationCompositionStyle.AND ? TerminationType.AND : TerminationType.OR;
+        var levelId = new DefaultTerminationId(levelType, parent, ordinal, phaseIndex);
         List<Termination<Solution_>> terminationList = new ArrayList<>(buildTimeBasedTermination(configPolicy));
 
         if (terminationConfig.getBestScoreLimit() != null) {
@@ -89,8 +116,13 @@ public final class TerminationFactory<Solution_> {
         if (terminationConfig.getMoveCountLimit() != null) {
             terminationList.add(new MoveCountTermination<>(terminationConfig.getMoveCountLimit()));
         }
-        terminationList.addAll(buildInnerTermination(configPolicy));
-        return buildTerminationFromList(terminationList);
+        for (var leaf : terminationList) {
+            var abstractLeaf = (AbstractTermination<Solution_>) leaf;
+            abstractLeaf.setTerminationId(new DefaultTerminationId(
+                    Objects.requireNonNull(abstractLeaf.getTerminationType()), levelId, 0, phaseIndex));
+        }
+        terminationList.addAll(buildInnerTermination(configPolicy, levelId));
+        return buildTerminationFromList(terminationList, levelId);
     }
 
     @SuppressWarnings("unchecked")
@@ -140,35 +172,53 @@ public final class TerminationFactory<Solution_> {
         return terminationList;
     }
 
-    List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
+    List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy,
+            DefaultTerminationId levelId) {
         var terminationConfigList = terminationConfig.getTerminationConfigList();
         if (ConfigUtils.isEmptyCollection(terminationConfigList)) {
             return Collections.emptyList();
         }
-
-        return terminationConfigList.stream()
-                .map(config -> TerminationFactory.<Solution_> create(config)
-                        .buildTermination(configPolicy))
+        var phaseIndex = levelId.nullablePhaseIndex();
+        // The index comes before the null filter, so an empty level does not shift the ordinals.
+        return IntStream.range(0, terminationConfigList.size())
+                .mapToObj(i -> TerminationFactory.<Solution_> create(terminationConfigList.get(i))
+                        .buildTermination(configPolicy, levelId, i, phaseIndex))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
+    private TerminationCompositionStyle getCompositionStyle() {
+        return Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);
+    }
+
     @SuppressWarnings("unchecked")
     @Nullable
-    Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
+    Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList,
+            DefaultTerminationId levelId) {
         return switch (terminationList.size()) {
             case 0 -> null;
             case 1 -> terminationList.getFirst();
             default -> {
                 var terminationArray = terminationList.toArray(new Termination[0]);
-                var compositionStyle =
-                        Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(),
-                                TerminationCompositionStyle.OR);
-                yield switch (compositionStyle) {
-                    case AND -> UniversalTermination.and(terminationArray);
-                    case OR -> UniversalTermination.or(terminationArray);
+                yield switch (getCompositionStyle()) {
+                    case AND -> {
+                        var and = new AndCompositeTermination<Solution_>(terminationArray);
+                        and.setTerminationId(levelId);
+                        terminationList.forEach(TerminationFactory::stopRecording);
+                        yield and;
+                    }
+                    case OR -> new OrCompositeTermination<Solution_>(terminationArray);
                 };
             }
         };
+    }
+
+    private static <Solution_> void stopRecording(Termination<Solution_> termination) {
+        if (termination instanceof AbstractCompositeTermination<Solution_> composite) {
+            if (composite instanceof OrCompositeTermination<Solution_> or) {
+                or.stopRecording();
+            }
+            composite.terminationList.forEach(TerminationFactory::stopRecording);
+        }
     }
 }

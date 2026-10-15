@@ -46,6 +46,7 @@ import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
@@ -54,6 +55,8 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.phase.DefaultPhaseId;
+import ai.timefold.solver.core.impl.phase.event.DefaultPhaseEventProducerId;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
@@ -299,7 +302,8 @@ class SolverManagerTest {
                     .run();
             solverJob.getFinalBestSolution();
             assertThat(initialSolutionEvent.isInitialized()).isTrue();
-            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(0));
+            assertThat(initialSolutionEvent.producerId())
+                    .isEqualTo(DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 0));
         }
     }
 
@@ -400,7 +404,8 @@ class SolverManagerTest {
             } finally {
                 assertThat(consumerCalled).isTrue();
                 assertThat(initialSolutionEvent.isInitialized()).isFalse();
-                assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(0));
+                assertThat(initialSolutionEvent.producerId())
+                        .isEqualTo(DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 0));
             }
         }
     }
@@ -447,7 +452,8 @@ class SolverManagerTest {
             solverJob.getFinalBestSolution(); // LS will start, but terminate immediately.
             assertThat(consumerCalled).isTrue();
             assertThat(initialSolutionEvent.isInitialized()).isFalse();
-            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(0));
+            assertThat(initialSolutionEvent.producerId())
+                    .isEqualTo(DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 0));
         }
     }
 
@@ -473,7 +479,8 @@ class SolverManagerTest {
                     .run();
             solverJob.getFinalBestSolution();
             assertThat(initialSolutionEvent.isInitialized()).isTrue();
-            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(1));
+            assertThat(initialSolutionEvent.producerId())
+                    .isEqualTo(DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 1));
         }
     }
 
@@ -500,7 +507,8 @@ class SolverManagerTest {
                     .run();
             solverJob.getFinalBestSolution();
             assertThat(initialSolutionEvent.isInitialized()).isTrue();
-            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(1));
+            assertThat(initialSolutionEvent.producerId())
+                    .isEqualTo(DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 1));
         }
     }
 
@@ -528,7 +536,7 @@ class SolverManagerTest {
                     .run();
             solverJob.getFinalBestSolution();
             assertThat(initialSolutionEvent.isInitialized()).isTrue();
-            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.customPhase(1));
+            assertThat(initialSolutionEvent.producerId()).isEqualTo(DefaultPhaseEventProducerId.of(PhaseType.CUSTOM_PHASE, 1));
         }
     }
 
@@ -1403,6 +1411,35 @@ class SolverManagerTest {
             // The live getters cover only the segment after the problem change.
             assertThat(summary.scoreCalculationCount()).isGreaterThan(solverJob.getScoreCalculationCount());
             assertThat(summary.solvingDuration()).isGreaterThanOrEqualTo(solverJob.getSolvingDuration());
+            // The restart sets a new best solution, so the time to best includes the first segment.
+            assertThat(summary.timeToBestSolution())
+                    .isGreaterThanOrEqualTo(summary.solvingDuration().minus(solverJob.getSolvingDuration()))
+                    .isLessThanOrEqualTo(summary.solvingDuration());
+        }
+    }
+
+    @Test
+    @Timeout(60)
+    void resultWhenTerminatedEarlyDuringLocalSearch() throws InterruptedException, ExecutionException {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig());
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var firstInitializedSolution = new CountDownLatch(1);
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                    .withFirstInitializedSolutionEventConsumer(event -> firstInitializedSolution.countDown())
+                    .run();
+            firstInitializedSolution.await();
+            // The Construction Heuristic ended, so new move evaluations come from the Local Search.
+            var moveEvaluationCount = solverJob.getMoveEvaluationCount();
+            await().atMost(Duration.ofSeconds(10)).until(() -> solverJob.getMoveEvaluationCount() > moveEvaluationCount);
+            solverJob.terminateEarly();
+
+            var summary = solverJob.getResult();
+            assertThat(summary.isTerminatedEarly()).isTrue();
+            assertThat(summary.termination()).isNull();
+            assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
         }
     }
 

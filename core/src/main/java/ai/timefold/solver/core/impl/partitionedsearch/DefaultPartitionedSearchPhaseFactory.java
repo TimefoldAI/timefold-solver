@@ -22,7 +22,7 @@ public class DefaultPartitionedSearchPhaseFactory<Solution_>
         var solverConfigPolicyUpdated = solverConfigPolicy.copyConfigPolicy(environmentMode);
         return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.PARTITIONED_SEARCH)
                 .buildPartitionedSearch(phaseIndex, phaseConfig, solverConfigPolicyUpdated, solverTermination,
-                        this::buildPhaseTermination);
+                        (configPolicy, termination) -> buildPhaseTermination(configPolicy, termination, phaseIndex));
     }
 
 }

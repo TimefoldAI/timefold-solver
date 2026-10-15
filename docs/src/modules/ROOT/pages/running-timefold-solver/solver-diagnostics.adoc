@@ -513,6 +513,70 @@ the time between them, such as the idle time of a daemon solver, is not included
 The live getters on `SolverJob` cover only the segment since the last problem change,
 so after a problem change their values are smaller than these totals.
 
+`SolverRunSummary` also tells how the run ended:
+
+`isTerminatedEarly()`:: True if the run terminated early,
+after `Solver.terminateEarly()`, `SolverJob.terminateEarly()`, `SolverManager.terminateEarly(problemId)`,
+or an interrupt of the solver thread.
+A daemon solver ends only this way, so for a daemon solver this is always true.
+`termination()`:: The `TerminationId` of the termination that ended the run:
+a termination configured on the solver,
+or a termination configured on the phase that ran last.
+A termination of an earlier phase is never reported, because the next phase starts after it.
+It is `null` if the run terminated early, or if the last phase completed.
+If the last phase is a Partitioned Search phase, a termination configured on that phase is not reported, because only the partitions evaluate it.
+`lastPhase()`:: The `PhaseId` of the last phase that started, such as `Local Search (1)`.
+It is `null` if no phase ran, for example if no planning entity is movable.
+`timeToBestSolution()`:: The time from the start of the run until the final best solution was set,
+summed over the segments like the solving duration.
+It is about zero if the solver did not improve the input solution.
+After a problem change, the solver restarts and sets a new best solution.
+
+If `isTerminatedEarly()` is `false` and `termination()` is `null`,
+the last phase completed; for example, a Construction Heuristic initialized all planning entities.
+
+A `TerminationId` identifies one termination in the xref:optimization-algorithms/overview.adoc#termination[termination configuration].
+Each `<termination>` element is a level.
+The type of a level is `AND` or `OR`, from its `terminationCompositionStyle` (`OR` by default).
+Each limit in a level is a leaf.
+All `*SpentLimit` settings of one level, such as `secondsSpentLimit` and `minutesSpentLimit`, make one `SPENT_LIMIT` leaf.
+
+* `type()` is the type of the leaf or of the level.
+* `parent()` of a leaf is its level.
+`parent()` of a nested level is the outer level.
+The root level has no parent.
+* `ordinal()` is the index of a nested level in the list of its parent;
+it is 0 for the root level and for all leaves.
+* `phaseIndex()` is the index of the phase that has this termination configured,
+and is empty for the termination configured on the solver.
+All ids in one chain of parents have the same phase index.
+
+An `OR` level is reported as the first of its terminations that is true: a leaf or a nested `AND` level.
+Thus `OR` appears only as `parent().type()`.
+An `AND` level is reported as itself, when all its terminations are true.
+If an `AND` level has only one termination, that termination is reported instead.
+For example, in this solver configuration, each comment shows the id as `(type, parent, ordinal)`:
+
+[source,xml,options="nowrap"]
+----
+<termination>                                                <!-- R = (OR, none, 0) -->
+  <secondsSpentLimit>30</secondsSpentLimit>                  <!-- (SPENT_LIMIT, R, 0) -->
+  <minutesSpentLimit>1</minutesSpentLimit>                   <!-- the same leaf as secondsSpentLimit -->
+  <termination>                                              <!-- A = (OR, R, 0) -->
+    <bestScoreLimit>0</bestScoreLimit>                       <!-- (BEST_SCORE_LIMIT, A, 0) -->
+  </termination>
+  <termination>                                              <!-- B = (AND, R, 1) -->
+    <terminationCompositionStyle>AND</terminationCompositionStyle>
+    <stepCountLimit>100</stepCountLimit>                     <!-- (STEP_COUNT_LIMIT, B, 0) -->
+    <unimprovedStepCountLimit>10</unimprovedStepCountLimit>  <!-- (UNIMPROVED_STEP_COUNT_LIMIT, B, 0) -->
+  </termination>
+</termination>
+----
+
+The run can report `(SPENT_LIMIT, R, 0)`, `(BEST_SCORE_LIMIT, A, 0)` or `B`.
+It never reports `R`, `A`, or a leaf of `B`.
+Solvers built from the same configuration give equal ids.
+
 === Additional metrics
 
 For more detailed monitoring, Timefold Solver can be configured to monitor additional metrics at a performance cost.

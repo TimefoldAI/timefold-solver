@@ -17,6 +17,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.phase.PhaseId;
+import ai.timefold.solver.core.api.solver.termination.TerminationId;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -30,6 +32,8 @@ import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+
+import org.jspecify.annotations.Nullable;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -70,6 +74,9 @@ public class SolverScope<Solution_> {
     private Score<?> startingInitializedScore;
 
     private Long bestSolutionTimeMillis;
+
+    private TerminationId lastTerminationId;
+    private PhaseId lastPhase;
 
     /**
      * Used for tracking step score
@@ -269,6 +276,26 @@ public class SolverScope<Solution_> {
         this.bestSolutionTimeMillis = bestSolutionTimeMillis;
     }
 
+    public @Nullable TerminationId getLastTerminationId() {
+        return lastTerminationId;
+    }
+
+    /**
+     * The last id wins, because an unimproved* termination can be true in the middle of a step and false at the phase loop
+     * check.
+     */
+    public void setLastTerminationId(@Nullable TerminationId lastTerminationId) {
+        this.lastTerminationId = lastTerminationId;
+    }
+
+    public @Nullable PhaseId getLastPhase() {
+        return lastPhase;
+    }
+
+    public void setLastPhase(@Nullable PhaseId lastPhase) {
+        this.lastPhase = lastPhase;
+    }
+
     public Set<String> getMoveCountTypes() {
         return moveEvaluationCountPerTypeMap.keySet();
     }
@@ -290,6 +317,8 @@ public class SolverScope<Solution_> {
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
         this.moveEvaluationCount = 0L;
         this.childThreadsScoreCalculationCount = 0L;
+        this.lastTerminationId = null;
+        this.lastPhase = null;
     }
 
     public Long getBestSolutionTimeMillisSpent() {
@@ -298,7 +327,9 @@ public class SolverScope<Solution_> {
 
     public void endingNow() {
         endingSystemTimeMillis.set(getClock().millis());
-        solverRunStatistics.addSegment(getTimeMillisSpent(), getScoreCalculationCount(), getMoveEvaluationCount());
+        var bestSolutionTimeMillisSpent = getBestSolutionTimeMillis() == null ? 0L : getBestSolutionTimeMillisSpent();
+        solverRunStatistics.addSegment(getTimeMillisSpent(), getScoreCalculationCount(), getMoveEvaluationCount(),
+                bestSolutionTimeMillisSpent);
     }
 
     public SolverRunStatisticsTracker getSolverStatistics() {

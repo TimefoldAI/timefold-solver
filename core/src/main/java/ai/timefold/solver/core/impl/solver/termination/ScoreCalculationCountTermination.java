@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -64,6 +65,11 @@ final class ScoreCalculationCountTermination<Solution_>
             throw new UnsupportedOperationException("The childThreadType (%s) is not implemented."
                     .formatted(childThreadType));
         }
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.SCORE_CALCULATION_COUNT_LIMIT;
     }
 
     @Override

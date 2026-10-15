@@ -19,8 +19,9 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
-import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
+import ai.timefold.solver.core.impl.phase.event.DefaultPhaseEventProducerId;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.AfterEach;
@@ -151,7 +152,7 @@ class ConsumerSupportTest {
         consumerSupport.consumeFirstInitializedSolution(() -> {
             consumerCalled.set(true);
             return TestdataSolution.generateSolution();
-        }, EventProducerId.constructionHeuristic(0), false);
+        }, DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 0), false);
         assertThat(consumerCalled).isFalse();
         // Must not block, as no lock was acquired by the calls above.
         consumerSupport.consumeFinalBestSolution(new DefaultSolverRunResult<>(TestdataSolution.generateSolution(), SUMMARY));
@@ -183,7 +184,7 @@ class ConsumerSupportTest {
         consumerSupport.consumeFirstInitializedSolution(() -> {
             assertThat(Thread.currentThread()).isSameAs(callerThread);
             return firstInitializedSolution;
-        }, EventProducerId.constructionHeuristic(0), false);
+        }, DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 0), false);
 
         consumed.await();
         assertThat(startedSolutionRef.get()).isSameAs(startedSolution);
@@ -195,6 +196,7 @@ class ConsumerSupportTest {
     }
 
     private void consumeIntermediateBestSolution(TestdataSolution bestSolution) {
-        consumerSupport.consumeIntermediateBestSolution(bestSolution, EventProducerId.constructionHeuristic(0), () -> true);
+        consumerSupport.consumeIntermediateBestSolution(bestSolution,
+                DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, 0), () -> true);
     }
 }
