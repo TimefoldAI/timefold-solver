@@ -100,11 +100,11 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
         solver.setMonitorTags(subSingleBenchmarkSolverTags);
         solver.addPhaseLifecycleListener(statisticRegistry);
-        var solution = solver.solve(problem);
+        var result = solver.solveAndSummarize(problem);
+        var solution = result.solution();
 
         solver.removePhaseLifecycleListener(statisticRegistry);
         Metrics.removeRegistry(statisticRegistry);
-        var timeMillisSpent = solver.getTimeMillisSpent();
 
         for (var subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap().values()) {
             subSingleStatistic.close(statisticRegistry, runTag);
@@ -113,11 +113,11 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         if (!warmUp) {
             var solverScope = solver.getSolverScope();
             var solutionDescriptor = solverScope.getSolutionDescriptor();
-            problemBenchmarkResult.registerProblemSizeStatistics(solverScope.getProblemSizeStatistics());
-            subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution), solverScope.isBestSolutionInitialized());
-            subSingleBenchmarkResult.setTimeMillisSpent(timeMillisSpent);
-            subSingleBenchmarkResult.setScoreCalculationCount(solverScope.getScoreCalculationCount());
-            subSingleBenchmarkResult.setMoveEvaluationCount(solverScope.getMoveEvaluationCount());
+            problemBenchmarkResult.registerProblemSizeStatistics(result.problemSizeStatistics());
+            subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution), result.isSolutionInitialized());
+            subSingleBenchmarkResult.setTimeMillisSpent(result.solvingDuration().toMillis());
+            subSingleBenchmarkResult.setScoreCalculationCount(result.scoreCalculationCount());
+            subSingleBenchmarkResult.setMoveEvaluationCount(result.moveEvaluationCount());
 
             var solutionManager = SolutionManager.create(solverFactory);
             var isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().getConstraintMatchPolicy()

@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.impl.executionprofile;
+package ai.timefold.solver.service.definition.impl.executionprofile.seed;
 
 import java.util.Map;
 

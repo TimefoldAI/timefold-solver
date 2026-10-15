@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverRunResult;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
@@ -45,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, Callable<Solution_> {
+public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, Callable<@Nullable SolverRunResult<Solution_>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolverJob.class);
     private static final Duration EARLY_TERMINATION_TIMEOUT = Duration.ofMinutes(1);
@@ -66,7 +67,8 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
     private final AtomicReference<@Nullable ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
     private final AtomicReference<SolverStatus> solverStatus = new AtomicReference<>(SolverStatus.SOLVING_SCHEDULED);
-    private final AtomicReference<@Nullable Future<Solution_>> finalBestSolutionFuture = new AtomicReference<>();
+    private final AtomicReference<@Nullable Future<@Nullable SolverRunResult<Solution_>>> finalBestSolutionFuture =
+            new AtomicReference<>();
     private final AtomicReference<@Nullable ConsumerSupport<Solution_, Object>> consumerSupport = new AtomicReference<>();
 
     public DefaultSolverJob(DefaultSolverManager<Solution_> solverManager, Solver<Solution_> solver, Object problemId,
@@ -93,7 +95,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
         this.solverStatusModifyingLock = new ReentrantLock();
     }
 
-    public void setFinalBestSolutionFuture(Future<Solution_> finalBestSolutionFuture) {
+    public void setFinalBestSolutionFuture(Future<@Nullable SolverRunResult<Solution_>> finalBestSolutionFuture) {
         var oldFuture = this.finalBestSolutionFuture.getAndSet(finalBestSolutionFuture);
         if (oldFuture != null) { // We set this, and we should only set it once.
             throw new IllegalStateException("Impossible state: the finalBestSolutionFuture was already set to (%s)."
@@ -112,13 +114,17 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     }
 
     @Override
-    public Solution_ call() {
+    public @Nullable SolverRunResult<Solution_> call() {
         solverStatusModifyingLock.lock();
-        if (solverStatus.get() != SolverStatus.SOLVING_SCHEDULED) {
-            // This job has been canceled before it started,
-            // or it is already solving
+        var status = solverStatus.get();
+        if (status != SolverStatus.SOLVING_SCHEDULED) {
             solverStatusModifyingLock.unlock();
-            return problemFinder.apply(problemId);
+            if (status == SolverStatus.SOLVING_ACTIVE) {
+                throw new IllegalStateException(
+                        "Impossible state: the solver job for problemId (%s) is already solving.".formatted(problemId));
+            } else { // Terminated before solving started.
+                return null;
+            }
         }
         try {
             solverStatus.set(SolverStatus.SOLVING_ACTIVE);
@@ -135,13 +141,14 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             // add a phase lifecycle listener that unlock the solver status lock when solving started
             solver.addPhaseLifecycleListener(new UnlockLockPhaseLifecycleListener());
             // add a phase lifecycle listener that consumes the first initialized solution
-            solver.addPhaseLifecycleListener(new FirstInitializedSolutionPhaseLifecycleListener(currentConsumerSupport));
+            solver.addPhaseLifecycleListener(
+                    new FirstInitializedSolutionPhaseLifecycleListener<>(solver, problemId, currentConsumerSupport));
             // add a phase lifecycle listener once when the solver starts its execution
-            solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener(currentConsumerSupport));
+            solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener<>(currentConsumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
-            final var finalBestSolution = solver.solve(problem);
-            currentConsumerSupport.consumeFinalBestSolution(finalBestSolution);
-            return finalBestSolution;
+            var result = solver.solveAndSummarize(problem);
+            currentConsumerSupport.consumeFinalBestSolution(result);
+            return result;
         } catch (Throwable e) {
             exceptionHandler.accept(problemId, e);
             bestSolutionHolder.cancelPendingChanges();
@@ -271,18 +278,28 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     @Override
     public Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
         try {
-            var future = finalBestSolutionFuture.get();
-            if (future == null) { // We set this; we messed up.
-                throw new IllegalStateException(
-                        "Impossible state: the finalBestSolutionFuture is not set yet for problemId (%s)."
-                                .formatted(problemId));
-            }
-            return future.get();
+            return getResult().solution();
         } catch (CancellationException cancellationException) {
             LOGGER.debug(
                     "terminateEarly() has been called before the solver job started solving. Retrieving the input problem instead.");
             return problemFinder.apply(problemId);
         }
+    }
+
+    @Override
+    public SolverRunResult<Solution_> getResult() throws InterruptedException, ExecutionException {
+        var future = finalBestSolutionFuture.get();
+        if (future == null) { // We set this; we messed up.
+            throw new IllegalStateException(
+                    "Impossible state: the finalBestSolutionFuture is not set yet for problemId (%s)."
+                            .formatted(problemId));
+        }
+        var result = future.get();
+        if (result == null) { // Terminated before solving started, but after the future was submitted.
+            throw new CancellationException(
+                    "The solver job for problemId (%s) was terminated before solving started.".formatted(problemId));
+        }
+        return result;
     }
 
     @Override
@@ -400,11 +417,17 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     /**
      * A listener that consumes the solution from a phase only if the phase first initializes the solution.
      */
-    private final class FirstInitializedSolutionPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
+    static final class FirstInitializedSolutionPhaseLifecycleListener<Solution_>
+            extends PhaseLifecycleListenerAdapter<Solution_> {
 
+        private final DefaultSolver<Solution_> solver;
+        private final Object problemId;
         private final ConsumerSupport<Solution_, Object> consumerSupport;
 
-        public FirstInitializedSolutionPhaseLifecycleListener(ConsumerSupport<Solution_, Object> consumerSupport) {
+        public FirstInitializedSolutionPhaseLifecycleListener(DefaultSolver<Solution_> solver, Object problemId,
+                ConsumerSupport<Solution_, Object> consumerSupport) {
+            this.solver = solver;
+            this.problemId = problemId;
             this.consumerSupport = consumerSupport;
         }
 
@@ -421,7 +444,9 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
                 // The Solver thread calls the method,
                 // but the consumption is done asynchronously by the Consumer thread.
                 // Only happens if the phase initializes the solution.
-                consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution(), phaseScope.getPhaseId(),
+                // The working solution is only cloned if there is a consumer,
+                // to avoid sharing its instance.
+                consumerSupport.consumeFirstInitializedSolution(phaseScope::cloneWorkingSolution, phaseScope.getPhaseId(),
                         possiblyInitializingPhase.getTerminationStatus().early());
             }
         }
@@ -430,7 +455,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     /**
      * A listener that is triggered once when the solver starts the solving process.
      */
-    private final class StartSolverJobPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
+    static final class StartSolverJobPhaseLifecycleListener<Solution_> extends PhaseLifecycleListenerAdapter<Solution_> {
 
         private final ConsumerSupport<Solution_, Object> consumerSupport;
 
@@ -440,7 +465,11 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
 
         @Override
         public void solvingStarted(SolverScope<Solution_> solverScope) {
-            consumerSupport.consumeStartSolverJob(solverScope.getWorkingSolution());
+            // Sharing the initial solution with the consumer is safe without cloning it,
+            // because the solver never reads it after SolverScope.setInitialSolution():
+            // the working and best solutions are planning clones of it,
+            // and on restart it is replaced by a fresh clone of the working solution.
+            consumerSupport.consumeStartSolverJob(solverScope::getInitialSolution);
         }
     }
 }
