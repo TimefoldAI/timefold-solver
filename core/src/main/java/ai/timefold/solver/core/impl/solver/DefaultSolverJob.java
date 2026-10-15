@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, Callable<SolverRunResult<Solution_>> {
+public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, Callable<@Nullable SolverRunResult<Solution_>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolverJob.class);
     private static final Duration EARLY_TERMINATION_TIMEOUT = Duration.ofMinutes(1);
@@ -67,7 +67,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
     private final AtomicReference<@Nullable ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
     private final AtomicReference<SolverStatus> solverStatus = new AtomicReference<>(SolverStatus.SOLVING_SCHEDULED);
-    private final AtomicReference<@Nullable Future<SolverRunResult<Solution_>>> finalBestSolutionFuture =
+    private final AtomicReference<@Nullable Future<@Nullable SolverRunResult<Solution_>>> finalBestSolutionFuture =
             new AtomicReference<>();
     private final AtomicReference<@Nullable ConsumerSupport<Solution_, Object>> consumerSupport = new AtomicReference<>();
 
@@ -95,7 +95,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
         this.solverStatusModifyingLock = new ReentrantLock();
     }
 
-    public void setFinalBestSolutionFuture(Future<SolverRunResult<Solution_>> finalBestSolutionFuture) {
+    public void setFinalBestSolutionFuture(Future<@Nullable SolverRunResult<Solution_>> finalBestSolutionFuture) {
         var oldFuture = this.finalBestSolutionFuture.getAndSet(finalBestSolutionFuture);
         if (oldFuture != null) { // We set this, and we should only set it once.
             throw new IllegalStateException("Impossible state: the finalBestSolutionFuture was already set to (%s)."
@@ -114,14 +114,17 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     }
 
     @Override
-    public SolverRunResult<Solution_> call() {
+    public @Nullable SolverRunResult<Solution_> call() {
         solverStatusModifyingLock.lock();
-        if (solverStatus.get() != SolverStatus.SOLVING_SCHEDULED) {
-            // This job has been canceled before it started,
-            // or it is already solving
+        var status = solverStatus.get();
+        if (status != SolverStatus.SOLVING_SCHEDULED) {
             solverStatusModifyingLock.unlock();
-            throw new CancellationException("The solver job for problemId (%s) is not scheduled to solve (%s)."
-                    .formatted(problemId, solverStatus.get()));
+            if (status == SolverStatus.SOLVING_ACTIVE) {
+                throw new IllegalStateException(
+                        "Impossible state: the solver job for problemId (%s) is already solving.".formatted(problemId));
+            } else { // Terminated before solving started.
+                return null;
+            }
         }
         try {
             solverStatus.set(SolverStatus.SOLVING_ACTIVE);
@@ -291,15 +294,12 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
                     "Impossible state: the finalBestSolutionFuture is not set yet for problemId (%s)."
                             .formatted(problemId));
         }
-        try {
-            return future.get();
-        } catch (ExecutionException executionException) {
-            // call() throws this when the job was terminated before its future was registered.
-            if (executionException.getCause() instanceof CancellationException cancellationException) {
-                throw cancellationException;
-            }
-            throw executionException;
+        var result = future.get();
+        if (result == null) { // Terminated before solving started, but after the future was submitted.
+            throw new CancellationException(
+                    "The solver job for problemId (%s) was terminated before solving started.".formatted(problemId));
         }
+        return result;
     }
 
     @Override

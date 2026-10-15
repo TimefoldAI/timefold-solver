@@ -26,7 +26,7 @@ public record DefaultSolverRunResult<Solution_>(Solution_ solution, SolverRunSum
     }
 
     @Override
-    public long scoreCalculationSpeed() {
+    public int scoreCalculationSpeed() {
         return summary.scoreCalculationSpeed();
     }
 
@@ -36,7 +36,7 @@ public record DefaultSolverRunResult<Solution_>(Solution_ solution, SolverRunSum
     }
 
     @Override
-    public long moveEvaluationSpeed() {
+    public int moveEvaluationSpeed() {
         return summary.moveEvaluationSpeed();
     }
 

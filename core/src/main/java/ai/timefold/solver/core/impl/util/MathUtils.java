@@ -73,9 +73,9 @@ public class MathUtils {
         return Math.log(value) / Math.log(base);
     }
 
-    public static long getSpeed(long count, long timeMillisSpent) {
+    public static int getSpeed(long count, long timeMillisSpent) {
         // Avoid divide by zero exception on a fast CPU
-        return count * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
+        return Math.toIntExact(count * 1000L / Math.max(timeMillisSpent, 1L));
     }
 
     public static long factorial(int n) {

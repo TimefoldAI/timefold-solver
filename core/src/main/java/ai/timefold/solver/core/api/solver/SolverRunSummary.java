@@ -34,7 +34,7 @@ public interface SolverRunSummary {
      * @return at least 0, {@link #scoreCalculationCount()} over {@link #solvingDuration()};
      *         scores per second.
      */
-    long scoreCalculationSpeed();
+    int scoreCalculationSpeed();
 
     /**
      * @return at least 0, the number of move evaluations in the whole run
@@ -44,7 +44,7 @@ public interface SolverRunSummary {
     /**
      * @return at least 0, move evaluations per second over {@link #solvingDuration()}
      */
-    long moveEvaluationSpeed();
+    int moveEvaluationSpeed();
 
     /**
      * @return true if every planning variable of the final best solution is assigned

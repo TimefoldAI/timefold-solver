@@ -26,12 +26,12 @@ public record DefaultSolverRunSummary(Duration solvingDuration, long scoreCalcul
     }
 
     @Override
-    public long scoreCalculationSpeed() {
+    public int scoreCalculationSpeed() {
         return MathUtils.getSpeed(scoreCalculationCount, solvingDuration.toMillis());
     }
 
     @Override
-    public long moveEvaluationSpeed() {
+    public int moveEvaluationSpeed() {
         return MathUtils.getSpeed(moveEvaluationCount, solvingDuration.toMillis());
     }
 

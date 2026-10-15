@@ -34,6 +34,7 @@ class SolverScopeTest {
         solverScope.startingNow();
         when(scoreDirector.getCalculationCount()).thenReturn(7L);
         assertThat(solverScope.getScoreCalculationCount()).isEqualTo(7L); // The child count resets.
+
         solverScope.addMoveEvaluationCount(2L);
         clock.tick(Duration.ofMillis(50));
         solverScope.endingNow();

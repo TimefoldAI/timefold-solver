@@ -497,7 +497,7 @@ The names and format of the metrics vary depending on the registry.
 [#solverRunSummary]
 === Summary of a finished run
 
-When a run ends, `SolverRunSummary` gives its statistics:
+When a run ends, its overview can be found in `SolverRunSummary`:
 the solving duration, the score calculation count and speed,
 the move evaluation count and speed,
 whether the final best solution is initialized,

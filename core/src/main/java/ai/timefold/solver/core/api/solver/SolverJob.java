@@ -87,7 +87,9 @@ public interface SolverJob<Solution_> {
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @throws ExecutionException if the computation threw an exception
      */
-    Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException;
+    default Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
+        return getResult().solution();
+    };
 
     /**
      * Waits if necessary for the solver to complete and then returns the final best {@link PlanningSolution}

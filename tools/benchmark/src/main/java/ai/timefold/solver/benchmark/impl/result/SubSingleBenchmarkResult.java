@@ -221,12 +221,12 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public Long getScoreCalculationSpeed() {
+    public int getScoreCalculationSpeed() {
         return getSpeed(scoreCalculationCount, this.timeMillisSpent);
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public Long getMoveEvaluationSpeed() {
+    public int getMoveEvaluationSpeed() {
         return getSpeed(moveEvaluationCount, this.timeMillisSpent);
     }
 

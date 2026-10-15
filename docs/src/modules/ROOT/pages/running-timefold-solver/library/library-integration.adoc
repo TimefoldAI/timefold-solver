@@ -217,7 +217,7 @@ it can be consumed by configuring it with `withBestSolutionEventConsumer(...)`.
 The final best solution consumer,
 which is called at the end of the solving process,
 can be set using `withFinalBestSolutionEventConsumer(...)`.
-Its event also gives the statistics of the run, such as `moveEvaluationSpeed()`.
+Its event also gives the summary of the run, such as move evaluation speed.
 Additionally,
 an improved solution consumer capable of throttling events is available in the <<throttlingBestSolutionEvents,Enterprise Edition>> of the Timefold Solver.
 
