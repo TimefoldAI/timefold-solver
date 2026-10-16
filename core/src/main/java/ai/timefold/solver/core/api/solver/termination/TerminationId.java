@@ -10,8 +10,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Identifies one termination in the termination configuration,
- * so that {@link SolverRunSummary#termination()} can tell which termination ended the run.
+ * Identifies one termination in the termination configuration.
+ * {@link SolverRunSummary#termination()} describes which id it returns.
  * <p>
  * The termination configuration is a tree of {@link TerminationConfig} elements.
  * Each element has its own terminations, such as {@code secondsSpentLimit} or {@code bestScoreLimit},
@@ -20,11 +20,6 @@ import org.jspecify.annotations.Nullable;
  * the {@link #type()} of an element is {@link TerminationType#AND} or {@link TerminationType#OR}.
  * All {@code *SpentLimit} properties of one element, such as {@code secondsSpentLimit} and {@code minutesSpentLimit},
  * are one {@link TerminationType#SPENT_LIMIT} termination.
- * <p>
- * The reported id is the termination that ended the run.
- * In an {@code OR} element, this is the first of its terminations that is true.
- * An {@code AND} element with two or more terminations is reported as itself.
- * Thus {@code OR} is never reported; it appears only as {@code parent().type()}.
  * <p>
  * Example, with each id as {@code (type, parent, ordinal)}:
  *
@@ -43,7 +38,6 @@ import org.jspecify.annotations.Nullable;
  * </termination>
  * }</pre>
  *
- * This run can report {@code (SPENT_LIMIT, R, 0)}, {@code (BEST_SCORE_LIMIT, A, 0)} or {@code B}.
  * <p>
  * Two ids are equal if all their parts are equal,
  * so solvers built from the same configuration give equal ids.

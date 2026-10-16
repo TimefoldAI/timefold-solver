@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public record DefaultSolverRunSummary(Duration solvingDuration, long scoreCalculationCount, long moveEvaluationCount,
-        boolean isSolutionInitialized, ProblemSizeStatistics problemSizeStatistics, boolean isTerminatedEarly,
+        boolean isSolutionInitialized, ProblemSizeStatistics problemSizeStatistics, boolean terminatedEarly,
         @Nullable TerminationId termination, @Nullable PhaseId lastPhase, Duration timeToBestSolution)
         implements
             SolverRunSummary {

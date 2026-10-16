@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.api.solver.termination;
 
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
@@ -57,13 +58,12 @@ public enum TerminationType {
     MOVE_COUNT_LIMIT,
     /**
      * A {@link TerminationConfig} element with {@link TerminationCompositionStyle#AND}.
-     * It is reported as itself when all its terminations are true.
-     * If it has only one termination, that termination is reported instead.
+     * See {@link SolverRunSummary#termination()} for when it is reported.
      */
     AND,
     /**
      * A {@link TerminationConfig} element with {@link TerminationCompositionStyle#OR}, the default.
-     * It appears only as {@code parent().type()}; it is never reported.
+     * It appears only as {@link TerminationId#parent()}; see {@link SolverRunSummary#termination()}.
      */
     OR
 

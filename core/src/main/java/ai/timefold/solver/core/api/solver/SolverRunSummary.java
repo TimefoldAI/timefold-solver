@@ -5,6 +5,7 @@ import java.time.Duration;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.phase.PhaseId;
 import ai.timefold.solver.core.api.solver.termination.TerminationId;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -66,7 +67,7 @@ public interface SolverRunSummary {
      *
      * @return true if the run terminated early
      */
-    boolean isTerminatedEarly();
+    boolean terminatedEarly();
 
     /**
      * The termination that ended the run:
@@ -76,18 +77,51 @@ public interface SolverRunSummary {
      * because the next phase starts after it.
      * If the last phase is a Partitioned Search phase,
      * a termination configured on that phase is not reported, because only the partitions evaluate it.
-     * See {@link TerminationId} for the id model.
      * <p>
-     * If this is null and {@link #isTerminatedEarly()} is false,
+     * In an {@code OR} element of the termination configuration,
+     * the reported termination is the first of its terminations that is true.
+     * An {@code AND} element with two or more terminations is reported as itself;
+     * with only one termination, that termination is reported.
+     * Thus an id of type {@link TerminationType#OR} is never returned.
+     * For example, with this solver termination configuration:
+     *
+     * <pre>{@code
+     * <termination>
+     *   <secondsSpentLimit>30</secondsSpentLimit>                  <!-- returned as type SPENT_LIMIT -->
+     *   <termination>
+     *     <terminationCompositionStyle>AND</terminationCompositionStyle>
+     *     <stepCountLimit>100</stepCountLimit>
+     *     <unimprovedStepCountLimit>10</unimprovedStepCountLimit>
+     *   </termination>                                             <!-- returned as type AND, when both are true -->
+     * </termination>
+     * }</pre>
+     *
+     * this returns either the {@link TerminationType#SPENT_LIMIT} termination,
+     * or the nested {@link TerminationType#AND} element; never the outer {@code OR} element,
+     * and never {@link TerminationType#STEP_COUNT_LIMIT} or {@link TerminationType#UNIMPROVED_STEP_COUNT_LIMIT} alone.
+     * <p>
+     * If this is null and {@link #terminatedEarly()} is false,
      * the {@link #lastPhase() last phase} completed.
      *
-     * @return null if {@link #isTerminatedEarly()} is true, or if the last phase completed
+     * @return null if {@link #terminatedEarly()} is true, or if the last phase completed
      */
     @Nullable
     TerminationId termination();
 
     /**
-     * @return the last phase that started; null if no phase ran
+     * The last phase that started, whether it completed or a termination ended it.
+     * <ul>
+     * <li>If a termination configured on the solver ends the run before the next phase starts,
+     * that next phase is not reported; the phase before it is.</li>
+     * <li>For a Partitioned Search phase, this is the Partitioned Search phase itself,
+     * never a phase that runs inside a partition.</li>
+     * <li>A Ruin and Recreate move runs a Construction Heuristic inside a Local Search step.
+     * That Construction Heuristic is never reported; the Local Search phase is.</li>
+     * <li>After a problem change restarts the solver,
+     * this is the last phase that started after the restart.</li>
+     * </ul>
+     *
+     * @return null if no phase ran, for example because no planning entity is movable
      */
     @Nullable
     PhaseId lastPhase();

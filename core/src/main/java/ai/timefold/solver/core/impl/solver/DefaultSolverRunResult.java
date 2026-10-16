@@ -54,8 +54,8 @@ public record DefaultSolverRunResult<Solution_>(Solution_ solution, SolverRunSum
     }
 
     @Override
-    public boolean isTerminatedEarly() {
-        return summary.isTerminatedEarly();
+    public boolean terminatedEarly() {
+        return summary.terminatedEarly();
     }
 
     @Override

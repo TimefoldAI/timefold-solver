@@ -45,9 +45,4 @@ public enum PhaseType {
         return phaseName;
     }
 
-    @Override
-    public String toString() {
-        return phaseName;
-    }
-
 }

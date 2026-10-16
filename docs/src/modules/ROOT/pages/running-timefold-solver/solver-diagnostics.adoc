@@ -515,7 +515,7 @@ so after a problem change their values are smaller than these totals.
 
 `SolverRunSummary` also tells how the run ended:
 
-`isTerminatedEarly()`:: True if the run terminated early,
+`terminatedEarly()`:: True if the run terminated early,
 after `Solver.terminateEarly()`, `SolverJob.terminateEarly()`, `SolverManager.terminateEarly(problemId)`,
 or an interrupt of the solver thread.
 A daemon solver ends only this way, so for a daemon solver this is always true.
@@ -532,7 +532,7 @@ summed over the segments like the solving duration.
 It is about zero if the solver did not improve the input solution.
 After a problem change, the solver restarts and sets a new best solution.
 
-If `isTerminatedEarly()` is `false` and `termination()` is `null`,
+If `terminatedEarly()` is `false` and `termination()` is `null`,
 the last phase completed; for example, a Construction Heuristic initialized all planning entities.
 
 A `TerminationId` identifies one termination in the xref:optimization-algorithms/overview.adoc#termination[termination configuration].
