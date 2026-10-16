@@ -175,9 +175,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 unregisterSolverSpecificMetrics();
             }
             restartSolver = checkProblemChanges();
-            if (!restartSolver
-                    && (basicPlumbingTermination.isDaemon() || !basicPlumbingTermination.isEveryProblemChangeProcessed())) {
-                // A daemon, or a pending problem change, skips the restart only because of terminateEarly().
+            if (!restartSolver && basicPlumbingTermination.isRestartPreventedByTerminateEarly()) {
                 terminatedEarly = true;
             }
         }

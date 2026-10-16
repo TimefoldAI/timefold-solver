@@ -18,6 +18,26 @@ import org.junit.jupiter.api.Test;
 class BasicPlumbingTerminationTest {
 
     @Test
+    void problemChangeAfterRestartDecisionIsNotTerminateEarly() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(false);
+        assertThat(termination.waitForRestartSolverDecision()).isFalse();
+        // Another thread adds a problem change after the decision; the run did not end because of terminateEarly().
+        termination.addProblemChanges(Collections.singletonList((workingSolution, problemChangeDirector) -> {
+        }));
+        assertThat(termination.isRestartPreventedByTerminateEarly()).isFalse();
+    }
+
+    @Test
+    void terminateEarlyPreventsRestartWithPendingProblemChange() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(false);
+        termination.addProblemChanges(Collections.singletonList((workingSolution, problemChangeDirector) -> {
+        }));
+        termination.terminateEarly();
+        assertThat(termination.waitForRestartSolverDecision()).isFalse();
+        assertThat(termination.isRestartPreventedByTerminateEarly()).isTrue();
+    }
+
+    @Test
     void addProblemChangeWithoutDaemon() {
         var count = new AtomicInteger(0);
         var basicPlumbingTermination = new BasicPlumbingTermination<TestdataSolution>(false);

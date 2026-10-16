@@ -22,6 +22,11 @@ public final class BasicPlumbingTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final boolean daemon;
+    /**
+     * Decided together with the restart, under the same lock,
+     * so a problem change added later by another thread does not change it.
+     */
+    private boolean restartPreventedByTerminateEarly = false;
     private final BlockingQueue<ProblemChange<Solution_>> problemChangeQueue = new LinkedBlockingQueue<>();
 
     private boolean terminatedEarly = false;
@@ -46,14 +51,10 @@ public final class BasicPlumbingTermination<Solution_>
      * @return true if successful
      */
     public synchronized boolean terminateEarly() {
-        boolean terminationEarlySuccessful = !terminatedEarly;
+        var terminationEarlySuccessful = !terminatedEarly;
         terminatedEarly = true;
         notifyAll();
         return terminationEarlySuccessful;
-    }
-
-    public boolean isDaemon() {
-        return daemon;
     }
 
     /**
@@ -72,6 +73,7 @@ public final class BasicPlumbingTermination<Solution_>
      */
     public synchronized boolean waitForRestartSolverDecision() {
         if (!daemon) {
+            restartPreventedByTerminateEarly = terminatedEarly && !problemChangeQueue.isEmpty();
             return !problemChangeQueue.isEmpty() && !terminatedEarly;
         } else {
             while (problemChangeQueue.isEmpty() && !terminatedEarly) {
@@ -82,8 +84,18 @@ public final class BasicPlumbingTermination<Solution_>
                     throw new IllegalStateException("Solver thread was interrupted during Object.wait().", e);
                 }
             }
+            // A daemon leaves the wait without a restart only because of terminateEarly().
+            restartPreventedByTerminateEarly = terminatedEarly;
             return !terminatedEarly;
         }
+    }
+
+    /**
+     * @return true if the last {@link #waitForRestartSolverDecision()} did not restart only because of
+     *         {@link #terminateEarly()}
+     */
+    public synchronized boolean isRestartPreventedByTerminateEarly() {
+        return restartPreventedByTerminateEarly;
     }
 
     /**
@@ -93,7 +105,7 @@ public final class BasicPlumbingTermination<Solution_>
      * @return as specified by {@link Collection#add}
      */
     public synchronized boolean addProblemChanges(List<ProblemChange<Solution_>> problemChangeList) {
-        boolean added = problemChangeQueue.addAll(problemChangeList);
+        var added = problemChangeQueue.addAll(problemChangeList);
         notifyAll();
         return added;
     }
