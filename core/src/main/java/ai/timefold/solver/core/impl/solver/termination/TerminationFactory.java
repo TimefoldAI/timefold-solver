@@ -74,14 +74,11 @@ public final class TerminationFactory<Solution_> {
     public <Score_ extends Score<Score_>> @Nullable Termination<Solution_> buildTermination(
             HeuristicConfigPolicy<Solution_> configPolicy, @Nullable TerminationId parent, int ordinal,
             @Nullable Integer phaseIndex) {
-        var levelType = getCompositionStyle() == TerminationCompositionStyle.AND ? TerminationType.AND : TerminationType.OR;
-        var levelId = new DefaultTerminationId(levelType, parent, ordinal, phaseIndex);
-        List<Termination<Solution_>> terminationList = new ArrayList<>(buildTimeBasedTermination(configPolicy));
-
+        var terminationList = new ArrayList<>(buildTimeBasedTermination(configPolicy));
         if (terminationConfig.getBestScoreLimit() != null) {
             ScoreDefinition<Score_> scoreDefinition = configPolicy.getScoreDefinition();
-            Score_ bestScoreLimit_ = scoreDefinition.parseScore(terminationConfig.getBestScoreLimit());
-            double[] timeGradientWeightNumbers = new double[scoreDefinition.getLevelsSize() - 1];
+            var bestScoreLimit_ = scoreDefinition.parseScore(terminationConfig.getBestScoreLimit());
+            var timeGradientWeightNumbers = new double[scoreDefinition.getLevelsSize() - 1];
             Arrays.fill(timeGradientWeightNumbers, 0.50); // Number pulled out of thin air
             terminationList.add(new BestScoreTermination<>(scoreDefinition, bestScoreLimit_, timeGradientWeightNumbers));
         }
@@ -92,7 +89,7 @@ public final class TerminationFactory<Solution_> {
                 throw new IllegalArgumentException("The termination bestScoreFeasible (%s) cannot be false."
                         .formatted(bestScoreFeasible));
             }
-            int feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
+            var feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
             if (feasibleLevelsSize < 1) {
                 throw new IllegalStateException("""
                         The termination with bestScoreFeasible (%s) can only be used with a score type \
@@ -100,7 +97,7 @@ public final class TerminationFactory<Solution_> {
                         which is less than 1."""
                         .formatted(bestScoreFeasible, scoreDefinition, feasibleLevelsSize));
             }
-            double[] timeGradientWeightFeasibleNumbers = new double[feasibleLevelsSize - 1];
+            var timeGradientWeightFeasibleNumbers = new double[feasibleLevelsSize - 1];
             Arrays.fill(timeGradientWeightFeasibleNumbers, 0.50); // Number pulled out of thin air
             terminationList.add(new BestScoreFeasibleTermination<>(scoreDefinition, timeGradientWeightFeasibleNumbers));
         }
@@ -116,6 +113,8 @@ public final class TerminationFactory<Solution_> {
         if (terminationConfig.getMoveCountLimit() != null) {
             terminationList.add(new MoveCountTermination<>(terminationConfig.getMoveCountLimit()));
         }
+        var levelType = getCompositionStyle() == TerminationCompositionStyle.AND ? TerminationType.AND : TerminationType.OR;
+        var levelId = new DefaultTerminationId(levelType, parent, ordinal, phaseIndex);
         for (var leaf : terminationList) {
             var abstractLeaf = (AbstractTermination<Solution_>) leaf;
             abstractLeaf.setTerminationId(new DefaultTerminationId(
@@ -128,18 +127,18 @@ public final class TerminationFactory<Solution_> {
     @SuppressWarnings("unchecked")
     <Score_ extends Score<Score_>> List<Termination<Solution_>>
             buildTimeBasedTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
-        List<Termination<Solution_>> terminationList = new ArrayList<>();
-        Long timeMillisSpentLimit = terminationConfig.calculateTimeMillisSpentLimit();
+        var terminationList = new ArrayList<Termination<Solution_>>();
+        var timeMillisSpentLimit = terminationConfig.calculateTimeMillisSpentLimit();
         if (timeMillisSpentLimit != null) {
             terminationList.add(new TimeMillisSpentTermination<>(timeMillisSpentLimit));
         }
-        Long unimprovedTimeMillisSpentLimit = terminationConfig.calculateUnimprovedTimeMillisSpentLimit();
+        var unimprovedTimeMillisSpentLimit = terminationConfig.calculateUnimprovedTimeMillisSpentLimit();
         if (unimprovedTimeMillisSpentLimit != null) {
             if (terminationConfig.getUnimprovedScoreDifferenceThreshold() == null) {
                 terminationList.add(new UnimprovedTimeMillisSpentTermination<>(unimprovedTimeMillisSpentLimit));
             } else {
                 ScoreDefinition<Score_> scoreDefinition = configPolicy.getScoreDefinition();
-                Score_ unimprovedScoreDifferenceThreshold_ =
+                var unimprovedScoreDifferenceThreshold_ =
                         scoreDefinition.parseScore(terminationConfig.getUnimprovedScoreDifferenceThreshold());
                 if (scoreDefinition.isNegativeOrZero(unimprovedScoreDifferenceThreshold_)) {
                     throw new IllegalStateException("The unimprovedScoreDifferenceThreshold ("
@@ -150,10 +149,10 @@ public final class TerminationFactory<Solution_> {
                         unimprovedTimeMillisSpentLimit, unimprovedScoreDifferenceThreshold_));
             }
         } else if (terminationConfig.getUnimprovedScoreDifferenceThreshold() != null) {
-            throw new IllegalStateException("The unimprovedScoreDifferenceThreshold ("
-                    + terminationConfig.getUnimprovedScoreDifferenceThreshold()
-                    + ") can only be used if an unimproved*SpentLimit ("
-                    + unimprovedTimeMillisSpentLimit + ") is used too.");
+            throw new IllegalStateException(
+                    "The unimprovedScoreDifferenceThreshold (%s) can only be used if an unimproved*SpentLimit (%s) is used too."
+                            .formatted(terminationConfig.getUnimprovedScoreDifferenceThreshold(),
+                                    unimprovedTimeMillisSpentLimit));
         }
 
         if (terminationConfig.getDiminishedReturnsConfig() != null) {
@@ -188,7 +187,10 @@ public final class TerminationFactory<Solution_> {
     }
 
     private TerminationCompositionStyle getCompositionStyle() {
-        return Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);
+        if (terminationConfig.getTerminationCompositionStyle() != null) {
+            return terminationConfig.getTerminationCompositionStyle();
+        }
+        return TerminationCompositionStyle.OR;
     }
 
     @SuppressWarnings("unchecked")
@@ -204,7 +206,7 @@ public final class TerminationFactory<Solution_> {
                     case AND -> {
                         var and = new AndCompositeTermination<Solution_>(terminationArray);
                         and.setTerminationId(levelId);
-                        terminationList.forEach(TerminationFactory::stopRecording);
+                        terminationList.forEach(TerminationFactory::stopRegistration);
                         yield and;
                     }
                     case OR -> new OrCompositeTermination<Solution_>(terminationArray);
@@ -213,12 +215,12 @@ public final class TerminationFactory<Solution_> {
         };
     }
 
-    private static <Solution_> void stopRecording(Termination<Solution_> termination) {
+    private static <Solution_> void stopRegistration(Termination<Solution_> termination) {
         if (termination instanceof AbstractCompositeTermination<Solution_> composite) {
-            if (composite instanceof OrCompositeTermination<Solution_> or) {
-                or.stopRecording();
+            if (composite instanceof OrCompositeTermination<Solution_> orTermination) {
+                orTermination.stopRegistration();
             }
-            composite.terminationList.forEach(TerminationFactory::stopRecording);
+            composite.terminationList.forEach(TerminationFactory::stopRegistration);
         }
     }
 }

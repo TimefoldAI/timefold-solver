@@ -46,10 +46,6 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         return PhaseType.CONSTRUCTION_HEURISTIC;
     }
 
-    protected String getPhaseName() {
-        return "Ruin & Recreate Construction Heuristic";
-    }
-
     @Override
     protected void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
         var checkMissingElements = !elementsToRuinSet.isEmpty()

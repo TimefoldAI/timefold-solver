@@ -16,7 +16,7 @@ final class OrCompositeTermination<Solution_>
     /**
      * If true, the id of the first child that is true goes to {@link SolverScope#setLastTerminationId}.
      */
-    private boolean recording = true;
+    private boolean registering = true;
 
     public OrCompositeTermination(List<Termination<Solution_>> terminationList) {
         super(terminationList);
@@ -28,14 +28,15 @@ final class OrCompositeTermination<Solution_>
     }
 
     /**
-     * Called by a built {@link AndCompositeTermination} above this one, because its children can be true while it is false.
+     * Called by a built {@link AndCompositeTermination} above this one,
+     * because its children can be true while it is false.
      */
-    void stopRecording() {
-        recording = false;
+    void stopRegistration() {
+        registering = false;
     }
 
-    private void record(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
-        if (!recording) {
+    private void registering(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
+        if (!registering) {
             return;
         }
         var terminationId = termination.getTerminationId();
@@ -52,7 +53,7 @@ final class OrCompositeTermination<Solution_>
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         for (var termination : solverTerminationList) {
             if (termination.isSolverTerminated(solverScope)) {
-                record(solverScope, termination);
+                registering(solverScope, termination);
                 return true;
             }
         }
@@ -69,7 +70,7 @@ final class OrCompositeTermination<Solution_>
                 continue;
             }
             if (termination.isPhaseTerminated(phaseScope)) {
-                record(phaseScope.getSolverScope(), termination);
+                registering(phaseScope.getSolverScope(), termination);
                 return true;
             }
         }

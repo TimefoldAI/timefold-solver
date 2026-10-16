@@ -1,10 +1,7 @@
 package ai.timefold.solver.core.impl.phase;
 
-import java.util.Map;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhase;
@@ -15,7 +12,6 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
-import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
 import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -23,8 +19,6 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.micrometer.core.instrument.Tags;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -79,8 +73,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     public boolean isAssertShadowVariablesAreNotStaleAfterStep() {
         return assertShadowVariablesAreNotStaleAfterStep;
     }
-
-    public abstract PhaseType getPhaseType();
 
     // ************************************************************************
     // Lifecycle methods
@@ -173,7 +165,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     }
 
     protected void calculateWorkingStepScore(AbstractStepScope<Solution_> stepScope, Object completedAction) {
-        AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
+        var phaseScope = stepScope.getPhaseScope();
         var score = phaseScope.calculateScore();
         stepScope.setScore(score);
         if (assertStepScoreFromScratch) {
@@ -215,9 +207,9 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     private static <Solution_> void collectMetrics(AbstractStepScope<Solution_> stepScope) {
         var solverScope = stepScope.getPhaseScope().getSolverScope();
         if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().isFullyAssigned()) {
-            Tags tags = solverScope.getMonitoringTags();
+            var tags = solverScope.getMonitoringTags();
             ScoreDefinition<?> scoreDefinition = solverScope.getScoreDefinition();
-            Map<Tags, ScoreLevels> tagToScoreLevels = solverScope.getStepScoreMap();
+            var tagToScoreLevels = solverScope.getStepScoreMap();
             SolverMetricUtil.registerScore(SolverMetric.STEP_SCORE, tags, scoreDefinition, tagToScoreLevels,
                     stepScope.getScore());
         }
