@@ -167,15 +167,21 @@ Which routing profile those matrices describe is controlled by the transport typ
 
 | `foot`
 | Distances follow the walking network.
+
+| `auto-select`
+| The transport type is selected from the dataset. This value is not a routing profile.
 |===
 
-The platform sets the transport type per deployment.
+The platform sets the transport type per deployment with `timefold.platform.map-service.transport-type`.
+The default is `car`. Set it to `auto-select` to use the transport types from the dataset.
+Use `timefold.platform.map-service.allowed-transport-types` to restrict the comma-separated list of routing profiles
+that the dataset can use. If it is not set, all routing profiles are allowed.
 A model can declare its default with `timefold.model.default-config.map.transport-type`,
 see xref:deploying-to-platform/model-metadata.adoc[model metadata].
 
 When the deployment fixes a transport type, a dataset that uses another one is rejected before any map service call is made,
 because a deployment only has the map for the profile it is configured with.
-Otherwise, the transport types can be taken from the dataset; see <<multipleTransportTypes>>.
+When the deployment uses `auto-select`, the transport types can be taken from the dataset; see <<multipleTransportTypes>>.
 
 [#readingMatrices]
 === Reading travel times and distances
