@@ -52,6 +52,10 @@ public final class BasicPlumbingTermination<Solution_>
         return terminationEarlySuccessful;
     }
 
+    public boolean isDaemon() {
+        return daemon;
+    }
+
     /**
      * This method is thread-safe.
      */
