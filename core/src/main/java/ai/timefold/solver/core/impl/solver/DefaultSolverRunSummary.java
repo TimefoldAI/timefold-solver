@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public record DefaultSolverRunSummary(Duration solvingDuration, long scoreCalculationCount, long moveEvaluationCount,
-        boolean isSolutionInitialized, ProblemSizeStatistics problemSizeStatistics, boolean terminatedEarly,
+        boolean solutionInitialized, ProblemSizeStatistics problemSizeStatistics, boolean terminatedEarly,
         @Nullable TerminationId termination, @Nullable PhaseId lastPhase, Duration timeToBestSolution)
         implements
             SolverRunSummary {
@@ -27,6 +27,7 @@ public record DefaultSolverRunSummary(Duration solvingDuration, long scoreCalcul
         return new DefaultSolverRunSummary(Duration.ofMillis(solverStatistics.getTimeMillisSpent()),
                 solverStatistics.getScoreCalculationCount(), solverStatistics.getMoveEvaluationCount(),
                 solverScope.isBestSolutionInitialized(), solverScope.getProblemSizeStatistics(), terminatedEarly,
+                // terminateEarly() can arrive while a configured termination is also true; the early end wins.
                 terminatedEarly ? null : solverScope.getLastTerminationId(), solverScope.getLastPhase(),
                 Duration.ofMillis(solverStatistics.getTimeToBestSolutionMillis()));
     }

@@ -427,6 +427,41 @@ class TerminationFactoryTest {
                 .isEqualTo(new DefaultTerminationId(TerminationType.SPENT_LIMIT, ROOT_ID, 0, null));
     }
 
+    @Test
+    void phaseRootClearsIdWhenFalse() {
+        // A termination true in the middle of a step, then false at the phase loop check, did not end the phase.
+        var config = new TerminationConfig().withStepCountLimit(5);
+        Termination<TestdataSolution> chainedTermination = new StepCountTermination<>(1000);
+        var phaseRoot = (OrCompositeTermination<TestdataSolution>) TerminationFactory
+                .<TestdataSolution> create(config)
+                .buildTermination(mockSimpleScoreConfigPolicy(), chainedTermination, 1);
+        var solverScope = new SolverScope<TestdataSolution>();
+        var phaseScope = mockPhaseScope(solverScope);
+
+        when(phaseScope.getNextStepIndex()).thenReturn(5);
+        assertThat(phaseRoot.isPhaseTerminated(phaseScope)).isTrue();
+        assertThat(solverScope.getLastTerminationId()).isNotNull();
+
+        when(phaseScope.getNextStepIndex()).thenReturn(0);
+        assertThat(phaseRoot.isPhaseTerminated(phaseScope)).isFalse();
+        assertThat(solverScope.getLastTerminationId()).isNull();
+    }
+
+    @Test
+    void phaseRootWithoutPhaseTerminationClearsIdWhenFalse() {
+        Termination<TestdataSolution> chainedTermination = new StepCountTermination<>(1000);
+        var phaseRoot = (OrCompositeTermination<TestdataSolution>) TerminationFactory
+                .<TestdataSolution> create(new TerminationConfig())
+                .buildTermination(mockSimpleScoreConfigPolicy(), chainedTermination, 1);
+        var solverScope = new SolverScope<TestdataSolution>();
+        solverScope.setLastTerminationId(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT, null, 0, null));
+        var phaseScope = mockPhaseScope(solverScope);
+
+        when(phaseScope.getNextStepIndex()).thenReturn(0);
+        assertThat(phaseRoot.isPhaseTerminated(phaseScope)).isFalse();
+        assertThat(solverScope.getLastTerminationId()).isNull();
+    }
+
     // R{spentLimit, [A{bestScoreLimit}, B(AND){stepCountLimit, unimprovedStepCountLimit}]}
     private static TerminationConfig buildRabConfig() {
         return new TerminationConfig()

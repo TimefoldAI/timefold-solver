@@ -268,7 +268,7 @@ class DefaultSolverTest {
                 softly.assertThat(summary.scoreCalculationCount()).isPositive();
                 softly.assertThat(summary.scoreCalculationSpeed())
                         .isEqualTo(MathUtils.getSpeed(summary.scoreCalculationCount(), 1001));
-                softly.assertThat(summary.isSolutionInitialized()).isTrue();
+                softly.assertThat(summary.solutionInitialized()).isTrue();
                 softly.assertThat(summary.problemSizeStatistics()).isNotNull();
                 softly.assertThat(summary.terminatedEarly()).isFalse();
                 softly.assertThat(summary.termination())
@@ -406,6 +406,26 @@ class DefaultSolverTest {
     }
 
     @Test
+    void summaryWhenTerminateEarlyPreventsProblemChangeRestart() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // A pending problem change would restart the solver, but terminateEarly() ends the run instead.
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+                });
+                solver.terminateEarly();
+            }
+        });
+
+        var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+        assertThat(summary.terminatedEarly()).isTrue();
+        assertThat(summary.termination()).isNull();
+    }
+
+    @Test
     void summaryOfIdleDaemonStoppedByTerminateEarly() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withDaemon(true)
@@ -460,7 +480,7 @@ class DefaultSolverTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
         var summary = solver.solveAndSummarize(solution);
-        assertThat(summary.isSolutionInitialized()).isFalse();
+        assertThat(summary.solutionInitialized()).isFalse();
     }
 
     @Test

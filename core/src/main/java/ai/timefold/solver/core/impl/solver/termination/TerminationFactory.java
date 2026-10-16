@@ -45,6 +45,13 @@ public final class TerminationFactory<Solution_> {
     public <Termination_ extends Termination<Solution_>> Termination_ buildTermination(
             HeuristicConfigPolicy<Solution_> configPolicy, Termination_ chainedTermination, @Nullable Integer phaseIndex) {
         var termination = buildTermination(configPolicy, null, 0, phaseIndex);
+        if (phaseIndex != null) {
+            // Always an OR, also around the bridge alone, so every phase has a root that clears a stale id.
+            var phaseRoot = termination == null ? new OrCompositeTermination<>(chainedTermination)
+                    : new OrCompositeTermination<>(chainedTermination, termination);
+            phaseRoot.markPhaseRoot();
+            return (Termination_) phaseRoot;
+        }
         if (termination == null) {
             return chainedTermination;
         }
@@ -199,6 +206,7 @@ public final class TerminationFactory<Solution_> {
             DefaultTerminationId levelId) {
         return switch (terminationList.size()) {
             case 0 -> null;
+            // No AND is built for one termination, so the ORs below it keep registering; that termination is reported.
             case 1 -> terminationList.getFirst();
             default -> {
                 var terminationArray = terminationList.toArray(new Termination[0]);

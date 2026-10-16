@@ -97,8 +97,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         phaseScope.startingNow();
         phaseScope.reset();
+        // A nested phase (Ruin and Recreate) runs inside a move of this run's phase; it is not a phase of the run.
         if (!isNested()) {
             var solverScope = phaseScope.getSolverScope();
+            // The termination of an earlier phase did not end the run, because this phase started.
             solverScope.setLastTerminationId(null);
             solverScope.setLastPhase(new DefaultPhaseId(getPhaseType(), phaseIndex));
             var solver = solverScope.getSolver();

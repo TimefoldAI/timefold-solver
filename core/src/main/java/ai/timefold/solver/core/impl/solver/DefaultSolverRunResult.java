@@ -44,8 +44,8 @@ public record DefaultSolverRunResult<Solution_>(Solution_ solution, SolverRunSum
     }
 
     @Override
-    public boolean isSolutionInitialized() {
-        return summary.isSolutionInitialized();
+    public boolean solutionInitialized() {
+        return summary.solutionInitialized();
     }
 
     @Override

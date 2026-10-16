@@ -51,9 +51,11 @@ public interface SolverRunSummary {
     long moveEvaluationSpeed();
 
     /**
-     * @return true if every planning variable of the final best solution is assigned
+     * @return true if every planning variable of the final best solution is assigned;
+     *         when the domain allows unassigned variables/values,
+     *         this is effectively always true because null values are allowed.
      */
-    boolean isSolutionInitialized();
+    boolean solutionInitialized();
 
     /**
      * @return the size statistics of the problem in its final state
@@ -112,7 +114,9 @@ public interface SolverRunSummary {
      * The last phase that started, whether it completed or a termination ended it.
      * <ul>
      * <li>If a termination configured on the solver ends the run before the next phase starts,
-     * that next phase is not reported; the phase before it is.</li>
+     * the phase that was last started is reported.
+     * This is the phase that was either running at the time of solver termination,
+     * or has completed recently without the next phase starting yet.</li>
      * <li>For a Partitioned Search phase, this is the Partitioned Search phase itself,
      * never a phase that runs inside a partition.</li>
      * <li>A Ruin and Recreate move runs a Construction Heuristic inside a Local Search step.

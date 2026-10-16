@@ -26,6 +26,7 @@ public final class SolverRunStatisticsTracker {
      */
     public void addSegment(long segmentTimeMillisSpent, long segmentScoreCalculationCount,
             long segmentMoveEvaluationCount, long bestSolutionTimeMillisSpent) {
+        // A restart sets the best solution again, so the final best solution is always in the last segment.
         timeToBestSolutionMillis = timeMillisSpent + bestSolutionTimeMillisSpent;
         timeMillisSpent += segmentTimeMillisSpent;
         scoreCalculationCount += segmentScoreCalculationCount;

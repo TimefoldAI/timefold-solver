@@ -317,6 +317,7 @@ public class SolverScope<Solution_> {
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
         this.moveEvaluationCount = 0L;
         this.childThreadsScoreCalculationCount = 0L;
+        // A problem-change restart starts a new segment; the summary describes how the last segment ended.
         this.lastTerminationId = null;
         this.lastPhase = null;
     }
@@ -327,6 +328,7 @@ public class SolverScope<Solution_> {
 
     public void endingNow() {
         endingSystemTimeMillis.set(getClock().millis());
+        // Null only if solving never started, so no best solution was set.
         var bestSolutionTimeMillisSpent = getBestSolutionTimeMillis() == null ? 0L : getBestSolutionTimeMillisSpent();
         solverRunStatistics.addSegment(getTimeMillisSpent(), getScoreCalculationCount(), getMoveEvaluationCount(),
                 bestSolutionTimeMillisSpent);

@@ -53,7 +53,7 @@ public interface EventProducerId {
 
     /**
      * @deprecated this type isn't meant to be constructed by a user.
-     *             To find the phase of an event, use {@link PhaseEventProducerId#phaseId()}.
+     *             To tell whether an event comes from a phase, check whether its producer is a {@link PhaseEventProducerId}.
      */
     @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId solvingStarted() {
@@ -62,7 +62,7 @@ public interface EventProducerId {
 
     /**
      * @deprecated this type isn't meant to be constructed by a user.
-     *             To find the phase of an event, use {@link PhaseEventProducerId#phaseId()}.
+     *             To tell whether an event comes from a phase, check whether its producer is a {@link PhaseEventProducerId}.
      */
     @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId problemChange() {
