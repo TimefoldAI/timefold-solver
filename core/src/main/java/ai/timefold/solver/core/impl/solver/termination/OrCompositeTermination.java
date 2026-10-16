@@ -18,6 +18,12 @@ final class OrCompositeTermination<Solution_>
      */
     private boolean registering = true;
 
+    /**
+     * If true, a false result clears {@link SolverScope#setLastTerminationId},
+     * because a termination that was true in the middle of a step did not end the phase.
+     */
+    private boolean phaseRoot = false;
+
     public OrCompositeTermination(List<Termination<Solution_>> terminationList) {
         super(terminationList);
     }
@@ -35,7 +41,11 @@ final class OrCompositeTermination<Solution_>
         registering = false;
     }
 
-    private void registering(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
+    void markPhaseRoot() {
+        phaseRoot = true;
+    }
+
+    private void register(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
         if (!registering) {
             return;
         }
@@ -53,7 +63,7 @@ final class OrCompositeTermination<Solution_>
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         for (var termination : solverTerminationList) {
             if (termination.isSolverTerminated(solverScope)) {
-                registering(solverScope, termination);
+                register(solverScope, termination);
                 return true;
             }
         }
@@ -70,9 +80,12 @@ final class OrCompositeTermination<Solution_>
                 continue;
             }
             if (termination.isPhaseTerminated(phaseScope)) {
-                registering(phaseScope.getSolverScope(), termination);
+                register(phaseScope.getSolverScope(), termination);
                 return true;
             }
+        }
+        if (phaseRoot) {
+            phaseScope.getSolverScope().setLastTerminationId(null);
         }
         return false;
     }
@@ -119,6 +132,7 @@ final class OrCompositeTermination<Solution_>
     @Override
     public OrCompositeTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
+        // The copy has default flags; it records into the child thread's scope, which the run summary does not read.
         return new OrCompositeTermination<>(createChildThreadTerminationList(solverScope, childThreadType));
     }
 

@@ -1331,9 +1331,9 @@ class SolverManagerTest {
             await().atMost(Duration.ofSeconds(10)).until(() -> eventSummary.get() != null);
             var event = eventSummary.get();
             assertThat(List.<Object> of(event.solvingDuration(), event.scoreCalculationCount(), event.moveEvaluationCount(),
-                    event.isSolutionInitialized(), event.problemSizeStatistics()))
+                    event.solutionInitialized(), event.problemSizeStatistics()))
                     .containsExactly(summary.solvingDuration(), summary.scoreCalculationCount(),
-                            summary.moveEvaluationCount(), summary.isSolutionInitialized(),
+                            summary.moveEvaluationCount(), summary.solutionInitialized(),
                             summary.problemSizeStatistics());
             assertSoftly(softly -> {
                 softly.assertThat(summary.solvingDuration()).isEqualTo(solverJob.getSolvingDuration());
@@ -1342,7 +1342,7 @@ class SolverManagerTest {
                 softly.assertThat(summary.moveEvaluationCount()).isEqualTo(solverJob.getMoveEvaluationCount());
                 softly.assertThat(summary.moveEvaluationSpeed()).isEqualTo(solverJob.getMoveEvaluationSpeed());
                 softly.assertThat(summary.problemSizeStatistics()).isEqualTo(solverJob.getProblemSizeStatistics());
-                softly.assertThat(summary.isSolutionInitialized()).isTrue();
+                softly.assertThat(summary.solutionInitialized()).isTrue();
             });
         }
     }

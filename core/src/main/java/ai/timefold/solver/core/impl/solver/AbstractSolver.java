@@ -95,7 +95,9 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             return;
         }
         var it = phaseList.iterator();
-        while (it.hasNext() && !globalTermination.isSolverTerminated(solverScope)) {
+        // The termination is checked also after the last phase; only partition threads check it in Partitioned Search,
+        // so this check records the termination that ended the run.
+        while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
             var phase = it.next();
             phase.solve(solverScope);
             // If there is a next phase, it starts from the best solution, which might differ from the working solution.
