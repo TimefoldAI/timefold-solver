@@ -112,8 +112,15 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
         }
         // Add the new tabu(s)
         for (var tabu : tabus) {
-            // Push tabu to the end of the line; remove+put has that effect in LinkedHashMap.
-            tabuToStepIndexMap.remove(tabu);
+            // Skip null planning values (unassigned state)
+            if (tabu == null) {
+                continue;
+            }
+            // Push tabu to the end of the line
+            if (tabuToStepIndexMap.containsKey(tabu)) {
+                tabuToStepIndexMap.remove(tabu);
+                tabuSequenceDeque.remove(tabu);
+            }
             tabuToStepIndexMap.put(tabu, tabuStepIndex);
         }
     }
