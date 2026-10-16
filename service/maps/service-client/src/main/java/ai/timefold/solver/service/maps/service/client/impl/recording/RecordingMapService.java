@@ -79,7 +79,7 @@ public final class RecordingMapService implements MapService {
     @Override
     public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
         var result = delegate.getTravelTimeAndDistance(locations, options);
-        record("distances", options, locations, generator -> {
+        write("distances", options, locations, generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsNotInMap", result.locationsNotInMapIdx());
@@ -95,7 +95,7 @@ public final class RecordingMapService implements MapService {
     public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
             String options) {
         var result = delegate.getTravelTimeAndDistanceByTimeframe(locations, options);
-        record("distances-by-timeframe", options, locations, generator -> {
+        write("distances-by-timeframe", options, locations, generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsNotInMap", indexesOf(result.locationsNotInMap(), locations));
@@ -115,7 +115,7 @@ public final class RecordingMapService implements MapService {
     @Override
     public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
         var result = delegate.getLocationsOutOfMap(locations, options);
-        record("locations-out-of-map", options, locations, generator -> {
+        write("locations-out-of-map", options, locations, generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsOutOfMap", result);
@@ -132,7 +132,7 @@ public final class RecordingMapService implements MapService {
                 : null;
     }
 
-    private void record(String kind, String options, List<Location> locations, JsonWriter content) {
+    private void write(String kind, String options, List<Location> locations, JsonWriter content) {
         if (!recorded.add(List.of(kind, String.valueOf(options), keys(locations)))) {
             return;
         }

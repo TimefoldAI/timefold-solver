@@ -43,7 +43,7 @@ class ReplayMapServiceTest {
 
     @Test
     void replaysRecordedMatrices() {
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
                 return new TravelTimeAndDistanceWithMetadata(
@@ -62,7 +62,7 @@ class ReplayMapServiceTest {
 
     @Test
     void replaysSubsetInRequestedOrder() {
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
                 return new TravelTimeAndDistanceWithMetadata(
@@ -82,7 +82,7 @@ class ReplayMapServiceTest {
 
     @Test
     void doesNotTouchTheRequestedLocations() {
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
                 return new TravelTimeAndDistanceWithMetadata(
@@ -103,7 +103,7 @@ class ReplayMapServiceTest {
 
     @Test
     void matchesTransportType() {
-        var recorder = record(new StubMapService() {
+        var recorder = recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
                 long factor = options.contains("bike") ? 7 : 1;
@@ -125,7 +125,7 @@ class ReplayMapServiceTest {
     @Test
     void replaysUnreachableRoutes() {
         long unreachable = Long.MAX_VALUE;
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
                 DistanceMatrix travelTime = matrix(abc, 1);
@@ -143,7 +143,7 @@ class ReplayMapServiceTest {
 
     @Test
     void ignoresMaxDistanceFromRoad() {
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
                 return new TravelTimeAndDistanceWithMetadata(
@@ -157,7 +157,7 @@ class ReplayMapServiceTest {
 
     @Test
     void failsOnUnrecordedLocation() {
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
                 return new TravelTimeAndDistanceWithMetadata(
@@ -166,10 +166,13 @@ class ReplayMapServiceTest {
         }).getTravelTimeAndDistance(abc, CAR);
 
         var replay = replay();
-        assertThatThrownBy(() -> replay.getTravelTimeAndDistance(List.of(a, new Location(9.0, 9.0)), CAR))
+        var unrecorded = new Location(9.0, 9.0);
+        var withUnrecorded = List.of(a, unrecorded);
+        var onlyUnrecorded = List.of(unrecorded);
+        assertThatThrownBy(() -> replay.getTravelTimeAndDistance(withUnrecorded, CAR))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("containing all 2 requested locations");
-        assertThatThrownBy(() -> replay.getLocationsOutOfMap(List.of(new Location(9.0, 9.0)), CAR))
+        assertThatThrownBy(() -> replay.getLocationsOutOfMap(onlyUnrecorded, CAR))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("not in any recording");
     }
@@ -177,7 +180,7 @@ class ReplayMapServiceTest {
     @Test
     void replaysMatricesByTimeframe() {
         var bucketing = new StaticDaypartBucketing();
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
                     String options) {
@@ -203,7 +206,7 @@ class ReplayMapServiceTest {
 
     @Test
     void replaysSingleMatrixWithoutTraffic() {
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
                     String options) {
@@ -222,7 +225,7 @@ class ReplayMapServiceTest {
     @Test
     void failsOnDifferentTimeframes() {
         var bucketing = new StaticDaypartBucketing();
-        record(new StubMapService() {
+        recorder(new StubMapService() {
             @Override
             public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
                     String options) {
@@ -243,7 +246,7 @@ class ReplayMapServiceTest {
 
     @Test
     void replaysLocationsOutOfMap() {
-        var recorder = record(new StubMapService() {
+        var recorder = recorder(new StubMapService() {
             @Override
             public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
                 return List.of(1);
@@ -337,11 +340,11 @@ class ReplayMapServiceTest {
         }
     }
 
-    private RecordingMapService record(MapService delegate) {
-        return record(delegate, new SingleTimeframeBucketing());
+    private RecordingMapService recorder(MapService delegate) {
+        return recorder(delegate, new SingleTimeframeBucketing());
     }
 
-    private RecordingMapService record(MapService delegate, TimeframeBucketing bucketing) {
+    private RecordingMapService recorder(MapService delegate, TimeframeBucketing bucketing) {
         return new RecordingMapService(delegate, bucketing, tempDir, mapper);
     }
 

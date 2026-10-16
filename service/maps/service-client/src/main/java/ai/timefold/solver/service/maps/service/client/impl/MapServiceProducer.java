@@ -81,16 +81,16 @@ public class MapServiceProducer {
 
     @Produces
     public MapService mapServiceProducer() {
-        MapService mapService = createMapService();
+        var delegate = createMapService();
         // A replay run is never re-recorded, which could overwrite the recordings it reads.
         return recordingEnabled && !replayEnabled
-                ? RecordingMapService.inExecutionProfileDir(mapService, timeframeBucketing, mapper)
-                : mapService;
+                ? RecordingMapService.inExecutionProfileDir(delegate, timeframeBucketing, mapper)
+                : delegate;
     }
 
     private MapService createMapService() {
         if (replayEnabled) {
-            Path directory = Path.of(replayDirectory.orElseThrow(() -> new IllegalStateException(
+            var directory = Path.of(replayDirectory.orElseThrow(() -> new IllegalStateException(
                     "The property timefold.platform.map-service.replay.directory is required when "
                             + "timefold.platform.map-service.replay.enabled is true.")));
             return new ReplayMapService(directory, timeframeBucketing,

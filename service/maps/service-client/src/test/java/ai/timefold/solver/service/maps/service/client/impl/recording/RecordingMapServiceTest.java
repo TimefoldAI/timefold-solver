@@ -51,8 +51,8 @@ class RecordingMapServiceTest {
         assertThat(json.get("locations").get(1).get("latitude").asDouble()).isEqualTo(3.0);
         assertThat(json.get("locationsNotInMap").get(0).asInt()).isEqualTo(1);
         assertThat(json.get("resolvedMapLocation").asText()).isEqualTo("us-georgia");
-        assertThat(json.get("travelTime").toString()).isEqualTo("[[0,10],[20,0]]");
-        assertThat(json.get("distance").toString()).isEqualTo("[[0,100],[200,0]]");
+        assertThat(json.get("travelTime")).hasToString("[[0,10],[20,0]]");
+        assertThat(json.get("distance")).hasToString("[[0,100],[200,0]]");
     }
 
     @Test
@@ -71,10 +71,10 @@ class RecordingMapServiceTest {
         service.getTravelTimeAndDistanceByTimeframe(List.of(a, b), OPTIONS);
 
         JsonNode json = mapper.readTree(singleFile("distances-by-timeframe.json").toFile());
-        assertThat(json.get("timeframes").toString()).isEqualTo("[\"morning\",\"afternoon\",\"night\"]");
-        assertThat(json.get("locationsNotInMap").toString()).isEqualTo("[1]");
-        assertThat(json.get("travelTimes").toString()).isEqualTo("[[[0,1],[2,0]],[[0,3],[4,0]],[[0,5],[6,0]]]");
-        assertThat(json.get("distances").get(2).toString()).isEqualTo("[[0,7],[8,0]]");
+        assertThat(json.get("timeframes")).hasToString("[\"morning\",\"afternoon\",\"night\"]");
+        assertThat(json.get("locationsNotInMap")).hasToString("[1]");
+        assertThat(json.get("travelTimes")).hasToString("[[[0,1],[2,0]],[[0,3],[4,0]],[[0,5],[6,0]]]");
+        assertThat(json.get("distances").get(2)).hasToString("[[0,7],[8,0]]");
     }
 
     @Test
@@ -107,7 +107,7 @@ class RecordingMapServiceTest {
         assertThat(service.getLocationsOutOfMap(List.of(a, b), OPTIONS)).containsExactly(0);
 
         JsonNode json = mapper.readTree(singleFile("locations-out-of-map.json").toFile());
-        assertThat(json.get("locationsOutOfMap").toString()).isEqualTo("[0]");
+        assertThat(json.get("locationsOutOfMap")).hasToString("[0]");
         assertThat(json.get("locations")).hasSize(2);
     }
 
