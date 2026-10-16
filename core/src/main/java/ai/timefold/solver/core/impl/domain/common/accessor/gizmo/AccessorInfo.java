@@ -21,7 +21,10 @@ public record AccessorInfo(MemberAccessorType memberAccessorType, boolean return
     }
 
     public static AccessorInfo of(MemberAccessorType memberAccessorType) {
-        return new AccessorInfo(memberAccessorType, memberAccessorType != MemberAccessorType.VOID_METHOD,
-                memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER);
+        var voidMethod = memberAccessorType == MemberAccessorType.VOID_METHOD
+                || memberAccessorType == MemberAccessorType.VOID_METHOD_WITH_PARAMETER;
+        var readsParameter = memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER
+                || memberAccessorType == MemberAccessorType.VOID_METHOD_WITH_PARAMETER;
+        return new AccessorInfo(memberAccessorType, !voidMethod, readsParameter);
     }
 }

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.entity.descriptor;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_READ_METHOD;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.VOID_METHOD_WITH_PARAMETER;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertNotMixedInheritance;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertSingleInheritance;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertValidPlanningVariables;
@@ -38,6 +39,7 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.domain.common.PlanningPinSupport;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
@@ -91,7 +93,7 @@ public class EntityDescriptor<Solution_> {
     private SequencedMap<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
     private SequencedMap<String, CascadingUpdateShadowVariableDescriptor<Solution_>> declaredCascadingUpdateShadowVariableDecriptorMap;
 
-    private List<MovableFilter<Solution_>> declaredPinEntityFilterList;
+    private List<PinEntityFilter<Solution_>> declaredPinEntityFilterList;
     private List<EntityDescriptor<Solution_>> effectiveInheritedEntityDescriptorList;
 
     // Caches the inherited, declared and descending movable filters (including @PlanningPin filters) as a composite filter
@@ -357,7 +359,30 @@ public class EntityDescriptor<Solution_> {
                         "The entityClass (%s) has a %s annotated member (%s) that is not a boolean or Boolean."
                                 .formatted(entityClass.getCanonicalName(), PlanningPin.class.getSimpleName(), member));
             }
-            declaredPinEntityFilterList.add(new PinEntityFilter<>(memberAccessor));
+            var solutionArgumentSetter = PlanningPinSupport.findSolutionArgumentSetter(entityClass, memberAccessor.getName(),
+                    type, getSolutionDescriptor().getSolutionClass());
+            MemberAccessor solutionArgumentSetterAccessor = null;
+            if (solutionArgumentSetter != null) {
+                solutionArgumentSetterAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(
+                        solutionArgumentSetter, VOID_METHOD_WITH_PARAMETER, PlanningPin.class,
+                        descriptorPolicy.getDomainAccessType());
+            }
+            declaredPinEntityFilterList.add(new PinEntityFilter<>(memberAccessor, solutionArgumentSetterAccessor));
+        }
+    }
+
+    /**
+     * Recomputes {@link PlanningPin} booleans whose setter accepts the planning solution.
+     * Pins without that setter are left untouched.
+     */
+    public void refreshPlanningPins(Solution_ solution, Object entity) {
+        for (var pinEntityFilter : declaredPinEntityFilterList) {
+            pinEntityFilter.refresh(solution, entity);
+        }
+        if (effectiveInheritedEntityDescriptorList != null) {
+            for (var inheritedEntityDescriptor : effectiveInheritedEntityDescriptorList) {
+                inheritedEntityDescriptor.refreshPlanningPins(solution, entity);
+            }
         }
     }
 
