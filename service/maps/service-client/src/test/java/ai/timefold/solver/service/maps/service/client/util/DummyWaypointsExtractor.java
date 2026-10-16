@@ -24,7 +24,8 @@ public class DummyWaypointsExtractor implements WaypointsExtractor<SampleModel> 
                 waypoints.add(new Waypoints("id_" + i,
                         List.of(userModel.getLocations().get(index++), userModel.getLocations().get(index++))));
             }
-        } else {
+        } else if (size == 1) {
+            // A single location is one route; an empty model has no routes, so the run keeps no waypoints.
             waypoints.add(new Waypoints("id", userModel.getLocations()));
         }
 
