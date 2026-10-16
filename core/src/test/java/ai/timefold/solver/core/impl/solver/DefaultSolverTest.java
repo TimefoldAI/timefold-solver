@@ -5,7 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.awaitility.Awaitility.await;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,7 +19,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,9 +77,11 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
@@ -82,6 +89,7 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob.FirstInitializedSolutionPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob.StartSolverJobPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
@@ -161,6 +169,7 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedv
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.BestScoreChangedEvent;
+import ai.timefold.solver.core.testutil.MockClock;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
@@ -195,6 +204,117 @@ class DefaultSolverTest {
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
+    }
+
+    @Test
+    void solveAndSummarizeReturnsSameSolutionAsSolve() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+
+        var solution = solver.solve(TestdataSolution.generateSolution(3, 4));
+        var result = solver.solveAndSummarize(TestdataSolution.generateSolution(3, 4));
+
+        assertThat(result.solution().getScore()).isEqualTo(solution.getScore());
+        assertThat(result.solution().getEntityList())
+                .map(entity -> entity.getValue().getCode())
+                .containsExactlyElementsOf(solution.getEntityList().stream()
+                        .map(entity -> entity.getValue().getCode())
+                        .toList());
+    }
+
+    @Test
+    void solveAndSummarize() throws InterruptedException, ExecutionException {
+        var clock = new MockClock(Clock.systemDefaultZone());
+        var solverConfig = new SolverConfig(clock)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofSeconds(1)));
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null));
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        var localSearchStepEnded = new CountDownLatch(1);
+        ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void stepEnded(AbstractStepScope<TestdataSolution> stepScope) {
+                if (stepScope instanceof LocalSearchStepScope<TestdataSolution>) {
+                    localSearchStepEnded.countDown();
+                }
+            }
+        });
+
+        var executor = Executors.newSingleThreadExecutor();
+        try {
+            var future = executor.submit(() -> solver.solveAndSummarize(solution));
+            assertThat(localSearchStepEnded.await(10, TimeUnit.SECONDS)).isTrue();
+            clock.tick(Duration.ofMillis(1001));
+            await().atMost(Duration.ofSeconds(1)).until(future::isDone);
+
+            var summary = future.get();
+            assertSoftly(softly -> {
+                softly.assertThat(summary.solvingDuration()).isEqualTo(Duration.ofMillis(1001));
+                softly.assertThat(summary.moveEvaluationCount()).isPositive();
+                softly.assertThat(summary.moveEvaluationSpeed())
+                        .isEqualTo(MathUtils.getSpeed(summary.moveEvaluationCount(), 1001));
+                softly.assertThat(summary.scoreCalculationCount()).isPositive();
+                softly.assertThat(summary.scoreCalculationSpeed())
+                        .isEqualTo(MathUtils.getSpeed(summary.scoreCalculationCount(), 1001));
+                softly.assertThat(summary.isSolutionInitialized()).isTrue();
+                softly.assertThat(summary.problemSizeStatistics()).isNotNull();
+            });
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void solveAndSummarizeUninitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(1));
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null));
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+
+        var summary = solver.solveAndSummarize(solution);
+        assertThat(summary.isSolutionInitialized()).isFalse();
+    }
+
+    @Test
+    void solveAndSummarizeFails() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(new ThrowingCommand()));
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+
+        assertThatThrownBy(() -> solver.solveAndSummarize(TestdataSolution.generateSolution(2, 2)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(ThrowingCommand.MESSAGE);
+    }
+
+    @Test
+    void solveAndSummarizeTwiceDoesNotAccumulate() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+
+        var first = solver.solveAndSummarize(TestdataSolution.generateSolution(3, 4));
+        var second = solver.solveAndSummarize(TestdataSolution.generateSolution(3, 4));
+
+        assertThat(first.scoreCalculationCount()).isPositive();
+        assertThat(second.scoreCalculationCount()).isEqualTo(first.scoreCalculationCount());
+        assertThat(second.moveEvaluationCount()).isEqualTo(first.moveEvaluationCount());
+    }
+
+    private static final class ThrowingCommand implements PhaseCommand<Object> {
+
+        static final String MESSAGE = "Solving failed on purpose.";
+
+        @Override
+        public void changeWorkingSolution(PhaseCommandContext<Object> context) {
+            throw new IllegalStateException(MESSAGE);
+        }
+
     }
 
     @Test
