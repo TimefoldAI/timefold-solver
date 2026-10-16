@@ -175,6 +175,10 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 unregisterSolverSpecificMetrics();
             }
             restartSolver = checkProblemChanges();
+            if (!restartSolver && basicPlumbingTermination.isDaemon()) {
+                // An idle daemon leaves the wait without a restart only through terminateEarly().
+                terminatedEarly = true;
+            }
         }
         outerSolvingEnded(solverScope);
         return new DefaultSolverRunResult<>(solverScope.getBestSolution(),
