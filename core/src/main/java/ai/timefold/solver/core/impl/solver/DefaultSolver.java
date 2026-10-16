@@ -109,7 +109,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public boolean isTerminateEarly() {
-        return basicPlumbingTermination.isTerminateEarly();
+        return basicPlumbingTermination.isTerminateEarlyRequested();
     }
 
     @Override
@@ -154,7 +154,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         outerSolvingStarted(solverScope);
 
         var restartSolver = true;
-        var terminatedEarly = false;
         while (restartSolver) {
             var sample = solveLengthTimer.start();
             try {
@@ -163,8 +162,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 // problem's scale metrics
                 solvingStarted(solverScope);
                 runPhases(solverScope);
-                // Read before solvingEnded, so a terminateEarly() after the phases ended does not count.
-                terminatedEarly = isTerminateEarly();
                 solvingEnded(solverScope);
             } catch (Exception e) {
                 errorCounter.increment();
@@ -175,10 +172,9 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 unregisterSolverSpecificMetrics();
             }
             restartSolver = checkProblemChanges();
-            if (!restartSolver && basicPlumbingTermination.isRestartPreventedByTerminateEarly()) {
-                terminatedEarly = true;
-            }
         }
+        // Before outerSolvingEnded, which lets another solve() start and clear it.
+        var terminatedEarly = basicPlumbingTermination.isRunEndedByTerminateEarly();
         outerSolvingEnded(solverScope);
         return new DefaultSolverRunResult<>(solverScope.getBestSolution(),
                 DefaultSolverRunSummary.of(solverScope, terminatedEarly));
@@ -186,7 +182,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     public void outerSolvingStarted(SolverScope<Solution_> solverScope) {
         solving.set(true);
-        basicPlumbingTermination.resetTerminateEarly();
+        basicPlumbingTermination.solvingStarted();
         solverScope.setStartingSolverCount(0);
         solverScope.setWorkingRandom(randomFactory.get());
         solverScope.getSolverStatistics().solvingStarted();

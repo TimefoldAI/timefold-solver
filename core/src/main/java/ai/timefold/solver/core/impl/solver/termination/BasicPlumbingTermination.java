@@ -15,6 +15,12 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Concurrency notes:
  * Condition predicate on ({@link #problemChangeQueue} is not empty or {@link #terminatedEarly} is true).
+ * The lock is required by {@link #waitForRestartSolverDecision()} (it waits),
+ * by {@link #terminateEarly()} and {@link #addProblemChanges(List)} (they notify the waiting thread),
+ * and by the problem-change processing methods: {@link #isEveryProblemChangeProcessed()} must read the queue
+ * and {@link #problemChangesBeingProcessed} together, while another thread adds a change.
+ * The other methods use only volatile fields, so they do not take the lock;
+ * {@link #isSolverTerminated(SolverScope)} runs on every step, also in child threads.
  */
 @NullMarked
 public final class BasicPlumbingTermination<Solution_>
@@ -22,14 +28,15 @@ public final class BasicPlumbingTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final boolean daemon;
-    /**
-     * Decided together with the restart, under the same lock,
-     * so a problem change added later by another thread does not change it.
-     */
-    private boolean restartPreventedByTerminateEarly = false;
     private final BlockingQueue<ProblemChange<Solution_>> problemChangeQueue = new LinkedBlockingQueue<>();
 
-    private boolean terminatedEarly = false;
+    /**
+     * The answer for the run summary.
+     * {@link #solvingEnded(SolverScope)} takes it; {@link #waitForRestartSolverDecision()} can only set it to true.
+     * The wait reads the queue under the lock, so a problem change added later by another thread does not change it.
+     */
+    private volatile boolean runTerminatedEarly = false;
+    private volatile boolean terminatedEarly = false;
     private boolean problemChangesBeingProcessed = false;
 
     public BasicPlumbingTermination(boolean daemon) {
@@ -39,8 +46,18 @@ public final class BasicPlumbingTermination<Solution_>
     /**
      * This method is thread-safe.
      */
-    public synchronized void resetTerminateEarly() {
+    public void solvingStarted() {
         terminatedEarly = false;
+        runTerminatedEarly = false;
+    }
+
+    /**
+     * Called before any solver listener, so a {@link #terminateEarly()} after the phases ended does not count,
+     * unless it prevents a restart.
+     */
+    @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        runTerminatedEarly = terminatedEarly;
     }
 
     /**
@@ -59,8 +76,11 @@ public final class BasicPlumbingTermination<Solution_>
 
     /**
      * This method is thread-safe.
+     *
+     * @return true once a stop was requested, also after the run ended;
+     *         {@link #isRunEndedByTerminateEarly()} tells if that request ended the run
      */
-    public synchronized boolean isTerminateEarly() {
+    public boolean isTerminateEarlyRequested() {
         return terminatedEarly;
     }
 
@@ -73,7 +93,7 @@ public final class BasicPlumbingTermination<Solution_>
      */
     public synchronized boolean waitForRestartSolverDecision() {
         if (!daemon) {
-            restartPreventedByTerminateEarly = terminatedEarly && !problemChangeQueue.isEmpty();
+            runTerminatedEarly |= terminatedEarly && !problemChangeQueue.isEmpty();
             return !problemChangeQueue.isEmpty() && !terminatedEarly;
         } else {
             while (problemChangeQueue.isEmpty() && !terminatedEarly) {
@@ -85,17 +105,16 @@ public final class BasicPlumbingTermination<Solution_>
                 }
             }
             // A daemon leaves the wait without a restart only because of terminateEarly().
-            restartPreventedByTerminateEarly = terminatedEarly;
+            runTerminatedEarly |= terminatedEarly;
             return !terminatedEarly;
         }
     }
 
     /**
-     * @return true if the last {@link #waitForRestartSolverDecision()} did not restart only because of
-     *         {@link #terminateEarly()}
+     * @return true if {@link #terminateEarly()} ended the run: before its phases ended, or by preventing a restart
      */
-    public synchronized boolean isRestartPreventedByTerminateEarly() {
-        return restartPreventedByTerminateEarly;
+    public boolean isRunEndedByTerminateEarly() {
+        return runTerminatedEarly;
     }
 
     /**
@@ -124,13 +143,14 @@ public final class BasicPlumbingTermination<Solution_>
     }
 
     @Override
-    public synchronized boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         // Destroying a thread pool with solver threads will only cause it to interrupt those solver threads,
         // it won't call Solver.terminateEarly()
         if (Thread.currentThread().isInterrupted() // Does not clear the interrupted flag
                 // Avoid duplicate log message because this method is called twice:
                 // - in the phase step loop (every phase termination bridges to the solver termination)
                 // - in the solver's phase loop
+                // Child threads interrupted at the same time can still both log; there is no lock here.
                 && !terminatedEarly) {
             logger.info("The solver thread got interrupted, so this solver is terminating early.");
             terminatedEarly = true;
