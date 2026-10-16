@@ -114,7 +114,7 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             var solverScope = solver.getSolverScope();
             var solutionDescriptor = solverScope.getSolutionDescriptor();
             problemBenchmarkResult.registerProblemSizeStatistics(result.problemSizeStatistics());
-            subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution), result.isSolutionInitialized());
+            subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution), result.solutionInitialized());
             subSingleBenchmarkResult.setTimeMillisSpent(result.solvingDuration().toMillis());
             subSingleBenchmarkResult.setScoreCalculationCount(result.scoreCalculationCount());
             subSingleBenchmarkResult.setMoveEvaluationCount(result.moveEvaluationCount());

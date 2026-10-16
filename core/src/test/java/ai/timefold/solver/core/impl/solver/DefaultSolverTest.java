@@ -38,8 +38,11 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
@@ -73,11 +76,13 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.phase.DefaultPhaseId;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -89,6 +94,7 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob.FirstInitializedSolutionPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob.StartSolverJobPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.DefaultTerminationId;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
@@ -99,6 +105,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.classloader.TestdataSeparateClassLoaderDomain;
+import ai.timefold.solver.core.testdomain.common.DummyHardSoftEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -146,6 +153,7 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
@@ -260,12 +268,206 @@ class DefaultSolverTest {
                 softly.assertThat(summary.scoreCalculationCount()).isPositive();
                 softly.assertThat(summary.scoreCalculationSpeed())
                         .isEqualTo(MathUtils.getSpeed(summary.scoreCalculationCount(), 1001));
-                softly.assertThat(summary.isSolutionInitialized()).isTrue();
+                softly.assertThat(summary.solutionInitialized()).isTrue();
                 softly.assertThat(summary.problemSizeStatistics()).isNotNull();
+                softly.assertThat(summary.terminatedEarly()).isFalse();
+                softly.assertThat(summary.termination())
+                        .isEqualTo(new DefaultTerminationId(TerminationType.SPENT_LIMIT, ROOT_TERMINATION_ID, 0, null));
+                softly.assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+                softly.assertThat(summary.timeToBestSolution()).isEqualTo(Duration.ZERO);
             });
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    private static final DefaultTerminationId ROOT_TERMINATION_ID =
+            new DefaultTerminationId(TerminationType.OR, null, 0, null);
+
+    private static SolverRunSummary solveAndSummarizeUninitialized(SolverConfig solverConfig) {
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        return solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+    }
+
+    @Test
+    void summaryWhenLastPhaseCompleted() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.terminatedEarly()).isFalse();
+        assertThat(summary.termination()).isNull();
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryWithPhaseTermination() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        var phaseRootId = new DefaultTerminationId(TerminationType.OR, null, 0, 1);
+        assertThat(summary.terminatedEarly()).isFalse();
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT, phaseRootId, 0, 1));
+        assertThat(summary.termination().phaseIndex()).hasValue(1);
+        assertThat(summary.termination().parent().phaseIndex()).hasValue(1);
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+    }
+
+    @Test
+    void summaryWithSolverStepCountLimit() {
+        // The bridge checks the solver termination from inside the phase.
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.termination().phaseIndex()).isEmpty();
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+    }
+
+    @Test
+    void summaryWithBestScoreLimit() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withSpentLimit(Duration.ofHours(1))
+                        .withBestScoreLimit("0"));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.BEST_SCORE_LIMIT, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryWithAndTermination() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
+                        .withStepCountLimit(3)
+                        .withBestScoreLimit("0"));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.AND, null, 0, null));
+    }
+
+    @Test
+    void summaryWithBestScoreFeasibleSkipsLocalSearch() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataHardSoftScoreSolution.class, TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withBestScoreFeasible(true));
+        var solution = TestdataHardSoftScoreSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null));
+
+        var summary = SolverFactory.<TestdataHardSoftScoreSolution> create(solverConfig).buildSolver()
+                .solveAndSummarize(solution);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.BEST_SCORE_FEASIBLE, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryWhenTerminationFiresAsLastPhaseRunsOutOfWork() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataHardSoftScoreSolution.class, TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withBestScoreFeasible(true));
+        var solution = TestdataHardSoftScoreSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null));
+
+        var summary = SolverFactory.<TestdataHardSoftScoreSolution> create(solverConfig).buildSolver()
+                .solveAndSummarize(solution);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.BEST_SCORE_FEASIBLE, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryIgnoresTerminateEarlyAfterPhasesEnded() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                solver.terminateEarly();
+            }
+        });
+
+        var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+        assertThat(summary.terminatedEarly()).isFalse();
+    }
+
+    @Test
+    void summaryWhenTerminateEarlyPreventsProblemChangeRestart() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // A pending problem change would restart the solver, but terminateEarly() ends the run instead.
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+                });
+                solver.terminateEarly();
+            }
+        });
+
+        var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+        assertThat(summary.terminatedEarly()).isTrue();
+        assertThat(summary.termination()).isNull();
+    }
+
+    @Test
+    void summaryOfIdleDaemonStoppedByTerminateEarly() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withDaemon(true)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // The daemon then waits for problem changes, until terminateEarly() ends the run.
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                solver.terminateEarly();
+            }
+        });
+
+        var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+        assertThat(summary.terminatedEarly()).isTrue();
+        assertThat(summary.termination()).isNull();
+    }
+
+    @Test
+    void summaryWithEmptyEntityList() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solution = TestdataSolution.generateSolution(2, 0);
+
+        var summary = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver().solveAndSummarize(solution);
+        assertThat(summary.terminatedEarly()).isFalse();
+        assertThat(summary.termination()).isNull();
+        assertThat(summary.lastPhase()).isNull();
+    }
+
+    @Test
+    void summaryWithRuinRecreateMoveSelector() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig())
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        // The nested Construction Heuristic of ruin and recreate is not a phase of the solver.
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT,
+                new DefaultTerminationId(TerminationType.OR, null, 0, 1), 0, 1));
     }
 
     @Test
@@ -278,7 +480,7 @@ class DefaultSolverTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
         var summary = solver.solveAndSummarize(solution);
-        assertThat(summary.isSolutionInitialized()).isFalse();
+        assertThat(summary.solutionInitialized()).isFalse();
     }
 
     @Test

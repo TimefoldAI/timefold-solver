@@ -6,8 +6,11 @@ import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.SolverRunResult;
 import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.phase.PhaseId;
+import ai.timefold.solver.core.api.solver.termination.TerminationId;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public record DefaultSolverRunResult<Solution_>(Solution_ solution, SolverRunSummary summary)
@@ -41,13 +44,33 @@ public record DefaultSolverRunResult<Solution_>(Solution_ solution, SolverRunSum
     }
 
     @Override
-    public boolean isSolutionInitialized() {
-        return summary.isSolutionInitialized();
+    public boolean solutionInitialized() {
+        return summary.solutionInitialized();
     }
 
     @Override
     public ProblemSizeStatistics problemSizeStatistics() {
         return summary.problemSizeStatistics();
+    }
+
+    @Override
+    public boolean terminatedEarly() {
+        return summary.terminatedEarly();
+    }
+
+    @Override
+    public @Nullable TerminationId termination() {
+        return summary.termination();
+    }
+
+    @Override
+    public @Nullable PhaseId lastPhase() {
+        return summary.lastPhase();
+    }
+
+    @Override
+    public Duration timeToBestSolution() {
+        return summary.timeToBestSolution();
     }
 
 }
