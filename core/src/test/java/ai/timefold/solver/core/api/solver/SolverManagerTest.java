@@ -1437,7 +1437,7 @@ class SolverManagerTest {
             solverJob.terminateEarly();
 
             var summary = solverJob.getResult();
-            assertThat(summary.isTerminatedEarly()).isTrue();
+            assertThat(summary.terminatedEarly()).isTrue();
             assertThat(summary.termination()).isNull();
             assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
         }

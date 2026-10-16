@@ -270,7 +270,7 @@ class DefaultSolverTest {
                         .isEqualTo(MathUtils.getSpeed(summary.scoreCalculationCount(), 1001));
                 softly.assertThat(summary.isSolutionInitialized()).isTrue();
                 softly.assertThat(summary.problemSizeStatistics()).isNotNull();
-                softly.assertThat(summary.isTerminatedEarly()).isFalse();
+                softly.assertThat(summary.terminatedEarly()).isFalse();
                 softly.assertThat(summary.termination())
                         .isEqualTo(new DefaultTerminationId(TerminationType.SPENT_LIMIT, ROOT_TERMINATION_ID, 0, null));
                 softly.assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
@@ -295,7 +295,7 @@ class DefaultSolverTest {
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
         var summary = solveAndSummarizeUninitialized(solverConfig);
-        assertThat(summary.isTerminatedEarly()).isFalse();
+        assertThat(summary.terminatedEarly()).isFalse();
         assertThat(summary.termination()).isNull();
         assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
     }
@@ -308,7 +308,7 @@ class DefaultSolverTest {
 
         var summary = solveAndSummarizeUninitialized(solverConfig);
         var phaseRootId = new DefaultTerminationId(TerminationType.OR, null, 0, 1);
-        assertThat(summary.isTerminatedEarly()).isFalse();
+        assertThat(summary.terminatedEarly()).isFalse();
         assertThat(summary.termination())
                 .isEqualTo(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT, phaseRootId, 0, 1));
         assertThat(summary.termination().phaseIndex()).hasValue(1);
@@ -402,7 +402,7 @@ class DefaultSolverTest {
         });
 
         var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
-        assertThat(summary.isTerminatedEarly()).isFalse();
+        assertThat(summary.terminatedEarly()).isFalse();
     }
 
     @Test
@@ -420,7 +420,7 @@ class DefaultSolverTest {
         });
 
         var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
-        assertThat(summary.isTerminatedEarly()).isTrue();
+        assertThat(summary.terminatedEarly()).isTrue();
         assertThat(summary.termination()).isNull();
     }
 
@@ -430,7 +430,7 @@ class DefaultSolverTest {
         var solution = TestdataSolution.generateSolution(2, 0);
 
         var summary = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver().solveAndSummarize(solution);
-        assertThat(summary.isTerminatedEarly()).isFalse();
+        assertThat(summary.terminatedEarly()).isFalse();
         assertThat(summary.termination()).isNull();
         assertThat(summary.lastPhase()).isNull();
     }
