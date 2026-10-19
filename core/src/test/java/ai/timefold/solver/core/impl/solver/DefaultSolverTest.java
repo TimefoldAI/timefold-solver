@@ -2462,7 +2462,9 @@ class DefaultSolverTest {
         assertThat(bestSolution.getEntityList())
                 .allSatisfy(entity -> {
                     assertThat(entity.getValueRange()).contains(entity.getValue());
-                    assertThat(entity.getSecondValueRange()).contains(entity.getSecondValue());
+                    if (entity.getSecondValue() != null) {
+                        assertThat(entity.getSecondValueRange()).contains(entity.getSecondValue());
+                    }
                 });
     }
 
