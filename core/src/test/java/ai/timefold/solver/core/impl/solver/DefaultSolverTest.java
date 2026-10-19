@@ -171,7 +171,11 @@ import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSort
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntitySolutionRangeEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
@@ -2404,6 +2408,125 @@ class DefaultSolverTest {
         assertThat(bestEntity2.getValue()).isNotIn(value3, value4);
         var bestEntity3 = bestSolution.getEntityList().get(2);
         assertThat(bestEntity3.getValue()).isNotIn(value1, value2, value3);
+    }
+
+    @Test
+    void solveMultiEntityEntityRangeModelWithDefaultMoves() {
+        solveMultiEntityEntityRangeModel(null);
+    }
+
+    @Test
+    void solveMultiEntityEntityRangeModelWithSwapOnEntityRangeVariable() {
+        solveMultiEntityEntityRangeModel(new SwapMoveSelectorConfig()
+                .withEntitySelectorConfig(
+                        new EntitySelectorConfig().withEntityClass(TestdataMultiEntityEntityProvidingEntity.class))
+                .withVariableNameIncludes("value"));
+    }
+
+    @Test
+    void solveMultiEntityEntityRangeModelWithSwapOnSolutionRangeVariable() {
+        solveMultiEntityEntityRangeModel(new SwapMoveSelectorConfig()
+                .withEntitySelectorConfig(
+                        new EntitySelectorConfig().withEntityClass(TestdataMultiEntitySolutionRangeEntity.class))
+                .withVariableNameIncludes("solutionValue"));
+    }
+
+    private void solveMultiEntityEntityRangeModel(MoveSelectorConfig<?> moveSelectorConfig) {
+        // A null move selector config means the default moves are used
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectorConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataMultiEntityEntityProvidingSolution.class,
+                        TestdataMultiEntityEntityProvidingEntity.class, TestdataMultiEntitySolutionRangeEntity.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                // The default CH cannot deduce the entity class when multiple entities define basic variables,
+                // so the problem starts initialized and only the local search phase runs
+                .withPhases(localSearchConfig);
+
+        var solution = TestdataMultiEntityEntityProvidingSolution.generateSolution(5, 3);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
+        assertThat(bestSolution.getEntityProvidingEntityList())
+                .allSatisfy(entity -> assertThat(entity.getValueRange()).contains(entity.getValue()));
+        assertThat(bestSolution.getSolutionRangeEntityList())
+                .allSatisfy(entity -> assertThat(entity.getSolutionValue()).isNotNull());
+    }
+
+    @Test
+    void solveMultiVarEntityRangeModelWithDefaultMoves() {
+        // The change moves can assign each solutionValue to the entity value, which scores 3
+        var bestSolution = solveMultiVarEntityRangeModel(null, generateMultiVarEntityRangeProblem());
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(3));
+        assertThat(bestSolution.getEntityList())
+                .allSatisfy(entity -> {
+                    assertThat(entity.getValueRange()).contains(entity.getValue());
+                    assertThat(entity.getSecondValueRange()).contains(entity.getSecondValue());
+                });
+    }
+
+    @Test
+    void solveMultiVarEntityRangeModelWithSwapOnSolutionRangeVariable() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        // The entity value ranges are disjoint,
+        // so the entity value range filtering would never select e1 and e2 for the same swap.
+        // Only the solution-range variable is swapped, so the filtering must be disabled to reach the optimal solution.
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1), v1, List.of(v1), v1, v2);
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e2", List.of(v2), v2, List.of(v2), v2, v1);
+        var problem = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution("s1", List.of(v1, v2));
+        problem.setEntityList(List.of(e1, e2));
+
+        var bestSolution = solveMultiVarEntityRangeModel(
+                new SwapMoveSelectorConfig().withVariableNameIncludes("solutionValue"), problem);
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(2));
+        assertThat(bestSolution.getEntityList())
+                .map(TestdataAllowsUnassignedMultiVarEntityProvidingEntity::getSolutionValue)
+                .containsExactly(v1, v2);
+    }
+
+    @Test
+    void solveMultiVarEntityRangeModelWithSwapOnEntityRangeVariable() {
+        // Within the entity value ranges, the best is swapping e1 and e2, which scores 1
+        var bestSolution = solveMultiVarEntityRangeModel(new SwapMoveSelectorConfig().withVariableNameIncludes("value"),
+                generateMultiVarEntityRangeProblem());
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
+        assertThat(bestSolution.getEntityList())
+                .allSatisfy(entity -> assertThat(entity.getValueRange()).contains(entity.getValue()));
+    }
+
+    private static TestdataAllowsUnassignedMultiVarEntityProvidingSolution generateMultiVarEntityRangeProblem() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var secondValueRange = List.of(v1, v2, v3);
+        // Rotating the values to e1(v3), e2(v1) and e3(v2) scores 3, but v3 is outside the ranges of e1 and e2
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1, v2), v1, secondValueRange, v1,
+                v3);
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e2", List.of(v1, v2), v2, secondValueRange, v1,
+                v1);
+        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e3", List.of(v3), v3, secondValueRange, v1,
+                v2);
+        var problem = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution("s1", List.of(v1, v2, v3));
+        problem.setEntityList(List.of(e1, e2, e3));
+        return problem;
+    }
+
+    private static TestdataAllowsUnassignedMultiVarEntityProvidingSolution solveMultiVarEntityRangeModel(
+            MoveSelectorConfig<?> moveSelectorConfig, TestdataAllowsUnassignedMultiVarEntityProvidingSolution problem) {
+        // A null move selector config means the default moves are used
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectorConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.class,
+                        TestdataAllowsUnassignedMultiVarEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedMultiVarEntityProvidingScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                // The problem starts initialized, so only the local search phase runs
+                .withPhases(localSearchConfig);
+        return PlannerTestUtils.solve(solverConfig, problem, true);
     }
 
     private static List<MoveSelectorConfig<?>> generateMovesForListVarEntityRangeModel() {

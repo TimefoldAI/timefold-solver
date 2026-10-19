@@ -42,9 +42,8 @@ public class SwapMoveSelectorFactory<Solution_>
         // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector
         // to replay the selected value and return only reachable values.
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
-        var enableEntityValueRangeFilter = entityDescriptor.getSolutionDescriptor().getBasicVariableDescriptorList()
-                .stream()
-                .anyMatch(v -> !v.canExtractValueRangeFromSolution());
+        var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
+        var enableEntityValueRangeFilter = variableDescriptorList.stream().anyMatch(v -> !v.canExtractValueRangeFromSolution());
         // A null ID means to turn off the entity value range filtering
         String entityRecorderId = null;
         if (enableEntityValueRangeFilter) {
@@ -66,10 +65,8 @@ public class SwapMoveSelectorFactory<Solution_>
                 EntitySelectorFactory.<Solution_> create(secondaryEntitySelectorConfig)
                         .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
                                 new ValueRangeRecorderId(entityRecorderId, true));
-        var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
 
-        return new SwapMoveSelector<>(leftEntitySelector, rightEntitySelector, variableDescriptorList,
-                randomSelection);
+        return new SwapMoveSelector<>(leftEntitySelector, rightEntitySelector, variableDescriptorList, randomSelection);
     }
 
     @Override
