@@ -10,13 +10,13 @@ import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
-import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.event.SolveEventProducerId;
 import ai.timefold.solver.core.impl.solver.monitoring.SolverTags;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
@@ -109,7 +109,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public boolean isTerminateEarly() {
-        return basicPlumbingTermination.isTerminateEarly();
+        return basicPlumbingTermination.isTerminateEarlyRequested();
     }
 
     @Override
@@ -173,13 +173,16 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             }
             restartSolver = checkProblemChanges();
         }
+        // Before outerSolvingEnded, which lets another solve() start and clear it.
+        var terminatedEarly = basicPlumbingTermination.isRunEndedByTerminateEarly();
         outerSolvingEnded(solverScope);
-        return new DefaultSolverRunResult<>(solverScope.getBestSolution(), DefaultSolverRunSummary.of(solverScope));
+        return new DefaultSolverRunResult<>(solverScope.getBestSolution(),
+                DefaultSolverRunSummary.of(solverScope, terminatedEarly));
     }
 
     public void outerSolvingStarted(SolverScope<Solution_> solverScope) {
         solving.set(true);
-        basicPlumbingTermination.resetTerminateEarly();
+        basicPlumbingTermination.solvingStarted();
         solverScope.setStartingSolverCount(0);
         solverScope.setWorkingRandom(randomFactory.get());
         solverScope.getSolverStatistics().solvingStarted();
@@ -197,7 +200,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
         // Update the best solution, since problem's shadows and score were updated
         bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
-                EventProducerId.solvingStarted());
+                SolveEventProducerId.SOLVING_STARTED);
         if (LOGGER.isInfoEnabled()) { // Formatting is expensive here.
             LOGGER.info("Solving {}: time spent ({}), best score ({}), "
                     + "default environment mode ({}), move thread count ({}), random ({}).",
@@ -349,7 +352,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             // We update the initial solution to ensure the related events use an updated instance
             solverScope.setInitialSolution(solverScope.cloneWorkingSolution(), false);
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
-                    EventProducerId.problemChange());
+                    SolveEventProducerId.PROBLEM_CHANGE);
             LOGGER.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);
             return true;

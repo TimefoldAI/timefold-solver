@@ -5,6 +5,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.phase.event.DefaultPhaseEventProducerId;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
@@ -268,7 +269,8 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     public EventProducerId getPhaseId() {
-        return solverScope.getSolver().getPhaseList().get(phaseIndex).getEventProducerIdSupplier().apply(phaseIndex);
+        return DefaultPhaseEventProducerId.of(solverScope.getSolver().getPhaseList().get(phaseIndex).getPhaseType(),
+                phaseIndex);
     }
 
     @Override

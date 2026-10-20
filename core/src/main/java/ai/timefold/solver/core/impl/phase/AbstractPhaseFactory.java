@@ -40,11 +40,11 @@ public abstract class AbstractPhaseFactory<Solution_, PhaseConfig_ extends Phase
     }
 
     protected PhaseTermination<Solution_> buildPhaseTermination(HeuristicConfigPolicy<Solution_> configPolicy,
-            SolverTermination<Solution_> solverTermination) {
+            SolverTermination<Solution_> solverTermination, int phaseIndex) {
         var terminationConfig_ = Objects.requireNonNullElseGet(phaseConfig.getTerminationConfig(), TerminationConfig::new);
         var phaseTermination = PhaseTermination.bridge(solverTermination);
         var resultingTermination = TerminationFactory.<Solution_> create(terminationConfig_)
-                .buildTermination(configPolicy, phaseTermination);
+                .buildTermination(configPolicy, phaseTermination, phaseIndex);
         var inapplicableTerminationList =
                 resultingTermination instanceof UniversalTermination<Solution_> universalTermination
                         ? universalTermination.getPhaseTerminationsInapplicableTo(getPhaseScopeClass())

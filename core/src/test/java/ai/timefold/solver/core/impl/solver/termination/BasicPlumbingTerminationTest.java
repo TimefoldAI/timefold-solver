@@ -17,6 +17,68 @@ import org.junit.jupiter.api.Test;
 
 class BasicPlumbingTerminationTest {
 
+    private static void addNoopProblemChange(BasicPlumbingTermination<TestdataSolution> termination) {
+        termination.addProblemChanges(Collections.singletonList((workingSolution, problemChangeDirector) -> {
+        }));
+    }
+
+    @Test
+    void terminateEarlyBeforeSolvingEndedIsEarly() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(false);
+        termination.terminateEarly();
+        termination.solvingEnded(mock(SolverScope.class));
+        assertThat(termination.waitForRestartSolverDecision()).isFalse();
+        assertThat(termination.isRunEndedByTerminateEarly()).isTrue();
+    }
+
+    @Test
+    void terminateEarlyAfterSolvingEndedIsNotEarly() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(false);
+        termination.solvingEnded(mock(SolverScope.class));
+        termination.terminateEarly();
+        assertThat(termination.waitForRestartSolverDecision()).isFalse();
+        assertThat(termination.isRunEndedByTerminateEarly()).isFalse();
+    }
+
+    @Test
+    void terminateEarlyPreventingRestartIsEarly() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(false);
+        addNoopProblemChange(termination);
+        termination.solvingEnded(mock(SolverScope.class));
+        termination.terminateEarly();
+        assertThat(termination.waitForRestartSolverDecision()).isFalse();
+        assertThat(termination.isRunEndedByTerminateEarly()).isTrue();
+    }
+
+    @Test
+    void daemonStoppedWhileIdleIsEarly() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(true);
+        termination.solvingEnded(mock(SolverScope.class));
+        termination.terminateEarly();
+        assertThat(termination.waitForRestartSolverDecision()).isFalse();
+        assertThat(termination.isRunEndedByTerminateEarly()).isTrue();
+    }
+
+    @Test
+    void problemChangeAfterRestartDecisionIsNotEarly() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(false);
+        termination.solvingEnded(mock(SolverScope.class));
+        assertThat(termination.waitForRestartSolverDecision()).isFalse();
+        // Another thread adds a problem change after the decision.
+        addNoopProblemChange(termination);
+        assertThat(termination.isRunEndedByTerminateEarly()).isFalse();
+    }
+
+    @Test
+    void solvingStartedClearsTheAnswer() {
+        var termination = new BasicPlumbingTermination<TestdataSolution>(false);
+        termination.terminateEarly();
+        termination.solvingEnded(mock(SolverScope.class));
+        termination.solvingStarted();
+        assertThat(termination.isRunEndedByTerminateEarly()).isFalse();
+        assertThat(termination.isTerminateEarlyRequested()).isFalse();
+    }
+
     @Test
     void addProblemChangeWithoutDaemon() {
         var count = new AtomicInteger(0);
