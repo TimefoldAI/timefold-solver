@@ -46,7 +46,7 @@ public interface PhaseCommandContext<Solution_>
      * <p>
      * Once this method returns true because of a configured termination, and this is the last phase,
      * {@link SolverRunSummary#termination()} reports that termination,
-     * also if the command ignores it.
+     * even if the command ignores it.
      *
      * @return true if the solver has requested the phase to terminate,
      *         for example because the time limit has been reached.
