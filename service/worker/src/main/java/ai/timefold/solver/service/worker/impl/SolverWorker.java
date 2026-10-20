@@ -48,6 +48,10 @@ import ai.timefold.solver.service.definition.api.metrics.InputMetricsAware;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.OutputMetricsAware;
+import ai.timefold.solver.service.definition.api.rest.OperationId;
+import ai.timefold.solver.service.definition.api.usage.UniqueResourceAware;
+import ai.timefold.solver.service.definition.api.usage.UniqueResourceReporter;
+import ai.timefold.solver.service.definition.api.usage.UniqueResources;
 import ai.timefold.solver.service.definition.api.validation.LegacyValidationResult;
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
@@ -151,6 +155,8 @@ public class SolverWorker {
 
     private final Emitter<FailedSolutionEvent> failedSolutionEmitter;
 
+    private final Instance<UniqueResourceReporter> uniqueResourceReporterInstance;
+
     private final List<ModelPostProcessor> modelPostProcessors;
 
     private final ShutdownExecutor shutdownExecutor;
@@ -189,6 +195,7 @@ public class SolverWorker {
             ShutdownOnTerminate shutdownOnTerminate,
             Instance<BestSolutionConsumerDecorator> bestSolutionConsumerDecoratorOptional,
             CompletionStatus completionStatus,
+            Instance<UniqueResourceReporter> uniqueResourceReporterInstance,
             @Broadcast @Channel(SolverChannels.DATASET_COMPUTED) Emitter<DatasetComputedEvent> datasetOutputsComputedEmitter,
             @Broadcast @Channel(SolverChannels.DATASET_VALIDATED) Emitter<DatasetValidatedEvent> datasetValidatedEventEmitter,
             @Broadcast @Channel(SolverChannels.STARTED) Emitter<ItemStarted> scheduleStartedEmitter,
@@ -216,7 +223,7 @@ public class SolverWorker {
         this.shutdownExecutor = shutdownExecutor;
         this.shutdownOnTerminate = shutdownOnTerminate;
         this.completionStatus = completionStatus;
-
+        this.uniqueResourceReporterInstance = uniqueResourceReporterInstance;
         if (bestSolutionConsumerDecoratorOptional.isResolvable()) {
             bestSolutionConsumerDecorator = bestSolutionConsumerDecoratorOptional.get();
         }
@@ -358,9 +365,7 @@ public class SolverWorker {
                 return;
             }
             var configuration = storageService.getConfiguration(id);
-
             var modelConfig = Configuration.getSafeModelConfig(configuration);
-
             var solverModel = createSolverModel(modelInput, modelConfig);
 
             String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
@@ -376,6 +381,9 @@ public class SolverWorker {
             metadata.datasetComputed();
             storageService.storeSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
                     extractOutputMetrics(solverModel));
+
+            // We report the unique resources once we compute the outputs of the valid dataset.
+            reportUniqueResources(id, solverModel);
 
             postProcessOutput(id, modelOutput, solverModel);
 
@@ -725,7 +733,7 @@ public class SolverWorker {
 
     /**
      * Failing to read or write the storage, or to get hold of the data set in time, may well pass. A data set that does
-     * not exist any more, or any failure the storage reported as permanent, does not.
+     * not exist anymore, or any failure the storage reported as permanent, does not.
      */
     static boolean isTransientStorageFailure(TimefoldRuntimeException e) {
         return e.isRecoverable() && TRANSIENT_STORAGE_ERROR_CODES.contains(e.getCode());
@@ -912,6 +920,30 @@ public class SolverWorker {
         }
 
         return consumer;
+    }
+
+    /**
+     * Reports the {@link UniqueResources} contained in the dataset.
+     */
+    private void reportUniqueResources(String datasetId, SolverModel solverModel) {
+        if (!uniqueResourceReporterInstance.isResolvable()) { // Solver CE does not report resources.
+            return;
+        }
+        var uniqueResourceReporter = uniqueResourceReporterInstance.get();
+        if (solverModel instanceof UniqueResourceAware uniqueResourceAwareModel) {
+            UniqueResources uniqueResources = null;
+            try {
+                uniqueResources = uniqueResourceAwareModel.getUniqueResources();
+            } catch (Exception e) {
+                LOGGER.error("Failed to obtain unique resources for a dataset ({}).", datasetId, e);
+            }
+
+            if (uniqueResources != null) {
+                uniqueResourceReporter.reportUniqueResources(OperationId.SCHEDULE, datasetId, uniqueResources);
+            }
+        } else {
+            LOGGER.debug("Solver model does not support unique resources reporting.");
+        }
     }
 
     private static SolverJob<SolverModel> resolveJob(CompletableFuture<SolverJob<SolverModel>> jobFuture) {

@@ -31,4 +31,6 @@ public class SolverChannels {
     public static final String FAILED_SOLUTION = "schedule-failed-solution";
 
     public static final String DATASET_EVENTS = "dataset-events";
+
+    public static final String UNIQUE_RESOURCE_REPORTED = "unique-resource-reported";
 }
