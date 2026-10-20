@@ -149,7 +149,7 @@ class ProblemSizeStatisticsTest {
         assertThat(statistics.genuineEntityClassToVariableToValueCount().get(TestdataAddVarChildEntity.class))
                 .containsEntry("value", 5L)
                 .containsEntry("value2", 2L);
-        // The inherited variable is counted once, not once for each entity class.
+        // An inherited variable's value count is not double-counted by subclasses.
         assertThat(statistics.approximateValueCount()).isEqualTo(7L);
     }
 
