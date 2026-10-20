@@ -214,7 +214,9 @@ public final class TerminationFactory<Solution_> {
                     case AND -> {
                         var and = new AndCompositeTermination<Solution_>(terminationArray);
                         and.setTerminationId(levelId);
-                        terminationList.forEach(TerminationFactory::stopRegistration);
+                        // A child can be true while this AND is false, so nothing below may record an id;
+                        // only this AND's id is reported, by the OR above it.
+                        terminationList.forEach(TerminationFactory::stopRecording);
                         yield and;
                     }
                     case OR -> new OrCompositeTermination<Solution_>(terminationArray);
@@ -223,12 +225,13 @@ public final class TerminationFactory<Solution_> {
         };
     }
 
-    private static <Solution_> void stopRegistration(Termination<Solution_> termination) {
+    private static <Solution_> void stopRecording(Termination<Solution_> termination) {
         if (termination instanceof AbstractCompositeTermination<Solution_> composite) {
+            // Only an OR records ids; an AND records nothing, but ORs can sit below it, so the walk goes on.
             if (composite instanceof OrCompositeTermination<Solution_> orTermination) {
-                orTermination.stopRegistration();
+                orTermination.stopRecording();
             }
-            composite.terminationList.forEach(TerminationFactory::stopRegistration);
+            composite.terminationList.forEach(TerminationFactory::stopRecording);
         }
     }
 }

@@ -37,7 +37,7 @@ final class OrCompositeTermination<Solution_>
      * Called by a built {@link AndCompositeTermination} above this one,
      * because its children can be true while it is false.
      */
-    void stopRegistration() {
+    void stopRecording() {
         registering = false;
     }
 
@@ -45,7 +45,7 @@ final class OrCompositeTermination<Solution_>
         phaseRoot = true;
     }
 
-    private void register(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
+    private void recordTermination(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
         if (!registering) {
             return;
         }
@@ -63,7 +63,7 @@ final class OrCompositeTermination<Solution_>
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         for (var termination : solverTerminationList) {
             if (termination.isSolverTerminated(solverScope)) {
-                register(solverScope, termination);
+                recordTermination(solverScope, termination);
                 return true;
             }
         }
@@ -80,7 +80,7 @@ final class OrCompositeTermination<Solution_>
                 continue;
             }
             if (termination.isPhaseTerminated(phaseScope)) {
-                register(phaseScope.getSolverScope(), termination);
+                recordTermination(phaseScope.getSolverScope(), termination);
                 return true;
             }
         }
