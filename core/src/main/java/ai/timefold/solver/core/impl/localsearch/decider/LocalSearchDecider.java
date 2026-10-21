@@ -116,7 +116,7 @@ public class LocalSearchDecider<Solution_> {
                     .formatted(moveRepository, move));
         }
         @SuppressWarnings("unchecked")
-        var lowerBound = (Score_) acceptor.acceptedScoreLowerBound(moveScope.getStepScope());
+        var lowerBound = (Score_) acceptor.acceptedScoreLowerBound(moveScope.getStepScope(), true);
         InnerScore<Score_> score;
         if (lowerBound == null) {
             score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);

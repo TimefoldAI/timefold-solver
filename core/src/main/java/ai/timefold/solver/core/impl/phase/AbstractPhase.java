@@ -181,9 +181,17 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected <Score_ extends Score<Score_>> void predictWorkingStepScore(AbstractStepScope<Solution_> stepScope,
             Object completedAction) {
         var phaseScope = stepScope.getPhaseScope();
-        // There is no need to recalculate the score, but we still need to set it
-        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
-                stepScope.<Score_> getScore().raw());
+        if ((assertStepScoreFromScratch || assertExpectedStepScore || assertShadowVariablesAreNotStaleAfterStep) && phaseScope.getSolutionDescriptor().isTieredScoreCalculationEnabled()) {
+            // The score from the step score might be incomplete if the forager bailed out due
+            // to termination or interruption (which can pick a move below the lower bound)
+            var newScore = phaseScope.<Score_>calculateScore();
+            stepScope.setScore(newScore);
+            phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), newScore.raw());
+        } else {
+            // There is no need to recalculate the score, but we still need to set it
+            phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
+                    stepScope.<Score_> getScore().raw());
+        }
         if (assertStepScoreFromScratch) {
             phaseScope.<Score_> assertPredictedScoreFromScratch(stepScope.getScore(), completedAction);
         }
