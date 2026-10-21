@@ -526,6 +526,7 @@ A termination of an earlier phase is never reported, because the next phase star
 It is `null` if the run terminated early, or if the last phase completed.
 If the last phase is a Partitioned Search phase, a termination configured on that phase is not reported, because only the partitions evaluate it.
 `lastPhase()`:: The `PhaseId` of the last phase that started, such as `Local Search (1)`.
+Its `type()` is a `PhaseType`, such as `LOCAL_SEARCH`, and its `phaseIndex()` is the phase index.
 It is `null` if no phase ran, for example if no planning entity is movable.
 `timeToBestSolution()`:: The time from the start of the run until the final best solution was set,
 summed over the segments like the solving duration.
@@ -536,6 +537,7 @@ If `terminatedEarly()` is `false` and `termination()` is `null`,
 the last phase completed; for example, a Construction Heuristic initialized all planning entities.
 
 A `TerminationId` identifies one termination in the xref:optimization-algorithms/overview.adoc#termination[termination configuration].
+Its `type()` is a `TerminationType`, such as `SPENT_LIMIT` or `BEST_SCORE_LIMIT`.
 Each `<termination>` element is a level.
 The type of a level is `AND` or `OR`, from its `terminationCompositionStyle` (`OR` by default).
 Each limit in a level is a leaf.

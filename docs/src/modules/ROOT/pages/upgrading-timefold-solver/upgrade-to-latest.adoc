@@ -134,6 +134,18 @@ you must implement the new API.
 For `Solver`, implement `solveAndSummarize(problem)` instead of `solve(problem)`.
 ====
 
+icon:eye[set=far] Deprecated `EventProducerId` factory methods
+[%collapsible%open]
+====
+The static factory methods on `EventProducerId` are deprecated for removal:
+`solvingStarted()`, `problemChange()`, `constructionHeuristic(...)`, `localSearch(...)`,
+`exhaustiveSearch(...)`, `partitionedSearch(...)` and `customPhase(...)`.
+
+Do not construct event producer IDs directly.
+To identify the phase that produced an event, check whether its producer is a `PhaseEventProducerId`
+and use its `phaseId()` method.
+====
+
 '''
 
 [#previewFeatureUpgrade]
