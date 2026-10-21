@@ -165,32 +165,6 @@ class RecordingMapServiceTest {
         }
     }
 
-    @Test
-    void keepsRecordingsOfAnEarlierRun() throws IOException {
-        var stub = new StubMapService() {
-            @Override
-            public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
-                return List.of();
-            }
-        };
-        recordingService(stub).getLocationsOutOfMap(List.of(a), OPTIONS);
-        Path earlier = singleFile("locations-out-of-map.json");
-        String earlierContent = Files.readString(earlier);
-        // The next file name of the sequence is already taken, as after a restart of the process.
-        String taken = String.format("%05d-locations-out-of-map.json",
-                Long.parseLong(earlier.getFileName().toString().substring(0, 5)) + 1);
-        Files.writeString(tempDir.resolve(taken), "earlier run");
-
-        recordingService(stub).getLocationsOutOfMap(List.of(b), OPTIONS);
-
-        assertThat(Files.readString(earlier)).isEqualTo(earlierContent);
-        assertThat(Files.readString(tempDir.resolve(taken))).isEqualTo("earlier run");
-        try (Stream<Path> files = Files.list(tempDir)) {
-            assertThat(files.filter(path -> path.getFileName().toString().endsWith("locations-out-of-map.json")))
-                    .hasSize(3);
-        }
-    }
-
     /**
      * Fills a 2x2 matrix for {@code a} and {@code b}, using separate location instances, like the converters do.
      */

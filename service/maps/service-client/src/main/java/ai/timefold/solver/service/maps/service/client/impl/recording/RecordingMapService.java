@@ -129,7 +129,7 @@ public final class RecordingMapService implements MapService {
     }
 
     private void write(String kind, JsonWriter content) {
-        Path file = nextFile(kind);
+        Path file = directory.resolve(String.format("%05d-%s.json", SEQUENCE.incrementAndGet(), kind));
         try {
             Files.createDirectories(directory);
             // Write to a temporary file first, so a partially written file never ends up in the artifacts.
@@ -141,7 +141,7 @@ public final class RecordingMapService implements MapService {
                     content.write(generator);
                     generator.writeEndObject();
                 }
-                Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } finally {
                 Files.deleteIfExists(tmp);
             }
@@ -149,15 +149,6 @@ public final class RecordingMapService implements MapService {
         } catch (IOException | RuntimeException e) {
             LOGGER.warn("Could not record distance matrix ({}).", file, e);
         }
-    }
-
-    /** Skips sequence numbers already taken, so that files of an earlier run in the same directory are kept. */
-    private Path nextFile(String kind) {
-        Path file;
-        do {
-            file = directory.resolve(String.format("%05d-%s.json", SEQUENCE.incrementAndGet(), kind));
-        } while (Files.exists(file));
-        return file;
     }
 
     private static void writeLocations(JsonGenerator generator, String field, List<Location> locations)
