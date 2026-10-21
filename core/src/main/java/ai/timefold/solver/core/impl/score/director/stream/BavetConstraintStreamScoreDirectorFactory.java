@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector.Builder;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
-import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSessionFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.DefaultBavetConstraintSessionFactory;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
@@ -67,7 +67,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         }
     }
 
-    private final BavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;
+    private final DefaultBavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;
     private final ConstraintMetaModel constraintMetaModel;
     private final boolean profilingEnabled;
     private final boolean useTieredScoreCalculation;
@@ -87,7 +87,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         this.useTieredScoreCalculation = useTieredScoreCalculation;
         constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
         constraintSessionFactory =
-                new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
+                new DefaultBavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
     }
 
     /**
