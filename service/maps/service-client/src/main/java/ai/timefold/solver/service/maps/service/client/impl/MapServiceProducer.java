@@ -84,7 +84,7 @@ public class MapServiceProducer {
         var delegate = createMapService();
         // A replay run is never re-recorded, which could overwrite the recordings it reads.
         return recordingEnabled && !replayEnabled
-                ? RecordingMapService.inExecutionProfileDir(delegate, timeframeBucketing, mapper)
+                ? new RecordingMapService(delegate, timeframeBucketing, mapper)
                 : delegate;
     }
 

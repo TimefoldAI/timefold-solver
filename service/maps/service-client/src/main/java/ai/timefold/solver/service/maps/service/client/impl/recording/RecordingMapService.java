@@ -65,11 +65,13 @@ public final class RecordingMapService implements MapService {
         this.mapper = mapper;
     }
 
-    public static RecordingMapService inExecutionProfileDir(MapService delegate, TimeframeBucketing timeframeBucketing,
-            ObjectMapper mapper) {
+    public RecordingMapService(MapService delegate, TimeframeBucketing timeframeBucketing, ObjectMapper mapper) {
         var dir = System.getenv(EnvironmentVars.ENV_TIMEFOLD_EXECUTION_PROFILE_DIR);
         var root = Path.of(dir != null && !dir.isBlank() ? dir : EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR);
-        return new RecordingMapService(delegate, timeframeBucketing, root.resolve(DIRECTORY_NAME), mapper);
+        this.delegate = delegate;
+        this.timeframeBucketing = timeframeBucketing;
+        this.directory = root.resolve(DIRECTORY_NAME);
+        this.mapper = mapper;
     }
 
     @Override
@@ -151,7 +153,7 @@ public final class RecordingMapService implements MapService {
         }
     }
 
-    private static void writeLocations(JsonGenerator generator, String field, List<Location> locations)
+    private void writeLocations(JsonGenerator generator, String field, List<Location> locations)
             throws IOException {
         generator.writeArrayFieldStart(field);
         for (Location location : locations) {
@@ -163,7 +165,7 @@ public final class RecordingMapService implements MapService {
         generator.writeEndArray();
     }
 
-    private static void writeMatrices(JsonGenerator generator, String field, DistanceMatrix[] matrices,
+    private void writeMatrices(JsonGenerator generator, String field, DistanceMatrix[] matrices,
             List<Location> keys) throws IOException {
         generator.writeArrayFieldStart(field);
         for (DistanceMatrix matrix : matrices) {
@@ -172,13 +174,13 @@ public final class RecordingMapService implements MapService {
         generator.writeEndArray();
     }
 
-    private static void writeMatrix(JsonGenerator generator, String field, DistanceMatrix matrix, List<Location> keys)
+    private void writeMatrix(JsonGenerator generator, String field, DistanceMatrix matrix, List<Location> keys)
             throws IOException {
         generator.writeFieldName(field);
         writeMatrixRows(generator, matrix, keys);
     }
 
-    private static void writeMatrixRows(JsonGenerator generator, DistanceMatrix matrix, List<Location> keys)
+    private void writeMatrixRows(JsonGenerator generator, DistanceMatrix matrix, List<Location> keys)
             throws IOException {
         generator.writeStartArray();
         for (Location from : keys) {
@@ -191,7 +193,7 @@ public final class RecordingMapService implements MapService {
         generator.writeEndArray();
     }
 
-    private static List<Integer> indexesOf(List<Location> subset, List<Location> locations) {
+    private List<Integer> indexesOf(List<Location> subset, List<Location> locations) {
         Set<Location> subsetSet = new HashSet<>(subset);
         return IntStream.range(0, locations.size())
                 .filter(index -> subsetSet.contains(locations.get(index)))
@@ -203,7 +205,7 @@ public final class RecordingMapService implements MapService {
      * Matrices are looked up by coordinates. Fresh copies keep the lookup from caching matrix indexes on the model's
      * own locations.
      */
-    static List<Location> keys(List<Location> locations) {
+    private List<Location> keys(List<Location> locations) {
         return locations.stream().map(location -> new Location(location.getLatitude(), location.getLongitude()))
                 .toList();
     }
