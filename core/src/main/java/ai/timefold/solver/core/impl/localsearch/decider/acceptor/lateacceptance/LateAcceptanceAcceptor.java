@@ -49,7 +49,8 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
 
     @Override
     @SuppressWarnings("unchecked")
-    public @Nullable <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope) {
+    public @Nullable <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope,
+            boolean allowDecreasingDuringStep) {
         var minScore = (InnerScore<Score_>) scoreBuffer.getCurrent();
         if (hillClimbingEnabled) {
             var lastStepScore = (InnerScore<Score_>) stepScope.getPhaseScope()
