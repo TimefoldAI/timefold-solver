@@ -61,7 +61,7 @@ class ReplayMapServiceTest {
     }
 
     @Test
-    void replaysSubsetInRequestedOrder() {
+    void failsOnASubsetOrADifferentOrder() {
         recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
@@ -70,14 +70,16 @@ class ReplayMapServiceTest {
             }
         }).getTravelTimeAndDistance(abc, CAR);
 
-        List<Location> ca = List.of(new Location(5.0, 6.0), new Location(1.0, 2.0));
-        var replayed = replay().getTravelTimeAndDistance(ca, CAR);
-
-        DistanceMatrix travelTime = replayed.travelTimeAndDistance().travelTime();
-        assertThat(travelTime.get(ca.get(0), ca.get(1))).isEqualTo(expected(c, a, 1));
-        assertThat(travelTime.get(ca.get(1), ca.get(0))).isEqualTo(expected(a, c, 1));
-        // a was not in the map; it is now the second requested location.
-        assertThat(replayed.locationsNotInMapIdx()).containsExactly(1);
+        // The recording is replayed with the input of the recorded run, so the locations must be the same.
+        var replay = replay();
+        var subset = List.of(a, c);
+        var reordered = List.of(c, b, a);
+        assertThatThrownBy(() -> replay.getTravelTimeAndDistance(subset, CAR))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("for the 2 requested locations");
+        assertThatThrownBy(() -> replay.getTravelTimeAndDistance(reordered, CAR))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("for the 3 requested locations");
     }
 
     @Test
@@ -91,8 +93,9 @@ class ReplayMapServiceTest {
         }).getTravelTimeAndDistance(abc, CAR);
         var modelA = new Location(1.0, 2.0);
         var modelB = new Location(3.0, 4.0);
+        var modelC = new Location(5.0, 6.0);
 
-        DistanceMatrix travelTime = replay().getTravelTimeAndDistance(List.of(modelA, modelB), CAR)
+        DistanceMatrix travelTime = replay().getTravelTimeAndDistance(List.of(modelA, modelB, modelC), CAR)
                 .travelTimeAndDistance().travelTime();
         modelA.setTravelTimeMatrix(travelTime);
         modelB.setTravelTimeMatrix(travelTime);
@@ -171,10 +174,12 @@ class ReplayMapServiceTest {
         var onlyUnrecorded = List.of(unrecorded);
         assertThatThrownBy(() -> replay.getTravelTimeAndDistance(withUnrecorded, CAR))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("containing all 2 requested locations");
+                .hasMessageContaining("for the 2 requested locations");
+        // Locations out of map are only answered from recorded calls of that method.
         assertThatThrownBy(() -> replay.getLocationsOutOfMap(onlyUnrecorded, CAR))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not in any recording");
+                .hasMessageContaining("No recording")
+                .hasMessageContaining("locations-out-of-map");
     }
 
     @Test
@@ -191,13 +196,12 @@ class ReplayMapServiceTest {
             }
         }, bucketing).getTravelTimeAndDistanceByTimeframe(abc, CAR);
 
-        List<Location> ab = List.of(a, b);
-        var replayed = replay(bucketing).getTravelTimeAndDistanceByTimeframe(ab, CAR_LOCALLY);
+        var replayed = replay(bucketing).getTravelTimeAndDistanceByTimeframe(abc, CAR_LOCALLY);
 
         assertThat(replayed.travelTimesByTimeframe()).hasSize(3);
         for (int timeframe = 0; timeframe < 3; timeframe++) {
-            assertMatrix(replayed.travelTimesByTimeframe()[timeframe], ab, timeframe + 1);
-            assertMatrix(replayed.distancesByTimeframe()[timeframe], ab, 10L * (timeframe + 1));
+            assertMatrix(replayed.travelTimesByTimeframe()[timeframe], abc, timeframe + 1);
+            assertMatrix(replayed.distancesByTimeframe()[timeframe], abc, 10L * (timeframe + 1));
         }
         assertThat(replayed.locationsNotInMap()).containsExactly(b);
         var afternoon = OffsetDateTime.of(2026, 1, 1, 14, 0, 0, 0, ZoneOffset.UTC);
@@ -251,18 +255,15 @@ class ReplayMapServiceTest {
             public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
                 return List.of(1);
             }
-
-            @Override
-            public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
-                return new TravelTimeAndDistanceWithMetadata(
-                        new TravelTimeAndDistance(matrix(abc, 1), matrix(abc, 1)), List.of(2));
-            }
         });
         recorder.getLocationsOutOfMap(List.of(a, b), CAR);
-        recorder.getTravelTimeAndDistance(abc, CAR);
 
-        // b comes from the recorded call; c only appears in the matrix recording, where it was not in the map.
-        assertThat(replay().getLocationsOutOfMap(List.of(c, b, a), CAR_LOCALLY)).containsExactly(0, 1);
+        var replay = replay();
+        assertThat(replay.getLocationsOutOfMap(List.of(a, b), CAR_LOCALLY)).containsExactly(1);
+        var otherLocations = List.of(a, c);
+        assertThatThrownBy(() -> replay.getLocationsOutOfMap(otherLocations, CAR))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("for the 2 requested locations");
     }
 
     @Test

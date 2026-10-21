@@ -6,13 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 
@@ -29,19 +24,18 @@ import ai.timefold.solver.service.maps.service.integration.internal.model.Travel
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Answers map service calls from the files written by {@link RecordingMapService}, so that a run can be reproduced
- * without access to the maps service.
+ * Answers map service calls from the files written by {@link RecordingMapService} during a single run, so that the run
+ * can be reproduced without access to the maps service.
  * <p>
- * A request is answered by the first recording of the same kind and transport type that contains every requested
- * location; locations are matched by coordinates, so the request may use a subset of the recorded locations, in any
- * order. Other options (tenant, provider, location set, max distance from road, ...) are ignored: they only affect how
- * the maps service computes a matrix, and typically differ between the recorded environment and a local run. A request
- * that no recording can answer fails, rather than silently falling back to another source of travel times.
+ * The directory holds the recording of one run, which is replayed with the same input: a call is answered by the
+ * recording of the same kind and transport type, which must have been made for exactly the same locations, in the same
+ * order. Other options (tenant, provider, location set, max distance from road, ...) are ignored, as they typically
+ * differ between the recorded environment and a local run. A call that no recording answers fails, rather than silently
+ * falling back to another source of travel times.
  * <p>
  * Waypoints are not recorded and are delegated to the given fallback.
  */
@@ -59,12 +53,11 @@ public final class ReplayMapService implements MapService {
     private final ObjectMapper mapper;
 
     private List<Recording> recordings;
-    private final Map<String, Map<LocationKey, Boolean>> outOfMapByTransportType = new HashMap<>();
 
     public ReplayMapService(Path directory, TimeframeBucketing timeframeBucketing, MapService waypointsFallback,
             ObjectMapper mapper) {
         // Accept the root of an unzipped execution artifact as well as the recording directory itself.
-        Path recordingDirectory = directory.resolve(RecordingMapService.DIRECTORY_NAME);
+        var recordingDirectory = directory.resolve(RecordingMapService.DIRECTORY_NAME);
         this.directory = Files.isDirectory(recordingDirectory) ? recordingDirectory : directory;
         this.timeframeBucketing = timeframeBucketing;
         this.waypointsFallback = waypointsFallback;
@@ -74,40 +67,27 @@ public final class ReplayMapService implements MapService {
     @Override
     public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
         var recording = find(KIND_DISTANCES, locations, options);
-        int[] indexes = indexesOf(recording, locations);
-        List<Location> keys = keys(locations);
-        List<Integer> locationsNotInMap = new ArrayList<>();
-        for (var i = 0; i < indexes.length; i++) {
-            if (recording.locationsNotInMap().contains(indexes[i])) {
-                locationsNotInMap.add(i);
-            }
-        }
+        var keys = keys(locations);
         return new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(
-                recording.travelTimes().get(0).toDistanceMatrix(keys, indexes),
-                recording.distances().get(0).toDistanceMatrix(keys, indexes)),
-                locationsNotInMap, recording.resolvedMapLocation());
+                toDistanceMatrix(recording.content().travelTime(), keys),
+                toDistanceMatrix(recording.content().distance(), keys)),
+                recording.content().locationsNotInMap(), recording.content().resolvedMapLocation());
     }
 
     @Override
     public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
             String options) {
         var recording = find(KIND_DISTANCES_BY_TIMEFRAME, locations, options);
-        ToIntFunction<OffsetDateTime> resolver = timeframeResolver(recording);
-        int[] indexes = indexesOf(recording, locations);
-        List<Location> keys = keys(locations);
-        int timeframeCount = recording.travelTimes().size();
+        var resolver = timeframeResolver(recording);
+        var keys = keys(locations);
+        var timeframeCount = recording.content().travelTimes().size();
         var travelTimes = new DistanceMatrix[timeframeCount];
         var distances = new DistanceMatrix[timeframeCount];
         for (var timeframe = 0; timeframe < timeframeCount; timeframe++) {
-            travelTimes[timeframe] = recording.travelTimes().get(timeframe).toDistanceMatrix(keys, indexes);
-            distances[timeframe] = recording.distances().get(timeframe).toDistanceMatrix(keys, indexes);
+            travelTimes[timeframe] = toDistanceMatrix(recording.content().travelTimes().get(timeframe), keys);
+            distances[timeframe] = toDistanceMatrix(recording.content().distances().get(timeframe), keys);
         }
-        List<Location> locationsNotInMap = new ArrayList<>();
-        for (var i = 0; i < indexes.length; i++) {
-            if (recording.locationsNotInMap().contains(indexes[i])) {
-                locationsNotInMap.add(locations.get(i));
-            }
-        }
+        var locationsNotInMap = recording.content().locationsNotInMap().stream().map(locations::get).toList();
         return new TravelTimesByTimeframeWithMetadata(travelTimes, distances, locationsNotInMap, resolver);
     }
 
@@ -117,14 +97,14 @@ public final class ReplayMapService implements MapService {
      * run.
      */
     private ToIntFunction<OffsetDateTime> timeframeResolver(Recording recording) {
-        if (recording.travelTimes().size() == 1) {
+        if (recording.content().travelTimes().size() == 1) {
             return time -> 0;
         }
-        List<String> localTimeframes = timeframeBucketing.allTimeframes().stream().map(Timeframe::name).toList();
-        if (!localTimeframes.equals(recording.timeframes())) {
+        var localTimeframes = timeframeBucketing.allTimeframes().stream().map(Timeframe::name).toList();
+        if (!localTimeframes.equals(recording.content().timeframes())) {
             throw new IllegalStateException(
                     "The recording (%s) was made with timeframes %s, but the local timeframe bucketing uses %s."
-                            .formatted(recording.file(), recording.timeframes(), localTimeframes));
+                            .formatted(recording.file(), recording.content().timeframes(), localTimeframes));
         }
         return timeframeBucketing::indexOf;
     }
@@ -134,61 +114,27 @@ public final class ReplayMapService implements MapService {
         return waypointsFallback.getWaypoints(locations, options);
     }
 
-    /**
-     * Answers from the locations the recorded matrices could not route, preferring recorded calls of this method.
-     * Only recordings of the requested transport type are considered.
-     */
     @Override
     public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
-        String transportType = transportType(options);
-        Map<LocationKey, Boolean> outOfMap = outOfMap(transportType);
-        List<Integer> result = new ArrayList<>();
-        for (var i = 0; i < locations.size(); i++) {
-            Boolean isOutOfMap = outOfMap.get(key(locations.get(i)));
-            if (isOutOfMap == null) {
-                throw new IllegalStateException(
-                        "The location (%s) is not in any recording for transport type (%s) in the directory (%s)."
-                                .formatted(locations.get(i), transportType, directory));
-            }
-            if (isOutOfMap) {
-                result.add(i);
-            }
-        }
-        return result;
-    }
-
-    /** Merged once per transport type, so that each lookup is a single map access. */
-    private synchronized Map<LocationKey, Boolean> outOfMap(String transportType) {
-        return outOfMapByTransportType.computeIfAbsent(transportType, type -> {
-            Map<LocationKey, Boolean> merged = new HashMap<>();
-            List<Recording> candidates = recordings().stream()
-                    .filter(recording -> Objects.equals(recording.transportType(), type))
-                    .toList();
-            // Recorded calls of getLocationsOutOfMap first, then the matrices' locations that could not be routed.
-            Stream.concat(
-                    candidates.stream().filter(recording -> recording.kind().equals(KIND_LOCATIONS_OUT_OF_MAP)),
-                    candidates.stream().filter(recording -> !recording.kind().equals(KIND_LOCATIONS_OUT_OF_MAP)))
-                    .forEach(recording -> recording.locationIndex().forEach((location, index) -> merged
-                            .putIfAbsent(location, recording.locationsNotInMap().contains(index))));
-            return merged;
-        });
+        return find(KIND_LOCATIONS_OUT_OF_MAP, locations, options).content().locationsOutOfMap();
     }
 
     private Recording find(String kind, List<Location> locations, String options) {
-        String transportType = transportType(options);
-        for (Recording recording : recordings()) {
+        var transportType = transportType(options);
+        var requested = coordinates(locations);
+        for (var recording : recordings()) {
             if (recording.kind().equals(kind) && Objects.equals(recording.transportType(), transportType)
-                    && containsAll(recording, locations)) {
+                    && recording.content().locations().equals(requested)) {
                 LOGGER.info("Replaying {} for {} locations from ({}).", kind, locations.size(), recording.file());
                 return recording;
             }
         }
         throw new IllegalStateException(("No recording in the directory (%s) has %s for transport type (%s) "
-                + "containing all %d requested locations. Available recordings: %s.")
+                + "for the %d requested locations; replay the input of the recorded run. Available recordings: %s.")
                 .formatted(directory, kind, transportType, locations.size(), recordings().stream()
                         .map(recording -> "%s (%s, transport type %s, %d locations)".formatted(
                                 recording.file().getFileName(), recording.kind(), recording.transportType(),
-                                recording.locations().size()))
+                                recording.content().locations().size()))
                         .toList()));
     }
 
@@ -196,7 +142,7 @@ public final class ReplayMapService implements MapService {
         return MapServiceOptions.parse(options).get(MapServiceOptions.TRANSPORT_TYPE);
     }
 
-    private synchronized List<Recording> recordings() {
+    private List<Recording> recordings() {
         if (recordings == null) {
             recordings = load();
         }
@@ -210,7 +156,7 @@ public final class ReplayMapService implements MapService {
         }
         try (Stream<Path> files = Files.list(directory)) {
             List<Recording> loaded = new ArrayList<>();
-            for (Path file : files.filter(path -> path.getFileName().toString().endsWith(".json")).sorted().toList()) {
+            for (var file : files.filter(path -> path.getFileName().toString().endsWith(".json")).sorted().toList()) {
                 loaded.add(read(file));
             }
             if (loaded.isEmpty()) {
@@ -225,130 +171,23 @@ public final class ReplayMapService implements MapService {
         }
     }
 
-    /**
-     * Streams the file, so that the matrices are read straight into arrays without an intermediate tree.
-     */
-    Recording read(Path file) throws IOException {
+    private Recording read(Path file) throws IOException {
         var fileName = file.getFileName().toString();
-        String kind = Stream.of(KIND_DISTANCES_BY_TIMEFRAME, KIND_LOCATIONS_OUT_OF_MAP, KIND_DISTANCES)
+        var kind = Stream.of(KIND_DISTANCES_BY_TIMEFRAME, KIND_LOCATIONS_OUT_OF_MAP, KIND_DISTANCES)
                 .filter(candidate -> fileName.endsWith("-" + candidate + ".json"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Unknown distance matrix recording (%s).".formatted(file)));
-        String options = null;
-        String resolvedMapLocation = null;
-        List<Location> locations = List.of();
-        Set<Integer> locationsNotInMap = Set.of();
-        List<String> timeframes = null;
-        List<Matrix> travelTimes = List.of();
-        List<Matrix> distances = List.of();
-        try (JsonParser parser = mapper.getFactory().createParser(file.toFile())) {
-            expect(parser.nextToken(), JsonToken.START_OBJECT, file);
-            while (parser.nextToken() == JsonToken.FIELD_NAME) {
-                String field = parser.currentName();
-                JsonToken value = parser.nextToken();
-                switch (field) {
-                    case "options" -> options = parser.getValueAsString();
-                    case "resolvedMapLocation" -> resolvedMapLocation = parser.getValueAsString();
-                    case "locations" -> locations = readLocations(parser);
-                    case "locationsNotInMap", "locationsOutOfMap" -> locationsNotInMap = readIndexes(parser);
-                    case "timeframes" -> timeframes = value == JsonToken.VALUE_NULL ? null
-                            : Arrays.asList(mapper.readValue(parser, String[].class));
-                    case "travelTime" -> travelTimes = List.of(readMatrix(parser));
-                    case "distance" -> distances = List.of(readMatrix(parser));
-                    case "travelTimes" -> travelTimes = readMatrices(parser);
-                    case "distances" -> distances = readMatrices(parser);
-                    default -> parser.skipChildren();
-                }
-            }
-        }
-        Map<LocationKey, Integer> locationIndex = new HashMap<>();
-        for (var i = 0; i < locations.size(); i++) {
-            locationIndex.putIfAbsent(key(locations.get(i)), i);
-        }
-        if (!kind.equals(KIND_LOCATIONS_OUT_OF_MAP)
-                && (travelTimes.isEmpty() || travelTimes.size() != distances.size())) {
+        var content = mapper.readValue(file.toFile(), RecordedCall.class);
+        if (!kind.equals(KIND_LOCATIONS_OUT_OF_MAP) && !content.hasMatrices()) {
             throw new IllegalStateException(("Invalid distance matrix recording (%s): expected the same, non-zero number "
-                    + "of travel time and distance matrices but found %d and %d.")
-                    .formatted(file, travelTimes.size(), distances.size()));
+                    + "of travel time and distance matrices.").formatted(file));
         }
-        return new Recording(file, kind, transportType(options), resolvedMapLocation, locations, locationIndex,
-                locationsNotInMap, timeframes, travelTimes, distances);
+        return new Recording(file, kind, transportType(content.options()), content);
     }
 
-    private List<Location> readLocations(JsonParser parser) throws IOException {
-        List<Location> locations = new ArrayList<>();
-        while (parser.nextToken() == JsonToken.START_OBJECT) {
-            double latitude = Double.NaN;
-            double longitude = Double.NaN;
-            while (parser.nextToken() == JsonToken.FIELD_NAME) {
-                String field = parser.currentName();
-                parser.nextToken();
-                switch (field) {
-                    case "latitude" -> latitude = parser.getDoubleValue();
-                    case "longitude" -> longitude = parser.getDoubleValue();
-                    default -> parser.skipChildren();
-                }
-            }
-            locations.add(new Location(latitude, longitude));
-        }
-        return locations;
-    }
-
-    private Set<Integer> readIndexes(JsonParser parser) throws IOException {
-        Set<Integer> indexes = new HashSet<>();
-        while (parser.nextToken() != JsonToken.END_ARRAY) {
-            indexes.add(parser.getIntValue());
-        }
-        return indexes;
-    }
-
-    private List<Matrix> readMatrices(JsonParser parser) throws IOException {
-        List<Matrix> matrices = new ArrayList<>();
-        while (parser.nextToken() == JsonToken.START_ARRAY) {
-            matrices.add(readMatrix(parser));
-        }
-        return matrices;
-    }
-
-    /**
-     * Expects the parser on the matrix's {@code START_ARRAY}. Values are kept as longs: unreachable routes are recorded
-     * as {@link Long#MAX_VALUE}, which the model relies on.
-     */
-    private Matrix readMatrix(JsonParser parser) throws IOException {
-        List<long[]> rows = new ArrayList<>();
-        while (parser.nextToken() == JsonToken.START_ARRAY) {
-            // Rows are square, so the first row's length sizes the others.
-            var row = new long[rows.isEmpty() ? 16 : Math.max(rows.get(0).length, 1)];
-            var size = 0;
-            while (parser.nextToken() != JsonToken.END_ARRAY) {
-                if (size == row.length) {
-                    row = Arrays.copyOf(row, row.length * 2);
-                }
-                row[size] = parser.getLongValue();
-                size++;
-            }
-            rows.add(size == row.length ? row : Arrays.copyOf(row, size));
-        }
-        return new Matrix(rows.toArray(long[][]::new));
-    }
-
-    private void expect(JsonToken actual, JsonToken expected, Path file) {
-        if (actual != expected) {
-            throw new IllegalStateException("Invalid distance matrix recording (%s): expected %s but was %s."
-                    .formatted(file, expected, actual));
-        }
-    }
-
-    private LocationKey key(Location location) {
-        return new LocationKey(location.getLatitude(), location.getLongitude());
-    }
-
-    private boolean containsAll(Recording recording, List<Location> requested) {
-        return requested.stream().allMatch(location -> recording.locationIndex().containsKey(key(location)));
-    }
-
-    private int[] indexesOf(Recording recording, List<Location> requested) {
-        return requested.stream().mapToInt(location -> recording.locationIndex().get(key(location))).toArray();
+    private List<Coordinates> coordinates(List<Location> locations) {
+        return locations.stream().map(location -> new Coordinates(location.getLatitude(), location.getLongitude()))
+                .toList();
     }
 
     private List<Location> keys(List<Location> locations) {
@@ -356,43 +195,46 @@ public final class ReplayMapService implements MapService {
                 .toList();
     }
 
-    /** Coordinates only, so lookups never touch the matrix indexes cached on {@link Location}. */
-    private record LocationKey(double latitude, double longitude) {
-    }
-
-    record Matrix(long[][] values) {
-
-        /** The keys are fresh location instances, like the converters use, so the model's locations stay untouched. */
-        DistanceMatrix toDistanceMatrix(List<Location> keys, int[] indexes) {
-            var matrix = DistanceMatrix.getInstance(keys.size());
-            for (var from = 0; from < keys.size(); from++) {
-                long[] row = values[indexes[from]];
-                for (var to = 0; to < keys.size(); to++) {
-                    matrix.put(keys.get(from), keys.get(to), row[indexes[to]]);
-                }
+    private DistanceMatrix toDistanceMatrix(List<long[]> rows, List<Location> keys) {
+        var matrix = DistanceMatrix.getInstance(keys.size());
+        for (var from = 0; from < keys.size(); from++) {
+            var row = rows.get(from);
+            for (var to = 0; to < keys.size(); to++) {
+                matrix.put(keys.get(from), keys.get(to), row[to]);
             }
-            return matrix;
+        }
+        return matrix;
+    }
+
+    record Coordinates(double latitude, double longitude) {
+    }
+
+    /**
+     * The content of a recorded file, see {@link RecordingMapService}; only the fields of its kind are set. Matrices are
+     * lists of rows, {@code matrix[from][to]}.
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record RecordedCall(String options, List<Coordinates> locations, List<Integer> locationsNotInMap,
+            List<Integer> locationsOutOfMap, String resolvedMapLocation, List<String> timeframes,
+            List<long[]> travelTime, List<long[]> distance, List<List<long[]>> travelTimes,
+            List<List<long[]>> distances) {
+
+        RecordedCall {
+            locations = locations == null ? List.of() : locations;
+            locationsNotInMap = locationsNotInMap == null ? List.of() : locationsNotInMap;
+            locationsOutOfMap = locationsOutOfMap == null ? List.of() : locationsOutOfMap;
+            travelTimes = travelTimes == null ? List.of() : travelTimes;
+            distances = distances == null ? List.of() : distances;
         }
 
-        @Override
-        public boolean equals(Object other) {
-            return other instanceof Matrix matrix && Arrays.deepEquals(values, matrix.values);
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.deepHashCode(values);
-        }
-
-        /** The size only, as the values of a large matrix would flood the output. */
-        @Override
-        public String toString() {
-            return "Matrix[" + values.length + "x" + (values.length == 0 ? 0 : values[0].length) + "]";
+        boolean hasMatrices() {
+            if (travelTime != null || distance != null) {
+                return travelTime != null && distance != null;
+            }
+            return !travelTimes.isEmpty() && travelTimes.size() == distances.size();
         }
     }
 
-    record Recording(Path file, String kind, String transportType, String resolvedMapLocation, List<Location> locations,
-            Map<LocationKey, Integer> locationIndex, Set<Integer> locationsNotInMap,
-            List<String> timeframes, List<Matrix> travelTimes, List<Matrix> distances) {
+    record Recording(Path file, String kind, String transportType, RecordedCall content) {
     }
 }

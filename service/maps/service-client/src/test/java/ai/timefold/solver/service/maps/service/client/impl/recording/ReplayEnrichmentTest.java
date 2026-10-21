@@ -35,12 +35,12 @@ class ReplayEnrichmentTest {
         var mapEnrichmentContext = new MapEnrichmentContext();
         var enricher = new TravelTimeMatrixEnricher(produce(Optional.of(RECORDING)), carOptions(),
                 mapEnrichmentContext, false);
-        // A subset of the recorded locations would also work; here all of them, in a different order.
-        Location l1 = new Location(1, 1);
+        // The input of the recorded run: the recorded locations, in the same order.
         Location l0 = new Location(0, 0);
+        Location l1 = new Location(1, 1);
         Location l2 = new Location(2, 2);
 
-        var enriched = enricher.enrich(new SampleModel(List.of(l1, l0, l2)));
+        var enriched = enricher.enrich(new SampleModel(List.of(l0, l1, l2)));
 
         assertThat(l0.getTravelTimeTo(l1)).isEqualTo(TravelTime.of(111L));
         assertThat(l1.getTravelTimeTo(l0)).isEqualTo(TravelTime.of(222L));
