@@ -7,7 +7,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
@@ -53,9 +52,6 @@ public final class RecordingMapService implements MapService {
     /** Shared across instances, because the map service is produced once per injection point. */
     private static final AtomicLong SEQUENCE = new AtomicLong();
 
-    /** Requests already recorded by this instance; the same request is not written twice. */
-    private final Set<List<Object>> recorded = ConcurrentHashMap.newKeySet();
-
     private final MapService delegate;
     private final TimeframeBucketing timeframeBucketing;
     private final Path directory;
@@ -79,7 +75,7 @@ public final class RecordingMapService implements MapService {
     @Override
     public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
         var result = delegate.getTravelTimeAndDistance(locations, options);
-        write("distances", options, locations, generator -> {
+        write("distances", generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsNotInMap", result.locationsNotInMapIdx());
@@ -95,7 +91,7 @@ public final class RecordingMapService implements MapService {
     public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
             String options) {
         var result = delegate.getTravelTimeAndDistanceByTimeframe(locations, options);
-        write("distances-by-timeframe", options, locations, generator -> {
+        write("distances-by-timeframe", generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsNotInMap", indexesOf(result.locationsNotInMap(), locations));
@@ -115,7 +111,7 @@ public final class RecordingMapService implements MapService {
     @Override
     public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
         var result = delegate.getLocationsOutOfMap(locations, options);
-        write("locations-out-of-map", options, locations, generator -> {
+        write("locations-out-of-map", generator -> {
             generator.writeStringField("options", options);
             writeLocations(generator, "locations", locations);
             generator.writeObjectField("locationsOutOfMap", result);
@@ -132,10 +128,7 @@ public final class RecordingMapService implements MapService {
                 : null;
     }
 
-    private void write(String kind, String options, List<Location> locations, JsonWriter content) {
-        if (!recorded.add(List.of(kind, String.valueOf(options), keys(locations)))) {
-            return;
-        }
+    private void write(String kind, JsonWriter content) {
         Path file = nextFile(kind);
         try {
             Files.createDirectories(directory);

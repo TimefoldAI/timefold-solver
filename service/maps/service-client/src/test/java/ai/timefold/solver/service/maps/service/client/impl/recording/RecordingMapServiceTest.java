@@ -166,28 +166,6 @@ class RecordingMapServiceTest {
     }
 
     @Test
-    void recordsTheSameRequestOnce() throws IOException {
-        var result = new TravelTimeAndDistanceWithMetadata(
-                new TravelTimeAndDistance(matrix(0, 1, 1, 0), matrix(0, 1, 1, 0)), List.of());
-        var service = recordingService(new StubMapService() {
-            @Override
-            public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
-                return result;
-            }
-        });
-
-        service.getTravelTimeAndDistance(List.of(a, b), OPTIONS);
-        // Equal coordinates in new instances are the same request.
-        service.getTravelTimeAndDistance(List.of(new Location(1.0, 2.0), new Location(3.0, 4.0)), OPTIONS);
-        service.getTravelTimeAndDistance(List.of(b, a), OPTIONS);
-
-        try (Stream<Path> files = Files.list(tempDir)) {
-            // The reordered request is a different request.
-            assertThat(files.filter(path -> path.getFileName().toString().endsWith("-distances.json"))).hasSize(2);
-        }
-    }
-
-    @Test
     void keepsRecordingsOfAnEarlierRun() throws IOException {
         var stub = new StubMapService() {
             @Override

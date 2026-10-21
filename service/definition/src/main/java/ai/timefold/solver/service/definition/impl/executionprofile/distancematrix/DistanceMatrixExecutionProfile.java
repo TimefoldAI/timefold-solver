@@ -1,6 +1,5 @@
 package ai.timefold.solver.service.definition.impl.executionprofile.distancematrix;
 
-import java.util.Locale;
 import java.util.Map;
 
 import ai.timefold.solver.service.definition.internal.executionprofile.ExecutionProfile;
@@ -17,8 +16,8 @@ public final class DistanceMatrixExecutionProfile implements ExecutionProfile {
 
     static final String ID = "distance-matrix";
 
-    static final String ENV_DISTANCE_MATRIX_RECORDING_ENABLED =
-            EnvironmentVars.PROPERTY_MAP_SERVICE_RECORDING_ENABLED.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "_");
+    /** Environment-variable form of {@link EnvironmentVars#PROPERTY_MAP_SERVICE_RECORDING_ENABLED}. */
+    static final String ENV_DISTANCE_MATRIX_RECORDING_ENABLED = "TIMEFOLD_PLATFORM_MAP_SERVICE_RECORDING_ENABLED";
 
     @Override
     public String id() {
