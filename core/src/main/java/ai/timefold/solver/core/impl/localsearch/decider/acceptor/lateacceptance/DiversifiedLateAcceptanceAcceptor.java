@@ -51,14 +51,23 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
     }
 
     @Override
-    public @Nullable <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope) {
+    @SuppressWarnings("unchecked")
+    public @Nullable <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope,
+            boolean allowDecreasingDuringStep) {
         var currentScore = (Score_) stepScope.getPhaseScope()
                 .getLastCompletedStepScope().getScore().raw();
-        var lateScore = (Score_) getLateWorseScore().raw();
-        if (currentScore.compareTo(lateScore) <= 0) {
-            return currentScore;
+        if (allowDecreasingDuringStep) {
+            var lateScore = (Score_) getLateWorseScore().raw();
+            if (currentScore.compareTo(lateScore) <= 0) {
+                return currentScore;
+            } else {
+                return lateScore;
+            }
         } else {
-            return lateScore;
+            // The late score changes dynamically based on the current
+            // foraged moves' score, so there is no lower bound that can
+            // apply to the entire step
+            return null;
         }
     }
 

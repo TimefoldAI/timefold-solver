@@ -19,13 +19,15 @@ public interface Acceptor<Solution_> extends LocalSearchPhaseLifecycleListener<S
 
     /**
      * Returns the lowest score that this acceptor would accept, or null if it could accept any score.
-     * 
-     * @return null if can accept a step with any store, the minimum score of a potential step otherwise.
-     * @param <Solution_> The solution type
+     *
      * @param <Score_> The score type
+     * @param allowDecreasingDuringStep if true, the method can return a score that decreases within a step.
+     *                                  If false, it will return the lowest possible score it would accept across the entire step.
+     * @return null if it can accept a step with any store, the minimum score of a potential step otherwise.
      */
     @Nullable
-    default <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope) {
+    default <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope,
+            boolean allowDecreasingDuringStep) {
         return null;
     }
 
