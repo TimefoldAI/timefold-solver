@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
  * (dependencies between values, which can loop) and {@code concurrent} (values aligned in groups)</li>
  * </ul>
  */
-class AcceleratedGraphStructureDifferentialTest {
+class GraphStructureDifferentialTest {
 
     private static final int ENTITY_COUNT = 3;
     private static final int VALUE_COUNT = 9;
