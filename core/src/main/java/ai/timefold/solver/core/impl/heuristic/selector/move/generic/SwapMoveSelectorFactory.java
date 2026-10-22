@@ -14,6 +14,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListS
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ValueRangeRecorderId;
@@ -42,9 +43,9 @@ public class SwapMoveSelectorFactory<Solution_>
         // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector
         // to replay the selected value and return only reachable values.
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
-        var enableEntityValueRangeFilter = entityDescriptor.getSolutionDescriptor().getBasicVariableDescriptorList()
-                .stream()
-                .anyMatch(v -> !v.canExtractValueRangeFromSolution());
+        var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
+        var enableEntityValueRangeFilter =
+                !variableDescriptorList.stream().allMatch(GenuineVariableDescriptor::canExtractValueRangeFromSolution);
         // A null ID means to turn off the entity value range filtering
         String entityRecorderId = null;
         if (enableEntityValueRangeFilter) {
@@ -66,10 +67,8 @@ public class SwapMoveSelectorFactory<Solution_>
                 EntitySelectorFactory.<Solution_> create(secondaryEntitySelectorConfig)
                         .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
                                 new ValueRangeRecorderId(entityRecorderId, true));
-        var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
 
-        return new SwapMoveSelector<>(leftEntitySelector, rightEntitySelector, variableDescriptorList,
-                randomSelection);
+        return new SwapMoveSelector<>(leftEntitySelector, rightEntitySelector, variableDescriptorList, randomSelection);
     }
 
     @Override
