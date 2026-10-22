@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.testdomain.shadow.inverserelation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -16,6 +17,24 @@ public class TestdataInverseRelationSolution extends TestdataObject {
     public static SolutionDescriptor<TestdataInverseRelationSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataInverseRelationSolution.class,
                 TestdataInverseRelationEntity.class, TestdataInverseRelationValue.class);
+    }
+
+    public static TestdataInverseRelationSolution generateSolution(int valueListSize, int entityListSize) {
+        var solution = new TestdataInverseRelationSolution("Generated Solution 0");
+        var valueList = new ArrayList<TestdataInverseRelationValue>(valueListSize);
+        for (int i = 0; i < valueListSize; i++) {
+            var value = new TestdataInverseRelationValue("Generated Value " + i);
+            valueList.add(value);
+        }
+        solution.setValueList(valueList);
+        var entityList = new ArrayList<TestdataInverseRelationEntity>(entityListSize);
+        for (int i = 0; i < entityListSize; i++) {
+            var value = valueList.get(i % valueListSize);
+            TestdataInverseRelationEntity entity = new TestdataInverseRelationEntity("Generated Entity " + i, value);
+            entityList.add(entity);
+        }
+        solution.setEntityList(entityList);
+        return solution;
     }
 
     private List<TestdataInverseRelationValue> valueList;
@@ -57,9 +76,5 @@ public class TestdataInverseRelationSolution extends TestdataObject {
     public void setScore(SimpleScore score) {
         this.score = score;
     }
-
-    // ************************************************************************
-    // Complex methods
-    // ************************************************************************
 
 }

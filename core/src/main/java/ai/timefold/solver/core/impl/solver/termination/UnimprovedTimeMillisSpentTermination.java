@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import java.time.Clock;
 
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -121,6 +122,11 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
     public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
         return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
                 || phaseScopeClass == CustomPhaseScope.class);
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.UNIMPROVED_SPENT_LIMIT;
     }
 
     @Override

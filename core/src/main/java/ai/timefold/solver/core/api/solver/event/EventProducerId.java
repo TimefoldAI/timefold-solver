@@ -3,15 +3,21 @@ package ai.timefold.solver.core.api.solver.event;
 import java.util.OptionalInt;
 
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.phase.PhaseId;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.phase.PhaseType;
-import ai.timefold.solver.core.impl.phase.event.PhaseEventProducerId;
+import ai.timefold.solver.core.impl.phase.event.DefaultPhaseEventProducerId;
 import ai.timefold.solver.core.impl.solver.event.SolveEventProducerId;
 
 import org.jspecify.annotations.NullMarked;
 
 /**
  * Identifies the producer of a {@link BestSolutionChangedEvent}.
+ * Do not attempt to parse this class' {@link Object#toString() toString()},
+ * it is not guaranteed to be stable.
+ *
+ * @see PhaseEventProducerId A subtype in case a phase produced the event,
+ *      which gives access to a regular {@link PhaseId}.
  */
 @NullMarked
 public interface EventProducerId {
@@ -45,31 +51,66 @@ public interface EventProducerId {
      */
     OptionalInt phaseIndex();
 
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     *             To tell whether an event comes from a phase, check whether its producer is a {@link PhaseEventProducerId}.
+     */
+    @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId solvingStarted() {
         return SolveEventProducerId.SOLVING_STARTED;
     }
 
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     *             To tell whether an event comes from a phase, check whether its producer is a {@link PhaseEventProducerId}.
+     */
+    @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId problemChange() {
         return SolveEventProducerId.PROBLEM_CHANGE;
     }
 
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     *             To find the phase of an event, use {@link PhaseEventProducerId#phaseId()}.
+     */
+    @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId constructionHeuristic(int phaseIndex) {
-        return new PhaseEventProducerId(PhaseType.CONSTRUCTION_HEURISTIC, phaseIndex);
+        return DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, phaseIndex);
     }
 
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     *             To find the phase of an event, use {@link PhaseEventProducerId#phaseId()}.
+     */
+    @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId localSearch(int phaseIndex) {
-        return new PhaseEventProducerId(PhaseType.LOCAL_SEARCH, phaseIndex);
+        return DefaultPhaseEventProducerId.of(PhaseType.LOCAL_SEARCH, phaseIndex);
     }
 
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     *             To find the phase of an event, use {@link PhaseEventProducerId#phaseId()}.
+     */
+    @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId exhaustiveSearch(int phaseIndex) {
-        return new PhaseEventProducerId(PhaseType.EXHAUSTIVE_SEARCH, phaseIndex);
+        return DefaultPhaseEventProducerId.of(PhaseType.EXHAUSTIVE_SEARCH, phaseIndex);
     }
 
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     *             To find the phase of an event, use {@link PhaseEventProducerId#phaseId()}.
+     */
+    @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId partitionedSearch(int phaseIndex) {
-        return new PhaseEventProducerId(PhaseType.PARTITIONED_SEARCH, phaseIndex);
+        return DefaultPhaseEventProducerId.of(PhaseType.PARTITIONED_SEARCH, phaseIndex);
     }
 
+    /**
+     * @deprecated this type isn't meant to be constructed by a user.
+     *             To find the phase of an event, use {@link PhaseEventProducerId#phaseId()}.
+     */
+    @Deprecated(since = "2.9.0", forRemoval = true)
     static EventProducerId customPhase(int phaseIndex) {
-        return new PhaseEventProducerId(PhaseType.CUSTOM_PHASE, phaseIndex);
+        return DefaultPhaseEventProducerId.of(PhaseType.CUSTOM_PHASE, phaseIndex);
     }
 }

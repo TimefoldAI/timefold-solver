@@ -3,6 +3,9 @@ package ai.timefold.solver.core.testutil;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
+import ai.timefold.solver.core.impl.phase.event.DefaultPhaseEventProducerId;
+import ai.timefold.solver.core.impl.solver.event.SolveEventProducerId;
 
 import org.jspecify.annotations.NonNull;
 
@@ -22,25 +25,26 @@ public record BestScoreChangedEvent<Score_ extends Score<@NonNull Score_>>(Score
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> solvingStarted(Score_ newScore) {
-        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.solvingStarted());
+        return new BestScoreChangedEvent<>(newScore, true, SolveEventProducerId.SOLVING_STARTED);
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> problemChange(Score_ newScore) {
-        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.problemChange());
+        return new BestScoreChangedEvent<>(newScore, true, SolveEventProducerId.PROBLEM_CHANGE);
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_>
             constructionHeuristic(Score_ newScore, int index) {
-        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.constructionHeuristic(index));
+        return new BestScoreChangedEvent<>(newScore, true,
+                DefaultPhaseEventProducerId.of(PhaseType.CONSTRUCTION_HEURISTIC, index));
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> custom(Score_ newScore,
             int index) {
-        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.customPhase(index));
+        return new BestScoreChangedEvent<>(newScore, true, DefaultPhaseEventProducerId.of(PhaseType.CUSTOM_PHASE, index));
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> localSearch(Score_ newScore,
             int index) {
-        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.localSearch(index));
+        return new BestScoreChangedEvent<>(newScore, true, DefaultPhaseEventProducerId.of(PhaseType.LOCAL_SEARCH, index));
     }
 }

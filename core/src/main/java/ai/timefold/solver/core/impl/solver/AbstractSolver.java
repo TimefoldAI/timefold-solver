@@ -95,6 +95,8 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             return;
         }
         var it = phaseList.iterator();
+        // The termination is checked also after the last phase; only partition threads check it in Partitioned Search,
+        // so this check records the termination that ended the run.
         while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
             var phase = it.next();
             phase.solve(solverScope);
@@ -107,11 +109,12 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void solvingEnded(SolverScope<Solution_> solverScope) {
+        // First, so the termination sees the state from when the phases ended, before any listener runs.
+        globalTermination.solvingEnded(solverScope);
         for (var phase : phaseList) {
             phase.solvingEnded(solverScope);
         }
         bestSolutionRecaller.solvingEnded(solverScope);
-        globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
         solverContextManager.solvingEnded(solverScope);
     }

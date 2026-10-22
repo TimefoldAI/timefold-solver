@@ -1,10 +1,8 @@
 package ai.timefold.solver.core.impl.phase;
 
-import java.util.function.IntFunction;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -40,7 +38,7 @@ public interface Phase<Solution_> extends PhaseLifecycleListener<Solution_> {
 
     void solve(SolverScope<Solution_> solverScope);
 
-    IntFunction<EventProducerId> getEventProducerIdSupplier();
+    PhaseType getPhaseType();
 
     EnvironmentMode getEnvironmentMode();
 }
