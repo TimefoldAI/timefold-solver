@@ -172,6 +172,7 @@ import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSort
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntitySolutionRangeEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
@@ -2440,18 +2441,37 @@ class DefaultSolverTest {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataMultiEntityEntityProvidingSolution.class,
                         TestdataMultiEntityEntityProvidingEntity.class, TestdataMultiEntitySolutionRangeEntity.class)
+                .withEasyScoreCalculatorClass(TestdataMultiEntityEntityProvidingScoreCalculator.class)
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 // The default CH cannot deduce the entity class when multiple entities define basic variables,
                 // so the problem starts initialized and only the local search phase runs
                 .withPhases(localSearchConfig);
 
-        var solution = TestdataMultiEntityEntityProvidingSolution.generateSolution(5, 3);
-        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
-        assertThat(bestSolution).isNotNull();
+        var bestSolution = PlannerTestUtils.solve(solverConfig, generateMultiEntityEntityRangeProblem(), true);
+        // Each test reaches the best score only with its own swap
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(3));
         assertThat(bestSolution.getEntityProvidingEntityList())
                 .allSatisfy(entity -> assertThat(entity.getValueRange()).contains(entity.getValue()));
-        assertThat(bestSolution.getSolutionRangeEntityList())
-                .allSatisfy(entity -> assertThat(entity.getSolutionValue()).isNotNull());
+    }
+
+    private static TestdataMultiEntityEntityProvidingSolution generateMultiEntityEntityRangeProblem() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        // The pairs (a, x), (b, y) and (c, z) score 1 when their values match, so the problem starts with a score of 1.
+        // Swapping a and b, or x and y, scores 3.
+        // Swapping a and c is not possible, because v3 is outside the range of a and v1 is outside the range of c.
+        var a = new TestdataMultiEntityEntityProvidingEntity("a", List.of(v1, v2), v1);
+        var b = new TestdataMultiEntityEntityProvidingEntity("b", List.of(v1, v2), v2);
+        var c = new TestdataMultiEntityEntityProvidingEntity("c", List.of(v3), v3);
+        var x = new TestdataMultiEntitySolutionRangeEntity("x", v2);
+        var y = new TestdataMultiEntitySolutionRangeEntity("y", v1);
+        var z = new TestdataMultiEntitySolutionRangeEntity("z", v3);
+        var problem = new TestdataMultiEntityEntityProvidingSolution("s1");
+        problem.setValueList(List.of(v1, v2, v3));
+        problem.setEntityProvidingEntityList(List.of(a, b, c));
+        problem.setSolutionRangeEntityList(List.of(x, y, z));
+        return problem;
     }
 
     @Test
@@ -2502,13 +2522,13 @@ class DefaultSolverTest {
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");
         var v3 = new TestdataValue("v3");
-        var secondValueRange = List.of(v1, v2, v3);
+        var secondValueList = List.of(v1, v2, v3);
         // Rotating the values to e1(v3), e2(v1) and e3(v2) scores 3, but v3 is outside the ranges of e1 and e2
-        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1, v2), v1, secondValueRange, v1,
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1, v2), v1, secondValueList, v1,
                 v3);
-        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e2", List.of(v1, v2), v2, secondValueRange, v1,
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e2", List.of(v1, v2), v2, secondValueList, v1,
                 v1);
-        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e3", List.of(v3), v3, secondValueRange, v1,
+        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e3", List.of(v3), v3, secondValueList, v1,
                 v2);
         var problem = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution("s1", List.of(v1, v2, v3));
         problem.setEntityList(List.of(e1, e2, e3));
