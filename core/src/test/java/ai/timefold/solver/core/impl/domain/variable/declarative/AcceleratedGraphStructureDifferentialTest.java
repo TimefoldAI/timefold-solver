@@ -29,6 +29,14 @@ import org.junit.jupiter.api.Test;
  * Unlike {@link ai.timefold.solver.core.config.solver.EnvironmentMode#FULL_ASSERT},
  * which recomputes the shadow variables with the graph under test,
  * these tests compare that graph against the arbitrary graph.
+ * <p>
+ * Each test uses an existing test domain whose shadow variables select the structure under test:
+ * <ul>
+ * <li>{@link GraphStructure#SINGLE_DIRECTIONAL_PARENT}: {@code simple_list} (previous)
+ * and {@code simple_list_next} (next)</li>
+ * <li>{@link GraphStructure#ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE}: {@code dependency}
+ * (dependencies between values, which can loop) and {@code concurrent} (values aligned in groups)</li>
+ * </ul>
  */
 class AcceleratedGraphStructureDifferentialTest {
 
@@ -98,8 +106,8 @@ class AcceleratedGraphStructureDifferentialTest {
     }
 
     /**
-     * Aligned values share one computation, which is only valid when their supplier gives the same value
-     * on each of them; this one does not when some of them are unassigned, so all of them stay assigned.
+     * The values stay assigned: the aligned graph gives an unassigned value the start time of its group,
+     * whereas the arbitrary graph calls the supplier on that value, which returns null.
      */
     @Test
     void arbitrarySingleEntityWithAlignedValues() {

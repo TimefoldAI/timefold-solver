@@ -25,8 +25,9 @@ final class DeclarativeShadowVariableAssertions {
     private static final long VIOLATION_DISPLAY_LIMIT = 10L;
 
     /**
-     * Executes random list moves on the solution, and after each of them asserts that the shadow variables,
-     * maintained incrementally by the graph of the expected structure, match {@link #assertMatchesArbitraryGraph}.
+     * Asserts that the solution selects the expected structure, then executes random list moves on it.
+     * After each move, asserts that the shadow variables, maintained incrementally by the graph of that structure,
+     * match the ones recomputed by {@link #assertMatchesArbitraryGraph}.
      *
      * @param unassigning whether the moves may unassign values, which ruin and recreate does
      *        even when the list variable does not allow unassigned values
@@ -57,13 +58,21 @@ final class DeclarativeShadowVariableAssertions {
      * Asserts that the shadow variables of the solution do not change when its declarative shadow variables
      * are recomputed from scratch with {@link GraphStructure#ARBITRARY},
      * the general graph that every other structure must agree with.
-     * Building the graph marks all of its nodes changed, so that recomputation does not depend on any prior state.
+     * The declarative shadow variables are cleared first,
+     * so that a value the arbitrary graph does not recompute is reported instead of kept.
      */
     static <Solution_> void assertMatchesArbitraryGraph(SolutionDescriptor<Solution_> solutionDescriptor,
             Solution_ solution, String description, Object... descriptionArgs) {
         var snapshot = ShadowVariablesAssert.takeSnapshot(solutionDescriptor, solution);
         var entities = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entities::add);
+        for (var variableDescriptor : solutionDescriptor.getDeclarativeShadowVariableDescriptors()) {
+            for (var entity : entities) {
+                if (variableDescriptor.getEntityDescriptor().matchesEntity(entity)) {
+                    variableDescriptor.setValue(entity, null);
+                }
+            }
+        }
         DefaultShadowVariableSessionFactory.buildGraphForStructureAndDirection(
                 new GraphStructure.GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null),
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
