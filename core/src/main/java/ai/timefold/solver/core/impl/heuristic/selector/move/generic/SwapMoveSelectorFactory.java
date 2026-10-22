@@ -14,6 +14,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListS
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ValueRangeRecorderId;
@@ -43,7 +44,8 @@ public class SwapMoveSelectorFactory<Solution_>
         // to replay the selected value and return only reachable values.
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
         var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
-        var enableEntityValueRangeFilter = variableDescriptorList.stream().anyMatch(v -> !v.canExtractValueRangeFromSolution());
+        var enableEntityValueRangeFilter =
+                variableDescriptorList.stream().noneMatch(GenuineVariableDescriptor::canExtractValueRangeFromSolution);
         // A null ID means to turn off the entity value range filtering
         String entityRecorderId = null;
         if (enableEntityValueRangeFilter) {
