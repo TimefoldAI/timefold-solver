@@ -45,7 +45,7 @@ public class SwapMoveSelectorFactory<Solution_>
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
         var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
         var enableEntityValueRangeFilter =
-                variableDescriptorList.stream().noneMatch(GenuineVariableDescriptor::canExtractValueRangeFromSolution);
+                !variableDescriptorList.stream().allMatch(GenuineVariableDescriptor::canExtractValueRangeFromSolution);
         // A null ID means to turn off the entity value range filtering
         String entityRecorderId = null;
         if (enableEntityValueRangeFilter) {
