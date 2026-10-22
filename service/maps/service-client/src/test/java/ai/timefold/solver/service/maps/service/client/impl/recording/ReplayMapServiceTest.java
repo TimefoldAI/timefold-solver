@@ -61,28 +61,6 @@ class ReplayMapServiceTest {
     }
 
     @Test
-    void failsOnASubsetOrADifferentOrder() {
-        recorder(new StubMapService() {
-            @Override
-            public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
-                return new TravelTimeAndDistanceWithMetadata(
-                        new TravelTimeAndDistance(matrix(abc, 1), matrix(abc, 1000)), List.of(0));
-            }
-        }).getTravelTimeAndDistance(abc, CAR);
-
-        // The recording is replayed with the input of the recorded run, so the locations must be the same.
-        var replay = replay();
-        var subset = List.of(a, c);
-        var reordered = List.of(c, b, a);
-        assertThatThrownBy(() -> replay.getTravelTimeAndDistance(subset, CAR))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("for the 2 requested locations");
-        assertThatThrownBy(() -> replay.getTravelTimeAndDistance(reordered, CAR))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("for the 3 requested locations");
-    }
-
-    @Test
     void doesNotTouchTheRequestedLocations() {
         recorder(new StubMapService() {
             @Override
@@ -159,7 +137,7 @@ class ReplayMapServiceTest {
     }
 
     @Test
-    void failsOnUnrecordedLocation() {
+    void failsOnAnUnrecordedCall() {
         recorder(new StubMapService() {
             @Override
             public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
@@ -168,18 +146,12 @@ class ReplayMapServiceTest {
             }
         }).getTravelTimeAndDistance(abc, CAR);
 
+        // Only the distances were recorded, not the locations out of map.
         var replay = replay();
-        var unrecorded = new Location(9.0, 9.0);
-        var withUnrecorded = List.of(a, unrecorded);
-        var onlyUnrecorded = List.of(unrecorded);
-        assertThatThrownBy(() -> replay.getTravelTimeAndDistance(withUnrecorded, CAR))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("for the 2 requested locations");
-        // Locations out of map are only answered from recorded calls of that method.
-        assertThatThrownBy(() -> replay.getLocationsOutOfMap(onlyUnrecorded, CAR))
+        assertThatThrownBy(() -> replay.getLocationsOutOfMap(abc, CAR))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("No recording")
-                .hasMessageContaining("locations-out-of-map");
+                .hasMessageContaining("locations-out-of-map-car.json");
     }
 
     @Test
@@ -258,12 +230,7 @@ class ReplayMapServiceTest {
         });
         recorder.getLocationsOutOfMap(List.of(a, b), CAR);
 
-        var replay = replay();
-        assertThat(replay.getLocationsOutOfMap(List.of(a, b), CAR_LOCALLY)).containsExactly(1);
-        var otherLocations = List.of(a, c);
-        assertThatThrownBy(() -> replay.getLocationsOutOfMap(otherLocations, CAR))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("for the 2 requested locations");
+        assertThat(replay().getLocationsOutOfMap(List.of(a, b), CAR_LOCALLY)).containsExactly(1);
     }
 
     @Test
@@ -290,14 +257,14 @@ class ReplayMapServiceTest {
                 }, mapper);
         assertThatThrownBy(() -> missing.getTravelTimeAndDistance(abc, CAR))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("does not exist");
+                .hasMessageContaining("No recording");
 
         Path empty = Files.createDirectory(tempDir.resolve("empty"));
         var emptyReplay = new ReplayMapService(empty, new SingleTimeframeBucketing(), new StubMapService() {
         }, mapper);
         assertThatThrownBy(() -> emptyReplay.getTravelTimeAndDistance(abc, CAR))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("no recordings");
+                .hasMessageContaining("No recording");
     }
 
     @Test

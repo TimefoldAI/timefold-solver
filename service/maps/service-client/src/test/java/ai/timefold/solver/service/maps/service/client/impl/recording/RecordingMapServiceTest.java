@@ -19,7 +19,7 @@ import ai.timefold.solver.service.maps.service.integration.internal.model.Travel
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 class RecordingMapServiceTest {
@@ -46,13 +46,13 @@ class RecordingMapServiceTest {
 
         assertThat(service.getTravelTimeAndDistance(List.of(a, b), OPTIONS)).isSameAs(result);
 
-        JsonNode json = mapper.readTree(singleFile("distances.json").toFile());
-        assertThat(json.get("options").asText()).isEqualTo(OPTIONS);
-        assertThat(json.get("locations").get(1).get("latitude").asDouble()).isEqualTo(3.0);
-        assertThat(json.get("locationsNotInMap").get(0).asInt()).isEqualTo(1);
-        assertThat(json.get("resolvedMapLocation").asText()).isEqualTo("us-georgia");
-        assertThat(json.get("travelTime")).hasToString("[[0,10],[20,0]]");
-        assertThat(json.get("distance")).hasToString("[[0,100],[200,0]]");
+        var recorded = mapper.readValue(singleFile("distances-default.json").toFile(),
+                TravelTimeAndDistanceWithMetadata.class);
+        assertThat(value(recorded.travelTimeAndDistance().travelTime(), a, b)).isEqualTo(10L);
+        assertThat(value(recorded.travelTimeAndDistance().travelTime(), b, a)).isEqualTo(20L);
+        assertThat(value(recorded.travelTimeAndDistance().distance(), a, b)).isEqualTo(100L);
+        assertThat(recorded.locationsNotInMapIdx()).containsExactly(1);
+        assertThat(recorded.resolvedMapLocation()).isEqualTo("us-georgia");
     }
 
     @Test
@@ -70,11 +70,14 @@ class RecordingMapServiceTest {
 
         service.getTravelTimeAndDistanceByTimeframe(List.of(a, b), OPTIONS);
 
-        JsonNode json = mapper.readTree(singleFile("distances-by-timeframe.json").toFile());
-        assertThat(json.get("timeframes")).hasToString("[\"morning\",\"afternoon\",\"night\"]");
-        assertThat(json.get("locationsNotInMap")).hasToString("[1]");
-        assertThat(json.get("travelTimes")).hasToString("[[[0,1],[2,0]],[[0,3],[4,0]],[[0,5],[6,0]]]");
-        assertThat(json.get("distances").get(2)).hasToString("[[0,7],[8,0]]");
+        var recorded = mapper.readValue(singleFile("distances-by-timeframe-default.json").toFile(),
+                RecordingMapService.TimeframeRecording.class);
+        assertThat(recorded.timeframes()).containsExactly("morning", "afternoon", "night");
+        assertThat(recorded.locationsNotInMap()).containsExactly(b);
+        assertThat(recorded.travelTimes()).hasSize(3);
+        assertThat(value(recorded.travelTimes().get(1), a, b)).isEqualTo(3L);
+        assertThat(value(recorded.travelTimes().get(2), b, a)).isEqualTo(6L);
+        assertThat(value(recorded.distances().get(2), b, a)).isEqualTo(8L);
     }
 
     @Test
@@ -90,9 +93,10 @@ class RecordingMapServiceTest {
 
         service.getTravelTimeAndDistanceByTimeframe(List.of(a, b), OPTIONS);
 
-        JsonNode json = mapper.readTree(singleFile("distances-by-timeframe.json").toFile());
-        assertThat(json.get("timeframes").isNull()).isTrue();
-        assertThat(json.get("travelTimes")).hasSize(1);
+        var recorded = mapper.readValue(singleFile("distances-by-timeframe-default.json").toFile(),
+                RecordingMapService.TimeframeRecording.class);
+        assertThat(recorded.timeframes()).isNull();
+        assertThat(recorded.travelTimes()).hasSize(1);
     }
 
     @Test
@@ -106,9 +110,10 @@ class RecordingMapServiceTest {
 
         assertThat(service.getLocationsOutOfMap(List.of(a, b), OPTIONS)).containsExactly(0);
 
-        JsonNode json = mapper.readTree(singleFile("locations-out-of-map.json").toFile());
-        assertThat(json.get("locationsOutOfMap")).hasToString("[0]");
-        assertThat(json.get("locations")).hasSize(2);
+        List<Integer> recorded = mapper.readValue(singleFile("locations-out-of-map-default.json").toFile(),
+                new TypeReference<>() {
+                });
+        assertThat(recorded).containsExactly(0);
     }
 
     @Test
@@ -149,19 +154,21 @@ class RecordingMapServiceTest {
     }
 
     @Test
-    void callsAreNumberedAcrossInstances() throws IOException {
+    void namesFilesByKindAndTransportType() throws IOException {
         var stub = new StubMapService() {
             @Override
             public List<Integer> getLocationsOutOfMap(List<Location> locations, String options) {
                 return List.of();
             }
         };
-        recordingService(stub).getLocationsOutOfMap(List.of(a), OPTIONS);
-        recordingService(stub).getLocationsOutOfMap(List.of(a), OPTIONS);
+        recordingService(stub).getLocationsOutOfMap(List.of(a), OPTIONS + ",transportType:car");
+        recordingService(stub).getLocationsOutOfMap(List.of(a), OPTIONS + ",transportType:bike");
+        // A repeated call overwrites its recording.
+        recordingService(stub).getLocationsOutOfMap(List.of(a), OPTIONS + ",transportType:car");
 
         try (Stream<Path> files = Files.list(tempDir)) {
-            assertThat(files.filter(path -> path.getFileName().toString().endsWith("locations-out-of-map.json")))
-                    .hasSize(2);
+            assertThat(files.map(path -> path.getFileName().toString()))
+                    .containsExactlyInAnyOrder("locations-out-of-map-car.json", "locations-out-of-map-bike.json");
         }
     }
 
@@ -177,6 +184,12 @@ class RecordingMapServiceTest {
         matrix.put(responseB, responseA, ba);
         matrix.put(responseB, responseB, bb);
         return matrix;
+    }
+
+    /** Looks up with fresh location instances, as the matrix is matched by coordinates. */
+    private long value(DistanceMatrix matrix, Location from, Location to) {
+        return matrix.get(new Location(from.getLatitude(), from.getLongitude()),
+                new Location(to.getLatitude(), to.getLongitude()));
     }
 
     private RecordingMapService recordingService(MapService delegate) {

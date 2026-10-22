@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 class ReplayEnrichmentTest {
 
-    /** The unzipped execution artifact of a recorded run, see {@code 00001-distances.json} in it. */
+    /** The unzipped execution artifact of a recorded run, see {@code distances-car.json} in it. */
     private static final String RECORDING = "src/test/resources/replay-recording";
 
     @Test
