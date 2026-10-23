@@ -2,7 +2,7 @@ package ai.timefold.solver.service.definition.internal.events;
 
 public abstract sealed class AbstractEvent
         permits AbstractDatasetEvent, ItemCompleted, SolveStartCommand, SolveTerminateCommand,
-        DatasetValidateComputeCommand, ItemTerminated {
+        DatasetValidateComputeCommand, ItemTerminated, UniqueResourceReportEvent {
 
     private final String id;
 
