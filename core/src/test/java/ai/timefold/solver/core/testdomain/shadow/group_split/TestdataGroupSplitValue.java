@@ -67,11 +67,11 @@ public class TestdataGroupSplitValue {
 
     @ShadowSources({ "dependencies[].endTime", "previousValue.endTime", "entity" })
     public LocalDateTime calculateReadyTime() {
-        LocalDateTime readyTime;
+        LocalDateTime calculatedReadyTime;
         if (previousValue != null) {
-            readyTime = previousValue.endTime;
+            calculatedReadyTime = previousValue.endTime;
         } else if (entity != null) {
-            readyTime = entity.startTime;
+            calculatedReadyTime = entity.startTime;
         } else {
             return null;
         }
@@ -79,9 +79,9 @@ public class TestdataGroupSplitValue {
             if (dependency.endTime == null) {
                 return null;
             }
-            readyTime = ObjectUtils.max(readyTime, dependency.endTime);
+            calculatedReadyTime = ObjectUtils.max(calculatedReadyTime, dependency.endTime);
         }
-        return readyTime;
+        return calculatedReadyTime;
     }
 
     @ShadowSources({ "readyTime", "alignedValues[].readyTime", "peer.readyTime" })
@@ -89,20 +89,20 @@ public class TestdataGroupSplitValue {
         if (readyTime == null) {
             return null;
         }
-        var startTime = readyTime;
+        var calculatedStartTime = readyTime;
         for (var alignedValue : alignedValues) {
             if (alignedValue.readyTime == null) {
                 return null;
             }
-            startTime = ObjectUtils.max(startTime, alignedValue.readyTime);
+            calculatedStartTime = ObjectUtils.max(calculatedStartTime, alignedValue.readyTime);
         }
         if (peer != null) {
             if (peer.readyTime == null) {
                 return null;
             }
-            startTime = ObjectUtils.max(startTime, peer.readyTime);
+            calculatedStartTime = ObjectUtils.max(calculatedStartTime, peer.readyTime);
         }
-        return startTime;
+        return calculatedStartTime;
     }
 
     @ShadowSources({ "startTime" })
@@ -118,16 +118,16 @@ public class TestdataGroupSplitValue {
         if (endTime == null) {
             return null;
         }
-        var handoverTime = endTime;
+        var calculatedHandoverTime = endTime;
         for (var follower : followers) {
             if (follower.previousValue != null) {
                 if (follower.previousValue.endTime == null) {
                     return null;
                 }
-                handoverTime = ObjectUtils.max(handoverTime, follower.previousValue.endTime);
+                calculatedHandoverTime = ObjectUtils.max(calculatedHandoverTime, follower.previousValue.endTime);
             }
         }
-        return handoverTime;
+        return calculatedHandoverTime;
     }
 
     public String getId() {

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.testdomain.shadow.aligned_dependency;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +14,12 @@ public class TestdataAlignedDependencyEntity {
     @PlanningListVariable
     List<TestdataAlignedDependencyValue> values;
 
-    LocalDateTime startTime;
+    OffsetDateTime startTime;
 
     public TestdataAlignedDependencyEntity() {
     }
 
-    public TestdataAlignedDependencyEntity(String id, LocalDateTime startTime) {
+    public TestdataAlignedDependencyEntity(String id, OffsetDateTime startTime) {
         this.id = id;
         this.startTime = startTime;
         this.values = new ArrayList<>();
@@ -41,11 +41,11 @@ public class TestdataAlignedDependencyEntity {
         this.values = values;
     }
 
-    public LocalDateTime getStartTime() {
+    public OffsetDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(OffsetDateTime startTime) {
         this.startTime = startTime;
     }
 

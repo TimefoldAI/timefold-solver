@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -27,7 +28,7 @@ import org.junit.jupiter.api.Test;
  */
 class AlignedDependencyShadowVariableTest {
 
-    private static final LocalDateTime START = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
+    private static final OffsetDateTime START = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     private static final List<String> ALL_VARIABLES = List.of("readyTime", "startTime", "endTime");
     private static final List<String> READY_TIME = List.of("readyTime");
     private static final List<String> START_AND_END_TIME = List.of("startTime", "endTime");
@@ -68,6 +69,18 @@ class AlignedDependencyShadowVariableTest {
         // E has both a dependency and an aligned value.
         assertThat(variablesPerNode(graph, e)).containsExactlyInAnyOrder(READY_TIME, START_AND_END_TIME);
         assertThat(variablesPerNode(graph, f)).containsExactlyInAnyOrder(READY_TIME, START_AND_END_TIME);
+    }
+
+    @Test
+    void valueThatDependsOnItselfFailsFast() {
+        var a = new TestdataAlignedDependencyValue("A", Duration.ofMinutes(30));
+        a.setDependencies(List.of(a));
+
+        // The end time of A leads back to its ready time,
+        // so the ready time must not share a node with the end time, which would hide the loop.
+        assertThatCode(() -> buildGraph(a))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("There are fixed dependency loops in the graph");
     }
 
     @Test

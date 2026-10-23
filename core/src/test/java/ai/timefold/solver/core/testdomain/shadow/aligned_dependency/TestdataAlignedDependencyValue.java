@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.testdomain.shadow.aligned_dependency;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -41,13 +41,13 @@ public class TestdataAlignedDependencyValue {
     TestdataAlignedDependencyEntity entity;
 
     @ShadowVariable(supplierName = "calculateReadyTime")
-    LocalDateTime readyTime;
+    OffsetDateTime readyTime;
 
     @ShadowVariable(supplierName = "calculateStartTime")
-    LocalDateTime startTime;
+    OffsetDateTime startTime;
 
     @ShadowVariable(supplierName = "calculateEndTime")
-    LocalDateTime endTime;
+    OffsetDateTime endTime;
 
     public TestdataAlignedDependencyValue() {
     }
@@ -76,12 +76,12 @@ public class TestdataAlignedDependencyValue {
     }
 
     @ShadowSources({ "dependencies[].endTime", "previousValue.endTime", "entity" })
-    public LocalDateTime calculateReadyTime() {
-        LocalDateTime readyTime;
+    public OffsetDateTime calculateReadyTime() {
+        OffsetDateTime calculatedReadyTime;
         if (previousValue != null) {
-            readyTime = previousValue.endTime;
+            calculatedReadyTime = previousValue.endTime;
         } else if (entity != null) {
-            readyTime = entity.startTime;
+            calculatedReadyTime = entity.startTime;
         } else {
             return null;
         }
@@ -89,28 +89,28 @@ public class TestdataAlignedDependencyValue {
             if (dependency.endTime == null) {
                 return null;
             }
-            readyTime = ObjectUtils.max(readyTime, dependency.endTime);
+            calculatedReadyTime = ObjectUtils.max(calculatedReadyTime, dependency.endTime);
         }
-        return readyTime;
+        return calculatedReadyTime;
     }
 
     @ShadowSources({ "readyTime", "alignedValues[].readyTime" })
-    public LocalDateTime calculateStartTime() {
+    public OffsetDateTime calculateStartTime() {
         if (readyTime == null) {
             return null;
         }
-        var startTime = readyTime;
+        var calculatedStartTime = readyTime;
         for (var alignedValue : alignedValues) {
             if (alignedValue.readyTime == null) {
                 return null;
             }
-            startTime = ObjectUtils.max(startTime, alignedValue.readyTime);
+            calculatedStartTime = ObjectUtils.max(calculatedStartTime, alignedValue.readyTime);
         }
-        return startTime;
+        return calculatedStartTime;
     }
 
     @ShadowSources({ "startTime" })
-    public LocalDateTime calculateEndTime() {
+    public OffsetDateTime calculateEndTime() {
         if (startTime == null) {
             return null;
         }
@@ -165,27 +165,27 @@ public class TestdataAlignedDependencyValue {
         this.entity = entity;
     }
 
-    public LocalDateTime getReadyTime() {
+    public OffsetDateTime getReadyTime() {
         return readyTime;
     }
 
-    public void setReadyTime(LocalDateTime readyTime) {
+    public void setReadyTime(OffsetDateTime readyTime) {
         this.readyTime = readyTime;
     }
 
-    public LocalDateTime getStartTime() {
+    public OffsetDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(OffsetDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public OffsetDateTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(OffsetDateTime endTime) {
         this.endTime = endTime;
     }
 

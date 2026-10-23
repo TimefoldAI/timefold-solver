@@ -356,6 +356,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
      * and the group is empty for the entity.</li>
      * <li>Each other source is a variable of the entity itself.</li>
      * <li>The group reads a declarative shadow variable of the node it joins, and none of an earlier node.</li>
+     * <li>No source of the node it joins reaches the entity itself to read a variable of the group.
+     * Inside one node, that edge would vanish, and with it the fixed loop that it closes.</li>
      * </ul>
      * Then every edge from outside enters the first group of the joined node, and each later group depends on that node,
      * so a loop through the joined node is also a loop through the separate nodes.
@@ -372,17 +374,37 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         private StaticVariableGroups(List<List<DeclarativeShadowVariableDescriptor<Solution_>>> groupIndexToVariables,
                 boolean[] isSplitOnlyByGroupSources, List<List<VariableUpdaterInfo<Solution_>>> groupIndexToUpdaters) {
             this.groupIndexToUpdaters = groupIndexToUpdaters;
+            var groupCount = groupIndexToVariables.size();
             var variableToGroupIndex = new HashMap<VariableMetaModel<?, ?, ?>, Integer>();
-            for (var groupIndex = 0; groupIndex < groupIndexToVariables.size(); groupIndex++) {
+            for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
                 for (var variableDescriptor : groupIndexToVariables.get(groupIndex)) {
                     variableToGroupIndex.put(variableDescriptor.getVariableMetaModel(), groupIndex);
                 }
             }
-            this.groupIndexToJoinCondition = new JoinCondition[groupIndexToVariables.size()];
-            for (var groupIndex = 1; groupIndex < groupIndexToVariables.size(); groupIndex++) {
+            var groupIndexToBackwardSources = new ArrayList<List<BackwardSource>>(groupCount);
+            for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+                groupIndexToBackwardSources.add(new ArrayList<>());
+            }
+            for (var groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+                for (var variableDescriptor : groupIndexToVariables.get(groupIndex)) {
+                    for (var source : variableDescriptor.getSources()) {
+                        var sourceReferences = source.variableSourceReferences();
+                        var readReference = sourceReferences.get(sourceReferences.size() - 1);
+                        var readGroupIndex = readReference.isDeclarative()
+                                ? variableToGroupIndex.get(readReference.variableMetaModel())
+                                : null;
+                        if (readGroupIndex != null && readGroupIndex > groupIndex) {
+                            groupIndexToBackwardSources.get(readGroupIndex).add(new BackwardSource(groupIndex, source));
+                        }
+                    }
+                }
+            }
+            this.groupIndexToJoinCondition = new JoinCondition[groupCount];
+            for (var groupIndex = 1; groupIndex < groupCount; groupIndex++) {
                 if (isSplitOnlyByGroupSources[groupIndex]) {
-                    groupIndexToJoinCondition[groupIndex] =
-                            JoinCondition.of(groupIndex, groupIndexToVariables.get(groupIndex), variableToGroupIndex);
+                    groupIndexToJoinCondition[groupIndex] = JoinCondition.of(groupIndex,
+                            groupIndexToVariables.get(groupIndex), variableToGroupIndex,
+                            groupIndexToBackwardSources.get(groupIndex));
                 }
             }
         }
@@ -409,12 +431,14 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         private List<List<VariableUpdaterInfo<Solution_>>> joinGroups(BitSet keptSplits) {
             var out = new ArrayList<List<VariableUpdaterInfo<Solution_>>>();
             List<VariableUpdaterInfo<Solution_>> joinedUpdaters = new ArrayList<>();
-            var joinedGroupId = nextGroupId++;
+            var joinedGroupId = nextGroupId;
+            nextGroupId++;
             for (var i = 0; i < groupIndexToUpdaters.size(); i++) {
                 if (keptSplits.get(i)) {
                     out.add(joinedUpdaters);
                     joinedUpdaters = new ArrayList<>();
-                    joinedGroupId = nextGroupId++;
+                    joinedGroupId = nextGroupId;
+                    nextGroupId++;
                 }
                 for (var updater : groupIndexToUpdaters.get(i)) {
                     joinedUpdaters.add(updater.withGroupId(joinedGroupId));
@@ -433,16 +457,17 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
      * @param lowestOwnSourceGroupIndex the lowest group index of the declarative shadow variables of the entity
      *        that the group reads
      * @param highestEarlierOwnSourceGroupIndex the highest such group index before the group itself
+     * @param backwardSources the sources of earlier groups that read a variable of the group
      */
     private record JoinCondition(List<RootVariableSource<?, ?>> groupSources, int lowestOwnSourceGroupIndex,
-            int highestEarlierOwnSourceGroupIndex) {
+            int highestEarlierOwnSourceGroupIndex, List<BackwardSource> backwardSources) {
 
         /**
          * @return null if the group can never join the node before it
          */
         static <Solution_> @Nullable JoinCondition of(int groupIndex,
                 List<DeclarativeShadowVariableDescriptor<Solution_>> groupVariables,
-                Map<VariableMetaModel<?, ?, ?>, Integer> variableToGroupIndex) {
+                Map<VariableMetaModel<?, ?, ?>, Integer> variableToGroupIndex, List<BackwardSource> backwardSources) {
             var groupSources = new ArrayList<RootVariableSource<?, ?>>();
             var lowestOwnSourceGroupIndex = Integer.MAX_VALUE;
             var highestEarlierOwnSourceGroupIndex = -1;
@@ -478,7 +503,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 return null;
             }
             return new JoinCondition(List.copyOf(groupSources), lowestOwnSourceGroupIndex,
-                    highestEarlierOwnSourceGroupIndex);
+                    highestEarlierOwnSourceGroupIndex, List.copyOf(backwardSources));
         }
 
         boolean allows(Object entity, int nodeStartGroupIndex) {
@@ -490,7 +515,43 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     return false;
                 }
             }
+            for (var backwardSource : backwardSources) {
+                if (backwardSource.groupIndex() >= nodeStartGroupIndex && backwardSource.mayReachItself(entity)) {
+                    return false;
+                }
+            }
             return true;
+        }
+
+    }
+
+    /**
+     * A source of a variable in an earlier group that reads a declarative shadow variable of a later group.
+     *
+     * @param groupIndex the group of the variable that has the source
+     */
+    private record BackwardSource(int groupIndex, RootVariableSource<?, ?> source) {
+
+        boolean mayReachItself(Object entity) {
+            return switch (source.parentVariableType()) {
+                // A list holds each element once, so the element before or after an element is never that element.
+                case PREVIOUS, NEXT -> false;
+                // With one variable on the path, only facts lead to it, so the entities that the path reaches never change.
+                // A path through another variable, or through a list variable, can reach the entity itself later.
+                case GROUP, INDIRECT, INVERSE, VARIABLE, NO_PARENT ->
+                    source.variableSourceReferences().size() != 1 || reachesItself(source, entity);
+                case LIST_ELEMENT -> true;
+            };
+        }
+
+        private static boolean reachesItself(RootVariableSource<?, ?> source, Object entity) {
+            var reachedCount = new MutableInt();
+            source.valueEntityFunction().accept(entity, reachedEntity -> {
+                if (reachedEntity == entity) {
+                    reachedCount.increment();
+                }
+            });
+            return reachedCount.intValue() > 0;
         }
 
     }
