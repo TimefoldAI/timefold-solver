@@ -28,6 +28,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
@@ -71,6 +72,7 @@ import ai.timefold.solver.service.definition.internal.events.ItemTerminated;
 import ai.timefold.solver.service.definition.internal.events.SolveStartCommand;
 import ai.timefold.solver.service.definition.internal.events.SolveTerminateCommand;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
+import ai.timefold.solver.service.definition.internal.events.SolverRunSummaryDto;
 import ai.timefold.solver.service.definition.internal.events.ValidationSummary;
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 import ai.timefold.solver.service.definition.internal.platform.OnStartCommand;
@@ -454,7 +456,8 @@ public class SolverWorker {
                     .withProblemId(id)
                     .withBestSolutionEventConsumer(
                             decorateIfPossible(event -> notifyOnSave(id, event.solution(), event.producerId())))
-                    .withFinalBestSolutionEventConsumer(event -> notifyOnComplete(id, event.solution()))
+                    .withFinalBestSolutionEventConsumer(
+                            event -> notifyOnComplete(id, event.solution(), SolverRunSummaryDto.of(event)))
                     .withFirstInitializedSolutionEventConsumer(
                             event -> notifyOnInit(id, event.solution(), event.isTerminatedEarly(), event.producerId()))
                     .withExceptionHandler(this::notifyOnFailure)
@@ -731,7 +734,7 @@ public class SolverWorker {
         return e.isRecoverable() && TRANSIENT_STORAGE_ERROR_CODES.contains(e.getCode());
     }
 
-    protected void notifyOnComplete(String id, SolverModel solverModel) {
+    protected void notifyOnComplete(String id, SolverModel solverModel, SolverRunSummary runSummary) {
         if (this.shuttingDown.get()) {
             // shutting down flag is only set when solver worker is being shutdown - its pod is shutting down
             // but the termination was not issued - either explicitly by terminate early or by solver termination strategy
@@ -762,7 +765,7 @@ public class SolverWorker {
 
             processor.onNext(metadata);
             sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
-                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName));
+                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName, runSummary));
 
             postProcessCompleteOutput(id, modelOutput, solverModel);
 
