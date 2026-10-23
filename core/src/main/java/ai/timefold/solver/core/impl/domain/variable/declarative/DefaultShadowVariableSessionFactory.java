@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -309,7 +310,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     private record GroupVariableUpdaterInfo<Solution_>(
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeVariableDescriptors,
             List<VariableUpdaterInfo<Solution_>> allUpdaters,
-            List<VariableUpdaterInfo<Solution_>> groupedUpdaters,
+            StaticVariableGroups<Solution_> staticGroups,
+            int groupIndex,
             Map<DeclarativeShadowVariableDescriptor<Solution_>, Map<Object, VariableUpdaterInfo<Solution_>>> variableToEntityToGroupUpdater) {
 
         public List<VariableUpdaterInfo<Solution_>> getUpdatersForEntityVariable(Object entity,
@@ -325,18 +327,91 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     if (rootSource.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
                         // Unlike a fact collection, a list variable's contents change during solving,
                         // so the decision must not depend on its current contents.
-                        return groupedUpdaters;
+                        return staticGroups.getUpdatersForEntity(entity, groupIndex);
                     }
-                    if (rootSource.parentVariableType() == ParentVariableType.GROUP) {
-                        var visitedCount = new MutableInt();
-                        rootSource.valueEntityFunction().accept(entity, ignored -> visitedCount.increment());
-                        if (visitedCount.intValue() > 0) {
-                            return groupedUpdaters;
-                        }
+                    if (rootSource.parentVariableType() == ParentVariableType.GROUP && hasMembers(rootSource, entity)) {
+                        return staticGroups.getUpdatersForEntity(entity, groupIndex);
                     }
                 }
             }
             return allUpdaters;
+        }
+
+    }
+
+    private static boolean hasMembers(RootVariableSource<?, ?> groupSource, Object entity) {
+        var visitedCount = new MutableInt();
+        groupSource.valueEntityFunction().accept(entity, ignored -> visitedCount.increment());
+        return visitedCount.intValue() > 0;
+    }
+
+    /**
+     * The groups of declarative shadow variables that need their own graph node
+     * for an entity that uses a group or a list element source.
+     * A group that starts only because its first variable has a group source
+     * (i.e. "visitGroup[].arrivalTime") is merged into the group before it
+     * for each entity for which all those group sources are empty:
+     * such a variable has nothing to wait for outside the entity,
+     * and a separate node for it only adds work to every update.
+     */
+    private static final class StaticVariableGroups<Solution_> {
+
+        private final List<List<DeclarativeShadowVariableDescriptor<Solution_>>> groupIndexToVariables;
+        private final boolean[] isSplitOnlyByGroupSources;
+        private final List<List<VariableUpdaterInfo<Solution_>>> groupIndexToUpdaters;
+        private final Map<BitSet, List<List<VariableUpdaterInfo<Solution_>>>> keptSplitsToMergedGroupUpdaters =
+                new HashMap<>();
+        private int nextGroupId;
+
+        private StaticVariableGroups(List<List<DeclarativeShadowVariableDescriptor<Solution_>>> groupIndexToVariables,
+                boolean[] isSplitOnlyByGroupSources, List<List<VariableUpdaterInfo<Solution_>>> groupIndexToUpdaters) {
+            this.groupIndexToVariables = groupIndexToVariables;
+            this.isSplitOnlyByGroupSources = isSplitOnlyByGroupSources;
+            this.groupIndexToUpdaters = groupIndexToUpdaters;
+        }
+
+        private List<VariableUpdaterInfo<Solution_>> getUpdatersForEntity(Object entity, int groupIndex) {
+            var groupCount = groupIndexToVariables.size();
+            var keptSplits = new BitSet(groupCount);
+            for (var i = 1; i < groupCount; i++) {
+                if (!isSplitOnlyByGroupSources[i] || hasAnyGroupMembers(groupIndexToVariables.get(i).get(0), entity)) {
+                    keptSplits.set(i);
+                }
+            }
+            if (keptSplits.cardinality() == groupCount - 1) {
+                return groupIndexToUpdaters.get(groupIndex);
+            }
+            var mergedGroupUpdaters = keptSplitsToMergedGroupUpdaters.computeIfAbsent(keptSplits, this::mergeGroups);
+            // Bit 0 is never set, so this counts the kept splits up to and including this group.
+            return mergedGroupUpdaters.get(keptSplits.get(0, groupIndex + 1).cardinality());
+        }
+
+        private boolean hasAnyGroupMembers(DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
+                Object entity) {
+            for (var rootSource : variableDescriptor.getSources()) {
+                if (rootSource.parentVariableType() == ParentVariableType.GROUP && hasMembers(rootSource, entity)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private List<List<VariableUpdaterInfo<Solution_>>> mergeGroups(BitSet keptSplits) {
+            var out = new ArrayList<List<VariableUpdaterInfo<Solution_>>>();
+            List<VariableUpdaterInfo<Solution_>> mergedUpdaters = new ArrayList<>();
+            var mergedGroupId = nextGroupId++;
+            for (var i = 0; i < groupIndexToUpdaters.size(); i++) {
+                if (keptSplits.get(i)) {
+                    out.add(mergedUpdaters);
+                    mergedUpdaters = new ArrayList<>();
+                    mergedGroupId = nextGroupId++;
+                }
+                for (var updater : groupIndexToUpdaters.get(i)) {
+                    mergedUpdaters.add(updater.withGroupId(mergedGroupId));
+                }
+            }
+            out.add(mergedUpdaters);
+            return out;
         }
 
     }
@@ -349,15 +424,18 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var sortedDeclarativeVariableDescriptors =
                 topologicallySortedDeclarativeShadowVariables(declarativeShadowVariableDescriptors);
         var groupIndexToVariables = new HashMap<Integer, List<DeclarativeShadowVariableDescriptor<Solution_>>>();
+        var groupIndexToSplitOnlyByGroupSources = new ArrayList<Boolean>();
         var groupVariables = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
         groupIndexToVariables.put(0, groupVariables);
+        groupIndexToSplitOnlyByGroupSources.add(false);
         for (var declarativeShadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
             // If a @ShadowSources has a group source (i.e. "visitGroup[].arrivalTimes")
             // or a list element source (i.e. "values[].endTime"),
             // create a new group since it must wait until all members of that group are processed
-            var hasGroupSources = Arrays.stream(declarativeShadowVariableDescriptor.getSources())
-                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP
-                            || rootVariableSource.parentVariableType() == ParentVariableType.LIST_ELEMENT);
+            var hasListElementSources = Arrays.stream(declarativeShadowVariableDescriptor.getSources())
+                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.LIST_ELEMENT);
+            var hasGroupSources = hasListElementSources || Arrays.stream(declarativeShadowVariableDescriptor.getSources())
+                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP);
 
             // If a @ShadowSources has an alignment key,
             // create a new group since multiple entities must be updated for this node
@@ -374,16 +452,27 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     || previousHasAlignmentKey)) {
                 groupVariables = new ArrayList<>();
                 groupIndexToVariables.put(groupIndexToVariables.size(), groupVariables);
+                groupIndexToSplitOnlyByGroupSources
+                        .add(!hasListElementSources && !hasAlignmentKey && !previousHasAlignmentKey);
             }
             groupVariables.add(declarativeShadowVariableDescriptor);
         }
 
         var out = new HashMap<VariableMetaModel<Solution_, ?, ?>, GroupVariableUpdaterInfo<Solution_>>();
         var allUpdaters = new ArrayList<VariableUpdaterInfo<Solution_>>();
+        var groupIndexToUpdaters = new ArrayList<List<VariableUpdaterInfo<Solution_>>>();
         var groupedUpdaters =
                 new HashMap<DeclarativeShadowVariableDescriptor<Solution_>, Map<Object, VariableUpdaterInfo<Solution_>>>();
+        var groupCount = groupIndexToVariables.size();
+        var isSplitOnlyByGroupSources = new boolean[groupCount];
+        for (var i = 0; i < groupCount; i++) {
+            isSplitOnlyByGroupSources[i] = groupIndexToSplitOnlyByGroupSources.get(i);
+        }
+        var staticGroups = new StaticVariableGroups<Solution_>(
+                IntStream.range(0, groupCount).mapToObj(groupIndexToVariables::get).toList(), isSplitOnlyByGroupSources,
+                groupIndexToUpdaters);
         var updaterKey = 0;
-        for (var entryKey = 0; entryKey < groupIndexToVariables.size(); entryKey++) {
+        for (var entryKey = 0; entryKey < groupCount; entryKey++) {
             var entryGroupVariables = groupIndexToVariables.get(entryKey);
             var updaters = new ArrayList<VariableUpdaterInfo<Solution_>>();
             for (var declarativeShadowVariableDescriptor : entryGroupVariables) {
@@ -425,15 +514,18 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     allUpdaters.add(updater);
                 }
             }
+            groupIndexToUpdaters.add(updaters);
             var groupVariableUpdaterInfo =
-                    new GroupVariableUpdaterInfo<Solution_>(sortedDeclarativeVariableDescriptors, allUpdaters, updaters,
-                            groupedUpdaters);
+                    new GroupVariableUpdaterInfo<Solution_>(sortedDeclarativeVariableDescriptors, allUpdaters,
+                            staticGroups, entryKey, groupedUpdaters);
             for (var declarativeShadowVariableDescriptor : entryGroupVariables) {
                 out.put(declarativeShadowVariableDescriptor.getVariableMetaModel(), groupVariableUpdaterInfo);
             }
             updaterKey++;
         }
-        allUpdaters.replaceAll(updater -> updater.withGroupId(groupIndexToVariables.size()));
+        allUpdaters.replaceAll(updater -> updater.withGroupId(groupCount));
+        // Merged groups take ids that no other updater uses.
+        staticGroups.nextGroupId = Math.max(updaterKey, groupCount + 1);
         return out;
     }
 
