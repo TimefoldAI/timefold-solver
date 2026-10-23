@@ -5,7 +5,6 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -15,21 +14,12 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 @PlanningEntity
 public class TestdataMultiEntityEntityProvidingEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataMultiEntityEntityProvidingSolution> buildEntityDescriptor() {
-        return TestdataMultiEntityEntityProvidingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataMultiEntityEntityProvidingEntity.class);
-    }
-
     private List<TestdataValue> valueRange;
 
     private TestdataValue value;
 
     public TestdataMultiEntityEntityProvidingEntity() {
         // Required for cloning
-    }
-
-    public TestdataMultiEntityEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
-        this(code, valueRange, null);
     }
 
     public TestdataMultiEntityEntityProvidingEntity(String code, List<TestdataValue> valueRange, TestdataValue value) {
