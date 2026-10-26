@@ -1,6 +1,5 @@
 package ai.timefold.solver.service.definition.impl.executionprofile.verboselogging;
 
-import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 
@@ -52,7 +51,7 @@ public final class VerboseLoggingExecutionProfile implements ExecutionProfile {
     static final String ENV_QUARKUS_LOG_CATEGORY_SOLVER_LEVEL =
             "QUARKUS_LOG_CATEGORY__" + DEBUG_CATEGORY.toUpperCase(Locale.ROOT).replace('.', '_') + "__LEVEL";
 
-    static final String LOG_FILE_PATH = Path.of(EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR, ID, LOG_FILE_NAME).toString();
+    static final String LOG_FILE_PATH = EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR + "/" + ID + "/" + LOG_FILE_NAME;
 
     @Override
     public String id() {
