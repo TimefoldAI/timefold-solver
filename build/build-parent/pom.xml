@@ -45,7 +45,7 @@
     <version.org.mapstruct>1.6.3</version.org.mapstruct>
     <version.org.openrewrite>8.90.4</version.org.openrewrite>
     <version.org.testcontainers>2.0.5</version.org.testcontainers>
-    <version.org.springframework.boot>4.1.1</version.org.springframework.boot>
+    <version.org.springframework.boot>4.1.2</version.org.springframework.boot>
     <version.org.wiremock>3.13.2</version.org.wiremock>
     <version.ow2.asm>9.11</version.ow2.asm>
     <!-- Upgrade Jackson and its annotations together; otherwise there may be runtime errors. -->
