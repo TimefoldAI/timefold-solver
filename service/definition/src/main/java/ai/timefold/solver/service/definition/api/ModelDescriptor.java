@@ -1,7 +1,6 @@
 package ai.timefold.solver.service.definition.api;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigDesc
 import ai.timefold.solver.service.definition.internal.descriptor.OutputMetricDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.UISupport;
 import ai.timefold.solver.service.definition.internal.descriptor.VisualizationPageDescriptor;
+import ai.timefold.solver.service.definition.internal.descriptor.usage.UniqueResource;
 
 public class ModelDescriptor {
 
@@ -41,23 +41,23 @@ public class ModelDescriptor {
 
     protected String imageRefNative;
 
-    protected Map<String, String> environment = new HashMap<>();
+    protected Map<String, String> environment = Collections.EMPTY_MAP;
 
-    protected List<String> features = new ArrayList<>();
+    protected List<String> features = Collections.EMPTY_LIST;
 
-    protected List<ConstraintGroupDescriptor> constraintGroupDescriptors = new ArrayList<>();
+    protected List<ConstraintGroupDescriptor> constraintGroupDescriptors = Collections.EMPTY_LIST;
 
     protected ModelConfigDescriptor modelConfigDescriptor;
 
-    protected List<InputMetricDescriptor> inputMetricDescriptors = new ArrayList<>();
+    protected List<InputMetricDescriptor> inputMetricDescriptors = Collections.EMPTY_LIST;
 
-    protected List<OutputMetricDescriptor> outputMetricDescriptors = new ArrayList<>();
+    protected List<OutputMetricDescriptor> outputMetricDescriptors = Collections.EMPTY_LIST;
 
     protected Integer maxThreadCount;
 
     protected String logoUrl;
 
-    protected List<String> images = new ArrayList<>();
+    protected List<String> images = Collections.EMPTY_LIST;
 
     protected TrialConfig trialConfig;
 
@@ -67,9 +67,11 @@ public class ModelDescriptor {
 
     protected DocumentationDescriptor documentationDescriptor;
 
-    protected List<VisualizationPageDescriptor> visualizationPages = new ArrayList<>();
+    protected List<VisualizationPageDescriptor> visualizationPages = Collections.EMPTY_LIST;
 
     protected boolean requiresMap = false;
+
+    protected List<UniqueResource> uniqueResources = Collections.EMPTY_LIST;
 
     /**
      * @return Unique id, composed by model id and version. Ex: employee-scheduling_v1
@@ -278,8 +280,16 @@ public class ModelDescriptor {
         this.requiresMap = requiresMap;
     }
 
+    public List<UniqueResource> getUniqueResources() {
+        return uniqueResources;
+    }
+
+    public void setUniqueResources(List<UniqueResource> uniqueResources) {
+        this.uniqueResources = uniqueResources;
+    }
+
     public static ModelDescriptor from(ModelDescriptor descriptor) {
-        ModelDescriptor copy = new ModelDescriptor();
+        var copy = new ModelDescriptor();
         copy.setId(descriptor.getId());
         copy.setModel(descriptor.getModel());
         copy.setName(descriptor.getName());
@@ -303,6 +313,7 @@ public class ModelDescriptor {
         copy.setDocumentationDescriptor(descriptor.getDocumentationDescriptor());
         copy.setVisualizationPages(descriptor.getVisualizationPages());
         copy.setRequiresMap(descriptor.isRequiresMap());
+        copy.setUniqueResources(descriptor.getUniqueResources());
         return copy;
     }
 }
