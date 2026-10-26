@@ -184,7 +184,8 @@ public class LocationDistanceMeter implements NearbyDistanceMeter<Visit, Locatio
 
     @Override
     public double getNearbyDistance(Visit origin, LocationAware destination) {
-        return origin.getLocation().getDrivingTimeTo(destination.getLocation()).seconds();
+        var travelTime = origin.getLocation().getTravelTimeTo(destination.getLocation());
+        return travelTime.isReachable() ? travelTime.seconds() : Double.MAX_VALUE;
     }
 }
 ----
@@ -313,12 +314,17 @@ settings described in <<mapServiceConfiguration>>.
 [#mapServiceLocationSets]
 == One-off matrices versus named location sets
 
-`getLocationSetName()` decides how the matrix is obtained:
+When `use-traffic=true`, the enricher does not use the location set name.
+It requests matrices for the model's locations for every timeframe instead.
+
+With `use-traffic=false`, `getLocationSetName()` decides how the matrix is obtained:
 
 Empty (`Optional.empty()`)::
 Every solve gets a matrix for the locations the model returns.
-The client keeps the most recent one in memory, keyed by the set of locations and the routing options.
+When `use-remote=true`, the client keeps the most recent matrix in memory,
+keyed by the set of locations and the routing options.
 A solve that returns the same locations with the same options reuses it instead of requesting it again.
+With `use-remote=false`, the local provider computes the matrix again for every solve.
 This is the simplest option, and it is enough when you solve the same locations repeatedly within one running instance,
 for example when re-solving after a small change to the constraints.
 It is also the right choice when the locations differ from one dataset to the next,

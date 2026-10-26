@@ -230,9 +230,10 @@ When the solution returns an empty list, the default transport type is used.
 When you have multiple enrichers, register a `SolverModelEnrichmentDirector` to control the order in which they run.
 This matters when one enricher builds on the output of another.
 
-The xref:./map-service.adoc[maps extension] is a good example of this: it enriches
-`LocationsAwareSolverModel` implementations with a travel time and distance matrix before every
-solve, without any code in your model calling it directly.
+The xref:./map-service.adoc[maps extension] enriches `LocationsAwareSolverModel` implementations
+with a travel time and distance matrix before solving.
+If you register a matching `SolverModelEnrichmentDirector`, it replaces the automatic enricher chain.
+Your director must explicitly call `TravelTimeMatrixEnricher` before any enricher that reads travel times.
 
 .Enrichment director that sequences enrichers explicitly
 [tabs]
