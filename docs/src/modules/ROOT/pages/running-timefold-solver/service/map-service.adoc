@@ -61,9 +61,9 @@ There is no silent sentinel value that could quietly end up in a score.
 Where a zero is the acceptable answer for an unreachable pair, use `reachableSeconds()` /
 `reachableMeters()`, which return `0` instead of throwing.
 
-A model whose locations are all in the map never sees this, which is why
-<<mapServiceUnreachableLocations>> matters: if you ignore the locations the map service could not
-resolve, the failure surfaces much later, as an exception in the middle of scoring.
+Even when every location is in the map, two locations can be on disconnected road networks.
+Check `isReachable()` before calling `seconds()` or `meters()` on a route value.
+Also handle the unresolved locations described in <<mapServiceUnreachableLocations>>.
 
 [IMPORTANT]
 ====
@@ -75,6 +75,16 @@ model pipeline.
 
 [#mapServiceDeclaringLocations]
 == Declaring the locations of your model
+
+Add the maps integration dependency to your project's `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+  <groupId>ai.timefold.solver</groupId>
+  <artifactId>timefold-solver-service-with-maps</artifactId>
+</dependency>
+----
 
 To let the map extension build the matrix, your `@PlanningSolution` implements
 `LocationsAwareSolverModel<Score_>` instead of the plain `SolverModel<Score_>`:
@@ -125,11 +135,12 @@ public class VehicleRoutePlan implements LocationsAwareSolverModel<HardMediumSof
     Return them in any order.
     Nothing deduplicates this list for you: each `Location` instance you return gets enriched (and
     counted) individually, even if two of them share the exact same coordinates.
-    If your input can contain the same coordinate many times, share a single `Location` instance
-    per coordinate — `LocationDeduplicator` and `UniqueLocationAccumulator` in
-    `ai.timefold.solver.service.maps.api` are there for exactly that — so the matrix stays as small
-    as the set of distinct sites. Building a matrix is roughly quadratic in the number of locations,
-    so this is not just a memory optimization.
+    If your input can contain the same coordinate many times, use `LocationDeduplicator.same(...)`
+    when constructing domain objects so that they share one `Location` instance per coordinate.
+    Return the deduplicator's `asList()` from `getLocations()`, or collect those shared instances with
+    `UniqueLocationAccumulator`, so each location appears only once in the returned list.
+    Sharing instances alone does not remove repeated list entries;
+    the local provider still computes every pair of entries in that list.
 <2> The name of a reusable location set, or empty to build a one-off matrix for this solve.
     See <<mapServiceLocationSets>>.
 <3> The map service calls this back with the locations it could not resolve onto the road network,
@@ -229,6 +240,9 @@ timefold.platform.map-service.enable-fallback=true
 |`false`
 |Take historical traffic into account, producing a travel time matrix per timeframe rather than a
  single one.
+Use `getTravelTimeTo(destination, departureTime)` and `getDistanceTo(destination, departureTime)`
+with an `OffsetDateTime` to select the timeframe for the departure time.
+The overloads without a departure time use the first available timeframe.
 |===
 
 When `use-remote=true` (the default), the extension also needs the REST client settings for the
@@ -281,10 +295,10 @@ timefold.platform.map-service.provider=haversine
 
 |`haversine`
 |Open source
-|Great-circle distance between the two coordinates, converted to a driving time at a fixed average
- speed. No map data and no network access, so it is instant and always available — but it ignores
- roads, water and one-way streets entirely. Suitable for development, demos and tests; never for
- production planning.
+|Great-circle distance between the two coordinates, converted to a driving time at a fixed average speed.
+ For network-free local computation, set `timefold.platform.map-service.use-remote=false`;
+ setting `provider=haversine` alone still uses the remote service by default.
+ It ignores roads, water and one-way streets, so use it for development, demos and tests, not production planning.
 
 |`osrm`
 |Enterprise
@@ -302,15 +316,22 @@ settings described in <<mapServiceConfiguration>>.
 `getLocationSetName()` decides how the matrix is obtained:
 
 Empty (`Optional.empty()`)::
-Every solve builds its own one-off matrix from the locations the model returns.
-This is the simplest option and the right one when the locations differ from one dataset to the
-next, as they do in the vehicle routing quickstart.
+Every solve gets a matrix for the locations the model returns.
+The client keeps the most recent one in memory, keyed by the set of locations and the routing options.
+A solve that returns the same locations with the same options reuses it instead of requesting it again.
+This is the simplest option, and it is enough when you solve the same locations repeatedly within one running instance,
+for example when re-solving after a small change to the constraints.
+It is also the right choice when the locations differ from one dataset to the next,
+as they do in the vehicle routing quickstart.
 
 A name (Platform only)::
 A matrix can be stored under a name in the map service and reused across solves.
-Building a large matrix is expensive, it grows with the square of the number of locations, so a
-fleet that visits the same few thousand sites every day should build the matrix once and name it,
-rather than rebuild it on every run.
+The in-memory cache holds only one matrix, does not survive a restart, and is not shared between instances.
+Any change to the set of locations also forces a new matrix.
+Building a large matrix is expensive, it grows with the square of the number of locations.
+A fleet that visits the same few thousand sites every day, across several instances or restarts,
+should build the matrix once and name it.
+A name also lets the matrix be updated when locations change, instead of being rebuilt in full.
 
 Creating and populating a named location set is a management operation on the map service, not
 something your solver model does. Consult the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service#location_sets[Timefold Platform documentation] for how to create
@@ -319,8 +340,8 @@ one.
 Once created, a named location set has one of three states: `PROCESSING` while the map service
 builds it, `COMPLETED` once it is ready to be used by a solve, or `NOT_FOUND` if the name a solve
 refers to was never created (or was cleared).
-A solve that names a set which is not yet `COMPLETED` cannot use it to enrich locations; make sure
-the set has finished processing before submitting solves that depend on it.
+A solve can reuse a named matrix only after the set is `COMPLETED`.
+If the set does not exist or has been deleted, the client falls back to requesting a matrix for the model's locations.
 
 [#mapServiceUnreachableLocations]
 == Locations not in the map
@@ -338,10 +359,9 @@ Decide explicitly what that means for your model. Typically one of two actions:
 [WARNING]
 ====
 What you must not do is ignore the list.
-Travel times involving those locations are `UNREACHABLE`, and the first `seconds()` call on one (e.g.
-in a constraint, a shadow variable supplier or the output conversion) throws
-`IllegalStateException`, aborting the solve with an error that points at the scoring code rather
-than at the bad input that caused it.
+Travel times and distances involving these locations must not be used.
+A lookup is not guaranteed to return `UNREACHABLE` or throw an exception.
+Reject these locations, or exclude them from routing before constraints, shadow variables and nearby selection read the matrix.
 ====
 
 
