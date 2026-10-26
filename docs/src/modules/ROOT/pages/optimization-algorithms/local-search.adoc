@@ -399,6 +399,8 @@ Simulated Annealing does not always pick the move with the highest score, neithe
 At least at first.
 Instead, it gives non improving moves also a chance to be picked, depending on its score and the time gradient of the ``Termination``.
 In the end, it gradually turns into Hill Climbing, only accepting improving moves.
+It cools only with a termination that can estimate how long the phase will continue,
+such as a time limit or diminished returns; without one, it keeps its starting temperature.
 
 
 [#simulatedAnnealingConfiguration]

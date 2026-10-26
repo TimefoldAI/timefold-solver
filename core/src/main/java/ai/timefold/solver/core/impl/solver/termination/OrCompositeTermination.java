@@ -94,11 +94,11 @@ final class OrCompositeTermination<Solution_>
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @return the maximum timeGradient of the terminations.
+     * @return the maximum timeGradient of the terminations, or -1.0 if none of them supports it.
      */
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        var timeGradient = 0.0;
+        var timeGradient = -1.0;
         for (var termination : solverTerminationList) {
             var nextTimeGradient = termination.calculateSolverTimeGradient(solverScope);
             if (nextTimeGradient >= 0.0) {
@@ -112,11 +112,11 @@ final class OrCompositeTermination<Solution_>
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @return the maximum timeGradient of the supported terminations.
+     * @return the maximum timeGradient of the supported terminations, or -1.0 if none of them supports it.
      */
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        var timeGradient = 0.0;
+        var timeGradient = -1.0;
         for (var termination : phaseTerminationList) {
             if (!termination.isApplicableTo(phaseScope.getClass())) {
                 continue;
@@ -127,6 +127,11 @@ final class OrCompositeTermination<Solution_>
             }
         }
         return timeGradient;
+    }
+
+    @Override
+    double combineTimeGradients(double timeGradient, double otherTimeGradient) {
+        return Math.max(timeGradient, otherTimeGradient);
     }
 
     @Override

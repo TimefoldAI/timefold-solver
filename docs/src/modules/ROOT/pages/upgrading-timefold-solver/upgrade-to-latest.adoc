@@ -134,6 +134,21 @@ you must implement the new API.
 For `Solver`, implement `solveAndSummarize(problem)` instead of `solve(problem)`.
 ====
 
+icon:info-circle[role=yellow,set=fas] Simulated annealing cools with every termination
+[%collapsible%open]
+====
+Simulated annealing cools according to the time gradient of the terminations.
+Before, it did not cool when diminished returns was the only termination,
+when diminished returns was configured at solver level,
+or when a nested `and`/`or` composite had no termination with a time gradient;
+diminished returns now estimates the time left.
+So the results of simulated annealing in such configurations change.
+
+Without any termination that can estimate the time left,
+for example when only `terminateEarly()` stops the solver,
+simulated annealing keeps its starting temperature, as before, and logs a warning.
+====
+
 '''
 
 [#previewFeatureUpgrade]

@@ -49,6 +49,10 @@ final class SolverBridgePhaseTermination<Solution_>
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
+        if (solverTermination instanceof AbstractCompositeTermination<Solution_> compositeTermination) {
+            // Its phase-only terminations can end the phase too.
+            return compositeTermination.calculateSolverTimeGradientForPhase(phaseScope);
+        }
         return solverTermination.calculateSolverTimeGradient(phaseScope.getSolverScope());
     }
 
