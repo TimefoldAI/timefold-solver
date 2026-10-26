@@ -11,6 +11,7 @@ include::../../_attributes.adoc[]
 :testannotation: @QuarkusTest
 :testannotationfq: io.quarkus.test.junit.QuarkusTest
 :framework-quickstart-url: {quarkus-quickstart-url}
+:framework-kotlin-quickstart-url: {quarkus-kotlin-quickstart-url}
 
 // Keep this in sync with the quarkus repo's copy
 // https://github.com/quarkusio/quarkus/blob/main/docs/src/main/asciidoc/timefold.adoc
@@ -81,13 +82,13 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 public class TimetableResource {
 
     @Inject
-    SolverManager<Timetable, UUID> solverManager;
+    SolverManager<Timetable> solverManager;
 
     @POST
     public Timetable solve(Timetable problem) {
         UUID problemId = UUID.randomUUID();
         // Submit the problem to start solving
-        SolverJob<Timetable, UUID> solverJob = solverManager.solve(problemId, problem);
+        SolverJob<Timetable> solverJob = solverManager.solve(problemId, problem);
         Timetable solution;
         try {
             // Wait until the solving ends
@@ -110,41 +111,25 @@ Create the `src/main/kotlin/org/acme/schooltimetabling/rest/TimetableResource.kt
 ----
 package org.acme.schooltimetabling.rest
 
-import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis
-import ai.timefold.solver.core.api.score.HardSoftScore
-import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy
-import ai.timefold.solver.core.api.solver.SolutionManager
 import ai.timefold.solver.core.api.solver.SolverManager
 import jakarta.inject.Inject
-import jakarta.ws.rs.Consumes
-import jakarta.ws.rs.DELETE
-import jakarta.ws.rs.GET
 import jakarta.ws.rs.POST
-import jakarta.ws.rs.PUT
 import jakarta.ws.rs.Path
-import jakarta.ws.rs.PathParam
-import jakarta.ws.rs.Produces
-import jakarta.ws.rs.QueryParam
-import jakarta.ws.rs.core.MediaType
-import jakarta.ws.rs.core.Response
 import org.acme.schooltimetabling.domain.Timetable
-import org.acme.schooltimetabling.rest.exception.ErrorInfo
-import org.acme.schooltimetabling.rest.exception.TimetableSolverException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
+import java.util.concurrent.ExecutionException
 
-@Path("timetables")
+@Path("/timetables")
 class TimetableResource {
 
     @Inject
-    private final var solverManager: SolverManager<Timetable, String>?
+    lateinit var solverManager: SolverManager<Timetable>
 
     @POST
-    fun solve(problem: Timetable?): Timetable {
+    fun solve(problem: Timetable): Timetable {
         val problemId = UUID.randomUUID()
         // Submit the problem to start solving
-        val solverJob = solverManager!!.solve(problemId, problem)
+        val solverJob = solverManager.solve(problemId, problem)
         val solution: Timetable
         try {
             // Wait until the solving ends
@@ -260,39 +245,29 @@ In a JUnit test, generate a test dataset and send it to the `TimetableResource` 
 Java::
 +
 --
+Save the JSON request body of the earlier `curl` command as the `src/test/resources/testing-timetable.json` file.
+
 Create the `src/test/java/org/acme/schooltimetabling/rest/TimetableResourceTest.java` class:
 
 [source,java]
 ----
 package org.acme.schooltimetabling.rest;
 
-import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import jakarta.inject.Singleton;
-
-import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
-import ai.timefold.solver.core.api.solver.SolverStatus;
-import ai.timefold.solver.jackson.api.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
+import java.io.File;
+import java.io.IOException;
 
 import org.acme.schooltimetabling.domain.Timetable;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
-import io.quarkus.jackson.ObjectMapperCustomizer;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-
-import java.io.IOException;
-import java.io.File;
 
 @QuarkusTest
 class TimetableResourceTest {
@@ -303,10 +278,9 @@ class TimetableResourceTest {
         ObjectMapper objectMapper = JsonMapper.builder()
             .findAndAddModules()
             .build();
-        Timetable testTimetable = objectMapper
-.readValue(
-            new File("src/test/resources/testing-timetable.json"),
-            Timetable.class);
+        Timetable testTimetable = objectMapper.readValue(
+                new File("src/test/resources/testing-timetable.json"),
+                Timetable.class);
 
         Timetable solution = given()
                 .contentType(ContentType.JSON)
@@ -338,43 +312,52 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/rest/TimetableResourceTes
 ----
 package org.acme.schooltimetabling.rest
 
-import ai.timefold.solver.core.api.solver.SolverStatus
 import io.quarkus.test.junit.QuarkusTest
-import io.restassured.RestAssured.get
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
+import org.acme.schooltimetabling.domain.Lesson
 import org.acme.schooltimetabling.domain.Room
 import org.acme.schooltimetabling.domain.Timeslot
 import org.acme.schooltimetabling.domain.Timetable
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.Duration
+import java.time.DayOfWeek
+import java.time.LocalTime
 
 @QuarkusTest
 class TimetableResourceTest {
 
     @Test
     fun solveDemoDataUntilFeasible() {
-        val testTimetable: Timetable = // setup test data
+        // Provide the same input data shown in the text above.
+        val testTimetable = Timetable(
+            listOf(
+                Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)),
+                Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30))),
+            listOf(Room("Room A"), Room("Room B")),
+            listOf(
+                Lesson("1", "Math", "A. Turing", "9th grade"),
+                Lesson("2", "Chemistry", "M. Curie", "9th grade"),
+                Lesson("3", "French", "M. Curie", "10th grade"),
+                Lesson("4", "History", "I. Jones", "10th grade")))
 
         val solution: Timetable = given()
             .contentType(ContentType.JSON)
             .body(testTimetable)
-            .expect().contentType(ContentType.TEXT)
+            .expect().contentType(ContentType.JSON)
             .`when`().post("/timetables")
             .then()
             .statusCode(200)
             .extract()
-            .as(Timetable.class);
+            .`as`(Timetable::class.java)
 
         assertNotNull(solution.lessons)
         assertNotNull(solution.timeslots)
         assertNotNull(solution.rooms)
-        assertNotNull(solution.lessons.get(0).room)
-        assertNotNull(solution.lessons.get(0).timeslot)
-        assertTrue(solution.score?.isFeasible!!)
+        assertNotNull(solution.lessons[0].room)
+        assertNotNull(solution.lessons[0].timeslot)
+        assertTrue(solution.score!!.isFeasible)
     }
 
 }
@@ -441,5 +424,5 @@ You have just developed a Quarkus application with https://timefold.ai[Timefold]
 
 Next Steps:
 
-- For a full implementation with a web UI and in-memory storage, check out {quarkus-quickstart-url}[the Quarkus quickstart source code].
+- For a full implementation with a web UI and in-memory storage, check out {quarkus-quickstart-url}[the Quarkus quickstart source code] (Java) or {quarkus-kotlin-quickstart-url}[the Kotlin version].
 - Check out more information about Timefold's integration with Quarkus in our xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkus[Integration documentation].

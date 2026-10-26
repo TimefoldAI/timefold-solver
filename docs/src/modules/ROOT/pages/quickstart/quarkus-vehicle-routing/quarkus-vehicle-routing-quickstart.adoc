@@ -96,11 +96,12 @@ Java::
   <version>1.0-SNAPSHOT</version>
 
   <properties>
-    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.release>{java-version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <version.io.quarkus>{quarkus-version}</version.io.quarkus>
     <version.ai.timefold.solver>{timefold-solver-version}</version.ai.timefold.solver>
+    <version.compiler.plugin>{compiler-plugin-version}</version.compiler.plugin>
   </properties>
 
   <dependencyManagement>
@@ -189,11 +190,13 @@ Kotlin::
   <version>1.0-SNAPSHOT</version>
 
   <properties>
-    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.release>{java-version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <version.io.quarkus>{quarkus-version}</version.io.quarkus>
     <version.ai.timefold.solver>{timefold-solver-version}</version.ai.timefold.solver>
+    <version.compiler.plugin>{compiler-plugin-version}</version.compiler.plugin>
+    <version.kotlin>2.4.10</version.kotlin>
   </properties>
 
   <dependencyManagement>
@@ -236,7 +239,6 @@ Kotlin::
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-stdlib</artifactId>
-      <version>1.9.22</version>
     </dependency>
   </dependencies>
 
@@ -355,14 +357,14 @@ import org.acme.vehiclerouting.domain.VehicleRoutePlan;
 @Path("route-plans")
 public class VehicleRoutePlanResource {
 
-    private final SolverManager<VehicleRoutePlan, String> solverManager;
+    private final SolverManager<VehicleRoutePlan> solverManager;
 
     public VehicleRoutePlanResource() {
         this.solverManager = null;
     }
 
     @Inject
-    public VehicleRoutePlanResource(SolverManager<VehicleRoutePlan, String> solverManager) {
+    public VehicleRoutePlanResource(SolverManager<VehicleRoutePlan> solverManager) {
         this.solverManager = solverManager;
     }
 
@@ -370,8 +372,10 @@ public class VehicleRoutePlanResource {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces(MediaType.APPLICATION_JSON)
     public VehicleRoutePlan solve(VehicleRoutePlan problem) {
+        // Jackson skips the constructor that calculates the driving times
+        problem.initDrivingTimeMaps();
         String jobId = UUID.randomUUID().toString();
-        SolverJob<VehicleRoutePlan, String> solverJob = solverManager.solveBuilder()
+        SolverJob<VehicleRoutePlan> solverJob = solverManager.solveBuilder()
                 .withProblemId(jobId)
                 .withProblem(problem)
                 .run();
@@ -412,14 +416,14 @@ import org.acme.vehiclerouting.domain.VehicleRoutePlan
 
 @Path("route-plans")
 class VehicleRoutePlanResource {
-    private val solverManager: SolverManager<VehicleRoutePlan, String>?
+    private val solverManager: SolverManager<VehicleRoutePlan>?
 
     constructor() {
         this.solverManager = null
     }
 
     @Inject
-    constructor(solverManager: SolverManager<VehicleRoutePlan, String>?) {
+    constructor(solverManager: SolverManager<VehicleRoutePlan>?) {
         this.solverManager = solverManager
     }
 
@@ -427,6 +431,8 @@ class VehicleRoutePlanResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     fun solve(problem: VehicleRoutePlan): VehicleRoutePlan {
+        // Jackson skips the constructor that calculates the driving times
+        problem.initDrivingTimeMaps()
         val jobId = UUID.randomUUID().toString()
         val solverJob = solverManager!!.solveBuilder()
             .withProblemId(jobId)
@@ -619,7 +625,7 @@ class VehicleRoutingConstraintProviderTest {
 Kotlin::
 +
 --
-Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.kt` class:
+Create the `src/test/kotlin/org/acme/vehiclerouting/solver/VehicleRoutingConstraintProviderTest.kt` class:
 
 [source,kotlin]
 ----
@@ -633,7 +639,6 @@ import java.util.Arrays
 
 import jakarta.inject.Inject
 
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory
 import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier
 
 import org.acme.vehiclerouting.domain.Location
@@ -659,15 +664,11 @@ internal class VehicleRoutingConstraintProviderTest {
         val tomorrow_10_00 = LocalDateTime.of(TOMORROW, LocalTime.of(10, 0))
         val vehicleA = Vehicle("1", 100, LOCATION_1, tomorrow_07_00)
         val visit1 = Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L))
-        vehicleA.visits!!.add(visit1)
+        vehicleA.visits.add(visit1)
         val visit2 = Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L))
-        vehicleA.visits!!.add(visit2)
+        vehicleA.visits.add(visit2)
 
-        constraintVerifier!!.verifyThat { obj: VehicleRoutingConstraintProvider, factory: ConstraintFactory? ->
-            obj.vehicleCapacity(
-                factory!!
-            )
-        }
+        constraintVerifier.verifyThat(VehicleRoutingConstraintProvider::vehicleCapacity)
             .given(vehicleA, visit1, visit2)
             .penalizesBy(20)
     }
@@ -709,9 +710,9 @@ This way, constraint weight tweaking does not break the unit tests.
 
 ==== Test the solver
 
-In a JUnit test, generate a test dataset and send it to the `VehicleRoutePlanResource` to solve.
+In a JUnit test, send a test dataset to the `VehicleRoutePlanResource` to solve.
 
-Add some dependencies in your `pom.xml`:
+Add the subsequent dependency in your `pom.xml`:
 [source,xml]
 ----
     <dependency>
@@ -719,12 +720,9 @@ Add some dependencies in your `pom.xml`:
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <scope>test</scope>
-    </dependency>
 ----
+
+Save the JSON request body of the earlier `curl` command as the `src/test/resources/testing-route-plan.json` file.
 
 Then create the test itself:
 
@@ -739,61 +737,36 @@ Create the `src/test/java/org/acme/vehiclerouting/rest/VehicleRoutePlanResourceT
 ----
 package org.acme.vehiclerouting.rest;
 
-import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Duration;
+import java.io.File;
 
-import ai.timefold.solver.core.api.solver.SolverStatus;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 
-import org.acme.vehiclerouting.domain.VehicleRoutePlan;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-public class VehicleRoutePlanResourceTest {
+class VehicleRoutePlanResourceTest {
 
     @Test
-    public void solveDemoDataUntilFeasible() {
-        VehicleRoutePlan vehicleRoutePlan = given()
-                .when().get("/demo-data/FIRENZE")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(VehicleRoutePlan.class);
-
-        String jobId = given()
+    void solveUntilFeasible() {
+        String score = given()
                 .contentType(ContentType.JSON)
-                .body(vehicleRoutePlan)
-                .expect().contentType(ContentType.TEXT)
+                .body(new File("src/test/resources/testing-route-plan.json"))
+                .expect().contentType(ContentType.JSON)
                 .when().post("/route-plans")
                 .then()
                 .statusCode(200)
                 .extract()
-                .asString();
+                .path("score");
 
-        await()
-                .atMost(Duration.ofMinutes(1))
-                .pollInterval(Duration.ofMillis(500L))
-                .until(() -> SolverStatus.NOT_SOLVING.name().equals(
-                        get("/route-plans/" + jobId + "/status")
-                                .jsonPath().get("solverStatus")));
-
-        VehicleRoutePlan solution = get("/route-plans/" + jobId).then().extract().as(VehicleRoutePlan.class);
-        assertEquals(solution.getSolverStatus(), SolverStatus.NOT_SOLVING);
-        assertNotNull(solution.getVehicles());
-        assertNotNull(solution.getVisits());
-        assertNotNull(solution.getVehicles().get(0).getVisits());
-        assertTrue(solution.getScore().isFeasible());
+        assertTrue(HardSoftScore.parseScore(score).isFeasible());
     }
 }
-
 ----
 --
 Kotlin::
@@ -805,60 +778,32 @@ Create the `src/test/kotlin/org/acme/vehiclerouting/rest/VehicleRoutePlanResourc
 ----
 package org.acme.vehiclerouting.rest
 
-import java.time.Duration
+import java.io.File
 
-import ai.timefold.solver.core.api.solver.SolverStatus
+import ai.timefold.solver.core.api.score.HardSoftScore
 
-import org.acme.vehiclerouting.domain.VehicleRoutePlan
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 import io.quarkus.test.junit.QuarkusTest
-import io.restassured.RestAssured
+import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
-
-import org.awaitility.Awaitility
-
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
 
 @QuarkusTest
 class VehicleRoutePlanResourceTest {
     @Test
-    fun solveDemoDataUntilFeasible() {
-        val vehicleRoutePlan = RestAssured.given()
-            .`when`()["/demo-data/FIRENZE"]
-            .then()
-            .statusCode(200)
-            .extract()
-            .`as`(VehicleRoutePlan::class.java)
-
-        val jobId = RestAssured.given()
+    fun solveUntilFeasible() {
+        val score: String = given()
             .contentType(ContentType.JSON)
-            .body(vehicleRoutePlan)
-            .expect().contentType(ContentType.TEXT)
+            .body(File("src/test/resources/testing-route-plan.json"))
+            .expect().contentType(ContentType.JSON)
             .`when`().post("/route-plans")
             .then()
             .statusCode(200)
             .extract()
-            .asString()
+            .path("score")
 
-        Awaitility.await()
-            .atMost(Duration.ofMinutes(1))
-            .pollInterval(Duration.ofMillis(500L))
-            .until {
-                SolverStatus.NOT_SOLVING.name == RestAssured.get("/route-plans/$jobId/status")
-                    .jsonPath().get("solverStatus")
-            }
-
-        val solution = RestAssured.get("/route-plans/$jobId").then().extract().`as`(
-            VehicleRoutePlan::class.java
-        )
-        assertEquals(solution.solverStatus, SolverStatus.NOT_SOLVING)
-        assertNotNull(solution.vehicles)
-        assertNotNull(solution.visits)
-        assertNotNull(solution.vehicles!!.get(0).visits)
-        assertTrue(solution.score!!.isFeasible())
+        assertTrue(HardSoftScore.parseScore(score).isFeasible)
     }
 }
 ----
