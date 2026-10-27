@@ -31,6 +31,16 @@ class UniqueResourceIdPathResolverTest {
     }
 
     @Test
+    void wildcardTypes() throws IOException {
+        var index = Index.of(WildcardInput.class, Vehicle.class, Visit.class, Depot.class);
+
+        assertThat(resolve(index, WildcardInput.class)).containsExactly(
+                new UniqueResource("depot", "$.depotsByName.*.code"),
+                new UniqueResource("vehicle", "$.vehicles[*].id"),
+                new UniqueResource("visit", "$.vehicles[*].visits[*].visitId"));
+    }
+
+    @Test
     void noResourceId() throws IOException {
         var index = Index.of(NoResourceIdInput.class);
 
@@ -57,6 +67,14 @@ class UniqueResourceIdPathResolverTest {
         Visit[] unassignedVisits;
         @JsonIgnore
         List<Vehicle> ignoredVehicles;
+    }
+
+    static class WildcardInput {
+        List<? extends Vehicle> vehicles;
+        Map<String, ? extends Depot> depotsByName;
+        // Neither an unbounded nor a lower-bounded wildcard has fields to visit.
+        List<?> unknowns;
+        List<? super Visit> visitSupers;
     }
 
     static class Vehicle {
