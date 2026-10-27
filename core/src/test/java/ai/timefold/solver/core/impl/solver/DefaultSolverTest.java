@@ -38,8 +38,11 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
@@ -73,11 +76,13 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.phase.DefaultPhaseId;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -89,6 +94,7 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob.FirstInitializedSolutionPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob.StartSolverJobPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.DefaultTerminationId;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
@@ -99,6 +105,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.classloader.TestdataSeparateClassLoaderDomain;
+import ai.timefold.solver.core.testdomain.common.DummyHardSoftEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -146,6 +153,7 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
@@ -163,7 +171,12 @@ import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSort
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntityEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multientity.TestdataMultiEntitySolutionRangeEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
@@ -260,12 +273,206 @@ class DefaultSolverTest {
                 softly.assertThat(summary.scoreCalculationCount()).isPositive();
                 softly.assertThat(summary.scoreCalculationSpeed())
                         .isEqualTo(MathUtils.getSpeed(summary.scoreCalculationCount(), 1001));
-                softly.assertThat(summary.isSolutionInitialized()).isTrue();
+                softly.assertThat(summary.solutionInitialized()).isTrue();
                 softly.assertThat(summary.problemSizeStatistics()).isNotNull();
+                softly.assertThat(summary.terminatedEarly()).isFalse();
+                softly.assertThat(summary.termination())
+                        .isEqualTo(new DefaultTerminationId(TerminationType.SPENT_LIMIT, ROOT_TERMINATION_ID, 0, null));
+                softly.assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+                softly.assertThat(summary.timeToBestSolution()).isEqualTo(Duration.ZERO);
             });
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    private static final DefaultTerminationId ROOT_TERMINATION_ID =
+            new DefaultTerminationId(TerminationType.OR, null, 0, null);
+
+    private static SolverRunSummary solveAndSummarizeUninitialized(SolverConfig solverConfig) {
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        return solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+    }
+
+    @Test
+    void summaryWhenLastPhaseCompleted() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.terminatedEarly()).isFalse();
+        assertThat(summary.termination()).isNull();
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryWithPhaseTermination() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        var phaseRootId = new DefaultTerminationId(TerminationType.OR, null, 0, 1);
+        assertThat(summary.terminatedEarly()).isFalse();
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT, phaseRootId, 0, 1));
+        assertThat(summary.termination().phaseIndex()).hasValue(1);
+        assertThat(summary.termination().parent().phaseIndex()).hasValue(1);
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+    }
+
+    @Test
+    void summaryWithSolverStepCountLimit() {
+        // The bridge checks the solver termination from inside the phase.
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.termination().phaseIndex()).isEmpty();
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+    }
+
+    @Test
+    void summaryWithBestScoreLimit() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withSpentLimit(Duration.ofHours(1))
+                        .withBestScoreLimit("0"));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.BEST_SCORE_LIMIT, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryWithAndTermination() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
+                        .withStepCountLimit(3)
+                        .withBestScoreLimit("0"));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.AND, null, 0, null));
+    }
+
+    @Test
+    void summaryWithBestScoreFeasibleSkipsLocalSearch() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataHardSoftScoreSolution.class, TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withBestScoreFeasible(true));
+        var solution = TestdataHardSoftScoreSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null));
+
+        var summary = SolverFactory.<TestdataHardSoftScoreSolution> create(solverConfig).buildSolver()
+                .solveAndSummarize(solution);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.BEST_SCORE_FEASIBLE, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryWhenTerminationFiresAsLastPhaseRunsOutOfWork() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataHardSoftScoreSolution.class, TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig())
+                .withTerminationConfig(new TerminationConfig().withBestScoreFeasible(true));
+        var solution = TestdataHardSoftScoreSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null));
+
+        var summary = SolverFactory.<TestdataHardSoftScoreSolution> create(solverConfig).buildSolver()
+                .solveAndSummarize(solution);
+        assertThat(summary.termination())
+                .isEqualTo(new DefaultTerminationId(TerminationType.BEST_SCORE_FEASIBLE, ROOT_TERMINATION_ID, 0, null));
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void summaryIgnoresTerminateEarlyAfterPhasesEnded() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                solver.terminateEarly();
+            }
+        });
+
+        var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+        assertThat(summary.terminatedEarly()).isFalse();
+    }
+
+    @Test
+    void summaryWhenTerminateEarlyPreventsProblemChangeRestart() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // A pending problem change would restart the solver, but terminateEarly() ends the run instead.
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+                });
+                solver.terminateEarly();
+            }
+        });
+
+        var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+        assertThat(summary.terminatedEarly()).isTrue();
+        assertThat(summary.termination()).isNull();
+    }
+
+    @Test
+    void summaryOfIdleDaemonStoppedByTerminateEarly() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withDaemon(true)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        // The daemon then waits for problem changes, until terminateEarly() ends the run.
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                solver.terminateEarly();
+            }
+        });
+
+        var summary = solver.solveAndSummarize(TestdataSolution.generateUninitializedSolution(2, 2));
+        assertThat(summary.terminatedEarly()).isTrue();
+        assertThat(summary.termination()).isNull();
+    }
+
+    @Test
+    void summaryWithEmptyEntityList() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solution = TestdataSolution.generateSolution(2, 0);
+
+        var summary = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver().solveAndSummarize(solution);
+        assertThat(summary.terminatedEarly()).isFalse();
+        assertThat(summary.termination()).isNull();
+        assertThat(summary.lastPhase()).isNull();
+    }
+
+    @Test
+    void summaryWithRuinRecreateMoveSelector() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig())
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        // The nested Construction Heuristic of ruin and recreate is not a phase of the solver.
+        assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.LOCAL_SEARCH, 1));
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.STEP_COUNT_LIMIT,
+                new DefaultTerminationId(TerminationType.OR, null, 0, 1), 0, 1));
     }
 
     @Test
@@ -278,7 +485,7 @@ class DefaultSolverTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
         var summary = solver.solveAndSummarize(solution);
-        assertThat(summary.isSolutionInitialized()).isFalse();
+        assertThat(summary.solutionInitialized()).isFalse();
     }
 
     @Test
@@ -2202,6 +2409,146 @@ class DefaultSolverTest {
         assertThat(bestEntity2.getValue()).isNotIn(value3, value4);
         var bestEntity3 = bestSolution.getEntityList().get(2);
         assertThat(bestEntity3.getValue()).isNotIn(value1, value2, value3);
+    }
+
+    @Test
+    void solveMultiEntityEntityRangeModelWithDefaultMoves() {
+        solveMultiEntityEntityRangeModel(null);
+    }
+
+    @Test
+    void solveMultiEntityEntityRangeModelWithSwapOnEntityRangeVariable() {
+        solveMultiEntityEntityRangeModel(new SwapMoveSelectorConfig()
+                .withEntitySelectorConfig(
+                        new EntitySelectorConfig().withEntityClass(TestdataMultiEntityEntityProvidingEntity.class))
+                .withVariableNameIncludes("value"));
+    }
+
+    @Test
+    void solveMultiEntityEntityRangeModelWithSwapOnSolutionRangeVariable() {
+        solveMultiEntityEntityRangeModel(new SwapMoveSelectorConfig()
+                .withEntitySelectorConfig(
+                        new EntitySelectorConfig().withEntityClass(TestdataMultiEntitySolutionRangeEntity.class))
+                .withVariableNameIncludes("solutionValue"));
+    }
+
+    private void solveMultiEntityEntityRangeModel(MoveSelectorConfig<?> moveSelectorConfig) {
+        // A null move selector config means the default moves are used
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectorConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataMultiEntityEntityProvidingSolution.class,
+                        TestdataMultiEntityEntityProvidingEntity.class, TestdataMultiEntitySolutionRangeEntity.class)
+                .withEasyScoreCalculatorClass(TestdataMultiEntityEntityProvidingScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                // The default CH cannot deduce the entity class when multiple entities define basic variables,
+                // so the problem starts initialized and only the local search phase runs
+                .withPhases(localSearchConfig);
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, generateMultiEntityEntityRangeProblem(), true);
+        // Each test reaches the best score only with its own swap
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(3));
+        assertThat(bestSolution.getEntityProvidingEntityList())
+                .allSatisfy(entity -> assertThat(entity.getValueRange()).contains(entity.getValue()));
+    }
+
+    private static TestdataMultiEntityEntityProvidingSolution generateMultiEntityEntityRangeProblem() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        // The pairs (a, x), (b, y) and (c, z) score 1 when their values match, so the problem starts with a score of 1.
+        // Swapping a and b, or x and y, scores 3.
+        // Swapping a and c is not possible, because v3 is outside the range of a and v1 is outside the range of c.
+        var a = new TestdataMultiEntityEntityProvidingEntity("a", List.of(v1, v2), v1);
+        var b = new TestdataMultiEntityEntityProvidingEntity("b", List.of(v1, v2), v2);
+        var c = new TestdataMultiEntityEntityProvidingEntity("c", List.of(v3), v3);
+        var x = new TestdataMultiEntitySolutionRangeEntity("x", v2);
+        var y = new TestdataMultiEntitySolutionRangeEntity("y", v1);
+        var z = new TestdataMultiEntitySolutionRangeEntity("z", v3);
+        var problem = new TestdataMultiEntityEntityProvidingSolution("s1");
+        problem.setValueList(List.of(v1, v2, v3));
+        problem.setEntityProvidingEntityList(List.of(a, b, c));
+        problem.setSolutionRangeEntityList(List.of(x, y, z));
+        return problem;
+    }
+
+    @Test
+    void solveMultiVarEntityRangeModelWithDefaultMoves() {
+        // The change moves can assign each solutionValue to the entity value, which scores 3
+        var bestSolution = solveMultiVarEntityRangeModel(null, generateMultiVarEntityRangeProblem());
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(3));
+        assertThat(bestSolution.getEntityList())
+                .allSatisfy(entity -> {
+                    assertThat(entity.getValueRange()).contains(entity.getValue());
+                    if (entity.getSecondValue() != null) {
+                        assertThat(entity.getSecondValueRange()).contains(entity.getSecondValue());
+                    }
+                });
+    }
+
+    @Test
+    void solveMultiVarEntityRangeModelWithSwapOnSolutionRangeVariable() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        // The entity value ranges are disjoint,
+        // so the entity value range filtering would never select e1 and e2 for the same swap.
+        // Only the solution-range variable is swapped, so the filtering must be disabled to reach the optimal solution.
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1), v1, List.of(v1), v1, v2);
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e2", List.of(v2), v2, List.of(v2), v2, v1);
+        var problem = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution("s1", List.of(v1, v2));
+        problem.setEntityList(List.of(e1, e2));
+
+        var bestSolution = solveMultiVarEntityRangeModel(
+                new SwapMoveSelectorConfig().withVariableNameIncludes("solutionValue"), problem);
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(2));
+        assertThat(bestSolution.getEntityList())
+                .map(TestdataAllowsUnassignedMultiVarEntityProvidingEntity::getSolutionValue)
+                .containsExactly(v1, v2);
+    }
+
+    @Test
+    void solveMultiVarEntityRangeModelWithSwapOnEntityRangeVariable() {
+        // Within the entity value ranges, the best is swapping e1 and e2, which scores 1
+        var bestSolution = solveMultiVarEntityRangeModel(new SwapMoveSelectorConfig().withVariableNameIncludes("value"),
+                generateMultiVarEntityRangeProblem());
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
+        assertThat(bestSolution.getEntityList())
+                .allSatisfy(entity -> assertThat(entity.getValueRange()).contains(entity.getValue()));
+    }
+
+    private static TestdataAllowsUnassignedMultiVarEntityProvidingSolution generateMultiVarEntityRangeProblem() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var secondValueList = List.of(v1, v2, v3);
+        // Rotating the values to e1(v3), e2(v1) and e3(v2) scores 3, but v3 is outside the ranges of e1 and e2
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1, v2), v1, secondValueList, v1,
+                v3);
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e2", List.of(v1, v2), v2, secondValueList, v1,
+                v1);
+        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e3", List.of(v3), v3, secondValueList, v1,
+                v2);
+        var problem = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution("s1", List.of(v1, v2, v3));
+        problem.setEntityList(List.of(e1, e2, e3));
+        return problem;
+    }
+
+    private static TestdataAllowsUnassignedMultiVarEntityProvidingSolution solveMultiVarEntityRangeModel(
+            MoveSelectorConfig<?> moveSelectorConfig, TestdataAllowsUnassignedMultiVarEntityProvidingSolution problem) {
+        // A null move selector config means the default moves are used
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectorConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.class,
+                        TestdataAllowsUnassignedMultiVarEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedMultiVarEntityProvidingScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                // The problem starts initialized, so only the local search phase runs
+                .withPhases(localSearchConfig);
+        return PlannerTestUtils.solve(solverConfig, problem, true);
     }
 
     private static List<MoveSelectorConfig<?>> generateMovesForListVarEntityRangeModel() {

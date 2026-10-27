@@ -6,8 +6,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.termination.TerminationId;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -30,10 +33,25 @@ public final class TerminationFactory<Solution_> {
         this.terminationConfig = terminationConfig;
     }
 
-    @SuppressWarnings("unchecked")
     public <Termination_ extends Termination<Solution_>> Termination_
             buildTermination(HeuristicConfigPolicy<Solution_> configPolicy, Termination_ chainedTermination) {
-        var termination = buildTermination(configPolicy);
+        return buildTermination(configPolicy, chainedTermination, null);
+    }
+
+    /**
+     * @param phaseIndex null for the solver termination
+     */
+    @SuppressWarnings("unchecked")
+    public <Termination_ extends Termination<Solution_>> Termination_ buildTermination(
+            HeuristicConfigPolicy<Solution_> configPolicy, Termination_ chainedTermination, @Nullable Integer phaseIndex) {
+        var termination = buildTermination(configPolicy, null, 0, phaseIndex);
+        if (phaseIndex != null) {
+            // Always an OR, also around the bridge alone, so every phase has a root that clears a stale id.
+            var phaseRoot = termination == null ? new OrCompositeTermination<>(chainedTermination)
+                    : new OrCompositeTermination<>(chainedTermination, termination);
+            phaseRoot.markPhaseRoot();
+            return (Termination_) phaseRoot;
+        }
         if (termination == null) {
             return chainedTermination;
         }
@@ -43,18 +61,31 @@ public final class TerminationFactory<Solution_> {
     }
 
     /**
-     * @param configPolicy never null
+     * Builds the root level of the solver termination.
+     *
+     * @return sometimes null
+     */
+    public @Nullable Termination<Solution_> buildTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
+        return buildTermination(configPolicy, null, 0, null);
+    }
+
+    /**
+     * See {@link TerminationId} for the id model.
+     *
+     * @param parent null for the root level
+     * @param ordinal the index of this level in its parent; 0 for the root level
+     * @param phaseIndex null for the solver termination
      * @return sometimes null
      */
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> @Nullable Termination<Solution_> buildTermination(
-            HeuristicConfigPolicy<Solution_> configPolicy) {
-        List<Termination<Solution_>> terminationList = new ArrayList<>(buildTimeBasedTermination(configPolicy));
-
+            HeuristicConfigPolicy<Solution_> configPolicy, @Nullable TerminationId parent, int ordinal,
+            @Nullable Integer phaseIndex) {
+        var terminationList = new ArrayList<>(buildTimeBasedTermination(configPolicy));
         if (terminationConfig.getBestScoreLimit() != null) {
             ScoreDefinition<Score_> scoreDefinition = configPolicy.getScoreDefinition();
-            Score_ bestScoreLimit_ = scoreDefinition.parseScore(terminationConfig.getBestScoreLimit());
-            double[] timeGradientWeightNumbers = new double[scoreDefinition.getLevelsSize() - 1];
+            var bestScoreLimit_ = scoreDefinition.parseScore(terminationConfig.getBestScoreLimit());
+            var timeGradientWeightNumbers = new double[scoreDefinition.getLevelsSize() - 1];
             Arrays.fill(timeGradientWeightNumbers, 0.50); // Number pulled out of thin air
             terminationList.add(new BestScoreTermination<>(scoreDefinition, bestScoreLimit_, timeGradientWeightNumbers));
         }
@@ -65,7 +96,7 @@ public final class TerminationFactory<Solution_> {
                 throw new IllegalArgumentException("The termination bestScoreFeasible (%s) cannot be false."
                         .formatted(bestScoreFeasible));
             }
-            int feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
+            var feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
             if (feasibleLevelsSize < 1) {
                 throw new IllegalStateException("""
                         The termination with bestScoreFeasible (%s) can only be used with a score type \
@@ -73,7 +104,7 @@ public final class TerminationFactory<Solution_> {
                         which is less than 1."""
                         .formatted(bestScoreFeasible, scoreDefinition, feasibleLevelsSize));
             }
-            double[] timeGradientWeightFeasibleNumbers = new double[feasibleLevelsSize - 1];
+            var timeGradientWeightFeasibleNumbers = new double[feasibleLevelsSize - 1];
             Arrays.fill(timeGradientWeightFeasibleNumbers, 0.50); // Number pulled out of thin air
             terminationList.add(new BestScoreFeasibleTermination<>(scoreDefinition, timeGradientWeightFeasibleNumbers));
         }
@@ -89,25 +120,32 @@ public final class TerminationFactory<Solution_> {
         if (terminationConfig.getMoveCountLimit() != null) {
             terminationList.add(new MoveCountTermination<>(terminationConfig.getMoveCountLimit()));
         }
-        terminationList.addAll(buildInnerTermination(configPolicy));
-        return buildTerminationFromList(terminationList);
+        var levelType = getCompositionStyle() == TerminationCompositionStyle.AND ? TerminationType.AND : TerminationType.OR;
+        var levelId = new DefaultTerminationId(levelType, parent, ordinal, phaseIndex);
+        for (var leaf : terminationList) {
+            var abstractLeaf = (AbstractTermination<Solution_>) leaf;
+            abstractLeaf.setTerminationId(new DefaultTerminationId(
+                    Objects.requireNonNull(abstractLeaf.getTerminationType()), levelId, 0, phaseIndex));
+        }
+        terminationList.addAll(buildInnerTermination(configPolicy, levelId));
+        return buildTerminationFromList(terminationList, levelId);
     }
 
     @SuppressWarnings("unchecked")
     <Score_ extends Score<Score_>> List<Termination<Solution_>>
             buildTimeBasedTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
-        List<Termination<Solution_>> terminationList = new ArrayList<>();
-        Long timeMillisSpentLimit = terminationConfig.calculateTimeMillisSpentLimit();
+        var terminationList = new ArrayList<Termination<Solution_>>();
+        var timeMillisSpentLimit = terminationConfig.calculateTimeMillisSpentLimit();
         if (timeMillisSpentLimit != null) {
             terminationList.add(new TimeMillisSpentTermination<>(timeMillisSpentLimit));
         }
-        Long unimprovedTimeMillisSpentLimit = terminationConfig.calculateUnimprovedTimeMillisSpentLimit();
+        var unimprovedTimeMillisSpentLimit = terminationConfig.calculateUnimprovedTimeMillisSpentLimit();
         if (unimprovedTimeMillisSpentLimit != null) {
             if (terminationConfig.getUnimprovedScoreDifferenceThreshold() == null) {
                 terminationList.add(new UnimprovedTimeMillisSpentTermination<>(unimprovedTimeMillisSpentLimit));
             } else {
                 ScoreDefinition<Score_> scoreDefinition = configPolicy.getScoreDefinition();
-                Score_ unimprovedScoreDifferenceThreshold_ =
+                var unimprovedScoreDifferenceThreshold_ =
                         scoreDefinition.parseScore(terminationConfig.getUnimprovedScoreDifferenceThreshold());
                 if (scoreDefinition.isNegativeOrZero(unimprovedScoreDifferenceThreshold_)) {
                     throw new IllegalStateException("The unimprovedScoreDifferenceThreshold ("
@@ -118,10 +156,10 @@ public final class TerminationFactory<Solution_> {
                         unimprovedTimeMillisSpentLimit, unimprovedScoreDifferenceThreshold_));
             }
         } else if (terminationConfig.getUnimprovedScoreDifferenceThreshold() != null) {
-            throw new IllegalStateException("The unimprovedScoreDifferenceThreshold ("
-                    + terminationConfig.getUnimprovedScoreDifferenceThreshold()
-                    + ") can only be used if an unimproved*SpentLimit ("
-                    + unimprovedTimeMillisSpentLimit + ") is used too.");
+            throw new IllegalStateException(
+                    "The unimprovedScoreDifferenceThreshold (%s) can only be used if an unimproved*SpentLimit (%s) is used too."
+                            .formatted(terminationConfig.getUnimprovedScoreDifferenceThreshold(),
+                                    unimprovedTimeMillisSpentLimit));
         }
 
         if (terminationConfig.getDiminishedReturnsConfig() != null) {
@@ -140,35 +178,60 @@ public final class TerminationFactory<Solution_> {
         return terminationList;
     }
 
-    List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
+    List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy,
+            DefaultTerminationId levelId) {
         var terminationConfigList = terminationConfig.getTerminationConfigList();
         if (ConfigUtils.isEmptyCollection(terminationConfigList)) {
             return Collections.emptyList();
         }
-
-        return terminationConfigList.stream()
-                .map(config -> TerminationFactory.<Solution_> create(config)
-                        .buildTermination(configPolicy))
+        var phaseIndex = levelId.nullablePhaseIndex();
+        // The index comes before the null filter, so an empty level does not shift the ordinals.
+        return IntStream.range(0, terminationConfigList.size())
+                .mapToObj(i -> TerminationFactory.<Solution_> create(terminationConfigList.get(i))
+                        .buildTermination(configPolicy, levelId, i, phaseIndex))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
+    private TerminationCompositionStyle getCompositionStyle() {
+        if (terminationConfig.getTerminationCompositionStyle() != null) {
+            return terminationConfig.getTerminationCompositionStyle();
+        }
+        return TerminationCompositionStyle.OR;
+    }
+
     @SuppressWarnings("unchecked")
     @Nullable
-    Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
+    Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList,
+            DefaultTerminationId levelId) {
         return switch (terminationList.size()) {
             case 0 -> null;
+            // No AND is built for one termination, so the ORs below it keep registering; that termination is reported.
             case 1 -> terminationList.getFirst();
             default -> {
                 var terminationArray = terminationList.toArray(new Termination[0]);
-                var compositionStyle =
-                        Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(),
-                                TerminationCompositionStyle.OR);
-                yield switch (compositionStyle) {
-                    case AND -> UniversalTermination.and(terminationArray);
-                    case OR -> UniversalTermination.or(terminationArray);
+                yield switch (getCompositionStyle()) {
+                    case AND -> {
+                        var and = new AndCompositeTermination<Solution_>(terminationArray);
+                        and.setTerminationId(levelId);
+                        // A child can be true while this AND is false, so nothing below may record an id;
+                        // only this AND's id is reported, by the OR above it.
+                        terminationList.forEach(TerminationFactory::stopRecording);
+                        yield and;
+                    }
+                    case OR -> new OrCompositeTermination<Solution_>(terminationArray);
                 };
             }
         };
+    }
+
+    private static <Solution_> void stopRecording(Termination<Solution_> termination) {
+        if (termination instanceof AbstractCompositeTermination<Solution_> composite) {
+            // Only an OR records ids; an AND records nothing, but ORs can sit below it, so the walk goes on.
+            if (composite instanceof OrCompositeTermination<Solution_> orTermination) {
+                orTermination.stopRecording();
+            }
+            composite.terminationList.forEach(TerminationFactory::stopRecording);
+        }
     }
 }
