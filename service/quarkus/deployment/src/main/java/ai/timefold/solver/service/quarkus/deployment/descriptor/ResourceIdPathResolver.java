@@ -100,6 +100,12 @@ public final class ResourceIdPathResolver {
                 }
             }
             case CLASS -> visitClassByName(index, type.name(), path, visitingSet, resourceList);
+            case WILDCARD_TYPE -> {
+                var upperBound = type.asWildcardType().extendsBound();
+                if (upperBound != null) {
+                    visitType(index, upperBound, path, visitingSet, resourceList);
+                }
+            }
             default -> {
                 // Primitives are already handled by the visitClass method; type variables and wildcards have no fields to visit.
             }
