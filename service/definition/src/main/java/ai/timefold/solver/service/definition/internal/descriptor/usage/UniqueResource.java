@@ -1,7 +1,5 @@
 package ai.timefold.solver.service.definition.internal.descriptor.usage;
 
-import java.util.Objects;
-
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -11,7 +9,11 @@ import org.jspecify.annotations.NullMarked;
 public record UniqueResource(String resourceType, String resourceIdJsonPath) {
 
     public UniqueResource {
-        Objects.requireNonNull(resourceType, "resourceType must not be null");
-        Objects.requireNonNull(resourceIdJsonPath, "resourceIdJsonPath must not be null");
+        if (resourceType == null || resourceType.trim().isEmpty()) {
+            throw new IllegalArgumentException("resourceType must not be empty");
+        }
+        if (resourceIdJsonPath == null || resourceIdJsonPath.trim().isEmpty()) {
+            throw new IllegalArgumentException("resourceIdJsonPath must not be empty");
+        }
     }
 }

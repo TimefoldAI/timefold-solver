@@ -1,10 +1,10 @@
 package ai.timefold.solver.service.quarkus.deployment.testdata.uniqueresource;
 
-import ai.timefold.solver.service.definition.api.usage.ResourceId;
+import ai.timefold.solver.service.definition.api.usage.UniqueResourceId;
 
 public class TestdataVisit {
 
-    @ResourceId(type = "visit")
+    @UniqueResourceId(type = "visit")
     private String id;
 
     public String getId() {

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.CLASS)
-public @interface ResourceId {
+public @interface UniqueResourceId {
 
     /**
      * Identifies the resource type to scope the uniqueness of the resource IDs.

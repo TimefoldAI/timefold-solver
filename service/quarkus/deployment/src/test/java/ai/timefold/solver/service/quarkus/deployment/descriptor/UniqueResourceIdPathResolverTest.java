@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import ai.timefold.solver.service.definition.api.usage.ResourceId;
+import ai.timefold.solver.service.definition.api.usage.UniqueResourceId;
 import ai.timefold.solver.service.definition.internal.descriptor.usage.UniqueResource;
 
 import org.jboss.jandex.Index;
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-class ResourceIdPathResolverTest {
+class UniqueResourceIdPathResolverTest {
 
     @Test
     void multipleResourceTypes() throws IOException {
@@ -60,19 +60,19 @@ class ResourceIdPathResolverTest {
     }
 
     static class Vehicle {
-        @ResourceId(type = "vehicle")
+        @UniqueResourceId(type = "vehicle")
         String id;
         List<Visit> visits;
     }
 
     static class Visit {
         @JsonProperty("visitId")
-        @ResourceId(type = "visit")
+        @UniqueResourceId(type = "visit")
         String id;
     }
 
     static class Depot {
-        @ResourceId(type = "depot")
+        @UniqueResourceId(type = "depot")
         String code;
     }
 
@@ -81,7 +81,7 @@ class ResourceIdPathResolverTest {
     }
 
     static class BlankTypeInput {
-        @ResourceId(type = " ")
+        @UniqueResourceId(type = " ")
         String id;
     }
 }
