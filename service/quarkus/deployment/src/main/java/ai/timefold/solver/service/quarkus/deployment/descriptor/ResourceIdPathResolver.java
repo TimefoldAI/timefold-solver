@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ai.timefold.solver.service.definition.api.usage.ResourceId;
+import ai.timefold.solver.service.definition.api.usage.UniqueResourceId;
 import ai.timefold.solver.service.definition.internal.descriptor.usage.UniqueResource;
 
 import org.jboss.jandex.ClassInfo;
@@ -22,10 +22,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Finds the fields annotated with {@link ResourceId} in the object structure of the model input
+ * Finds the fields annotated with {@link UniqueResourceId} in the object structure of the model input
  * and creates a JSON Path expression to each of them.
  * <p>
- * Multiple fields may share the same {@link ResourceId#type()};
+ * Multiple fields may share the same {@link UniqueResourceId#type()};
  * the IDs must then be unique across all the fields of that type.
  * <p>
  * The resolver walks the fields of the indexed classes.
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class ResourceIdPathResolver {
 
-    private static final DotName RESOURCE_ID = DotName.createSimple(ResourceId.class);
+    private static final DotName RESOURCE_ID = DotName.createSimple(UniqueResourceId.class);
     private static final String RESOURCE_ID_TYPE_PARAM = "type";
     private static final DotName JSON_PROPERTY = DotName.createSimple(JsonProperty.class);
     private static final DotName JSON_IGNORE = DotName.createSimple(JsonIgnore.class);
@@ -48,10 +48,10 @@ public final class ResourceIdPathResolver {
     /**
      * @param index never null
      * @param modelInput never null
-     * @return never null, one {@link UniqueResource} for each field annotated with {@link ResourceId}
+     * @return never null, one {@link UniqueResource} for each field annotated with {@link UniqueResourceId}
      *         reachable from the model input, sorted by the resource type and the path;
      *         empty if no such field exists
-     * @throws IllegalStateException if a {@link ResourceId#type()} is blank
+     * @throws IllegalStateException if a {@link UniqueResourceId#type()} is blank
      */
     public static List<UniqueResource> resolve(IndexView index, ClassInfo modelInput) {
         var resourceList = new ArrayList<UniqueResource>();
@@ -139,7 +139,7 @@ public final class ResourceIdPathResolver {
         var typeValue = field.declaredAnnotation(RESOURCE_ID).value(RESOURCE_ID_TYPE_PARAM);
         if (typeValue == null || typeValue.asString().trim().isBlank()) {
             throw new IllegalStateException("The field (%s) of the class (%s) is annotated with @%s with a blank %s."
-                    .formatted(field.name(), field.declaringClass().name(), ResourceId.class.getSimpleName(),
+                    .formatted(field.name(), field.declaringClass().name(), UniqueResourceId.class.getSimpleName(),
                             RESOURCE_ID_TYPE_PARAM));
         }
         return typeValue.asString();

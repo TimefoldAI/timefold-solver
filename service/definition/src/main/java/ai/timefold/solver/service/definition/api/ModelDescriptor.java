@@ -41,23 +41,23 @@ public class ModelDescriptor {
 
     protected String imageRefNative;
 
-    protected Map<String, String> environment = Collections.EMPTY_MAP;
+    protected Map<String, String> environment = Collections.emptyMap();
 
-    protected List<String> features = Collections.EMPTY_LIST;
+    protected List<String> features = Collections.emptyList();
 
-    protected List<ConstraintGroupDescriptor> constraintGroupDescriptors = Collections.EMPTY_LIST;
+    protected List<ConstraintGroupDescriptor> constraintGroupDescriptors = Collections.emptyList();
 
     protected ModelConfigDescriptor modelConfigDescriptor;
 
-    protected List<InputMetricDescriptor> inputMetricDescriptors = Collections.EMPTY_LIST;
+    protected List<InputMetricDescriptor> inputMetricDescriptors = Collections.emptyList();
 
-    protected List<OutputMetricDescriptor> outputMetricDescriptors = Collections.EMPTY_LIST;
+    protected List<OutputMetricDescriptor> outputMetricDescriptors = Collections.emptyList();
 
     protected Integer maxThreadCount;
 
     protected String logoUrl;
 
-    protected List<String> images = Collections.EMPTY_LIST;
+    protected List<String> images = Collections.emptyList();
 
     protected TrialConfig trialConfig;
 
@@ -67,11 +67,11 @@ public class ModelDescriptor {
 
     protected DocumentationDescriptor documentationDescriptor;
 
-    protected List<VisualizationPageDescriptor> visualizationPages = Collections.EMPTY_LIST;
+    protected List<VisualizationPageDescriptor> visualizationPages = Collections.emptyList();
 
     protected boolean requiresMap = false;
 
-    protected List<UniqueResource> uniqueResources = Collections.EMPTY_LIST;
+    protected List<UniqueResource> uniqueResources = Collections.emptyList();
 
     /**
      * @return Unique id, composed by model id and version. Ex: employee-scheduling_v1
