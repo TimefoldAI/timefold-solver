@@ -350,8 +350,9 @@ public class MapServiceClientImpl implements MapService {
         String id = String.valueOf(Objects.hash(new HashSet<>(locations), options));
 
         if (travelTimeAndDistanceSingleItemCache.isInCache(id)) {
-            LOGGER.info("Distance matrix without location set name in cache, returning from cache");
             CacheItem cacheItem = travelTimeAndDistanceSingleItemCache.get();
+            LOGGER.info("Distance matrix without location set name in cache, returning from cache (map: '{}')",
+                    cacheItem.resolvedMapLocation());
             return new TravelTimeAndDistanceWithMetadata(cacheItem.travelTimeAndDistance(), cacheItem.locationsOutOfMap(),
                     cacheItem.resolvedMapLocation());
         }
@@ -378,7 +379,7 @@ public class MapServiceClientImpl implements MapService {
         }
 
         TravelTimeAndDistanceWithMetadata travelTimeAndDistance = processResponseAndStoreInCache(response, localCacheId);
-        LOGGER.info("Distance/time matrix calculation completed");
+        LOGGER.info("Distance/time matrix calculation completed (map: '{}')", travelTimeAndDistance.resolvedMapLocation());
         return travelTimeAndDistance;
     }
 
