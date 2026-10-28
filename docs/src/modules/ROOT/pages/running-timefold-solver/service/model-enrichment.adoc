@@ -224,6 +224,22 @@ A dataset that uses a transport type the tenant is not allowed to route with is 
 When the solution returns an empty list, the default transport type is used.
 
 
+[#recordingAndReplayingMatrices]
+=== Recording and replaying distance matrices
+
+To reproduce a run without access to the map service, enable distance-matrix recording with
+`timefold.platform.map-service.recording.enabled=true`.
+The service writes the travel-time and distance matrices, and the locations that are out of the map,
+to JSON files in the `distance-matrix` subdirectory of the execution artifacts directory.
+The default execution artifacts directory is `/tmp/timefold-execution-artifacts`.
+
+To use recorded matrices, set `timefold.platform.map-service.replay.enabled=true`
+and set `timefold.platform.map-service.replay.directory` to the execution artifact directory
+or directly to its `distance-matrix` subdirectory.
+Replay fails when a required recording is missing or when the local traffic timeframes differ from those in the recording.
+Waypoints are still resolved by the local fallback map service.
+
+
 [#enrichmentDirector]
 == Controlling enrichment order
 
