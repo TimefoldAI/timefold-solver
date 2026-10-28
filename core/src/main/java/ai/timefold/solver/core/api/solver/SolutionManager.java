@@ -290,4 +290,26 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
             EntityOrElement_ evaluatedEntityOrElement, Function<EntityOrElement_, @Nullable Proposition_> propositionFunction,
             ScoreAnalysisFetchPolicy fetchPolicy);
 
+    /**
+     * Creates a {@link MoveEvaluator} for the given solution,
+     * allowing to execute moves on it and evaluate their impact on the score,
+     * without running the solver.
+     * See {@link MoveEvaluator} Javadoc for details.
+     * <p>
+     * The evaluator works on a planning clone of the given solution, its {@link MoveEvaluator#getWorkingSolution()
+     * working solution}.
+     * To obtain the working solution counterpart of an entity or fact of the given solution,
+     * use {@link MoveEvaluator#lookUpWorkingObject(Object)}.
+     * <p>
+     * Unlike the other methods of this class, the returned evaluator is stateful and not thread-safe.
+     * It must be closed after use.
+     * <p>
+     * Note: The move evaluator is exclusive to Timefold Solver Enterprise Edition.
+     * This method will throw an exception if the binaries can't be found.
+     *
+     * @param solution the solution to be cloned and on which the moves will be evaluated
+     * @return a new evaluator, to be closed when no longer needed
+     */
+    MoveEvaluator<Solution_> moveEvaluator(Solution_ solution);
+
 }

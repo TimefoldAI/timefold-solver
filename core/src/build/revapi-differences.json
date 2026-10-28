@@ -176,6 +176,12 @@
           "code": "java.method.addedToInterface",
           "new": "method ai.timefold.solver.core.api.solver.SolverRunResult<Solution_> ai.timefold.solver.core.api.solver.SolverJob<Solution_>::getResult() throws java.lang.InterruptedException, java.util.concurrent.ExecutionException",
           "justification": "Return end-of-run statistics; SolverJob is implemented by the solver, not by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.addedToInterface",
+          "new": "method ai.timefold.solver.core.api.solver.MoveEvaluator<Solution_> ai.timefold.solver.core.api.solver.SolutionManager<Solution_, Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::moveEvaluator(Solution_)",
+          "justification": "Added a public API for move evaluation"
         }
       ]
     }
