@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.violation.ShadowVariablesAssert;
+import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -44,10 +45,8 @@ final class DeclarativeShadowVariableAssertions {
         var random = new Random(0);
         for (var moveIndex = 0; moveIndex < moveCount; moveIndex++) {
             var move = randomListMove(listVariableMetaModel, listFunction, entityList, valueList, random);
-            if (move != null) {
-                context.execute(move);
-                assertMatchesArbitraryGraph(solutionDescriptor, solution, "Move %d (%s)", moveIndex, move);
-            }
+            context.execute(move);
+            assertMatchesArbitraryGraph(solutionDescriptor, solution, "Move %d (%s)", moveIndex, move);
         }
     }
 
@@ -118,10 +117,33 @@ final class DeclarativeShadowVariableAssertions {
     }
 
     /**
-     * Returns a random list move of one of the {@link ListMoveType}s.
-     * Returns null when the solution has no room for the move picked.
+     * Returns a random list move of one of the {@link ListMoveType}s,
+     * redrawn while the solution has no room for the move drawn,
+     * with the bail out of {@link FilteringIterator}.
      */
-    private static <Solution_, Entity_, Value_> @Nullable Move<Solution_> randomListMove(
+    private static <Solution_, Entity_, Value_> Move<Solution_> randomListMove(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
+            Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
+            Random random) {
+        var bailOutSize = valueList.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+        var attemptsBeforeBailOut = bailOutSize;
+        Move<Solution_> move;
+        do {
+            if (attemptsBeforeBailOut <= 0L) {
+                throw new IllegalStateException(
+                        "No list move drawn in (%d) attempts fits the solution.".formatted(bailOutSize));
+            }
+            attemptsBeforeBailOut--;
+            move = drawListMove(listVariableMetaModel, listFunction, entityList, valueList, random);
+        } while (move == null);
+        return move;
+    }
+
+    /**
+     * Draws a random list move of one of the {@link ListMoveType}s.
+     * Returns null when the solution has no room for the move drawn.
+     */
+    private static <Solution_, Entity_, Value_> @Nullable Move<Solution_> drawListMove(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
             Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
             Random random) {
