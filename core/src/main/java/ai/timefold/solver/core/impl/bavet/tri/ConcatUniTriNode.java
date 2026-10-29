@@ -36,7 +36,10 @@ public final class ConcatUniTriNode<A, B, C>
 
     @Override
     protected void updateOutTupleFromLeft(UniTuple<A> leftTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.setA(leftTuple.getA());
+        var factA = leftTuple.getA();
+        outTuple.setA(factA);
+        outTuple.setB(paddingFunctionB.apply(factA));
+        outTuple.setC(paddingFunctionC.apply(factA));
     }
 
     @Override
