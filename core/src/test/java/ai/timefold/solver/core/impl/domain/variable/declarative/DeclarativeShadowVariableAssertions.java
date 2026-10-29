@@ -28,15 +28,12 @@ final class DeclarativeShadowVariableAssertions {
      * Asserts that the solution selects the expected structure, then executes random list moves on it.
      * After each move, asserts that the shadow variables, maintained incrementally by the graph of that structure,
      * match the ones recomputed by {@link #assertMatchesArbitraryGraph}.
-     *
-     * @param unassigning whether the moves may unassign values, which ruin and recreate does
-     *        even when the list variable does not allow unassigned values
      */
     static <Solution_, Entity_, Value_> void assertRandomListMovesMatchArbitraryGraph(
             SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution, GraphStructure expectedStructure,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
             Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
-            boolean unassigning, int moveCount) {
+            int moveCount) {
         var entities = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entities::add);
         assertThat(GraphStructure.determineGraphStructure(solutionDescriptor, entities.toArray()).structure())
@@ -46,7 +43,7 @@ final class DeclarativeShadowVariableAssertions {
         assertMatchesArbitraryGraph(solutionDescriptor, solution, "Initial solution");
         var random = new Random(0);
         for (var moveIndex = 0; moveIndex < moveCount; moveIndex++) {
-            var move = randomListMove(listVariableMetaModel, listFunction, entityList, valueList, unassigning, random);
+            var move = randomListMove(listVariableMetaModel, listFunction, entityList, valueList, random);
             if (move != null) {
                 context.execute(move);
                 assertMatchesArbitraryGraph(solutionDescriptor, solution, "Move %d (%s)", moveIndex, move);
@@ -107,9 +104,6 @@ final class DeclarativeShadowVariableAssertions {
         REVERSE
     }
 
-    private static final List<ListMoveType> NON_UNASSIGNING_MOVE_TYPE_LIST = List.of(ListMoveType.CHANGE, ListMoveType.SWAP,
-            ListMoveType.SUB_LIST_CHANGE, ListMoveType.SUB_LIST_SWAP, ListMoveType.REVERSE);
-
     /**
      * A random sub list of an assigned entity's list: the values from fromIndex (inclusive) to toIndex (exclusive).
      */
@@ -124,14 +118,13 @@ final class DeclarativeShadowVariableAssertions {
     }
 
     /**
-     * Returns a random list move of one of the {@link ListMoveType}s,
-     * excluding those that unassign values unless unassigning.
+     * Returns a random list move of one of the {@link ListMoveType}s.
      * Returns null when the solution has no room for the move picked.
      */
     private static <Solution_, Entity_, Value_> @Nullable Move<Solution_> randomListMove(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
             Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
-            boolean unassigning, Random random) {
+            Random random) {
         var assignedValueSet = Collections.newSetFromMap(new IdentityHashMap<Value_, Boolean>());
         var assignedEntityList = new ArrayList<Entity_>();
         for (var entity : entityList) {
@@ -141,9 +134,8 @@ final class DeclarativeShadowVariableAssertions {
                 assignedEntityList.add(entity);
             }
         }
-        var moveTypeList = unassigning ? List.of(ListMoveType.values()) : NON_UNASSIGNING_MOVE_TYPE_LIST;
-        var moveType = assignedEntityList.isEmpty() ? ListMoveType.ASSIGN
-                : moveTypeList.get(random.nextInt(moveTypeList.size()));
+        var moveTypes = ListMoveType.values();
+        var moveType = assignedEntityList.isEmpty() ? ListMoveType.ASSIGN : moveTypes[random.nextInt(moveTypes.length)];
         if (moveType == ListMoveType.ASSIGN) {
             var unassignedValueList = valueList.stream().filter(value -> !assignedValueSet.contains(value)).toList();
             if (unassignedValueList.isEmpty()) {

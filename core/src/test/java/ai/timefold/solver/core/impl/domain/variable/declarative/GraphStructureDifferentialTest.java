@@ -60,7 +60,7 @@ class GraphStructureDifferentialTest {
                 new TestdataDeclarativeSimpleListSolution(entityList, valueList), GraphStructure.SINGLE_DIRECTIONAL_PARENT,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataDeclarativeSimpleListEntity.class)
                         .listVariable("values", TestdataDeclarativeSimpleListValue.class),
-                TestdataDeclarativeSimpleListEntity::getValues, entityList, valueList, true, MOVE_COUNT);
+                TestdataDeclarativeSimpleListEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
     @Test
@@ -80,7 +80,7 @@ class GraphStructureDifferentialTest {
                 GraphStructure.SINGLE_DIRECTIONAL_PARENT,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataDeclarativeSimpleNextListEntity.class)
                         .listVariable("values", TestdataDeclarativeSimpleNextListValue.class),
-                TestdataDeclarativeSimpleNextListEntity::getValues, entityList, valueList, true, MOVE_COUNT);
+                TestdataDeclarativeSimpleNextListEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
     @Test
@@ -102,13 +102,9 @@ class GraphStructureDifferentialTest {
                 GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataDependencyEntity.class)
                         .listVariable("values", TestdataDependencyValue.class),
-                TestdataDependencyEntity::getValues, entityList, valueList, true, MOVE_COUNT);
+                TestdataDependencyEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
-    /**
-     * The values stay assigned: the aligned graph gives an unassigned value the start time of its group,
-     * whereas the arbitrary graph calls the supplier on that value, which returns null.
-     */
     @Test
     void arbitrarySingleEntityWithAlignedValues() {
         var entityList = new ArrayList<TestdataConcurrentEntity>();
@@ -133,7 +129,7 @@ class GraphStructureDifferentialTest {
                 GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataConcurrentEntity.class)
                         .listVariable("values", TestdataConcurrentValue.class),
-                TestdataConcurrentEntity::getValues, entityList, valueList, false, MOVE_COUNT);
+                TestdataConcurrentEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
     /**
