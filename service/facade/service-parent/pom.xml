@@ -89,6 +89,7 @@
     <!-- Dependencies -->
     <!-- Keep in sync with the build-parent -->
     <!-- ************************************************************************ -->
+    <version.com.aayushatharva.brotli4j>1.24.0</version.com.aayushatharva.brotli4j>
     <version.io.quarkus>3.40.1</version.io.quarkus>
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
@@ -126,6 +127,37 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Override the brotli4j version managed by quarkus-bom -->
+      <dependency>
+        <groupId>com.aayushatharva.brotli4j</groupId>
+        <artifactId>brotli4j</artifactId>
+        <version>${version.com.aayushatharva.brotli4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aayushatharva.brotli4j</groupId>
+        <artifactId>native-linux-x86_64</artifactId>
+        <version>${version.com.aayushatharva.brotli4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aayushatharva.brotli4j</groupId>
+        <artifactId>native-linux-aarch64</artifactId>
+        <version>${version.com.aayushatharva.brotli4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aayushatharva.brotli4j</groupId>
+        <artifactId>native-osx-x86_64</artifactId>
+        <version>${version.com.aayushatharva.brotli4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aayushatharva.brotli4j</groupId>
+        <artifactId>native-osx-aarch64</artifactId>
+        <version>${version.com.aayushatharva.brotli4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.aayushatharva.brotli4j</groupId>
+        <artifactId>native-windows-x86_64</artifactId>
+        <version>${version.com.aayushatharva.brotli4j}</version>
+      </dependency>
       <dependency>
         <groupId>io.quarkus.platform</groupId>
         <artifactId>quarkus-bom</artifactId>
