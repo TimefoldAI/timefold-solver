@@ -263,10 +263,26 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     public abstract InnerScore<Score_> innerCalculateScore();
 
+    public InnerScore<Score_> innerCalculateScoreAboveBound(Score_ lowerBound) {
+        return innerCalculateScore();
+    }
+
     @Override
     public final InnerScore<Score_> calculateScore() {
         if (lastVariableUpdateSuccessful) {
             return innerCalculateScore();
+        } else {
+            // invalid scores are worse than any valid score, even those with unassigned values
+            var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
+            getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
+            return invalidScore;
+        }
+    }
+
+    @Override
+    public final InnerScore<Score_> calculateScoreAboveBound(Score_ lowerBound) {
+        if (lastVariableUpdateSuccessful) {
+            return innerCalculateScoreAboveBound(lowerBound);
         } else {
             // invalid scores are worse than any valid score, even those with unassigned values
             var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
@@ -468,6 +484,28 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             }
             if (assertMoveScoreFromScratch) {
                 assertWorkingScoreFromScratch(score, move);
+            }
+            if (consumer != null) {
+                consumer.accept(moveDirector);
+            }
+            return score;
+        });
+        return Objects.requireNonNull(result);
+    }
+
+    @Override
+    public InnerScore<Score_> executeTemporaryMoveAboveBound(Move<Solution_> move, Score_ lowerBound,
+            @Nullable Consumer<SolutionView<Solution_>> consumer,
+            boolean assertMoveScoreFromScratch) {
+        if (solutionTracker != null) {
+            solutionTracker.setBeforeMoveSolution(workingSolution);
+        }
+        var result = moveDirector.executeTemporaryAboveBound(move, lowerBound, score -> {
+            if (solutionTracker != null) {
+                solutionTracker.setAfterMoveSolution(workingSolution);
+            }
+            if (assertMoveScoreFromScratch) {
+                assertWorkingScoreAboveBoundFromScratch(lowerBound, score, move);
             }
             if (consumer != null) {
                 consumer.accept(moveDirector);
@@ -843,15 +881,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction) {
-        assertScoreFromScratch(workingScore, completedAction, false);
+        assertScoreFromScratch(workingScore, completedAction, false, null);
     }
 
     @Override
     public void assertPredictedScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction) {
-        assertScoreFromScratch(workingScore, completedAction, true);
+        assertScoreFromScratch(workingScore, completedAction, true, null);
     }
 
-    private void assertScoreFromScratch(InnerScore<Score_> innerScore, Object completedAction, boolean predicted) {
+    protected void assertWorkingScoreAboveBoundFromScratch(Score_ lowerBound, InnerScore<Score_> workingScore, Object completedAction) {
+        assertScoreFromScratch(workingScore, completedAction, false, lowerBound);
+    }
+
+    private void assertScoreFromScratch(InnerScore<Score_> innerScore, Object completedAction, boolean predicted,
+            @Nullable Score_ lowerBound) {
         var assertionScoreDirectorFactory = scoreDirectorFactory.getAssertionScoreDirectorFactory();
         if (assertionScoreDirectorFactory == null) {
             assertionScoreDirectorFactory = scoreDirectorFactory;
@@ -862,7 +905,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(Objects.requireNonNull(workingSolution));
-            var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
+            InnerScore<Score_> uncorruptedInnerScore;
+            if (lowerBound != null) {
+                uncorruptedInnerScore = uncorruptedScoreDirector.calculateScoreAboveBound(lowerBound);
+            } else {
+                uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
+            }
             if (!innerScore.equals(uncorruptedInnerScore)) {
                 var corruptionAnalyzer = new CorruptionAnalyzer<>(this);
                 var scoreCorruptionAnalysis = corruptionAnalyzer.analyzeScore(uncorruptedScoreDirector, predicted);
