@@ -166,7 +166,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
-        return new DiminishedReturnsTermination<>(slidingWindowNanos, minimumImprovementRatio);
+        return new DiminishedReturnsTermination<>(slidingWindowNanos / NANOS_PER_MILLISECOND, minimumImprovementRatio);
     }
 
     @Override
