@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.analysis.VariableLoop;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.api.solver.MoveEvaluator;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -48,6 +49,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
@@ -246,6 +248,9 @@ public interface TimefoldSolverEnterpriseService {
                     Function<In_, @Nullable Out_> propositionFunction,
                     ScoreAnalysisFetchPolicy fetchPolicy);
 
+    <Solution_, Score_ extends Score<Score_>> MoveEvaluator<Solution_>
+            buildMoveEvaluator(ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, Solution_ solution);
+
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
@@ -255,7 +260,8 @@ public interface TimefoldSolverEnterpriseService {
                 "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
         CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration"),
         SCORE_ANALYSIS("Score analysis", "do not use SolutionManager's analyze() method"),
-        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method");
+        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method"),
+        MOVE_EVALUATOR("Move evaluator", "do not use SolutionManager's moveEvaluator() method");
 
         private final String name;
         private final String workaround;

@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.analysis.VariableLoop;
+import ai.timefold.solver.core.api.solver.MoveEvaluator;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -175,6 +176,13 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                 (scoreDirector, inconsistentEntities) -> enterpriseService.buildRecommender(solverFactory, solution,
                         evaluatedEntityOrElement, propositionFunction, fetchPolicy).apply((InnerScoreDirector) scoreDirector),
                 ConstraintMatchPolicy.match(fetchPolicy), true, false);
+    }
+
+    @Override
+    public MoveEvaluator<Solution_> moveEvaluator(Solution_ solution) {
+        var enterpriseService =
+                TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MOVE_EVALUATOR);
+        return enterpriseService.buildMoveEvaluator(scoreDirectorFactory, solution);
     }
 
 }
