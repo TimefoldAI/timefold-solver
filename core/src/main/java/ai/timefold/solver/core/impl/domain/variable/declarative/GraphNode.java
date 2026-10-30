@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public record GraphNode<Solution_>(Object entity, List<VariableUpdaterInfo<Solution_>> variableReferences,
-        int graphNodeId, int entityId, @Nullable int[] groupEntityIds) {
+        int graphNodeId, int entityId, int @Nullable [] groupEntityIds) {
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof GraphNode<?> that))
