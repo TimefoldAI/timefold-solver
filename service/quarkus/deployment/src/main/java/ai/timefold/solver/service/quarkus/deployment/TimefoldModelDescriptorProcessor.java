@@ -70,6 +70,7 @@ import ai.timefold.solver.service.quarkus.deployment.builditem.RestComponentsBui
 import ai.timefold.solver.service.quarkus.deployment.builditem.SingleOpenApiDocumentBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.config.VisualizationPagesConfig;
 import ai.timefold.solver.service.quarkus.deployment.descriptor.DefaultConstraintGroupDescriptorFactory;
+import ai.timefold.solver.service.quarkus.deployment.descriptor.ResourceIdPathResolver;
 import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaPostProcessor;
 import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaUtils;
 
@@ -580,6 +581,9 @@ class TimefoldModelDescriptorProcessor {
         List<OutputMetricDescriptor> metrics =
                 outputMetricsFromClassInfo(combinedIndex.getIndex(), modelComponentsBuildItem.getModelOutputMetrics());
         descriptor.setOutputMetricDescriptors(metrics);
+
+        descriptor.setUniqueResources(
+                ResourceIdPathResolver.resolve(combinedIndex.getIndex(), modelComponentsBuildItem.getModelInput()));
 
         // check model specific data
         String modelMaturityLevel =
@@ -1159,7 +1163,7 @@ class TimefoldModelDescriptorProcessor {
             List<String> includedPrefixes = List.of("og-");
             // copy model images and logo
             Path imagesPath = Paths.get(outputDirectory.getParent().toString(), "model-images");
-
+            List<String> images = new ArrayList<>();
             if (Files.exists(imagesPath)) {
                 String apiPath = "/api/info/models/" + descriptor.getId() + "/model-images/";
                 try (Stream<Path> stream = Files.list(imagesPath)) {
@@ -1176,7 +1180,7 @@ class TimefoldModelDescriptorProcessor {
                             } else if (fileName.equals("logo.png")) {
                                 descriptor.setLogoUrl(apiPath + fileName);
                             } else {
-                                descriptor.getImages().add(apiPath + fileName);
+                                images.add(apiPath + fileName);
                             }
                         } catch (IOException e) {
                             LOG.error("Error processing image: " + fileName, e);
@@ -1184,7 +1188,8 @@ class TimefoldModelDescriptorProcessor {
 
                     });
                 }
-                Collections.sort(descriptor.getImages());
+                Collections.sort(images);
+                descriptor.setImages(images);
             }
         }
     }
