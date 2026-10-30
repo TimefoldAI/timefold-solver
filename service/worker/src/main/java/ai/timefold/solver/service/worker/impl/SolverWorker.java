@@ -364,12 +364,6 @@ public class SolverWorker {
 
             var solverModel = createSolverModel(modelInput, modelConfig);
 
-            String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
-            if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
-                LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", mapEnrichmentContext.getResolvedMapLocation(),
-                        metadata.getId());
-            }
-
             solutionManager.update(solverModel);
 
             // Store the updated solution
