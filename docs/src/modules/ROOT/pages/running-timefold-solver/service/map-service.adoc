@@ -273,7 +273,7 @@ The local computation is a great-circle (Haversine) distance converted to a trav
 fixed average speed. It requires no network access and no map data, which makes it the right choice for development,
 demos and tests, but the times it produces ignore roads and traffic entirely.
 Only the Timefold Platform brings actual road distances and traffic data.
-Never benchmark solution quality against it and then expect the same numbers in production.
+Never benchmark solution quality against Haversine and then expect the same numbers in production with real map data.
 
 [WARNING]
 ====
