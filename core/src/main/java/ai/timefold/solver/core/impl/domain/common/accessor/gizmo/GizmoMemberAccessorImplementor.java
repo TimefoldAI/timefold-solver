@@ -422,7 +422,7 @@ public final class GizmoMemberAccessorImplementor {
                 if (memberInfo.returnTypeRequired()) {
                     blockCreator.return_(memberInfo.descriptor().readMemberValue(blockCreator, castedBean, castedValue));
                 } else {
-                    memberInfo.descriptor().readMemberValue(blockCreator, castedBean);
+                    memberInfo.descriptor().readMemberValue(blockCreator, castedBean, castedValue);
                     // Returns null as the called method has no return type
                     blockCreator.returnNull();
                 }
