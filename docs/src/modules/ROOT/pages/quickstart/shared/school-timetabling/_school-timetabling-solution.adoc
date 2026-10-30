@@ -71,6 +71,10 @@ public class Timetable {
         return score;
     }
 
+    public void setScore(HardSoftScore score) {
+        this.score = score;
+    }
+
 }
 ----
 --
@@ -78,7 +82,7 @@ public class Timetable {
 Kotlin::
 +
 --
-Create the `src/main/kotlin/org/acme/schooltimetabling/TimetableApp.kt` class:
+Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Timetable.kt` class:
 
 [source,kotlin]
 ----
@@ -90,7 +94,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider
 import ai.timefold.solver.core.api.score.HardSoftScore
-import ai.timefold.solver.core.api.solver.SolverStatus
 
 @PlanningSolution
 data class Timetable (

@@ -2,4 +2,9 @@
 
 Follow the instructions in the next sections to create the application step by step (recommended).
 
+ifdef::framework-kotlin-quickstart-url[]
+In case you get stuck during this Getting Started guide, it might be worth checking the solution project on GitHub, for {framework-quickstart-url}[Java] or {framework-kotlin-quickstart-url}[Kotlin].
+endif::[]
+ifndef::framework-kotlin-quickstart-url[]
 In case you get stuck during this Getting Started guide, it might be worth checking the solution project {framework-quickstart-url}[on GitHub].
+endif::[]

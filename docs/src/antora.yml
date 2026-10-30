@@ -14,6 +14,9 @@ asciidoc:
     spring-boot-version: ${version.org.springframework.boot}
     logback-version: ${version.ch.qos.logback}
     exec-maven-plugin-version: ${version.exec.plugin}
+    assembly-plugin-version: ${version.assembly.plugin}
+    compiler-plugin-version: ${version.compiler.plugin}
+    junit-version: ${version.org.junit.jupiter}
     rewrite-maven-plugin-version: ${version.rewrite.plugin}
 nav:
   - modules/ROOT/nav.adoc

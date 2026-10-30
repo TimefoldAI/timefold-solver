@@ -97,6 +97,7 @@ Create a Maven or Gradle build file and add these dependencies:
 
 * `timefold-solver-core` (compile scope) to solve the school timetable problem.
 * A xref:running-timefold-solver/solver-diagnostics.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
+* `junit-jupiter` (test scope) to test the constraints.
 
 [tabs]
 ====
@@ -135,6 +136,11 @@ Your `pom.xml` file has the following content:
         <artifactId>logback-classic</artifactId>
         <version>{logback-version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>{junit-version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -147,6 +153,11 @@ Your `pom.xml` file has the following content:
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -180,6 +191,7 @@ plugins {
 
 def timefoldSolverVersion = "{timefold-solver-version}"
 def logbackVersion = "{logback-version}"
+def junitVersion = "{junit-version}"
 
 group = "org.acme"
 version = "1.0-SNAPSHOT"
@@ -193,6 +205,10 @@ dependencies {
     implementation "ai.timefold.solver:timefold-solver-core"
 
     runtimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+
+    testImplementation platform("org.junit:junit-bom:${junitVersion}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 java {
@@ -214,6 +230,7 @@ application {
 }
 
 test {
+    useJUnitPlatform()
     // Log the test execution results.
     testLogging {
         events "passed", "skipped", "failed"
@@ -421,8 +438,6 @@ import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalTime
-import java.util.Objects
-import java.util.function.Function
 import java.util.stream.Collectors
 
 
@@ -443,7 +458,7 @@ object TimetableApp {
         )
 
         // Load the problem
-        val problem = generateDemoData(DemoData.SMALL)
+        val problem = generateDemoData()
 
         // Solve the problem
         val solver = solverFactory.buildSolver()
@@ -503,26 +518,16 @@ object TimetableApp {
         LOGGER.info("")
         val rooms = timeTable.rooms
         val lessons = timeTable.lessons
-        val lessonMap = lessons.stream()
+        val lessonMap: Map<Timeslot, Map<Room, List<Lesson>>> = lessons
             .filter { lesson: Lesson -> lesson.timeslot != null && lesson.room != null }
-            .collect(
-                Collectors.groupingBy<Lesson, Timeslot, Any, Map<Room, List<Lesson>>>(
-                    Function { obj: Lesson -> obj.timeslot }, Collectors.groupingBy(
-                        Function { obj: Lesson -> obj.room })
-                )
-            )
+            .groupBy { lesson: Lesson -> lesson.timeslot!! }
+            .mapValues { (_, timeslotLessons) -> timeslotLessons.groupBy { lesson: Lesson -> lesson.room!! } }
         LOGGER.info("|            | " + rooms.stream()
             .map { room: Room -> String.format("%-10s", room.name) }.collect(Collectors.joining(" | ")) + " |"
         )
         LOGGER.info("|" + "------------|".repeat(rooms.size + 1))
         for (timeslot in timeTable.timeslots) {
-            val cells = rooms.stream()
-                .map { room: Room ->
-                    val byRoomMap = lessonMap[timeslot]
-                        ?: return@map emptyList<Lesson>()
-                    val cellLessons = byRoomMap[room]!!
-                    Objects.requireNonNullElse(cellLessons, emptyList())
-                }.toList()
+            val cells = rooms.map { room: Room -> lessonMap[timeslot]?.get(room) ?: emptyList() }
 
             LOGGER.info("| " + String.format(
                 "%-10s",
@@ -641,7 +646,7 @@ Kotlin::
 [source,kotlin]
 ----
 // Load the problem
-val problem = generateDemoData(DemoData.SMALL)
+val problem = generateDemoData()
 
 // Solve the problem
 val solver = solverFactory.buildSolver()
@@ -751,17 +756,17 @@ import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 class TimetableConstraintProviderTest {
 
     private static final Room ROOM1 = new Room("Room1");
-    private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.NOON);
-    private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.NOON);
+    private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.NOON);
+    private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 0), LocalTime.NOON);
 
     ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier = ConstraintVerifier.build(
             new TimetableConstraintProvider(), Timetable.class, Lesson.class);
 
     @Test
     void roomConflict() {
-        Lesson firstLesson = new Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
-        Lesson conflictingLesson = new Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
-        Lesson nonConflictingLesson = new Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
+        Lesson firstLesson = new Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
+        Lesson conflictingLesson = new Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
+        Lesson nonConflictingLesson = new Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
         constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
                 .given(firstLesson, conflictingLesson, nonConflictingLesson)
                 .penalizesBy(1);
@@ -781,8 +786,7 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstrain
 ----
 package org.acme.schooltimetabling.solver
 
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory
-import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier
 import org.acme.schooltimetabling.domain.Lesson
 import org.acme.schooltimetabling.domain.Room
 import org.acme.schooltimetabling.domain.Timeslot
@@ -798,22 +802,18 @@ internal class TimetableConstraintProviderTest {
 
     @Test
     fun roomConflict() {
-        val firstLesson = Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
-        val conflictingLesson = Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
-        val nonConflictingLesson = Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
-        constraintVerifier.verifyThat { obj: TimetableConstraintProvider, constraintFactory: ConstraintFactory? ->
-            obj.roomConflict(
-                constraintFactory
-            )
-        }
+        val firstLesson = Lesson("1", "Subject1", "Teacher1", "Group1").apply { timeslot = TIMESLOT1; room = ROOM1 }
+        val conflictingLesson = Lesson("2", "Subject2", "Teacher2", "Group2").apply { timeslot = TIMESLOT1; room = ROOM1 }
+        val nonConflictingLesson = Lesson("3", "Subject3", "Teacher3", "Group3").apply { timeslot = TIMESLOT2; room = ROOM1 }
+        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
             .given(firstLesson, conflictingLesson, nonConflictingLesson)
             .penalizesBy(1)
     }
 
     companion object {
         private val ROOM1 = Room("Room1")
-        private val TIMESLOT1 = Timeslot(DayOfWeek.MONDAY, LocalTime.NOON)
-        private val TIMESLOT2 = Timeslot(DayOfWeek.TUESDAY, LocalTime.NOON)
+        private val TIMESLOT1 = Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.NOON)
+        private val TIMESLOT2 = Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 0), LocalTime.NOON)
     }
 }
 ----
@@ -882,7 +882,7 @@ Maven::
 --
 In Maven, add the following to your `pom.xml`:
 
-[source,xml,options="nowrap"]
+[source,xml,options="nowrap",subs=attributes+]
 ----
   ...
   <build>
@@ -890,7 +890,7 @@ In Maven, add the following to your `pom.xml`:
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>${version.assembly.plugin}</version>
+        <version>{assembly-plugin-version}</version>
         <configuration>
           <finalName>hello-world-run</finalName>
           <appendAssemblyId>false</appendAssemblyId>

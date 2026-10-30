@@ -31,7 +31,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.core.api.solver.SolverStatus;
 
 import org.acme.vehiclerouting.domain.geo.DrivingTimeCalculator;
 import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator;
@@ -60,8 +59,12 @@ public class VehicleRoutePlan {
         this.name = name;
         this.vehicles = vehicles;
         this.visits = visits;
+        initDrivingTimeMaps();
+    }
 
-        // Enhance locations with a pre-calculated driving time map
+    // Enhance locations with a pre-calculated driving time map.
+    // Jackson uses the no-arg constructor, so a deserialized plan must call this method before solving.
+    public void initDrivingTimeMaps() {
         List<Location> locations = Stream.concat(
                 vehicles.stream().map(Vehicle::getHomeLocation),
                 visits.stream().map(Visit::getLocation)).toList();
@@ -84,7 +87,6 @@ Create the `src/main/kotlin/org/acme/vehiclerouting/domain/VehicleRoutePlan.kt` 
 ----
 package org.acme.vehiclerouting.domain;
 
-import java.time.LocalDateTime
 import java.util.stream.Stream
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty
@@ -92,7 +94,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider
 import ai.timefold.solver.core.api.score.HardSoftScore
-import ai.timefold.solver.core.api.solver.SolverStatus
 
 import org.acme.vehiclerouting.domain.geo.DrivingTimeCalculator
 import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator
@@ -125,11 +126,15 @@ class VehicleRoutePlan {
         this.name = name
         this.vehicles = vehicles
         this.visits = visits
+        initDrivingTimeMaps()
+    }
 
-        // Enhance locations with a pre-calculated driving time map
+    // Enhance locations with a pre-calculated driving time map.
+    // Jackson uses the no-arg constructor, so a deserialized plan must call this method before solving.
+    fun initDrivingTimeMaps() {
         val locations = Stream.concat(
-            vehicles.stream().map({ obj: Vehicle -> obj.homeLocation }),
-            visits.stream().map({ obj: Visit -> obj.location })
+            vehicles!!.stream().map({ obj: Vehicle -> obj.homeLocation }),
+            visits!!.stream().map({ obj: Visit -> obj.location })
         ).toList()
 
         val drivingTimeCalculator: DrivingTimeCalculator = HaversineDrivingTimeCalculator.INSTANCE
