@@ -39,7 +39,11 @@ public final class ConcatUniQuadNode<A, B, C, D>
 
     @Override
     protected void updateOutTupleFromLeft(UniTuple<A> leftTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.setA(leftTuple.getA());
+        var factA = leftTuple.getA();
+        outTuple.setA(factA);
+        outTuple.setB(paddingFunctionB.apply(factA));
+        outTuple.setC(paddingFunctionC.apply(factA));
+        outTuple.setD(paddingFunctionD.apply(factA));
     }
 
     @Override

@@ -38,7 +38,9 @@ public final class ConcatBiUniNode<A, B>
 
     @Override
     protected void updateOutTupleFromRight(UniTuple<A> rightTuple, BiTuple<A, B> outTuple) {
-        outTuple.setA(rightTuple.getA());
+        var factA = rightTuple.getA();
+        outTuple.setA(factA);
+        outTuple.setB(paddingFunction.apply(factA));
     }
 
 }

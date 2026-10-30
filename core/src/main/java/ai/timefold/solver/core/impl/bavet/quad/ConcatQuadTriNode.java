@@ -40,9 +40,13 @@ public final class ConcatQuadTriNode<A, B, C, D>
 
     @Override
     protected void updateOutTupleFromRight(TriTuple<A, B, C> rightTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.setA(rightTuple.getA());
-        outTuple.setB(rightTuple.getB());
-        outTuple.setC(rightTuple.getC());
+        var factA = rightTuple.getA();
+        var factB = rightTuple.getB();
+        var factC = rightTuple.getC();
+        outTuple.setA(factA);
+        outTuple.setB(factB);
+        outTuple.setC(factC);
+        outTuple.setD(paddingFunction.apply(factA, factB, factC));
     }
 
 }
