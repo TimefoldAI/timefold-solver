@@ -364,7 +364,7 @@ Decide explicitly what that means for your model. Typically one of two actions:
 
 [WARNING]
 ====
-What you must not do is ignore the list.
+You must not ignore the list.
 Travel times and distances involving these locations must not be used.
 A lookup is not guaranteed to return `UNREACHABLE` or throw an exception.
 Reject these locations, or exclude them from routing before constraints, shadow variables and nearby selection read the matrix.
