@@ -2723,6 +2723,123 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 assertMatch(entity3, entity2, entity1, entity3).withIndictedObjects(entity3, entity2, entity1));
     }
 
+    @TestTemplate
+    public void concatUniWithPadding() {
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() == value2)
+                        .expand(TestdataLavishEntity::getValue)
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() != value2),
+                                TestdataLavishEntity::getValue)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, value1).withIndictedObjects(entity1),
+                assertMatch(entity2, value2).withIndictedObjects(entity2));
+
+        // Incremental; the padding reads the planning variable, so it must be recomputed
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, value3).withIndictedObjects(entity1),
+                assertMatch(entity2, value2).withIndictedObjects(entity2));
+    }
+
+    @TestTemplate
+    public void concatTriWithPadding() {
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() != value2)
+                        .expand(TestdataLavishEntity::getValue)
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2)
+                                .expand(TestdataLavishEntity::getValue, TestdataLavishEntity::getValue),
+                                (entity, valueB) -> entity.getValue())
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, value1, value1).withIndictedObjects(entity1),
+                assertMatch(entity2, value2, value2).withIndictedObjects(entity2));
+
+        // Incremental; the padding reads the planning variable, so it must be recomputed
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, value3, value3).withIndictedObjects(entity1),
+                assertMatch(entity2, value2, value2).withIndictedObjects(entity2));
+    }
+
+    @TestTemplate
+    public void concatQuadWithPadding() {
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getValue() != value2)
+                        .expand(TestdataLavishEntity::getValue)
+                        .concat(factory.forEach(TestdataLavishEntity.class)
+                                .filter(entity -> entity.getValue() == value2)
+                                .expand(TestdataLavishEntity::getValue, TestdataLavishEntity::getValue,
+                                        TestdataLavishEntity::getValue),
+                                (entity, valueB) -> entity.getValue(), (entity, valueB) -> entity.getValue())
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, value1, value1, value1).withIndictedObjects(entity1),
+                assertMatch(entity2, value2, value2, value2).withIndictedObjects(entity2));
+
+        // Incremental; the padding reads the planning variable, so it must be recomputed
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value3);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, value3, value3, value3).withIndictedObjects(entity1),
+                assertMatch(entity2, value2, value2, value2).withIndictedObjects(entity2));
+    }
+
     @Override
     @TestTemplate
     public void concatAfterGroupBy() {

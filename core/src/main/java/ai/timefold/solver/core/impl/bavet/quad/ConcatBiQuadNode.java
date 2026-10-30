@@ -37,8 +37,12 @@ public final class ConcatBiQuadNode<A, B, C, D>
 
     @Override
     protected void updateOutTupleFromLeft(BiTuple<A, B> leftTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.setA(leftTuple.getA());
-        outTuple.setB(leftTuple.getB());
+        var factA = leftTuple.getA();
+        var factB = leftTuple.getB();
+        outTuple.setA(factA);
+        outTuple.setB(factB);
+        outTuple.setC(paddingFunctionC.apply(factA, factB));
+        outTuple.setD(paddingFunctionD.apply(factA, factB));
     }
 
     @Override
