@@ -240,10 +240,12 @@ package org.acme.vehiclerouting.service;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -364,6 +366,7 @@ public class VehicleRoutePlanModelConvertor implements
                 .orElseGet(() -> modelInput.vehicles().stream()
                         .collect(Collectors.toMap(VehicleInputDTO::id, VehicleInputDTO::visitIds)));
 
+        Set<String> assignedVisitIds = new HashSet<>();
         for (Vehicle vehicle : vehicles) {
             List<String> visitIds = routeByVehicleId.get(vehicle.getId());
             if (visitIds == null || visitIds.isEmpty()) {
@@ -375,6 +378,10 @@ public class VehicleRoutePlanModelConvertor implements
                 Visit visit = visitMap.get(visitId);
                 if (visit == null) {
                     throw new IllegalArgumentException("Unknown visit '%s'.".formatted(visitId));
+                }
+                // A visit can only be in one list variable, once.
+                if (!assignedVisitIds.add(visitId)) {
+                    throw new IllegalArgumentException("Visit '%s' is assigned more than once.".formatted(visitId));
                 }
                 route.add(visit);
             }

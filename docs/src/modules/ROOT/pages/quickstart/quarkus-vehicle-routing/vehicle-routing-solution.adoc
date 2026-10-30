@@ -154,9 +154,20 @@ every vehicle's home location plus every visit's location.
 rather than reusing a named, pre-built one.
 * `setLocationsNotInMap()` lets the map service report back any locations it could not resolve,
 so the model retains that information instead of silently dropping it.
+This only records them: the matrix has no entries for those locations.
 
-After that, `Location.getTravelTimeTo(otherLocation)` returns the driving time between any two of those locations.
+After that, `Location.getTravelTimeTo(otherLocation)` returns the driving time between any two of the resolved locations.
 `Vehicle.getTotalDrivingTimeSeconds()` and `Visit.getDrivingTimeSecondsFromPreviousStandstill()` both rely on it.
+
+[WARNING]
+====
+`getTravelTimeTo()` throws when either location is missing from the matrix,
+and the route calculations call it for every leg.
+A location reported through `setLocationsNotInMap()` would therefore fail the solve if it ended up in a route.
+Do not solve a plan whose `getLocationsNotInMap()` is not empty:
+check it right after enrichment and reject the request with a clear error that names those locations,
+or remove the affected visits (and report them as unassigned) before the solver starts.
+====
 
 Two properties control how the matrix gets built:
 
