@@ -10,6 +10,8 @@ Computing that yourself means either a crude straight-line approximation, or bui
 maintaining an integration with a road-network routing engine.
 
 Timefold Solver ships a *maps extension* that does this for you.
+On its own it computes approximate times from straight-line distances.
+Connected to the xref:deploying-to-platform/introduction.adoc[Timefold Platform], it uses real road distances and traffic data.
 Your solver model declares which locations it uses; before every solve, the maps extension builds a
 travel time and distance matrix covering those locations and injects it into them.
 Your domain classes then simply ask a location how far away another location is.
@@ -67,7 +69,7 @@ Also handle the unresolved locations described in <<mapServiceUnreachableLocatio
 
 [IMPORTANT]
 ====
-`getDrivingTimeTo(...)` only works once the matrix has been built and injected.
+`getTravelTimeTo(...)` and `getDistanceTo(...)` only work once the matrix has been built and injected.
 When called on a `Location` that was never handed to the map extension, it throws.
 See <<mapServiceTesting>> for how to satisfy this in unit tests, which bypass the
 model pipeline.
@@ -85,6 +87,10 @@ Add the maps integration dependency to your project's `pom.xml`:
   <artifactId>timefold-solver-service-with-maps</artifactId>
 </dependency>
 ----
+
+There is no separate artifact for the Enterprise providers or the Timefold Platform.
+Moving from local computation to real road data is a configuration change,
+see <<mapServiceConfiguration>> and <<mapServiceProviders>>.
 
 To let the map extension build the matrix, your `@PlanningSolution` implements
 `LocationsAwareSolverModel<Score_>` instead of the plain `SolverModel<Score_>`:
@@ -216,7 +222,7 @@ timefold.platform.map-service.enable-fallback=true
 
 |`timefold.platform.map-service.use-remote`
 |`true`
-|Use the platform's remote map service, which returns real road-network driving times and
+|Use the remote map service of the xref:deploying-to-platform/introduction.adoc[Timefold Platform], which returns real road-network driving times and
  distances. Set to `false` to compute the matrix locally instead.
 
 |`timefold.platform.map-service.enable-fallback`
@@ -260,21 +266,20 @@ timefold.platform.map-service.read-timeout=3600000
 quarkus.rest-client.map-service.read-timeout=${timefold.platform.map-service.read-timeout}
 ----
 
-This map service is not packaged with Timefold Solver, it is only available on the Timefold
-platform.
+The remote map service is not packaged with Timefold Solver, it is only available on the
+xref:deploying-to-platform/introduction.adoc[Timefold Platform].
 
-The local computation is a great-circle (Haversine) distance converted to a driving time at a
-fixed average speed.
-It requires no network access and no map data, which makes it the right choice for development,
-demos and tests, but the times it produces ignore roads entirely, so never benchmark solution
-quality against it and then expect the same numbers in production.
+The local computation is a great-circle (Haversine) distance converted to a travel time at a
+fixed average speed. It requires no network access and no map data, which makes it the right choice for development,
+demos and tests, but the times it produces ignore roads and traffic entirely.
+Only the Timefold Platform brings actual road distances and traffic data.
+Never benchmark solution quality against it and then expect the same numbers in production.
 
 [WARNING]
 ====
 `use-remote=false` and `enable-fallback=true`, as shown above, are development settings. They are
 what the `vehicle-routing` https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/vehicle-routing[quickstart] uses to run without any external dependency.
-In production, leave `use-remote` at its default so the solver optimizes against real driving
-times.
+In production, leave `use-remote` at its default so the solver optimizes against real travel times.
 ====
 
 [#mapServiceProviders]
@@ -299,7 +304,8 @@ timefold.platform.map-service.provider=haversine
 |Great-circle distance between the two coordinates, converted to a driving time at a fixed average speed.
  For network-free local computation, set `timefold.platform.map-service.use-remote=false`;
  setting `provider=haversine` alone still uses the remote service by default.
- It ignores roads, water and one-way streets, so use it for development, demos and tests, not production planning.
+ It ignores roads, water, one-way streets and traffic, so use it for development, demos and tests, not production planning.
+ For real road data and traffic, use a road-network provider such as `osrm` below, available on the Timefold Platform.
 
 |`osrm`
 |Enterprise
@@ -328,13 +334,14 @@ With `use-remote=false`, the local provider computes the matrix again for every 
 This is the simplest option, and it is enough when you solve the same locations repeatedly within one running instance,
 for example when re-solving after a small change to the constraints.
 It is also the right choice when the locations differ from one dataset to the next,
-as they do in the vehicle routing quickstart.
+as they do in the https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/vehicle-routing[vehicle routing quickstart^].
 
 A name (Platform only)::
 A matrix can be stored under a name in the map service and reused across solves.
 The in-memory cache holds only one matrix, does not survive a restart, and is not shared between instances.
 Any change to the set of locations also forces a new matrix.
-Building a large matrix is expensive, it grows with the square of the number of locations.
+Building a large matrix is expensive: it holds one entry for every pair of locations,
+so 100 locations need 10,000 entries and 1,000 locations need 1,000,000.
 A fleet that visits the same few thousand sites every day, across several instances or restarts,
 should build the matrix once and name it.
 A name also lets the matrix be updated when locations change, instead of being rebuilt in full.
@@ -374,10 +381,10 @@ Reject these locations, or exclude them from routing before constraints, shadow 
 [#mapServiceTesting]
 == Testing
 
-`ConstraintVerifier` tests construct planning entities directly, bypassing the model conversion
+xref:constraints-and-score/score-calculation.adoc#constraintStreamsTesting[`ConstraintVerifier`] tests construct planning entities directly, bypassing the model conversion
 pipeline the map extension hooks into.
 The `Location` objects in such a test therefore have no matrix, and the first call to
-`getDrivingTimeTo(...)` fails.
+`getTravelTimeTo(...)` fails.
 
 Build the matrix yourself in the test fixture with `TestDistanceCalculator.initDistanceMaps(...)`.
 It takes the locations to cover, a distance function and a travel time function.
@@ -388,34 +395,37 @@ are easy to verify by hand:
 
 [source,java,options="nowrap"]
 ----
-import ai.timefold.solver.service.maps.service.test.api.TestDistanceCalculator;
+class VehicleRoutingConstraintProviderTest {
 
-private static final Location LOCATION_1 = new Location(51.01, 3.66);
-private static final Location LOCATION_2 = new Location(51.02, 3.68);
-private static final Location DISTANT_LOCATION = new Location(50.85, 4.35);
+    private static final Location LOCATION_1 = new Location(51.01, 3.66);
+    private static final Location LOCATION_2 = new Location(51.02, 3.68);
+    private static final Location DISTANT_LOCATION = new Location(50.85, 4.35);
 
-@BeforeAll
-static void initDistanceMaps() {
-    TestDistanceCalculator.initDistanceMaps(List.of(LOCATION_1, LOCATION_2, DISTANT_LOCATION),
-            (Location from, Location to) -> fixedValue(from, to), // distance function
-            (Location from, Location to) -> fixedValue(from, to)); // travel time function, in seconds
-}
-
-private static long fixedValue(Location from, Location to) {
-    if (from.equals(to)) {
-        return 0;
+    @BeforeAll
+    static void initDistanceMaps() {
+        TestDistanceCalculator.initDistanceMaps(List.of(LOCATION_1, LOCATION_2, DISTANT_LOCATION),
+                (Location from, Location to) -> fixedValue(from, to), // distance function
+                (Location from, Location to) -> fixedValue(from, to)); // travel time function, in seconds
     }
-    return from.equals(DISTANT_LOCATION) || to.equals(DISTANT_LOCATION) ? 3600 : 1;
+
+    private static long fixedValue(Location from, Location to) {
+        if (from.equals(to)) {
+            return 0;
+        }
+        return from.equals(DISTANT_LOCATION) || to.equals(DISTANT_LOCATION) ? 3600 : 1;
+    }
+
+    // ... tests
 }
 ----
+
+`TestDistanceCalculator` lives in `ai.timefold.solver.service.maps.service.test.api`.
 
 To test with more realistic values instead, use the Haversine provider and pass in all the locations in the `PlanningSolution`:
 
 [source,java,options="nowrap"]
 ----
-import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
-import ai.timefold.solver.service.maps.service.test.api.TestDistanceCalculator;
-
+// HaversineTravelTimeAndDistanceMatrixProvider is in ai.timefold.solver.service.maps.haversine.impl
 private static final HaversineTravelTimeAndDistanceMatrixProvider PROVIDER =
         new HaversineTravelTimeAndDistanceMatrixProvider(new ObjectMapper());
 
