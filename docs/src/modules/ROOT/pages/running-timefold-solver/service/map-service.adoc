@@ -68,7 +68,7 @@ Also handle the unresolved locations described in <<mapServiceUnreachableLocatio
 [IMPORTANT]
 ====
 `getDrivingTimeTo(...)` only works once the matrix has been built and injected.
-Calling it on a `Location` that was never handed to the map extension throws.
+When called on a `Location` that was never handed to the map extension, it throws.
 See <<mapServiceTesting>> for how to satisfy this in unit tests, which bypass the
 model pipeline.
 ====
