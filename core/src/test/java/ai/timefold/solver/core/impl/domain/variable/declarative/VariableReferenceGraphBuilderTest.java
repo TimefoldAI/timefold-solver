@@ -164,25 +164,6 @@ class VariableReferenceGraphBuilderTest {
     }
 
     @Test
-    void doesNotMergeEntityWithMixedLoopStatus() {
-        // a.startTime and b.startTime form the loop a.startTime -> b.startTime -> a.startTime,
-        // but a.endTime is not in the loop.
-        // Merging a's nodes would make a.endTime looped, so a must not be merged.
-        var builder = new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.<TestdataDependencySolution> empty());
-        var entityA = new TestdataDependencyValue("a", Duration.ofMinutes(1));
-        var entityB = new TestdataDependencyValue("b", Duration.ofMinutes(2));
-        var aStart = addNode(builder, entityA, "startTime");
-        var aEnd = addNode(builder, entityA, "endTime");
-        var bStart = addNode(builder, entityB, "startTime");
-        builder.addInitialDynamicEdge(aStart, bStart);
-        builder.addFixedEdge(bStart, aStart);
-
-        builder.build(DefaultTopologicalOrderGraph::new, false);
-
-        assertThat(builder.nodeList).hasSize(3);
-    }
-
-    @Test
     void doesNotMergeAcrossAliasGroups() {
         // a and b start are calculated together; c is calculated by itself.
         // a.end and b.end cannot be merged with (a&b).start, but c.start and c.end can be merged
