@@ -41,6 +41,14 @@ class UniqueResourceIdPathResolverTest {
     }
 
     @Test
+    void twoDimensionalArray() throws IOException {
+        var index = Index.of(TwoDimensionalArrayInput.class, Depot.class);
+
+        assertThat(resolve(index, TwoDimensionalArrayInput.class)).containsExactly(
+                new UniqueResource("depot", "$.depotGrid[*][*].code"));
+    }
+
+    @Test
     void noResourceId() throws IOException {
         var index = Index.of(NoResourceIdInput.class);
 
@@ -75,6 +83,10 @@ class UniqueResourceIdPathResolverTest {
         // Neither an unbounded nor a lower-bounded wildcard has fields to visit.
         List<?> unknowns;
         List<? super Visit> visitSupers;
+    }
+
+    static class TwoDimensionalArrayInput {
+        Depot[][] depotGrid;
     }
 
     static class Vehicle {

@@ -88,7 +88,7 @@ public final class ResourceIdPathResolver {
     private static void visitType(IndexView index, Type type, String path, Set<DotName> visitingSet,
             List<UniqueResource> resourceList) {
         switch (type.kind()) {
-            case ARRAY -> visitType(index, type.asArrayType().elementType(), path + "[*]", visitingSet, resourceList);
+            case ARRAY -> visitType(index, type.asArrayType().componentType(), path + "[*]", visitingSet, resourceList);
             case PARAMETERIZED_TYPE -> {
                 var argumentList = type.asParameterizedType().arguments();
                 if (isAssignableTo(type.name(), Collection.class) && argumentList.size() == 1) {
