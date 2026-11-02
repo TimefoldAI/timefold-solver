@@ -154,7 +154,8 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                                 modelDescriptor.get("id").asText(), errorCode, key, readErrorMessage(conflictBody)));
                     }
                     if (getPropertyOrParameter(PROP_MODEL_OVERWRITE, overwrite)) {
-
+                        // configure which release offset to be targetted when patching the model registration, default is 0 (latest)
+                        queryString.append("&releaseOffset=").append(getPropertyOrParameter(PROP_MODEL_OFFSET, offset));
                         requestURI =
                                 URI.create(platformUrl + "/api/platform/v1/models/" + key + "?" + queryString.toString());
                         builder = HttpRequest.newBuilder().uri(requestURI).method("PATCH",

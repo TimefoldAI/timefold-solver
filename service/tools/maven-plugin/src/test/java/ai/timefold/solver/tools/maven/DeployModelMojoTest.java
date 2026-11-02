@@ -62,6 +62,22 @@ public class DeployModelMojoTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("{}")));
 
+        wm1.stubFor(post(urlPathEqualTo("/api/platform/v1/models"))
+                .withQueryParam("registrationKey", equalTo("close-to-limit"))
+                .willReturn(aResponse()
+                        .withStatus(409)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                                "{\"id\":\"1\",\"code\":\"TFP-14001\",\"message\":\"Registered model conflicts with existing model (model_v1), unique model registration key is required\"}")));
+
+        wm1.stubFor(patch(urlPathEqualTo("/api/platform/v1/models/close-to-limit"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withHeader("X-TF-WARN-MSG",
+                                "Limit of parallel model registration approaching (current value 8, limit 10)")
+                        .withBody("{}")));
+
         // represents a conflict the platform did not identify
         wm1.stubFor(post(urlPathEqualTo("/api/platform/v1/models"))
                 .withQueryParam("registrationKey", equalTo("unknown-conflict"))
@@ -211,7 +227,29 @@ public class DeployModelMojoTest {
 
         // verify plugin performed expected HTTP call
         wm1.verify(1, postRequestedFor(urlPathEqualTo("/api/platform/v1/models"))
-                .withQueryParam("registrationKey", equalTo("model-key")));
+                .withQueryParam("registrationKey", equalTo("model-key"))
+                .withoutQueryParam("releaseOffset"));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Type is not explicitly specified so it was computed based on tenants and is set to Private",
+                Level.DEBUG);
+        log.assertContains("Model .* has been successfully deployed into platform.*", Level.INFO);
+    }
+
+    @Test
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @MojoParameter(name = "offset", value = "1")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testRegisterModelCustomOffset(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        // verify plugin performed expected HTTP call
+        wm1.verify(1, postRequestedFor(urlPathEqualTo("/api/platform/v1/models"))
+                .withQueryParam("registrationKey", equalTo("model-key"))
+                .withoutQueryParam("releaseOffset"));
 
         // assert that plugin executed and produced expected logs
         log.assertContains("Type is not explicitly specified so it was computed based on tenants and is set to Private",
@@ -234,7 +272,31 @@ public class DeployModelMojoTest {
         wm1.verify(1, postRequestedFor(urlPathEqualTo("/api/platform/v1/models"))
                 .withQueryParam("registrationKey", equalTo("existing")));
 
-        wm1.verify(1, patchRequestedFor(urlPathEqualTo("/api/platform/v1/models/existing")));
+        wm1.verify(1, patchRequestedFor(urlPathEqualTo("/api/platform/v1/models/existing"))
+                .withQueryParam("releaseOffset", equalTo("0")));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Model .* has been successfully updated on platform.*", Level.INFO);
+    }
+
+    @Test
+    @MojoParameter(name = "key", value = "existing")
+    @MojoParameter(name = "overwrite", value = "true")
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @MojoParameter(name = "offset", value = "1")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testRegisterModelWithPatchCustomOffset(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        // verify plugin performed expected HTTP call
+        wm1.verify(1, postRequestedFor(urlPathEqualTo("/api/platform/v1/models"))
+                .withQueryParam("registrationKey", equalTo("existing")));
+
+        wm1.verify(1, patchRequestedFor(urlPathEqualTo("/api/platform/v1/models/existing")).withQueryParam("releaseOffset",
+                equalTo("1")));
 
         // assert that plugin executed and produced expected logs
         log.assertContains("Model .* has been successfully updated on platform.*", Level.INFO);
