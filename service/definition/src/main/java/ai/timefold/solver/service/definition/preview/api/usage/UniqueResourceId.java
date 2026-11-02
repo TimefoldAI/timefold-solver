@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.api.usage;
+package ai.timefold.solver.service.definition.preview.api.usage;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

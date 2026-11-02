@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ai.timefold.solver.service.definition.api.usage.UniqueResourceId;
 import ai.timefold.solver.service.definition.internal.descriptor.usage.UniqueResource;
+import ai.timefold.solver.service.definition.preview.api.usage.UniqueResourceId;
 
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;

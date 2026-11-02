@@ -4,7 +4,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.service.definition.api.usage.UniqueResourceId;
+import ai.timefold.solver.service.definition.preview.api.usage.UniqueResourceId;
 
 @PlanningEntity
 public class TestdataVehicle {

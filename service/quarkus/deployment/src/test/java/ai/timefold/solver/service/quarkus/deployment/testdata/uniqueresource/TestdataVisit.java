@@ -1,6 +1,6 @@
 package ai.timefold.solver.service.quarkus.deployment.testdata.uniqueresource;
 
-import ai.timefold.solver.service.definition.api.usage.UniqueResourceId;
+import ai.timefold.solver.service.definition.preview.api.usage.UniqueResourceId;
 
 public class TestdataVisit {
 

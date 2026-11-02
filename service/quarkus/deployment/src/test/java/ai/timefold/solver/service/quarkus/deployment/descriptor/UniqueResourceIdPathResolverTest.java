@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import ai.timefold.solver.service.definition.api.usage.UniqueResourceId;
 import ai.timefold.solver.service.definition.internal.descriptor.usage.UniqueResource;
+import ai.timefold.solver.service.definition.preview.api.usage.UniqueResourceId;
 
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
