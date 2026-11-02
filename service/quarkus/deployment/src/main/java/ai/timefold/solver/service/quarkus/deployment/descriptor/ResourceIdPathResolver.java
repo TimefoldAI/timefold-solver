@@ -122,7 +122,7 @@ public final class ResourceIdPathResolver {
 
     private static boolean isAssignableTo(DotName className, Class<?> superType) {
         try {
-            var clazz = Class.forName(className.toString(), false, ResourceIdPathResolver.class.getClassLoader());
+            var clazz = Class.forName(className.toString(), false, Thread.currentThread().getContextClassLoader());
             return superType.isAssignableFrom(clazz);
         } catch (ClassNotFoundException e) {
             return false;
