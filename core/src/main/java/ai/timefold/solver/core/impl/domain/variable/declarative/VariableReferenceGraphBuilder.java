@@ -325,8 +325,9 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                             mergedNodeIdOfComponent[componentIndex], orderGraph));
                 }
             } else {
-                // node isn't merged with anything, so reuse the original node
-                newNodeList.add(oldNode);
+                // Keep the node data, but assign its index in the new list.
+                newNodeList.add(new GraphNode<>(oldNode.entity(), oldNode.variableReferences(), newNodeList.size(),
+                        oldNode.entityId(), oldNode.groupEntityIds()));
             }
             oldNodeIdToNewNodeId[oldNodeId] = isMerged ? mergedNodeIdOfComponent[componentIndex]
                     : newNodeList.size() - 1;
@@ -374,9 +375,10 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 }
                 var toList = newEdgeMap.computeIfAbsent(fromNode, ignored -> new ArrayList<>());
                 var newToNode = newNodeList.get(newToNodeId);
-                if (!toList.contains(newToNode)) {
-                    toList.add(newToNode);
-                }
+                // Do not deduplicate; dynamic edges that are merged should call `addEdge`
+                // twice so the removal of one keeps the edge present in the graph
+                // (duplicates largely don't matter since AbstractVariableReferenceGraph keep counts anyway)
+                toList.add(newToNode);
             }
         }
     }

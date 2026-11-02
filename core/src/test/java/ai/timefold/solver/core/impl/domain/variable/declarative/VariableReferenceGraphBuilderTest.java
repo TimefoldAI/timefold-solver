@@ -3,8 +3,10 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import java.time.LocalDate;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySolution;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyValue;
 
@@ -65,17 +67,25 @@ class VariableReferenceGraphBuilderTest {
     @Test
     void mergesNodesOfSameEntityInVariableTopologicalOrder() {
         var builder = new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.<TestdataDependencySolution> empty());
-        var entityA = new TestdataDependencyValue("a", Duration.ofMinutes(1));
-        var entityB = new TestdataDependencyValue("b", Duration.ofMinutes(2));
+        var startTime = LocalDate.of(2000, 1, 1).atStartOfDay();
+        var entity = new TestdataDependencyEntity(startTime);
+        var valueA = new TestdataDependencyValue("a", Duration.ofMinutes(1));
+        var valueB = new TestdataDependencyValue("b", Duration.ofMinutes(2));
+
+        valueA.setEntity(entity);
+        valueB.setEntity(entity);
+        valueB.setPreviousValue(valueA);
+
         // Add endTime before startTime so the merge cannot just keep insertion order.
-        var aStart = addNode(builder, entityA, "startTime");
-        var aEnd = addNode(builder, entityA, "endTime");
-        var bStart = addNode(builder, entityB, "startTime");
-        var bEnd = addNode(builder, entityB, "endTime");
+        var aStart = addNode(builder, valueA, "startTime");
+        var aEnd = addNode(builder, valueA, "endTime");
+        var bStart = addNode(builder, valueB, "startTime");
+        var bEnd = addNode(builder, valueB, "endTime");
         builder.addFixedEdge(aStart, aEnd);
         builder.addFixedEdge(bStart, bEnd);
+        builder.addInitialDynamicEdge(aStart, bEnd);
 
-        builder.build(DefaultTopologicalOrderGraph::new, false);
+        var graph = builder.build(DefaultTopologicalOrderGraph::new, false);
 
         assertThat(builder.nodeList).hasSize(2);
         for (var node : builder.nodeList) {
@@ -83,6 +93,12 @@ class VariableReferenceGraphBuilderTest {
             assertThat(node.variableReferences().get(0).id().name()).isEqualTo("startTime");
             assertThat(node.variableReferences().get(1).id().name()).isEqualTo("endTime");
         }
+
+        graph.updateChanged();
+        assertThat(valueA.getStartTime()).isEqualTo(startTime);
+        assertThat(valueA.getEndTime()).isEqualTo(startTime.plusMinutes(1));
+        assertThat(valueB.getStartTime()).isEqualTo(startTime.plusMinutes(1));
+        assertThat(valueB.getEndTime()).isEqualTo(startTime.plusMinutes(3));
     }
 
     @Test
@@ -168,25 +184,37 @@ class VariableReferenceGraphBuilderTest {
         // a and b start are calculated together; c is calculated by itself.
         // a.end and b.end cannot be merged with (a&b).start, but c.start and c.end can be merged
         var builder = new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.<TestdataDependencySolution> empty());
-        var entityA = new TestdataDependencyValue("a", Duration.ofMinutes(1));
-        var entityB = new TestdataDependencyValue("b", Duration.ofMinutes(2));
-        var entityC = new TestdataDependencyValue("c", Duration.ofMinutes(3));
-        var abStartShared = addSharedNode(builder, entityA, "startTime", entityA, entityB);
-        var cStart = addNode(builder, entityC, "startTime");
-        var aEnd = addNode(builder, entityA, "endTime");
-        var bEnd = addNode(builder, entityB, "endTime");
-        var cEnd = addNode(builder, entityC, "endTime");
+        var startTime = LocalDate.of(2000, 1, 1).atStartOfDay();
+        var entity = new TestdataDependencyEntity(startTime);
+        var valueA = new TestdataDependencyValue("a", Duration.ofMinutes(1));
+        var valueB = new TestdataDependencyValue("b", Duration.ofMinutes(2));
+        var valueC = new TestdataDependencyValue("c", Duration.ofMinutes(3));
+
+        valueA.setEntity(entity);
+        valueB.setEntity(entity);
+        valueC.setEntity(entity);
+
+        valueA.setPreviousValue(valueC);
+        valueB.setPreviousValue(valueC);
+
+        var abStartShared = addSharedNode(builder, valueA, "startTime", valueA, valueB);
+        var aEnd = addNode(builder, valueA, "endTime");
+        // define C in the middle so a stale index cause an exception
+        var cStart = addNode(builder, valueC, "startTime");
+        var cEnd = addNode(builder, valueC, "endTime");
+        var bEnd = addNode(builder, valueB, "endTime");
 
         builder.addFixedEdge(abStartShared, aEnd);
         builder.addFixedEdge(abStartShared, bEnd);
         builder.addFixedEdge(cStart, cEnd);
+        builder.addInitialDynamicEdge(cEnd, abStartShared);
 
-        builder.build(DefaultTopologicalOrderGraph::new, false);
+        var graph = builder.build(DefaultTopologicalOrderGraph::new, false);
 
         assertThat(builder.nodeList).hasSize(4);
 
         for (var node : builder.nodeList) {
-            if (node.entity() == entityC) {
+            if (node.entity() == valueC) {
                 assertThat(node.variableReferences()).hasSize(2);
             } else {
                 if (node.variableReferences().getFirst().variableDescriptor().getVariableName().equals("startTime")) {
@@ -198,5 +226,13 @@ class VariableReferenceGraphBuilderTest {
                 }
             }
         }
+
+        graph.updateChanged();
+        assertThat(valueC.getStartTime()).isEqualTo(startTime);
+        assertThat(valueC.getEndTime()).isEqualTo(startTime.plusMinutes(3));
+        assertThat(valueA.getStartTime()).isEqualTo(startTime.plusMinutes(3));
+        assertThat(valueA.getEndTime()).isEqualTo(startTime.plusMinutes(4));
+        assertThat(valueB.getStartTime()).isEqualTo(startTime.plusMinutes(3));
+        assertThat(valueB.getEndTime()).isEqualTo(startTime.plusMinutes(5));
     }
 }
