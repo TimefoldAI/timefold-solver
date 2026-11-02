@@ -280,6 +280,29 @@ public class DeployModelMojoTest {
     }
 
     @Test
+    @MojoParameter(name = "key", value = "close-to-limit")
+    @MojoParameter(name = "overwrite", value = "true")
+    @MojoParameter(name = "descriptorOnly", value = "true")
+    @InjectMojo(goal = "deploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testRegisterModelWithPatchWarnOnLimit(DeployModelMojo mojo) throws Exception {
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        // verify plugin performed expected HTTP call
+        wm1.verify(1, postRequestedFor(urlPathEqualTo("/api/platform/v1/models"))
+                .withQueryParam("registrationKey", equalTo("close-to-limit")));
+
+        wm1.verify(1, patchRequestedFor(urlPathEqualTo("/api/platform/v1/models/close-to-limit"))
+                .withQueryParam("releaseOffset", equalTo("0")));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Model .* has been successfully updated on platform.*", Level.INFO);
+        log.assertContains("Limit of parallel model registration approaching \\(current value 8, limit 10\\)", Level.WARN);
+    }
+
+    @Test
     @MojoParameter(name = "key", value = "existing")
     @MojoParameter(name = "overwrite", value = "true")
     @MojoParameter(name = "descriptorOnly", value = "true")

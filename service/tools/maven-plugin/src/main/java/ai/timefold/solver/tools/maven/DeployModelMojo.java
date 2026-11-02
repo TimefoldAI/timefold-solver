@@ -37,6 +37,8 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
     private static final String ERROR_CODE_MODEL_VERSION_ALREADY_EXISTS = "TFP-14005";
     private static final String ERROR_CODE_UNKNOWN = "TFP-99999";
 
+    private static final String HEADER_WARN_MSG = "X-TF-WARN-MSG";
+
     private static final List<String> OVERWRITABLE_CONFLICT_ERROR_CODES =
             List.of(ERROR_CODE_REGISTRATION_KEY_ALREADY_EXISTS, ERROR_CODE_MODEL_VERSION_ALREADY_EXISTS);
 
@@ -142,6 +144,9 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                                     "Model %s (%s) has been successfully deployed into platform %s with registration key %s",
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
+
+                    response.headers().firstValue(HEADER_WARN_MSG).ifPresent(warnMsg -> getLog().warn(warnMsg));
+
                 } else if (response.statusCode() == 409) {
                     String conflictBody = response.body();
                     String errorCode = readErrorCode(conflictBody);
@@ -154,7 +159,7 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                                 modelDescriptor.get("id").asText(), errorCode, key, readErrorMessage(conflictBody)));
                     }
                     if (getPropertyOrParameter(PROP_MODEL_OVERWRITE, overwrite)) {
-                        // configure which release offset to be targetted when patching the model registration, default is 0 (latest)
+                        // configure which release offset to be targeted when patching the model registration, default is 0 (latest)
                         queryString.append("&releaseOffset=").append(getPropertyOrParameter(PROP_MODEL_OFFSET, offset));
                         requestURI =
                                 URI.create(platformUrl + "/api/platform/v1/models/" + key + "?" + queryString.toString());
@@ -167,6 +172,8 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                                     "Model %s (%s) has been successfully updated on platform %s with registration key %s",
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
+
+                            response.headers().firstValue(HEADER_WARN_MSG).ifPresent(warnMsg -> getLog().warn(warnMsg));
                         } else {
                             printErrorInfo(response.body());
                             throw new MojoExecutionException(
