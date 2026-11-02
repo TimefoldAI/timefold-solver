@@ -102,14 +102,19 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
                     + "no recording will be made.");
             return;
         }
+        Recording newRecording = null;
         try {
-            var newRecording = new Recording(Configuration.getConfiguration(SETTINGS_NAME));
+            newRecording = new Recording(Configuration.getConfiguration(SETTINGS_NAME));
             newRecording.setName("timefold-" + PROFILE_DIR_NAME);
             newRecording.setToDisk(true);
             newRecording.start();
             recording = newRecording;
             LOGGER.info("Performance profiling enabled: recording with Java Flight Recorder ({} settings)", SETTINGS_NAME);
         } catch (IOException | ParseException | RuntimeException e) {
+            // The recording stays open on success for the lifetime of the worker; only a failed start must release it.
+            if (newRecording != null) {
+                newRecording.close();
+            }
             LOGGER.warn("Unable to start Java Flight Recorder recording due to {}", e.getMessage());
         }
     }
@@ -143,7 +148,7 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
         }
     }
 
-    private void move(Path source, Path target) throws IOException {
+    private static void move(Path source, Path target) throws IOException {
         try {
             Files.move(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException e) {

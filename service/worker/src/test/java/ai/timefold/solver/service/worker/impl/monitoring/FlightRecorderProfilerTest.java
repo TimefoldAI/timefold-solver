@@ -32,8 +32,8 @@ class FlightRecorderProfilerTest {
 
         var saved = profiler.save();
 
-        assertThat(saved).isEqualTo(artifactsDir.toAbsolutePath().resolve("performance-profiling/solver-profile.jfr"));
-        assertThat(saved).isRegularFile();
+        assertThat(saved).isEqualTo(artifactsDir.toAbsolutePath().resolve("performance-profiling/solver-profile.jfr"))
+                .isRegularFile();
         assertThat(RecordingFile.readAllEvents(saved)).isNotEmpty();
     }
 
