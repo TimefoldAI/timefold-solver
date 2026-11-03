@@ -59,8 +59,10 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
 
     @Inject
     public FlightRecorderProfiler(
-            @ConfigProperty(name = "timefold.platform.monitoring.jfr.enabled", defaultValue = "false") Boolean enabled) {
-        this(enabled, executionProfileDir());
+            @ConfigProperty(name = "timefold.platform.monitoring.jfr.enabled", defaultValue = "false") Boolean enabled,
+            @ConfigProperty(name = "ai.timefold.execution.profile.dir",
+                    defaultValue = EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR) String executionProfileDir) {
+        this(enabled, Path.of(executionProfileDir));
     }
 
     public FlightRecorderProfiler(boolean enabled, Path executionProfileDir) {
@@ -80,7 +82,8 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
 
     @Override
     public void processComputed(ModelOutput modelOutput, SolverModel<?> solverModel, String id) {
-        // no op: called before solving starts, when the recording holds nothing of interest yet.
+        // no op: the recording already covers validation and computing the outputs, but a
+        // later save on completion, failure or shutdown (which also covers compute-only runs) replaces it anyway.
     }
 
     @Override
@@ -155,10 +158,5 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
             // Different file systems; a plain move is the best we can do.
             Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
         }
-    }
-
-    private static Path executionProfileDir() {
-        var dir = System.getenv(EnvironmentVars.ENV_TIMEFOLD_EXECUTION_PROFILE_DIR);
-        return Path.of(dir != null && !dir.isBlank() ? dir : EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR);
     }
 }
