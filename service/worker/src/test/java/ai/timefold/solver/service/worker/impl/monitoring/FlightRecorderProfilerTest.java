@@ -38,16 +38,17 @@ class FlightRecorderProfilerTest {
     }
 
     @Test
-    void laterSaveReplacesEarlierRecording() {
+    void onlyFirstSaveWritesRecording() {
         var profiler = new FlightRecorderProfiler(true, artifactsDir);
         profiler.start();
 
         var first = profiler.save();
         var second = profiler.save();
 
-        assertThat(second).isEqualTo(first).isRegularFile();
-        assertThat(artifactsDir.resolve("performance-profiling")).isDirectoryContaining(
-                path -> path.getFileName().toString().equals("solver-profile.jfr"));
+        assertThat(first).isRegularFile();
+        assertThat(second).isNull();
+        assertThat(FlightRecorder.getFlightRecorder().getRecordings())
+                .noneMatch(recording -> recording.getName().equals("timefold-performance-profiling"));
     }
 
     @Test

@@ -34,12 +34,12 @@ import jdk.jfr.Recording;
  * ({@code timefold.platform.monitoring.jfr.enabled}, set by the {@code performance-profiling} execution profile).
  * <p>
  * The recording starts with the JDK's built-in {@code profile} settings when the worker starts, and is saved into the
- * {@value #PROFILE_DIR_NAME} subdirectory of the execution-profile artifacts directory whenever the run completes, fails or the
- * worker shuts down. A later save replaces the earlier file with a longer recording. Saving has to happen before the artifacts
- * are uploaded, so this post processor runs ahead of the others ({@link Priority}, higher goes first) and its shutdown observer
- * runs ahead of the default ones (lower goes first). The file is written elsewhere and moved into place, so an upload running
- * on another thread never picks up a half-written recording. The recording keeps running across saves, the same as
- * {@code jcmd JFR.dump}, and is only closed when the worker is destroyed.
+ * {@value #PROFILE_DIR_NAME} subdirectory of the execution-profile artifacts directory when the run completes, fails or the
+ * worker shuts down, whichever comes first. The artifacts are uploaded only once per run, right after that, so the first save
+ * stops and closes the recording and later ones do nothing. Saving has to happen before the artifacts are uploaded, so this
+ * post processor runs ahead of the others ({@link Priority}, higher goes first) and its shutdown observer runs ahead of the
+ * default ones (lower goes first). The file is written elsewhere and moved into place, so an upload running on another thread
+ * never picks up a half-written recording.
  * <p>
  * A JVM without JFR, such as a native image built without it, skips the recording with a warning.
  */
@@ -83,8 +83,8 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
 
     @Override
     public void processComputed(ModelOutput modelOutput, SolverModel<?> solverModel, String id) {
-        // no op: the recording already covers validation and computing the outputs, but a
-        // later save on completion, failure or shutdown (which also covers compute-only runs) replaces it anyway.
+        // no op: saving here would end the recording before solving starts. The save on completion, failure or shutdown
+        // (which also covers compute-only runs) still includes validation and computing the outputs.
     }
 
     @Override
@@ -115,7 +115,7 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
             recording = newRecording;
             LOGGER.info("Performance profiling enabled: recording with Java Flight Recorder ({} settings)", SETTINGS_NAME);
         } catch (IOException | ParseException | RuntimeException e) {
-            // The recording stays open on success for the lifetime of the worker; only a failed start must release it.
+            // On success the recording stays open until it is saved; only a failed start must release it here.
             if (newRecording != null) {
                 newRecording.close();
             }
@@ -124,17 +124,23 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
     }
 
     /**
-     * @return the saved recording, or null if there is no recording or it could not be saved
+     * Stops the recording, writes it to the recording file and closes it. Only the first call does anything: the artifacts
+     * are uploaded once per run, right after the first save, so a later recording would never be uploaded.
+     *
+     * @return the saved recording, or null if there is no recording (anymore) or it could not be saved
      */
-    Path save() {
+    synchronized Path save() {
         if (recording == null) {
             return null;
         }
+        var finishedRecording = recording;
+        recording = null;
         Path tempFile = null;
         try {
             Files.createDirectories(recordingFile.getParent());
             tempFile = Files.createTempFile("solver-profile-", ".jfr");
-            recording.dump(tempFile);
+            finishedRecording.stop();
+            finishedRecording.dump(tempFile);
             move(tempFile, recordingFile);
             LOGGER.info("Java Flight Recorder recording written to {}", recordingFile);
             return recordingFile;
@@ -142,6 +148,7 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
             LOGGER.warn("Unable to write Java Flight Recorder recording to {} due to {}", recordingFile, e.getMessage());
             return null;
         } finally {
+            finishedRecording.close();
             if (tempFile != null) {
                 try {
                     Files.deleteIfExists(tempFile);
