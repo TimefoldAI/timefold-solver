@@ -31,7 +31,7 @@ public class EnvironmentVars {
      * Directory the solver worker collects execution-profile diagnostic artifacts into; its contents are zipped and
      * uploaded when the run finishes.
      */
-    public static final String ENV_TIMEFOLD_EXECUTION_PROFILE_DIR = "AI_TIMEFOLD_EXECUTION_PROFILE_DIR";
+    public static final String ENV_TIMEFOLD_EXECUTION_PROFILE_DIR = "TIMEFOLD_PLATFORM_EXECUTION_PROFILE_DIR";
 
     /**
      * Default value for {@link #ENV_TIMEFOLD_EXECUTION_PROFILE_DIR} when the variable is not set.

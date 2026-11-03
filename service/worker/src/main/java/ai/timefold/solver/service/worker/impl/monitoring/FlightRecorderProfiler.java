@@ -38,7 +38,8 @@ import jdk.jfr.Recording;
  * worker shuts down. A later save replaces the earlier file with a longer recording. Saving has to happen before the artifacts
  * are uploaded, so this post processor runs ahead of the others ({@link Priority}, higher goes first) and its shutdown observer
  * runs ahead of the default ones (lower goes first). The file is written elsewhere and moved into place, so an upload running
- * on another thread never picks up a half-written recording.
+ * on another thread never picks up a half-written recording. The recording keeps running across saves, the same as
+ * {@code jcmd JFR.dump}, and is only closed when the worker is destroyed.
  * <p>
  * A JVM without JFR, such as a native image built without it, skips the recording with a warning.
  */
@@ -60,7 +61,7 @@ public class FlightRecorderProfiler implements ModelPostProcessor {
     @Inject
     public FlightRecorderProfiler(
             @ConfigProperty(name = "timefold.platform.monitoring.jfr.enabled", defaultValue = "false") Boolean enabled,
-            @ConfigProperty(name = "ai.timefold.execution.profile.dir",
+            @ConfigProperty(name = "timefold.platform.execution-profile.dir",
                     defaultValue = EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR) String executionProfileDir) {
         this(enabled, Path.of(executionProfileDir));
     }
