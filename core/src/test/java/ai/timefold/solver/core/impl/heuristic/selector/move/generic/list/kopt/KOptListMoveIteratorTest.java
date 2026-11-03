@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -289,10 +290,12 @@ class KOptListMoveIteratorTest {
         var distinctEntityList = Arrays.stream(entities).distinct().toList();
         var entityListIndex = distinctEntityList.indexOf(entities[k]);
         when(mocks.workingRandom.ints(0, distinctEntityList.size()))
-                .thenReturn(IntStream.iterate(entityListIndex, value -> value));
+                .thenAnswer(invocation -> IntStream.iterate(entityListIndex, value -> value));
         when(mocks.workingRandom.nextInt(entityToList.get(distinctEntityList.get(entityListIndex)).size()))
                 .thenReturn(finalValueIndex);
         when(mocks.valueSelector.iterator()).thenReturn(pickedValueList.iterator());
+        // The 4-opt makes 2 cycles; the expected move patches the second one.
+        when(mocks.workingRandom.nextInt(2)).thenReturn(1);
 
         var out = new KOptMoveInfo();
 
@@ -365,6 +368,8 @@ class KOptListMoveIteratorTest {
         var kOptListMove =
                 (SelectorBasedKOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
         kOptMoveInfo.verify(kOptListMove);
+        // Any of the 2 cycles can be patched.
+        verify(mocks.workingRandom).nextInt(2);
     }
 
     @Test
@@ -375,6 +380,8 @@ class KOptListMoveIteratorTest {
         var kOptListMove =
                 (SelectorBasedKOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
         kOptMoveInfo.verify(kOptListMove);
+        // Any of the 2 cycles can be patched.
+        verify(mocks.workingRandom).nextInt(2);
     }
 
 }
