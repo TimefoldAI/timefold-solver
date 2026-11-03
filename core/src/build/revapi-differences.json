@@ -180,7 +180,7 @@
         {
           "ignore": true,
           "code": "java.method.addedToInterface",
-          "new": "method ai.timefold.solver.core.api.solver.MoveEvaluator<Solution_> ai.timefold.solver.core.api.solver.SolutionManager<Solution_, Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::moveEvaluator(Solution_)",
+          "new": "method ai.timefold.solver.core.api.solver.MoveEvaluator<Solution_, Score_> ai.timefold.solver.core.api.solver.SolutionManager<Solution_, Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::moveEvaluator(Solution_)",
           "justification": "Added a public API for move evaluation"
         }
       ]

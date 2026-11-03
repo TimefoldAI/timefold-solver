@@ -9,6 +9,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.PillarChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
@@ -235,6 +236,18 @@ public final class MoveProviderUtil {
         // This is why PillarChangeMoveProvider/SubPillarChangeMoveProvider can only ever cross null downward (unassign),
         // regardless of their own crossingNull flag.
         return entityStream.filter((solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null);
+    }
+
+    /**
+     * A move's {@link Object#toString()} may read the working solution, which a failed undo left corrupted,
+     * and throw; that must not replace the undo failure.
+     */
+    public static String toStringSafely(Move<?> move) {
+        try {
+            return move.toString();
+        } catch (RuntimeException e) {
+            return move.getClass().getName();
+        }
     }
 
     private MoveProviderUtil() {

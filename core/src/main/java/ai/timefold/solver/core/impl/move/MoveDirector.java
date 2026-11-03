@@ -19,6 +19,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVa
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
@@ -662,12 +663,25 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      */
     public final void execute(Move<Solution_> move, boolean guaranteeFreshScore) {
         executeAllowingStructurallyFlawedSolutions(move);
-        if (!backingScoreDirector.isLastVariableUpdateSuccessful()) {
-            throw new IllegalArgumentException("The move (%s) caused the solution to become structurally flawed."
-                    .formatted(move));
-        }
+        ensureStructurallySound(move);
         if (guaranteeFreshScore) {
             backingScoreDirector.calculateScore();
+        }
+    }
+
+    /**
+     * Throws if the last variable update left the working solution structurally flawed.
+     * Must be called while the move is still applied; once the move is undone, the flaw is gone.
+     *
+     * @param move the move that was just executed, used in the message
+     * @throws IllegalArgumentException if the working solution is structurally flawed
+     */
+    public void ensureStructurallySound(Move<Solution_> move) {
+        if (!backingScoreDirector.isLastVariableUpdateSuccessful()) {
+            throw new IllegalArgumentException("""
+                    The move (%s) caused the solution to become structurally flawed.
+                    Maybe check that the move does not make shadow variables depend on each other in a cycle."""
+                    .formatted(move));
         }
     }
 
@@ -844,7 +858,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             backingScoreDirector.getSolutionDescriptor().setScore(workingSolution, previousScore);
         } catch (RuntimeException e) {
             throw new UndoCorruptionException("Undoing the move (%s) failed, so the working solution is corrupted."
-                    .formatted(move), e);
+                    .formatted(MoveProviderUtil.toStringSafely(move)), e);
         }
     }
 

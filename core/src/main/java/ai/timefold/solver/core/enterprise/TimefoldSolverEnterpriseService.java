@@ -248,7 +248,7 @@ public interface TimefoldSolverEnterpriseService {
                     Function<In_, @Nullable Out_> propositionFunction,
                     ScoreAnalysisFetchPolicy fetchPolicy);
 
-    <Solution_, Score_ extends Score<Score_>> MoveEvaluator<Solution_>
+    <Solution_, Score_ extends Score<Score_>> MoveEvaluator<Solution_, Score_>
             buildMoveEvaluator(ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, Solution_ solution);
 
     enum Feature {

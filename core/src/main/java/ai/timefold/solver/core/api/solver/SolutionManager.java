@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -309,7 +310,10 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *
      * @param solution the solution to be cloned and on which the moves will be evaluated
      * @return a new evaluator, to be closed when no longer needed
+     * @throws InconsistentSolutionException if the solution is structurally flawed
+     * @throws IllegalStateException if the score calculator does not support constraint matching,
+     *         such as an Easy or Incremental score calculator
      */
-    MoveEvaluator<Solution_> moveEvaluator(Solution_ solution);
+    MoveEvaluator<Solution_, Score_> moveEvaluator(Solution_ solution);
 
 }

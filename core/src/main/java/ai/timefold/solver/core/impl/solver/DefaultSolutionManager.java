@@ -179,7 +179,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public MoveEvaluator<Solution_> moveEvaluator(Solution_ solution) {
+    public MoveEvaluator<Solution_, Score_> moveEvaluator(Solution_ solution) {
         var enterpriseService =
                 TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MOVE_EVALUATOR);
         return enterpriseService.buildMoveEvaluator(scoreDirectorFactory, solution);

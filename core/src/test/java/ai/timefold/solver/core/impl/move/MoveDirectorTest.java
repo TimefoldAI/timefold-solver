@@ -2781,17 +2781,77 @@ class MoveDirectorTest {
         var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
         var moveDirector = new MoveDirector<>(scoreDirector);
         assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
-            if (!scoreDirector.isLastVariableUpdateSuccessful()) {
-                throw new IllegalArgumentException("Structurally flawed.");
-            }
+            moveDirector.ensureStructurallySound(move);
             return null;
         })).isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Structurally flawed.");
+                .hasMessageContainingAll("caused the solution to become structurally flawed.",
+                        "Maybe check that the move does not make shadow variables depend on each other in a cycle.");
 
         assertSoftly(softly -> {
             softly.assertThat(e1.getValues()).containsExactly(b1, b2);
             softly.assertThat(solutionDescriptor.<HardSoftScore> getScore(solution)).isEqualTo(previousScore);
         });
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureReportsUndoFailureWhenMoveCannotBePrinted() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        // No dependencies, so the swap is structurally sound.
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        // Emptying the list behind the move director makes the undo fail on stale indexes,
+        // and the swap's toString() as well, as it reads the values at those indexes.
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            e1.getValues().clear();
+            return null;
+        })).isInstanceOf(UndoCorruptionException.class)
+                .hasMessageContaining("Undoing the move (" + move.getClass().getName() + ") failed")
+                .hasCauseInstanceOf(IndexOutOfBoundsException.class);
+    }
+
+    @Test
+    void executeRejectsStructurallyFlawedMove() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        b2.setDependencies(List.of(b1));
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        // Swapping the two values makes b2 (which depends on b1) precede b1, creating a dependency cycle.
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        assertThatThrownBy(() -> moveDirector.execute(move))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("caused the solution to become structurally flawed.",
+                        "Maybe check that the move does not make shadow variables depend on each other in a cycle.");
     }
 
     @Test

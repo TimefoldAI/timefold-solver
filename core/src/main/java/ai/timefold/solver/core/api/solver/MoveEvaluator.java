@@ -39,8 +39,12 @@ import org.jspecify.annotations.Nullable;
  * If a move fails while it is being executed, it may leave the working solution half-changed.
  * The evaluator then can no longer be used, and every further call throws {@link IllegalStateException};
  * create a new evaluator from the original solution instead.
+ * The same happens if calculating the score fails, as the score calculation may then be only partly updated.
  * Exceptions thrown after a temporary move was fully executed, such as by its postprocessor,
  * do not have this effect, unless undoing the move fails; see {@link #executeTemporaryMove(Move, Function)}.
+ * <p>
+ * The evaluator needs a score calculator that supports constraint matching, such as Constraint Streams,
+ * because {@link MoveEvaluatorContext#getScoreAnalysis()} relies on it.
  * <p>
  * The evaluator holds resources and must be {@link #close() closed} when no longer needed,
  * preferably using a try-with-resources block.
@@ -50,9 +54,10 @@ import org.jspecify.annotations.Nullable;
  * Note: The move evaluator is exclusive to Timefold Solver Enterprise Edition.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Score_> the actual score type
  */
 @NullMarked
-public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
+public interface MoveEvaluator<Solution_, Score_ extends Score<Score_>> extends Lookup, AutoCloseable {
 
     /**
      * Describes the structure of the planning solution,
@@ -60,7 +65,7 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      *
      * @return the meta model of the planning solution
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
-     *         or can no longer be used because an earlier move failed while being executed
+     *         or can no longer be used because an earlier move or score calculation failed
      */
     PlanningSolutionMetaModel<Solution_> getSolutionMetaModel();
 
@@ -73,7 +78,7 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      *
      * @return the working solution
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
-     *         or can no longer be used because an earlier move failed while being executed
+     *         or can no longer be used because an earlier move or score calculation failed
      */
     Solution_ getWorkingSolution();
 
@@ -83,12 +88,11 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      * Does not execute any move and does not change any planning variable;
      * only the {@link ai.timefold.solver.core.api.domain.solution.PlanningScore score} field is updated.
      *
-     * @param <Score_> the actual score type
      * @return the score of the working solution
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
-     *         or can no longer be used because an earlier move failed while being executed
+     *         or can no longer be used because an earlier move or score calculation failed
      */
-    <Score_ extends Score<Score_>> Score_ calculateScore();
+    Score_ calculateScore();
 
     /**
      * Executes the move on the working solution and keeps its changes.
@@ -99,13 +103,16 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      * A permanent move cannot be undone.
      * If this method throws for any reason, including a structurally flawed working solution,
      * the evaluator can no longer be used.
+     * If the move may make the working solution structurally flawed,
+     * execute it with {@link #executeTemporaryMove(Move)} first:
+     * a temporary move is undone when it does, and the evaluator remains usable.
      *
      * @param move must only reference instances of the working solution
      * @throws IllegalArgumentException if the move makes the working solution structurally flawed,
      *         for example by creating a loop in shadow variables;
      *         the evaluator can no longer be used afterwards
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
-     *         or can no longer be used because an earlier move failed while being executed
+     *         or can no longer be used because an earlier move or score calculation failed
      */
     void executeMove(Move<Solution_> move);
 
@@ -117,16 +124,15 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      * with {@link MoveEvaluatorContext#getScore()} as the postprocessor.
      *
      * @param move must only reference instances of the working solution
-     * @param <Score_> the actual score type
      * @return the score the working solution would have if the move was executed
      * @throws IllegalArgumentException if the move makes the working solution structurally flawed,
      *         for example by creating a loop in shadow variables
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
-     *         or can no longer be used because an earlier move failed while being executed
+     *         or can no longer be used because an earlier move or score calculation failed
      */
-    default <Score_ extends Score<Score_>> Score_ executeTemporaryMove(Move<Solution_> move) {
+    default Score_ executeTemporaryMove(Move<Solution_> move) {
         return Objects.requireNonNull(executeTemporaryMove(move, MoveEvaluatorContext::getScore),
-                () -> "The move (%s) failed to calculate a score.".formatted(move));
+                () -> "Impossible state: the score after the move (%s) is null.".formatted(move));
     }
 
     /**
@@ -175,10 +181,10 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      * @throws IllegalArgumentException if the move makes the working solution structurally flawed,
      *         for example by creating a loop in shadow variables
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
-     *         or can no longer be used because an earlier move failed while being executed
+     *         or can no longer be used because an earlier move or score calculation failed
      */
     <Result_> @Nullable Result_ executeTemporaryMove(Move<Solution_> move,
-            Function<MoveEvaluatorContext<Solution_>, @Nullable Result_> postprocessor);
+            Function<MoveEvaluatorContext<Solution_, Score_>, @Nullable Result_> postprocessor);
 
     /**
      * Translates an entity or fact instance, such as one from the solution given to
@@ -188,7 +194,7 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      * Otherwise as defined by {@link Lookup#lookUpWorkingObject(Object)}.
      *
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
-     *         or can no longer be used because an earlier move failed while being executed
+     *         or can no longer be used because an earlier move or score calculation failed
      */
     @Override
     <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity);
@@ -196,6 +202,7 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
     /**
      * Releases all resources held by this evaluator.
      * The evaluator must not be used after it has been closed.
+     * Calling this method more than once has no effect.
      */
     @Override
     void close();

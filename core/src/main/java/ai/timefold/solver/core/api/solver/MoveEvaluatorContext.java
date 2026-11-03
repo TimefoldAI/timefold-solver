@@ -23,9 +23,10 @@ import org.jspecify.annotations.NullMarked;
  * The documentation of each method describes what remains valid once the move is undone.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Score_> the actual score type
  */
 @NullMarked
-public interface MoveEvaluatorContext<Solution_> {
+public interface MoveEvaluatorContext<Solution_, Score_ extends Score<Score_>> {
 
     /**
      * Returns the {@link MoveEvaluator#getWorkingSolution() working solution} with the move applied,
@@ -51,11 +52,10 @@ public interface MoveEvaluatorContext<Solution_> {
      * <p>
      * The score is a value object; it remains valid after the move is undone.
      *
-     * @param <Score_> the actual score type
      * @return the score after the move
      * @throws IllegalStateException if called after the postprocessor returned
      */
-    <Score_ extends Score<Score_>> Score_ getScore();
+    Score_ getScore();
 
     /**
      * Returns the analysis of the score of the working solution with the move applied.
@@ -71,22 +71,20 @@ public interface MoveEvaluatorContext<Solution_> {
      * Extract what is needed from them inside the postprocessor.
      *
      * @param fetchPolicy how much detail the analysis includes
-     * @param <Score_> the actual score type
      * @return the analysis of the score after the move
      * @throws IllegalStateException if called after the postprocessor returned
      */
-    <Score_ extends Score<Score_>> ScoreAnalysis<Score_> getScoreAnalysis(ScoreAnalysisFetchPolicy fetchPolicy);
+    ScoreAnalysis<Score_> getScoreAnalysis(ScoreAnalysisFetchPolicy fetchPolicy);
 
     /**
      * As defined by {@link #getScoreAnalysis(ScoreAnalysisFetchPolicy)},
      * using {@link ScoreAnalysisFetchPolicy#FETCH_JUSTIFICATIONS},
      * the same default as {@link SolutionManager#analyze(Object)}.
      *
-     * @param <Score_> the actual score type
      * @return the analysis of the score after the move
      * @throws IllegalStateException if called after the postprocessor returned
      */
-    default <Score_ extends Score<Score_>> ScoreAnalysis<Score_> getScoreAnalysis() {
+    default ScoreAnalysis<Score_> getScoreAnalysis() {
         return getScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_JUSTIFICATIONS);
     }
 
