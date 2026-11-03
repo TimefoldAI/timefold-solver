@@ -190,23 +190,23 @@ public final class VariableReferenceGraphBuilder<Solution_> {
 
         // Find the connected components of the same-entity nodes via the direct edges;
         // only those nodes can be merged into one node.
-        var entityToNodeIds = new IdentityHashMap<Object, List<Integer>>();
+        var entityToNodeIds = new IdentityHashMap<Object, BitSet>();
         for (var i = 0; i < size; i++) {
-            entityToNodeIds.computeIfAbsent(nodeList.get(i).entity(), ignored -> new ArrayList<>()).add(i);
+            entityToNodeIds.computeIfAbsent(nodeList.get(i).entity(), ignored -> new BitSet()).set(i);
         }
 
         // component = same entity nodes connected by fixed edges. Nodes with non-empty groups are not considered
         // part of the component.
         var componentIndexOfNode = new int[size];
         Arrays.fill(componentIndexOfNode, -1); // -1 = no connected same entity nodes
-        var componentToNodeIds = new ArrayList<List<Integer>>();
+        var componentToNodeIds = new ArrayList<BitSet>();
         var visited = new boolean[size];
         for (var nodeIds : entityToNodeIds.values()) {
-            for (var startId : nodeIds) {
+            for (var startId : nodeIds.stream().toArray()) {
                 if (visited[startId] || nodeList.get(startId).groupEntityIds() != null) {
                     continue;
                 }
-                var component = new ArrayList<Integer>();
+                var component = new BitSet();
                 var queue = new ArrayDeque<>(List.of(startId));
                 visited[startId] = true;
 
@@ -214,7 +214,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 // the first one in a chain
                 while (!queue.isEmpty()) {
                     var currentId = queue.poll();
-                    component.add(currentId);
+                    component.set(currentId);
                     for (var nextId : forwardEdges[currentId].stream().toArray()) {
                         if (!visited[nextId] && isSameEntityNode(nextId, startId, backwardEdges)) {
                             visited[nextId] = true;
@@ -230,7 +230,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 }
                 if (component.size() > 1) {
                     var componentIndex = componentToNodeIds.size();
-                    for (var nodeId : component) {
+                    for (var nodeId : component.stream().toArray()) {
                         componentIndexOfNode[nodeId] = componentIndex;
                     }
                     componentToNodeIds.add(component);
@@ -281,7 +281,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
      * @return for each component, whether merging it together with all the other mergeable
      *         components does not create a loop
      */
-    private boolean[] canMergeComponents(List<List<Integer>> componentToNodeIds, int[] componentIndexOfNode,
+    private boolean[] canMergeComponents(List<BitSet> componentToNodeIds, int[] componentIndexOfNode,
             int graphNodeCount) {
         // A vertex for every component and for every node that is not in a component.
         var componentCount = componentToNodeIds.size();
@@ -330,7 +330,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         }
     }
 
-    private void replaceNodesWithMergedNodes(List<List<Integer>> componentToNodeIds,
+    private void replaceNodesWithMergedNodes(List<BitSet> componentToNodeIds,
             boolean[] canMergeComponent, int[] componentIndexOfNode, DefaultTopologicalOrderGraph orderGraph) {
         var oldNodeIdToNewNodeId = new int[nodeList.size()];
         var mergedNodeIdOfComponent = new int[componentToNodeIds.size()];
@@ -361,17 +361,16 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         nodeList.addAll(newNodeList);
     }
 
-    private GraphNode<Solution_> createMergedNode(List<Integer> component, int newNodeId,
+    private GraphNode<Solution_> createMergedNode(BitSet component, int newNodeId,
             DefaultTopologicalOrderGraph orderGraph) {
-        var sortedNodeIds = new ArrayList<>(component);
-        sortedNodeIds.sort(Comparator
+        var sortedNodeIds = component.stream().boxed().sorted(Comparator
                 .comparingInt(orderGraph::getTopologicalOrder)
-                .thenComparingInt(Integer::intValue));
+                .thenComparingInt(Integer::intValue)).collect(Collectors.toCollection(ArrayList::new));
         var mergedUpdaters = new ArrayList<VariableUpdaterInfo<Solution_>>();
         for (var nodeId : sortedNodeIds) {
             mergedUpdaters.addAll(nodeList.get(nodeId).variableReferences());
         }
-        var firstNode = nodeList.get(component.getFirst());
+        var firstNode = nodeList.get(component.nextSetBit(0));
         return new GraphNode<>(firstNode.entity(), mergedUpdaters, newNodeId, firstNode.entityId(), null,
                 firstNode.hasDynamicEdges());
     }

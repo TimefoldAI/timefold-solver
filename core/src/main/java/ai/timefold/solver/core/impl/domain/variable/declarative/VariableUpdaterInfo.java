@@ -33,6 +33,18 @@ public record VariableUpdaterInfo<Solution_>(
                 null);
     }
 
+    public VariableUpdaterInfo(DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
+            DefaultShadowVariableSessionFactory.GraphDescriptor<Solution_> graphDescriptor,
+            int groupId) {
+        this(variableDescriptor.getVariableMetaModel(),
+                groupId,
+                variableDescriptor,
+                graphDescriptor.consistencyTracker().getDeclarativeEntityConsistencyState(
+                        variableDescriptor.getEntityDescriptor()),
+                variableDescriptor.getMemberAccessor(),
+                variableDescriptor.getCalculator());
+    }
+
     public VariableUpdaterInfo<Solution_> withGroupEntities(Object[] groupEntities) {
         return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, entityConsistencyState, memberAccessor,
                 calculator, groupEntities);
