@@ -35,4 +35,16 @@ class KOptListMoveSelectorTest {
         assertThat(buildSelector(valueCount, minK, maxK).getSize()).isEqualTo(Long.MAX_VALUE);
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "10, 2, 2, 36", // 1 * C(9, 2)
+            "10, 3, 3, 336", // 4 * C(9, 3)
+            "10, 2, 3, 372",
+            "3, 3, 3, 0", // A 3-opt needs more than 3 values.
+            "4, 2, 3, 7" // 1 * C(3, 2) + 4 * C(3, 3)
+    })
+    void sizeIncludesMaximumK(long valueCount, int minK, int maxK, long expectedSize) {
+        assertThat(buildSelector(valueCount, minK, maxK).getSize()).isEqualTo(expectedSize);
+    }
+
 }
