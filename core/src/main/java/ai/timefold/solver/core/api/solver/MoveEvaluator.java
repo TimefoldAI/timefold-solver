@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.api.solver;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
@@ -23,18 +22,25 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Moves can be executed in two ways:
  * <ul>
- * <li>Permanently, using {@link #executeMove(Move)}, {@link #executeMoveAndCalculate(Move)}
- * or {@link #executeMoveAndAnalyze(Move, ScoreAnalysisFetchPolicy)}.
- * The working solution keeps the changes, and subsequent moves build on top of them.</li>
- * <li>Temporarily, using {@link #executeTemporaryMove(Move)}
- * or {@link #executeTemporaryMoveAndAnalyze(Move, ScoreAnalysisFetchPolicy)}.
+ * <li>Permanently, using {@link #executeMove(Move)}.
+ * The working solution keeps the changes, and subsequent moves build on top of them.
+ * Call {@link #calculateScore()} afterwards if the resulting score is needed.</li>
+ * <li>Temporarily, using {@link #executeTemporaryMove(Move)}.
  * The move is executed, its score is calculated, and the move is then undone,
  * returning the working solution to the state it was in before the move.
  * Use this to compare several alternative moves against the same starting point.
- * To inspect the working solution while the move is still applied,
- * use {@link #executeTemporaryMove(Move, Function)}
- * or {@link #executeTemporaryMoveAndAnalyze(Move, ScoreAnalysisFetchPolicy, BiFunction)}.</li>
+ * To get more than the score, such as the {@link ScoreAnalysis}
+ * or information from the working solution while the move is still applied,
+ * use {@link #executeTemporaryMove(Move, Function)}, which exposes a {@link MoveEvaluatorContext}.</li>
  * </ul>
+ * <p>
+ * To get the score of the working solution without executing a move, use {@link #calculateScore()}.
+ * <p>
+ * If a move fails while it is being executed, it may leave the working solution half-changed.
+ * The evaluator then can no longer be used, and every further call throws {@link IllegalStateException};
+ * create a new evaluator from the original solution instead.
+ * Exceptions thrown after a temporary move was fully executed, such as by its postprocessor,
+ * do not have this effect, unless undoing the move fails; see {@link #executeTemporaryMove(Move, Function)}.
  * <p>
  * The evaluator holds resources and must be {@link #close() closed} when no longer needed,
  * preferably using a try-with-resources block.
@@ -51,6 +57,10 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
     /**
      * Describes the structure of the planning solution,
      * useful for building {@link Move}s that refer to planning variables generically.
+     *
+     * @return the meta model of the planning solution
+     * @throws IllegalStateException if this evaluator has been {@link #close() closed},
+     *         or can no longer be used because an earlier move failed while being executed
      */
     PlanningSolutionMetaModel<Solution_> getSolutionMetaModel();
 
@@ -60,127 +70,115 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      * temporary moves are no longer visible once their execution method returns.
      * <p>
      * Do not modify the returned solution directly; only change it through {@link Move}s.
+     *
+     * @return the working solution
+     * @throws IllegalStateException if this evaluator has been {@link #close() closed},
+     *         or can no longer be used because an earlier move failed while being executed
      */
     Solution_ getWorkingSolution();
 
     /**
      * Calculates the score of the {@link #getWorkingSolution() working solution} in its current state,
      * which reflects all moves executed permanently so far.
-     * Does not execute any move and does not change the working solution.
+     * Does not execute any move and does not change any planning variable;
+     * only the {@link ai.timefold.solver.core.api.domain.solution.PlanningScore score} field is updated.
      *
      * @param <Score_> the actual score type
      * @return the score of the working solution
+     * @throws IllegalStateException if this evaluator has been {@link #close() closed},
+     *         or can no longer be used because an earlier move failed while being executed
      */
     <Score_ extends Score<Score_>> Score_ calculateScore();
 
     /**
      * Executes the move on the working solution and keeps its changes.
      * Shadow variables are updated, but the score is not calculated.
-     * Use this when the score is not needed, as it is the fastest of the execution methods.
+     * This is the fastest way of executing a move.
+     * To obtain the score after the move, call {@link #calculateScore()}.
+     * <p>
+     * A permanent move cannot be undone.
+     * If this method throws for any reason, including a structurally flawed working solution,
+     * the evaluator can no longer be used.
      *
      * @param move must only reference instances of the working solution
+     * @throws IllegalArgumentException if the move makes the working solution structurally flawed,
+     *         for example by creating a loop in shadow variables;
+     *         the evaluator can no longer be used afterwards
+     * @throws IllegalStateException if this evaluator has been {@link #close() closed},
+     *         or can no longer be used because an earlier move failed while being executed
      */
     void executeMove(Move<Solution_> move);
 
     /**
-     * As defined by {@link #executeMove(Move)},
-     * then calculates the score of the working solution after the move,
-     * as defined by {@link #calculateScore()}.
-     *
-     * @param move must only reference instances of the working solution
-     * @param <Score_> the actual score type
-     * @return the score of the working solution after the move
-     */
-    default <Score_ extends Score<Score_>> Score_ executeMoveAndCalculate(Move<Solution_> move) {
-        executeMove(move);
-        return calculateScore();
-    }
-
-    /**
-     * As defined by {@link #executeMove(Move)},
-     * then analyzes the score of the working solution after the move.
-     * This is slower than {@link #executeMoveAndCalculate(Move)};
-     * how much slower depends on {@code fetchPolicy}.
-     *
-     * @param move must only reference instances of the working solution
-     * @param fetchPolicy how much detail the analysis includes
-     * @param <Score_> the actual score type
-     * @return the analysis of the score of the working solution after the move
-     */
-    <Score_ extends Score<Score_>> ScoreAnalysis<Score_> executeMoveAndAnalyze(Move<Solution_> move,
-            ScoreAnalysisFetchPolicy fetchPolicy);
-
-    /**
      * Executes the move on the working solution, calculates the resulting score, and then undoes the move.
      * When this method returns, the working solution is in the same state as before it was called.
+     * <p>
+     * Shorthand for {@link #executeTemporaryMove(Move, Function)}
+     * with {@link MoveEvaluatorContext#getScore()} as the postprocessor.
      *
      * @param move must only reference instances of the working solution
      * @param <Score_> the actual score type
      * @return the score the working solution would have if the move was executed
+     * @throws IllegalArgumentException if the move makes the working solution structurally flawed,
+     *         for example by creating a loop in shadow variables
+     * @throws IllegalStateException if this evaluator has been {@link #close() closed},
+     *         or can no longer be used because an earlier move failed while being executed
      */
-    <Score_ extends Score<Score_>> Score_ executeTemporaryMove(Move<Solution_> move);
-
-    /**
-     * As defined by {@link #executeTemporaryMove(Move)},
-     * but instead of returning the score, passes the working solution to {@code postprocessor}
-     * while the move is still applied, and returns whatever the postprocessor returns.
-     * The working solution passed to the postprocessor has its score set to the score after the move.
-     * <p>
-     * The move is undone after the postprocessor returns, so the postprocessor must not modify the working solution,
-     * and its result must not reference the temporary state of the working solution,
-     * such as entities whose planning variables the move changed.
-     * Extract the information needed instead.
-     *
-     * @param move must only reference instances of the working solution
-     * @param postprocessor called once, with the working solution after the move
-     * @param <Result_> the type of the result produced by the postprocessor
-     * @return the result of {@code postprocessor}
-     */
-    <Result_> @Nullable Result_ executeTemporaryMove(Move<Solution_> move,
-            Function<Solution_, @Nullable Result_> postprocessor);
-
-    /**
-     * As defined by {@link #executeTemporaryMove(Move)},
-     * but returns the analysis of the score instead of just the score.
-     * This is slower than {@link #executeTemporaryMove(Move)};
-     * how much slower depends on {@code fetchPolicy}.
-     * <p>
-     * The analysis is computed before the move is undone,
-     * but it does not reference the temporary state of the working solution,
-     * so it remains valid after this method returns.
-     *
-     * @param move must only reference instances of the working solution
-     * @param fetchPolicy how much detail the analysis includes
-     * @param <Score_> the actual score type
-     * @return the analysis of the score the working solution would have if the move was executed
-     */
-    @SuppressWarnings("unchecked")
-    default <Score_ extends Score<Score_>> ScoreAnalysis<Score_> executeTemporaryMoveAndAnalyze(Move<Solution_> move,
-            ScoreAnalysisFetchPolicy fetchPolicy) {
-        return Objects.requireNonNull(executeTemporaryMoveAndAnalyze(move, fetchPolicy,
-                (solution, scoreScoreAnalysis) -> (ScoreAnalysis<Score_>) scoreScoreAnalysis));
+    default <Score_ extends Score<Score_>> Score_ executeTemporaryMove(Move<Solution_> move) {
+        return Objects.requireNonNull(executeTemporaryMove(move, MoveEvaluatorContext::getScore),
+                () -> "The move (%s) failed to calculate a score.".formatted(move));
     }
 
     /**
-     * As defined by {@link #executeTemporaryMove(Move, Function)},
-     * but also passes the analysis of the score after the move to {@code postprocessor}.
-     * This is slower than {@link #executeTemporaryMove(Move, Function)};
-     * how much slower depends on {@code fetchPolicy}.
+     * Executes the move on the working solution, calls {@code postprocessor} while the move is still applied,
+     * and then undoes the move.
+     * When this method returns, the working solution is in the same state as before it was called.
      * <p>
-     * Unlike the working solution, the analysis does not reference the temporary state of the working solution,
-     * so the postprocessor may return it, or parts of it.
+     * The postprocessor receives a {@link MoveEvaluatorContext},
+     * through which it reads the state after the move:
+     * the working solution, its score, and its score analysis.
+     * The score and the score analysis are only calculated when the postprocessor asks for them;
+     * for example, a postprocessor which does not request the score analysis does not pay for building it.
+     * Constraint matches are always tracked, so that the score analysis is available when requested.
+     * <p>
+     * The move is undone after the postprocessor returns. Therefore:
+     * <ul>
+     * <li>The postprocessor must not modify the working solution, nor execute other moves on this evaluator.</li>
+     * <li>The context must not be used after the postprocessor returns.</li>
+     * <li>The result must not depend on the temporary state of the working solution,
+     * such as the planning variable values of entities which the move changed,
+     * because that state is reverted once the move is undone.
+     * Extract the information needed into the result instead.
+     * The score obtained from the context, and the score and match counts of the score analysis,
+     * do not change when the move is undone, and so they may be returned.
+     * The constraint justifications and indictments of the score analysis, however,
+     * reference entities and facts of the working solution, whose planning variables revert;
+     * see {@link MoveEvaluatorContext#getScoreAnalysis(ScoreAnalysisFetchPolicy)}.</li>
+     * </ul>
+     * <p>
+     * When an exception is thrown, the working solution is restored as follows:
+     * <ul>
+     * <li>If the postprocessor throws, the move is undone, and the exception is rethrown.</li>
+     * <li>If the move makes the working solution structurally flawed,
+     * the move is undone, the postprocessor is not called, and {@link IllegalArgumentException} is thrown.</li>
+     * <li>If the move itself throws, it may be half-applied, and so it cannot be undone.
+     * The exception is rethrown, and the evaluator can no longer be used.</li>
+     * </ul>
+     * In the first two cases, the evaluator remains usable,
+     * unless undoing the move fails as well; the working solution is then corrupted,
+     * and the evaluator can no longer be used.
      *
      * @param move must only reference instances of the working solution
-     * @param fetchPolicy how much detail the analysis includes
-     * @param postprocessor called once, with the working solution after the move
-     *        and the analysis of its score
+     * @param postprocessor called exactly once, with the context of the working solution after the move
      * @param <Result_> the type of the result produced by the postprocessor
-     * @param <Score_> the actual score type
      * @return the result of {@code postprocessor}
+     * @throws IllegalArgumentException if the move makes the working solution structurally flawed,
+     *         for example by creating a loop in shadow variables
+     * @throws IllegalStateException if this evaluator has been {@link #close() closed},
+     *         or can no longer be used because an earlier move failed while being executed
      */
-    <Result_, Score_ extends Score<Score_>> @Nullable Result_ executeTemporaryMoveAndAnalyze(Move<Solution_> move,
-            ScoreAnalysisFetchPolicy fetchPolicy,
-            BiFunction<Solution_, ScoreAnalysis<Score_>, @Nullable Result_> postprocessor);
+    <Result_> @Nullable Result_ executeTemporaryMove(Move<Solution_> move,
+            Function<MoveEvaluatorContext<Solution_>, @Nullable Result_> postprocessor);
 
     /**
      * Translates an entity or fact instance, such as one from the solution given to
@@ -188,6 +186,9 @@ public interface MoveEvaluator<Solution_> extends Lookup, AutoCloseable {
      * to its counterpart in the {@link #getWorkingSolution() working solution}.
      * <p>
      * Otherwise as defined by {@link Lookup#lookUpWorkingObject(Object)}.
+     *
+     * @throws IllegalStateException if this evaluator has been {@link #close() closed},
+     *         or can no longer be used because an earlier move failed while being executed
      */
     @Override
     <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity);

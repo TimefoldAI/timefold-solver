@@ -800,6 +800,54 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         return result;
     }
 
+    /**
+     * Like {@link #executeTemporaryWithoutScoring(Move, Function)},
+     * but undoes the move and restores the previous working score even when {@code postprocessor} throws.
+     * Does not check whether the move made the solution structurally flawed;
+     * the postprocessor may do that, and throw to have the move undone.
+     * <p>
+     * If {@code move} itself throws, its changes may be half-applied, so it is not undone;
+     * see {@link EphemeralMoveDirector}.
+     * The caller must then treat the working solution as corrupted.
+     * If undoing the move fails, an {@link UndoCorruptionException} is thrown,
+     * or added as a suppressed exception to the exception thrown by {@code postprocessor}.
+     *
+     * @return whatever {@code postprocessor} returns
+     */
+    public @Nullable <Result_> Result_ executeTemporaryUndoingOnFailure(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> postprocessor) {
+        var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
+        var workingSolution = backingScoreDirector.getWorkingSolution();
+        var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
+        var ephemeralMoveDirector = ephemeral();
+        ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move); // If this throws, there is no undo.
+        // Only reached once the move is fully recorded, so undoing it is safe.
+        Result_ result;
+        try {
+            result = postprocessor.apply(workingSolution);
+        } catch (RuntimeException | Error e) {
+            try {
+                undoTemporaryMove(move, ephemeralMoveDirector, workingSolution, previousScore);
+            } catch (UndoCorruptionException undoCorruptionException) {
+                e.addSuppressed(undoCorruptionException); // Keep the postprocessor's exception primary.
+            }
+            throw e;
+        }
+        undoTemporaryMove(move, ephemeralMoveDirector, workingSolution, previousScore);
+        return result;
+    }
+
+    private void undoTemporaryMove(Move<Solution_> move, EphemeralMoveDirector<Solution_, Score_> ephemeralMoveDirector,
+            Solution_ workingSolution, @Nullable Score_ previousScore) {
+        try {
+            ephemeralMoveDirector.close(); // This undoes the move.
+            backingScoreDirector.getSolutionDescriptor().setScore(workingSolution, previousScore);
+        } catch (RuntimeException e) {
+            throw new UndoCorruptionException("Undoing the move (%s) failed, so the working solution is corrupted."
+                    .formatted(move), e);
+        }
+    }
+
     @Override
     public final <Entity_, Value_> Value_ getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity) {
