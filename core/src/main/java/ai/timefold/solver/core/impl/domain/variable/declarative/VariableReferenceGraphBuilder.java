@@ -69,7 +69,8 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 .add(listElementSourceLocator);
     }
 
-    public <Entity_> void addVariableReferenceEntity(Entity_ entity, VariableUpdaterInfo<Solution_> variableUpdater) {
+    public <Entity_> void addVariableReferenceEntity(Entity_ entity, boolean hasDynamicEdges,
+            VariableUpdaterInfo<Solution_> variableUpdater) {
         var groupId = variableUpdater.groupId();
         var isGroup = variableUpdater.groupEntities() != null;
         var entityRepresentative = entity;
@@ -100,7 +101,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         }
 
         var node = new GraphNode<>(entityRepresentative, Collections.singletonList(variableUpdater), nodeList.size(),
-                entityId, groupEntityIds);
+                entityId, groupEntityIds, hasDynamicEdges);
 
         if (isGroup) {
             for (var groupEntity : variableUpdater.groupEntities()) {
@@ -175,13 +176,11 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         // The topological order of the graph before the merge;
         // assertNoFixedLoops() guarantees the fixed edges are acyclic.
         var orderGraph = new DefaultTopologicalOrderGraph(size);
-        @SuppressWarnings("unchecked")
-        var forwardEdges = (ArrayList<Integer>[]) new ArrayList[size];
-        @SuppressWarnings("unchecked")
-        var backwardEdges = (ArrayList<Integer>[]) new ArrayList[size];
+        var forwardEdges = new BitSet[size];
+        var backwardEdges = new BitSet[size];
         for (var i = 0; i < size; i++) {
-            forwardEdges[i] = new ArrayList<>();
-            backwardEdges[i] = new ArrayList<>();
+            forwardEdges[i] = new BitSet();
+            backwardEdges[i] = new BitSet();
         }
         for (var edgeEntry : this.fixedEdges.entrySet()) {
             addEdgeToAdjacency(orderGraph, forwardEdges, backwardEdges, edgeEntry.getKey().graphNodeId(),
@@ -216,14 +215,14 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 while (!queue.isEmpty()) {
                     var currentId = queue.poll();
                     component.add(currentId);
-                    for (var nextId : forwardEdges[currentId]) {
-                        if (!visited[nextId] && isSameEntityNode(nextId, startId)) {
+                    for (var nextId : forwardEdges[currentId].stream().toArray()) {
+                        if (!visited[nextId] && isSameEntityNode(nextId, startId, backwardEdges)) {
                             visited[nextId] = true;
                             queue.add(nextId);
                         }
                     }
-                    for (var nextId : backwardEdges[currentId]) {
-                        if (!visited[nextId] && isSameEntityNode(nextId, startId)) {
+                    for (var nextId : backwardEdges[currentId].stream().toArray()) {
+                        if (!visited[nextId] && isSameEntityNode(nextId, startId, backwardEdges)) {
                             visited[nextId] = true;
                             queue.add(nextId);
                         }
@@ -249,9 +248,33 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         }
     }
 
-    private boolean isSameEntityNode(int nodeId, int otherId) {
+    private boolean isSameEntityNode(int nodeId, int otherId, BitSet[] backwardEdges) {
         var node = nodeList.get(nodeId);
-        return node.groupEntityIds() == null && node.entity() == nodeList.get(otherId).entity();
+        if (!(node.groupEntityIds() == null && node.entity() == nodeList.get(otherId).entity())) {
+            return false;
+        }
+        return countAncestorsWithDynamicEdges(nodeId, backwardEdges) == countAncestorsWithDynamicEdges(otherId, backwardEdges);
+    }
+
+    private int countAncestorsWithDynamicEdges(int nodeId, BitSet[] backwardEdges) {
+        var visited = new BitSet();
+        var queue = new ArrayDeque<Integer>();
+        queue.add(nodeId);
+        visited.set(nodeId);
+        var count = 0;
+        while (!queue.isEmpty()) {
+            var next = queue.poll();
+            if (nodeList.get(next).hasDynamicEdges()) {
+                count++;
+            }
+            for (var nextId : backwardEdges[next].stream().toArray()) {
+                if (!visited.get(nextId)) {
+                    visited.set(nextId);
+                    queue.add(nextId);
+                }
+            }
+        }
+        return count;
     }
 
     /**
@@ -297,13 +320,13 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         return out;
     }
 
-    private static <Solution_> void addEdgeToAdjacency(DefaultTopologicalOrderGraph orderGraph, List<Integer>[] forwardEdges,
-            List<Integer>[] backwardEdges, int fromNodeId, List<GraphNode<Solution_>> toNodes) {
+    private static <Solution_> void addEdgeToAdjacency(DefaultTopologicalOrderGraph orderGraph, BitSet[] forwardEdges,
+            BitSet[] backwardEdges, int fromNodeId, List<GraphNode<Solution_>> toNodes) {
         for (var toNode : toNodes) {
             var toNodeId = toNode.graphNodeId();
             orderGraph.addEdge(fromNodeId, toNodeId);
-            forwardEdges[fromNodeId].add(toNodeId);
-            backwardEdges[toNodeId].add(fromNodeId);
+            forwardEdges[fromNodeId].set(toNodeId);
+            backwardEdges[toNodeId].set(fromNodeId);
         }
     }
 
@@ -327,7 +350,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             } else {
                 // Keep the node data, but assign its index in the new list.
                 newNodeList.add(new GraphNode<>(oldNode.entity(), oldNode.variableReferences(), newNodeList.size(),
-                        oldNode.entityId(), oldNode.groupEntityIds()));
+                        oldNode.entityId(), oldNode.groupEntityIds(), oldNode.hasDynamicEdges()));
             }
             oldNodeIdToNewNodeId[oldNodeId] = isMerged ? mergedNodeIdOfComponent[componentIndex]
                     : newNodeList.size() - 1;
@@ -349,7 +372,8 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             mergedUpdaters.addAll(nodeList.get(nodeId).variableReferences());
         }
         var firstNode = nodeList.get(component.getFirst());
-        return new GraphNode<>(firstNode.entity(), mergedUpdaters, newNodeId, firstNode.entityId(), null);
+        return new GraphNode<>(firstNode.entity(), mergedUpdaters, newNodeId, firstNode.entityId(), null,
+                firstNode.hasDynamicEdges());
     }
 
     private void replaceEdges(int[] oldNodeIdToNewNodeId, List<GraphNode<Solution_>> newNodeList) {

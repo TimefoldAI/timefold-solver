@@ -24,6 +24,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -244,7 +245,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     // which makes all topological orders valid
                     continue;
                 }
-                var variableReference = variableReferences.get(0);
+                var variableReference = variableReferences.getFirst();
                 var sourceDeclarativeVariable = variableReference.downstreamDeclarativeVariableMetamodel();
                 if (sourceDeclarativeVariable != null) {
                     var fromIndex = nameToIndex.get(sourceDeclarativeVariable.name());
@@ -351,7 +352,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             updater = sharedUpdater;
                         }
                     }
-                    graphDescriptor.variableReferenceGraphBuilder.addVariableReferenceEntity(entity, updater);
+
+                    var hasDynamicEdges = false;
                     for (var sourceRoot : declarativeShadowVariableDescriptor.getSources()) {
                         for (var source : sourceRoot.variableSourceReferences()) {
                             if (source.downstreamDeclarativeVariableMetamodel() != null) {
@@ -360,7 +362,20 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                         .add(source);
                             }
                         }
+                        hasDynamicEdges |= switch (sourceRoot.parentVariableType()) {
+                            // No parent (so variable/shadow directly on entity), cannot affect graph edges
+                            case NO_PARENT -> false;
+                            // variable/element parent can always add/remove edges.
+                            case VARIABLE, INVERSE, NEXT, PREVIOUS, LIST_ELEMENT -> true;
+                            case INDIRECT, GROUP -> {
+                                // Access a variable via a fact; it can only modify the graph if any entities are present
+                                var entityCount = new MutableInt();
+                                sourceRoot.valueEntityFunction().accept(entity, ignored -> entityCount.increment());
+                                yield entityCount.intValue() != 0;
+                            }
+                        };
                     }
+                    graphDescriptor.variableReferenceGraphBuilder.addVariableReferenceEntity(entity, hasDynamicEdges, updater);
                 }
             }
         }
@@ -493,7 +508,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         });
         // Maintain the fan-in edges (element.sourceVariable -> entity.targetVariable)
         // when the list variable changes.
-        var elementSource = source.variableSourceReferences().get(0);
+        var elementSource = source.variableSourceReferences().getFirst();
         graphDescriptor.variableReferenceGraphBuilder()
                 .addListElementSourceLocator(listVariableId,
                         new ListElementSourceLocator(elementSource.variableMetaModel(), fromVariableId,

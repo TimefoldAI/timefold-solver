@@ -6,6 +6,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySolution;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyValue;
@@ -19,8 +22,9 @@ class VariableReferenceGraphBuilderTest {
 
     private int nextGroupId = 0;
 
-    private VariableUpdaterInfo<TestdataDependencySolution> updaterOf(String variableName) {
-        var descriptor = SOLUTION_DESCRIPTOR.getDeclarativeShadowVariableDescriptors().stream()
+    private <Solution_> VariableUpdaterInfo<Solution_> updaterOf(SolutionDescriptor<Solution_> solutionDescriptor,
+            String variableName) {
+        var descriptor = solutionDescriptor.getDeclarativeShadowVariableDescriptors().stream()
                 .filter(variable -> variable.getVariableName().equals(variableName))
                 .findFirst()
                 .orElseThrow();
@@ -28,7 +32,7 @@ class VariableReferenceGraphBuilderTest {
                 descriptor.getVariableMetaModel(),
                 nextGroupId++,
                 descriptor,
-                new ConsistencyTracker<TestdataDependencySolution>()
+                new ConsistencyTracker<Solution_>()
                         .getDeclarativeEntityConsistencyState(descriptor.getEntityDescriptor()),
                 descriptor.getMemberAccessor(),
                 descriptor.getCalculator());
@@ -49,10 +53,22 @@ class VariableReferenceGraphBuilderTest {
                 descriptor.getCalculator()).withGroupEntities(entities);
     }
 
+    private <Solution_> GraphNode<Solution_> addNode(VariableReferenceGraphBuilder<Solution_> builder,
+            Object entity, String variableName, SolutionDescriptor<Solution_> solutionDescriptor) {
+        var updater = updaterOf(solutionDescriptor, variableName);
+        builder.addVariableReferenceEntity(entity, false, updater);
+        return builder.lookupOrError(updater.id(), entity);
+    }
+
     private GraphNode<TestdataDependencySolution> addNode(VariableReferenceGraphBuilder<TestdataDependencySolution> builder,
             TestdataDependencyValue entity, String variableName) {
-        var updater = updaterOf(variableName);
-        builder.addVariableReferenceEntity(entity, updater);
+        return addNode(builder, entity, variableName, SOLUTION_DESCRIPTOR);
+    }
+
+    private <Solution_> GraphNode<Solution_> addDynamicNode(VariableReferenceGraphBuilder<Solution_> builder,
+            Object entity, String variableName, SolutionDescriptor<Solution_> solutionDescriptor) {
+        var updater = updaterOf(solutionDescriptor, variableName);
+        builder.addVariableReferenceEntity(entity, true, updater);
         return builder.lookupOrError(updater.id(), entity);
     }
 
@@ -60,7 +76,7 @@ class VariableReferenceGraphBuilderTest {
             VariableReferenceGraphBuilder<TestdataDependencySolution> builder,
             TestdataDependencyValue entity, String variableName, Object... groupedEntities) {
         var updater = sharedUpdaterOf(variableName, groupedEntities);
-        builder.addVariableReferenceEntity(entity, updater);
+        builder.addVariableReferenceEntity(entity, false, updater);
         return builder.lookupOrError(updater.id(), entity);
     }
 
@@ -234,5 +250,71 @@ class VariableReferenceGraphBuilderTest {
         assertThat(valueA.getEndTime()).isEqualTo(startTime.plusMinutes(4));
         assertThat(valueB.getStartTime()).isEqualTo(startTime.plusMinutes(3));
         assertThat(valueB.getEndTime()).isEqualTo(startTime.plusMinutes(5));
+    }
+
+    @Test
+    void splitNodesOfSameEntityByNodesWithDynamicEdges() {
+        var builder = new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.<TestdataConcurrentSolution> empty());
+        var entity = new TestdataConcurrentEntity("entity");
+        var valueA = new TestdataConcurrentValue("a");
+        var valueB = new TestdataConcurrentValue("b");
+
+        valueA.setEntity(entity);
+        valueB.setEntity(entity);
+        valueB.setPreviousValue(valueA);
+
+        // Add endTime before startTime so the merge cannot just keep insertion order.
+        var solutionDescriptor = TestdataConcurrentSolution.buildSolutionDescriptor();
+        var aReady = addNode(builder, valueA, "serviceReadyTime", solutionDescriptor);
+        var aStart = addDynamicNode(builder, valueA, "serviceStartTime", solutionDescriptor);
+        var aEnd = addNode(builder, valueA, "serviceFinishTime", solutionDescriptor);
+        var bReady = addNode(builder, valueB, "serviceReadyTime", solutionDescriptor);
+        var bStart = addNode(builder, valueB, "serviceStartTime", solutionDescriptor);
+        var bEnd = addDynamicNode(builder, valueB, "serviceFinishTime", solutionDescriptor);
+        builder.addFixedEdge(aReady, aStart);
+        builder.addFixedEdge(aStart, aEnd);
+        builder.addFixedEdge(bReady, bStart);
+        builder.addFixedEdge(bStart, bEnd);
+        builder.addInitialDynamicEdge(aEnd, bStart);
+
+        var graph = builder.build(DefaultTopologicalOrderGraph::new, false);
+
+        assertThat(builder.nodeList).hasSize(4);
+        for (var node : builder.nodeList) {
+            // valueA is split at startTime
+            if (node.entity() == valueA) {
+                if (node.variableReferences().size() == 1) {
+                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                            .isEqualTo("serviceReadyTime");
+                } else {
+                    assertThat(node.variableReferences().size()).isEqualTo(2);
+                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                            .isEqualTo("serviceStartTime");
+                    assertThat(node.variableReferences().getLast().variableDescriptor().getVariableName())
+                            .isEqualTo("serviceFinishTime");
+                }
+            } else {
+                // valueB is split at endTime
+                if (node.variableReferences().size() == 1) {
+                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                            .isEqualTo("serviceFinishTime");
+                } else {
+                    assertThat(node.variableReferences().size()).isEqualTo(2);
+                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                            .isEqualTo("serviceReadyTime");
+                    assertThat(node.variableReferences().getLast().variableDescriptor().getVariableName())
+                            .isEqualTo("serviceStartTime");
+                }
+            }
+        }
+
+        graph.updateChanged();
+        var startTime = TestdataConcurrentValue.BASE_START_TIME;
+        assertThat(valueA.getServiceReadyTime()).isEqualTo(startTime);
+        assertThat(valueA.getServiceStartTime()).isEqualTo(startTime);
+        assertThat(valueA.getServiceFinishTime()).isEqualTo(startTime.plusMinutes(30L));
+        assertThat(valueB.getServiceReadyTime()).isEqualTo(startTime.plusMinutes(60L));
+        assertThat(valueB.getServiceStartTime()).isEqualTo(startTime.plusMinutes(60L));
+        assertThat(valueB.getServiceFinishTime()).isEqualTo(startTime.plusMinutes(90L));
     }
 }
