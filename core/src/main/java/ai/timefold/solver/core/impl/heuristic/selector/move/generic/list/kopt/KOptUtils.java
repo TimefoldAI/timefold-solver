@@ -178,15 +178,20 @@ final class KOptUtils {
      * Returns the number of unique ways a K-Opt can add K edges without reinserting a removed edge.
      *
      * @param k How many edges were removed/will be added
-     * @return the number of unique ways a K-Opt can add K edges without reinserting a removed edge.
+     * @return the number of unique ways a K-Opt can add K edges without reinserting a removed edge,
+     *         or {@link Long#MAX_VALUE} if that does not fit in a long
      */
     public static long getPureKOptMoveTypes(int k) {
+        if (k >= 18) {
+            // From k = 18, the count does not fit in a long.
+            return Long.MAX_VALUE;
+        }
         // This calculates the item at index k for the sequence https://oeis.org/A061714
         long totalTypes = 0;
         for (var i = 1; i < k; i++) {
             for (var j = 0; j <= i; j++) {
-                var sign = ((k + j - 1) % 2 == 0) ? 1 : -1;
-                totalTypes += sign * MathUtils.binomialCoefficient(i, j) * MathUtils.factorial(j) * (1L << j);
+                var term = MathUtils.binomialCoefficient(i, j) * MathUtils.factorial(j) * (1L << j);
+                totalTypes = ((k + j - 1) % 2 == 0) ? totalTypes + term : totalTypes - term;
             }
         }
         return totalTypes;

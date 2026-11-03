@@ -30,7 +30,7 @@ class KOptListMoveSelectorTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "100000, 2, 5", "10000000, 2, 5", "3000000000, 2, 4" })
+    @CsvSource({ "100000, 2, 5", "10000000, 2, 5", "3000000000, 2, 4", "19, 18, 18", "23, 22, 22" })
     void sizeSaturatesInsteadOfOverflowing(long valueCount, int minK, int maxK) {
         assertThat(buildSelector(valueCount, minK, maxK).getSize()).isEqualTo(Long.MAX_VALUE);
     }
