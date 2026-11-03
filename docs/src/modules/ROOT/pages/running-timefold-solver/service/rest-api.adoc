@@ -74,6 +74,26 @@ Note how the `ModelInput` and `ModelOutput` interface can be placed on the same 
 
 Since an xref:#openAPISpecification[OpenAPI specification] will also be automatically generated, it's important to properly document your `ModelInput` and `ModelOutput` classes with OpenAPI annotations.
 
+[#uniqueResourceIds]
+== Unique resource identifiers
+
+To report the resources in a dataset, annotate the resource identifier fields in your `ModelInput` with `@UniqueResourceId`.
+The `type` attribute identifies the resource type and scopes the uniqueness of the identifier.
+The annotation can be used on fields nested anywhere in the input model.
+
+This is a preview API. The service uses the annotations to derive JSONPath expressions for the resource identifiers in the model descriptor.
+
+[source,java,options="nowrap"]
+----
+public class Vehicle {
+
+    @UniqueResourceId(type = "vehicle")
+    private String id;
+
+    // Getters and setters excluded.
+}
+----
+
 [#generatedEndpoints]
 == Generated endpoints
 
