@@ -57,7 +57,8 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
 
             URI requestURI =
                     URI.create(platformUrl + "/api/platform/v1/models/" + key + "?handleSubscription="
-                            + getPropertyOrParameter(PROP_MODEL_SUBS, handleSubscription));
+                            + getPropertyOrParameter(PROP_MODEL_SUBS, handleSubscription) + "&releaseOffset="
+                            + getPropertyOrParameter(PROP_MODEL_OFFSET, offset));
 
             if (dryRun) {
                 getLog().info("DRY_RUN: Would perform DELETE on " + requestURI);

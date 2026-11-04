@@ -1,14 +1,12 @@
 package ai.timefold.solver.core.impl.phase.custom;
 
 import java.util.List;
-import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
-import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -42,11 +40,6 @@ public final class DefaultCustomPhase<Solution_>
     @Override
     public PhaseType getPhaseType() {
         return PhaseType.CUSTOM_PHASE;
-    }
-
-    @Override
-    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
-        return EventProducerId::customPhase;
     }
 
     // ************************************************************************

@@ -68,7 +68,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 .withValueSorterManner(valueSorterManner)
                 .build();
         var isMixedModel = phaseConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables();
-        var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
+        var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination, phaseIndex);
         var scoreBounderEnabled = exhaustiveSearchType.isScoreBounderEnabled();
         var nodeExplorationType = getNodeExplorationType(exhaustiveSearchType, phaseConfig);
         AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;

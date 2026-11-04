@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 import org.junit.jupiter.api.Test;
 
@@ -266,5 +268,14 @@ class DiminishedReturnsTerminationTest {
 
         // Timeout
         assertThat(termination.isTerminated(currentTime + 11_000 * NANOS_PER_MILLISECOND, score)).isTrue();
+    }
+
+    @Test
+    void childThreadTerminationKeepsTheSlidingWindow() {
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 0.5);
+        var childTermination = (DiminishedReturnsTermination<?, ?>) termination
+                .createChildThreadTermination(new SolverScope<>(), ChildThreadType.PART_THREAD);
+        assertThat(childTermination.getSlidingWindowNanos()).isEqualTo(10 * NANOS_PER_MILLISECOND);
+        assertThat(childTermination.getMinimumImprovementRatio()).isEqualTo(0.5);
     }
 }

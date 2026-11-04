@@ -165,9 +165,6 @@ public class TestdataConcurrentValue {
             throw new IllegalStateException(
                     "Value (%s) is inconsistent when serviceStartTimeUpdater is called.".formatted(this));
         }
-        if (serviceReadyTime == null) {
-            return null;
-        }
         var startTime = serviceReadyTime;
         if (concurrentValueGroup != null) {
             for (var visit : concurrentValueGroup) {
@@ -175,7 +172,8 @@ public class TestdataConcurrentValue {
                     throw new IllegalStateException(
                             "Value (%s) is inconsistent when serviceStartTimeUpdater is called.".formatted(visit));
                 }
-                if (visit.serviceReadyTime != null && startTime.isBefore(visit.serviceReadyTime)) {
+                if (visit.serviceReadyTime != null
+                        && (startTime == null || startTime.isBefore(visit.serviceReadyTime))) {
                     startTime = visit.serviceReadyTime;
                 }
             }

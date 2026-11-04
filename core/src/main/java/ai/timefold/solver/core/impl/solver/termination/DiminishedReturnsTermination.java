@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -165,7 +166,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
-        return new DiminishedReturnsTermination<>(slidingWindowNanos, minimumImprovementRatio);
+        return new DiminishedReturnsTermination<>(slidingWindowNanos / NANOS_PER_MILLISECOND, minimumImprovementRatio);
     }
 
     @Override
@@ -205,6 +206,11 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     long getGracePeriodStartTimeNanos() {
         return gracePeriodStartTimeNanos;
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.DIMINISHED_RETURNS;
     }
 
     @Override

@@ -84,7 +84,8 @@ public final class SolverWorkerBuilder {
     public SolverWorker build() {
         when(terminationService.resolveTerminationConfig(any())).thenReturn(new TerminationConfig());
         return new SolverWorker(Optional.empty(), Optional.empty(), Optional.empty(), storageService, null,
-                modelPostProcessors, solverManager, null, null, null, null, null, terminationService, null,
+                modelPostProcessors, solverManager, null, null, null, null, new UnresolvableInstance<>(), terminationService,
+                null,
                 new ShutdownOnTerminate(null), new UnresolvableInstance<>(), completionStatus, new RecordingEmitter<>(),
                 new RecordingEmitter<>(), new RecordingEmitter<>(), terminatedEmitter, new RecordingEmitter<>(), failedEmitter,
                 new RecordingEmitter<>(), new RecordingEmitter<>(), new RecordingEmitter<>(), failedSolutionEmitter);

@@ -17,6 +17,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.phase.PhaseId;
+import ai.timefold.solver.core.api.solver.termination.TerminationId;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -30,6 +32,8 @@ import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+
+import org.jspecify.annotations.Nullable;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -47,6 +51,7 @@ public class SolverScope<Solution_> {
     private final AtomicLong startingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
     private final AtomicLong endingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
 
+    private Solution_ initialSolution;
     private Set<SolverMetric> solverMetricSet = Collections.emptySet();
     private boolean anyMetricConstraintMatchBased;
     private Tags monitoringTags;
@@ -64,9 +69,14 @@ public class SolverScope<Solution_> {
 
     private long moveEvaluationCount = 0L;
 
+    private final SolverRunStatisticsTracker solverRunStatistics = new SolverRunStatisticsTracker();
+
     private Score<?> startingInitializedScore;
 
     private Long bestSolutionTimeMillis;
+
+    private TerminationId lastTerminationId;
+    private PhaseId lastPhase;
 
     /**
      * Used for tracking step score
@@ -190,6 +200,10 @@ public class SolverScope<Solution_> {
         return scoreDirector.getWorkingSolution();
     }
 
+    public Solution_ cloneWorkingSolution() {
+        return scoreDirector.cloneWorkingSolution();
+    }
+
     public int getWorkingEntityCount() {
         return scoreDirector.getWorkingGenuineEntityCount();
     }
@@ -262,6 +276,26 @@ public class SolverScope<Solution_> {
         this.bestSolutionTimeMillis = bestSolutionTimeMillis;
     }
 
+    public @Nullable TerminationId getLastTerminationId() {
+        return lastTerminationId;
+    }
+
+    /**
+     * The last id wins, because an unimproved* termination can be true in the middle of a step and false at the phase loop
+     * check.
+     */
+    public void setLastTerminationId(@Nullable TerminationId lastTerminationId) {
+        this.lastTerminationId = lastTerminationId;
+    }
+
+    public @Nullable PhaseId getLastPhase() {
+        return lastPhase;
+    }
+
+    public void setLastPhase(@Nullable PhaseId lastPhase) {
+        this.lastPhase = lastPhase;
+    }
+
     public Set<String> getMoveCountTypes() {
         return moveEvaluationCountPerTypeMap.keySet();
     }
@@ -282,6 +316,10 @@ public class SolverScope<Solution_> {
         startingSystemTimeMillis.set(getClock().millis());
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
         this.moveEvaluationCount = 0L;
+        this.childThreadsScoreCalculationCount = 0L;
+        // A problem-change restart starts a new segment; the summary describes how the last segment ended.
+        this.lastTerminationId = null;
+        this.lastPhase = null;
     }
 
     public Long getBestSolutionTimeMillisSpent() {
@@ -290,6 +328,14 @@ public class SolverScope<Solution_> {
 
     public void endingNow() {
         endingSystemTimeMillis.set(getClock().millis());
+        // Null only if solving never started, so no best solution was set.
+        var bestSolutionTimeMillisSpent = getBestSolutionTimeMillis() == null ? 0L : getBestSolutionTimeMillisSpent();
+        solverRunStatistics.addSegment(getTimeMillisSpent(), getScoreCalculationCount(), getMoveEvaluationCount(),
+                bestSolutionTimeMillisSpent);
+    }
+
+    public SolverRunStatisticsTracker getSolverStatistics() {
+        return solverRunStatistics;
     }
 
     public boolean isBestSolutionInitialized() {
@@ -325,16 +371,14 @@ public class SolverScope<Solution_> {
      * @return at least 0, per second
      */
     public long getScoreCalculationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getScoreCalculationCount(), timeMillisSpent);
+        return getSpeed(getScoreCalculationCount(), getTimeMillisSpent());
     }
 
     /**
      * @return at least 0, per second
      */
     public long getMoveEvaluationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
+        return getSpeed(getMoveEvaluationCount(), getTimeMillisSpent());
     }
 
     public void setWorkingSolutionFromBestSolution() {
@@ -344,12 +388,33 @@ public class SolverScope<Solution_> {
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
-    public void setInitialSolution(Solution_ initialSolution) {
-        // The workingSolution must never be the same instance as the bestSolution.
-        scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(initialSolution));
+    /**
+     * Sets the solution that the solver starts or restarts from,
+     * as returned by {@link #getInitialSolution()} and delivered with the solver job started event.
+     * <p>
+     * The instance is stored as given, without being cloned.
+     * When solving starts, it is the problem passed to the solver, which belongs to the caller.
+     * After real-time problem changes, it is a clone of the working solution,
+     * so the event emitted on restart reflects those changes instead of the stale original problem.
+     *
+     * @param initialSolution never null; the solution to start or restart from
+     * @param updateInternalState true to also reset the working and best solutions from {@code initialSolution},
+     *        which is required when solving starts;
+     *        false when the working solution is already up to date,
+     *        such as after problem changes have been applied to it
+     */
+    public void setInitialSolution(Solution_ initialSolution, boolean updateInternalState) {
+        this.initialSolution = initialSolution;
+        if (updateInternalState) {
+            // The workingSolution must never be the same instance as the bestSolution.
+            scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(initialSolution));
+            // Set the best solution to the solution with shadow variable updated.
+            setBestSolution(scoreDirector.cloneWorkingSolution());
+        }
+    }
 
-        // Set the best solution to the solution with shadow variable updated.
-        setBestSolution(scoreDirector.cloneSolution(scoreDirector.getWorkingSolution()));
+    public Solution_ getInitialSolution() {
+        return initialSolution;
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {

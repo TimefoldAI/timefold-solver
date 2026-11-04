@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
-import java.util.function.IntFunction;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
@@ -11,7 +9,6 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.neighborhood.PlacerBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
-import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -49,11 +46,6 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     @Override
     public PhaseType getPhaseType() {
         return PhaseType.CONSTRUCTION_HEURISTIC;
-    }
-
-    @Override
-    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
-        return EventProducerId::constructionHeuristic;
     }
 
     // ************************************************************************

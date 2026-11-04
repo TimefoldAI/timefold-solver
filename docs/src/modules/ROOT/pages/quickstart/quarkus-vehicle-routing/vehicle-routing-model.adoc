@@ -151,28 +151,24 @@ public class Vehicle {
     // Getters and Setters excluded
 
     public int getTotalDemand() {
-        int totalDemand = 0;
-        for (Visit visit : visits) {
-            totalDemand += visit.getDemand();
+        if (visits.isEmpty()) {
+            return 0;
         }
-        return totalDemand;
+        Visit lastVisit = visits.get(visits.size() - 1);
+        Integer cumulativeDemand = lastVisit.getCumulativeDemand();
+        return cumulativeDemand == null ? 0 : cumulativeDemand;
     }
 
     public long getTotalDrivingTimeSeconds() {
         if (visits.isEmpty()) {
             return 0;
         }
-
-        long totalDrivingTime = 0;
-        Location previousLocation = homeLocation;
-
-        for (Visit visit : visits) {
-            totalDrivingTime += previousLocation.getDrivingTimeTo(visit.getLocation());
-            previousLocation = visit.getLocation();
+        Visit lastVisit = visits.get(visits.size() - 1);
+        Long cumulativeDrivingTime = lastVisit.getCumulativeDrivingTimeSeconds();
+        if (cumulativeDrivingTime == null) {
+            return 0;
         }
-        totalDrivingTime += previousLocation.getDrivingTimeTo(homeLocation);
-
-        return totalDrivingTime;
+        return cumulativeDrivingTime + lastVisit.getLocation().getDrivingTimeTo(homeLocation);
     }
 
     @Override
@@ -528,4 +524,3 @@ NOTE: `@NextElementShadowVariable` also exists, which can be used to get a refer
 The `arrivalTime` field has a `@CascadingUpdateShadowVariable` annotation.
 This annotation indicates which method should be triggered to update this field whenever this entity is moved, in this case the `updateArrivalTime()` method.
 This change is automatically propagated to the subsequent visits and stops when the `arrivalTime` value hasn't changed or when it's reached the end of the chain of visit objects.
-

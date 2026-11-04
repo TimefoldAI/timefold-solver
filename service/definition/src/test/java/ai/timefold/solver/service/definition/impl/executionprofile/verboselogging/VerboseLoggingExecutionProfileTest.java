@@ -47,10 +47,9 @@ class VerboseLoggingExecutionProfileTest {
     void writesIntoItsOwnSubdirectoryOfTheArtifactsDirectory() {
         // The log must land under <artifacts-dir>/<id>/ so the post-processor bundles it, and so multiple active profiles
         // never collide on the same file.
-        assertThat(profile.toEnvironment(Map.of()))
-                .containsEntry(VerboseLoggingExecutionProfile.ENV_QUARKUS_LOG_FILE_PATH,
-                        Path.of(EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR, profile.id(),
-                                VerboseLoggingExecutionProfile.LOG_FILE_NAME).toString());
+        assertThat(Path.of(profile.toEnvironment(Map.of()).get(VerboseLoggingExecutionProfile.ENV_QUARKUS_LOG_FILE_PATH)))
+                .isEqualTo(Path.of(EnvironmentVars.DEFAULT_EXECUTION_PROFILE_DIR, profile.id(),
+                        VerboseLoggingExecutionProfile.LOG_FILE_NAME));
     }
 
     @Test

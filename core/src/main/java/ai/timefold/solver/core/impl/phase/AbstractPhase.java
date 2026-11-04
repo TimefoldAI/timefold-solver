@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.phase;
 
-import java.util.Map;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -14,7 +12,6 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
-import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
 import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -22,8 +19,6 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.micrometer.core.instrument.Tags;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -79,8 +74,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         return assertShadowVariablesAreNotStaleAfterStep;
     }
 
-    public abstract PhaseType getPhaseType();
-
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
@@ -104,8 +97,13 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         phaseScope.startingNow();
         phaseScope.reset();
+        // A nested phase (Ruin and Recreate) runs inside a move of this run's phase; it is not a phase of the run.
         if (!isNested()) {
-            var solver = phaseScope.getSolverScope().getSolver();
+            var solverScope = phaseScope.getSolverScope();
+            // The termination of an earlier phase did not end the run, because this phase started.
+            solverScope.setLastTerminationId(null);
+            solverScope.setLastPhase(new DefaultPhaseId(getPhaseType(), phaseIndex));
+            var solver = solverScope.getSolver();
             solver.phaseStarted(phaseScope);
         }
         phaseTermination.phaseStarted(phaseScope);
@@ -141,7 +139,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                 // as the assertion will need to reallocate the solution range,
                 // and it may lead to OOM errors.
                 phaseScope.getScoreDirector().getValueRangeManager().reset(null);
-                phaseScope.assertWorkingScoreFromScratch(score, getPhaseType() + " phase ended");
+                phaseScope.assertWorkingScoreFromScratch(score, getPhaseType().getPhaseName() + " phase ended");
             } catch (ScoreCorruptionException | VariableCorruptionException e) {
                 throw new IllegalStateException("""
                         Solver corruption was detected. Solutions provided by this solver can not be trusted.
@@ -169,7 +167,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     }
 
     protected void calculateWorkingStepScore(AbstractStepScope<Solution_> stepScope, Object completedAction) {
-        AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
+        var phaseScope = stepScope.getPhaseScope();
         var score = phaseScope.calculateScore();
         stepScope.setScore(score);
         if (assertStepScoreFromScratch) {
@@ -211,9 +209,9 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     private static <Solution_> void collectMetrics(AbstractStepScope<Solution_> stepScope) {
         var solverScope = stepScope.getPhaseScope().getSolverScope();
         if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().isFullyAssigned()) {
-            Tags tags = solverScope.getMonitoringTags();
+            var tags = solverScope.getMonitoringTags();
             ScoreDefinition<?> scoreDefinition = solverScope.getScoreDefinition();
-            Map<Tags, ScoreLevels> tagToScoreLevels = solverScope.getStepScoreMap();
+            var tagToScoreLevels = solverScope.getStepScoreMap();
             SolverMetricUtil.registerScore(SolverMetric.STEP_SCORE, tags, scoreDefinition, tagToScoreLevels,
                     stepScope.getScore());
         }
@@ -245,7 +243,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                                 %s phase (%d) needs to start from an initialized solution, but there are (%d) uninitialized entities.
                                 Maybe there is no Construction Heuristic configured before this phase to initialize the solution.
                                 Or maybe the getter/setters of your planning variables in your domain classes aren't implemented correctly."""
-                                .formatted(getPhaseType(), phaseIndex, uninitializedEntityCount));
+                                .formatted(getPhaseType().getPhaseName(), phaseIndex, uninitializedEntityCount));
             }
             var unassignedValueCount = initializationStatistics.unassignedValueCount();
             if (unassignedValueCount > 0) {
@@ -254,7 +252,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                                 %s phase (%d) needs to start from an initialized solution, \
                                 but planning list variable (%s) has (%d) unexpected unassigned values.
                                 Maybe there is no Construction Heuristic configured before this phase to initialize the solution."""
-                                .formatted(getPhaseType(), phaseIndex, solutionDescriptor.getListVariableDescriptor(),
+                                .formatted(getPhaseType().getPhaseName(), phaseIndex,
+                                        solutionDescriptor.getListVariableDescriptor(),
                                         unassignedValueCount));
             }
         }

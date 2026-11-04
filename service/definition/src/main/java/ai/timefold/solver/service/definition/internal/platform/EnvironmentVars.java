@@ -39,6 +39,12 @@ public class EnvironmentVars {
     public static final String DEFAULT_EXECUTION_PROFILE_DIR = "/tmp/timefold-execution-artifacts";
 
     /**
+     * Config property that switches on the maps client's distance matrix recorder. As an environment variable, it is
+     * the upper-cased property name with every non-alphanumeric character replaced by an underscore.
+     */
+    public static final String PROPERTY_MAP_SERVICE_RECORDING_ENABLED = "timefold.platform.map-service.recording.enabled";
+
+    /**
      * Plan name that is being used to run the job
      */
     public static final String ENV_TIMEFOLD_PLAN_NAME = "AI_TIMEFOLD_PLAN_NAME";

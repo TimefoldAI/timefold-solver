@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jspecify.annotations.NullMarked;
@@ -43,7 +43,7 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
 
     @Override
     public PhaseType getPhaseType() {
-        return PhaseType.RUIN_AND_RECREATE_CONSTRUCTION_HEURISTIC;
+        return PhaseType.CONSTRUCTION_HEURISTIC;
     }
 
     @Override

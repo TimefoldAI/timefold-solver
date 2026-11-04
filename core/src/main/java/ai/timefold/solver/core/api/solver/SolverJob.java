@@ -3,6 +3,7 @@ package ai.timefold.solver.core.api.solver;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -79,20 +80,42 @@ public interface SolverJob<Solution_> {
 
     /**
      * Waits if necessary for the solver to complete and then returns the final best {@link PlanningSolution}.
+     * This is the {@link SolverRunResult#solution() solution} of {@link #getResult()},
+     * or the original problem if the job was terminated before solving started.
      *
      * @return never null, but it could be the original uninitialized problem
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @throws ExecutionException if the computation threw an exception
      */
-    Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException;
+    default Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
+        return getResult().solution();
+    };
+
+    /**
+     * Waits if necessary for the solver to complete and then returns the final best {@link PlanningSolution}
+     * together with the {@link SolverRunSummary summary} of the run.
+     * The summary values are totals for the whole run, including every restart after a problem change.
+     *
+     * @return never null
+     * @throws InterruptedException if the current thread was interrupted while waiting
+     * @throws ExecutionException if the computation threw an exception
+     * @throws CancellationException if the job was terminated before solving started,
+     *         or if its solver thread was cancelled because early termination took too long
+     */
+    SolverRunResult<Solution_> getResult() throws InterruptedException, ExecutionException;
 
     /**
      * Returns the {@link Duration} spent solving since the last start.
      * If it hasn't started it yet, it returns {@link Duration#ZERO}.
      * If it hasn't ended yet, it returns the time between the last start and now.
      * If it has ended already, it returns the time between the last start and the ending.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getResult()}.
      *
      * @return the {@link Duration} spent solving since the last (re)start, at least 0
+     * @see #getResult()
      */
     Duration getSolvingDuration();
 
@@ -101,8 +124,13 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the number of score calculations so far.
      * If it has ended already, it returns the total number of score calculations that occurred during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getResult()}.
      *
      * @return the number of score calculations that had occurred during solving since the last (re)start, at least 0
+     * @see #getResult()
      */
     long getScoreCalculationCount();
 
@@ -111,8 +139,13 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the number of moves evaluations so far.
      * If it has ended already, it returns the total number of move evaluations that occurred during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getResult()}.
      *
      * @return the number of move evaluations that had occurred during solving since the last (re)start, at least 0
+     * @see #getResult()
      */
     long getMoveEvaluationCount();
 
@@ -120,6 +153,7 @@ public interface SolverJob<Solution_> {
      * Return the {@link ProblemSizeStatistics} for the {@link PlanningSolution problem} submitted to the
      * {@link SolverManager}.
      *
+     * @see #getResult()
      */
     ProblemSizeStatistics getProblemSizeStatistics();
 
@@ -128,9 +162,14 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the average number of score calculations per second so far.
      * If it has ended already, it returns the average number of score calculations per second during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getResult()}.
      *
      * @return the average number of score calculations per second that had occurred during solving
      *         since the last (re)start, at least 0
+     * @see #getResult()
      */
     long getScoreCalculationSpeed();
 
@@ -139,9 +178,14 @@ public interface SolverJob<Solution_> {
      * If it hasn't started yet, it returns 0.
      * If it hasn't ended yet, it returns the average number of move evaluations per second so far.
      * If it has ended already, it returns the average number of move evaluations per second during solving.
+     * <p>
+     * The solver restarts after each {@link ProblemChange problem change},
+     * so this value covers only the time since the last problem change.
+     * For totals of the whole run, use {@link #getResult()}.
      *
      * @return the average number of move evaluations per second that had occurred during solving
      *         since the last (re)start, at least 0
+     * @see #getResult()
      */
     long getMoveEvaluationSpeed();
 }

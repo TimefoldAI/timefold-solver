@@ -41,8 +41,11 @@ public final class ConcatTriBiNode<A, B, C>
 
     @Override
     protected void updateOutTupleFromRight(BiTuple<A, B> rightTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.setA(rightTuple.getA());
-        outTuple.setB(rightTuple.getB());
+        var factA = rightTuple.getA();
+        var factB = rightTuple.getB();
+        outTuple.setA(factA);
+        outTuple.setB(factB);
+        outTuple.setC(paddingFunction.apply(factA, factB));
     }
 
 }
