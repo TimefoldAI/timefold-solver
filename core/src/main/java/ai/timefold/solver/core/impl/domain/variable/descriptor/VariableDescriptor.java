@@ -5,6 +5,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 /**
@@ -13,6 +14,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 public abstract class VariableDescriptor<Solution_> {
 
     protected final int ordinal;
+    private final int globalOrdinal;
     protected final EntityDescriptor<Solution_> entityDescriptor;
     protected final MemberAccessor variableMemberAccessor;
     protected final String variableName;
@@ -45,6 +47,7 @@ public abstract class VariableDescriptor<Solution_> {
                             getSimpleEntityAndVariableName()));
         }
         this.ordinal = ordinal;
+        this.globalOrdinal = entityDescriptor.getVariableOrdinalOffset() + ordinal;
         this.entityDescriptor = entityDescriptor;
         this.variableMemberAccessor = variableMemberAccessor;
         this.variableName = variableMemberAccessor.getName();
@@ -52,13 +55,23 @@ public abstract class VariableDescriptor<Solution_> {
     }
 
     /**
-     * A number unique within an {@link EntityDescriptor}, increasing sequentially from zero.
-     * Used for indexing in arrays to avoid object hash lookups in maps.
+     * A number unique within the declaring {@link EntityDescriptor}, increasing sequentially from zero.
+     * For a number unique within the {@link SolutionDescriptor}, use {@link #getGlobalOrdinal()}.
      *
      * @return zero or higher
      */
     public int getOrdinal() {
         return ordinal;
+    }
+
+    /**
+     * A number unique within a {@link SolutionDescriptor}, increasing sequentially from zero.
+     * Use it as an array index; {@link SolutionDescriptor#getVariableDescriptorCount()} gives the array size.
+     *
+     * @return zero or higher
+     */
+    public int getGlobalOrdinal() {
+        return globalOrdinal;
     }
 
     public EntityDescriptor<Solution_> getEntityDescriptor() {

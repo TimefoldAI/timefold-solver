@@ -1,8 +1,11 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -72,13 +75,13 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 .add(listElementSourceLocator);
     }
 
-    public <Entity_> void addVariableReferenceEntity(Entity_ entity,
-            List<? extends VariableUpdater<Solution_>> variableReferences) {
-        var nodeGroupKey = variableReferences.get(0).nodeGroupKey();
-        var isGroup = variableReferences.get(0).groupEntities() != null;
+    public <Entity_> void addVariableReferenceEntity(Entity_ entity, boolean hasDynamicEdges,
+            VariableUpdater<Solution_> variableUpdater) {
+        var nodeGroupKey = variableUpdater.nodeGroupKey();
+        var isGroup = variableUpdater.groupEntities() != null;
         var entityRepresentative = entity;
         if (isGroup) {
-            entityRepresentative = (Entity_) variableReferences.get(0).groupEntities()[0];
+            entityRepresentative = (Entity_) variableUpdater.groupEntities()[0];
         }
         var instanceMap = nodeGroupKeyToContainingNodeMap.get(nodeGroupKey);
 
@@ -95,35 +98,33 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         int[] groupEntityIds = null;
 
         if (isGroup) {
-            var groupEntities = variableReferences.get(0).groupEntities();
+            var groupEntities = variableUpdater.groupEntities();
             groupEntityIds = new int[groupEntities.length];
             for (var i = 0; i < groupEntityIds.length; i++) {
-                var groupEntity = variableReferences.get(0).groupEntities()[i];
+                var groupEntity = variableUpdater.groupEntities()[i];
                 groupEntityIds[i] = entityToEntityId.computeIfAbsent(groupEntity, ignored -> entityToEntityId.size());
             }
         }
 
-        var node = new GraphNode<>(entityRepresentative, variableReferences, nodeList.size(),
-                entityId, groupEntityIds);
+        var node = new GraphNode<>(entityRepresentative, Collections.singletonList(variableUpdater), nodeList.size(),
+                entityId, groupEntityIds, hasDynamicEdges);
 
         if (isGroup) {
-            for (var groupEntity : variableReferences.get(0).groupEntities()) {
-                addToInstanceMaps(instanceMap, groupEntity, node, variableReferences);
+            for (var groupEntity : variableUpdater.groupEntities()) {
+                addToInstanceMaps(instanceMap, groupEntity, node, variableUpdater);
             }
         } else {
-            addToInstanceMaps(instanceMap, entity, node, variableReferences);
+            addToInstanceMaps(instanceMap, entity, node, variableUpdater);
         }
         nodeList.add(node);
     }
 
     private void addToInstanceMaps(Map<Object, GraphNode<Solution_>> instanceMap,
-            Object entity, GraphNode<Solution_> node, List<? extends VariableUpdater<Solution_>> variableReferences) {
+            Object entity, GraphNode<Solution_> node, VariableUpdater<Solution_> variableUpdater) {
         instanceMap.put(entity, node);
-        for (var variable : variableReferences) {
-            var variableInstanceMap =
-                    variableReferenceToContainingNodeMap.computeIfAbsent(variable.id(), ignored -> new IdentityHashMap<>());
-            variableInstanceMap.put(entity, node);
-        }
+        var variableInstanceMap =
+                variableReferenceToContainingNodeMap.computeIfAbsent(variableUpdater.id(), ignored -> new IdentityHashMap<>());
+        variableInstanceMap.put(entity, node);
     }
 
     public void addFixedEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
@@ -153,6 +154,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         if (nodeList.isEmpty()) {
             return EmptyVariableReferenceGraph.INSTANCE;
         }
+        mergeSameEntityNodes();
         if (isGraphFixed) {
             return new FixedVariableReferenceGraph<>(this, graphCreator);
         }
@@ -165,6 +167,274 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             throw new IllegalArgumentException();
         }
         return out;
+    }
+
+    /**
+     * Merges the nodes of each entity that are connected by a direct fixed edge
+     * into a single node, when the merge does not create a loop.
+     * A merged node's variableReferences are in the topological order of the merged subgraph.
+     */
+    private void mergeSameEntityNodes() {
+        var size = nodeList.size();
+        if (size < 2) {
+            return;
+        }
+        // The topological order of the graph before the merge;
+        // assertNoFixedLoops() guarantees the fixed edges are acyclic.
+        var orderGraph = new DefaultTopologicalOrderGraph(size);
+        var forwardEdges = new BitSet[size];
+        var backwardEdges = new BitSet[size];
+        for (var i = 0; i < size; i++) {
+            forwardEdges[i] = new BitSet();
+            backwardEdges[i] = new BitSet();
+        }
+        for (var edgeEntry : this.fixedEdges.entrySet()) {
+            addEdgeToAdjacency(orderGraph, forwardEdges, backwardEdges, edgeEntry.getKey().graphNodeId(),
+                    edgeEntry.getValue());
+        }
+        orderGraph.commitChanges(new BitSet());
+
+        // Find the connected components of the same-entity nodes via the direct edges;
+        // only those nodes can be merged into one node.
+        var entityToNodeIds = new IdentityHashMap<Object, BitSet>();
+        for (var i = 0; i < size; i++) {
+            entityToNodeIds.computeIfAbsent(nodeList.get(i).entity(), ignored -> new BitSet()).set(i);
+        }
+
+        // component = same entity nodes connected by fixed edges. Nodes with non-empty groups are not considered
+        // part of the component.
+        var componentIndexOfNode = new int[size];
+        Arrays.fill(componentIndexOfNode, -1); // -1 = no connected same entity nodes
+        var componentToNodeIds = new ArrayList<BitSet>();
+        var visited = new boolean[size];
+        for (var nodeIds : entityToNodeIds.values()) {
+            for (var startId : nodeIds.stream().toArray()) {
+                if (visited[startId] || !isMergeable(nodeList.get(startId))) {
+                    continue;
+                }
+                var component = new BitSet();
+                var queue = new ArrayDeque<>(List.of(startId));
+                visited[startId] = true;
+
+                // Do a DFS in both the forward and backward direction, since the node might not be
+                // the first one in a chain
+                while (!queue.isEmpty()) {
+                    var currentId = queue.poll();
+                    component.set(currentId);
+                    for (var nextId : forwardEdges[currentId].stream().toArray()) {
+                        if (!visited[nextId] && isSameEntityNode(nextId, startId, backwardEdges)) {
+                            visited[nextId] = true;
+                            queue.add(nextId);
+                        }
+                    }
+                    for (var nextId : backwardEdges[currentId].stream().toArray()) {
+                        if (!visited[nextId] && isSameEntityNode(nextId, startId, backwardEdges)) {
+                            visited[nextId] = true;
+                            queue.add(nextId);
+                        }
+                    }
+                }
+                if (component.size() > 1) {
+                    var componentIndex = componentToNodeIds.size();
+                    for (var nodeId : component.stream().toArray()) {
+                        componentIndexOfNode[nodeId] = componentIndex;
+                    }
+                    componentToNodeIds.add(component);
+                }
+            }
+        }
+
+        var canMergeComponent = canMergeComponents(componentToNodeIds, componentIndexOfNode, size);
+        var anyCanMerge = false;
+        for (var canMerge : canMergeComponent) {
+            anyCanMerge |= canMerge;
+        }
+        if (anyCanMerge) {
+            replaceNodesWithMergedNodes(componentToNodeIds, canMergeComponent, componentIndexOfNode, orderGraph);
+        }
+    }
+
+    private boolean isSameEntityNode(int nodeId, int otherId, BitSet[] backwardEdges) {
+        var node = nodeList.get(nodeId);
+        if (!(isMergeable(node) && node.entity() == nodeList.get(otherId).entity())) {
+            return false;
+        }
+        return countAncestorsWithDynamicEdges(nodeId, backwardEdges) == countAncestorsWithDynamicEdges(otherId, backwardEdges);
+    }
+
+    /**
+     * A node of an aligned group updates several entities, and a list chain node walks a whole list,
+     * so neither can share a node with the variables of a single entity.
+     */
+    private static boolean isMergeable(GraphNode<?> node) {
+        return node.groupEntityIds() == null && node.variableReferences().getFirst() instanceof VariableUpdaterInfo<?>;
+    }
+
+    private int countAncestorsWithDynamicEdges(int nodeId, BitSet[] backwardEdges) {
+        var visited = new BitSet();
+        var queue = new ArrayDeque<Integer>();
+        queue.add(nodeId);
+        visited.set(nodeId);
+        var count = 0;
+        while (!queue.isEmpty()) {
+            var next = queue.poll();
+            if (nodeList.get(next).hasDynamicEdges()) {
+                count++;
+            }
+            for (var nextId : backwardEdges[next].stream().toArray()) {
+                if (!visited.get(nextId)) {
+                    visited.set(nextId);
+                    queue.add(nextId);
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * @return for each component, whether merging it together with all the other mergeable
+     *         components does not create a loop
+     */
+    private boolean[] canMergeComponents(List<BitSet> componentToNodeIds, int[] componentIndexOfNode,
+            int graphNodeCount) {
+        // A vertex for every component and for every node that is not in a component.
+        var componentCount = componentToNodeIds.size();
+
+        // Maps a node in the original graph to a node in the contracted graph
+        var nodeToVertex = new int[graphNodeCount];
+
+        // Nodes in the contracted graph
+        var vertexCount = componentCount;
+        for (var i = 0; i < graphNodeCount; i++) {
+            if (componentIndexOfNode[i] >= 0) {
+                nodeToVertex[i] = componentIndexOfNode[i];
+            } else {
+                nodeToVertex[i] = vertexCount++;
+            }
+        }
+        var contractedGraph = new DefaultTopologicalOrderGraph(vertexCount);
+
+        // Map fixed edges in the original graph to edges in the contracted graph
+        for (var edgeEntry : this.fixedEdges.entrySet()) {
+            var fromVertex = nodeToVertex[edgeEntry.getKey().graphNodeId()];
+            for (var toNode : edgeEntry.getValue()) {
+                var toVertex = nodeToVertex[toNode.graphNodeId()];
+                if (fromVertex != toVertex) {
+                    contractedGraph.addEdge(fromVertex, toVertex);
+                }
+            }
+        }
+        contractedGraph.commitChanges(new BitSet());
+        var out = new boolean[componentCount];
+        for (var i = 0; i < componentCount; i++) {
+            // A component that is on a loop in the contracted graph would
+            // create the loop when it and the other mergeable components are merged.
+            out[i] = contractedGraph.getComponent(i).size() == 1;
+        }
+        return out;
+    }
+
+    private static <Solution_> void addEdgeToAdjacency(DefaultTopologicalOrderGraph orderGraph, BitSet[] forwardEdges,
+            BitSet[] backwardEdges, int fromNodeId, List<GraphNode<Solution_>> toNodes) {
+        for (var toNode : toNodes) {
+            var toNodeId = toNode.graphNodeId();
+            orderGraph.addEdge(fromNodeId, toNodeId);
+            forwardEdges[fromNodeId].set(toNodeId);
+            backwardEdges[toNodeId].set(fromNodeId);
+        }
+    }
+
+    private void replaceNodesWithMergedNodes(List<BitSet> componentToNodeIds,
+            boolean[] canMergeComponent, int[] componentIndexOfNode, DefaultTopologicalOrderGraph orderGraph) {
+        var oldNodeIdToNewNodeId = new int[nodeList.size()];
+        var mergedNodeIdOfComponent = new int[componentToNodeIds.size()];
+        Arrays.fill(mergedNodeIdOfComponent, -1);
+        var newNodeList = new ArrayList<GraphNode<Solution_>>(nodeList.size());
+        for (var oldNodeId = 0; oldNodeId < nodeList.size(); oldNodeId++) {
+            var oldNode = nodeList.get(oldNodeId);
+            var componentIndex = componentIndexOfNode[oldNodeId];
+            var isMerged = componentIndex >= 0 && canMergeComponent[componentIndex];
+            if (isMerged) {
+                // Only create a new node for the component if we haven't done so already
+                if (mergedNodeIdOfComponent[componentIndex] == -1) {
+                    mergedNodeIdOfComponent[componentIndex] = newNodeList.size();
+                    newNodeList.add(createMergedNode(componentToNodeIds.get(componentIndex),
+                            mergedNodeIdOfComponent[componentIndex], orderGraph));
+                }
+            } else {
+                // Keep the node data, but assign its index in the new list.
+                newNodeList.add(new GraphNode<>(oldNode.entity(), oldNode.variableReferences(), newNodeList.size(),
+                        oldNode.entityId(), oldNode.groupEntityIds(), oldNode.hasDynamicEdges()));
+            }
+            oldNodeIdToNewNodeId[oldNodeId] = isMerged ? mergedNodeIdOfComponent[componentIndex]
+                    : newNodeList.size() - 1;
+        }
+        replaceEdges(oldNodeIdToNewNodeId, newNodeList);
+        replaceContainingNodeMap(newNodeList);
+        nodeList.clear();
+        nodeList.addAll(newNodeList);
+    }
+
+    private GraphNode<Solution_> createMergedNode(BitSet component, int newNodeId,
+            DefaultTopologicalOrderGraph orderGraph) {
+        var sortedNodeIds = component.stream().boxed().sorted(Comparator
+                .comparingInt(orderGraph::getTopologicalOrder)
+                .thenComparingInt(Integer::intValue)).collect(Collectors.toCollection(ArrayList::new));
+        var mergedUpdaters = new ArrayList<VariableUpdater<Solution_>>();
+        for (var nodeId : sortedNodeIds) {
+            mergedUpdaters.addAll(nodeList.get(nodeId).variableReferences());
+        }
+        var firstNode = nodeList.get(component.nextSetBit(0));
+        return new GraphNode<>(firstNode.entity(), mergedUpdaters, newNodeId, firstNode.entityId(), null,
+                firstNode.hasDynamicEdges());
+    }
+
+    private void replaceEdges(int[] oldNodeIdToNewNodeId, List<GraphNode<Solution_>> newNodeList) {
+        var newFixedEdges = new HashMap<GraphNode<Solution_>, List<GraphNode<Solution_>>>();
+        remapEdges(fixedEdges, oldNodeIdToNewNodeId, newNodeList, newFixedEdges);
+        fixedEdges.clear();
+        fixedEdges.putAll(newFixedEdges);
+        var newInitialDynamicEdges = new HashMap<GraphNode<Solution_>, List<GraphNode<Solution_>>>();
+        remapEdges(initialDynamicEdges, oldNodeIdToNewNodeId, newNodeList, newInitialDynamicEdges);
+        initialDynamicEdges.clear();
+        initialDynamicEdges.putAll(newInitialDynamicEdges);
+    }
+
+    private void remapEdges(Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> edgeMap,
+            int[] oldNodeIdToNewNodeId, List<GraphNode<Solution_>> newNodeList,
+            Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> newEdgeMap) {
+        for (var edgeEntry : edgeMap.entrySet()) {
+            var fromNode = newNodeList.get(oldNodeIdToNewNodeId[edgeEntry.getKey().graphNodeId()]);
+            for (var toNode : edgeEntry.getValue()) {
+                var newToNodeId = oldNodeIdToNewNodeId[toNode.graphNodeId()];
+                if (fromNode.graphNodeId() == newToNodeId) {
+                    continue;
+                }
+                var toList = newEdgeMap.computeIfAbsent(fromNode, ignored -> new ArrayList<>());
+                var newToNode = newNodeList.get(newToNodeId);
+                // Do not deduplicate; dynamic edges that are merged should call `addEdge`
+                // twice so the removal of one keeps the edge present in the graph
+                // (duplicates largely don't matter since AbstractVariableReferenceGraph keep counts anyway)
+                toList.add(newToNode);
+            }
+        }
+    }
+
+    private void replaceContainingNodeMap(List<GraphNode<Solution_>> newNodeList) {
+        var newContainingNodeMap = new HashMap<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>>();
+        for (var node : newNodeList) {
+            var entityList = node.groupEntityIds() == null
+                    ? List.of(node.entity())
+                    : List.of(node.variableReferences().getFirst().groupEntities());
+            for (var updater : node.variableReferences()) {
+                for (var entity : entityList) {
+                    newContainingNodeMap.computeIfAbsent(updater.id(), ignored -> new IdentityHashMap<>())
+                            .put(entity, node);
+                }
+            }
+        }
+        variableReferenceToContainingNodeMap.clear();
+        variableReferenceToContainingNodeMap.putAll(newContainingNodeMap);
     }
 
     /**

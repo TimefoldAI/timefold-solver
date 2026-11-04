@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -62,6 +63,11 @@ final class TimeMillisSpentTermination<Solution_>
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new TimeMillisSpentTermination<>(timeMillisSpentLimit);
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.SPENT_LIMIT;
     }
 
     @Override

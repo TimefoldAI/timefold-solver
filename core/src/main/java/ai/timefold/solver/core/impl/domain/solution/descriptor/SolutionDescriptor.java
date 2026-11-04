@@ -727,6 +727,18 @@ public final class SolutionDescriptor<Solution_> {
         return entityDescriptorMap.sequencedValues();
     }
 
+    /**
+     * @return the number of variable descriptors, which is one more than the highest
+     *         {@link VariableDescriptor#getGlobalOrdinal() global ordinal}
+     */
+    public int getVariableDescriptorCount() {
+        if (entityDescriptorMap.isEmpty()) {
+            return 0;
+        }
+        var lastEntityDescriptor = entityDescriptorMap.sequencedValues().getLast();
+        return lastEntityDescriptor.getVariableOrdinalOffset() + lastEntityDescriptor.getDeclaredVariableCount();
+    }
+
     public SequencedCollection<EntityDescriptor<Solution_>> getGenuineEntityDescriptors() {
         if (genuineEntityDescriptorList != null) {
             return genuineEntityDescriptorList;

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -42,6 +43,11 @@ final class StepCountTermination<Solution_>
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new StepCountTermination<>(stepCountLimit);
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.STEP_COUNT_LIMIT;
     }
 
     @Override

@@ -35,8 +35,18 @@ import org.junit.jupiter.api.Test;
  * Unlike {@link ai.timefold.solver.core.config.solver.EnvironmentMode#FULL_ASSERT},
  * which recomputes the shadow variables with the graph under test,
  * these tests compare that graph against the arbitrary graph.
+ * <p>
+ * Each test uses an existing test domain whose shadow variables select the structure under test:
+ * <ul>
+ * <li>{@link GraphStructure#SINGLE_DIRECTIONAL_PARENT}: {@code simple_list} (previous)
+ * and {@code simple_list_next} (next)</li>
+ * <li>{@link GraphStructure#ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE}: {@code dependency}
+ * (dependencies between values, which can loop) and {@code concurrent} (values aligned in groups)</li>
+ * <li>{@link GraphStructure#LIST_CHAIN}: {@code multi_entity_chain} (previous)
+ * and {@code multi_entity_chain_next} (next)</li>
+ * </ul>
  */
-class AcceleratedGraphStructureDifferentialTest {
+class GraphStructureDifferentialTest {
 
     private static final int ENTITY_COUNT = 3;
     private static final int VALUE_COUNT = 9;
@@ -58,7 +68,7 @@ class AcceleratedGraphStructureDifferentialTest {
                 new TestdataDeclarativeSimpleListSolution(entityList, valueList), GraphStructure.SINGLE_DIRECTIONAL_PARENT,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataDeclarativeSimpleListEntity.class)
                         .listVariable("values", TestdataDeclarativeSimpleListValue.class),
-                TestdataDeclarativeSimpleListEntity::getValues, entityList, valueList, true, MOVE_COUNT);
+                TestdataDeclarativeSimpleListEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
     @Test
@@ -78,7 +88,7 @@ class AcceleratedGraphStructureDifferentialTest {
                 GraphStructure.SINGLE_DIRECTIONAL_PARENT,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataDeclarativeSimpleNextListEntity.class)
                         .listVariable("values", TestdataDeclarativeSimpleNextListValue.class),
-                TestdataDeclarativeSimpleNextListEntity::getValues, entityList, valueList, true, MOVE_COUNT);
+                TestdataDeclarativeSimpleNextListEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
     @Test
@@ -103,7 +113,7 @@ class AcceleratedGraphStructureDifferentialTest {
         assertRandomListMovesMatchArbitraryGraph(solutionDescriptor, solution, GraphStructure.LIST_CHAIN,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataMultiEntityChainVehicle.class)
                         .listVariable("visits", TestdataMultiEntityChainVisit.class),
-                TestdataMultiEntityChainVehicle::getVisits, entityList, valueList, true, MOVE_COUNT);
+                TestdataMultiEntityChainVehicle::getVisits, entityList, valueList, MOVE_COUNT);
     }
 
     @Test
@@ -127,7 +137,7 @@ class AcceleratedGraphStructureDifferentialTest {
         assertRandomListMovesMatchArbitraryGraph(solutionDescriptor, solution, GraphStructure.LIST_CHAIN,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataMultiEntityChainNextVehicle.class)
                         .listVariable("visits", TestdataMultiEntityChainNextVisit.class),
-                TestdataMultiEntityChainNextVehicle::getVisits, entityList, valueList, true, MOVE_COUNT);
+                TestdataMultiEntityChainNextVehicle::getVisits, entityList, valueList, MOVE_COUNT);
     }
 
     @Test
@@ -149,13 +159,9 @@ class AcceleratedGraphStructureDifferentialTest {
                 GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataDependencyEntity.class)
                         .listVariable("values", TestdataDependencyValue.class),
-                TestdataDependencyEntity::getValues, entityList, valueList, true, MOVE_COUNT);
+                TestdataDependencyEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
-    /**
-     * Aligned values share one computation, which is only valid when their supplier gives the same value
-     * on each of them; this one does not when some of them are unassigned, so all of them stay assigned.
-     */
     @Test
     void arbitrarySingleEntityWithAlignedValues() {
         var entityList = new ArrayList<TestdataConcurrentEntity>();
@@ -180,7 +186,7 @@ class AcceleratedGraphStructureDifferentialTest {
                 GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE,
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataConcurrentEntity.class)
                         .listVariable("values", TestdataConcurrentValue.class),
-                TestdataConcurrentEntity::getValues, entityList, valueList, false, MOVE_COUNT);
+                TestdataConcurrentEntity::getValues, entityList, valueList, MOVE_COUNT);
     }
 
     /**

@@ -28,6 +28,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
@@ -52,7 +53,7 @@ import ai.timefold.solver.service.definition.api.validation.LegacyValidationResu
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
-import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
+import ai.timefold.solver.service.definition.impl.enrichment.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
@@ -183,7 +184,7 @@ public class SolverWorker {
             ModelConvertorBase modelConvertor,
             SolverModelEnricherService enricherService,
             SolverModelEnrichmentDirectorService enrichmentDirectorService,
-            MapEnrichmentContext mapEnrichmentContext,
+            Instance<MapEnrichmentContext> mapEnrichmentContext,
             TerminationService terminationService,
             ShutdownExecutor shutdownExecutor,
             ShutdownOnTerminate shutdownOnTerminate,
@@ -210,7 +211,8 @@ public class SolverWorker {
         this.modelConvertor = (ModelConvertor) modelConvertor;
         this.enricherService = enricherService;
         this.enrichmentDirectorService = enrichmentDirectorService;
-        this.mapEnrichmentContext = mapEnrichmentContext;
+        this.mapEnrichmentContext =
+                mapEnrichmentContext.isResolvable() ? mapEnrichmentContext.get() : new MapEnrichmentContext();
         this.terminationService = terminationService;
         this.shutdownExecutor = shutdownExecutor;
         this.shutdownOnTerminate = shutdownOnTerminate;
@@ -362,12 +364,6 @@ public class SolverWorker {
 
             var solverModel = createSolverModel(modelInput, modelConfig);
 
-            String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
-            if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
-                LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", mapEnrichmentContext.getResolvedMapLocation(),
-                        metadata.getId());
-            }
-
             solutionManager.update(solverModel);
 
             // Store the updated solution
@@ -453,7 +449,8 @@ public class SolverWorker {
                     .withProblemId(id)
                     .withBestSolutionEventConsumer(
                             decorateIfPossible(event -> notifyOnSave(id, event.solution(), event.producerId())))
-                    .withFinalBestSolutionEventConsumer(event -> notifyOnComplete(id, event.solution()))
+                    .withFinalBestSolutionEventConsumer(
+                            event -> notifyOnComplete(id, event.solution(), event))
                     .withFirstInitializedSolutionEventConsumer(
                             event -> notifyOnInit(id, event.solution(), event.isTerminatedEarly(), event.producerId()))
                     .withExceptionHandler(this::notifyOnFailure)
@@ -666,7 +663,7 @@ public class SolverWorker {
             saveIntermediateSolution(id, () -> storageService.updateSolution(id, modelOutput, metadata,
                     extractInputMetrics(solverModel), extractOutputMetrics(solverModel)));
             sendEvent(initSolutionEmitter, new InitSolutionEvent(metadata, solverModel,
-                    new SolverWorkerJobState(SolverStatus.SOLVING_ACTIVE, solverJob), planName, tenantName,
+                    SolverWorkerJobState.ofRunning(SolverStatus.SOLVING_ACTIVE, solverJob), planName, tenantName,
                     eventProducerId.producerId()));
         }
     }
@@ -684,7 +681,7 @@ public class SolverWorker {
                     extractInputMetrics(solverModel), extractOutputMetrics(solverModel)));
 
             sendEvent(bestSolutionEmitter, new BestSolutionEvent(metadata, solverModel,
-                    new SolverWorkerJobState(SolverStatus.SOLVING_ACTIVE, solverJob), planName, tenantName,
+                    SolverWorkerJobState.ofRunning(SolverStatus.SOLVING_ACTIVE, solverJob), planName, tenantName,
                     eventProducerId.producerId()));
         }
     }
@@ -730,7 +727,7 @@ public class SolverWorker {
         return e.isRecoverable() && TRANSIENT_STORAGE_ERROR_CODES.contains(e.getCode());
     }
 
-    protected void notifyOnComplete(String id, SolverModel solverModel) {
+    protected void notifyOnComplete(String id, SolverModel solverModel, SolverRunSummary runSummary) {
         if (this.shuttingDown.get()) {
             // shutting down flag is only set when solver worker is being shutdown - its pod is shutting down
             // but the termination was not issued - either explicitly by terminate early or by solver termination strategy
@@ -761,7 +758,7 @@ public class SolverWorker {
 
             processor.onNext(metadata);
             sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
-                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName));
+                    SolverWorkerJobState.ofTerminated(SolverStatus.NOT_SOLVING, solverJob, runSummary), planName, tenantName));
 
             postProcessCompleteOutput(id, modelOutput, solverModel);
 

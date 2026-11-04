@@ -1,5 +1,6 @@
 package ai.timefold.solver.service.definition.impl.storage;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Produces StorageObjectMapper instances with storage-specific (de)serialization settings.
  */
+@ApplicationScoped
 public class StorageObjectMapperProducer {
 
     private ObjectMapper quarkusObjectMapper;

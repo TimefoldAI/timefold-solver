@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.violation.ShadowVariablesAssert;
+import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -25,17 +26,15 @@ final class DeclarativeShadowVariableAssertions {
     private static final long VIOLATION_DISPLAY_LIMIT = 10L;
 
     /**
-     * Executes random list moves on the solution, and after each of them asserts that the shadow variables,
-     * maintained incrementally by the graph of the expected structure, match {@link #assertMatchesArbitraryGraph}.
-     *
-     * @param unassigning whether the moves may unassign values, which ruin and recreate does
-     *        even when the list variable does not allow unassigned values
+     * Asserts that the solution selects the expected structure, then executes random list moves on it.
+     * After each move, asserts that the shadow variables, maintained incrementally by the graph of that structure,
+     * match the ones recomputed by {@link #assertMatchesArbitraryGraph}.
      */
     static <Solution_, Entity_, Value_> void assertRandomListMovesMatchArbitraryGraph(
             SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution, GraphStructure expectedStructure,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
             Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
-            boolean unassigning, int moveCount) {
+            int moveCount) {
         var entities = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entities::add);
         assertThat(GraphStructure.determineGraphStructure(solutionDescriptor, entities.toArray()).structure())
@@ -45,11 +44,9 @@ final class DeclarativeShadowVariableAssertions {
         assertMatchesArbitraryGraph(solutionDescriptor, solution, "Initial solution");
         var random = new Random(0);
         for (var moveIndex = 0; moveIndex < moveCount; moveIndex++) {
-            var move = randomListMove(listVariableMetaModel, listFunction, entityList, valueList, unassigning, random);
-            if (move != null) {
-                context.execute(move);
-                assertMatchesArbitraryGraph(solutionDescriptor, solution, "Move %d (%s)", moveIndex, move);
-            }
+            var move = randomListMove(listVariableMetaModel, listFunction, entityList, valueList, random);
+            context.execute(move);
+            assertMatchesArbitraryGraph(solutionDescriptor, solution, "Move %d (%s)", moveIndex, move);
         }
     }
 
@@ -57,13 +54,21 @@ final class DeclarativeShadowVariableAssertions {
      * Asserts that the shadow variables of the solution do not change when its declarative shadow variables
      * are recomputed from scratch with {@link GraphStructure#ARBITRARY},
      * the general graph that every other structure must agree with.
-     * Building the graph marks all of its nodes changed, so that recomputation does not depend on any prior state.
+     * The declarative shadow variables are cleared first,
+     * so that a value the arbitrary graph does not recompute is reported instead of kept.
      */
     static <Solution_> void assertMatchesArbitraryGraph(SolutionDescriptor<Solution_> solutionDescriptor,
             Solution_ solution, String description, Object... descriptionArgs) {
         var snapshot = ShadowVariablesAssert.takeSnapshot(solutionDescriptor, solution);
         var entities = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entities::add);
+        for (var variableDescriptor : solutionDescriptor.getDeclarativeShadowVariableDescriptors()) {
+            for (var entity : entities) {
+                if (variableDescriptor.getEntityDescriptor().matchesEntity(entity)) {
+                    variableDescriptor.setValue(entity, null);
+                }
+            }
+        }
         DefaultShadowVariableSessionFactory.buildGraphForStructureAndDirection(
                 new GraphStructure.GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null),
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
@@ -98,9 +103,6 @@ final class DeclarativeShadowVariableAssertions {
         REVERSE
     }
 
-    private static final List<ListMoveType> NON_UNASSIGNING_MOVE_TYPE_LIST = List.of(ListMoveType.CHANGE, ListMoveType.SWAP,
-            ListMoveType.SUB_LIST_CHANGE, ListMoveType.SUB_LIST_SWAP, ListMoveType.REVERSE);
-
     /**
      * A random sub list of an assigned entity's list: the values from fromIndex (inclusive) to toIndex (exclusive).
      */
@@ -116,13 +118,35 @@ final class DeclarativeShadowVariableAssertions {
 
     /**
      * Returns a random list move of one of the {@link ListMoveType}s,
-     * excluding those that unassign values unless unassigning.
-     * Returns null when the solution has no room for the move picked.
+     * redrawn while the solution has no room for the move drawn,
+     * with the bail out of {@link FilteringIterator}.
      */
-    private static <Solution_, Entity_, Value_> @Nullable Move<Solution_> randomListMove(
+    private static <Solution_, Entity_, Value_> Move<Solution_> randomListMove(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
             Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
-            boolean unassigning, Random random) {
+            Random random) {
+        var bailOutSize = valueList.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+        var attemptsBeforeBailOut = bailOutSize;
+        Move<Solution_> move;
+        do {
+            if (attemptsBeforeBailOut <= 0L) {
+                throw new IllegalStateException(
+                        "No list move drawn in (%d) attempts fits the solution.".formatted(bailOutSize));
+            }
+            attemptsBeforeBailOut--;
+            move = drawListMove(listVariableMetaModel, listFunction, entityList, valueList, random);
+        } while (move == null);
+        return move;
+    }
+
+    /**
+     * Draws a random list move of one of the {@link ListMoveType}s.
+     * Returns null when the solution has no room for the move drawn.
+     */
+    private static <Solution_, Entity_, Value_> @Nullable Move<Solution_> drawListMove(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
+            Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
+            Random random) {
         var assignedValueSet = Collections.newSetFromMap(new IdentityHashMap<Value_, Boolean>());
         var assignedEntityList = new ArrayList<Entity_>();
         for (var entity : entityList) {
@@ -132,9 +156,8 @@ final class DeclarativeShadowVariableAssertions {
                 assignedEntityList.add(entity);
             }
         }
-        var moveTypeList = unassigning ? List.of(ListMoveType.values()) : NON_UNASSIGNING_MOVE_TYPE_LIST;
-        var moveType = assignedEntityList.isEmpty() ? ListMoveType.ASSIGN
-                : moveTypeList.get(random.nextInt(moveTypeList.size()));
+        var moveTypes = ListMoveType.values();
+        var moveType = assignedEntityList.isEmpty() ? ListMoveType.ASSIGN : moveTypes[random.nextInt(moveTypes.length)];
         if (moveType == ListMoveType.ASSIGN) {
             var unassignedValueList = valueList.stream().filter(value -> !assignedValueSet.contains(value)).toList();
             if (unassignedValueList.isEmpty()) {

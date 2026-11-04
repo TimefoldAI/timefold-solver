@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.termination.TerminationType;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -132,6 +133,11 @@ final class BestScoreTermination<Solution_>
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> Score_ getBestScoreLimit() {
         return (Score_) bestScoreLimit;
+    }
+
+    @Override
+    TerminationType getTerminationType() {
+        return TerminationType.BEST_SCORE_LIMIT;
     }
 
     @Override

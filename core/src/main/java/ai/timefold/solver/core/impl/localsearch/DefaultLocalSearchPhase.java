@@ -3,11 +3,10 @@ package ai.timefold.solver.core.impl.localsearch;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
@@ -15,7 +14,6 @@ import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleL
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
-import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -50,11 +48,6 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
     @Override
     public PhaseType getPhaseType() {
         return PhaseType.LOCAL_SEARCH;
-    }
-
-    @Override
-    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
-        return EventProducerId::localSearch;
     }
 
     // ************************************************************************

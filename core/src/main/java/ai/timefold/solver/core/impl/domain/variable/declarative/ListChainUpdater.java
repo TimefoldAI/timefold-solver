@@ -86,7 +86,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     }
 
     @Override
-    public @Nullable Object[] groupEntities() {
+    public Object @Nullable [] groupEntities() {
         return null;
     }
 

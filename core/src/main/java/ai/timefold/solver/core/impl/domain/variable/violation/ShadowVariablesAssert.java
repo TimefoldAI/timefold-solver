@@ -21,10 +21,7 @@ public final class ShadowVariablesAssert {
      * Deterministic ordering of variable descriptors.
      */
     private static final Comparator<ShadowVariableDescriptor<?>> SHADOW_VARIABLE_DESCRIPTOR_COMPARATOR =
-            Comparator
-                    .<ShadowVariableDescriptor<?>> comparingInt(
-                            variableDescriptor -> variableDescriptor.getEntityDescriptor().getOrdinal())
-                    .thenComparingInt(VariableDescriptor::getOrdinal);
+            Comparator.comparingInt(VariableDescriptor::getGlobalOrdinal);
 
     private final List<ShadowVariableSnapshot> shadowVariableSnapshots;
 

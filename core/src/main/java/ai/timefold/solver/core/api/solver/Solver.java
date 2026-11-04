@@ -41,8 +41,22 @@ public interface Solver<Solution_> {
      * @param problem a {@link PlanningSolution}, usually its planning variables are uninitialized
      * @return can return the original, uninitialized {@link PlanningSolution} with a null {@link Score}.
      * @see #terminateEarly()
+     * @see #solveAndSummarize(Object)
      */
-    Solution_ solve(Solution_ problem);
+    default Solution_ solve(Solution_ problem) {
+        return solveAndSummarize(problem).solution();
+    }
+
+    /**
+     * As {@link #solve(Object)}, but also returns the statistics of the run.
+     * <p>
+     * If solving fails, this method throws the same exception as {@link #solve(Object)} and gives no statistics.
+     *
+     * @param problem a {@link PlanningSolution}, usually its planning variables are uninitialized
+     * @return the best solution, as returned by {@link #solve(Object)}, and the statistics of the run
+     * @see #terminateEarly()
+     */
+    SolverRunResult<Solution_> solveAndSummarize(Solution_ problem);
 
     /**
      * Notifies the solver that it should stop at its earliest convenience.

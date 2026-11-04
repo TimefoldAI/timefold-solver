@@ -18,7 +18,7 @@ public record VariableUpdaterInfo<Solution_>(
         EntityConsistencyState<Solution_, Object> entityConsistencyState,
         MemberAccessor memberAccessor,
         BiFunction<@Nullable Solution_, Object, Object> calculator,
-        @Nullable Object[] groupEntities) implements VariableUpdater<Solution_> {
+        Object @Nullable [] groupEntities) implements VariableUpdater<Solution_> {
 
     public VariableUpdaterInfo(VariableMetaModel<Solution_, ?, ?> id,
             int groupId,
@@ -33,9 +33,16 @@ public record VariableUpdaterInfo<Solution_>(
                 null);
     }
 
-    public VariableUpdaterInfo<Solution_> withGroupId(int groupId) {
-        return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, entityConsistencyState, memberAccessor,
-                calculator, groupEntities);
+    public VariableUpdaterInfo(DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
+            DefaultShadowVariableSessionFactory.GraphDescriptor<Solution_> graphDescriptor,
+            int groupId) {
+        this(variableDescriptor.getVariableMetaModel(),
+                groupId,
+                variableDescriptor,
+                graphDescriptor.consistencyTracker().getDeclarativeEntityConsistencyState(
+                        variableDescriptor.getEntityDescriptor()),
+                variableDescriptor.getMemberAccessor(),
+                variableDescriptor.getCalculator());
     }
 
     public VariableUpdaterInfo<Solution_> withGroupEntities(Object[] groupEntities) {

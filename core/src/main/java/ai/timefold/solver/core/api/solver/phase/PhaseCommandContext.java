@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -42,6 +43,10 @@ public interface PhaseCommandContext<Solution_>
      * Long-running command implementations should check this periodically and terminate early if it returns true.
      * Otherwise the terminations configured by the user will have no effect,
      * as the solver can only terminate itself when a command has ended.
+     * <p>
+     * Once this method returns true because of a configured termination, and this is the last phase,
+     * {@link SolverRunSummary#termination()} reports that termination,
+     * even if the command ignores it.
      *
      * @return true if the solver has requested the phase to terminate,
      *         for example because the time limit has been reached.

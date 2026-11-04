@@ -309,6 +309,13 @@ add the `solutionPartitionerCustomProperties` element and use xref:running-timef
   </partitionedSearch>
 ----
 
+[IMPORTANT]
+====
+Each planning entity must belong to exactly one partition.
+If the model has a planning list variable,
+each planning value must also belong to exactly one partition.
+====
+
 [#runnablePartThreadLimit]
 ==== Runnable part thread limit
 

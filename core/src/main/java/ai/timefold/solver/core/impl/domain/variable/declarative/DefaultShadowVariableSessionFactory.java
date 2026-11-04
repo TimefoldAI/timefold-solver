@@ -19,7 +19,6 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -189,9 +188,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             case SINGLE_DIRECTIONAL_PARENT -> hasScoreDirector
                     ? buildSingleDirectionalParentGraph(graphDescriptor, graphStructureAndDirection)
                     : buildArbitraryGraph(graphDescriptor);
-            case ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE ->
-                buildArbitrarySingleEntityGraph(graphDescriptor);
-            case NO_DYNAMIC_EDGES, ARBITRARY ->
+            case ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE, NO_DYNAMIC_EDGES, ARBITRARY ->
                 buildArbitraryGraph(graphDescriptor);
         };
     }
@@ -284,9 +281,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 graphDescriptor.entities(), graphDescriptor.graphCreator());
         var builder = innerGraphDescriptor.variableReferenceGraphBuilder();
         builder.excludesListElements = true;
-        // Per-variable nodes for the non-element classes, whatever their structure:
-        // grouped single-entity nodes could put a pre-chain variable in a node ordered
-        // after the chain node, breaking the pre-chain before chain node guarantee.
         populateArbitraryGraph(innerGraphDescriptor, innerDescriptorList);
 
         addChainNodes(builder, graphDescriptor.entities(), listEntityClass, listVariableMetaModel, chainUpdater,
@@ -310,6 +304,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         @SuppressWarnings("unchecked")
         var innerGraph = (AbstractVariableReferenceGraph<Solution_, ?>) builder.build(innerGraphDescriptor.graphCreator(),
                 innerGraphDescriptor.ignoreInconsistentSolutions());
+        // Looked up only now: building merges the nodes of each entity, which renumbers every node.
+        for (var listEntity : graphDescriptor.entities()) {
+            if (listEntityClass.isInstance(listEntity)) {
+                chainUpdater.addListEntity(listEntity, builder.lookupOrError(listVariableMetaModel, listEntity));
+            }
+        }
         var listVariableState = Objects.requireNonNull(changedVariableNotifier.innerScoreDirector())
                 .<Object, Object> getListVariableState(listVariableDescriptor);
         return new ListChainVariableReferenceGraph<>(innerGraph, chainUpdater, listVariableState,
@@ -326,18 +326,15 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             VariableMetaModel<Solution_, ?, ?> listVariableMetaModel, ListChainUpdater<Solution_> chainUpdater,
             Set<VariableMetaModel<?, ?, ?>> preChainVariableIdSet,
             List<VariableMetaModel<?, ?, ?>> postChainVariableIdList) {
-        // Every chain node shares the updater, keyed by the list variable itself,
-        // so that a lookup by variable and entity finds it.
-        var chainUpdaterList = List.of(chainUpdater);
         for (var listEntity : entities) {
             if (!listEntityClass.isInstance(listEntity)) {
                 continue;
             }
-            // ListChainVariableReferenceGraph's constructor records every element,
-            // which marks the chain node of every non-empty list for the initial walk.
-            builder.addVariableReferenceEntity(listEntity, chainUpdaterList);
+            // Every chain node shares the updater, keyed by the list variable itself,
+            // so that a lookup by variable and entity finds it.
+            // Its edges are dynamic: the list's contents change while solving.
+            builder.addVariableReferenceEntity(listEntity, true, chainUpdater);
             var chainNode = builder.lookupOrError(listVariableMetaModel, listEntity);
-            chainUpdater.addListEntity(listEntity, chainNode);
             for (var preChainVariableId : preChainVariableIdSet) {
                 builder.addFixedEdge(builder.lookupOrError(preChainVariableId, listEntity), chainNode);
             }
@@ -380,7 +377,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     // which makes all topological orders valid
                     continue;
                 }
-                var variableReference = variableReferences.get(0);
+                var variableReference = variableReferences.getFirst();
                 var sourceDeclarativeVariable = variableReference.downstreamDeclarativeVariableMetamodel();
                 if (sourceDeclarativeVariable != null) {
                     var fromIndex = nameToIndex.get(sourceDeclarativeVariable.name());
@@ -407,16 +404,15 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
     private static <Solution_> void populateArbitraryGraph(GraphDescriptor<Solution_> graphDescriptor,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
-        var variableIdToUpdater = EntityVariableUpdaterLookup.<Solution_> entityIndependentLookup();
-
-        // Create graph node for each entity/declarative shadow variable pair.
+        // Create one graph node per entity/declarative shadow variable pair;
+        // the graph builder merges the nodes of an entity where the edges allow it.
         // Maps a variable id to its source aliases;
         // For instance, "previousVisit.startTime" is a source alias of "startTime"
         // One way to view this concept is "previousVisit.startTime" is a pointer
         // to "startTime" of some visit, and thus alias it.
         var declarativeShadowVariableToAliasMap = createGraphNodes(
                 graphDescriptor,
-                declarativeShadowVariableDescriptors, variableIdToUpdater);
+                declarativeShadowVariableDescriptors);
         populateVariableReferenceGraph(graphDescriptor, declarativeShadowVariableDescriptors,
                 declarativeShadowVariableToAliasMap);
     }
@@ -424,12 +420,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     private static <Solution_> void populateVariableReferenceGraph(
             GraphDescriptor<Solution_> graphDescriptor,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-            Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap) {
+            VariableAliasMapping variableAliasMapping) {
         // Create variable processors for each declarative shadow variable descriptor
         for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
             var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
             createSourceChangeProcessors(graphDescriptor, declarativeShadowVariable, fromVariableId);
-            var aliasSet = declarativeShadowVariableToAliasMap.get(fromVariableId);
+            var aliasSet = variableAliasMapping.getAliases(fromVariableId);
             if (aliasSet != null) {
                 createAliasToVariableChangeProcessors(graphDescriptor.variableReferenceGraphBuilder(), aliasSet,
                         fromVariableId);
@@ -441,227 +437,126 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 declarativeShadowVariableDescriptors);
     }
 
-    private record GroupVariableUpdaterInfo<Solution_>(
-            List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeVariableDescriptors,
-            List<VariableUpdaterInfo<Solution_>> allUpdaters,
-            List<VariableUpdaterInfo<Solution_>> groupedUpdaters,
-            Map<DeclarativeShadowVariableDescriptor<Solution_>, Map<Object, VariableUpdaterInfo<Solution_>>> variableToEntityToGroupUpdater) {
-
-        public List<VariableUpdaterInfo<Solution_>> getUpdatersForEntityVariable(Object entity,
-                DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariableDescriptor) {
-            if (variableToEntityToGroupUpdater.containsKey(declarativeShadowVariableDescriptor)) {
-                var updater = variableToEntityToGroupUpdater.get(declarativeShadowVariableDescriptor).get(entity);
-                if (updater != null) {
-                    return List.of(updater);
-                }
-            }
-            for (var shadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
-                for (var rootSource : shadowVariableDescriptor.getSources()) {
-                    if (rootSource.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
-                        // Unlike a fact collection, a list variable's contents change during solving,
-                        // so the decision must not depend on its current contents.
-                        return groupedUpdaters;
-                    }
-                    if (rootSource.parentVariableType() == ParentVariableType.GROUP) {
-                        var visitedCount = new MutableInt();
-                        rootSource.valueEntityFunction().accept(entity, ignored -> visitedCount.increment());
-                        if (visitedCount.intValue() > 0) {
-                            return groupedUpdaters;
-                        }
-                    }
-                }
-            }
-            return allUpdaters;
+    private record VariableAliasMapping(Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> backingMap) {
+        VariableAliasMapping() {
+            this(new LinkedHashMap<>());
         }
 
+        @Nullable
+        Set<VariableSourceReference> getAliases(VariableMetaModel<?, ?, ?> variableMetaModel) {
+            return backingMap.get(variableMetaModel);
+        }
+
+        void addAlias(VariableSourceReference alias) {
+            backingMap.computeIfAbsent(Objects.requireNonNull(alias.downstreamDeclarativeVariableMetamodel()),
+                    ignored -> new LinkedHashSet<>())
+                    .add(alias);
+        }
     }
 
-    private static <Solution_> Map<VariableMetaModel<Solution_, ?, ?>, GroupVariableUpdaterInfo<Solution_>>
-            getGroupVariableUpdaterInfoMap(
-                    ConsistencyTracker<Solution_> consistencyTracker,
-                    List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-                    Object[] entities) {
-        var sortedDeclarativeVariableDescriptors =
-                topologicallySortedDeclarativeShadowVariables(declarativeShadowVariableDescriptors);
-        var groupIndexToVariables = new HashMap<Integer, List<DeclarativeShadowVariableDescriptor<Solution_>>>();
-        var groupVariables = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
-        groupIndexToVariables.put(0, groupVariables);
-        for (var declarativeShadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
-            // If a @ShadowSources has a group source (i.e. "visitGroup[].arrivalTimes")
-            // or a list element source (i.e. "values[].endTime"),
-            // create a new group since it must wait until all members of that group are processed
-            var hasGroupSources = Arrays.stream(declarativeShadowVariableDescriptor.getSources())
-                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP
-                            || rootVariableSource.parentVariableType() == ParentVariableType.LIST_ELEMENT);
-
-            // If a @ShadowSources has an alignment key,
-            // create a new group since multiple entities must be updated for this node
-            var hasAlignmentKey = declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null;
-
-            // If the previous @ShadowSources has an alignment key,
-            // create a new group since we are updating a single entity again
-            // NOTE: Can potentially be optimized/share a node if VariableUpdaterInfo
-            //       update each group member independently after the alignmentKey
-            var previousHasAlignmentKey = !groupVariables.isEmpty() && groupVariables.get(0).getAlignmentKeyMap() != null;
-
-            if (!groupVariables.isEmpty() && (hasGroupSources
-                    || hasAlignmentKey
-                    || previousHasAlignmentKey)) {
-                groupVariables = new ArrayList<>();
-                groupIndexToVariables.put(groupIndexToVariables.size(), groupVariables);
-            }
-            groupVariables.add(declarativeShadowVariableDescriptor);
-        }
-
-        var out = new HashMap<VariableMetaModel<Solution_, ?, ?>, GroupVariableUpdaterInfo<Solution_>>();
-        var allUpdaters = new ArrayList<VariableUpdaterInfo<Solution_>>();
-        var groupedUpdaters =
+    private static <Solution_> VariableAliasMapping createGraphNodes(
+            GraphDescriptor<Solution_> graphDescriptor,
+            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
+        var result = new VariableAliasMapping();
+        var nextGroupId = 0;
+        // One shared updater per non-null alignment key, created by the first
+        // member entity in iteration order; all members update through it.
+        var alignmentKeyToSharedUpdater =
                 new HashMap<DeclarativeShadowVariableDescriptor<Solution_>, Map<Object, VariableUpdaterInfo<Solution_>>>();
-        var updaterKey = 0;
-        for (var entryKey = 0; entryKey < groupIndexToVariables.size(); entryKey++) {
-            var entryGroupVariables = groupIndexToVariables.get(entryKey);
-            var updaters = new ArrayList<VariableUpdaterInfo<Solution_>>();
-            for (var declarativeShadowVariableDescriptor : entryGroupVariables) {
-                var updater = new VariableUpdaterInfo<>(
-                        declarativeShadowVariableDescriptor.getVariableMetaModel(),
-                        updaterKey,
-                        declarativeShadowVariableDescriptor,
-                        consistencyTracker.getDeclarativeEntityConsistencyState(
-                                declarativeShadowVariableDescriptor.getEntityDescriptor()),
-                        declarativeShadowVariableDescriptor.getMemberAccessor(),
-                        declarativeShadowVariableDescriptor.getCalculator());
-                if (declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null) {
-                    var alignmentKeyFunction = declarativeShadowVariableDescriptor.getAlignmentKeyMap();
-                    var alignmentKeyToAlignedEntitiesMap = new HashMap<Object, List<Object>>();
-                    for (var entity : entities) {
-                        if (declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass().isInstance(entity)) {
-                            var alignmentKey = alignmentKeyFunction.apply(entity);
-                            alignmentKeyToAlignedEntitiesMap.computeIfAbsent(alignmentKey, k -> new ArrayList<>()).add(entity);
-                        }
-                    }
-                    for (var alignmentGroup : alignmentKeyToAlignedEntitiesMap.entrySet()) {
-                        var updaterCopy = updater.withGroupId(updaterKey);
-                        if (alignmentGroup.getKey() == null) {
-                            updaters.add(updaterCopy);
-                            allUpdaters.add(updaterCopy);
-                        } else {
-                            updaterCopy = updaterCopy.withGroupEntities(alignmentGroup.getValue().toArray(new Object[0]));
-                            var variableUpdaterMap = groupedUpdaters.computeIfAbsent(declarativeShadowVariableDescriptor,
-                                    ignored -> new IdentityHashMap<>());
-                            for (var entity : alignmentGroup.getValue()) {
-                                variableUpdaterMap.put(entity, updaterCopy);
-                            }
-                        }
-                        updaterKey++;
-                    }
-                    updaterKey--; // it will be incremented again at end of the loop
-                } else {
-                    updaters.add(updater);
-                    allUpdaters.add(updater);
-                }
-            }
-            var groupVariableUpdaterInfo =
-                    new GroupVariableUpdaterInfo<Solution_>(sortedDeclarativeVariableDescriptors, allUpdaters, updaters,
-                            groupedUpdaters);
-            for (var declarativeShadowVariableDescriptor : entryGroupVariables) {
-                out.put(declarativeShadowVariableDescriptor.getVariableMetaModel(), groupVariableUpdaterInfo);
-            }
-            updaterKey++;
-        }
-        allUpdaters.replaceAll(updater -> updater.withGroupId(groupIndexToVariables.size()));
-        return out;
-    }
-
-    private static <Solution_> VariableReferenceGraph buildArbitrarySingleEntityGraph(
-            GraphDescriptor<Solution_> graphDescriptor) {
-        var declarativeShadowVariableDescriptors =
-                graphDescriptor.solutionDescriptor().getDeclarativeShadowVariableDescriptors();
-        // Use a dependent lookup; if an entity does not use groups, then all variables can share the same node.
-        // If the entity use groups, then variables must be grouped into their own nodes.
-        var alignmentKeyMappers = new HashMap<VariableMetaModel<Solution_, ?, ?>, Function<Object, @Nullable Object>>();
-        for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
-            if (declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null) {
-                alignmentKeyMappers.put(declarativeShadowVariableDescriptor.getVariableMetaModel(),
-                        declarativeShadowVariableDescriptor.getAlignmentKeyMap());
-            }
-        }
-        var variableIdToUpdater =
-                alignmentKeyMappers.isEmpty() ? EntityVariableUpdaterLookup.<Solution_> entityDependentLookup()
-                        : EntityVariableUpdaterLookup.<Solution_> groupedEntityDependentLookup(alignmentKeyMappers::get);
-
-        // Create graph node for each entity/declarative shadow variable group pair.
-        // Maps a variable id to the source aliases of all variables in its group;
-        // If the variables are (in topological order)
-        // arrivalTime, readyTime, serviceStartTime, serviceFinishTime,
-        // where serviceStartTime depends on a group of readyTime, then
-        // the groups are [arrivalTime, readyTime] and [serviceStartTime, serviceFinishTime]
-        // this is because from arrivalTime, you can compute readyTime without knowing either
-        // serviceStartTime or serviceFinishTime.
-        var variableIdToGroupedUpdater =
-                getGroupVariableUpdaterInfoMap(graphDescriptor.consistencyTracker(), declarativeShadowVariableDescriptors,
-                        graphDescriptor.entities());
-        var declarativeShadowVariableToAliasMap = createGraphNodes(
-                graphDescriptor, declarativeShadowVariableDescriptors, variableIdToUpdater,
-                (entity, declarativeShadowVariable, variableId) -> variableIdToGroupedUpdater.get(variableId)
-                        .getUpdatersForEntityVariable(entity, declarativeShadowVariable));
-        populateVariableReferenceGraph(graphDescriptor, declarativeShadowVariableDescriptors,
-                declarativeShadowVariableToAliasMap);
-        return graphDescriptor.variableReferenceGraphBuilder().build(graphDescriptor.graphCreator(),
-                graphDescriptor.ignoreInconsistentSolutions());
-    }
-
-    private static <Solution_> Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> createGraphNodes(
-            GraphDescriptor<Solution_> graphDescriptor,
-            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-            EntityVariableUpdaterLookup<Solution_> variableIdToUpdaters) {
-        return createGraphNodes(graphDescriptor,
-                declarativeShadowVariableDescriptors, variableIdToUpdaters,
-                (entity, declarativeShadowVariableDescriptor,
-                        variableId) -> Collections.singletonList(new VariableUpdaterInfo<>(
-                                variableId,
-                                variableIdToUpdaters.getNextId(),
-                                declarativeShadowVariableDescriptor,
-                                graphDescriptor.consistencyTracker().getDeclarativeEntityConsistencyState(
-                                        declarativeShadowVariableDescriptor.getEntityDescriptor()),
-                                declarativeShadowVariableDescriptor.getMemberAccessor(),
-                                declarativeShadowVariableDescriptor.getCalculator())));
-    }
-
-    private static <Solution_> Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> createGraphNodes(
-            GraphDescriptor<Solution_> graphDescriptor,
-            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-            EntityVariableUpdaterLookup<Solution_> variableIdToUpdaters,
-            TriFunction<Object, DeclarativeShadowVariableDescriptor<Solution_>, VariableMetaModel<Solution_, ?, ?>, List<VariableUpdaterInfo<Solution_>>> entityVariableToUpdatersMapper) {
-        var result = new HashMap<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>>();
+        var shadowToAlignmentKeyToAlignedEntities =
+                new HashMap<DeclarativeShadowVariableDescriptor<Solution_>, AlignedEntitiesCache>();
         for (var entity : graphDescriptor.entities()) {
             for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
                 var entityClass = declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass();
                 if (entityClass.isInstance(entity)) {
-                    var variableId = declarativeShadowVariableDescriptor.getVariableMetaModel();
-                    var updaters = variableIdToUpdaters.computeUpdatersForVariableOnEntity(variableId,
-                            entity,
-                            () -> entityVariableToUpdatersMapper.apply(entity, declarativeShadowVariableDescriptor,
-                                    variableId));
-                    graphDescriptor.variableReferenceGraphBuilder.addVariableReferenceEntity(entity, updaters);
+                    var updater = new VariableUpdaterInfo<>(
+                            declarativeShadowVariableDescriptor,
+                            graphDescriptor,
+                            nextGroupId++);
+                    var alignmentKeyMap = declarativeShadowVariableDescriptor.getAlignmentKeyMap();
+                    if (alignmentKeyMap != null) {
+                        var alignmentKeyToAlignedEntities =
+                                shadowToAlignmentKeyToAlignedEntities.computeIfAbsent(declarativeShadowVariableDescriptor,
+                                        ignored -> calculateAllAlignmentGroupsForVariable(graphDescriptor,
+                                                declarativeShadowVariableDescriptor));
+                        var alignmentKey = alignmentKeyMap.apply(entity);
+                        if (alignmentKey != null) {
+                            var sharedUpdaterMap =
+                                    alignmentKeyToSharedUpdater.computeIfAbsent(declarativeShadowVariableDescriptor,
+                                            k -> new HashMap<>());
+                            var sharedUpdater = sharedUpdaterMap.get(alignmentKey);
+                            if (sharedUpdater == null) {
+                                var alignmentMembers = alignmentKeyToAlignedEntities.getAlignedEntities(alignmentKey);
+                                if (alignmentMembers.size() == 1) {
+                                    // no other variables share this alignment key, so use the original
+                                    // updater without group entities to allow the node to be merged with other
+                                    // nodes on the same entity
+                                    sharedUpdater = updater;
+                                } else {
+                                    sharedUpdater = updater.withGroupEntities(alignmentMembers.toArray());
+                                    sharedUpdaterMap.put(alignmentKey, sharedUpdater);
+                                }
+                            }
+                            updater = sharedUpdater;
+                        }
+                    }
+
+                    var hasDynamicEdges = false;
                     for (var sourceRoot : declarativeShadowVariableDescriptor.getSources()) {
                         for (var source : sourceRoot.variableSourceReferences()) {
                             if (source.downstreamDeclarativeVariableMetamodel() != null) {
-                                result.computeIfAbsent(source.downstreamDeclarativeVariableMetamodel(),
-                                        ignored -> new LinkedHashSet<>())
-                                        .add(source);
+                                result.addAlias(source);
                             }
                         }
+                        hasDynamicEdges |= switch (sourceRoot.parentVariableType()) {
+                            // No parent (so variable/shadow directly on entity), cannot affect graph edges
+                            case NO_PARENT -> false;
+                            // variable/element parent can always add/remove edges.
+                            case VARIABLE, INVERSE, NEXT, PREVIOUS, LIST_ELEMENT -> true;
+                            case INDIRECT, GROUP -> {
+                                // Access a variable via a fact; it can only modify the graph if any entities are present
+                                var entityCount = new MutableInt();
+                                sourceRoot.valueEntityFunction().accept(entity, ignored -> entityCount.increment());
+                                yield entityCount.intValue() != 0;
+                            }
+                        };
                     }
+                    graphDescriptor.variableReferenceGraphBuilder.addVariableReferenceEntity(entity, hasDynamicEdges, updater);
                 }
             }
         }
         return result;
     }
 
+    private record AlignedEntitiesCache(Map<Object, List<Object>> alignmentKeyToAlignedEntities) {
+        List<Object> getAlignedEntities(Object alignmentKey) {
+            return alignmentKeyToAlignedEntities.get(alignmentKey);
+        }
+    }
+
+    private static <Solution_> AlignedEntitiesCache calculateAllAlignmentGroupsForVariable(
+            GraphDescriptor<Solution_> graphDescriptor,
+            DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariableDescriptor) {
+        var entityClass = declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass();
+        var alignmentKeyMap = Objects.requireNonNull(declarativeShadowVariableDescriptor.getAlignmentKeyMap());
+        var alignmentKeyToAlignedEntities = new HashMap<Object, List<Object>>();
+        for (var entity : graphDescriptor.entities()) {
+            if (!entityClass.isInstance(entity)) {
+                continue;
+            }
+            var alignmentKey = alignmentKeyMap.apply(entity);
+            if (alignmentKey != null) {
+                alignmentKeyToAlignedEntities.computeIfAbsent(alignmentKey, ignored -> new ArrayList<>()).add(entity);
+            }
+        }
+        return new AlignedEntitiesCache(alignmentKeyToAlignedEntities);
+    }
+
     private static <Solution_> void createSourceChangeProcessors(
             GraphDescriptor<Solution_> graphDescriptor,
             DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var fromVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(fromVariableId);
         for (var source : declarativeShadowVariable.getSources()) {
             if (source.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
                 createListElementSourceProcessors(graphDescriptor, source, fromVariableId);
@@ -683,7 +578,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         graphDescriptor.variableReferenceGraphBuilder()
                                 .addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
                                         (graph, entity) -> {
-                                            var changed = graph.lookupOrNull(fromVariableId, entity);
+                                            var changed = graph.lookupOrNull(fromVariableOrdinal, entity);
                                             if (changed != null) {
                                                 graph.markChanged(changed);
                                             }
@@ -731,7 +626,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                 .addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
                                         (graph, entity) -> {
                                             for (var item : inverseFunction.apply(entity)) {
-                                                var changed = graph.lookupOrNull(fromVariableId, item);
+                                                var changed = graph.lookupOrNull(fromVariableOrdinal, item);
                                                 if (changed != null) {
                                                     graph.markChanged(changed);
                                                 }
@@ -750,6 +645,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             GraphDescriptor<Solution_> graphDescriptor,
             RootVariableSource<?, ?> source,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var fromVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(fromVariableId);
         var listVariableId = Objects.requireNonNull(source.listVariableMetaModel());
         // Mark the target variable changed whenever its list variable changes,
         // since its dependency set (and possibly its value) changes with the list's contents.
@@ -758,7 +654,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         graphDescriptor.variableReferenceGraphBuilder()
                 .addAfterProcessor(GraphChangeType.NO_CHANGE, listVariableId,
                         (graph, entity) -> {
-                            var changed = graph.lookupOrNull(fromVariableId, entity);
+                            var changed = graph.lookupOrNull(fromVariableOrdinal, entity);
                             if (changed != null) {
                                 graph.markChanged(changed);
                             }
@@ -771,7 +667,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         }
         // Maintain the fan-in edges (element.sourceVariable -> entity.targetVariable)
         // when the list variable changes.
-        var elementSource = source.variableSourceReferences().get(0);
+        var elementSource = source.variableSourceReferences().getFirst();
         graphDescriptor.variableReferenceGraphBuilder()
                 .addListElementSourceLocator(listVariableId,
                         new ListElementSourceLocator(elementSource.variableMetaModel(), fromVariableId,
@@ -781,8 +677,10 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     private static <Solution_> void createAliasToVariableChangeProcessors(
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Set<VariableSourceReference> aliasSet,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        var fromVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(fromVariableId);
         for (var alias : aliasSet) {
             var toVariableId = alias.targetVariableMetamodel();
+            var toVariableOrdinal = AbstractVariableReferenceGraph.globalOrdinalOf(toVariableId);
             var sourceVariableId = alias.variableMetaModel();
 
             if (!alias.isDeclarative() && alias.affectGraphEdges()) {
@@ -792,7 +690,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             // from/to can be null in extended models
                             // ex: previous is used as a source, but only an extended class
                             // has the to variable
-                            var to = graph.lookupOrNull(toVariableId, toEntity);
+                            var to = graph.lookupOrNull(toVariableOrdinal, toEntity);
                             if (to == null) {
                                 return;
                             }
@@ -801,7 +699,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             if (fromEntity == null) {
                                 return;
                             }
-                            var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                            var from = graph.lookupOrNull(fromVariableOrdinal, fromEntity);
                             if (from == null) {
                                 return;
                             }
@@ -809,7 +707,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         });
                 variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.ADD_EDGE, sourceVariableId,
                         (graph, toEntity) -> {
-                            var to = graph.lookupOrNull(toVariableId, toEntity);
+                            var to = graph.lookupOrNull(toVariableOrdinal, toEntity);
                             if (to == null) {
                                 return;
                             }
@@ -817,7 +715,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             if (fromEntity == null) {
                                 return;
                             }
-                            var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                            var from = graph.lookupOrNull(fromVariableOrdinal, fromEntity);
                             if (from == null) {
                                 return;
                             }

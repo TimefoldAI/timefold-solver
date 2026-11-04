@@ -24,6 +24,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.api.solver.change;
     exports ai.timefold.solver.core.api.solver.event;
     exports ai.timefold.solver.core.api.solver.phase;
+    exports ai.timefold.solver.core.api.solver.termination;
 
     // Config APIs; need to be open to JAXB for XML config parsing, happens below.
     exports ai.timefold.solver.core.config;

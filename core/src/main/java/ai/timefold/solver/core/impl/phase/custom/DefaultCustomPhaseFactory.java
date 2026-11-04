@@ -47,7 +47,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         }
         var phaseConfigPolicy = solverConfigPolicy.copyPhaseConfigPolicy(environmentMode);
         return new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase, environmentMode,
-                solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination),
+                solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination, phaseIndex),
                 customPhaseCommandList_)
                 .enableAssertions()
                 .build();

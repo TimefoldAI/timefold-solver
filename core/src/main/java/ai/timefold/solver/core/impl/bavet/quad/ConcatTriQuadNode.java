@@ -34,9 +34,13 @@ public final class ConcatTriQuadNode<A, B, C, D>
 
     @Override
     protected void updateOutTupleFromLeft(TriTuple<A, B, C> leftTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.setA(leftTuple.getA());
-        outTuple.setB(leftTuple.getB());
-        outTuple.setC(leftTuple.getC());
+        var factA = leftTuple.getA();
+        var factB = leftTuple.getB();
+        var factC = leftTuple.getC();
+        outTuple.setA(factA);
+        outTuple.setB(factB);
+        outTuple.setC(factC);
+        outTuple.setD(paddingFunction.apply(factA, factB, factC));
     }
 
     @Override

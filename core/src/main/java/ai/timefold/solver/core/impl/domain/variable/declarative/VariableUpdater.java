@@ -34,8 +34,7 @@ public sealed interface VariableUpdater<Solution_> permits VariableUpdaterInfo, 
      * The aligned entities all receiving this updater's value, or null when the updater
      * targets the single entity it is invoked with.
      */
-    @Nullable
-    Object[] groupEntities();
+    Object @Nullable [] groupEntities();
 
     /**
      * The consistency state of the entity class this updater's looped status applies to.

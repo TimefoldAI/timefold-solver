@@ -1,6 +1,5 @@
 package ai.timefold.solver.tools.maven;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,6 +30,25 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
     protected static final String PROP_MODEL_NATIVE_SUPPORTED = "timefold.model.nativeSupported";
 
     protected static final String PROP_MODEL_CONFIG_SKIP = "timefold.model.configuration.skip";
+
+    /**
+     * Name of the generated properties file,
+     * written into {@code <module>/target/generated-resources}.
+     */
+    static final String BUILD_PROPERTIES_FILE_NAME = "timefold-build.properties";
+
+    /**
+     * System property through which this goal hands the absolute location of the generated file
+     * to the Quarkus extension that reads it.
+     * The goal and the Quarkus augmentation run in the same JVM,
+     * and the augmentation has no way of knowing the module's build directory on its own,
+     * as the configuration is read before any build step runs.
+     * <p>
+     * Must stay in sync with
+     * {@code ai.timefold.solver.service.quarkus.deployment.config.TimefoldBuildConfigOverrides#BUILD_PROPERTIES_LOCATION};
+     * the two modules do not share code, so the literal is deliberately duplicated and asserted on both sides.
+     */
+    static final String BUILD_PROPERTIES_LOCATION = "timefold.build.properties.location";
 
     /**
      * Group id of the Enterprise Edition artifacts, pulled in by the {@code enterprise} profile of
@@ -72,6 +90,10 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        // A previously built module in the same reactor may have left its own location behind;
+        // only a successful write below may set it again.
+        System.clearProperty(BUILD_PROPERTIES_LOCATION);
+
         boolean deployRequested = shouldExecute();
         // Deliberately checked before the configuration skip, so that skipping the platform configuration
         // does not silently skip the Enterprise Edition check as well.
@@ -96,10 +118,8 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                     throw new MojoFailureException(describeMissingNamespaceAccess(info, resolvedNamespace));
                 }
 
-                Path path = Paths.get("target", "generated-resources", "timefold-build.properties");
-                File timefoldBuildPropertiesFile = path.toFile();
-
-                Files.createDirectories(path.getParent());
+                Path timefoldBuildPropertiesPath = resolveBuildPropertiesPath();
+                Files.createDirectories(timefoldBuildPropertiesPath.getParent());
 
                 Properties timefoldBuildProperties = new Properties();
 
@@ -132,14 +152,16 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                     timefoldBuildProperties.setProperty("image.native-suffix", "");
                 }
 
-                try (FileOutputStream output = new FileOutputStream(timefoldBuildPropertiesFile)) {
+                try (FileOutputStream output = new FileOutputStream(timefoldBuildPropertiesPath.toFile())) {
                     timefoldBuildProperties.store(output, "Timefold Platform configuration");
                 } catch (IOException e) {
                     throw new MojoExecutionException(
-                            "Unable to store the build properties in " + timefoldBuildPropertiesFile, e);
+                            "Unable to store the build properties in (%s).".formatted(timefoldBuildPropertiesPath), e);
                 }
+                System.setProperty(BUILD_PROPERTIES_LOCATION, timefoldBuildPropertiesPath.toString());
 
-                getLog().info("Configured Timefold Platform integration");
+                getLog().info("Configured Timefold Platform integration; build properties written to "
+                        + timefoldBuildPropertiesPath);
             } catch (IOException e) {
                 throw new MojoExecutionException("Unable to configure the Timefold Platform integration", e);
             }
@@ -256,6 +278,21 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
     protected boolean shouldExecute() {
         List<String> goals = session.getRequest().getGoals();
         return goals.contains("timefold:deploy");
+    }
+
+    /**
+     * Resolves the generated properties file inside the build directory of the module being built,
+     * rather than relative to the working directory.
+     * In a multi-module build, or whenever Maven is started from a parent directory,
+     * the working directory is the directory Maven was launched in and not the module's own directory,
+     * so a relative path puts the file in the wrong module's {@code target}.
+     *
+     * @return the absolute location of the file to generate
+     */
+    private Path resolveBuildPropertiesPath() {
+        return Paths.get(buildDirectory, "generated-resources", BUILD_PROPERTIES_FILE_NAME)
+                .toAbsolutePath()
+                .normalize();
     }
 
     protected MavenProject getProject() {
