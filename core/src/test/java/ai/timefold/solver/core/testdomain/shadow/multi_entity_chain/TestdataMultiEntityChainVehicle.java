@@ -35,6 +35,11 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
     @ShadowVariable(supplierName = "endTimeSupplier")
     Integer endTime;
 
+    // Shares a node with endTime once the graph merges the nodes of each entity,
+    // which renumbers the nodes created after it, such as the chain nodes.
+    @ShadowVariable(supplierName = "routeDurationSupplier")
+    Integer routeDuration;
+
     int previousEndTimeCalledCount = 0;
     int endTimeCalledCount = 0;
 
@@ -73,6 +78,14 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
             return lastEndServiceTime;
         }
         return Math.max(previousEndTime, lastEndServiceTime);
+    }
+
+    @ShadowSources({ "endTime", "previousEndTime" })
+    public Integer routeDurationSupplier() {
+        if (endTime == null || previousEndTime == null) {
+            return null;
+        }
+        return endTime - previousEndTime;
     }
 
     public List<TestdataMultiEntityChainVehicle> getPreviousVehicles() {
@@ -117,6 +130,14 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
 
     public void setEndTime(Integer endTime) {
         this.endTime = endTime;
+    }
+
+    public Integer getRouteDuration() {
+        return routeDuration;
+    }
+
+    public void setRouteDuration(Integer routeDuration) {
+        this.routeDuration = routeDuration;
     }
 
     public int getPreviousEndTimeCalledCount() {
