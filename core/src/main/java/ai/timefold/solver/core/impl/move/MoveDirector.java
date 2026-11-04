@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.exception.UndoMoveCorruptionException;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
@@ -675,12 +676,12 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * @param move the move that was just executed, used in the message
      * @throws StructurallyFlawedMoveException if the working solution is structurally flawed
      */
-    public void ensureStructurallySound(Move<Solution_> move) {
+    private void ensureStructurallySound(Move<Solution_> move) {
         if (!backingScoreDirector.isLastVariableUpdateSuccessful()) {
             throw new StructurallyFlawedMoveException("""
                     The move (%s) caused the solution to become structurally flawed.
                     Maybe check that the move does not make shadow variables depend on each other in a cycle."""
-                    .formatted(move));
+                    .formatted(move.toStringSafely()));
         }
     }
 
@@ -817,13 +818,14 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * Like {@link #executeTemporaryWithoutScoring(Move, Function)},
      * but undoes the move and restores the previous working score
      * even when {@code postprocessor} throws a {@link RuntimeException}.
-     * Does not check whether the move made the solution structurally flawed;
-     * the postprocessor may do that.
+     * If the move makes the working solution structurally flawed,
+     * the move is undone and {@link StructurallyFlawedMoveException} is thrown;
+     * {@code postprocessor} is not called.
      * <p>
      * If {@code move} itself throws, its changes may be half-applied, so it is not undone;
      * see {@link EphemeralMoveDirector}.
      * The caller must then treat the working solution as corrupted.
-     * If undoing the move fails, an {@link UndoCorruptionException} is thrown,
+     * If undoing the move fails, an {@link UndoMoveCorruptionException} is thrown,
      * or added as a suppressed exception to the exception thrown by {@code postprocessor}.
      *
      * @return whatever {@code postprocessor} returns
@@ -838,12 +840,13 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         // Only reached once the move is fully recorded, so undoing it is safe.
         Result_ result;
         try {
+            ensureStructurallySound(move); // Before the postprocessor, while the move is still applied.
             result = postprocessor.apply(workingSolution);
         } catch (RuntimeException e) {
             try {
                 undoTemporaryMove(move, ephemeralMoveDirector, workingSolution, previousScore);
-            } catch (UndoCorruptionException undoCorruptionException) {
-                e.addSuppressed(undoCorruptionException); // Keep the postprocessor's exception primary.
+            } catch (UndoMoveCorruptionException undoMoveCorruptionException) {
+                e.addSuppressed(undoMoveCorruptionException); // Keep the postprocessor's exception primary.
             }
             throw e;
         }
@@ -857,7 +860,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             ephemeralMoveDirector.close(); // This undoes the move.
             backingScoreDirector.getSolutionDescriptor().setScore(workingSolution, previousScore);
         } catch (RuntimeException e) {
-            throw new UndoCorruptionException("Undoing the move (%s) failed, so the working solution is corrupted."
+            throw new UndoMoveCorruptionException("Undoing the move (%s) failed, so the working solution is corrupted."
                     .formatted(move.toStringSafely()), e);
         }
     }

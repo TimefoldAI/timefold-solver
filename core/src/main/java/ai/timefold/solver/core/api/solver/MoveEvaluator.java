@@ -173,7 +173,8 @@ public interface MoveEvaluator<Solution_, Score_ extends Score<Score_>> extends 
      * </ul>
      *
      * @param move must only reference instances of the working solution
-     * @param postprocessor called exactly once, with the context of the working solution after the move
+     * @param postprocessor called at most once, with the context of the working solution after the move;
+     *        not called if the move throws or makes the working solution structurally flawed
      * @param <Result_> the type of the result produced by the postprocessor
      * @return the result of {@code postprocessor}
      * @throws IllegalArgumentException if the move makes the working solution structurally flawed,

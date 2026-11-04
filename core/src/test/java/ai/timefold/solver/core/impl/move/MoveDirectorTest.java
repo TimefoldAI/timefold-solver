@@ -41,6 +41,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.exception.UndoMoveCorruptionException;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
@@ -2806,8 +2807,9 @@ class MoveDirectorTest {
         // Swapping the two values makes b2 (which depends on b1) precede b1, creating a dependency cycle.
         var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
         var moveDirector = new MoveDirector<>(scoreDirector);
+        var postprocessorCalled = new AtomicBoolean(false);
         assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
-            moveDirector.ensureStructurallySound(move);
+            postprocessorCalled.set(true);
             return null;
         })).isInstanceOf(StructurallyFlawedMoveException.class)
                 .hasNoSuppressedExceptions()
@@ -2815,8 +2817,15 @@ class MoveDirectorTest {
                         "Maybe check that the move does not make shadow variables depend on each other in a cycle.");
 
         assertSoftly(softly -> {
+            // The move director checks the flaw itself, before the postprocessor.
+            softly.assertThat(postprocessorCalled).isFalse();
             softly.assertThat(e1.getValues()).containsExactly(b1, b2);
             softly.assertThat(solutionDescriptor.<HardSoftScore> getScore(solution)).isEqualTo(previousScore);
+            // The undo also makes the score director sound again, so the caller can keep using it.
+            softly.assertThat(scoreDirector.isLastVariableUpdateSuccessful()).isTrue();
+            var scoreAfterUndo = scoreDirector.calculateScore();
+            softly.assertThat(scoreAfterUndo.isStructurallyFlawed()).isFalse();
+            softly.assertThat(scoreAfterUndo.raw()).isEqualTo(previousScore);
         });
     }
 
@@ -2847,9 +2856,44 @@ class MoveDirectorTest {
         assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
             e1.getValues().clear();
             return null;
-        })).isInstanceOf(UndoCorruptionException.class)
+        })).isInstanceOf(UndoMoveCorruptionException.class)
                 .hasMessageContaining("Undoing the move (" + move.describe() + ") failed")
                 .hasCauseInstanceOf(IndexOutOfBoundsException.class);
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureKeepsPostprocessorFailureWhenUndoFails() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        // No dependencies, so the swap is structurally sound.
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        // Emptying the list behind the move director makes the undo fail on stale indexes.
+        // The postprocessor's failure stays primary; the undo failure is suppressed.
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            e1.getValues().clear();
+            throw new IllegalStateException("Postprocessor failure.");
+        })).isInstanceOf(IllegalStateException.class)
+                .hasMessage("Postprocessor failure.")
+                .satisfies(e -> assertThat(e.getSuppressed()).singleElement()
+                        .isInstanceOf(UndoMoveCorruptionException.class)
+                        .extracting(Throwable::getCause)
+                        .isInstanceOf(IndexOutOfBoundsException.class));
     }
 
     @Test
