@@ -4,9 +4,11 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.score.calculator.AnalyzableIncrementalScoreCalculator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -34,16 +36,15 @@ import org.jspecify.annotations.Nullable;
  * use {@link #executeTemporaryMove(Move, Function)}, which exposes a {@link MoveEvaluatorContext}.</li>
  * </ul>
  * <p>
- * To get the score of the working solution without executing a move, use {@link #calculateScore()}.
- * <p>
- * If a move fails while it is being executed, it may leave the working solution half-changed.
+ * If executing a move, its postprocessor, or a score calculation fails,
+ * the working solution may be left half-changed or the score calculation only partly updated.
  * The evaluator then can no longer be used, and every further call throws {@link IllegalStateException};
  * create a new evaluator from the original solution instead.
- * The same happens if calculating the score fails, as the score calculation may then be only partly updated.
- * Exceptions thrown after a temporary move was fully executed, such as by its postprocessor,
- * do not have this effect, unless undoing the move fails; see {@link #executeTemporaryMove(Move, Function)}.
+ * The only exception is a temporary move which makes the working solution structurally flawed:
+ * it is undone, and the evaluator remains usable; see {@link #executeTemporaryMove(Move, Function)}.
  * <p>
  * The evaluator needs a score calculator that supports constraint matching, such as Constraint Streams,
+ * or an Incremental score calculator which implements {@link AnalyzableIncrementalScoreCalculator},
  * because {@link MoveEvaluatorContext#getScoreAnalysis()} relies on it.
  * <p>
  * The evaluator holds resources and must be {@link #close() closed} when no longer needed,
@@ -86,7 +87,7 @@ public interface MoveEvaluator<Solution_, Score_ extends Score<Score_>> extends 
      * Calculates the score of the {@link #getWorkingSolution() working solution} in its current state,
      * which reflects all moves executed permanently so far.
      * Does not execute any move and does not change any planning variable;
-     * only the {@link ai.timefold.solver.core.api.domain.solution.PlanningScore score} field is updated.
+     * only the {@link PlanningScore score} field is updated.
      *
      * @return the score of the working solution
      * @throws IllegalStateException if this evaluator has been {@link #close() closed},
@@ -162,17 +163,14 @@ public interface MoveEvaluator<Solution_, Score_ extends Score<Score_>> extends 
      * see {@link MoveEvaluatorContext#getScoreAnalysis(ScoreAnalysisFetchPolicy)}.</li>
      * </ul>
      * <p>
-     * When an exception is thrown, the working solution is restored as follows:
+     * When an exception is thrown:
      * <ul>
-     * <li>If the postprocessor throws, the move is undone, and the exception is rethrown.</li>
      * <li>If the move makes the working solution structurally flawed,
-     * the move is undone, the postprocessor is not called, and {@link IllegalArgumentException} is thrown.</li>
-     * <li>If the move itself throws, it may be half-applied, and so it cannot be undone.
-     * The exception is rethrown, and the evaluator can no longer be used.</li>
+     * the move is undone, the postprocessor is not called, and {@link IllegalArgumentException} is thrown.
+     * The evaluator remains usable, unless undoing the move fails as well.</li>
+     * <li>If the move itself throws, the postprocessor throws, or undoing the move fails,
+     * the exception is rethrown, and the evaluator can no longer be used.</li>
      * </ul>
-     * In the first two cases, the evaluator remains usable,
-     * unless undoing the move fails as well; the working solution is then corrupted,
-     * and the evaluator can no longer be used.
      *
      * @param move must only reference instances of the working solution
      * @param postprocessor called exactly once, with the context of the working solution after the move

@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.score.calculator.AnalyzableIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.impl.domain.variable.ShadowVariableUpdateHelper;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
@@ -312,7 +313,8 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * @return a new evaluator, to be closed when no longer needed
      * @throws InconsistentSolutionException if the solution is structurally flawed
      * @throws IllegalStateException if the score calculator does not support constraint matching,
-     *         such as an Easy or Incremental score calculator
+     *         such as an Easy score calculator, or an Incremental score calculator which does not implement
+     *         {@link AnalyzableIncrementalScoreCalculator}
      */
     MoveEvaluator<Solution_, Score_> moveEvaluator(Solution_ solution);
 

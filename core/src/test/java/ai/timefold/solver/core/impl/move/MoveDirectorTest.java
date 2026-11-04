@@ -2757,6 +2757,32 @@ class MoveDirectorTest {
     }
 
     @Test
+    void executeTemporaryUndoingOnFailureDoesNotUndoMoveWhenPostprocessorThrowsError() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            throw new AssertionError("Postprocessor failure.");
+        })).isInstanceOf(AssertionError.class)
+                .hasMessage("Postprocessor failure.");
+
+        // Only a RuntimeException has the move undone; the caller must treat the working solution as corrupted.
+        assertThat(entity.getValue()).isEqualTo(badValue);
+    }
+
+    @Test
     void executeTemporaryUndoingOnFailureUndoesStructurallyFlawedMove() {
         var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
@@ -2783,7 +2809,8 @@ class MoveDirectorTest {
         assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
             moveDirector.ensureStructurallySound(move);
             return null;
-        })).isInstanceOf(IllegalArgumentException.class)
+        })).isInstanceOf(StructurallyFlawedMoveException.class)
+                .hasNoSuppressedExceptions()
                 .hasMessageContainingAll("caused the solution to become structurally flawed.",
                         "Maybe check that the move does not make shadow variables depend on each other in a cycle.");
 
@@ -2821,7 +2848,7 @@ class MoveDirectorTest {
             e1.getValues().clear();
             return null;
         })).isInstanceOf(UndoCorruptionException.class)
-                .hasMessageContaining("Undoing the move (" + move.getClass().getName() + ") failed")
+                .hasMessageContaining("Undoing the move (" + move.describe() + ") failed")
                 .hasCauseInstanceOf(IndexOutOfBoundsException.class);
     }
 
