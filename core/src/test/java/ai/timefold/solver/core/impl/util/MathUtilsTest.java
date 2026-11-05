@@ -294,4 +294,13 @@ class MathUtilsTest {
         assertThat(MathUtils.saturatingMultiply(1L << 32, 1L << 31)).isEqualTo(Long.MAX_VALUE);
     }
 
+    @Test
+    void saturatingProduct() {
+        assertThat(MathUtils.saturatingProduct(3, 5)).isEqualTo(60);
+        assertThat(MathUtils.saturatingProduct(5, 4)).isEqualTo(1);
+        assertThat(MathUtils.saturatingProduct(1, 20)).isEqualTo(2_432_902_008_176_640_000L);
+        assertThat(MathUtils.saturatingProduct(1, 21)).isEqualTo(Long.MAX_VALUE);
+        assertThat(MathUtils.saturatingProduct(2, 1_000_000_000_000L)).isEqualTo(Long.MAX_VALUE);
+    }
+
 }

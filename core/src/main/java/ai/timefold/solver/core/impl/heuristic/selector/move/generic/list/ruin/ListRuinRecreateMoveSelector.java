@@ -45,7 +45,9 @@ final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListM
         var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(valueCount);
         for (var selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
             // Order is significant, and each entity can only be picked once
-            totalSize += MathUtils.factorial((int) valueCount) / MathUtils.factorial(selectedCount);
+            // n! / k!, computed as a product so that it cannot overflow
+            var selectionCount = selectedCount > valueCount ? 0L : MathUtils.saturatingProduct(selectedCount + 1L, valueCount);
+            totalSize = MathUtils.saturatingAdd(totalSize, selectionCount);
         }
         return totalSize;
     }

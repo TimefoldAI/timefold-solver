@@ -419,4 +419,16 @@ public class MathUtils {
         return (a ^ b) < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
     }
 
+    /**
+     * @return {@code from * (from + 1) * ... * to}, 1 if {@code from > to},
+     *         or {@link Long#MAX_VALUE} if that overflows; requires {@code from >= 1}
+     */
+    public static long saturatingProduct(long from, long to) {
+        var product = 1L;
+        for (var factor = from; factor <= to && product != Long.MAX_VALUE; factor++) {
+            product = saturatingMultiply(product, factor);
+        }
+        return product;
+    }
+
 }

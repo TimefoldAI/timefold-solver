@@ -2,6 +2,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -139,4 +142,16 @@ class RuinRecreateMoveSelectorTest extends AbstractMeterTest {
         }
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void sizeDoesNotOverflow() {
+        var entitySelector = (EntitySelector<TestdataSolution>) mock(EntitySelector.class);
+        when(entitySelector.getSize()).thenReturn(25L);
+        // 25! does not fit in a long, but 25! / 24! + 25! / 25! does.
+        var selector = new RuinRecreateMoveSelector<TestdataSolution>(entitySelector, null, null, count -> 24, count -> 25);
+        assertThat(selector.getSize()).isEqualTo(26L);
+        var hugeSelector =
+                new RuinRecreateMoveSelector<TestdataSolution>(entitySelector, null, null, count -> 5, count -> 5);
+        assertThat(hugeSelector.getSize()).isEqualTo(Long.MAX_VALUE);
+    }
 }
