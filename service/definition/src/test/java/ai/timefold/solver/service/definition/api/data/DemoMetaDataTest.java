@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import ai.timefold.solver.service.definition.preview.api.demo.DemoMetaData;
+
 import org.junit.jupiter.api.Test;
 
 class DemoMetaDataTest {

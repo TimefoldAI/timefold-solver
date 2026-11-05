@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.api.data;
+package ai.timefold.solver.service.definition.preview.api.demo;
 
 public record DemoDataConfigEntry(String key, String value) {
 

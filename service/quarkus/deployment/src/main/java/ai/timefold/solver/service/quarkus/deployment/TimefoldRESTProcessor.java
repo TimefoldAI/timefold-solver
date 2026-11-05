@@ -13,11 +13,11 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.ext.MessageBodyReader;
 import jakarta.ws.rs.ext.Provider;
 
-import ai.timefold.solver.service.definition.api.data.AbstractBasicDemoDataGenerator;
-import ai.timefold.solver.service.definition.api.data.DemoDataGenerator;
 import ai.timefold.solver.service.definition.api.domain.Configuration;
 import ai.timefold.solver.service.definition.api.domain.ModelRequest;
 import ai.timefold.solver.service.definition.api.domain.ScoreAnalysisRequest;
+import ai.timefold.solver.service.definition.preview.api.demo.AbstractBasicDemoDataGenerator;
+import ai.timefold.solver.service.definition.preview.api.demo.DemoDataGenerator;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelConvertorBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.RestComponentsBuildItem;
