@@ -228,6 +228,22 @@ class RandomSubListSelectorTest {
     }
 
     @Test
+    void sizeOfLongListDoesNotOverflow() {
+        var values = new TestdataListValue[100_000];
+        for (var i = 0; i < values.length; i++) {
+            values[i] = new TestdataListValue(String.valueOf(i));
+        }
+        var a = new TestdataListEntity("A", values);
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        var selector = new RandomSubListSelector<>(
+                mockEntitySelector(a),
+                TestdataListUtils.mockNeverEndingIterableValueSelector(getListVariableDescriptor(scoreDirector)),
+                1, Integer.MAX_VALUE);
+        // 100,000th triangular number; it does not fit in an int.
+        assertThat(selector.getSize()).isEqualTo(5_000_050_000L);
+    }
+
+    @Test
     void phaseLifecycle() {
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 

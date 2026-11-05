@@ -27,6 +27,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
@@ -732,4 +734,16 @@ class ElementDestinationSelectorTest {
         assertThat(iterator.hasNext()).isFalse();
         assertThatCode(iterator::next).isInstanceOf(NoSuchElementException.class);
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void sizeSaturatesInsteadOfOverflowing() {
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        var entitySelector = (EntitySelector<TestdataListSolution>) mock(EntitySelector.class);
+        when(entitySelector.getSize()).thenReturn(Long.MAX_VALUE);
+        var valueSelector = mockIterableValueSelector(getListVariableDescriptor(scoreDirector), new TestdataListValue("1"));
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
+        assertThat(selector.getSize()).isEqualTo(Long.MAX_VALUE);
+    }
+
 }

@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.util.MappingIterator;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
@@ -86,7 +87,7 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
         if (entitySelector.getSize() == 0) {
             return 0;
         }
-        return entitySelector.getSize() + valueSelector.getSize();
+        return MathUtils.saturatingAdd(entitySelector.getSize(), valueSelector.getSize());
     }
 
     @Override
