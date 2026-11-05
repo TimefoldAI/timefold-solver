@@ -732,6 +732,7 @@
       <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
       <xs:enumeration value="NEIGHBORHOODS"/>
+      <xs:enumeration value="TIERED_SCORE_CALCULATION"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="solverMetric">
