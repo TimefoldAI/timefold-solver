@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -116,4 +117,11 @@ class NullAllowingValueRangeTest {
                 .createOriginalIterator(), null, 25, 1, 0, -1, -15);
     }
 
+    @Test
+    void countWithNullMustFitInLong() {
+        assertThat(new NullAllowingValueRange<>(new LongValueRange(0, Long.MAX_VALUE - 1)).getSize())
+                .isEqualTo(Long.MAX_VALUE);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new NullAllowingValueRange<>(new LongValueRange(0, Long.MAX_VALUE)));
+    }
 }

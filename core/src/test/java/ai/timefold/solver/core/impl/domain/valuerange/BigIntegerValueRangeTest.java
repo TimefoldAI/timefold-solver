@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOf
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import java.math.BigInteger;
 
@@ -124,4 +125,14 @@ class BigIntegerValueRangeTest {
         assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
     }
 
+    @Test
+    void countMustFitInLong() {
+        var maxCount = BigInteger.valueOf(Long.MAX_VALUE);
+        assertThat(new BigIntegerValueRange(BigInteger.ZERO, maxCount).getSize()).isEqualTo(Long.MAX_VALUE);
+        // The count fits because of the increment, although to - from does not.
+        assertThat(new BigIntegerValueRange(BigInteger.ZERO, maxCount.multiply(BigInteger.TWO), BigInteger.TWO).getSize())
+                .isEqualTo(Long.MAX_VALUE);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new BigIntegerValueRange(BigInteger.ZERO, maxCount.add(BigInteger.ONE)));
+    }
 }
