@@ -40,10 +40,10 @@ final class RuinRecreateMoveSelector<Solution_> extends AbstractGenericMoveSelec
         var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(entityCount);
         var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(entityCount);
         for (int selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
-            // Order is significant, and each entity can only be picked once
-            // n! / k!, computed as a product so that it cannot overflow
+            // Order is significant, and each entity can only be picked once: n! / (n - k)!
             var selectionCount =
-                    selectedCount > entityCount ? 0L : MathUtils.saturatingProduct(selectedCount + 1L, entityCount);
+                    selectedCount > entityCount ? 0L
+                            : MathUtils.saturatingProduct(entityCount - selectedCount + 1L, entityCount);
             totalSize = MathUtils.saturatingAdd(totalSize, selectionCount);
         }
         return totalSize;
