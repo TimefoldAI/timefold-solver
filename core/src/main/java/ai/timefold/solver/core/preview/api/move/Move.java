@@ -160,7 +160,7 @@ public interface Move<Solution_> {
         try {
             return toString();
         } catch (RuntimeException e) {
-            return describe();
+            return getClass().getName();
         }
     }
 
