@@ -87,7 +87,9 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
         if (entitySelector.getSize() == 0) {
             return 0;
         }
-        return MathUtils.saturatingAdd(entitySelector.getSize(), valueSelector.getSize());
+        var size = MathUtils.saturatingAdd(entitySelector.getSize(), valueSelector.getSize());
+        // The option of unassigning.
+        return listVariableDescriptor.allowsUnassignedValues() ? MathUtils.saturatingAdd(size, 1L) : size;
     }
 
     @Override

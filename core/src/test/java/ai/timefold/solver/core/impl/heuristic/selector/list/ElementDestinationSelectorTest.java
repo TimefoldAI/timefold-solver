@@ -746,4 +746,18 @@ class ElementDestinationSelectorTest {
         assertThat(selector.getSize()).isEqualTo(Long.MAX_VALUE);
     }
 
+    @Test
+    void sizeCountsUnassignOption() {
+        var a = new TestdataAllowsUnassignedValuesListEntity("A");
+        var assignedValue = new TestdataAllowsUnassignedValuesListValue("1");
+        a.setValueList(List.of(assignedValue));
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
+        var entitySelector = mockEntitySelector(a);
+        var valueSelector =
+                mockIterableValueSelector(getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector), assignedValue);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
+        // A[0], after the value, and the option of unassigning.
+        assertThat(selector.getSize()).isEqualTo(3L);
+    }
+
 }
