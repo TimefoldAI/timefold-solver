@@ -35,11 +35,9 @@ public class SaveWaypointsPostProcessor implements ModelPostProcessor {
 
         List<Waypoints> waypoints = waypointsService.getWaypoints(id, Set.of());
 
-        if (waypoints != null && !waypoints.isEmpty()) {
-            storageService.storeWaypoints(id, waypoints);
-            // Not in a finally block: a run released before its waypoints are stored returns 404 until a restart.
-            waypointsService.releaseFinishedRun(id);
-        }
+        storageService.storeWaypoints(id, waypoints);
+        // Not in a finally block: a run released before its waypoints are stored returns 404 until a restart.
+        waypointsService.releaseFinishedRun(id);
     }
 
     @Override

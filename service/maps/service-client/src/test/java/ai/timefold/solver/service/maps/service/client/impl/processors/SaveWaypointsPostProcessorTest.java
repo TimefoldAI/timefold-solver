@@ -7,6 +7,7 @@ import java.util.Set;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.service.definition.api.domain.Metadata;
+import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.api.model.Waypoints;
@@ -24,6 +25,8 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -32,6 +35,9 @@ import io.quarkus.test.junit.TestProfile;
 @QuarkusTestResource(MapServiceApiWiremockExtensions.class)
 @TestProfile(RemoteMapServiceConfigurationProfile.class)
 class SaveWaypointsPostProcessorTest {
+
+    private static final TypeReference<List<Waypoints>> WAYPOINTS_LIST_TYPE = new TypeReference<>() {
+    };
 
     @Inject
     SaveWaypointsPostProcessor postProcessor;
@@ -82,12 +88,16 @@ class SaveWaypointsPostProcessorTest {
     }
 
     @Test
-    void keepsARunWithoutRoutes() {
+    void storesAnEmptyListAndReleasesARunWithoutRoutes() {
         var metadata = startRun(new SampleModel(List.of()));
 
         postProcessor.process(null, null, metadata.getId());
 
+        Assertions.assertThat(storageService.getWaypoints(metadata.getId(), WAYPOINTS_LIST_TYPE)).isEmpty();
+        waypointsService.onBestSolution(new BestSolutionEvent(metadata, new SampleModel(List.of(new Location(0, 0),
+                new Location(1, 1))), null, null, null, null));
         Assertions.assertThat(waypointsService.getWaypoints(metadata.getId(), Set.of())).isEmpty();
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isZero();
     }
 
     private Metadata<?> startRun(SampleModel sampleModel) {

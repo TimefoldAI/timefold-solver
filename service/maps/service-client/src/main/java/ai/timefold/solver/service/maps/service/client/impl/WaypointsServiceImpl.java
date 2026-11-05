@@ -189,6 +189,8 @@ public class WaypointsServiceImpl implements WaypointsService {
 
     @Incoming(SolverChannels.INIT_SOLUTION)
     public void onInitSolution(InitSolutionEvent event) {
+        // A solve of a finished run sends no STARTED event, but it always sends this one first.
+        finishedRunIdSet.remove(event.getId());
         rebuildBaseWaypoints(event.getId(), event.getModel());
     }
 

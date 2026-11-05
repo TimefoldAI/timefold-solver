@@ -424,6 +424,20 @@ public class WaypointsServiceImplTest {
     }
 
     @Test
+    void tracksAReleasedRunAgainWhenItIsSolvedAgainWithoutAStartedEvent() {
+        var metadata = new Metadata<>();
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
+        storageService.storeWaypoints(metadata.getId(), enricher.getWaypoints(metadata.getId(), Set.of()));
+        enricher.releaseFinishedRun(metadata.getId());
+
+        enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(4, 4)), null, null, null, null));
+
+        Assertions.assertThat(enricher.getWaypoints(metadata.getId(), Set.of("id_1")).getFirst().waypoints())
+                .contains(new Location(4, 4));
+        Assertions.assertThat(mapServiceInvocationCounter.getWaypointsInvocationCounter()).isEqualTo(3);
+    }
+
+    @Test
     void doesNotStartATrailingBackgroundFetchForAReleasedRun() {
         var metadata = new Metadata<>();
         enricher.onInitSolution(new InitSolutionEvent(metadata, twoRoutes(new Location(3, 3)), null, null, null, null));
