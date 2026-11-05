@@ -23,7 +23,7 @@ public final class SelectorBailOut {
     public static final long UNKNOWN_SIZE_BAIL_OUT = Short.MAX_VALUE * MULTIPLIER;
 
     /**
-     * @param childSize computes the child's size; may throw
+     * @param childSize computes the child's size; may throw {@link UnsupportedOperationException}
      * @param childSelector only used for logging
      * @return never negative
      */
@@ -31,8 +31,8 @@ public final class SelectorBailOut {
         long size;
         try {
             size = childSize.getAsLong();
-        } catch (Exception ex) {
-            // Any exception means the size is unknown; the exception itself carries no useful information.
+        } catch (UnsupportedOperationException ex) {
+            // Only an unknown size is tolerated here; any other exception signals a genuine defect and must propagate.
             LOGGER.trace(
                     "        Never-ending selector ({}) failed to provide size, choosing a bail-out size of ({}) attempts.",
                     childSelector, UNKNOWN_SIZE_BAIL_OUT);

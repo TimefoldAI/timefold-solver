@@ -89,7 +89,7 @@ public final class RandomSubListSelector<Solution_> extends AbstractListMoveSele
 
     private static long triangle(int n) {
         // In long arithmetic, n(n+1) cannot overflow for any int n.
-        return (long) n * (n + 1) / 2;
+        return (long) n * (n + 1L) / 2;
     }
 
     @Override
