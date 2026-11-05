@@ -37,13 +37,13 @@ class KOptListMoveSelectorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "10, 2, 2, 36", // 1 * C(9, 2)
-            "10, 3, 3, 336", // 4 * C(9, 3)
-            "10, 2, 3, 372",
-            "3, 3, 3, 0", // A 3-opt needs more than 3 values.
-            "4, 2, 3, 7" // 1 * C(3, 2) + 4 * C(3, 3)
+            "10, 2, 2, 1200", // (10 * 2)^2 * 1 * 3
+            "10, 3, 3, 120000", // (10 * 2)^3 * 1 * 3 * 5
+            "10, 2, 3, 121200",
+            "3, 3, 3, 3240", // Degenerate moves exist even when a 3-opt has only 3 values.
+            "0, 2, 3, 0"
     })
-    void sizeIncludesMaximumK(long valueCount, int minK, int maxK, long expectedSize) {
+    void sizeIsUpperBoundOfDistinctSelections(long valueCount, int minK, int maxK, long expectedSize) {
         assertThat(buildSelector(valueCount, minK, maxK).getSize()).isEqualTo(expectedSize);
     }
 

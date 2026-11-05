@@ -44,23 +44,25 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
         return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupplier);
     }
 
+    /**
+     * A provable upper bound of distinct selections: the sum over k of n^k * 2^k * (2k - 1)!!,
+     * where n is the number of values.
+     * A k-opt move is a sequence of 2k removed edge endpoints (n choices for each odd one, 2 neighbors for each even one)
+     * plus a matching of those 2k endpoints into added edges ((2k - 1)!! possibilities).
+     * This counts degenerate and patched moves too, so it is much larger than the number of pure k-opt reconnections.
+     */
     @Override
     public long getSize() {
-        var valueSelectorSize = valueSelector.getSize();
-        if (valueSelectorSize > Integer.MAX_VALUE) {
-            return Long.MAX_VALUE;
-        }
+        // Each removed edge: n choices for its first endpoint and 2 neighbors for its second.
+        var endpointChoices = MathUtils.saturatingMultiply(valueSelector.getSize(), 2L);
         var total = 0L;
-        // A k-opt needs more than k values.
-        for (var i = minK; i <= maxK && i < valueSelectorSize; i++) {
-            try {
-                // A tour with n nodes has n - 1 edges, and a k-opt removes k of them.
-                var edgeChoices = MathUtils.binomialCoefficient((int) (valueSelectorSize - 1), i);
-                total = Math.addExact(total, Math.multiplyExact(KOptUtils.getPureKOptMoveTypes(i), edgeChoices));
-            } catch (ArithmeticException e) {
-                // binomialCoefficient() and the exact arithmetic throw on overflow.
-                return Long.MAX_VALUE;
+        for (var k = minK; k <= maxK; k++) {
+            var kOptSize = 1L;
+            for (var i = 1; i <= k; i++) {
+                kOptSize = MathUtils.saturatingMultiply(kOptSize, endpointChoices);
+                kOptSize = MathUtils.saturatingMultiply(kOptSize, 2L * i - 1);
             }
+            total = MathUtils.saturatingAdd(total, kOptSize);
         }
         return total;
     }
