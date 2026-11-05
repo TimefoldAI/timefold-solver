@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
@@ -64,7 +65,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
                     // There must be at least 1 non-empty child to change the size from 0
                     size = childSize;
                 } else {
-                    size *= childSize;
+                    size = MathUtils.saturatingMultiply(size, childSize);
                 }
             }
         }
