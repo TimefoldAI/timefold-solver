@@ -44,6 +44,7 @@
 ** xref:responding-to-change/real-time-planning.adoc[leveloffset=+1]
 ** xref:responding-to-change/non-disruptive-replanning.adoc[leveloffset=+1]
 ** xref:responding-to-change/recommendation-api.adoc[leveloffset=+1]
+** xref:responding-to-change/move-evaluator.adoc[leveloffset=+1]
 
 * Diagnosing the Solver
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
@@ -90,6 +91,7 @@
 * xref:commercial-editions/performance-improvements.adoc[leveloffset=+1]
 * xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
 * xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
+* xref:responding-to-change/move-evaluator.adoc#moveEvaluator[Move Evaluator]
 * xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
 * xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
 * xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned search]

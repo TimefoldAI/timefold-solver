@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.exception.UndoMoveCorruptionException;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
@@ -662,12 +663,25 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      */
     public final void execute(Move<Solution_> move, boolean guaranteeFreshScore) {
         executeAllowingStructurallyFlawedSolutions(move);
-        if (!backingScoreDirector.isLastVariableUpdateSuccessful()) {
-            throw new IllegalArgumentException("The move (%s) caused the solution to become structurally flawed."
-                    .formatted(move));
-        }
+        ensureStructurallySound(move);
         if (guaranteeFreshScore) {
             backingScoreDirector.calculateScore();
+        }
+    }
+
+    /**
+     * Throws if the last variable update left the working solution structurally flawed.
+     * Must be called while the move is still applied; once the move is undone, the flaw is gone.
+     *
+     * @param move the move that was just executed, used in the message
+     * @throws StructurallyFlawedMoveException if the working solution is structurally flawed
+     */
+    private void ensureStructurallySound(Move<Solution_> move) {
+        if (!backingScoreDirector.isLastVariableUpdateSuccessful()) {
+            throw new StructurallyFlawedMoveException("""
+                    The move (%s) caused the solution to become structurally flawed.
+                    Maybe check that the move does not make shadow variables depend on each other in a cycle."""
+                    .formatted(move.toStringSafely()));
         }
     }
 
@@ -798,6 +812,57 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         var result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
         ephemeralMoveDirector.close(); // This undoes the move.
         return result;
+    }
+
+    /**
+     * Like {@link #executeTemporaryWithoutScoring(Move, Function)},
+     * but undoes the move and restores the previous working score
+     * even when {@code postprocessor} throws a {@link RuntimeException}.
+     * If the move makes the working solution structurally flawed,
+     * the move is undone and {@link StructurallyFlawedMoveException} is thrown;
+     * {@code postprocessor} is not called.
+     * <p>
+     * If {@code move} itself throws, its changes may be half-applied, so it is not undone;
+     * see {@link EphemeralMoveDirector}.
+     * The caller must then treat the working solution as corrupted.
+     * If undoing the move fails, an {@link UndoMoveCorruptionException} is thrown,
+     * or added as a suppressed exception to the exception thrown by {@code postprocessor}.
+     *
+     * @return whatever {@code postprocessor} returns
+     */
+    public @Nullable <Result_> Result_ executeTemporaryUndoingOnFailure(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> postprocessor) {
+        var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
+        var workingSolution = backingScoreDirector.getWorkingSolution();
+        var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
+        var ephemeralMoveDirector = ephemeral();
+        ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move); // If this throws, there is no undo.
+        // Only reached once the move is fully recorded, so undoing it is safe.
+        Result_ result;
+        try {
+            ensureStructurallySound(move); // Before the postprocessor, while the move is still applied.
+            result = postprocessor.apply(workingSolution);
+        } catch (RuntimeException e) {
+            try {
+                undoTemporaryMove(move, ephemeralMoveDirector, workingSolution, previousScore);
+            } catch (UndoMoveCorruptionException undoMoveCorruptionException) {
+                e.addSuppressed(undoMoveCorruptionException); // Keep the postprocessor's exception primary.
+            }
+            throw e;
+        }
+        undoTemporaryMove(move, ephemeralMoveDirector, workingSolution, previousScore);
+        return result;
+    }
+
+    private void undoTemporaryMove(Move<Solution_> move, EphemeralMoveDirector<Solution_, Score_> ephemeralMoveDirector,
+            Solution_ workingSolution, @Nullable Score_ previousScore) {
+        try {
+            ephemeralMoveDirector.close(); // This undoes the move.
+            backingScoreDirector.getSolutionDescriptor().setScore(workingSolution, previousScore);
+        } catch (RuntimeException e) {
+            throw new UndoMoveCorruptionException("Undoing the move (%s) failed, so the working solution is corrupted."
+                    .formatted(move.toStringSafely()), e);
+        }
     }
 
     @Override
