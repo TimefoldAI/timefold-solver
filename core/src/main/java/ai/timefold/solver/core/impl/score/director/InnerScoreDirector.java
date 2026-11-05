@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.director;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -56,6 +57,27 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingSolution never null, must never be the same instance as the best solution.
      */
     void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution);
+
+    /**
+     * Recomputes a {@link PlanningPin} whose setter accepts the planning solution.
+     * <p>
+     * When {@code factOrEntity} is a planning entity, only that entity is refreshed.
+     * Otherwise every entity is refreshed, so a change to solution-level metadata (such as a planning window)
+     * is visible to those setters.
+     * Pins without a solution setter are left untouched.
+     */
+    default void refreshPlanningPinsAfterProblemChange(Object factOrEntity) {
+        var solutionDescriptor = getSolutionDescriptor();
+        var workingSolution = getWorkingSolution();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(factOrEntity.getClass());
+        if (entityDescriptor != null) {
+            entityDescriptor.refreshPlanningPins(workingSolution, factOrEntity);
+            return;
+        }
+        solutionDescriptor.visitAllEntities(workingSolution, entity -> solutionDescriptor
+                .findEntityDescriptorOrFail(entity.getClass())
+                .refreshPlanningPins(workingSolution, entity));
+    }
 
     /**
      * Different phases may need different move repositories,

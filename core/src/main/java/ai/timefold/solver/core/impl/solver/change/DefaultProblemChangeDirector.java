@@ -27,6 +27,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         scoreDirector.beforeEntityAdded(entity);
         entityConsumer.accept(entity);
         scoreDirector.afterEntityAdded(entity);
+        scoreDirector.refreshPlanningPinsAfterProblemChange(entity);
         problemEntitiesChanged = true;
     }
 
@@ -50,6 +51,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         scoreDirector.beforeVariableChanged(workingEntity, variableName);
         entityConsumer.accept(workingEntity);
         scoreDirector.afterVariableChanged(workingEntity, variableName);
+        scoreDirector.refreshPlanningPinsAfterProblemChange(workingEntity);
     }
 
     @Override
@@ -84,6 +86,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         scoreDirector.beforeProblemPropertyChanged(workingEntityOrProblemFact);
         problemFactOrEntityConsumer.accept(workingEntityOrProblemFact);
         scoreDirector.afterProblemPropertyChanged(workingEntityOrProblemFact);
+        scoreDirector.refreshPlanningPinsAfterProblemChange(workingEntityOrProblemFact);
     }
 
     @Override

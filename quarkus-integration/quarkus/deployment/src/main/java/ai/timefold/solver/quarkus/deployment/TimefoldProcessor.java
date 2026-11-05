@@ -24,6 +24,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
@@ -38,6 +39,7 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
+import ai.timefold.solver.core.impl.domain.common.PlanningPinSupport;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
@@ -1029,6 +1031,10 @@ class TimefoldProcessor {
                 default -> throw new IllegalStateException(
                         "The member (%s) is not on a field or method.".formatted(annotatedMember));
             }
+            if (annotatedMember.name().equals(DotNames.PLANNING_PIN)) {
+                generatePlanningPinSolutionSetterAccessor(annotatedMember, solutionClassInfo, indexView,
+                        generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput, transformers);
+            }
             if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
                 // The source method name also must be included
                 // targetMethodName is a required field and is always present
@@ -1144,6 +1150,67 @@ class TimefoldProcessor {
                             .value(source)
                             .buildWithTarget(target));
         }
+    }
+
+    private static void generatePlanningPinSolutionSetterAccessor(AnnotationInstance annotatedMember,
+            ClassInfo solutionClassInfo, IndexView indexView, Set<String> generatedMemberAccessorsClassNameSet,
+            GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput,
+            BuildProducer<BytecodeTransformerBuildItem> transformers) {
+        var classLoader = Thread.currentThread().getContextClassLoader();
+        var declaringClassName = switch (annotatedMember.target().kind()) {
+            case FIELD -> annotatedMember.target().asField().declaringClass().name().toString();
+            case METHOD -> annotatedMember.target().asMethod().declaringClass().name().toString();
+            default -> throw new IllegalStateException(
+                    "A @%s annotation must be on a field or method."
+                            .formatted(PlanningPin.class.getSimpleName()));
+        };
+        Class<?> entityClass;
+        Class<?> solutionClass;
+        try {
+            entityClass = classLoader.loadClass(declaringClassName);
+            solutionClass = classLoader.loadClass(solutionClassInfo.name().toString());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Failed to load a @%s declaring class during deployment."
+                    .formatted(PlanningPin.class.getSimpleName()), e);
+        }
+        String propertyName;
+        Class<?> propertyType;
+        try {
+            if (annotatedMember.target().kind() == AnnotationTarget.Kind.FIELD) {
+                var field = entityClass.getDeclaredField(annotatedMember.target().asField().name());
+                var getter = ReflectionHelper.getGetterMethod(entityClass, field.getName());
+                propertyName = getter == null ? field.getName() : ReflectionHelper.getGetterPropertyName(getter);
+                propertyType = field.getType();
+            } else {
+                var methodInfo = annotatedMember.target().asMethod();
+                var method = entityClass.getDeclaredMethod(methodInfo.name());
+                propertyName = ReflectionHelper.getGetterPropertyName(method);
+                propertyType = method.getReturnType();
+            }
+        } catch (NoSuchFieldException | NoSuchMethodException e) {
+            throw new IllegalStateException("Failed to read a @%s member (%s) during deployment."
+                    .formatted(PlanningPin.class.getSimpleName(), annotatedMember), e);
+        }
+        var setter = PlanningPinSupport.findSolutionArgumentSetter(entityClass, propertyName, propertyType, solutionClass);
+        if (setter == null) {
+            return;
+        }
+        var declaringClassInfo = indexView.getClassByName(DotName.createSimple(setter.getDeclaringClass().getName()));
+        if (declaringClassInfo == null) {
+            throw new IllegalStateException("""
+                    The @%s setter (%s) is not in the Jandex index.
+                    Maybe the declaring class is not part of the application index?"""
+                    .formatted(PlanningPin.class.getSimpleName(), setter));
+        }
+        var parameterType = Type.create(DotName.createSimple(setter.getParameterTypes()[0].getName()), Type.Kind.CLASS);
+        var setterMethodInfo = declaringClassInfo.method(setter.getName(), parameterType);
+        if (setterMethodInfo == null) {
+            throw new IllegalStateException("Failed to find @%s setter (%s) in the Jandex index."
+                    .formatted(PlanningPin.class.getSimpleName(), setter));
+        }
+        buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                declaringClassInfo, setterMethodInfo, AccessorInfo.of(MemberAccessorType.VOID_METHOD_WITH_PARAMETER),
+                transformers);
     }
 
     private static void buildFieldAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
