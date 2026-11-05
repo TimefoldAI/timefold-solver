@@ -18,6 +18,7 @@ import ai.timefold.solver.service.jackson.impl.SdkBuildTimeObjectMapperFactory;
 import ai.timefold.solver.service.quarkus.deployment.builditem.AdditionalDescriptorFilesBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelInfoBuildItem;
+import ai.timefold.solver.service.quarkus.deployment.util.EmptyInstances;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -81,7 +82,7 @@ public class DefaultConfigProfileProcessor {
 
         ClassInfo modelConfigOverrides = modelComponentsBuildItem.getModelConfigOverrides();
         Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(modelConfigOverrides.name().toString());
-        Object instance = clazz.getDeclaredConstructor().newInstance();
+        Object instance = EmptyInstances.of(clazz);
 
         Map<String, Object> modelOverrides = MAPPER.readValue(MAPPER.writeValueAsString(instance), Map.class);
 
