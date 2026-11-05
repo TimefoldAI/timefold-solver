@@ -4,7 +4,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.enterprise.inject.Instance;
@@ -334,6 +336,24 @@ public class WaypointsServiceImplTest {
 
         Awaitility.await().atMost(Duration.ofSeconds(5))
                 .until(() -> mapServiceInvocationCounter.getWaypointsInvocationCounter() == 5);
+    }
+
+    @Test
+    void failsAWaitingRequestWhenTheExecutorShutsDownWithQueuedRoutes() throws Exception {
+        var waypointsService = new WaypointsServiceImpl(mapService, waypointsExtractor, optionsSupplier, storageService, 1);
+        var metadata = new Metadata<>();
+        waypointsService.onInitSolution(new InitSolutionEvent(metadata, routes(2), null, null, null, null));
+        callControl.holdCalls();
+        var waitingRequest = CompletableFuture.supplyAsync(() -> waypointsService.getWaypoints(metadata.getId(), Set.of()));
+        Awaitility.await().pollInterval(Duration.ofMillis(10)).atMost(Duration.ofSeconds(5))
+                .until(callControl::hasCallsInFlight);
+
+        waypointsService.shutdownWaypointsExecutor();
+
+        Assertions.assertThatThrownBy(() -> waitingRequest.get(2, TimeUnit.SECONDS))
+                .isInstanceOf(ExecutionException.class)
+                .hasCauseInstanceOf(CancellationException.class);
+        callControl.releaseHeldCalls();
     }
 
     @Test

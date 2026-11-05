@@ -114,6 +114,8 @@ public class WaypointsServiceImpl implements WaypointsService {
     @PreDestroy
     void shutdownWaypointsExecutor() {
         waypointsExecutor.shutdownNow();
+        // A queued fetch never runs after shutdownNow, so a request that waits for it would never return.
+        runRoutesMap.values().forEach(runRoutes -> runRoutes.getRouteList(Set.of()).forEach(Route::cancelFetch));
     }
 
     @Override

@@ -53,6 +53,13 @@ final class Route {
         }
     }
 
+    void cancelFetch() {
+        var pendingFuture = waypointsFutureReference.getAndSet(null);
+        if (pendingFuture != null) {
+            pendingFuture.cancel(false);
+        }
+    }
+
     private void failFetch(CompletableFuture<Waypoints> candidateFuture, Throwable failure) {
         waypointsFutureReference.compareAndSet(candidateFuture, null);
         candidateFuture.completeExceptionally(failure);
