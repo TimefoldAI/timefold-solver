@@ -13,12 +13,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Regression coverage for the UI resources copy fix. {@code Files.copy(sourceDir, destDir, REPLACE_EXISTING)}
- * only throws {@code DirectoryNotEmptyException} when the destination directory is non-empty — which is exactly
- * what happens on an incremental build, where a previous run already populated the {@code ui/nested} output
- * directory. Before the fix, that unconditional {@code Files.copy} call ran for directory entries too and blew up
- * with an {@code UncheckedIOException} on any rebuild of a UI resource tree containing a subdirectory. The fix adds
- * an else-branch so {@code Files.copy} only runs for non-directory entries.
+ * Covers where {@code processModelUI} looks for a model's UI resources
+ * (the build output first, then the source tree)
+ * and the regression coverage for the UI resources copy fix.
+ * {@code Files.copy(sourceDir, destDir, REPLACE_EXISTING)} only throws {@code DirectoryNotEmptyException}
+ * when the destination directory is non-empty,
+ * which is exactly what happens on an incremental build,
+ * where a previous run already populated the {@code ui/nested} output directory.
+ * Before the fix, that unconditional {@code Files.copy} call ran for directory entries too
+ * and blew up with an {@code UncheckedIOException} on any rebuild of a UI resource tree containing a subdirectory.
+ * The fix adds an else-branch so {@code Files.copy} only runs for non-directory entries.
  */
 class ProcessModelUITest {
 
@@ -27,6 +31,53 @@ class ProcessModelUITest {
 
     private Path uiSourcePath(Path moduleRoot) {
         return moduleRoot.resolve("src").resolve("main").resolve("resources").resolve("META-INF").resolve("resources");
+    }
+
+    private Path uiBuildOutputPath(Path outputDirectory) {
+        return outputDirectory.resolve("classes").resolve("META-INF").resolve("resources");
+    }
+
+    @Test
+    void findsUiResourcesInBuildOutputWithoutSourceTree() throws IOException {
+        Path moduleRoot = tempDir.resolve("module");
+        Path outputDirectory = moduleRoot.resolve("target");
+        Path uiBuildOutputPath = uiBuildOutputPath(outputDirectory);
+
+        Files.createDirectories(uiBuildOutputPath.resolve("assets"));
+        Files.writeString(uiBuildOutputPath.resolve("index.html"), "<html>built</html>");
+        Files.writeString(uiBuildOutputPath.resolve("assets").resolve("index.js"), "console.log('built');");
+
+        ModelDescriptor descriptor = new ModelDescriptor();
+        descriptor.setId("test-model_v1");
+
+        boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
+
+        assertThat(found).isTrue();
+        Path uiDestination = outputDirectory.resolve("timefold").resolve(descriptor.getId()).resolve("ui");
+        assertThat(uiDestination.resolve("index.html")).exists().hasContent("<html>built</html>");
+        assertThat(uiDestination.resolve("assets").resolve("index.js")).exists().hasContent("console.log('built');");
+    }
+
+    @Test
+    void prefersBuildOutputOverSourceTree() throws IOException {
+        Path moduleRoot = tempDir.resolve("module");
+        Path outputDirectory = moduleRoot.resolve("target");
+        Path uiBuildOutputPath = uiBuildOutputPath(outputDirectory);
+        Path uiSourcePath = uiSourcePath(moduleRoot);
+
+        Files.createDirectories(uiBuildOutputPath);
+        Files.writeString(uiBuildOutputPath.resolve("index.html"), "<html>built</html>");
+        Files.createDirectories(uiSourcePath);
+        Files.writeString(uiSourcePath.resolve("index.html"), "<html>committed</html>");
+
+        ModelDescriptor descriptor = new ModelDescriptor();
+        descriptor.setId("test-model_v1");
+
+        boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
+
+        assertThat(found).isTrue();
+        Path uiDestination = outputDirectory.resolve("timefold").resolve(descriptor.getId()).resolve("ui");
+        assertThat(uiDestination.resolve("index.html")).hasContent("<html>built</html>");
     }
 
     @Test
@@ -96,6 +147,20 @@ class ProcessModelUITest {
         boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
 
         assertThat(found).isTrue();
+    }
+
+    @Test
+    void returnsFalseWhenBuildOutputHasNoUiResources() throws IOException {
+        Path moduleRoot = tempDir.resolve("module");
+        Path outputDirectory = moduleRoot.resolve("target");
+        Files.createDirectories(outputDirectory.resolve("classes").resolve("META-INF"));
+
+        ModelDescriptor descriptor = new ModelDescriptor();
+        descriptor.setId("test-model_v1");
+
+        boolean found = new TimefoldModelDescriptorProcessor().processModelUI(descriptor, outputDirectory);
+
+        assertThat(found).isFalse();
     }
 
     @Test
