@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.api.data;
+package ai.timefold.solver.service.definition.preview.api.demo;
 
 import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
 import ai.timefold.solver.service.definition.api.ModelInput;
