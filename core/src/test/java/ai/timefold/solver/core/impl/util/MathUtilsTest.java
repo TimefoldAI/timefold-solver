@@ -274,4 +274,24 @@ class MathUtilsTest {
     void binomialCoefficient(int n, int k, long coefficient) {
         assertThat(MathUtils.binomialCoefficient(n, k)).isEqualTo(coefficient);
     }
+
+    @Test
+    void saturatingAdd() {
+        assertThat(MathUtils.saturatingAdd(2, 3)).isEqualTo(5);
+        assertThat(MathUtils.saturatingAdd(Long.MAX_VALUE, 1)).isEqualTo(Long.MAX_VALUE);
+        assertThat(MathUtils.saturatingAdd(Long.MIN_VALUE, -1)).isEqualTo(Long.MIN_VALUE);
+        assertThat(MathUtils.saturatingAdd(Long.MAX_VALUE, Long.MIN_VALUE)).isEqualTo(-1);
+    }
+
+    @Test
+    void saturatingMultiply() {
+        assertThat(MathUtils.saturatingMultiply(6, 7)).isEqualTo(42);
+        assertThat(MathUtils.saturatingMultiply(-6, 7)).isEqualTo(-42);
+        assertThat(MathUtils.saturatingMultiply(Long.MAX_VALUE, 2)).isEqualTo(Long.MAX_VALUE);
+        assertThat(MathUtils.saturatingMultiply(Long.MAX_VALUE, -2)).isEqualTo(Long.MIN_VALUE);
+        assertThat(MathUtils.saturatingMultiply(Long.MIN_VALUE, -1)).isEqualTo(Long.MAX_VALUE);
+        assertThat(MathUtils.saturatingMultiply(Long.MIN_VALUE, 1)).isEqualTo(Long.MIN_VALUE);
+        assertThat(MathUtils.saturatingMultiply(1L << 32, 1L << 31)).isEqualTo(Long.MAX_VALUE);
+    }
+
 }

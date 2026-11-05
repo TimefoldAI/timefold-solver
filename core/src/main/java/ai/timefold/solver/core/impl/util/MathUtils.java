@@ -395,4 +395,28 @@ public class MathUtils {
             decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(MathUtils.FORMATTER_LOCALE));
         }
     }
+
+    /**
+     * @return {@code a + b}, or {@link Long#MAX_VALUE} or {@link Long#MIN_VALUE} if that overflows
+     */
+    public static long saturatingAdd(long a, long b) {
+        var result = a + b;
+        if (((a ^ result) & (b ^ result)) < 0) {
+            return a < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
+        }
+        return result;
+    }
+
+    /**
+     * @return {@code a * b}, or {@link Long#MAX_VALUE} or {@link Long#MIN_VALUE} if that overflows
+     */
+    public static long saturatingMultiply(long a, long b) {
+        var high = Math.multiplyHigh(a, b);
+        var low = a * b;
+        if ((high == 0 && low >= 0) || (high == -1 && low < 0)) {
+            return low;
+        }
+        return (a ^ b) < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
+    }
+
 }
