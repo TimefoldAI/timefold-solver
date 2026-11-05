@@ -100,6 +100,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -182,6 +183,8 @@ class TimefoldModelDescriptorProcessor {
 
     private static final String UI_SUPPORT_PROPERTY = "timefold.model.ui-support";
     private static final Path UI_SOURCE_PATH = Path.of("src", "main", "resources", "META-INF", "resources");
+    private static final Path UI_BUILD_OUTPUT_PATH = Path.of("classes", "META-INF", "resources");
+    private static final String UI_EXPECTED_LOCATIONS = "%s or %s".formatted(UI_BUILD_OUTPUT_PATH, UI_SOURCE_PATH);
 
     // To avoid depending on the whole OpenAPI, we use the fully qualified class name.
     private static final DotName OPEN_API_SCHEMA_ANNOTATION_FQCN =
@@ -1214,7 +1217,7 @@ class TimefoldModelDescriptorProcessor {
                 boolean success = processModelUI(descriptor, outputDirectory);
                 if (!success) {
                     throw new IllegalStateException("The model's UI resources were not found in the expected location (%s)."
-                            .formatted(UI_SOURCE_PATH.toString()));
+                            .formatted(UI_EXPECTED_LOCATIONS));
                 }
                 descriptor.setUiSupport(UISupport.APP_JS);
             }
@@ -1225,7 +1228,7 @@ class TimefoldModelDescriptorProcessor {
                 descriptor.setUiSupport(UISupport.APP_JS);
             } else {
                 LOG.debug("The model's UI resources were not found in the expected location (%s). Assuming no UI is supported."
-                        .formatted(UI_SOURCE_PATH.toString()));
+                        .formatted(UI_EXPECTED_LOCATIONS));
                 descriptor.setUiSupport(UISupport.NONE);
             }
         }
@@ -1235,8 +1238,8 @@ class TimefoldModelDescriptorProcessor {
         Objects.requireNonNull(outputDirectory);
 
         // copy model's ui resources
-        Path uiResourcesPath = Paths.get(outputDirectory.getParent().toString(), UI_SOURCE_PATH.toString());
-        boolean uiResourcesFound = Files.exists(uiResourcesPath);
+        Path uiResourcesPath = findUiResourcesPath(outputDirectory);
+        boolean uiResourcesFound = uiResourcesPath != null;
 
         if (uiResourcesFound) {
             try (Stream<Path> stream = Files.walk(uiResourcesPath)) {
@@ -1263,6 +1266,23 @@ class TimefoldModelDescriptorProcessor {
         }
 
         return uiResourcesFound;
+    }
+
+    /**
+     * The build output comes first,
+     * so a bundle that a build step writes there (for example a Vite build at generate-resources) counts as the model's UI.
+     * The source tree is the fallback for a committed bundle.
+     */
+    private static @Nullable Path findUiResourcesPath(Path outputDirectory) {
+        Path buildOutputPath = outputDirectory.resolve(UI_BUILD_OUTPUT_PATH);
+        if (Files.isDirectory(buildOutputPath)) {
+            return buildOutputPath;
+        }
+        Path sourcePath = Paths.get(outputDirectory.getParent().toString(), UI_SOURCE_PATH.toString());
+        if (Files.isDirectory(sourcePath)) {
+            return sourcePath;
+        }
+        return null;
     }
 
     private List<InputMetricDescriptor> inputMetricsFromClassInfo(ClassInfo classInfo) {
