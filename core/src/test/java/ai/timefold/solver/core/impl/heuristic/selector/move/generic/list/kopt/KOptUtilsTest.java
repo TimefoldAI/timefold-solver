@@ -203,6 +203,8 @@ class KOptUtilsTest {
         assertThat(KOptUtils.getPureKOptMoveTypes(6)).isEqualTo(2121L);
         assertThat(KOptUtils.getPureKOptMoveTypes(7)).isEqualTo(25828L);
         assertThat(KOptUtils.getPureKOptMoveTypes(8)).isEqualTo(365457L);
+        assertThat(KOptUtils.getPureKOptMoveTypes(17)).isEqualTo(806519154686509056L);
+        assertThat(KOptUtils.getPureKOptMoveTypes(18)).isEqualTo(Long.MAX_VALUE);
     }
 
     private static KOptDescriptor<TestdataListValue> fromRemovedAndAddedEdges(

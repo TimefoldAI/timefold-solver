@@ -247,8 +247,10 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         if (cycleCount == 1 || k + cycleCount > maxCyclesPatchedInInfeasibleMove) {
             return descriptor;
         }
-        var currentCycle =
-                getShortestCycleIdentifier(entityOrderInfo, oldRemovedEdges, cycle, removedEdgeIndexToTourOrder, cycleCount, k);
+        // findCycleIdentifierForNode() reads the tour order cyclically, through index 0.
+        removedEdgeIndexToTourOrder[0] = removedEdgeIndexToTourOrder[2 * k];
+        // Any cycle can be patched; a random one keeps every patched move reachable.
+        var currentCycle = workingRandom.nextInt(cycleCount);
 
         for (var i = 0; i < k; i++) {
             if (cycle[removedEdgeIndexToTourOrder[2 * i]] == currentCycle) {
@@ -360,53 +362,6 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             }
         }
         throw new IllegalStateException("Cannot find cycle the " + value + " belongs to");
-    }
-
-    int getShortestCycleIdentifier(EntityOrderInfo entityOrderInfo, Object[] removeEdgeEndpoints, int[] endpointIndexToCycle,
-            int[] removeEdgeEndpointIndexToTourOrder, int cycleCount, int k) {
-        int i;
-        var minCycleIdentifier = 0;
-        var minSize = Integer.MAX_VALUE;
-        var size = new int[cycleCount + 1];
-
-        for (i = 1; i <= cycleCount; i++) {
-            size[i] = 0;
-        }
-        removeEdgeEndpointIndexToTourOrder[0] = removeEdgeEndpointIndexToTourOrder[2 * k];
-        for (i = 0; i < 2 * k; i += 2) {
-            size[endpointIndexToCycle[removeEdgeEndpointIndexToTourOrder[i]]] +=
-                    getSegmentSize(entityOrderInfo, removeEdgeEndpoints[removeEdgeEndpointIndexToTourOrder[i]],
-                            removeEdgeEndpoints[removeEdgeEndpointIndexToTourOrder[i + 1]]);
-        }
-        for (i = 1; i <= cycleCount; i++) {
-            if (size[i] < minSize) {
-                minSize = size[i];
-                minCycleIdentifier = i - 1;
-            }
-        }
-        return minCycleIdentifier;
-    }
-
-    private int getSegmentSize(EntityOrderInfo entityOrderInfo, Object from, Object to) {
-        var entityToEntityIndex = entityOrderInfo.entityToEntityIndex();
-        var startElementPosition = listVariableState.getElementPosition(from)
-                .ensureAssigned();
-        var endElementPosition = listVariableState.getElementPosition(to)
-                .ensureAssigned();
-        var startEntityIndex = entityToEntityIndex.get(startElementPosition.entity());
-        var endEntityIndex = entityToEntityIndex.get(endElementPosition.entity());
-        var offsets = entityOrderInfo.offsets();
-        var startIndex = offsets[startEntityIndex] + startElementPosition.index();
-        var endIndex = offsets[endEntityIndex] + endElementPosition.index();
-
-        if (startIndex <= endIndex) {
-            return endIndex - startIndex;
-        } else {
-            var entities = entityOrderInfo.entities();
-            var totalRouteSize =
-                    offsets[offsets.length - 1] + listVariableDescriptor.getListSize(entities[entities.length - 1]);
-            return totalRouteSize - startIndex + endIndex;
-        }
     }
 
     private boolean isEdgeAlreadyAdded(Object[] pickedValues, Object ta, Object tb, int k) {

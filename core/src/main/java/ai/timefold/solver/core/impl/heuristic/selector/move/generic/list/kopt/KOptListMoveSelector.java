@@ -46,21 +46,20 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
 
     @Override
     public long getSize() {
+        var valueSelectorSize = valueSelector.getSize();
+        if (valueSelectorSize > Integer.MAX_VALUE) {
+            return Long.MAX_VALUE;
+        }
         long total = 0;
-        long valueSelectorSize = valueSelector.getSize();
-        for (int i = minK; i < Math.min(valueSelectorSize, maxK); i++) {
-            if (valueSelectorSize > i) { // need more than k nodes in order to perform a k-opt
-                long kOptMoveTypes = KOptUtils.getPureKOptMoveTypes(i);
-
-                // A tour with n nodes have n - 1 edges
-                // And we chose k of them to remove in a k-opt
-                final long edgeChoices;
-                if (valueSelectorSize <= Integer.MAX_VALUE) {
-                    edgeChoices = MathUtils.binomialCoefficient((int) (valueSelectorSize - 1), i);
-                } else {
-                    edgeChoices = Long.MAX_VALUE;
-                }
-                total += kOptMoveTypes * edgeChoices;
+        // A k-opt needs more than k values.
+        for (int i = minK; i <= maxK && i < valueSelectorSize; i++) {
+            try {
+                // A tour with n nodes has n - 1 edges, and a k-opt removes k of them.
+                var edgeChoices = MathUtils.binomialCoefficient((int) (valueSelectorSize - 1), i);
+                total = Math.addExact(total, Math.multiplyExact(KOptUtils.getPureKOptMoveTypes(i), edgeChoices));
+            } catch (ArithmeticException e) {
+                // binomialCoefficient() and the exact arithmetic throw on overflow.
+                return Long.MAX_VALUE;
             }
         }
         return total;
