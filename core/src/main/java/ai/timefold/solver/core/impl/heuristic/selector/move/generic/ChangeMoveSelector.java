@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractO
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomChangeIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public class ChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
@@ -42,12 +43,13 @@ public class ChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<S
     @Override
     public long getSize() {
         if (valueSelector instanceof IterableSelector) {
-            return entitySelector.getSize() * ((IterableSelector<Solution_, ?>) valueSelector).getSize();
+            return MathUtils.saturatingMultiply(entitySelector.getSize(),
+                    ((IterableSelector<Solution_, ?>) valueSelector).getSize());
         } else {
             long size = 0;
             for (Iterator<?> it = entitySelector.endingIterator(); it.hasNext();) {
                 Object entity = it.next();
-                size += valueSelector.getSize(entity);
+                size = MathUtils.saturatingAdd(size, valueSelector.getSize(entity));
             }
             return size;
         }

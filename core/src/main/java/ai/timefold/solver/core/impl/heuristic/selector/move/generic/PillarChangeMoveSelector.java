@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public class PillarChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
@@ -36,7 +37,8 @@ public class PillarChangeMoveSelector<Solution_> extends AbstractGenericMoveSele
 
     @Override
     public long getSize() {
-        return pillarSelector.getSize() * ((IterableValueSelector<Solution_>) valueSelector).getSize();
+        return MathUtils.saturatingMultiply(pillarSelector.getSize(),
+                ((IterableValueSelector<Solution_>) valueSelector).getSize());
     }
 
     @Override
