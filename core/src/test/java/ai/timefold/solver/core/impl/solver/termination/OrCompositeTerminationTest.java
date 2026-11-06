@@ -120,8 +120,8 @@ class OrCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
         when(termination1.calculateSolverTimeGradient(solverScope)).thenReturn(-1.0);
         when(termination2.calculateSolverTimeGradient(solverScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored, max(unsupported,unsupported) = 0.0 (default)
-        assertThat(compositeTermination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculateSolverTimeGradient(solverScope)).isEqualTo(-1.0, offset(0.0));
 
         when(termination1.calculateSolverTimeGradient(solverScope)).thenReturn(0.5);
         when(termination2.calculateSolverTimeGradient(solverScope)).thenReturn(-1.0);
@@ -160,8 +160,8 @@ class OrCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
         when(termination1.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(termination2.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored, max(unsupported,unsupported) = 0.0 (default)
-        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(-1.0, offset(0.0));
 
         when(termination1.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         when(termination2.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
@@ -200,13 +200,13 @@ class OrCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
         when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored
-        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(-1.0, offset(0.0));
 
         when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored
-        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(-1.0, offset(0.0));
 
         when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);

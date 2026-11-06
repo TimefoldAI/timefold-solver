@@ -15,10 +15,12 @@ import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeu
 import ai.timefold.solver.core.impl.exhaustivesearch.DefaultExhaustiveSearchPhaseFactory;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhaseFactory;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.partitionedsearch.DefaultPartitionedSearchPhaseFactory;
 import ai.timefold.solver.core.impl.phase.custom.DefaultCustomPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
+import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 public interface PhaseFactory<Solution_> {
 
@@ -48,7 +50,7 @@ public interface PhaseFactory<Solution_> {
             var phaseConfig = phaseConfigList.get(phaseIndex);
             if (phaseIndex > 0) {
                 PhaseConfig previousPhaseConfig = phaseConfigList.get(phaseIndex - 1);
-                if (!canTerminate(previousPhaseConfig)) {
+                if (!canTerminate(previousPhaseConfig) && !canSolverTerminationEndPhase(termination, previousPhaseConfig)) {
                     throw new IllegalStateException("Solver configuration contains an unreachable phase. "
                             + "Phase #" + phaseIndex + " (" + phaseConfig + ") follows a phase "
                             + "without a configured termination (" + previousPhaseConfig + ").");
@@ -84,6 +86,19 @@ public interface PhaseFactory<Solution_> {
             phaseList.add(phase);
         }
         return phaseList;
+    }
+
+    /**
+     * A phase-only termination in the solver termination ends the phase but not the solver,
+     * so the next phase runs.
+     */
+    private static <Solution_> boolean canSolverTerminationEndPhase(SolverTermination<Solution_> termination,
+            PhaseConfig<?> phaseConfig) {
+        return phaseConfig instanceof LocalSearchPhaseConfig
+                && termination instanceof UniversalTermination<Solution_> universalTermination
+                && universalTermination.getPhaseTerminationList().stream()
+                        .anyMatch(phaseTermination -> !(phaseTermination instanceof SolverTermination)
+                                && phaseTermination.isApplicableTo(LocalSearchPhaseScope.class));
     }
 
     static boolean canTerminate(PhaseConfig phaseConfig) {

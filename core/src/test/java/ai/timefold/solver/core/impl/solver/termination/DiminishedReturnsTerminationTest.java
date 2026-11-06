@@ -2,11 +2,13 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import static ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTermination.NANOS_PER_MILLISECOND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -252,22 +254,19 @@ class DiminishedReturnsTerminationTest {
         termination.stepStarted(firstStepScope);
         assertThat(termination.isGracePeriodStarted()).isTrue();
         assertThat(termination.isTerminated(termination.getGracePeriodStartTimeNanos(), score)).isFalse();
-        // It can be terminated after the first step started
-        assertThat(termination.isTerminated(termination.getGracePeriodStartTimeNanos() + 2_000 * NANOS_PER_MILLISECOND, score))
-                .isTrue();
         termination.stepEnded(firstStepScope);
 
         // Second step
         var secondStepScope = mock(AbstractStepScope.class);
         doReturn(phaseScope).when(secondStepScope).getPhaseScope();
         // The second step does not start the timer again
-        var currentTime = termination.getGracePeriodStartTimeNanos();
+        var firstStepStartTime = termination.getGracePeriodStartTimeNanos();
         termination.stepStarted(secondStepScope);
-        assertThat(termination.getGracePeriodStartTimeNanos()).isEqualTo(currentTime);
+        assertThat(termination.getGracePeriodStartTimeNanos()).isEqualTo(firstStepStartTime);
         termination.stepEnded(secondStepScope);
 
-        // Timeout
-        assertThat(termination.isTerminated(currentTime + 11_000 * NANOS_PER_MILLISECOND, score)).isTrue();
+        // One sliding window after the first step started, the grace period ends without improvement.
+        assertThat(termination.isTerminated(firstStepStartTime + 1_000 * NANOS_PER_MILLISECOND, score)).isTrue();
     }
 
     @Test
@@ -278,4 +277,43 @@ class DiminishedReturnsTerminationTest {
         assertThat(childTermination.getSlidingWindowNanos()).isEqualTo(10 * NANOS_PER_MILLISECOND);
         assertThat(childTermination.getMinimumImprovementRatio()).isEqualTo(0.5);
     }
+
+    @Test
+    void timeGradientAssumesOneWindowLeftSinceTheLastReset() {
+        var termination = new DiminishedReturnsTermination<Object, HardSoftScore>(10, 0.5);
+        assertThat(termination.calculateTimeGradient(5 * NANOS_PER_MILLISECOND)).isZero();
+        termination.start(0L, InnerScore.fullyAssigned(HardSoftScore.of(-1, 0)));
+        assertThat(termination.calculateTimeGradient(0L)).isZero();
+        assertThat(termination.calculateTimeGradient(10 * NANOS_PER_MILLISECOND)).isEqualTo(0.5, offset(1e-9));
+        assertThat(termination.calculateTimeGradient(30 * NANOS_PER_MILLISECOND)).isEqualTo(0.75, offset(1e-9));
+        // A change of a harder level restarts the grace period, and the time gradient with it.
+        termination.isTerminated(30 * NANOS_PER_MILLISECOND, InnerScore.fullyAssigned(HardSoftScore.of(0, 0)));
+        assertThat(termination.calculateTimeGradient(30 * NANOS_PER_MILLISECOND)).isZero();
+        assertThat(termination.calculateTimeGradient(40 * NANOS_PER_MILLISECOND)).isEqualTo(0.5, offset(1e-9));
+    }
+
+    @Test
+    void stepEndedRestartsGracePeriodWithoutIsPhaseTerminated() {
+        // An AND skips isPhaseTerminated() of its later terminations while an earlier one is not met.
+        var termination = new DiminishedReturnsTermination<Object, HardSoftScore>(10_000, 0.5);
+        termination.start(0L, InnerScore.fullyAssigned(HardSoftScore.of(-1, 0)));
+        var phaseScope = mock(LocalSearchPhaseScope.class);
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(0, 0))).when(phaseScope).getBestScore();
+        var stepScope = mock(AbstractStepScope.class);
+        doReturn(phaseScope).when(stepScope).getPhaseScope();
+
+        termination.stepEnded(stepScope);
+
+        var gracePeriodStartTimeNanos = termination.getGracePeriodStartTimeNanos();
+        assertThat(gracePeriodStartTimeNanos).isPositive();
+        assertThat(termination.calculateTimeGradient(gracePeriodStartTimeNanos)).isZero();
+    }
+
+    @Test
+    void phaseTimeGradientIsSupported() {
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10_000, 0.5);
+        termination.start(System.nanoTime(), InnerScore.fullyAssigned(SimpleScore.ZERO));
+        assertThat(termination.calculatePhaseTimeGradient(mock(AbstractPhaseScope.class))).isBetween(0.0, 1.0);
+    }
+
 }

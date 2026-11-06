@@ -88,4 +88,16 @@ class SimulatedAnnealingAcceptorTest extends AbstractAcceptorTest {
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
     }
 
+    @Test
+    void keepsStartingTemperatureWithoutTimeGradient() {
+        var acceptor = new SimulatedAnnealingAcceptor<>();
+        acceptor.setStartingTemperature(SimpleScore.of(200));
+        var phaseScope = new LocalSearchPhaseScope<>(new SolverScope<>(), 0);
+        acceptor.phaseStarted(phaseScope);
+        var stepScope = new LocalSearchStepScope<>(phaseScope);
+        stepScope.setTimeGradient(-1.0);
+        acceptor.stepStarted(stepScope);
+        assertThat(acceptor.temperatureLevels).containsExactly(200.0);
+    }
+
 }

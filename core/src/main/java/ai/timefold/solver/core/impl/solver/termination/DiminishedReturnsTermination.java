@@ -160,7 +160,22 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        return -1.0;
+        return calculateTimeGradient(System.nanoTime());
+    }
+
+    /**
+     * Assumes that one sliding window is left after the time since the grace period started,
+     * which a change of a harder level restarts.
+     */
+    double calculateTimeGradient(long currentTime) {
+        if (!isGracePeriodStarted) {
+            return 0.0;
+        }
+        var timeSinceGracePeriodStartNanos = currentTime - gracePeriodStartTimeNanos;
+        if (timeSinceGracePeriodStartNanos <= 0L) {
+            return 0.0;
+        }
+        return timeSinceGracePeriodStartNanos / (double) (timeSinceGracePeriodStartNanos + slidingWindowNanos);
     }
 
     @Override
@@ -190,7 +205,14 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+        var phaseScope = stepScope.getPhaseScope();
+        var currentTime = System.nanoTime();
+        var bestScore = phaseScope.<Score_> getBestScore();
+        step(currentTime, bestScore);
+        if (isApplicableTo(phaseScope.getClass())) {
+            // Restarts the grace period on time, also when a composite such as AND skips isPhaseTerminated().
+            isTerminated(currentTime, bestScore);
+        }
     }
 
     @SuppressWarnings("rawtypes")

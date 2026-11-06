@@ -109,4 +109,53 @@ abstract sealed class AbstractCompositeTermination<Solution_>
         return List.copyOf(result);
     }
 
+    /**
+     * Whether this solver termination ends the phase:
+     * solver terminations measure the solver, phase-only terminations the phase that they can end.
+     * A phase-only termination that is not applicable to the phase counts as not terminated.
+     */
+    abstract boolean isSolverTerminatedForPhase(AbstractPhaseScope<Solution_> phaseScope);
+
+    static <Solution_> boolean isTerminatedForPhase(Termination<Solution_> termination,
+            AbstractPhaseScope<Solution_> phaseScope) {
+        return switch (termination) {
+            case AbstractCompositeTermination<Solution_> compositeTermination -> compositeTermination
+                    .isSolverTerminatedForPhase(phaseScope);
+            case SolverTermination<Solution_> solverTermination -> solverTermination
+                    .isSolverTerminated(phaseScope.getSolverScope());
+            case PhaseTermination<Solution_> phaseTermination -> phaseTermination.isApplicableTo(phaseScope.getClass())
+                    && phaseTermination.isPhaseTerminated(phaseScope);
+            default -> throw new IllegalStateException("Impossible state: the termination (%s) is of an unknown type."
+                    .formatted(termination));
+        };
+    }
+
+    /**
+     * The timeGradient of this solver termination, as a phase sees it:
+     * solver terminations measure the solver, phase-only terminations the phase that they can end.
+     *
+     * @return -1.0 if none of the terminations supports a timeGradient
+     */
+    final double calculateSolverTimeGradientForPhase(AbstractPhaseScope<Solution_> phaseScope) {
+        var timeGradient = -1.0;
+        for (var termination : terminationList) {
+            var nextTimeGradient = switch (termination) {
+                case AbstractCompositeTermination<Solution_> compositeTermination -> compositeTermination
+                        .calculateSolverTimeGradientForPhase(phaseScope);
+                case SolverTermination<Solution_> solverTermination -> solverTermination
+                        .calculateSolverTimeGradient(phaseScope.getSolverScope());
+                case PhaseTermination<Solution_> phaseTermination when phaseTermination
+                        .isApplicableTo(phaseScope.getClass()) ->
+                    phaseTermination.calculatePhaseTimeGradient(phaseScope);
+                default -> -1.0;
+            };
+            if (nextTimeGradient >= 0.0) {
+                timeGradient = timeGradient < 0.0 ? nextTimeGradient : combineTimeGradients(timeGradient, nextTimeGradient);
+            }
+        }
+        return timeGradient;
+    }
+
+    abstract double combineTimeGradients(double timeGradient, double otherTimeGradient);
+
 }
