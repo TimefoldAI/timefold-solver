@@ -205,7 +205,14 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+        var phaseScope = stepScope.getPhaseScope();
+        var currentTime = System.nanoTime();
+        var bestScore = phaseScope.<Score_> getBestScore();
+        step(currentTime, bestScore);
+        if (isApplicableTo(phaseScope.getClass())) {
+            // Restarts the grace period on time, also when a composite such as AND skips isPhaseTerminated().
+            isTerminated(currentTime, bestScore);
+        }
     }
 
     @SuppressWarnings("rawtypes")

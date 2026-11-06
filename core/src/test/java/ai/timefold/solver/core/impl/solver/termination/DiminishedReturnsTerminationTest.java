@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -253,9 +254,6 @@ class DiminishedReturnsTerminationTest {
         termination.stepStarted(firstStepScope);
         assertThat(termination.isGracePeriodStarted()).isTrue();
         assertThat(termination.isTerminated(termination.getGracePeriodStartTimeNanos(), score)).isFalse();
-        // It can be terminated after the first step started
-        assertThat(termination.isTerminated(termination.getGracePeriodStartTimeNanos() + 2_000 * NANOS_PER_MILLISECOND, score))
-                .isTrue();
         termination.stepEnded(firstStepScope);
 
         // Second step
@@ -267,6 +265,8 @@ class DiminishedReturnsTerminationTest {
         assertThat(termination.getGracePeriodStartTimeNanos()).isEqualTo(currentTime);
         termination.stepEnded(secondStepScope);
 
+        // It can be terminated after the first step started
+        assertThat(termination.isTerminated(currentTime + 2_000 * NANOS_PER_MILLISECOND, score)).isTrue();
         // Timeout
         assertThat(termination.isTerminated(currentTime + 11_000 * NANOS_PER_MILLISECOND, score)).isTrue();
     }
@@ -292,6 +292,23 @@ class DiminishedReturnsTerminationTest {
         termination.isTerminated(30 * NANOS_PER_MILLISECOND, InnerScore.fullyAssigned(HardSoftScore.of(0, 0)));
         assertThat(termination.calculateTimeGradient(30 * NANOS_PER_MILLISECOND)).isZero();
         assertThat(termination.calculateTimeGradient(40 * NANOS_PER_MILLISECOND)).isEqualTo(0.5, offset(1e-9));
+    }
+
+    @Test
+    void stepEndedRestartsGracePeriodWithoutIsPhaseTerminated() {
+        // An AND skips isPhaseTerminated() of its later terminations while an earlier one is not met.
+        var termination = new DiminishedReturnsTermination<Object, HardSoftScore>(10_000, 0.5);
+        termination.start(0L, InnerScore.fullyAssigned(HardSoftScore.of(-1, 0)));
+        var phaseScope = mock(LocalSearchPhaseScope.class);
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(0, 0))).when(phaseScope).getBestScore();
+        var stepScope = mock(AbstractStepScope.class);
+        doReturn(phaseScope).when(stepScope).getPhaseScope();
+
+        termination.stepEnded(stepScope);
+
+        var gracePeriodStartTimeNanos = termination.getGracePeriodStartTimeNanos();
+        assertThat(gracePeriodStartTimeNanos).isPositive();
+        assertThat(termination.calculateTimeGradient(gracePeriodStartTimeNanos)).isZero();
     }
 
     @Test
