@@ -106,8 +106,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         // The declarative pre-chain nodes come before the chain node in the graph's order,
         // so they are already up to date for this update.
         var isPreChainChanged = updatePreChainValues(listEntity, chainState);
-        if (chainState.isChainStale || isPreChainChanged || chainState.changedElementCount == 0) {
-            chainState.isChainStale = false;
+        if (isPreChainChanged || chainState.changedElementCount == 0) {
             return walkWholeChain(elementList, changedVariableNotifier);
         }
         return walkFromChangedElements(elementList, chainState, changedVariableNotifier);
@@ -211,8 +210,6 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         private int changedElementCount;
         // Changed since the last update, so in the graph's dirtyChainStateList.
         private boolean isDirty;
-        // The chain was never walked, until an update walks it whole.
-        private boolean isChainStale = true;
 
         private ChainState(GraphNode<Solution_> chainNode, int preChainVariableCount) {
             this.chainNode = chainNode;
