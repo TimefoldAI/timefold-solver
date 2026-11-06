@@ -101,7 +101,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
             }
         }
 
-        // Every element gets an initial computation and starts consistent;
+        // Every element gets an initial computation, on the first update, and starts consistent;
         // its consistency can only change when its entity becomes inconsistent.
         for (var entity : entities) {
             if (elementEntityClass.isInstance(entity)) {
@@ -109,7 +109,6 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
                 recordChangedElement(entity);
             }
         }
-        updateChanged();
     }
 
     @Override

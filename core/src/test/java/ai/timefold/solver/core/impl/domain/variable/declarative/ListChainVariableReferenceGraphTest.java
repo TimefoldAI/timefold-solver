@@ -117,9 +117,10 @@ class ListChainVariableReferenceGraphTest {
                         solutionDescriptor, ChangedVariableNotifier.of(scoreDirector),
                         b2, vehicleB, a1, a3, vehicleA, b1, a2),
                 graphStructureAndDirection);
+        graph.updateChanged();
 
         // The topological order puts vehicle A's chain node before vehicle B's,
-        // so every element is computed exactly once even at construction.
+        // so the first update computes every element exactly once.
         assertThat(List.of(a1, a2, b1, b2)).allSatisfy(visit -> assertThat(visit.getCalledCount()).isOne());
         assertThat(a3.getCalledCount()).isOne();
         assertThat(vehicleB.getEndTime()).isEqualTo(4);
@@ -208,13 +209,12 @@ class ListChainVariableReferenceGraphTest {
 
         MoveTester.build(TestdataMultiEntityChainSolution.buildMetaModel()).using(solution);
 
-        // Every entity is dirty when the graph is built, and each chain is walked exactly twice:
-        // once by the graph's own bootstrap, and once by the from-scratch update
-        // AbstractScoreDirector#setWorkingSolution forces on every graph.
-        // Neither walk depends on how many vehicles precede the chain's vehicle,
+        // Every entity is dirty when the graph is built, and each chain is walked exactly once,
+        // by the from-scratch update AbstractScoreDirector#setWorkingSolution forces on every graph.
+        // The walk does not depend on how many vehicles precede the chain's vehicle,
         // which is what keeps building the graph linear in the length of a chain of vehicles.
         assertThat(solution.getVisits())
-                .allSatisfy(visit -> assertThat(visit.getCalledCount()).isEqualTo(2));
+                .allSatisfy(visit -> assertThat(visit.getCalledCount()).isOne());
         assertThat(vehicleList.getLast().getEndTime()).isEqualTo(CHAIN_LENGTH * VISITS_PER_VEHICLE);
     }
 
