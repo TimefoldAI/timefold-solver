@@ -7,6 +7,7 @@ import static org.awaitility.Awaitility.await;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,6 +27,10 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -346,6 +351,59 @@ class TerminationTest {
         // The global spent limit is one hour, but the phase limit is four steps.
         // The solver process is finished after 4 steps
         assertThat(bestSolution).isNotNull();
+    }
+
+    /**
+     * A solver-level AND of a global termination (move count, measured over the whole solver)
+     * and a local termination (unimproved step count, which can only end a phase and restarts in each phase).
+     * The global termination is met during the Construction Heuristic, yet:
+     * <ul>
+     * <li>The Construction Heuristic still completes, because the local termination does not apply to it,
+     * so the AND cannot be met there.</li>
+     * <li>The solver does not skip the next phase, because only a phase can check the local termination.</li>
+     * <li>Each Local Search phase waits for its own unimproved steps.</li>
+     * </ul>
+     */
+    @Test
+    void solverLevelAndOfGlobalAndLocalTermination() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
+                        .withMoveCountLimit(1L)
+                        .withUnimprovedStepCountLimit(3))
+                // Phase validation requires a termination on a phase that another phase follows;
+                // this one is far away, so the solver-level AND ends the phase.
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10_000)),
+                        new LocalSearchPhaseConfig());
+        var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        var endedPhaseList = new ArrayList<AbstractPhaseScope<TestdataSolution>>();
+        var entityAssignedAfterConstruction = new boolean[] { false };
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void phaseEnded(AbstractPhaseScope<TestdataSolution> phaseScope) {
+                endedPhaseList.add(phaseScope);
+                if (phaseScope instanceof ConstructionHeuristicPhaseScope<TestdataSolution> constructionScope) {
+                    entityAssignedAfterConstruction[0] = constructionScope.getWorkingSolution()
+                            .getEntityList().stream().allMatch(entity -> entity.getValue() != null);
+                }
+            }
+        });
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null));
+
+        solver.solve(solution);
+
+        assertThat(endedPhaseList)
+                .map(phaseScope -> phaseScope.getClass().getSimpleName())
+                .containsExactly("ConstructionHeuristicPhaseScope", "LocalSearchPhaseScope", "LocalSearchPhaseScope");
+        assertThat(entityAssignedAfterConstruction[0]).isTrue();
+        assertThat(endedPhaseList.subList(1, 3))
+                .allSatisfy(phaseScope -> assertThat(phaseScope.getNextStepIndex()).isGreaterThanOrEqualTo(3));
     }
 
     static class TerminationArgumentSource implements ArgumentsProvider {
