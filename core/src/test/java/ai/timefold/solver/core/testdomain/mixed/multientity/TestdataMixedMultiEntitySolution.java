@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningSolution
 public class TestdataMixedMultiEntitySolution {
@@ -22,10 +23,10 @@ public class TestdataMixedMultiEntitySolution {
     public static TestdataMixedMultiEntitySolution generateUninitializedSolution(int entityListSize, int valueListSize,
             int otherValueListSize) {
         var solution = new TestdataMixedMultiEntitySolution();
-        var valueList = new ArrayList<TestdataMixedMultiEntityFirstValue>(valueListSize);
+        var valueList = new ArrayList<TestdataValue>(valueListSize);
         var otherValueList = new ArrayList<TestdataMixedMultiEntitySecondValue>(otherValueListSize);
         for (int i = 0; i < valueListSize; i++) {
-            valueList.add(new TestdataMixedMultiEntityFirstValue("Generated Value " + i));
+            valueList.add(new TestdataValue("Generated Value " + i));
         }
         var strength = otherValueListSize * 10;
         for (int i = 0; i < otherValueListSize; i++) {
@@ -48,7 +49,7 @@ public class TestdataMixedMultiEntitySolution {
 
     @ValueRangeProvider(id = "valueRange")
     @ProblemFactCollectionProperty
-    private List<TestdataMixedMultiEntityFirstValue> valueList;
+    private List<TestdataValue> valueList;
     @ValueRangeProvider(id = "otherValueRange")
     @ProblemFactCollectionProperty
     private List<TestdataMixedMultiEntitySecondValue> otherValueList;
@@ -59,11 +60,11 @@ public class TestdataMixedMultiEntitySolution {
     @PlanningScore
     private SimpleScore score;
 
-    public List<TestdataMixedMultiEntityFirstValue> getValueList() {
+    public List<TestdataValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataMixedMultiEntityFirstValue> valueList) {
+    public void setValueList(List<TestdataValue> valueList) {
         this.valueList = valueList;
     }
 

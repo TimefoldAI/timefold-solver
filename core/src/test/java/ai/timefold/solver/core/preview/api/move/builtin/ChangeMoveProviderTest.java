@@ -17,7 +17,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEnt
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.incomplete.TestdataIncompleteValueRangeEntity;
 import ai.timefold.solver.core.testdomain.valuerange.incomplete.TestdataIncompleteValueRangeSolution;
 
 import org.jspecify.annotations.NullMarked;
@@ -53,7 +52,7 @@ class ChangeMoveProviderTest {
     @Test
     void fromSolutionIncompleteValueRange() {
         var solutionMetaModel = TestdataIncompleteValueRangeSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataIncompleteValueRangeEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable();
 
         // The point of this test is to ensure that the move provider skips values that are not in the value range.

@@ -11,10 +11,10 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.shadow.dynamic_follower.TestdataDynamicFollowerConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.dynamic_follower.TestdataDynamicFollowerEntity;
 import ai.timefold.solver.core.testdomain.shadow.dynamic_follower.TestdataDynamicFollowerSolution;
-import ai.timefold.solver.core.testdomain.shadow.dynamic_follower.TestdataDynamicLeaderEntity;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,8 +25,8 @@ class DynamicFollowerValuesShadowVariableTest {
 
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataDynamicFollowerSolution.class)
-                .withEntityClasses(TestdataDynamicLeaderEntity.class, TestdataDynamicFollowerEntity.class)
-                .withConstraintProviderClass(TestdataDynamicFollowerConstraintProvider.class)
+                .withEntityClasses(TestdataLeaderEntity.class, TestdataDynamicFollowerEntity.class)
+                .withConstraintProviderClass(TestdataFollowerConstraintProvider.class)
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1_000L));
@@ -42,8 +42,8 @@ class DynamicFollowerValuesShadowVariableTest {
 
     @Test
     void testLeaderValueChangeMove() {
-        var leaderA = new TestdataDynamicLeaderEntity("Leader A");
-        var leaderB = new TestdataDynamicLeaderEntity("Leader B");
+        var leaderA = new TestdataLeaderEntity("Leader A");
+        var leaderB = new TestdataLeaderEntity("Leader B");
 
         var follower1 = new TestdataDynamicFollowerEntity("Follower 1", leaderA);
         var follower2 = new TestdataDynamicFollowerEntity("Follower 2", leaderA);
@@ -58,7 +58,7 @@ class DynamicFollowerValuesShadowVariableTest {
                 List.of(value1, value2));
 
         var solutionMetamodel = TestdataDynamicFollowerSolution.buildMetaModel();
-        var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDynamicLeaderEntity.class)
+        var variableMetamodel = solutionMetamodel.genuineEntity(TestdataLeaderEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
         var context = MoveTester.build(solutionMetamodel)
@@ -81,8 +81,8 @@ class DynamicFollowerValuesShadowVariableTest {
 
     @Test
     void testLeaderChangeMove() {
-        var leaderA = new TestdataDynamicLeaderEntity("Leader A");
-        var leaderB = new TestdataDynamicLeaderEntity("Leader B");
+        var leaderA = new TestdataLeaderEntity("Leader A");
+        var leaderB = new TestdataLeaderEntity("Leader B");
 
         var follower1 = new TestdataDynamicFollowerEntity("Follower 1", leaderA);
         var follower2 = new TestdataDynamicFollowerEntity("Follower 2", leaderA);
@@ -105,7 +105,7 @@ class DynamicFollowerValuesShadowVariableTest {
 
         var solutionMetamodel = TestdataDynamicFollowerSolution.buildMetaModel();
         var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDynamicFollowerEntity.class)
-                .basicVariable("leader", TestdataDynamicLeaderEntity.class);
+                .basicVariable("leader", TestdataLeaderEntity.class);
 
         var context = MoveTester.build(solutionMetamodel)
                 .using(solution);

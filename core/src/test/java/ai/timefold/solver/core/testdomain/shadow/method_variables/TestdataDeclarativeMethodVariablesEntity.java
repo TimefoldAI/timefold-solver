@@ -6,10 +6,11 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedBaseValue;
 
 @PlanningEntity
 public class TestdataDeclarativeMethodVariablesEntity extends TestdataObject {
-    List<TestdataDeclarativeMethodVariablesBaseValue> values;
+    List<TestdataDeclarativeExtendedBaseValue> values;
 
     public TestdataDeclarativeMethodVariablesEntity() {
         super();
@@ -22,12 +23,12 @@ public class TestdataDeclarativeMethodVariablesEntity extends TestdataObject {
     }
 
     @PlanningListVariable
-    public List<TestdataDeclarativeMethodVariablesBaseValue> getValues() {
+    public List<TestdataDeclarativeExtendedBaseValue> getValues() {
         return values;
     }
 
     public void setValues(
-            List<TestdataDeclarativeMethodVariablesBaseValue> values) {
+            List<TestdataDeclarativeExtendedBaseValue> values) {
         this.values = values;
     }
 }

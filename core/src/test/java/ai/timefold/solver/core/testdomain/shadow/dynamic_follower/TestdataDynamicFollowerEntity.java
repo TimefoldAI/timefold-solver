@@ -6,11 +6,13 @@ import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataHasValue;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
 
 @PlanningEntity
-public class TestdataDynamicFollowerEntity extends TestdataObject implements TestdataDynamicHasValue {
+public class TestdataDynamicFollowerEntity extends TestdataObject implements TestdataHasValue {
     @PlanningVariable
-    TestdataDynamicLeaderEntity leader;
+    TestdataLeaderEntity leader;
 
     @ShadowVariable(supplierName = "valueSupplier")
     TestdataValue value;
@@ -22,7 +24,7 @@ public class TestdataDynamicFollowerEntity extends TestdataObject implements Tes
         super(code);
     }
 
-    public TestdataDynamicFollowerEntity(String code, TestdataDynamicLeaderEntity leader) {
+    public TestdataDynamicFollowerEntity(String code, TestdataLeaderEntity leader) {
         super(code);
         this.leader = leader;
     }
@@ -41,14 +43,14 @@ public class TestdataDynamicFollowerEntity extends TestdataObject implements Tes
         if (leader == null) {
             return null;
         }
-        return leader.value;
+        return leader.getValue();
     }
 
-    public TestdataDynamicLeaderEntity getLeader() {
+    public TestdataLeaderEntity getLeader() {
         return leader;
     }
 
-    public void setLeader(TestdataDynamicLeaderEntity leader) {
+    public void setLeader(TestdataLeaderEntity leader) {
         this.leader = leader;
     }
 }
