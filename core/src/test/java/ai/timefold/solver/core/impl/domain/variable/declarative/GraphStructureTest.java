@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.ARBITRARY;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.EMPTY;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.LIST_CHAIN;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.SINGLE_DIRECTIONAL_PARENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -143,7 +144,10 @@ class GraphStructureTest {
         var value = new TestdataListElementValue("v1");
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataListElementSolution.buildSolutionDescriptor(), entity, value))
-                .hasFieldOrPropertyWithValue("structure", ARBITRARY);
+                .hasFieldOrPropertyWithValue("structure", LIST_CHAIN)
+                .hasFieldOrPropertyWithValue("direction", ParentVariableType.PREVIOUS)
+                .extracting(structure -> structure.parentMetaModel().entity().type())
+                .isEqualTo(TestdataListElementValue.class);
     }
 
     @Test
