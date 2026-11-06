@@ -87,7 +87,7 @@ record ListChain<Solution_>(
         }
         if (listEntityDescriptor.getShadowVariableDescriptors().stream()
                 .noneMatch(variableDescriptor -> variableDescriptor instanceof DeclarativeShadowVariableDescriptor<?>)) {
-            // The chain node tracks its looped status through the list entity's consistency state,
+            // The graph marks the chain node's entity consistent through the list entity's consistency state,
             // which only exists when the list entity has declarative shadow variables of its own.
             // A model whose only declarative variables are its elements' is covered by the
             // existing structures anyway.

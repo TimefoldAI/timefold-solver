@@ -102,7 +102,7 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
         // and therefore never reports a list entity inconsistent.
         // The list cannot change while the graph updates, so it is read once.
         var elementList = listVariableDescriptor.getValue(listEntity);
-        var chainState = listEntityToChainStateMap.get(listEntity);
+        var chainState = getChainState(listEntity);
         // The declarative pre-chain nodes come before the chain node in the graph's order,
         // so they are already up to date for this update.
         var isPreChainChanged = updatePreChainValues(listEntity, chainState);
@@ -183,11 +183,10 @@ final class ListChainUpdater<Solution_> implements VariableUpdater<Solution_> {
     }
 
     /**
-     * @return null for anything but a list entity of the working solution the graph was built for
+     * @param listEntity a list entity of the working solution the graph was built for
      */
-    @Nullable
     ChainState<Solution_> getChainState(Object listEntity) {
-        return listEntityToChainStateMap.get(listEntity);
+        return Objects.requireNonNull(listEntityToChainStateMap.get(listEntity));
     }
 
     /**

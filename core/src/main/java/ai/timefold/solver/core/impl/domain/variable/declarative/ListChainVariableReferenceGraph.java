@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -181,7 +180,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
                 }
                 continue;
             }
-            var chainState = Objects.requireNonNull(chainUpdater.getChainState(positionInList.entity()));
+            var chainState = chainUpdater.getChainState(positionInList.entity());
             chainState.addChangedElementIndex(positionInList.index());
             markChainDirty(chainState);
         }
@@ -267,7 +266,7 @@ final class ListChainVariableReferenceGraph<Solution_> implements VariableRefere
                 // The elements whose source variables changed record themselves; when none of them is in this list,
                 // as when a forced update of every shadow variable simulates a change on every list,
                 // the whole chain is walked.
-                markChainDirty(Objects.requireNonNull(chainUpdater.getChainState(entity)));
+                markChainDirty(chainUpdater.getChainState(entity));
             }
             markPostChainVariablesChanged(entity);
         }
