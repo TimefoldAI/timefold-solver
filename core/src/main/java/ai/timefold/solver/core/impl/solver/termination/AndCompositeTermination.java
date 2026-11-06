@@ -23,10 +23,17 @@ final class AndCompositeTermination<Solution_>
     }
 
     /**
-     * @return true if all terminations are terminated.
+     * Only a phase can check the terminations that can only end a phase,
+     * see {@link #isSolverTerminatedForPhase(AbstractPhaseScope)}.
+     *
+     * @return true if all terminations are terminated;
+     *         false if this includes a termination that can only end a phase.
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+        if (solverTerminationList.size() != terminationList.size()) {
+            return false;
+        }
         for (var termination : solverTerminationList) {
             if (!termination.isSolverTerminated(solverScope)) {
                 return false;
@@ -42,6 +49,16 @@ final class AndCompositeTermination<Solution_>
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         for (var termination : phaseTerminationList) {
             if (termination.isApplicableTo(phaseScope.getClass()) && !termination.isPhaseTerminated(phaseScope)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    boolean isSolverTerminatedForPhase(AbstractPhaseScope<Solution_> phaseScope) {
+        for (var termination : terminationList) {
+            if (!isTerminatedForPhase(termination, phaseScope)) {
                 return false;
             }
         }

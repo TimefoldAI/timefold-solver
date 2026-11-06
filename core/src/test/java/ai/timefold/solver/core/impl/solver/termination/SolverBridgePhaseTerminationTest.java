@@ -34,6 +34,44 @@ class SolverBridgePhaseTerminationTest {
     }
 
     @Test
+    void solverLevelAndWaitsForPhaseOnlyTermination() {
+        PhaseTermination<TestdataSolution> phaseOnlyTermination = mockPhaseTermination();
+        var bridge = new SolverBridgePhaseTermination<>(
+                new AndCompositeTermination<>(new TimeMillisSpentTermination<>(1000L), phaseOnlyTermination));
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
+        AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
+        when(phaseScope.getSolverScope()).thenReturn(solverScope);
+        when(solverScope.calculateTimeMillisSpentUpToNow()).thenReturn(2000L);
+        when(phaseScope.calculatePhaseTimeMillisSpentUpToNow()).thenReturn(100L);
+
+        when(phaseOnlyTermination.isPhaseTerminated(phaseScope)).thenReturn(false);
+        when(phaseOnlyTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.3);
+        assertThat(bridge.isPhaseTerminated(phaseScope)).isFalse();
+        assertThat(bridge.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.3, offset(0.0));
+
+        when(phaseOnlyTermination.isPhaseTerminated(phaseScope)).thenReturn(true);
+        assertThat(bridge.isPhaseTerminated(phaseScope)).isTrue();
+        // The solver-level time limit measures the time of the solver, not of the phase.
+        when(solverScope.calculateTimeMillisSpentUpToNow()).thenReturn(200L);
+        assertThat(bridge.isPhaseTerminated(phaseScope)).isFalse();
+    }
+
+    @Test
+    void solverLevelAndBlocksPhaseWithInapplicableTermination() {
+        PhaseTermination<TestdataSolution> inapplicableTermination = mockPhaseTermination(false);
+        var bridge = new SolverBridgePhaseTermination<>(
+                new AndCompositeTermination<>(new TimeMillisSpentTermination<>(1000L), inapplicableTermination));
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
+        AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
+        when(phaseScope.getSolverScope()).thenReturn(solverScope);
+        when(solverScope.calculateTimeMillisSpentUpToNow()).thenReturn(2000L);
+
+        assertThat(bridge.isPhaseTerminated(phaseScope)).isFalse();
+        // Between phases, the solver cannot check a phase-only termination.
+        assertThat(bridge.solverTermination.isSolverTerminated(solverScope)).isFalse();
+    }
+
+    @Test
     void noTimeGradient() {
         var bridge = new SolverBridgePhaseTermination<TestdataSolution>(new BasicPlumbingTermination<>(false));
         SolverScope<TestdataSolution> solverScope = mockSolverScope();

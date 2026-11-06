@@ -134,19 +134,65 @@ you must implement the new API.
 For `Solver`, implement `solveAndSummarize(problem)` instead of `solve(problem)`.
 ====
 
-icon:info-circle[role=yellow,set=fas] Simulated annealing cools with every termination
+'''
+
+icon:eye[set=far] Simulated annealing cools with every termination
 [%collapsible%open]
 ====
-Simulated annealing cools according to the time gradient of the terminations.
-Before, it did not cool when diminished returns was the only termination,
+xref:optimization-algorithms/local-search.adoc#simulatedAnnealing[Simulated annealing] cools according to the time gradient of the xref:optimization-algorithms/overview.adoc#termination[terminations].
+Before, it did not cool when xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns] was the only termination,
 when diminished returns was configured at solver level,
-or when a nested `and`/`or` composite had no termination with a time gradient;
-diminished returns now estimates the time left.
+or when a nested xref:optimization-algorithms/overview.adoc#combiningMultipleTerminations[`and`/`or` composite] had no termination with a time gradient;
+diminished returns now estimates the time left according to its current time window,
+and simulated annealing heats up again when that window restarts.
 So the results of simulated annealing in such configurations change.
 
 Without any termination that can estimate the time left,
-for example when only `terminateEarly()` stops the solver,
+for example when only xref:optimization-algorithms/overview.adoc#asynchronousTermination[`terminateEarly()`] stops the solver,
 simulated annealing keeps its starting temperature, as before, and logs a warning.
+====
+
+'''
+icon:eye[set=far] Solver termination with `AND` waits for terminations that can only end a phase
+[%collapsible%open]
+====
+A solver termination that xref:optimization-algorithms/overview.adoc#combiningMultipleTerminations[combines terminations] with `AND`
+now also waits for the terminations which can only end a phase:
+xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns],
+xref:optimization-algorithms/overview.adoc#stepCountTermination[`stepCountLimit`] and xref:optimization-algorithms/overview.adoc#unimprovedStepCountTermination[`unimprovedStepCountLimit`].
+Each of them measures the current phase, and every other termination measures the whole solver.
+Before, the solver ignored them and stopped as soon as the other terminations were met.
+An `AND` of only such terminations stopped the solver before the first phase.
+
+For example, with this solver termination, Local Search now runs for at least 5 minutes from the start of the solver,
+and also until diminished returns is met:
+
+[source,xml,options="nowrap"]
+----
+<solver>
+  <termination>
+    <terminationCompositionStyle>AND</terminationCompositionStyle>
+    <minutesSpentLimit>5</minutesSpentLimit>
+    <diminishedReturns/>
+  </termination>
+  ...
+</solver>
+----
+
+Before, the solver stopped after 5 minutes.
+To keep that behavior, remove the terminations which can only end a phase:
+
+[source,xml,options="nowrap"]
+----
+<solver>
+  <termination>
+    <minutesSpentLimit>5</minutesSpentLimit>
+  </termination>
+  ...
+</solver>
+----
+
+See xref:optimization-algorithms/overview.adoc#phaseOnlyTerminationsOnTheSolver[terminations that can only end a phase].
 ====
 
 '''

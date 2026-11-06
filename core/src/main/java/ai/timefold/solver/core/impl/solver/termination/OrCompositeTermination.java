@@ -56,8 +56,11 @@ final class OrCompositeTermination<Solution_>
     }
 
     /**
+     * Only a phase can check the terminations that can only end a phase,
+     * see {@link #isSolverTerminatedForPhase(AbstractPhaseScope)}.
+     *
      * @param solverScope never null
-     * @return true if any one of the terminations is terminated.
+     * @return true if any one of the solver terminations is terminated.
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -86,6 +89,17 @@ final class OrCompositeTermination<Solution_>
         }
         if (phaseRoot) {
             phaseScope.getSolverScope().setLastTerminationId(null);
+        }
+        return false;
+    }
+
+    @Override
+    boolean isSolverTerminatedForPhase(AbstractPhaseScope<Solution_> phaseScope) {
+        for (var termination : terminationList) {
+            if (isTerminatedForPhase(termination, phaseScope)) {
+                recordTermination(phaseScope.getSolverScope(), termination);
+                return true;
+            }
         }
         return false;
     }
