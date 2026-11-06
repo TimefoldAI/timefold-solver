@@ -77,8 +77,7 @@ class ListChainVariableReferenceGraphTest {
         Mockito.when(scoreDirector.getListVariableState(Mockito.any())).thenReturn(Mockito.mock(ListVariableState.class));
         return DefaultShadowVariableSessionFactory.buildListChainGraph(
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
-                        ChangedVariableNotifier.of(scoreDirector), entities),
-                graphStructureAndDirection);
+                        ChangedVariableNotifier.of(scoreDirector), entities));
     }
 
     @Test
@@ -115,8 +114,7 @@ class ListChainVariableReferenceGraphTest {
         var graph = DefaultShadowVariableSessionFactory.buildListChainGraph(
                 new DefaultShadowVariableSessionFactory.GraphDescriptor<>(
                         solutionDescriptor, ChangedVariableNotifier.of(scoreDirector),
-                        b2, vehicleB, a1, a3, vehicleA, b1, a2),
-                graphStructureAndDirection);
+                        b2, vehicleB, a1, a3, vehicleA, b1, a2));
         graph.updateChanged();
 
         // The topological order puts vehicle A's chain node before vehicle B's,

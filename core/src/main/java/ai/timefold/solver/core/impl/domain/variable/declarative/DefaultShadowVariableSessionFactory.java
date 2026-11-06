@@ -183,7 +183,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         return switch (graphStructureAndDirection.structure()) {
             case EMPTY -> EmptyVariableReferenceGraph.INSTANCE;
             case LIST_CHAIN -> hasScoreDirector
-                    ? buildListChainGraph(graphDescriptor, graphStructureAndDirection)
+                    ? buildListChainGraph(graphDescriptor)
                     : buildArbitraryGraph(graphDescriptor);
             case SINGLE_DIRECTIONAL_PARENT -> hasScoreDirector
                     ? buildSingleDirectionalParentGraph(graphDescriptor, graphStructureAndDirection)
@@ -214,39 +214,20 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 canTerminateEarly, graphDescriptor.entities());
     }
 
-    static <Solution_> VariableReferenceGraph buildListChainGraph(
-            GraphDescriptor<Solution_> graphDescriptor,
-            GraphStructure.GraphStructureAndDirection graphStructureAndDirection) {
+    static <Solution_> VariableReferenceGraph buildListChainGraph(GraphDescriptor<Solution_> graphDescriptor) {
         var solutionDescriptor = graphDescriptor.solutionDescriptor();
-        var elementEntityClass = Objects.requireNonNull(graphStructureAndDirection.parentMetaModel()).entity().type();
-        var allDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
-        var listVariableDescriptor = Objects.requireNonNull(solutionDescriptor.getListVariableDescriptor());
+        var listChain = Objects.requireNonNull(ListChain.of(solutionDescriptor));
+        var listVariableDescriptor = listChain.listVariableDescriptor();
         var listEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
         var listEntityClass = listEntityDescriptor.getEntityClass();
         if (Arrays.stream(graphDescriptor.entities()).noneMatch(listEntityClass::isInstance)) {
             // No chain node to process: every element is unassigned.
             return buildArbitraryGraph(graphDescriptor);
         }
-        var elementDescriptorList = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
-        var innerDescriptorList = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
-        // The post-chain variables, with direct list element sources, get an edge from the chain
-        // node; the variables that depend on them are ordered through their own edges.
-        var postChainVariableIdList = new ArrayList<VariableMetaModel<?, ?, ?>>();
-        for (var descriptor : allDescriptors) {
-            var entityDescriptor = descriptor.getEntityDescriptor();
-            if (entityDescriptor.getEntityClass() == elementEntityClass) {
-                elementDescriptorList.add(descriptor);
-                continue;
-            }
-            innerDescriptorList.add(descriptor);
-            // Only the list entity class may source its list's elements.
-            for (var source : descriptor.getSources()) {
-                if (source.parentVariableType() == ParentVariableType.LIST_ELEMENT) {
-                    postChainVariableIdList.add(descriptor.getVariableMetaModel());
-                    break;
-                }
-            }
-        }
+        var elementDescriptorList = listChain.elementDescriptorList();
+        var innerDescriptorList = solutionDescriptor.getDeclarativeShadowVariableDescriptors().stream()
+                .filter(descriptor -> !elementDescriptorList.contains(descriptor))
+                .toList();
         var sortedElementDescriptors = topologicallySortedDeclarativeShadowVariables(elementDescriptorList);
         var listVariableMetaModel = listVariableDescriptor.<Object, Object> getVariableMetaModel();
 
@@ -256,25 +237,13 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 .getDeclarativeEntityConsistencyState(listEntityDescriptor);
         var elementConsistencyState = graphDescriptor.consistencyTracker()
                 .getDeclarativeEntityConsistencyState(sortedElementDescriptors.getFirst().getEntityDescriptor());
-
-        // The pre-chain variables the elements read through their inverse:
-        // when one of them changes, its entity's whole list must be walked, since any element may read it.
-        // The detection only accepts declarative ones, which an edge orders before the chain node.
-        var preChainVariableIdSet = new LinkedHashSet<VariableMetaModel<?, ?, ?>>();
-        for (var descriptor : elementDescriptorList) {
-            for (var source : descriptor.getSources()) {
-                if (source.parentVariableType() == ParentVariableType.INVERSE) {
-                    preChainVariableIdSet.add(source.variableSourceReferences().getLast().variableMetaModel());
-                }
-            }
-        }
-        var preChainVariableDescriptorList = preChainVariableIdSet.stream()
+        // When a pre-chain variable changes, its entity's whole list is walked, since any element may read it.
+        var preChainVariableDescriptorList = listChain.preChainVariableIdList().stream()
                 .map(variableId -> Objects.requireNonNull(listEntityDescriptor.getVariableDescriptor(variableId.name())))
                 .toList();
-        var chainUpdater = new ListChainUpdater<>(listVariableDescriptor,
-                graphStructureAndDirection.direction() == ParentVariableType.PREVIOUS, listEntityConsistencyState,
-                elementConsistencyState, sortedElementDescriptors, preChainVariableDescriptorList,
-                hasNoNonDeclarativeSourcesFromParent(elementDescriptorList));
+        var chainUpdater = new ListChainUpdater<>(listVariableDescriptor, listChain.isChainInListOrder(),
+                listEntityConsistencyState, elementConsistencyState, sortedElementDescriptors,
+                preChainVariableDescriptorList, hasNoNonDeclarativeSourcesFromParent(elementDescriptorList));
 
         var innerGraphDescriptor = new GraphDescriptor<>(graphDescriptor.consistencyTracker(), solutionDescriptor,
                 graphDescriptor.ignoreInconsistentSolutions(), new VariableReferenceGraphBuilder<>(changedVariableNotifier),
@@ -284,7 +253,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         populateArbitraryGraph(innerGraphDescriptor, innerDescriptorList);
 
         addChainNodes(builder, graphDescriptor.entities(), listEntityClass, listVariableMetaModel, chainUpdater,
-                preChainVariableIdSet, postChainVariableIdList);
+                listChain.preChainVariableIdList(), listChain.postChainVariableIdList());
         if (!builder.isGraphFixed) {
             // A dynamic edge, such as one from a planning variable chaining the list entities,
             // could close a dependency loop through a chain node while solving.
@@ -313,7 +282,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var listVariableState = Objects.requireNonNull(changedVariableNotifier.innerScoreDirector())
                 .<Object, Object> getListVariableState(listVariableDescriptor);
         return new ListChainVariableReferenceGraph<>(innerGraph, chainUpdater, listVariableState,
-                listVariableMetaModel, elementEntityClass, elementConsistencyState, elementDescriptorList,
+                listVariableMetaModel, listChain.elementEntityClass(), elementConsistencyState, elementDescriptorList,
                 changedVariableNotifier, graphDescriptor.entities());
     }
 
@@ -324,7 +293,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     private static <Solution_> void addChainNodes(
             VariableReferenceGraphBuilder<Solution_> builder, Object[] entities, Class<?> listEntityClass,
             VariableMetaModel<Solution_, ?, ?> listVariableMetaModel, ListChainUpdater<Solution_> chainUpdater,
-            Set<VariableMetaModel<?, ?, ?>> preChainVariableIdSet,
+            List<VariableMetaModel<?, ?, ?>> preChainVariableIdList,
             List<VariableMetaModel<?, ?, ?>> postChainVariableIdList) {
         for (var listEntity : entities) {
             if (!listEntityClass.isInstance(listEntity)) {
@@ -335,7 +304,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             // Its edges are dynamic: the list's contents change while solving.
             builder.addVariableReferenceEntity(listEntity, true, chainUpdater);
             var chainNode = builder.lookupOrError(listVariableMetaModel, listEntity);
-            for (var preChainVariableId : preChainVariableIdSet) {
+            for (var preChainVariableId : preChainVariableIdList) {
                 builder.addFixedEdge(builder.lookupOrError(preChainVariableId, listEntity), chainNode);
             }
             for (var postChainVariableId : postChainVariableIdList) {
