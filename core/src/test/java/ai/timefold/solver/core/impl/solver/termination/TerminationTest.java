@@ -374,10 +374,7 @@ class TerminationTest {
                         .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
                         .withMoveCountLimit(1L)
                         .withUnimprovedStepCountLimit(3))
-                // Phase validation requires a termination on a phase that another phase follows;
-                // this one is far away, so the solver-level AND ends the phase.
-                .withPhases(new ConstructionHeuristicPhaseConfig(),
-                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10_000)),
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig(),
                         new LocalSearchPhaseConfig());
         var solver = (DefaultSolver<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
