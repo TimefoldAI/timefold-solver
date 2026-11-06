@@ -22,9 +22,6 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
     // A planning variable, the earliest previousEndTime of the vehicle.
     @PlanningVariable
     Integer departureTime;
-    // A vehicle cannot finish before it starts. Unlike the plain last visit's end time,
-    // this makes endTime change as soon as previousEndTime does, before the chain has been walked.
-    boolean endTimeIncludesPreviousEndTime = false;
 
     @PlanningListVariable(allowsUnassignedValues = true)
     List<TestdataMultiEntityChainVisit> visits = new ArrayList<>();
@@ -73,11 +70,7 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
         if (visits.isEmpty()) {
             return previousEndTime;
         }
-        var lastEndServiceTime = visits.getLast().getEndServiceTime();
-        if (!endTimeIncludesPreviousEndTime || lastEndServiceTime == null || previousEndTime == null) {
-            return lastEndServiceTime;
-        }
-        return Math.max(previousEndTime, lastEndServiceTime);
+        return visits.getLast().getEndServiceTime();
     }
 
     @ShadowSources({ "endTime", "previousEndTime" })
@@ -102,10 +95,6 @@ public class TestdataMultiEntityChainVehicle extends TestdataObject {
 
     public void setDepartureTime(Integer departureTime) {
         this.departureTime = departureTime;
-    }
-
-    public void setEndTimeIncludesPreviousEndTime(boolean endTimeIncludesPreviousEndTime) {
-        this.endTimeIncludesPreviousEndTime = endTimeIncludesPreviousEndTime;
     }
 
     public List<TestdataMultiEntityChainVisit> getVisits() {
