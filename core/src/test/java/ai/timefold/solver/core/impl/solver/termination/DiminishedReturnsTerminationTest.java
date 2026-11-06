@@ -260,15 +260,13 @@ class DiminishedReturnsTerminationTest {
         var secondStepScope = mock(AbstractStepScope.class);
         doReturn(phaseScope).when(secondStepScope).getPhaseScope();
         // The second step does not start the timer again
-        var currentTime = termination.getGracePeriodStartTimeNanos();
+        var firstStepStartTime = termination.getGracePeriodStartTimeNanos();
         termination.stepStarted(secondStepScope);
-        assertThat(termination.getGracePeriodStartTimeNanos()).isEqualTo(currentTime);
+        assertThat(termination.getGracePeriodStartTimeNanos()).isEqualTo(firstStepStartTime);
         termination.stepEnded(secondStepScope);
 
-        // It can be terminated after the first step started
-        assertThat(termination.isTerminated(currentTime + 2_000 * NANOS_PER_MILLISECOND, score)).isTrue();
-        // Timeout
-        assertThat(termination.isTerminated(currentTime + 11_000 * NANOS_PER_MILLISECOND, score)).isTrue();
+        // One sliding window after the first step started, the grace period ends without improvement.
+        assertThat(termination.isTerminated(firstStepStartTime + 1_000 * NANOS_PER_MILLISECOND, score)).isTrue();
     }
 
     @Test
