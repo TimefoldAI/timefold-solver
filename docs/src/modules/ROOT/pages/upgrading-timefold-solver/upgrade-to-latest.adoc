@@ -153,6 +153,7 @@ simulated annealing keeps its starting temperature, as before, and logs a warnin
 ====
 
 '''
+
 icon:eye[set=far] Solver termination with `AND` waits for terminations that can only end a phase
 [%collapsible%open]
 ====
