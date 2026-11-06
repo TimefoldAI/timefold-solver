@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableAssertions.assertRandomListMovesMatchArbitraryGraph;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
@@ -26,6 +28,7 @@ import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarative
 import ai.timefold.solver.core.testdomain.shadow.simple_list_next.TestdataDeclarativeSimpleNextListEntity;
 import ai.timefold.solver.core.testdomain.shadow.simple_list_next.TestdataDeclarativeSimpleNextListSolution;
 import ai.timefold.solver.core.testdomain.shadow.simple_list_next.TestdataDeclarativeSimpleNextListValue;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 
@@ -114,6 +117,7 @@ class GraphStructureDifferentialTest {
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataMultiEntityChainVehicle.class)
                         .listVariable("visits", TestdataMultiEntityChainVisit.class),
                 TestdataMultiEntityChainVehicle::getVisits, entityList, valueList, MOVE_COUNT);
+        assertBuildsListChainGraph(solutionDescriptor, solution);
     }
 
     @Test
@@ -138,6 +142,7 @@ class GraphStructureDifferentialTest {
                 solutionDescriptor.getMetaModel().genuineEntity(TestdataMultiEntityChainNextVehicle.class)
                         .listVariable("visits", TestdataMultiEntityChainNextVisit.class),
                 TestdataMultiEntityChainNextVehicle::getVisits, entityList, valueList, MOVE_COUNT);
+        assertBuildsListChainGraph(solutionDescriptor, solution);
     }
 
     @Test
@@ -197,5 +202,21 @@ class GraphStructureDifferentialTest {
         for (var i = 0; i < 2 * valueList.size() / 3; i++) {
             listFunction.apply(entityList.get(i % entityList.size())).add(valueList.get(i));
         }
+    }
+
+    /**
+     * The list chain graph falls back to the arbitrary graph when it cannot be built,
+     * which would compare the arbitrary graph against itself.
+     * Checked after the moves, so that the initial shadow variables are left to the graph under test.
+     */
+    private static <Solution_> void assertBuildsListChainGraph(SolutionDescriptor<Solution_> solutionDescriptor,
+            Solution_ solution) {
+        var scoreDirector = PlannerTestUtils.mockScoreDirector(solutionDescriptor);
+        scoreDirector.setWorkingSolution(solution);
+        var entities = new ArrayList<>();
+        solutionDescriptor.visitAllEntities(solution, entities::add);
+        assertThat(DefaultShadowVariableSessionFactory.buildGraph(new DefaultShadowVariableSessionFactory.GraphDescriptor<>(
+                solutionDescriptor, ChangedVariableNotifier.of(scoreDirector), entities.toArray())))
+                .isInstanceOf(ListChainVariableReferenceGraph.class);
     }
 }
