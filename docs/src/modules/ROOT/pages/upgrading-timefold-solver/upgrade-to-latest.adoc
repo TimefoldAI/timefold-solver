@@ -196,7 +196,6 @@ To keep that behavior, remove the terminations which can only end a phase:
 See xref:optimization-algorithms/overview.adoc#phaseOnlyTerminationsOnTheSolver[terminations that can only end a phase].
 ====
 
-'''
 
 [#previewFeatureUpgrade]
 == Changes to preview features
