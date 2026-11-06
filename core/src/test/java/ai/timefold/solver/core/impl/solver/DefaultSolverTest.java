@@ -130,7 +130,6 @@ import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedse
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
-import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstValue;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondValue;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
@@ -2813,9 +2812,9 @@ class DefaultSolverTest {
                 .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
 
         var problem = new TestdataMixedMultiEntitySolution();
-        var v1a = new TestdataMixedMultiEntityFirstValue("1");
-        var v2a = new TestdataMixedMultiEntityFirstValue("2");
-        var v3a = new TestdataMixedMultiEntityFirstValue("3");
+        var v1a = new TestdataValue("1");
+        var v2a = new TestdataValue("2");
+        var v3a = new TestdataValue("3");
         var v1b = new TestdataMixedMultiEntitySecondValue("1", 1);
         var v2b = new TestdataMixedMultiEntitySecondValue("2", 1);
         var v3b = new TestdataMixedMultiEntitySecondValue("3", 1);

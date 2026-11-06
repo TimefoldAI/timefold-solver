@@ -53,7 +53,6 @@ import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSo
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseEntity;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseGroup;
-import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseOwner;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseSolution;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySimpleSolution;
@@ -420,7 +419,7 @@ class VariableSupportTest {
         // so a state which is not reused would accumulate one stale handler per reset.
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataBasicInverseSolution.class,
                 TestdataBasicInverseEntity.class, TestdataBasicInverseGroup.class);
-        var owner = new TestdataBasicInverseOwner("o1");
+        var owner = new TestdataValue("o1");
         var group = new TestdataBasicInverseGroup("g1");
         group.setOwner(owner);
         var entity = new TestdataBasicInverseEntity("e1");

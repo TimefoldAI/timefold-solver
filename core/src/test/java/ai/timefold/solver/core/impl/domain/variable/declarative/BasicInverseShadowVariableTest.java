@@ -7,9 +7,9 @@ import java.util.List;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseEntity;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseGroup;
-import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseOwner;
 import ai.timefold.solver.core.testdomain.shadow.declarative.basicinverse.TestdataBasicInverseSolution;
 
 import org.junit.jupiter.api.Test;
@@ -25,8 +25,8 @@ class BasicInverseShadowVariableTest {
 
     @Test
     void declarativeShadowTracksBasicVariableChangeThroughNonExternalizedInverseSupply() {
-        var ownerX = new TestdataBasicInverseOwner("ownerX");
-        var ownerY = new TestdataBasicInverseOwner("ownerY");
+        var ownerX = new TestdataValue("ownerX");
+        var ownerY = new TestdataValue("ownerY");
 
         var groupA = new TestdataBasicInverseGroup("groupA");
         groupA.setOwner(ownerX);
@@ -44,7 +44,7 @@ class BasicInverseShadowVariableTest {
         var groupVariable = solutionMetaModel.genuineEntity(TestdataBasicInverseEntity.class)
                 .basicVariable("group", TestdataBasicInverseGroup.class);
         var ownerVariable = solutionMetaModel.genuineEntity(TestdataBasicInverseGroup.class)
-                .basicVariable("owner", TestdataBasicInverseOwner.class);
+                .basicVariable("owner", TestdataValue.class);
 
         var context = MoveTester.build(solutionMetaModel).using(solution);
         assertThat(entity.getOwnerCode()).isEqualTo("ownerX");
