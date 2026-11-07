@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.solver.monitoring.statistic;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,22 +48,11 @@ public class MoveCountPerTypeStatistic<Solution_> implements SolverStatistic<Sol
             var moveCountPerType = phaseScope.getSolverScope().getMoveEvaluationCountPerType();
             var tags = phaseScope.getSolverScope().getMonitoringTags();
             moveCountPerType.forEach((type, count) -> {
+                var moveCount = tagsToMoveCountMap.computeIfAbsent(tags, k -> new ConcurrentHashMap<>())
+                        .computeIfAbsent(type, ignored -> new AtomicLong(0L));
                 var key = SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + type;
-                var counter = Metrics.gauge(key, tags, new AtomicLong(0L));
-                if (counter != null) {
-                    counter.set(count);
-                }
-                registerMoveCountPerType(tags, key, counter);
-            });
-        }
-
-        private void registerMoveCountPerType(Tags tag, String key, AtomicLong count) {
-            tagsToMoveCountMap.compute(tag, (tags, countMap) -> {
-                if (countMap == null) {
-                    countMap = new HashMap<>();
-                }
-                countMap.put(key, count);
-                return countMap;
+                moveCount.set(count);
+                Metrics.gauge(key, tags, moveCount);
             });
         }
 
