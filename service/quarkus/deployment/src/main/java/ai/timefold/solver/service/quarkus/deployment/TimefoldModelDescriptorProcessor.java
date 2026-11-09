@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -75,6 +76,7 @@ import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaPostProcessor
 import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaUtils;
 
 import org.apache.commons.lang3.exception.UncheckedException;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.OASFactory;
@@ -172,6 +174,10 @@ class TimefoldModelDescriptorProcessor {
     private static final String MODEL_TRIAL_DURATION_PROPERTY = "timefold.model.trial.duration";
     private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "timefold.model.trial.max-extensions";
     private static final String MODEL_TRIAL_EXTENSION_DURATION_PROPERTY = "timefold.model.trial.extension-duration";
+
+    static final String MINIMAL_SOLVER_VERSION_PROPERTY = "timefold.platform.minimal-solver-version";
+    static final String MAXIMAL_SOLVER_VERSION_PROPERTY = "timefold.platform.maximal-solver-version";
+    static final String ALLOW_SOLVER_SNAPSHOT_PROPERTY = "timefold.platform.allow-solver-snapshot";
 
     private static final String MEMORY_REQUEST_PROPERTY = "timefold.model.resources.memory.request";
     private static final String MEMORY_LIMIT_PROPERTY = "timefold.model.resources.memory.limit";
@@ -364,6 +370,12 @@ class TimefoldModelDescriptorProcessor {
 
         ModelBuildInfo modelBuildInfo = new ModelBuildInfo(solverVersion, version, buildTime, branch, commit);
 
+        Config config = ConfigProvider.getConfig();
+        validateSolverVersion(solverVersion,
+                config.getOptionalValue(MINIMAL_SOLVER_VERSION_PROPERTY, String.class).orElse(null),
+                config.getOptionalValue(MAXIMAL_SOLVER_VERSION_PROPERTY, String.class).orElse(null),
+                config.getOptionalValue(ALLOW_SOLVER_SNAPSHOT_PROPERTY, Boolean.class).orElse(null));
+
         byte[] buildInfoContent = MAPPER.writeValueAsBytes(modelBuildInfo);
         Path buildInfoFile = Paths.get(out.getOutputDirectory().toString(), "timefold", "build-info.json");
 
@@ -524,6 +536,35 @@ class TimefoldModelDescriptorProcessor {
                     The application version is missing.
                     Set the '%s' property (e.g. in application.properties) so the build can proceed."""
                     .formatted(APPLICATION_VERSION_PROPERTY));
+        }
+    }
+
+    static boolean isSnapshotVersion(String version) {
+        return version.toLowerCase(Locale.ROOT).contains("snapshot");
+    }
+
+    static void validateSolverVersion(String solverVersion, @Nullable String minimalSolverVersion,
+            @Nullable String maximalSolverVersion, @Nullable Boolean allowSnapshot) {
+        if (Boolean.FALSE.equals(allowSnapshot) && isSnapshotVersion(solverVersion)) {
+            throw new IllegalStateException("""
+                    The solver version (%s) is a snapshot version, but the platform does not allow snapshot versions.
+                    Use a released solver version, or set the '%s' property to true."""
+                    .formatted(solverVersion, ALLOW_SOLVER_SNAPSHOT_PROPERTY));
+        }
+        var comparableSolverVersion = new ComparableVersion(solverVersion);
+        if (minimalSolverVersion != null
+                && comparableSolverVersion.compareTo(new ComparableVersion(minimalSolverVersion)) < 0) {
+            throw new IllegalStateException("""
+                    The solver version (%s) is lower than the minimal solver version (%s) that the platform requires.
+                    Upgrade the solver version, or change the '%s' property."""
+                    .formatted(solverVersion, minimalSolverVersion, MINIMAL_SOLVER_VERSION_PROPERTY));
+        }
+        if (maximalSolverVersion != null
+                && comparableSolverVersion.compareTo(new ComparableVersion(maximalSolverVersion)) > 0) {
+            throw new IllegalStateException("""
+                    The solver version (%s) is higher than the maximal solver version (%s) that the platform allows.
+                    Downgrade the solver version, or change the '%s' property."""
+                    .formatted(solverVersion, maximalSolverVersion, MAXIMAL_SOLVER_VERSION_PROPERTY));
         }
     }
 
