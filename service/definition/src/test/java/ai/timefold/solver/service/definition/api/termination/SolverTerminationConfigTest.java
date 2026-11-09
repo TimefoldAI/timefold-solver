@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 
+import ai.timefold.solver.service.definition.api.dto.solve.SolverTerminationConfig;
 import org.junit.jupiter.api.Test;
 
 class SolverTerminationConfigTest {

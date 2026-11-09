@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.definition.internal.events;
 
-import ai.timefold.solver.service.definition.api.SolverModel;
-import ai.timefold.solver.service.definition.api.domain.Metadata;
+import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
 
 /**
  * Event sent when the outputs of a dataset are computed before solving.

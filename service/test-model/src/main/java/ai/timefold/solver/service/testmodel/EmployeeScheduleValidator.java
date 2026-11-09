@@ -2,9 +2,9 @@ package ai.timefold.solver.service.testmodel;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import ai.timefold.solver.service.definition.api.domain.ModelConfig;
-import ai.timefold.solver.service.definition.api.validation.ModelValidator;
-import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
+import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
+import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
 import ai.timefold.solver.service.testmodel.domain.EmployeeSchedule;
 import ai.timefold.solver.service.testmodel.domain.Shift;

@@ -1,6 +1,6 @@
 package ai.timefold.solver.service.quarkus.deployment.defaults;
 
-import ai.timefold.solver.service.definition.api.ModelConstraintJustification;
+import ai.timefold.solver.service.definition.spi.dto.ModelConstraintJustification;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 

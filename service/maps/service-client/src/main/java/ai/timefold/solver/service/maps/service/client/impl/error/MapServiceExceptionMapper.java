@@ -2,7 +2,7 @@ package ai.timefold.solver.service.maps.service.client.impl.error;
 
 import jakarta.ws.rs.core.Response;
 
-import ai.timefold.solver.service.definition.api.error.ErrorInfo;
+import ai.timefold.solver.service.definition.api.dto.error.ErrorInfo;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 

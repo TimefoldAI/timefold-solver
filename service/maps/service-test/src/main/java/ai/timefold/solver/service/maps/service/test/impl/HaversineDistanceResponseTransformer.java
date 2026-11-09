@@ -1,11 +1,11 @@
 package ai.timefold.solver.service.maps.service.test.impl;
 
-import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATIONS_CHUNK_BYTES;
-import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATIONS_NOT_IN_MAP;
-import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATION_HEADER;
-import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_MATRIX_HASH_HEADER;
-import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_PROVIDER_HEADER;
-import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_RESPONSE_CHUNK_BYTES;
+import static ai.timefold.solver.service.definition.internal.rest.Headers.X_MAPS_LOCATIONS_CHUNK_BYTES;
+import static ai.timefold.solver.service.definition.internal.rest.Headers.X_MAPS_LOCATIONS_NOT_IN_MAP;
+import static ai.timefold.solver.service.definition.internal.rest.Headers.X_MAPS_LOCATION_HEADER;
+import static ai.timefold.solver.service.definition.internal.rest.Headers.X_MAPS_MATRIX_HASH_HEADER;
+import static ai.timefold.solver.service.definition.internal.rest.Headers.X_MAPS_PROVIDER_HEADER;
+import static ai.timefold.solver.service.definition.internal.rest.Headers.X_MAPS_RESPONSE_CHUNK_BYTES;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

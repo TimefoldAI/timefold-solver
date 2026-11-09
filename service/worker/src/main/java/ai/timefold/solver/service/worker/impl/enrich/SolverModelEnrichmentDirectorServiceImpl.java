@@ -6,10 +6,10 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.SolverModel;
-import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnrichmentDirector;
-import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnrichmentDirectorBase;
-import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnrichmentDirectorService;
+import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.spi.enrichment.SolverModelEnrichmentDirector;
+import ai.timefold.solver.service.definition.spi.enrichment.SolverModelEnrichmentDirectorBase;
+import ai.timefold.solver.service.definition.spi.enrichment.SolverModelEnrichmentDirectorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

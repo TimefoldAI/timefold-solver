@@ -8,8 +8,8 @@ import java.time.Duration;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.ModelDescriptor;
-import ai.timefold.solver.service.definition.api.domain.DataFormat;
+import ai.timefold.solver.service.definition.internal.descriptor.ModelDescriptor;
+import ai.timefold.solver.service.definition.api.metrics.DataFormat;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigParameter;
 import ai.timefold.solver.service.definition.internal.descriptor.ParameterKind;

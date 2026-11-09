@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
-import ai.timefold.solver.service.definition.api.error.ErrorInfo;
+import ai.timefold.solver.service.definition.api.dto.error.ErrorInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

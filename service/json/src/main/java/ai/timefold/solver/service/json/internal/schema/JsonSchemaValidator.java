@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import ai.timefold.solver.service.definition.api.validation.Validator;
+import ai.timefold.solver.service.definition.internal.validation.schema.Validator;
 import ai.timefold.solver.service.json.api.schema.LocalDateTimeFormat;
 import ai.timefold.solver.service.json.api.schema.OffsetDateTimeFormat;
 import ai.timefold.solver.service.json.api.schema.ZoneIdFormat;

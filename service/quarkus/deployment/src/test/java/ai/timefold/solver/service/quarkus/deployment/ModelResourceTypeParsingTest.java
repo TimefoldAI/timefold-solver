@@ -4,7 +4,7 @@ import static ai.timefold.solver.service.quarkus.deployment.TimefoldModelDescrip
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import ai.timefold.solver.service.definition.api.ResourceType;
+import ai.timefold.solver.service.definition.internal.descriptor.ResourceType;
 
 import org.junit.jupiter.api.Test;
 

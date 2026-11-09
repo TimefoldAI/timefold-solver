@@ -195,7 +195,7 @@ Additionally, more fields might be added for specific model implementations:
 
 [NOTE]
 ====
-This envelope is represented in Java/Kotlin by the `ModelResponse` record (`ai.timefold.solver.service.definition.api.domain.ModelResponse`).
+This envelope is represented in Java/Kotlin by the `ModelResponse` record (`ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse`).
 Its accessor is named `outputMetrics()`, not `kpis()`; only the JSON serialization uses the `kpis` key (via `@JsonProperty("kpis")`).
 The score itself is not a top-level field: it's nested inside `metadata.score`, not `metadata.run.score` or a top-level `score`.
 ====

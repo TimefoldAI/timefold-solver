@@ -1,6 +1,6 @@
 package ai.timefold.solver.service.quarkus.deployment;
 
-import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
+import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
 import ai.timefold.solver.service.quarkus.deployment.testdata.validationduplicates.DuplicateTestIssue;
 import ai.timefold.solver.service.quarkus.deployment.testdata.validationduplicates.TestIssue;
 import ai.timefold.solver.service.quarkus.deployment.testdata.validationduplicates.TestdataAbstractIssue;

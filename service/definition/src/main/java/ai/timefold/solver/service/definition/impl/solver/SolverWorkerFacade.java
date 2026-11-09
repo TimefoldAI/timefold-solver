@@ -3,17 +3,17 @@ package ai.timefold.solver.service.definition.impl.solver;
 import java.util.List;
 import java.util.Set;
 
-import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.ModelInput;
-import ai.timefold.solver.service.definition.api.ModelOutput;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.Metadata;
-import ai.timefold.solver.service.definition.api.domain.ModelInputPatchRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelResponse;
-import ai.timefold.solver.service.definition.api.log.LogInfo;
-import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
-import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.spi.dto.ModelInput;
+import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
+import ai.timefold.solver.service.definition.api.dto.log.LogInfo;
+import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
 
 /**

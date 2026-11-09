@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnricher;
+import ai.timefold.solver.service.definition.spi.enrichment.SolverModelEnricher;
 import ai.timefold.solver.service.definition.impl.enrichment.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
