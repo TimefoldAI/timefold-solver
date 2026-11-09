@@ -2,6 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -75,6 +76,14 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
         } else {
             return false; // Both unassigned: a no-op, never emitted.
         }
+    }
+
+    /**
+     * @return {@code ListSwapMoveProvider(<Entity>.<variable>)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(ListSwapMoveProvider.class, variableMetaModel);
     }
 
     @NullMarked

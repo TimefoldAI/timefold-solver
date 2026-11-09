@@ -308,4 +308,13 @@ class PillarSwapMoveProviderTest {
                 .toList();
     }
 
+    @Test
+    void id() {
+        var entityMetaModel = TestdataMultiVarSolution.buildMetaModel().genuineEntity(TestdataMultiVarEntity.class);
+        List<PlanningVariableMetaModel<TestdataMultiVarSolution, TestdataMultiVarEntity, ?>> variableList =
+                List.of(entityMetaModel.basicVariable("secondaryValue"), entityMetaModel.basicVariable("primaryValue"));
+        assertThat(new PillarSwapMoveProvider<>(variableList).getId())
+                .isEqualTo("PillarSwapMoveProvider(TestdataMultiVarEntity.primaryValue,secondaryValue)");
+    }
+
 }

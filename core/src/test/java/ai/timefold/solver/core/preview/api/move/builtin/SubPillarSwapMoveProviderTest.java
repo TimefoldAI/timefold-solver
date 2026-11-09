@@ -352,4 +352,15 @@ class SubPillarSwapMoveProviderTest {
                 .hasMessageContaining("is empty");
     }
 
+    @Test
+    void id() {
+        var entityMetaModel = TestdataMultiVarSolution.buildMetaModel().genuineEntity(TestdataMultiVarEntity.class);
+        List<PlanningVariableMetaModel<TestdataMultiVarSolution, TestdataMultiVarEntity, ?>> variableList =
+                List.of(entityMetaModel.basicVariable("secondaryValue"), entityMetaModel.basicVariable("primaryValue"));
+        assertThat(new SubPillarSwapMoveProvider<>(variableList, Samplers.pillar(Samplers.all()),
+                Samplers.pillar(Samplers.upTo(4))).getId())
+                .isEqualTo(
+                        "SubPillarSwapMoveProvider(TestdataMultiVarEntity.primaryValue,secondaryValue,pillar(all),pillar(upTo(4)))");
+    }
+
 }

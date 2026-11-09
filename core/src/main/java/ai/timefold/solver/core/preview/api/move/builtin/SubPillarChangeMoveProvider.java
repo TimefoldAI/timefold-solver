@@ -99,6 +99,16 @@ public final class SubPillarChangeMoveProvider<Solution_, Entity_, Value_>
     }
 
     /**
+     * @return {@code SubPillarChangeMoveProvider(<Entity>.<variable>,<sampler>,crossingNull|noCrossingNull)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(SubPillarChangeMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler),
+                MoveProviderUtil.flag("crossingNull", crossingNull));
+    }
+
+    /**
      * Draws subpillars sharing an assigned value ("slice value")
      * and pairs each with a destination value, producing a {@code MassChangeMove}.
      * Left = slice value, right = destination value.

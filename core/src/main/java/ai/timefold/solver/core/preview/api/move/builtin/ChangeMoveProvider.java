@@ -2,6 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
@@ -73,6 +74,15 @@ public final class ChangeMoveProvider<Solution_, Entity_, Value_>
                         NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.differentValueFilter()),
                         NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter()))
                 .asMove((solution, entity, value) -> Moves.change(variableMetaModel, Objects.requireNonNull(entity), value));
+    }
+
+    /**
+     * @return {@code ChangeMoveProvider(<Entity>.<variable>,crossingNull|noCrossingNull)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(ChangeMoveProvider.class, variableMetaModel,
+                MoveProviderUtil.flag("crossingNull", crossingNull));
     }
 
 }

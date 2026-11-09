@@ -21,6 +21,19 @@ These properties are supported in Spring's `application.properties`:
 :solver_name_prefix:
 include::_config-properties.adoc[]
 
+[#integrationWithSpringBootNeighborhoods]
+== Neighborhoods
+
+When the `NEIGHBORHOODS` xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsConfiguration[preview feature] is enabled,
+the Spring Boot integration finds your `NeighborhoodProvider` and `MoveSelectionStrategy` implementations,
+as it finds your `ConstraintProvider`:
+
+- If it finds one implementation, the solver uses it as the solver-level setting.
+It does not set a move selection strategy on a solver that has a phase with move selectors.
+- It never changes a setting that the solver configuration already has, and never changes the settings of a phase.
+- If it finds several implementations, configure the one to use in the solver configuration XML.
+With several solvers, every solver that needs one must configure it, and every implementation must be used.
+
 [#integrationWithSpringBootManagedResources]
 == Injecting managed resources
 

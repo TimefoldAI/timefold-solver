@@ -24,6 +24,9 @@ import org.jspecify.annotations.Nullable;
  * not because a key-aware policy exists yet.
  * Move generation is single-threaded;
  * see {@link Sampler} for what that means for sampler state.
+ * <p>
+ * Implement {@link Object#toString()} with a short, stable description of the settings, without spaces;
+ * the IDs of built-in move providers contain it, or "custom" if it is not implemented.
  *
  * @param <Key_> the type of the key the sample was drawn under, such as the slice selector
  * @param <A> the type of the sample's members

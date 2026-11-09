@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -65,8 +67,9 @@ class NeighborhoodsTest {
 
         var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class).basicVariable();
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
+        var changeMoveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveRepository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
-                List.of(new ChangeMoveProvider<>(variableMetaModel)));
+                new LinkedHashMap<>(Map.of(changeMoveProvider.getId(), changeMoveProvider)));
 
         var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig().withLateAcceptanceSize(400))
                 .buildAcceptor(heuristicConfigPolicy);

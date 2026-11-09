@@ -5,10 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.PillarChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
@@ -239,6 +241,58 @@ public final class MoveProviderUtil {
 
     private MoveProviderUtil() {
         // No external instances.
+    }
+
+    /**
+     * @return {@code <provider class simple name>(<entity simple name>.<variable names>[,<setting>...])}, no spaces
+     */
+    public static String id(Class<?> providerClass, List<? extends VariableMetaModel<?, ?, ?>> variableMetaModelList,
+            String... settings) {
+        var id = new StringBuilder(providerClass.getSimpleName())
+                .append('(')
+                .append(variableMetaModelList.getFirst().entity().type().getSimpleName())
+                .append('.')
+                .append(variableMetaModelList.stream().map(VariableMetaModel::name).collect(Collectors.joining(",")));
+        for (var setting : settings) {
+            id.append(',').append(setting);
+        }
+        return id.append(')').toString();
+    }
+
+    public static String id(Class<?> providerClass, VariableMetaModel<?, ?, ?> variableMetaModel, String... settings) {
+        return id(providerClass, List.of(variableMetaModel), settings);
+    }
+
+    /**
+     * @return the name if true, else "no" + the capitalized name
+     */
+    public static String flag(String name, boolean value) {
+        return value ? name : "no" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
+    public static String range(int minimum, int maximum) {
+        return minimum + "-" + maximum;
+    }
+
+    /**
+     * @return the simple name of the class, or "custom" for a lambda or an anonymous class, whose names are not stable
+     */
+    public static String defaultId(Object instance) {
+        var type = instance.getClass();
+        return type.isHidden() || type.isAnonymousClass() || type.isSynthetic() ? "custom" : type.getSimpleName();
+    }
+
+    /**
+     * @return the {@code toString()} of the sampler, or "custom" if its class does not override it,
+     *         because the default {@code toString()} is not stable between runs
+     */
+    public static String samplerId(Object sampler) {
+        try {
+            var declaringClass = sampler.getClass().getMethod("toString").getDeclaringClass();
+            return declaringClass == Object.class ? "custom" : sampler.toString();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("Impossible state: every class has toString().", e);
+        }
     }
 
 }

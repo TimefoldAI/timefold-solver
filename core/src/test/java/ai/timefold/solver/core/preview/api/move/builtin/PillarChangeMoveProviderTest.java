@@ -293,4 +293,12 @@ class PillarChangeMoveProviderTest {
                 .isThrownBy(() -> new PillarChangeMoveProvider<>(variableMetaModel, true));
     }
 
+    @Test
+    void id() {
+        var unassignedVariableMetaModel = TestdataAllowsUnassignedSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedEntity.class).basicVariable("value");
+        assertThat(new PillarChangeMoveProvider<>(unassignedVariableMetaModel, true).getId())
+                .isEqualTo("PillarChangeMoveProvider(TestdataAllowsUnassignedEntity.value,crossingNull)");
+    }
+
 }

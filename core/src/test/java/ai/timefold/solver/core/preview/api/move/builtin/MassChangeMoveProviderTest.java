@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import java.util.List;
 
 import ai.timefold.solver.core.impl.move.builtin.MassChangeMove;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -283,6 +285,17 @@ class MassChangeMoveProviderTest {
                 .isNotEmpty()
                 .flatExtracting(MassChangeMove::getPlanningEntities)
                 .doesNotContain(pinnedEntity);
+    }
+
+    @Test
+    void id() {
+        var variableMetaModel = TestdataSolution.buildMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value");
+        assertThat(new MassChangeMoveProvider<>(variableMetaModel, Samplers.between(2, 5)).getId())
+                .isEqualTo("MassChangeMoveProvider(TestdataEntity.value,between(2-5),noCrossingNull)");
+        Sampler<TestdataEntity> lambdaSampler = (sizeSoFar, candidate) -> Sample.Decision.ACCEPT;
+        assertThat(new MassChangeMoveProvider<>(variableMetaModel, lambdaSampler).getId())
+                .isEqualTo("MassChangeMoveProvider(TestdataEntity.value,custom,noCrossingNull)");
     }
 
 }

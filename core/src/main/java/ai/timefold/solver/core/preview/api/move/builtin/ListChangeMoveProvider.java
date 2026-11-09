@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
@@ -102,6 +103,15 @@ public final class ListChangeMoveProvider<Solution_, Entity_, Value_>
         // not a persisted destinations x sources join, which used to make this provider pay for a second full cross product on top of forEachDestination's own entities x values join.
         return moveStreamFactory.buildMoveStream((session, random) -> new ListChangeMoveIterator<>(session, random,
                 variableMetaModel, sourceDataset, destinationDataset));
+    }
+
+    /**
+     * @return {@code ListChangeMoveProvider(<Entity>.<variable>,crossingNull|noCrossingNull)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(ListChangeMoveProvider.class, variableMetaModel,
+                MoveProviderUtil.flag("crossingNull", crossingNull));
     }
 
     @NullMarked

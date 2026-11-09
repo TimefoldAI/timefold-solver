@@ -38,6 +38,7 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
+import ai.timefold.solver.core.impl.solver.SolverLevelClassDetector;
 import ai.timefold.solver.spring.boot.autoconfigure.config.DiminishedReturnsProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TerminationProperties;
@@ -153,6 +154,14 @@ public class TimefoldSolverAutoConfiguration
         // Step 3 - load all additional information per SolverConfig
         solverConfigMap.forEach(
                 (solverName, solverConfig) -> loadSolverConfig(entityScanner, timefoldProperties, solverName, solverConfig));
+        // After step 3, because it applies the preview features.
+        for (var detector : List.of(SolverLevelClassDetector.NEIGHBORHOOD_PROVIDER,
+                SolverLevelClassDetector.MOVE_SELECTION_STRATEGY)) {
+            detector.detect(solverConfigMap, () -> entityScanner.findImplementingClassList(detector.getType()).stream()
+                    .filter(UNIQUENESS_PREDICATE)
+                    .<Class<?>> map(c -> c)
+                    .toList());
+        }
         // Step 4 - second pass of validations
         assertEmptySolutionClasses(solverConfigMap);
         assertMutableSolutionClasses(solverConfigMap);

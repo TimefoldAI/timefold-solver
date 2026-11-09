@@ -35,6 +35,9 @@ import org.jspecify.annotations.Nullable;
  * so a sampler may hold state across {@link #evaluate(int, Object)} calls
  * without it ever leaking into another sample.
  * This makes a sampler instance safe to share between separate neighborhood providers.
+ * <p>
+ * Implement {@link Object#toString()} with a short, stable description of the settings, without spaces;
+ * the IDs of built-in move providers contain it, or "custom" if it is not implemented.
  *
  * @param <A> the type of the sample's members
  */

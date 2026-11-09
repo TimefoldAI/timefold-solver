@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
@@ -225,6 +226,19 @@ class SwapMoveProviderTest {
         assertThatThrownBy(() -> new SwapMoveProvider<TestdataSolution, TestdataEntity>(List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("is empty");
+    }
+
+    @Test
+    void id() {
+        var entityMetaModel = TestdataMultiVarSolution.buildMetaModel().genuineEntity(TestdataMultiVarEntity.class);
+        List<PlanningVariableMetaModel<TestdataMultiVarSolution, TestdataMultiVarEntity, ?>> variableList =
+                List.of(entityMetaModel.basicVariable("secondaryValue"), entityMetaModel.basicVariable("primaryValue"));
+        var variableMetaModel = TestdataSolution.buildMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value");
+        assertThat(new SwapMoveProvider<>(variableList).getId())
+                .isEqualTo("SwapMoveProvider(TestdataMultiVarEntity.primaryValue,secondaryValue)");
+        assertThat(new SwapMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("SwapMoveProvider(TestdataEntity.value)");
     }
 
 }

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.spring.boot.it.domain.IntegrationTestEntity;
@@ -70,5 +71,12 @@ class TimefoldSolverTestResourceIntegrationTest {
         assertThat(solverConfig).isNotNull();
         assertThat(solverConfig.getSolutionClass()).isEqualTo(Object.class);
         assertThat(solverConfig.getPhaseConfigList()).isNotEmpty();
+        assertThat(solverConfig.getMoveSelectionStrategyCustomProperties()).containsEntry("string", "string");
+        var localSearchPhaseConfig = solverConfig.getPhaseConfigList().stream()
+                .filter(LocalSearchPhaseConfig.class::isInstance)
+                .map(LocalSearchPhaseConfig.class::cast)
+                .findFirst()
+                .orElseThrow();
+        assertThat(localSearchPhaseConfig.getMoveSelectionStrategyCustomProperties()).containsEntry("string", "string");
     }
 }

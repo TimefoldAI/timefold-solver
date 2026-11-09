@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
@@ -88,6 +89,17 @@ public final class SubListSwapMoveProvider<Solution_, Entity_, Value_>
         return moveStreamFactory.buildMoveStream((session, random) -> new SubListSwapMoveIterator<>(session, random,
                 variableMetaModel, valueDataset, leftMinimumSubListSize, leftMaximumSubListSize,
                 rightMinimumSubListSize, rightMaximumSubListSize, selectReversingMoveToo));
+    }
+
+    /**
+     * @return {@code SubListSwapMoveProvider(<Entity>.<variable>,<minimum>-<maximum>,<minimum>-<maximum>,reversing|noReversing)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(SubListSwapMoveProvider.class, variableMetaModel,
+                MoveProviderUtil.range(leftMinimumSubListSize, leftMaximumSubListSize),
+                MoveProviderUtil.range(rightMinimumSubListSize, rightMaximumSubListSize),
+                MoveProviderUtil.flag("reversing", selectReversingMoveToo));
     }
 
     /**

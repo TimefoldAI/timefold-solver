@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -36,7 +37,8 @@ public final class DefaultNeighborhoodTester<Solution_>
 
     @Override
     public NeighborhoodTestContext<Solution_> using(Solution_ solution) {
-        var repository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, List.of(moveProvider));
+        var repository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
+                new LinkedHashMap<>(Map.of(moveProvider.getId(), moveProvider)));
         var moveTestContext = (DefaultMoveTestContext<Solution_>) moveTester.using(solution);
         var scoreDirector = moveTestContext.getScoreDirector();
         var solverScope = new SolverScope<Solution_>();

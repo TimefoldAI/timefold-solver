@@ -155,4 +155,12 @@ class MassListUnassignMoveProviderTest {
                 .allSatisfy(move -> assertThat(move.getSample()).doesNotContainAnyElementsOf(pinnedValues));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataAllowsUnassignedValuesListSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class).listVariable("valueList");
+        assertThat(new MassListUnassignMoveProvider<>(variableMetaModel, Samplers.upTo(2)).getId())
+                .isEqualTo("MassListUnassignMoveProvider(TestdataAllowsUnassignedValuesListEntity.valueList,upTo(2))");
+    }
+
 }

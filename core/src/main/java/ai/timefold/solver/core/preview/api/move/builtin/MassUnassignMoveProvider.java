@@ -85,4 +85,13 @@ public final class MassUnassignMoveProvider<Solution_, Entity_, Value_>
                 sample -> Moves.massChange(variableMetaModel, sample, null)));
     }
 
+    /**
+     * @return {@code MassUnassignMoveProvider(<Entity>.<variable>,<sampler>)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(MassUnassignMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler));
+    }
+
 }

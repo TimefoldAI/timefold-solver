@@ -1,10 +1,13 @@
 package ai.timefold.solver.core.config.localsearch;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig;
@@ -27,8 +30,11 @@ import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAc
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
+import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.io.jaxb.JaxbCustomPropertiesAdapter;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.MoveSelectionStrategy;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -37,6 +43,8 @@ import org.jspecify.annotations.Nullable;
         "localSearchType",
         "moveSelectorConfig",
         "neighborhoodProviderClass",
+        "moveSelectionStrategyClass",
+        "moveSelectionStrategyCustomProperties",
         "acceptorConfig",
         "foragerConfig"
 })
@@ -75,6 +83,9 @@ public final class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseCo
     })
     private MoveSelectorConfig moveSelectorConfig = null;
     private String neighborhoodProviderClass = null;
+    private String moveSelectionStrategyClass = null;
+    @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
+    private Map<String, String> moveSelectionStrategyCustomProperties = null;
     @XmlElement(name = "acceptor")
     private LocalSearchAcceptorConfig acceptorConfig = null;
     @XmlElement(name = "forager")
@@ -121,6 +132,39 @@ public final class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseCo
         this.neighborhoodProviderClass = neighborhoodProviderClass == null ? null : neighborhoodProviderClass.getName();
     }
 
+    /**
+     * The {@link MoveSelectionStrategy} of this phase; overrides the one of the {@link SolverConfig}.
+     * Not allowed together with a {@link MoveSelectorConfig}.
+     * <p>
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
+    @SuppressWarnings("unchecked")
+    public @Nullable <Solution_> Class<? extends MoveSelectionStrategy<Solution_>> getMoveSelectionStrategyClass() {
+        return ConfigUtils.resolveClass(moveSelectionStrategyClass, "moveSelectionStrategyClass", this);
+    }
+
+    /**
+     * @see #getMoveSelectionStrategyClass()
+     */
+    @SuppressWarnings("rawtypes")
+    public void setMoveSelectionStrategyClass(@Nullable Class<? extends MoveSelectionStrategy> moveSelectionStrategyClass) {
+        this.moveSelectionStrategyClass = moveSelectionStrategyClass == null ? null : moveSelectionStrategyClass.getName();
+    }
+
+    /**
+     * Applied to the {@link #getMoveSelectionStrategyClass()} of this phase only.
+     * <p>
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
+    public @Nullable Map<@NonNull String, @NonNull String> getMoveSelectionStrategyCustomProperties() {
+        return moveSelectionStrategyCustomProperties;
+    }
+
+    public void setMoveSelectionStrategyCustomProperties(
+            @Nullable Map<@NonNull String, @NonNull String> moveSelectionStrategyCustomProperties) {
+        this.moveSelectionStrategyCustomProperties = moveSelectionStrategyCustomProperties;
+    }
+
     public @Nullable LocalSearchAcceptorConfig getAcceptorConfig() {
         return acceptorConfig;
     }
@@ -160,6 +204,24 @@ public final class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseCo
         return this;
     }
 
+    /**
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
+    public @NonNull LocalSearchPhaseConfig withMoveSelectionStrategyClass(
+            @NonNull Class<? extends MoveSelectionStrategy<?>> moveSelectionStrategyClass) {
+        this.moveSelectionStrategyClass = moveSelectionStrategyClass.getName();
+        return this;
+    }
+
+    /**
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
+    public @NonNull LocalSearchPhaseConfig withMoveSelectionStrategyCustomProperties(
+            @NonNull Map<@NonNull String, @NonNull String> moveSelectionStrategyCustomProperties) {
+        this.moveSelectionStrategyCustomProperties = moveSelectionStrategyCustomProperties;
+        return this;
+    }
+
     public @NonNull LocalSearchPhaseConfig withAcceptorConfig(@NonNull LocalSearchAcceptorConfig acceptorConfig) {
         this.acceptorConfig = acceptorConfig;
         return this;
@@ -179,6 +241,13 @@ public final class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseCo
                 getMoveSelectorConfig(), inheritedConfig.getMoveSelectorConfig()));
         neighborhoodProviderClass = ConfigUtils.inheritOverwritableProperty(neighborhoodProviderClass,
                 inheritedConfig.neighborhoodProviderClass);
+        // The class and its properties go together: properties of another class are not inherited.
+        if (moveSelectionStrategyClass == null
+                || Objects.equals(moveSelectionStrategyClass, inheritedConfig.moveSelectionStrategyClass)) {
+            moveSelectionStrategyClass = inheritedConfig.moveSelectionStrategyClass;
+            moveSelectionStrategyCustomProperties = ConfigUtils.inheritMergeableMapProperty(
+                    moveSelectionStrategyCustomProperties, inheritedConfig.getMoveSelectionStrategyCustomProperties());
+        }
         acceptorConfig = ConfigUtils.inheritConfig(acceptorConfig, inheritedConfig.getAcceptorConfig());
         foragerConfig = ConfigUtils.inheritConfig(foragerConfig, inheritedConfig.getForagerConfig());
         return this;
@@ -199,6 +268,9 @@ public final class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseCo
         }
         if (neighborhoodProviderClass != null) {
             classVisitor.accept(getNeighborhoodProviderClass());
+        }
+        if (moveSelectionStrategyClass != null) {
+            classVisitor.accept(getMoveSelectionStrategyClass());
         }
         if (acceptorConfig != null) {
             acceptorConfig.visitReferencedClasses(classVisitor);

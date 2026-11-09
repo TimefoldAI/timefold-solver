@@ -253,4 +253,16 @@ class ChangeMoveProviderTest {
                 .isThrownBy(() -> new ChangeMoveProvider<>(variableMetaModel, true));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataSolution.buildMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value");
+        var unassignedVariableMetaModel = TestdataAllowsUnassignedSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedEntity.class).basicVariable("value");
+        assertThat(new ChangeMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("ChangeMoveProvider(TestdataEntity.value,noCrossingNull)");
+        assertThat(new ChangeMoveProvider<>(unassignedVariableMetaModel).getId())
+                .isEqualTo("ChangeMoveProvider(TestdataAllowsUnassignedEntity.value,crossingNull)");
+    }
+
 }

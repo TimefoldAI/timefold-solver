@@ -54,6 +54,12 @@
     <!--Zero or more repetitions:-->
     <termination/>
   </termination>
+  <neighborhoodProviderClass>java.lang.Object</neighborhoodProviderClass>
+  <moveSelectionStrategyClass>java.lang.Object</moveSelectionStrategyClass>
+  <moveSelectionStrategyCustomProperties>
+    <!--Zero or more repetitions:-->
+    <property name="string" value="string"/>
+  </moveSelectionStrategyCustomProperties>
   <!--You have a CHOICE of the next 6 items at this level-->
   <constructionHeuristic>
     <termination>
@@ -1038,6 +1044,13 @@
   </constructionHeuristic>
   <customPhase/>
   <exhaustiveSearch/>
-  <localSearch/>
+  <localSearch>
+    <neighborhoodProviderClass>java.lang.Object</neighborhoodProviderClass>
+    <moveSelectionStrategyClass>java.lang.Object</moveSelectionStrategyClass>
+    <moveSelectionStrategyCustomProperties>
+      <!--Zero or more repetitions:-->
+      <property name="string" value="string"/>
+    </moveSelectionStrategyCustomProperties>
+  </localSearch>
   <partitionedSearch/>
 </solver>

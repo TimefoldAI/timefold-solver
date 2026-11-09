@@ -125,6 +125,17 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
     }
 
     /**
+     * @return {@code SubPillarSwapMoveProvider(<Entity>.<variable>,<variable>...,<sampler>,<sampler>)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(SubPillarSwapMoveProvider.class, variableMetaModelList,
+                MoveProviderUtil.samplerId(leftSampler),
+                MoveProviderUtil.samplerId(rightSampler));
+    }
+
+    /**
      * Draws two independently sampled pillar-slice keys and swaps every listed variable's value between a subpillar drawn
      * from each, producing a {@code PillarSwapMove}.
      * Left and right are both composite keys, each independently drawn from the same {@code distinctKeys} dataset;

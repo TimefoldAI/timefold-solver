@@ -241,4 +241,12 @@ class TwoOptListMoveProviderTest {
         assertThat(entity.getValueList()).containsExactly(v0, v3, v2, v1, v4);
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataListSolution.buildMetaModel().genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList");
+        assertThat(new TwoOptListMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("TwoOptListMoveProvider(TestdataListEntity.valueList,crossingEntity)");
+    }
+
 }

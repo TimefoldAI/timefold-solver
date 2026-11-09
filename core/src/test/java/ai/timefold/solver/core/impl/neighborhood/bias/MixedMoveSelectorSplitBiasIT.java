@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood.bias;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -88,10 +89,11 @@ class MixedMoveSelectorSplitBiasIT extends AbstractBiasIT {
     private static @NonNull NeighborhoodsMoveSelector<TestdataSolution>
             getNeighborhoodsMoveSelector(SolutionDescriptor<TestdataSolution> solutionDescriptor) {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var neighborhoodProviderList =
-                List.of(neverEndingMoveProvider("neighborhood-a"), neverEndingMoveProvider("neighborhood-b"));
+        var neighborhoodProviderMap = new LinkedHashMap<String, MoveProvider<TestdataSolution>>();
+        neighborhoodProviderMap.put("neighborhood-a", neverEndingMoveProvider("neighborhood-a"));
+        neighborhoodProviderMap.put("neighborhood-b", neverEndingMoveProvider("neighborhood-b"));
         var neighborhoodsMoveRepository =
-                new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, neighborhoodProviderList);
+                new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, neighborhoodProviderMap);
         return new NeighborhoodsMoveSelector<>(neighborhoodsMoveRepository);
     }
 

@@ -172,4 +172,12 @@ class SubPillarChangeMoveProviderTest {
                         () -> new SubPillarChangeMoveProvider<>(variableMetaModel, Samplers.pillar(Samplers.exactly(2)), true));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataSolution.buildMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value");
+        assertThat(new SubPillarChangeMoveProvider<>(variableMetaModel, Samplers.pillar(Samplers.between(2, 3))).getId())
+                .isEqualTo("SubPillarChangeMoveProvider(TestdataEntity.value,pillar(between(2-3)),noCrossingNull)");
+    }
+
 }

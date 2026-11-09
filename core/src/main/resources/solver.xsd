@@ -18,6 +18,9 @@
           <xs:element minOccurs="0" name="scoreDirectorFactory" type="tns:scoreDirectorFactoryConfig"/>
           <xs:element minOccurs="0" name="termination" type="tns:terminationConfig"/>
           <xs:element minOccurs="0" name="nearbyDistanceMeterClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="neighborhoodProviderClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="moveSelectionStrategyClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="moveSelectionStrategyCustomProperties" type="tns:jaxbAdaptedMap"/>
           <xs:choice maxOccurs="unbounded" minOccurs="0">
             <xs:element name="constructionHeuristic" type="tns:constructionHeuristicPhaseConfig"/>
             <xs:element name="customPhase" type="tns:customPhaseConfig"/>
@@ -647,6 +650,8 @@
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
           </xs:choice>
           <xs:element minOccurs="0" name="neighborhoodProviderClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="moveSelectionStrategyClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="moveSelectionStrategyCustomProperties" type="tns:jaxbAdaptedMap"/>
           <xs:element minOccurs="0" name="acceptor" type="tns:localSearchAcceptorConfig"/>
           <xs:element minOccurs="0" name="forager" type="tns:localSearchForagerConfig"/>
         </xs:sequence>

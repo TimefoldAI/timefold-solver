@@ -65,6 +65,28 @@
         },
         {
           "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+          "new": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"localSearchType\", \"moveSelectorConfig\", \"neighborhoodProviderClass\", \"acceptorConfig\", \"foragerConfig\"}",
+          "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"neighborhoodProviderClass\", \"moveSelectionStrategyClass\", \"moveSelectionStrategyCustomProperties\", \"acceptorConfig\", \"foragerConfig\"}",
+          "justification": "Solver-level neighborhoods and the move selection strategy; new optional XML elements."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "new": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\"}",
+          "newValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"neighborhoodProviderClass\", \"moveSelectionStrategyClass\", \"moveSelectionStrategyCustomProperties\", \"phaseConfigList\"}",
+          "justification": "Solver-level neighborhoods and the move selection strategy; new optional XML elements."
+        },
+        {
+          "ignore": true,
           "code": "java.method.addedToInterface",
           "new": "method long ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::structuralScore()",
           "justification": "Score is a sealed interface that only the library's own Score implementations may implement; user code cannot be broken by a new method."
