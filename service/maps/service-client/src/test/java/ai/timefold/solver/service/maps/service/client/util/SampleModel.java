@@ -10,8 +10,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.service.definition.api.Status;
-import ai.timefold.solver.service.definition.api.UserModel;
 import ai.timefold.solver.service.definition.api.metrics.InputMetricsAware;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
@@ -21,8 +19,7 @@ import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSol
 
 @PlanningSolution
 public class SampleModel implements LocationsAwareSolverModel<HardSoftScore>, InputMetricsAware<ModelInputMetrics>,
-        OutputMetricsAware<ModelOutputMetrics>,
-        UserModel<HardSoftScore, Status<HardSoftScore>> {
+        OutputMetricsAware<ModelOutputMetrics> {
 
     private final String locationSetName;
     private final List<Location> locations;
@@ -97,16 +94,6 @@ public class SampleModel implements LocationsAwareSolverModel<HardSoftScore>, In
     }
 
     @Override
-    public Status<HardSoftScore> getStatus() {
-        return null;
-    }
-
-    @Override
-    public Status<HardSoftScore> newStatus(String name) {
-        return null;
-    }
-
-    @Override
     public List<Location> getLocations() {
         return this.locations;
     }
@@ -124,10 +111,5 @@ public class SampleModel implements LocationsAwareSolverModel<HardSoftScore>, In
     @Override
     public List<Location> getLocationsNotInMap() {
         return locationsNotInMap;
-    }
-
-    @Override
-    public void setStatus(Status<HardSoftScore> status) {
-        // Noop
     }
 }
