@@ -11,7 +11,10 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -40,55 +43,47 @@ import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
-/**
- * The strategies record into a static list, because the solver creates them.
- */
-@Execution(ExecutionMode.SAME_THREAD)
 class MoveSelectionStrategySolverTest {
-
-    private static final List<RecordingStrategy> RECORDING_LIST = new ArrayList<>();
-
-    @BeforeEach
-    void clear() {
-        RECORDING_LIST.clear();
-    }
 
     @Test
     void lifecycle() {
-        var solverConfig = baseConfig()
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                .withPhases(new LocalSearchPhaseConfig()
-                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(20)));
-        solve(solverConfig, solution(4, 6));
+        try (var recorder = Recorder.open()) {
+            var solverConfig = baseConfig()
+                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                    .withMoveSelectionStrategyCustomProperties(recorder.properties())
+                    .withPhases(new LocalSearchPhaseConfig()
+                            .withTerminationConfig(new TerminationConfig().withStepCountLimit(20)));
+            solve(solverConfig, solution(4, 6));
 
-        assertThat(RECORDING_LIST).hasSize(1);
-        var recording = RECORDING_LIST.getFirst();
-        var eventList = recording.eventList;
-        assertThat(eventList.getFirst()).isEqualTo("phaseStarted");
-        assertThat(eventList).filteredOn("stepStarted"::equals).hasSize(20);
-        assertThat(eventList.get(1)).isEqualTo("stepStarted");
-        assertThat(recording.threadSet).containsExactly(Thread.currentThread());
-        assertThat(recording.stepContextSet).hasSize(1);
-        assertThat(recording.solutionSet).hasSize(1);
-        assertThat(recording.scoreMismatchList).isEmpty();
+            assertThat(recorder.strategyList).hasSize(1);
+            var recording = recorder.strategyList.getFirst();
+            var eventList = recording.eventList;
+            assertThat(eventList.getFirst()).isEqualTo("phaseStarted");
+            assertThat(eventList).filteredOn("stepStarted"::equals).hasSize(20);
+            assertThat(eventList.get(1)).isEqualTo("stepStarted");
+            assertThat(recording.threadSet).containsExactly(Thread.currentThread());
+            assertThat(recording.stepContextSet).hasSize(1);
+            assertThat(recording.solutionSet).hasSize(1);
+            assertThat(recording.scoreMismatchList).isEmpty();
+        }
     }
 
     @Test
     void newInstancePerSolve() {
-        var solverConfig = baseConfig()
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                .withPhases(new LocalSearchPhaseConfig()
-                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
-        solve(solverConfig, solution(3, 3));
-        solve(solverConfig, solution(3, 3));
+        try (var recorder = Recorder.open()) {
+            var solverConfig = baseConfig()
+                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                    .withMoveSelectionStrategyCustomProperties(recorder.properties())
+                    .withPhases(new LocalSearchPhaseConfig()
+                            .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+            solve(solverConfig, solution(3, 3));
+            solve(solverConfig, solution(3, 3));
 
-        assertThat(RECORDING_LIST).hasSize(2);
-        assertThat(RECORDING_LIST.get(0)).isNotSameAs(RECORDING_LIST.get(1));
+            assertThat(recorder.strategyList).hasSize(2);
+            assertThat(recorder.strategyList.get(0)).isNotSameAs(recorder.strategyList.get(1));
+        }
     }
 
     @Test
@@ -108,40 +103,45 @@ class MoveSelectionStrategySolverTest {
 
     @Test
     void solverLevelForGeneratedAndExplicitPhases() {
-        var generated = baseConfig()
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("label", "solver"))
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3));
-        solve(generated, solution(3, 3));
-        assertThat(RECORDING_LIST).extracting(r -> r.label).containsExactly("solver");
-
-        RECORDING_LIST.clear();
-        var explicit = baseConfig()
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("label", "solver"))
-                .withPhases(new LocalSearchPhaseConfig()
-                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
-        solve(explicit, solution(3, 3));
-        assertThat(RECORDING_LIST).extracting(r -> r.label).containsExactly("solver");
+        try (var recorder = Recorder.open()) {
+            var generated = baseConfig()
+                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                    .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "solver"))
+                    .withTerminationConfig(new TerminationConfig().withStepCountLimit(3));
+            solve(generated, solution(3, 3));
+            assertThat(recorder.strategyList).extracting(r -> r.label).containsExactly("solver");
+        }
+        try (var recorder = Recorder.open()) {
+            var explicit = baseConfig()
+                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                    .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "solver"))
+                    .withPhases(new LocalSearchPhaseConfig()
+                            .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+            solve(explicit, solution(3, 3));
+            assertThat(recorder.strategyList).extracting(r -> r.label).containsExactly("solver");
+        }
     }
 
     @Test
     void phaseOverridesAndPropertiesNeverMixLevels() {
-        var solverConfig = baseConfig()
-                .withMoveSelectionStrategyClass(NoChangeStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("unused", "solver"))
-                .withPhases(
-                        new LocalSearchPhaseConfig()
-                                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                                .withMoveSelectionStrategyCustomProperties(Map.of("label", "phase"))
-                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)),
-                        new LocalSearchPhaseConfig()
-                                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
-        solve(solverConfig, solution(3, 3));
+        try (var recorder = Recorder.open()) {
+            var solverConfig = baseConfig()
+                    .withMoveSelectionStrategyClass(NoChangeStrategy.class)
+                    .withMoveSelectionStrategyCustomProperties(Map.of("unused", "solver"))
+                    .withPhases(
+                            new LocalSearchPhaseConfig()
+                                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                                    .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "phase"))
+                                    .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)),
+                            new LocalSearchPhaseConfig()
+                                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                                    .withMoveSelectionStrategyCustomProperties(recorder.properties())
+                                    .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+            solve(solverConfig, solution(3, 3));
 
-        // NoChangeStrategy has no setter for "unused"; it would fail if the solver-level properties leaked.
-        assertThat(RECORDING_LIST).extracting(r -> r.label).containsExactly("phase", null);
+            // NoChangeStrategy has no setter for "unused"; it would fail if the solver-level properties leaked.
+            assertThat(recorder.strategyList).extracting(r -> r.label).containsExactly("phase", null);
+        }
     }
 
     @Test
@@ -150,18 +150,20 @@ class MoveSelectionStrategySolverTest {
         var problem = solution(2, 3);
         var value = problem.getValueList().getFirst();
         problem.getEntityList().forEach(entity -> entity.setValue(value));
-        var solverConfig = baseConfig()
-                .withNeighborhoodProviderClass(ChangeOnlyNeighborhoodProvider.class)
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("movesPerStep", "3"))
-                .withPhases(new LocalSearchPhaseConfig()
-                        .withLocalSearchType(LocalSearchType.HILL_CLIMBING)
-                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
+        try (var recorder = Recorder.open()) {
+            var solverConfig = baseConfig()
+                    .withNeighborhoodProviderClass(ChangeOnlyNeighborhoodProvider.class)
+                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                    .withMoveSelectionStrategyCustomProperties(recorder.properties("movesPerStep", "3"))
+                    .withPhases(new LocalSearchPhaseConfig()
+                            .withLocalSearchType(LocalSearchType.HILL_CLIMBING)
+                            .withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
 
-        var result = solve(solverConfig, problem);
-        assertThat(result.getScore()).isEqualTo(SimpleScore.of(-1));
-        // Every step still had a winning move, so all 10 steps ran.
-        assertThat(RECORDING_LIST.getFirst().eventList).filteredOn("stepStarted"::equals).hasSize(10);
+            var result = solve(solverConfig, problem);
+            assertThat(result.getScore()).isEqualTo(SimpleScore.of(-1));
+            // Every step still had a winning move, so all 10 steps ran.
+            assertThat(recorder.strategyList.getFirst().eventList).filteredOn("stepStarted"::equals).hasSize(10);
+        }
     }
 
     @Test
@@ -285,6 +287,37 @@ class MoveSelectionStrategySolverTest {
     }
 
     /**
+     * Collects the strategies of one test; the solver creates them, so they find it by its ID.
+     */
+    private static final class Recorder implements AutoCloseable {
+
+        private static final Map<String, Recorder> RECORDER_MAP = new ConcurrentHashMap<>();
+
+        private final String id = UUID.randomUUID().toString();
+        private final List<RecordingStrategy> strategyList = new ArrayList<>();
+
+        static Recorder open() {
+            var recorder = new Recorder();
+            RECORDER_MAP.put(recorder.id, recorder);
+            return recorder;
+        }
+
+        Map<String, String> properties() {
+            return Map.of("recorderId", id);
+        }
+
+        Map<String, String> properties(String name, String value) {
+            return Map.of("recorderId", id, name, value);
+        }
+
+        @Override
+        public void close() {
+            RECORDER_MAP.remove(id);
+        }
+
+    }
+
+    /**
      * Uses the default strategy, records the calls, and ends each step after movesPerStep moves if set.
      */
     @NullMarked
@@ -297,9 +330,14 @@ class MoveSelectionStrategySolverTest {
         private final Set<Object> stepContextSet = Collections.newSetFromMap(new IdentityHashMap<>());
         private final Set<Object> solutionSet = Collections.newSetFromMap(new IdentityHashMap<>());
         private final List<String> scoreMismatchList = new ArrayList<>();
+        private @Nullable Recorder recorder = null;
         private @Nullable String label = null;
         private int movesPerStep = Integer.MAX_VALUE;
         private int movesInStep = 0;
+
+        public void setRecorderId(String recorderId) {
+            this.recorder = Objects.requireNonNull(Recorder.RECORDER_MAP.get(recorderId));
+        }
 
         public void setLabel(String label) {
             this.label = label;
@@ -321,7 +359,7 @@ class MoveSelectionStrategySolverTest {
 
         @Override
         public void phaseStarted(PhaseContext<TestdataSolution> context) {
-            RECORDING_LIST.add(this);
+            Objects.requireNonNull(recorder, "recorderId").strategyList.add(this);
             record("phaseStarted", context.solution());
             delegate.phaseStarted(context);
         }

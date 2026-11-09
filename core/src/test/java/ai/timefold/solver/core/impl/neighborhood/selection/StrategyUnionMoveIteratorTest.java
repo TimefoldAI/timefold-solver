@@ -30,7 +30,8 @@ class StrategyUnionMoveIteratorTest {
     private static final StepContext<TestdataSolution> STEP_CONTEXT = TestdataSolution::new;
 
     @Test
-    void defaultStrategyGivesSameMovesAsUniformRandomUnionMoveIterator() {
+    void defaultStrategyWiringGivesSameMovesAsUniformRandomUnionMoveIterator() {
+        // Both use UniformRandomChooser; this checks the wiring: the order of the exhausted move sources and the random calls.
         var moveCounts = new int[] { 3, 0, 1, 5, 0, 2 };
         for (var seed = 0; seed < 20; seed++) {
             var expectedIterator = UniformRandomUnionMoveIterator.of(new Random(seed), iterableList(moveCounts),

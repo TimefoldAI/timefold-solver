@@ -1,87 +1,52 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.NoSuchElementException;
 import java.util.function.ToDoubleFunction;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.impl.solver.random.BiasedRandomChooser;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<Move<Solution_>> {
 
-    private final Map<Iterator<Move<Solution_>>, ProbabilityItem<Solution_>> probabilityItemMap;
-    private final NavigableMap<Double, Iterator<Move<Solution_>>> moveIteratorMap;
+    private final BiasedRandomChooser<Iterator<Move<Solution_>>> chooser;
     private final RandomGenerator workingRandom;
-    private double probabilityWeightTotal;
-    private boolean stale;
 
     public BiasedRandomUnionMoveIterator(List<MoveSelector<Solution_>> childMoveSelectorList,
             ToDoubleFunction<MoveSelector<Solution_>> probabilityWeightFunction,
             RandomGenerator workingRandom) {
-        this.probabilityItemMap = new LinkedHashMap<>(childMoveSelectorList.size());
-        for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
-            Iterator<Move<Solution_>> moveIterator = moveSelector.iterator();
-            ProbabilityItem<Solution_> probabilityItem = new ProbabilityItem<>();
-            probabilityItem.moveSelector = moveSelector;
-            probabilityItem.moveIterator = moveIterator;
-            probabilityItem.probabilityWeight = probabilityWeightFunction.applyAsDouble(moveSelector);
-            probabilityItemMap.put(moveIterator, probabilityItem);
+        var moveIteratorList = new ArrayList<Iterator<Move<Solution_>>>(childMoveSelectorList.size());
+        var probabilityWeightArray = new double[childMoveSelectorList.size()];
+        for (var i = 0; i < childMoveSelectorList.size(); i++) {
+            var moveSelector = childMoveSelectorList.get(i);
+            moveIteratorList.add(moveSelector.iterator());
+            probabilityWeightArray[i] = probabilityWeightFunction.applyAsDouble(moveSelector);
         }
-        this.moveIteratorMap = new TreeMap<>();
-        this.stale = true;
+        this.chooser = new BiasedRandomChooser<>(moveIteratorList, probabilityWeightArray, Iterator::hasNext);
         this.workingRandom = workingRandom;
     }
 
     @Override
     public boolean hasNext() {
-        refreshMoveIteratorMap();
-        return !moveIteratorMap.isEmpty();
+        return !chooser.isEmpty();
     }
 
     @Override
     public Move<Solution_> next() {
-        refreshMoveIteratorMap();
-        double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
-        Map.Entry<Double, Iterator<Move<Solution_>>> entry = moveIteratorMap.floorEntry(randomOffset);
-        // The entry is never null because randomOffset < probabilityWeightTotal
-        Iterator<Move<Solution_>> moveIterator = entry.getValue();
-        Move<Solution_> next = moveIterator.next();
+        var moveIterator = chooser.choose(workingRandom);
+        if (moveIterator == null) {
+            throw new NoSuchElementException();
+        }
+        var move = moveIterator.next();
         if (!moveIterator.hasNext()) {
-            stale = true;
+            chooser.markStale();
         }
-        return next;
-    }
-
-    private void refreshMoveIteratorMap() {
-        if (!stale) {
-            return;
-        }
-        moveIteratorMap.clear();
-        double probabilityWeightOffset = 0.0;
-        for (ProbabilityItem<Solution_> probabilityItem : probabilityItemMap.values()) {
-            if (probabilityItem.probabilityWeight != 0.0
-                    && probabilityItem.moveIterator.hasNext()) {
-                moveIteratorMap.put(probabilityWeightOffset, probabilityItem.moveIterator);
-                probabilityWeightOffset += probabilityItem.probabilityWeight;
-            }
-        }
-        probabilityWeightTotal = probabilityWeightOffset;
-        stale = false;
-    }
-
-    private static final class ProbabilityItem<Solution_> {
-
-        MoveSelector<Solution_> moveSelector;
-        Iterator<Move<Solution_>> moveIterator;
-        double probabilityWeight;
-
+        return move;
     }
 
 }

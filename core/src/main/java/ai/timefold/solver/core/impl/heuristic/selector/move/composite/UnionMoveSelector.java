@@ -112,6 +112,11 @@ public final class UnionMoveSelector<Solution_> extends CompositeMoveSelector<So
                                     "The selectorProbabilityWeightFactory (%s) returned a negative probabilityWeight (%f)."
                                             .formatted(selectorProbabilityWeightFactory, weight));
                         }
+                        if (!Double.isFinite(weight)) {
+                            throw new IllegalStateException(
+                                    "The selectorProbabilityWeightFactory (%s) returned a probabilityWeight (%s) that is not finite."
+                                            .formatted(selectorProbabilityWeightFactory, weight));
+                        }
                         return weight;
                     }, workingRandom);
         }

@@ -10,8 +10,8 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.neighborhood.selection.BiasedRandomChooser;
-import ai.timefold.solver.core.impl.neighborhood.selection.UniformRandomChooser;
+import ai.timefold.solver.core.impl.solver.random.BiasedRandomChooser;
+import ai.timefold.solver.core.impl.solver.random.UniformRandomChooser;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 

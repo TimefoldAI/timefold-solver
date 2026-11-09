@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMov
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
@@ -204,6 +206,8 @@ class UnionMoveSelectorTest {
 
         // A union of ending MoveSelectors does end, even with randomSelection
         assertAllCodesOfMoveSelector(moveSelector);
+        assertThatExceptionOfType(NoSuchElementException.class)
+                .isThrownBy(() -> moveSelector.iterator().next());
 
         moveSelector.stepEnded(stepScopeA1);
         moveSelector.phaseEnded(phaseScopeA);
@@ -211,6 +215,27 @@ class UnionMoveSelectorTest {
 
         verifyPhaseLifecycle(childMoveSelectorList.get(0), 1, 1, 1);
         verifyPhaseLifecycle(childMoveSelectorList.get(1), 1, 1, 1);
+    }
+
+    @Test
+    void invalidProbabilityWeightFails() {
+        for (var weight : new double[] { -1.0, Double.NaN, Double.POSITIVE_INFINITY }) {
+            List<MoveSelector<TestdataSolution>> childMoveSelectorList =
+                    List.of(SelectorTestUtils.mockMoveSelector(new SelectorBasedDummyMove("a1")));
+            var moveSelector = new UnionMoveSelector<>(childMoveSelectorList, true,
+                    new FixedSelectorProbabilityWeightFactory<>(Map.of(childMoveSelectorList.get(0), weight)));
+            SolverScope<TestdataSolution> solverScope = mockSolverScope();
+            when(solverScope.getWorkingRandom()).thenReturn(new TestRandom(0.0));
+            moveSelector.solvingStarted(solverScope);
+            AbstractPhaseScope<TestdataSolution> phaseScope = PlannerTestUtils.delegatingPhaseScope(solverScope);
+            moveSelector.phaseStarted(phaseScope);
+            moveSelector.stepStarted(PlannerTestUtils.delegatingStepScope(phaseScope));
+
+            assertThatExceptionOfType(IllegalStateException.class)
+                    .as("weight %s", weight)
+                    .isThrownBy(moveSelector::iterator)
+                    .withMessageContaining("probabilityWeight (");
+        }
     }
 
     @Test

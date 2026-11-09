@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.selection;
+package ai.timefold.solver.core.impl.solver.random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;

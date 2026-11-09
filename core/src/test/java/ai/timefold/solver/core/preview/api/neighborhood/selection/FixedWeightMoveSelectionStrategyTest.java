@@ -22,8 +22,9 @@ class FixedWeightMoveSelectionStrategyTest {
     private static final StepContext<TestdataSolution> STEP_CONTEXT = TestdataSolution::new;
 
     @Test
-    void samePicksAsBiasedRandomUnionMoveIterator() {
-        // Mirrors UnionMoveSelectorTest.biasedRandomSelection: a has 3 moves with weight 1000, b has 2 with weight 20.
+    void wiringGivesSamePicksAsBiasedUnionMoveSelector() {
+        // Both use BiasedRandomChooser; this checks the wiring with the expectations of
+        // UnionMoveSelectorTest.biasedRandomSelection: a has 3 moves with weight 1000, b has 2 with weight 20.
         var strategy = started(Map.of("a", 1000.0, "b", 20.0), List.of(A, B));
         var random = new TestRandom(1.0 / 1020.0, 1019.0 / 1020.0, 1000.0 / 1020.0, 0.0, 999.0 / 1020.0);
         var remainingMap = new HashMap<>(Map.of(A, 3, B, 2));

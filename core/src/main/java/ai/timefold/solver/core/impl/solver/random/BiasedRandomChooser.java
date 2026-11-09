@@ -1,13 +1,10 @@
-package ai.timefold.solver.core.impl.neighborhood.selection;
+package ai.timefold.solver.core.impl.solver.random;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
-
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -16,8 +13,7 @@ import org.jspecify.annotations.Nullable;
  * Chooses a random live item; the chance of each item is proportional to its weight.
  * Items with weight 0 are never chosen.
  * The live items are found again only after {@link #markStale()}.
- * <p>
- * Copy of the selection logic of {@code BiasedRandomUnionMoveIterator}; keep both in sync.
+ * Shared by move selectors and neighborhoods, so that both select the same way.
  *
  * @param <Item_> the type of the items
  */
@@ -32,8 +28,9 @@ public final class BiasedRandomChooser<Item_> {
     private boolean stale = true;
 
     /**
-     * @param itemList all items, in the order that maps the random offset to an item
-     * @param weightArray the weight of each item, at the same index as in itemList
+     * @param itemList all items, in the order that maps the random offset to an item;
+     *        the chooser keeps it, so do not change it
+     * @param weightArray the weight of each item, at the same index as in itemList; the chooser keeps it too
      * @param livePredicate true if the item can be chosen; evaluated only when stale
      */
     public BiasedRandomChooser(List<Item_> itemList, double[] weightArray, Predicate<Item_> livePredicate) {
@@ -41,8 +38,8 @@ public final class BiasedRandomChooser<Item_> {
             throw new IllegalArgumentException("The itemList size (%d) differs from the weightArray length (%d)."
                     .formatted(itemList.size(), weightArray.length));
         }
-        this.itemList = new ArrayList<>(itemList);
-        this.weightArray = weightArray.clone();
+        this.itemList = itemList;
+        this.weightArray = weightArray;
         this.livePredicate = livePredicate;
     }
 
