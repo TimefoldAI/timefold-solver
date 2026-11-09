@@ -5,7 +5,7 @@ import java.util.Set;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.domain.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.FinalBestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;

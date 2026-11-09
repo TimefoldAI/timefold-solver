@@ -10,10 +10,10 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.service.definition.api.metrics.InputMetricsAware;
-import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
-import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
-import ai.timefold.solver.service.definition.api.metrics.OutputMetricsAware;
+import ai.timefold.solver.service.definition.spi.metrics.InputMetricsAware;
+import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.spi.metrics.OutputMetricsAware;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSolverModel;
 

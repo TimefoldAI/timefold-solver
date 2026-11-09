@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.quarkus.deployment;
 
-import static ai.timefold.solver.service.definition.api.configuration.ConfigurationProfile.DEFAULT_CONFIGURATION_PROFILE_ID;
-import static ai.timefold.solver.service.definition.api.configuration.ConfigurationProfile.DEFAULT_CONFIGURATION_PROFILE_NAME;
+import static ai.timefold.solver.service.definition.internal.configuration.ConfigurationProfile.DEFAULT_CONFIGURATION_PROFILE_ID;
+import static ai.timefold.solver.service.definition.internal.configuration.ConfigurationProfile.DEFAULT_CONFIGURATION_PROFILE_NAME;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,11 +9,11 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Map;
 
-import ai.timefold.solver.service.definition.api.configuration.ConfigurationProfile;
-import ai.timefold.solver.service.definition.api.configuration.MapsConfiguration;
-import ai.timefold.solver.service.definition.api.configuration.ResourcesConfiguration;
-import ai.timefold.solver.service.definition.api.domain.RunConfiguration;
-import ai.timefold.solver.service.definition.api.termination.SolverTerminationConfig;
+import ai.timefold.solver.service.definition.internal.configuration.ConfigurationProfile;
+import ai.timefold.solver.service.definition.api.dto.dataset.MapsConfiguration;
+import ai.timefold.solver.service.definition.api.dto.dataset.ResourcesConfiguration;
+import ai.timefold.solver.service.definition.api.dto.dataset.RunConfiguration;
+import ai.timefold.solver.service.definition.api.dto.solve.SolverTerminationConfig;
 import ai.timefold.solver.service.jackson.impl.SdkBuildTimeObjectMapperFactory;
 import ai.timefold.solver.service.quarkus.deployment.builditem.AdditionalDescriptorFilesBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;

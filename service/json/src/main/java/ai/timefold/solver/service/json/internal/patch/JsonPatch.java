@@ -3,7 +3,7 @@ package ai.timefold.solver.service.json.internal.patch;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
-import ai.timefold.solver.service.definition.api.ModelInputPatchOp;
+import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchOp;
 import ai.timefold.solver.service.json.impl.patch.AddByFilter;
 import ai.timefold.solver.service.json.impl.patch.AddByIndex;
 import ai.timefold.solver.service.json.impl.patch.JsonPatchConstants;

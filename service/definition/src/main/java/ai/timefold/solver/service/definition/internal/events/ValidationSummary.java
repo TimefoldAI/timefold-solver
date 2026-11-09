@@ -3,10 +3,10 @@ package ai.timefold.solver.service.definition.internal.events;
 import java.util.HashMap;
 import java.util.Map;
 
-import ai.timefold.solver.service.definition.api.validation.Issue;
-import ai.timefold.solver.service.definition.api.validation.IssueSeverity;
-import ai.timefold.solver.service.definition.api.validation.ValidationStatus;
-import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
+import ai.timefold.solver.service.definition.api.dto.validation.Issue;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueSeverity;
+import ai.timefold.solver.service.definition.api.dto.validation.ValidationStatus;
+import ai.timefold.solver.service.definition.api.dto.validation.ValidationResult;
 
 /**
  * A compact summary of a dataset validation, carrying the overall {@link ValidationStatus} and issue counts by

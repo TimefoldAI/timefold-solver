@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.ModelDescriptor;
+import ai.timefold.solver.service.definition.internal.descriptor.ModelDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ConstraintDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ConstraintGroupDescriptor;
 import ai.timefold.solver.service.quarkus.deployment.ExtensionTestUtil;

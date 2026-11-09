@@ -9,7 +9,7 @@ import java.util.List;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import ai.timefold.solver.service.definition.api.domain.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
 import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
 

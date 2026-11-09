@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.ModelDescriptor;
+import ai.timefold.solver.service.definition.internal.descriptor.ModelDescriptor;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigdefault.ObjectParameter;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigdefault.TestdataConstraintProvider;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigdefault.TestdataEntity;

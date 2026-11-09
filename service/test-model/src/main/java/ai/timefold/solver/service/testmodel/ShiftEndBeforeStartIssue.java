@@ -3,9 +3,9 @@ package ai.timefold.solver.service.testmodel;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import ai.timefold.solver.service.definition.api.validation.IssueCode;
-import ai.timefold.solver.service.definition.api.validation.IssueSeverity;
-import ai.timefold.solver.service.definition.api.validation.metadata.IssueMessage;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueCode;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueSeverity;
+import ai.timefold.solver.service.definition.api.dto.validation.metadata.IssueMessage;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

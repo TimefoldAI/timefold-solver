@@ -1,0 +1,26 @@
+package ai.timefold.solver.service.definition.spi.validation;
+
+import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
+import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.spi.dto.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
+
+/**
+ * Provides a complex validation of the model input before the solving, or other operation, starts.
+ *
+ * @param <ModelInput_> the type of the model input
+ */
+public interface ModelValidator<ModelInput_ extends ModelInput, ModelConfigOverrides_ extends ModelConfigOverrides> {
+
+    /**
+     * Validates the model input before the solving, or other operation, starts.
+     *
+     * @param validationBuilder {@link ValidationBuilder} instance to add validation issues to; never null
+     * @param modelInput the model input; never null
+     * @param modelConfig the model configuration; never null
+     */
+    default void validate(ValidationBuilder validationBuilder, ModelInput_ modelInput,
+            ModelConfig<ModelConfigOverrides_> modelConfig) {
+        validationBuilder.unsupported();
+    }
+}

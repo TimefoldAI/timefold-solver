@@ -1,11 +1,11 @@
 package ai.timefold.solver.service.maps.service.client.util;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.ModelConstraintJustification;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
-import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.spi.dto.ModelConstraintJustification;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
 
 import com.fasterxml.jackson.core.type.TypeReference;

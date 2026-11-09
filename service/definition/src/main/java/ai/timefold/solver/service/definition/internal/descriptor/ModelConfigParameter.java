@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.definition.internal.descriptor;
 
-import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.domain.DataFormat;
+import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.metrics.DataFormat;
 
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 

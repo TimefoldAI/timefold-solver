@@ -2,6 +2,11 @@ package ai.timefold.solver.service.definition.api.validation;
 
 import java.util.List;
 
+import ai.timefold.solver.service.definition.api.dto.validation.AbstractIssue;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueCode;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueSeverity;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueType;
+import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
 import ai.timefold.solver.service.definition.impl.validation.AbstractLegacyIssue;
 
 import org.assertj.core.api.Assertions;

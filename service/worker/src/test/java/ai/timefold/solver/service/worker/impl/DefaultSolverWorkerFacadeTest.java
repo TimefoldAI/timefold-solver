@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import ai.timefold.solver.service.definition.api.SolvingStatus;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.Metadata;
-import ai.timefold.solver.service.definition.api.domain.ModelInputPatchRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
 import ai.timefold.solver.service.definition.impl.storage.StorageObjectMapperWrapper;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;

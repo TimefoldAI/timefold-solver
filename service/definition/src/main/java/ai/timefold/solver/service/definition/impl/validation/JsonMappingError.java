@@ -2,10 +2,10 @@ package ai.timefold.solver.service.definition.impl.validation;
 
 import java.util.List;
 
-import ai.timefold.solver.service.definition.api.validation.IssueCode;
-import ai.timefold.solver.service.definition.api.validation.IssueSeverity;
-import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
-import ai.timefold.solver.service.definition.api.validation.metadata.IssueMessage;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueCode;
+import ai.timefold.solver.service.definition.api.dto.validation.IssueSeverity;
+import ai.timefold.solver.service.definition.api.dto.validation.ValidationResult;
+import ai.timefold.solver.service.definition.api.dto.validation.metadata.IssueMessage;
 
 /**
  * Internal validation issue to translate a JSON parsing error
