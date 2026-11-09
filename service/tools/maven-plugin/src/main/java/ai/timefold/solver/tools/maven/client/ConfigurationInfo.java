@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(value = Include.NON_NULL)
-public record ConfigurationInfo(String containerRegistry) {
+public record ConfigurationInfo(String containerRegistry, String minimalSolverVersion, String maximalSolverVersion,
+        Boolean allowSnapshot) {
 
 }
