@@ -6,6 +6,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringSolution;
+
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked

@@ -1,5 +1,8 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -9,12 +12,10 @@ import ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.Testda
 import ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.TestdataOtherSpringNeighborhoodProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringMoveSelectionStrategy;
 import ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringNeighborhoodProvider;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 class TimefoldSolverNeighborhoodAutoConfigurationTest {
 
@@ -77,7 +78,8 @@ class TimefoldSolverNeighborhoodAutoConfigurationTest {
                             .map(LocalSearchPhaseConfig.class::cast)
                             .toList();
                     assertThat(phaseList).<Class<?>> extracting(phaseConfig -> phaseConfig.getNeighborhoodProviderClass())
-                            .containsExactly(TestdataSpringNeighborhoodProvider.class, TestdataOtherSpringNeighborhoodProvider.class);
+                            .containsExactly(TestdataSpringNeighborhoodProvider.class,
+                                    TestdataOtherSpringNeighborhoodProvider.class);
                     assertThat(phaseList).<Class<?>> extracting(phaseConfig -> phaseConfig.getMoveSelectionStrategyClass())
                             .containsExactly(TestdataSpringMoveSelectionStrategy.class,
                                     TestdataOtherSpringMoveSelectionStrategy.class);

@@ -134,17 +134,8 @@ public class ConfigUtils {
         }
         var beanClass = bean.getClass();
         customProperties.forEach((propertyName, valueString) -> {
-            var setterMethod = getSetterMethod(beanClass, propertyName);
-            if (setterMethod == null) {
-                throw new IllegalStateException(
-                        """
-                                The custom property %s (%s) in the %s cannot be set on the %s (%s) because that class has no public setter for that property.
-                                Maybe add a public setter for that custom property (%s) on that class (%s).
-                                Maybe don't configure that custom property %s (%s) in the %s."""
-                                .formatted(propertyName, valueString, customPropertiesPropertyName, beanClassPropertyName,
-                                        beanClass, propertyName, beanClass.getSimpleName(), propertyName, valueString,
-                                        customPropertiesPropertyName));
-            }
+            var setterMethod = getSetterMethodOrFail(beanClass, beanClassPropertyName, propertyName, valueString,
+                    customPropertiesPropertyName);
             var propertyType = setterMethod.getParameterTypes()[0];
             Object typedValue;
             try {
@@ -642,6 +633,34 @@ public class ConfigUtils {
      * @param propertyName never null
      * @return null if it doesn't exist
      */
+    /**
+     * Fails fast, before any instance exists, if a custom property has no public setter on the bean class.
+     */
+    public static void assertCustomPropertiesSettable(@NonNull Class<?> beanClass, @NonNull String beanClassPropertyName,
+            @Nullable Map<@NonNull String, @NonNull String> customProperties, @NonNull String customPropertiesPropertyName) {
+        if (customProperties == null) {
+            return;
+        }
+        customProperties.forEach((propertyName, valueString) -> getSetterMethodOrFail(beanClass, beanClassPropertyName,
+                propertyName, valueString, customPropertiesPropertyName));
+    }
+
+    private static Method getSetterMethodOrFail(Class<?> beanClass, String beanClassPropertyName, String propertyName,
+            String valueString, String customPropertiesPropertyName) {
+        var setterMethod = getSetterMethod(beanClass, propertyName);
+        if (setterMethod == null) {
+            throw new IllegalStateException(
+                    """
+                            The custom property %s (%s) in the %s cannot be set on the %s (%s) because that class has no public setter for that property.
+                            Maybe add a public setter for that custom property (%s) on that class (%s).
+                            Maybe don't configure that custom property %s (%s) in the %s."""
+                            .formatted(propertyName, valueString, customPropertiesPropertyName, beanClassPropertyName,
+                                    beanClass, propertyName, beanClass.getSimpleName(), propertyName, valueString,
+                                    customPropertiesPropertyName));
+        }
+        return setterMethod;
+    }
+
     private static Method getSetterMethod(Class<?> containingClass, String propertyName) {
         String setterName = ReflectionHelper.PROPERTY_MUTATOR_PREFIX + ReflectionHelper.capitalizePropertyName(propertyName);
         Method[] methods = Arrays.stream(containingClass.getMethods())

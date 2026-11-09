@@ -32,6 +32,9 @@ public final class IncrementalScoreDirectorFactory<Solution_, Score_ extends Sco
             throw new IllegalArgumentException("The incrementalScoreCalculatorClass (%s) does not implement %s."
                     .formatted(config.getIncrementalScoreCalculatorClass(), IncrementalScoreCalculator.class.getSimpleName()));
         }
+        ConfigUtils.assertCustomPropertiesSettable(config.getIncrementalScoreCalculatorClass(),
+                "incrementalScoreCalculatorClass", config.getIncrementalScoreCalculatorCustomProperties(),
+                "incrementalScoreCalculatorCustomProperties");
         return new IncrementalScoreDirectorFactory<>(solutionDescriptor, () -> {
             var incrementalScoreCalculator = (IncrementalScoreCalculator<Solution_, Score_>) ConfigUtils.newInstance(config,
                     "incrementalScoreCalculatorClass", (Class) config.getIncrementalScoreCalculatorClass());

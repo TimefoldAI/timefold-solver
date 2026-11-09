@@ -153,6 +153,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             throw new IllegalArgumentException("The moveSelectionStrategyClass (%s) does not implement %s."
                     .formatted(strategyClass, MoveSelectionStrategy.class.getSimpleName()));
         }
+        ConfigUtils.assertCustomPropertiesSettable(strategyClass, "moveSelectionStrategyClass", strategyProperties,
+                "moveSelectionStrategyCustomProperties");
         return () -> {
             var strategy = ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName,
                     "moveSelectionStrategyClass", strategyClass);
