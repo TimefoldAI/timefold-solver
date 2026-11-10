@@ -22,6 +22,7 @@ import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverRunResult;
+import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
@@ -70,6 +71,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     private final AtomicReference<@Nullable Future<@Nullable SolverRunResult<Solution_>>> finalBestSolutionFuture =
             new AtomicReference<>();
     private final AtomicReference<@Nullable ConsumerSupport<Solution_, Object>> consumerSupport = new AtomicReference<>();
+    private final AtomicReference<@Nullable SolverRunSummary> runSummary = new AtomicReference<>();
 
     public DefaultSolverJob(DefaultSolverManager<Solution_> solverManager, Solver<Solution_> solver, Object problemId,
             Function<? super Object, ? extends Solution_> problemFinder,
@@ -147,6 +149,8 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener<>(currentConsumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
             var result = solver.solveAndSummarize(problem);
+            // Set before the final best solution is consumed, so that its consumer can already read it from this job.
+            runSummary.set(result);
             currentConsumerSupport.consumeFinalBestSolution(result);
             return result;
         } catch (Throwable e) {
@@ -305,6 +309,12 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     @Override
     public Duration getSolvingDuration() {
         return Duration.ofMillis(solver.getTimeMillisSpent());
+    }
+
+    @Override
+    public @Nullable Duration getTimeToBestSolution() {
+        var summary = runSummary.get();
+        return summary == null ? null : summary.timeToBestSolution();
     }
 
     @Override

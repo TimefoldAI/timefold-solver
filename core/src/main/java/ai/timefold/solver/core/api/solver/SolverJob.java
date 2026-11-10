@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a {@link PlanningSolution problem} that has been submitted to solve on the {@link SolverManager}.
@@ -118,6 +119,12 @@ public interface SolverJob<Solution_> {
      * @see #getResult()
      */
     Duration getSolvingDuration();
+
+    /**
+     * @return null until the run finished; see {@link SolverRunSummary#timeToBestSolution()}
+     */
+    @Nullable
+    Duration getTimeToBestSolution();
 
     /**
      * Return the number of score calculations since the last start.

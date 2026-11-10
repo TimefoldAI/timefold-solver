@@ -1320,16 +1320,24 @@ class SolverManagerTest {
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             var eventSummary = new AtomicReference<SolverRunSummary>();
+            var solverJobReference = new AtomicReference<SolverJob<TestdataSolution>>();
+            var timeToBestSolutionInConsumer = new AtomicReference<Duration>();
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
-                    .withFinalBestSolutionEventConsumer(eventSummary::set)
+                    .withFinalBestSolutionEventConsumer(event -> {
+                        timeToBestSolutionInConsumer.set(solverJobReference.get().getTimeToBestSolution());
+                        eventSummary.set(event);
+                    })
                     .run();
+            solverJobReference.set(solverJob);
+            assertThat(solverJob.getTimeToBestSolution()).isNull();
             solvingPausedLatch.countDown();
             var summary = solverJob.getResult();
             assertThat(summary.solution()).isSameAs(solverJob.getFinalBestSolution());
             await().atMost(Duration.ofSeconds(10)).until(() -> eventSummary.get() != null);
             var event = eventSummary.get();
+            assertThat(timeToBestSolutionInConsumer.get()).isEqualTo(event.timeToBestSolution());
             assertThat(List.<Object> of(event.solvingDuration(), event.scoreCalculationCount(), event.moveEvaluationCount(),
                     event.solutionInitialized(), event.problemSizeStatistics()))
                     .containsExactly(summary.solvingDuration(), summary.scoreCalculationCount(),
@@ -1337,6 +1345,7 @@ class SolverManagerTest {
                             summary.problemSizeStatistics());
             assertSoftly(softly -> {
                 softly.assertThat(summary.solvingDuration()).isEqualTo(solverJob.getSolvingDuration());
+                softly.assertThat(summary.timeToBestSolution()).isEqualTo(solverJob.getTimeToBestSolution());
                 softly.assertThat(summary.scoreCalculationCount()).isEqualTo(solverJob.getScoreCalculationCount());
                 softly.assertThat(summary.scoreCalculationSpeed()).isEqualTo(solverJob.getScoreCalculationSpeed());
                 softly.assertThat(summary.moveEvaluationCount()).isEqualTo(solverJob.getMoveEvaluationCount());
@@ -1414,7 +1423,8 @@ class SolverManagerTest {
             // The restart sets a new best solution, so the time to best includes the first segment.
             assertThat(summary.timeToBestSolution())
                     .isGreaterThanOrEqualTo(summary.solvingDuration().minus(solverJob.getSolvingDuration()))
-                    .isLessThanOrEqualTo(summary.solvingDuration());
+                    .isLessThanOrEqualTo(summary.solvingDuration())
+                    .isEqualTo(solverJob.getTimeToBestSolution());
         }
     }
 

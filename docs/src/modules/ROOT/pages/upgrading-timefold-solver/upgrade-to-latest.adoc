@@ -124,6 +124,7 @@ these interfaces have new methods:
 - `Solver` has the abstract method `solveAndSummarize(problem)`.
 `solve(problem)` is now a default method that calls it.
 - `SolverJob` has the abstract method `getResult()`.
+- `SolverJob` has the abstract method `getTimeToBestSolution()`.
 - `FinalBestSolutionEvent` now extends `SolverRunSummary`.
 
 Timefold Solver implements these interfaces, and we do not expect users to implement them.
