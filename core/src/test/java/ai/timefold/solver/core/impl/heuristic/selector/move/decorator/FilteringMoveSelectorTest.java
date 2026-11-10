@@ -65,6 +65,28 @@ class FilteringMoveSelectorTest {
         verify(iterator, times(2000)).next();
     }
 
+    @Test
+    void bailOutWithSaturatedChildSize() {
+        var phaseScope = mock(AbstractPhaseScope.class);
+        var moveSelector = mock(MoveSelector.class);
+        var termination = mock(BasicPlumbingTermination.class);
+        var iterator = mock(Iterator.class);
+        var rejected = new SelectorBasedDummyMove("rejected");
+        var accepted = new SelectorBasedDummyMove("accepted");
+        when(moveSelector.getSize()).thenReturn(Long.MAX_VALUE);
+        when(moveSelector.isNeverEnding()).thenReturn(true);
+        when(moveSelector.iterator()).thenReturn(iterator);
+        when(iterator.hasNext()).thenReturn(true);
+        when(iterator.next()).thenReturn(rejected, rejected, accepted);
+        when(phaseScope.getTermination()).thenReturn(termination);
+        var filteredMoveSelector = FilteringMoveSelector.of(moveSelector,
+                (scoreDirector, selection) -> accepted.equals(selection));
+        filteredMoveSelector.phaseStarted(phaseScope);
+        var filteredIterator = filteredMoveSelector.iterator();
+        assertThat(filteredIterator.hasNext()).isTrue();
+        assertThat(filteredIterator.next()).isSameAs(accepted);
+    }
+
     public void filter(SelectionCacheType cacheType, int timesCalled) {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
                 new SelectorBasedDummyMove("a1"), new SelectorBasedDummyMove("a2"), new SelectorBasedDummyMove("a3"),

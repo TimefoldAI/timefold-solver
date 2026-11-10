@@ -81,7 +81,9 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
             return -1L;
         }
         try {
-            return childMoveSelector.getSize() * BAIL_OUT_MULTIPLIER;
+            var childSize = childMoveSelector.getSize();
+            // Saturate, so that a huge child size does not wrap to a negative bail-out size.
+            return childSize > Long.MAX_VALUE / BAIL_OUT_MULTIPLIER ? Long.MAX_VALUE : childSize * BAIL_OUT_MULTIPLIER;
         } catch (Exception ex) {
             // Some move selectors throw an exception when getSize() is called.
             // In this case, we choose to disregard it and pick a large-enough bail-out size anyway.
