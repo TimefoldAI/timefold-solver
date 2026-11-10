@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 
-import ai.timefold.solver.service.definition.api.dto.validation.AbstractIssue;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueCode;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueSeverity;
-import ai.timefold.solver.service.definition.api.dto.validation.ValidationStatus;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.AbstractIssue;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueCode;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueSeverity;
 import ai.timefold.solver.service.definition.api.dto.validation.ValidationResult;
+import ai.timefold.solver.service.definition.api.dto.validation.ValidationStatus;
 
 import org.junit.jupiter.api.Test;
 

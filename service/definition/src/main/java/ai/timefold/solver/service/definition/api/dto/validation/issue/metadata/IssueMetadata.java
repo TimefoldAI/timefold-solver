@@ -1,6 +1,4 @@
-package ai.timefold.solver.service.definition.api.dto.validation;
-
-import ai.timefold.solver.service.definition.api.dto.validation.metadata.IssueMessage;
+package ai.timefold.solver.service.definition.api.dto.validation.issue.metadata;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -15,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @Schema(oneOf = { IssueMessage.class })
 public interface IssueMetadata {
 
-    @Schema(description = "The type of the issue type detail.", implementation = String.class, readOnly = true)
+    @Schema(description = "The type of the issue metadata.", implementation = String.class, readOnly = true)
     @JsonProperty(value = "type", access = JsonProperty.Access.READ_ONLY)
     String getType();
 }

@@ -9,9 +9,9 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
 import ai.timefold.solver.service.definition.spi.metrics.InputMetricsAware;
 import ai.timefold.solver.service.definition.spi.metrics.OutputMetricsAware;
+import ai.timefold.solver.service.definition.spi.model.SolverModel;
 
 @PlanningSolution
 public class TestdataSolution implements SolverModel<SimpleScore>, InputMetricsAware<TestdataModelInputMetrics>,

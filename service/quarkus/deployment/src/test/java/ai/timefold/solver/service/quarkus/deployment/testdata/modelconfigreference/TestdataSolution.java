@@ -11,9 +11,9 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.service.definition.spi.dto.ModelInput;
 import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
 import ai.timefold.solver.service.definition.spi.metrics.InputMetricsAware;
 import ai.timefold.solver.service.definition.spi.metrics.OutputMetricsAware;
+import ai.timefold.solver.service.definition.spi.model.SolverModel;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelInputMetrics;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelOutputMetrics;
 

@@ -5,10 +5,10 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
 import ai.timefold.solver.service.definition.spi.enrichment.SolverModelEnricher;
 import ai.timefold.solver.service.definition.spi.enrichment.SolverModelEnricherBase;
 import ai.timefold.solver.service.definition.spi.enrichment.SolverModelEnricherService;
+import ai.timefold.solver.service.definition.spi.model.SolverModel;
 
 import io.quarkus.arc.All;
 

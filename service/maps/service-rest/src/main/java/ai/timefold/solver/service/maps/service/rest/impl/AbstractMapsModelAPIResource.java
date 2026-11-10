@@ -18,7 +18,7 @@ import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
 import ai.timefold.solver.service.definition.api.dto.error.ErrorInfo;
 import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
-import ai.timefold.solver.service.definition.api.dto.validation.Issue;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.Issue;
 import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
 import ai.timefold.solver.service.definition.impl.solver.SolverWorkerFacade;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;

@@ -5,13 +5,13 @@ import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
-import ai.timefold.solver.service.definition.api.dto.validation.AbstractIssue;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueCode;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueMetadata;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueSeverity;
-import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.AbstractIssue;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueCode;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.metadata.IssueMetadata;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueSeverity;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.metadata.IssueMessage;
 import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
-import ai.timefold.solver.service.definition.api.dto.validation.metadata.IssueMessage;
+import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
 
 @ApplicationScoped

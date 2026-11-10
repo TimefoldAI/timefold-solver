@@ -11,9 +11,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.ext.MessageBodyReader;
 
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
 import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
 import ai.timefold.solver.service.definition.spi.dto.ModelInput;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,6 +1,7 @@
 package ai.timefold.solver.service.definition.api.dto.scoreanalysis;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @Schema(additionalProperties = Schema.False.class)
