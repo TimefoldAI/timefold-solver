@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.api.dto.validation;
+package ai.timefold.solver.service.definition.api.dto.validation.issue;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

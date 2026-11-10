@@ -10,7 +10,7 @@ import java.util.List;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueType;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueType;
 import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;
 import ai.timefold.solver.service.quarkus.deployment.testdata.validation.TestdataConstraintProvider;

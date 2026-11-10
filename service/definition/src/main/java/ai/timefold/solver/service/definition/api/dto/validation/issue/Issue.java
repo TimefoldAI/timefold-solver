@@ -1,7 +1,8 @@
-package ai.timefold.solver.service.definition.api.dto.validation;
+package ai.timefold.solver.service.definition.api.dto.validation.issue;
 
 import java.util.List;
 
+import ai.timefold.solver.service.definition.api.dto.validation.issue.metadata.IssueMetadata;
 import org.jspecify.annotations.NonNull;
 
 /**

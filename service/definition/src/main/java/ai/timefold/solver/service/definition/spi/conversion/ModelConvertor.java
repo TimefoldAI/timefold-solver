@@ -3,13 +3,13 @@ package ai.timefold.solver.service.definition.spi.conversion;
 import java.util.Optional;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
 import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
 import ai.timefold.solver.service.definition.spi.dto.ModelInput;
 import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
 import ai.timefold.solver.service.definition.spi.model.SolverModel;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
 
 import org.jspecify.annotations.NullMarked;
 

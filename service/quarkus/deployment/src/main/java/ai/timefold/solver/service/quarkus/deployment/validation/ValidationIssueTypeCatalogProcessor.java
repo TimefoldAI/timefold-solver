@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import ai.timefold.solver.service.definition.api.dto.validation.AbstractIssue;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueCode;
-import ai.timefold.solver.service.definition.api.dto.validation.IssueType;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.AbstractIssue;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueCode;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueType;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;
 import ai.timefold.solver.service.jackson.impl.SdkBuildTimeObjectMapperFactory;
 import ai.timefold.solver.service.quarkus.deployment.builditem.AdditionalDescriptorFilesBuildItem;

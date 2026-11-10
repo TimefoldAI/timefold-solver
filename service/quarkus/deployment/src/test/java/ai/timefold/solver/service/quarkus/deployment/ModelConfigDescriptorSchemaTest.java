@@ -8,10 +8,10 @@ import java.time.Duration;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.internal.descriptor.ModelDescriptor;
 import ai.timefold.solver.service.definition.api.metrics.DataFormat;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigParameter;
+import ai.timefold.solver.service.definition.internal.descriptor.ModelDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ParameterKind;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema.TestdataConstraintProvider;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema.TestdataEntity;

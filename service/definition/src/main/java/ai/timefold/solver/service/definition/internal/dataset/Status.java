@@ -1,9 +1,9 @@
 package ai.timefold.solver.service.definition.internal.dataset;
 
-import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
-
 import java.time.OffsetDateTime;
 import java.util.Map;
+
+import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
 
 public interface Status<Score_> {
 

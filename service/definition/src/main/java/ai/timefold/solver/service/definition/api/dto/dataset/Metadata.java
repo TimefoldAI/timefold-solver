@@ -8,8 +8,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import ai.timefold.solver.service.definition.internal.dataset.Status;
 import ai.timefold.solver.service.definition.api.dto.validation.LegacyValidationResult;
+import ai.timefold.solver.service.definition.internal.dataset.Status;
 import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
 
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
