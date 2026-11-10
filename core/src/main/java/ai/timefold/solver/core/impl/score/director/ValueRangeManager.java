@@ -1,13 +1,18 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import java.util.Arrays;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
@@ -47,6 +52,7 @@ public final class ValueRangeManager<Solution_> {
     private final @Nullable ValueRangeState<Solution_, ?, ?> @Nullable [] multipleValueRangeState;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable ValueRangeStatistics<Solution_> statistics;
+    private @Nullable Map<EntityDescriptor<Solution_>, List<Object>> movableEntityListMap;
 
     public static <Solution_> ValueRangeManager<Solution_> of(SolutionDescriptor<Solution_> solutionDescriptor,
             Solution_ solution) {
@@ -202,8 +208,46 @@ public final class ValueRangeManager<Solution_> {
         return descriptor.getReachableValues(variableDescriptor, sorter);
     }
 
+    /**
+     * Movability only changes with a problem change, which calls {@link #reset(Object)}.
+     *
+     * @return unmodifiable, random access; the movable entities of the given descriptor in the working solution
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    @SuppressWarnings("unchecked")
+    public <Entity_> List<Entity_> getMovableEntityList(EntityDescriptor<Solution_> entityDescriptor) {
+        var solution = Objects.requireNonNull(cachedWorkingSolution);
+        if (movableEntityListMap == null) {
+            movableEntityListMap = new IdentityHashMap<>();
+        }
+        return (List<Entity_>) movableEntityListMap.computeIfAbsent(entityDescriptor, descriptor -> {
+            var movableFilter = movableEntityFilter(descriptor, solution);
+            var entities = descriptor.extractEntities(solution).stream();
+            return (movableFilter == null ? entities : entities.filter(movableFilter)).toList();
+        });
+    }
+
+    /**
+     * Checks each entity with the descriptor of its own class, so that pins declared on a subclass also apply.
+     *
+     * @return null if no entity of the given descriptor's class or of its subclasses can be pinned
+     */
+    static <Solution_, Entity_> @Nullable Predicate<Entity_> movableEntityFilter(EntityDescriptor<Solution_> entityDescriptor,
+            Solution_ solution) {
+        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
+        var entityClass = entityDescriptor.getEntityClass();
+        var canPin = solutionDescriptor.getGenuineEntityDescriptors().stream()
+                .anyMatch(descriptor -> entityClass.isAssignableFrom(descriptor.getEntityClass())
+                        && descriptor.hasEffectiveMovableEntityFilter());
+        if (!canPin) {
+            return null;
+        }
+        return entity -> solutionDescriptor.findEntityDescriptorOrFail(entity.getClass()).isMovable(solution, entity);
+    }
+
     public void reset(@Nullable Solution_ workingSolution) {
         singleValueRangeState = null;
+        movableEntityListMap = null;
         if (multipleValueRangeState != null) {
             Arrays.fill(multipleValueRangeState, null);
         }

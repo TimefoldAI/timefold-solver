@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
@@ -280,8 +281,10 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             loadEntityValueRange(entry.getValue(), valueIndexMap, entry.getKey(), reachableValueList);
         }
         var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
+        Predicate<Entity_> movableEntityFilter =
+                ValueRangeManager.movableEntityFilter(entityDescriptor, cachedWorkingSolution);
         return new ReachableValues<>(entityIndexItem, valueIndexItem, expectedTypeOfValue, sorterAdapter,
-                variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
+                variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange(), movableEntityFilter);
     }
 
     private static <Type_> Map<Type_, Integer> buildIndexMap(Iterator<@Nullable Type_> allValues, int size) {

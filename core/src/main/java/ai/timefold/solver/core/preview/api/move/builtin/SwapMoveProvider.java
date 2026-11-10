@@ -1,19 +1,14 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.List;
-import java.util.Objects;
 
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
+import ai.timefold.solver.core.impl.move.builtin.SwapMoveIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.BiMoveConstructor;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -63,42 +58,10 @@ public final class SwapMoveProvider<Solution_, Entity_>
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var entityType = entityMetaModel.type();
-        var entityStream = moveStreamFactory.forEach(entityType, false);
-        var moveConstructor = (BiMoveConstructor<Solution_, Entity_, Entity_>) this::buildMove;
+        var entityDataset = moveStreamFactory.forEach(entityMetaModel.type(), false).asCachedDataset();
         // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
-        return moveStreamFactory.pick(entityStream)
-                .pick(entityStream,
-                        NeighborhoodsJoiners.filtering(this::isValidSwap))
-                .asMove(moveConstructor);
-    }
-
-    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, Entity_ a, Entity_ b) {
-        return Moves.swap(variableMetaModelList, a, b);
-    }
-
-    private boolean isValidSwap(SolutionView<Solution_> solutionView, Entity_ leftEntity, Entity_ rightEntity) {
-        if (leftEntity == rightEntity) {
-            return false;
-        }
-        var change = false;
-        for (var variableMetaModel : variableMetaModelList) {
-            var defaultVariableMetaModel = (DefaultPlanningVariableMetaModel<Solution_, Entity_, Object>) variableMetaModel;
-            var variableDescriptor = defaultVariableMetaModel.variableDescriptor();
-            var oldLeftValue = variableDescriptor.getValue(leftEntity);
-            var oldRightValue = variableDescriptor.getValue(rightEntity);
-            if (Objects.equals(oldLeftValue, oldRightValue)) {
-                continue;
-            }
-            if (solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
-                    && solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)) {
-                change = true;
-            } else {
-                // One of the swaps falls out of range, skip this pair altogether.
-                return false;
-            }
-        }
-        return change;
+        return moveStreamFactory.buildMoveStream((session, random) -> new SwapMoveIterator<>(variableMetaModelList,
+                session.getSolutionView(), session.getInstance(entityDataset), random));
     }
 
 }

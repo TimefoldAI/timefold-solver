@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.move;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
@@ -217,5 +219,30 @@ public interface SolutionView<Solution_> {
      */
     <Entity_, Value_> ValueRange<Value_> getValueRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @Nullable Entity_ entity);
+
+    /**
+     * Returns the movable entities whose value range of a genuine planning variable contains the given value.
+     * Use it to draw only valid candidates for a move,
+     * instead of drawing from all entities and rejecting those that cannot take the value;
+     * the latter is slow when the value ranges are narrow.
+     * <p>
+     * Pinned entities ({@link PlanningPin}) are never included.
+     * Entities pinned only up to an index ({@link PlanningPinToIndex}) are included.
+     * If the value range is defined on {@link PlanningSolution},
+     * every movable entity is returned if the range contains the value, and none if it does not.
+     * The returned list may contain the entity which currently has the value assigned.
+     * <p>
+     * Do not keep the list beyond the current move iterator; it is invalid after a problem change.
+     * For value ranges defined on an entity, the first call for a variable builds an index
+     * whose size is proportional to the number of values times the number of entities.
+     *
+     * @param variableMetaModel variable in question.
+     * @param value value to look up.
+     * @param <Entity_> generic type of the entity that the variable is defined on.
+     * @param <Value_> generic type of the value that the variable can take.
+     * @return unmodifiable, with fast random access; empty if no movable entity accepts the value.
+     */
+    <Entity_, Value_> List<Entity_> getEntitiesWithValueInRange(
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value);
 
 }

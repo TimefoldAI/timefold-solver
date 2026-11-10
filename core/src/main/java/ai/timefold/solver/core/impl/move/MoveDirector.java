@@ -646,6 +646,23 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         }
     }
 
+    @Override
+    public final <Entity_, Value_> List<Entity_> getEntitiesWithValueInRange(
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
+        var variableDescriptor = ((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
+        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+        var valueRangeManager = backingScoreDirector.getValueRangeManager();
+        if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+            if (!valueRangeManager.getFromSolution(valueRangeDescriptor).contains(value)) {
+                return List.of();
+            }
+            return valueRangeManager.getMovableEntityList(variableDescriptor.getEntityDescriptor());
+        }
+        // The cached list is shared; sorting it in place would corrupt the index.
+        return Collections.unmodifiableList(
+                valueRangeManager.<Entity_, Value_> getReachableValues(variableDescriptor).extractMovableEntitiesAsList(value));
+    }
+
     /**
      * Execute a given move and make sure shadow variables are up to date after that.
      * Does not run a score calculation.

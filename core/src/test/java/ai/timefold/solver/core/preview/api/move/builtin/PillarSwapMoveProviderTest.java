@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.move.builtin.PillarSwapMove;
@@ -22,6 +23,8 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEnt
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingSolution;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -306,6 +309,57 @@ class PillarSwapMoveProviderTest {
         return entityMetaModel.variables().stream()
                 .map(v -> (PlanningVariableMetaModel<Solution_, Entity_, Object>) v)
                 .toList();
+    }
+
+    @Test
+    void everyValidPillarIsDrawnEquallyOftenRegardlessOfItsSize() {
+        var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntityProvidingEntity.class).basicVariable();
+        var a = new TestdataValue("a");
+        var b = new TestdataValue("b");
+        var c = new TestdataValue("c");
+        var range = List.of(a, b, c);
+        var entityList = new ArrayList<TestdataEntityProvidingEntity>();
+        var single = new TestdataEntityProvidingEntity("single", range, a);
+        entityList.add(single);
+        for (var i = 0; i < 5; i++) {
+            entityList.add(new TestdataEntityProvidingEntity("large" + i, range, b));
+        }
+        var small = new TestdataEntityProvidingEntity("small", range, c);
+        entityList.add(small);
+        // Pillars which cannot take "a"; they make the pool of all pillars larger than the candidate list,
+        // so that the right pillar is drawn through the candidate list and the size correction applies.
+        for (var i = 0; i < 10; i++) {
+            var other = new TestdataValue("other" + i);
+            entityList.add(new TestdataEntityProvidingEntity("other" + i, List.of(other), other));
+        }
+        var solution = new TestdataEntityProvidingSolution("s");
+        solution.setEntityList(entityList);
+
+        // With "single" on the left, the 5-member pillar has 5 members in the candidate list and the 1-member pillar 1;
+        // both are valid partners, so both must be chosen equally often.
+        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        var rightSizes = context
+                .getMovesAsStream(move -> (PillarSwapMove<TestdataEntityProvidingSolution, TestdataEntityProvidingEntity>) move)
+                .limit(20_000)
+                .filter(move -> move.getLeftPillar().contains(single))
+                .map(move -> move.getRightPillar().size())
+                .toList();
+        var largeCount = rightSizes.stream().filter(size -> size == 5).count();
+        assertThat(rightSizes).hasSizeGreaterThan(500);
+        assertThat((double) largeCount / rightSizes.size()).isBetween(0.4, 0.6);
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValid() {
+        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
+        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
+        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        MoveProviderAssertions.assertDrawnMovesKeepSolutionValid(context, List.of(variableMetaModel),
+                solution.getEntityList(), 2_000);
     }
 
 }

@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -166,22 +165,17 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniNeighborhoodsPredicate<Solution_, Entity_> assignedValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> differentValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter) {
+            UniNeighborhoodsPredicate<Solution_, Entity_> assignedValueFilter) {
 
         public NodeSharingSupportFunctions(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
-                    (solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null,
-                    (solutionView, entity, value) -> !Objects.equals(solutionView.getValue(variableMetaModel, entity), value),
-                    (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value));
+                    (solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null);
         }
 
     }
 
     public record ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniNeighborhoodsPredicate<Solution_, Value_> assignedValueOrNullFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> assignedValueFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> unassignedValueFilter,
             BiNeighborhoodsPredicate<Solution_, Value_, PositionInList> valueInRangeFilterForPosition,
@@ -193,7 +187,6 @@ public final class DefaultMoveStreamFactory<Solution_>
         public ListVariableNodeSharingSupportFunctions(
                 PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
-                    (solutionView, value) -> value == null || solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> !solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value, positionInList) -> {

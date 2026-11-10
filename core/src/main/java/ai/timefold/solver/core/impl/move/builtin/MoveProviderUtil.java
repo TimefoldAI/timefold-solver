@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
@@ -141,6 +142,46 @@ public final class MoveProviderUtil {
             perVariableList.add(SampleValueRanges.of(pillar, variableMetaModel, solutionView));
         }
         return perVariableList;
+    }
+
+    /**
+     * The movable entities which can be a swap partner of the given entity.
+     * A valid partner either accepts the entity's value of a variable, or already has it;
+     * either way, it is in that variable's list, so the smallest list over all variables is enough.
+     *
+     * @return null if every variable of the entity is unassigned, so that no value narrows the candidates
+     */
+    public static <Solution_, Entity_> @Nullable List<Entity_> swapCandidatesOf(SolutionView<Solution_> solutionView,
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ entity) {
+        return smallestCandidateList(solutionView, variableMetaModelList,
+                index -> solutionView.getValue(variableMetaModelList.get(index), entity));
+    }
+
+    /**
+     * As {@link #swapCandidatesOf(SolutionView, List, Object)},
+     * but for the entities whose values are the given {@link #compositeKeyOf composite key}.
+     */
+    public static <Solution_, Entity_> @Nullable List<Entity_> swapCandidatesOfKey(SolutionView<Solution_> solutionView,
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, List<Object> compositeKey) {
+        return smallestCandidateList(solutionView, variableMetaModelList, compositeKey::get);
+    }
+
+    private static <Solution_, Entity_> @Nullable List<Entity_> smallestCandidateList(SolutionView<Solution_> solutionView,
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList,
+            IntFunction<@Nullable Object> valueByVariableIndex) {
+        List<Entity_> candidateList = null;
+        for (var index = 0; index < variableMetaModelList.size(); index++) {
+            var variableMetaModel = variableMetaModelList.get(index);
+            var value = valueByVariableIndex.apply(index);
+            if (value == null) {
+                continue;
+            }
+            var entityList = solutionView.getEntitiesWithValueInRange(variableMetaModel, value);
+            if (candidateList == null || entityList.size() < candidateList.size()) {
+                candidateList = entityList;
+            }
+        }
+        return candidateList;
     }
 
     /**

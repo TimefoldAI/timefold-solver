@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
@@ -31,7 +32,9 @@ public final class ReachableValues<Entity_, Value_> {
     private final Class<?> expectedSupertypeOfValue;
     private final @Nullable ValueRangeSorter<Value_> valueRangeSorter;
     private final boolean acceptsNullValue;
+    private final @Nullable Predicate<Entity_> movableEntityFilter;
     private @Nullable List<Entity_>[] onDemandRandomAccessEntity;
+    private @Nullable List<Entity_>[] onDemandRandomAccessMovableEntity;
     private @Nullable List<Value_>[] onDemandRandomAccessValue;
     private @Nullable ReachableItemValue<Entity_, Value_> firstCachedObject;
     private @Nullable ReachableItemValue<Entity_, Value_> secondCachedObject;
@@ -39,11 +42,22 @@ public final class ReachableValues<Entity_, Value_> {
     public ReachableValues(ReachableValuesIndex<Entity_, Entity_> entitiesIndex,
             ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex, Class<?> expectedSupertypeOfValue,
             @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue) {
+        this(entitiesIndex, valuesIndex, expectedSupertypeOfValue, valueRangeSorter, acceptsNullValue, null);
+    }
+
+    /**
+     * @param movableEntityFilter null if every entity is movable
+     */
+    public ReachableValues(ReachableValuesIndex<Entity_, Entity_> entitiesIndex,
+            ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex, Class<?> expectedSupertypeOfValue,
+            @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue,
+            @Nullable Predicate<Entity_> movableEntityFilter) {
         this.entitiesIndex = entitiesIndex;
         this.valuesIndex = valuesIndex;
         this.expectedSupertypeOfValue = expectedSupertypeOfValue;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
+        this.movableEntityFilter = movableEntityFilter;
         clear();
     }
 
@@ -79,6 +93,30 @@ public final class ReachableValues<Entity_, Value_> {
         if (entityList == null) {
             entityList = itemValue.getRandomAccessEntityList(entitiesIndex.allItems());
             onDemandRandomAccessEntity[itemValue.ordinal] = entityList;
+        }
+        return entityList;
+    }
+
+    /**
+     * As {@link #extractEntitiesAsList(Object)}, but without the entities that are not movable.
+     * The movability is cached and only changes with a problem change, which rebuilds this instance.
+     *
+     * @return random access, shared with other callers; must not be modified
+     */
+    public List<Entity_> extractMovableEntitiesAsList(Object value) {
+        if (movableEntityFilter == null) {
+            return extractEntitiesAsList(value);
+        }
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
+        }
+        var entityList = onDemandRandomAccessMovableEntity[itemValue.ordinal];
+        if (entityList == null) {
+            entityList = extractEntitiesAsList(value).stream()
+                    .filter(movableEntityFilter)
+                    .toList();
+            onDemandRandomAccessMovableEntity[itemValue.ordinal] = entityList;
         }
         return entityList;
     }
@@ -158,7 +196,8 @@ public final class ReachableValues<Entity_, Value_> {
     }
 
     public ReachableValues<Entity_, Value_> copy(ValueRangeSorter<Value_> sorterAdapter) {
-        return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue);
+        return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue,
+                movableEntityFilter);
     }
 
     @SuppressWarnings("unchecked")
@@ -167,6 +206,7 @@ public final class ReachableValues<Entity_, Value_> {
         secondCachedObject = null;
         var valueCount = valuesIndex.allItems().size();
         this.onDemandRandomAccessEntity = new List[valueCount];
+        this.onDemandRandomAccessMovableEntity = new List[valueCount];
         this.onDemandRandomAccessValue = new List[valueCount];
     }
 

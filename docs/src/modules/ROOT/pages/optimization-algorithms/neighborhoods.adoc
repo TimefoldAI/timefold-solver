@@ -318,6 +318,8 @@ For this reason, built-in `Move` implementations generally do not validate their
 unlike the rest of the solver, do not fail fast.
 In other words, a built-in move will break value ranges, or create inconsistent solutions, if told to.
 It is the responsibility of the <<neighborhoodsMoveProviders,move provider>> not to generate such moves.
+To do that efficiently, draw only valid candidates;
+see <<neighborhoodsEnumeration,dataset enumeration>>.
 
 [#neighborhoodsTestingMoves]
 === Testing moves with `MoveTester`
@@ -1035,6 +1037,15 @@ In this case, we have used the `SolutionView.isValueInRange` method to check whe
 the `MONDAY_MORNING` timeslot is a valid value for the `timeslotVariable` of the given `lesson`.
 If that's not the case, we filter out this lesson from the enumeration
 and therefore will not generate moves which use this lesson.
+
+Filtering works well when most candidates pass.
+When value ranges are narrow, most candidates fail the filter,
+and the move provider spends its time drawing candidates only to reject them.
+In that case, draw the candidates from the value ranges instead:
+
+- `SolutionView.getValueRange(variable, entity)` returns the values which the entity accepts.
+- `SolutionView.getEntitiesWithValueInRange(variable, value)` returns the movable entities which accept the value.
+It never returns pinned entities.
 
 The same pattern applies to other building blocks as well, such as `join`, `ifExists` and `groupBy`;
 essentially, the `solutionView` argument was added to every predicate or function where it could be useful.
