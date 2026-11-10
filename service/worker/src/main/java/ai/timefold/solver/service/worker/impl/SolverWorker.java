@@ -756,6 +756,7 @@ public class SolverWorker {
             storageService.storeSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
                     extractOutputMetrics(solverModel));
 
+            LOGGER.info(SolverRunSummaryMessage.of(id, solverModel.getScore(), runSummary));
             processor.onNext(metadata);
             sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
                     SolverWorkerJobState.ofTerminated(SolverStatus.NOT_SOLVING, solverJob, runSummary), planName, tenantName));
