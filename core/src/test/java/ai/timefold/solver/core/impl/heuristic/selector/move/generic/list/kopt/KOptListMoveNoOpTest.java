@@ -16,26 +16,20 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Every evaluated k-opt move must change the solution.
  */
-@Execution(ExecutionMode.SAME_THREAD)
 class KOptListMoveNoOpTest {
-
-    private static List<List<TestdataListValue>> stepState;
-    private static long evaluationCount;
-    private static long unchangedCount;
 
     private static List<List<TestdataListValue>> snapshot(TestdataListSolution solution) {
         var result = new ArrayList<List<TestdataListValue>>();
@@ -46,6 +40,11 @@ class KOptListMoveNoOpTest {
     }
 
     public static class UnchangedCountingCalculator implements EasyScoreCalculator<TestdataListSolution, SimpleScore> {
+
+        private List<List<TestdataListValue>> stepState;
+        private long evaluationCount;
+        private long unchangedCount;
+
         @Override
         public SimpleScore calculateScore(TestdataListSolution solution) {
             var state = snapshot(solution);
@@ -66,32 +65,41 @@ class KOptListMoveNoOpTest {
     @ParameterizedTest
     @CsvSource({ "3, 3, 1", "3, 3, 10", "3, 3, 30", "4, 4, 10", "5, 5, 10", "2, 5, 10", "3, 6, 10" })
     void everyMoveChangesSolution(int minK, int maxK, int entityCount) {
-        stepState = null;
-        evaluationCount = 0;
-        unchangedCount = 0;
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
                 .withEasyScoreCalculatorClass(UnchangedCountingCalculator.class)
+                // The move count limit sets how many moves the test evaluates.
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(5_000L))
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new KOptListMoveSelectorConfig().withMinimumK(minK).withMaximumK(maxK))
-                                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(5_000L)));
+                                .withMoveSelectorConfig(
+                                        new KOptListMoveSelectorConfig().withMinimumK(minK).withMaximumK(maxK)));
         var solver = (DefaultSolver<TestdataListSolution>) SolverFactory.<TestdataListSolution> create(solverConfig)
                 .buildSolver();
+        var calculatorHolder = new UnchangedCountingCalculator[1];
         solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
             @Override
             public void stepStarted(AbstractStepScope<TestdataListSolution> stepScope) {
-                stepState = stepScope instanceof LocalSearchStepScope<?> ? snapshot(stepScope.getWorkingSolution()) : null;
+                var calculator = calculator(stepScope.getPhaseScope());
+                calculatorHolder[0] = calculator;
+                calculator.stepState =
+                        stepScope instanceof LocalSearchStepScope<?> ? snapshot(stepScope.getWorkingSolution()) : null;
             }
 
             @Override
             public void phaseEnded(AbstractPhaseScope<TestdataListSolution> phaseScope) {
                 // The phase-end score calculation is not a move evaluation.
-                stepState = null;
+                calculator(phaseScope).stepState = null;
             }
         });
         solver.solve(TestdataListSolution.generateUninitializedSolution(60, entityCount));
-        assertThat(evaluationCount).isGreaterThan(1_000L);
-        assertThat(unchangedCount).isZero();
+        var calculator = calculatorHolder[0];
+        assertThat(calculator.evaluationCount).isGreaterThan(1_000L);
+        assertThat(calculator.unchangedCount).isZero();
+    }
+
+    private static UnchangedCountingCalculator calculator(AbstractPhaseScope<TestdataListSolution> phaseScope) {
+        var scoreDirector = (EasyScoreDirector<TestdataListSolution, ?>) phaseScope.getScoreDirector();
+        return (UnchangedCountingCalculator) scoreDirector.getEasyScoreCalculator();
     }
 }

@@ -50,9 +50,9 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
         if (valueSelectorSize > Integer.MAX_VALUE) {
             return Long.MAX_VALUE;
         }
-        long total = 0;
+        var total = 0L;
         // A k-opt needs more than k values.
-        for (int i = minK; i <= maxK && i < valueSelectorSize; i++) {
+        for (var i = minK; i <= maxK && i < valueSelectorSize; i++) {
             try {
                 // A tour with n nodes has n - 1 edges, and a k-opt removes k of them.
                 var edgeChoices = MathUtils.binomialCoefficient((int) (valueSelectorSize - 1), i);
