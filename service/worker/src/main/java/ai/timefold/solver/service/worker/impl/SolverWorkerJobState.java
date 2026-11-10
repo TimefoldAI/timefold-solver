@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.phase.PhaseId;
 import ai.timefold.solver.core.api.solver.termination.TerminationId;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 
 import org.jspecify.annotations.Nullable;
 

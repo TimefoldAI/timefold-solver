@@ -1,8 +1,7 @@
 package ai.timefold.solver.service.definition.api.dto.dataset;
 
-import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
-import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
-import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

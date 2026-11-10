@@ -19,8 +19,8 @@ import ai.timefold.solver.service.definition.impl.log.LoggingConstants;
 import ai.timefold.solver.service.definition.internal.dataset.ModelPostProcessor;
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
-import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.SolverModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -11,7 +11,7 @@ import ai.timefold.solver.service.definition.api.dto.validation.issue.metadata.I
 import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueSeverity;
 import ai.timefold.solver.service.definition.api.dto.validation.issue.metadata.IssueMessage;
 import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
-import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
+import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
 
 @ApplicationScoped

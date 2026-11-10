@@ -15,8 +15,8 @@ import jakarta.interceptor.Interceptor;
 
 import ai.timefold.solver.service.definition.internal.dataset.ModelPostProcessor;
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
-import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.SolverModel;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;

@@ -1,7 +1,7 @@
-package ai.timefold.solver.service.definition.spi.enrichment;
+package ai.timefold.solver.service.definition.api.enrichment;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 
 public non-sealed interface SolverModelEnricher<SolverModel_ extends SolverModel<? extends Score<?>>>
         extends SolverModelEnricherBase {

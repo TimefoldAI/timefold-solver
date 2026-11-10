@@ -2,7 +2,7 @@ package ai.timefold.solver.service.quarkus.deployment.testdata.defaultconfigprof
 
 import java.time.Duration;
 
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;

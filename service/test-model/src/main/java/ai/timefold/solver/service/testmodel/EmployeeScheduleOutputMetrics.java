@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.testmodel;
 
 import ai.timefold.solver.service.definition.api.metrics.DataFormat;
-import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;

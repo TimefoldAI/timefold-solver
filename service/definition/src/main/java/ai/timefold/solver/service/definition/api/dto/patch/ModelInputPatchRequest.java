@@ -3,7 +3,7 @@ package ai.timefold.solver.service.definition.api.dto.patch;
 import java.util.List;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
 
 public class TestdataModelConfigOverrides implements ModelConfigOverrides {
 

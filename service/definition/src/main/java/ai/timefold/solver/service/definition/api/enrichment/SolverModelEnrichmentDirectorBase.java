@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.spi.enrichment;
+package ai.timefold.solver.service.definition.api.enrichment;
 
 /**
  * Root interface for all {@link SolverModelEnrichmentDirector} implementations.

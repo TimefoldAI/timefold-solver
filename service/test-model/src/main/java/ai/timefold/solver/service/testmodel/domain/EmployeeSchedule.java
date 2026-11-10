@@ -8,11 +8,11 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.HardMediumSoftScore;
-import ai.timefold.solver.service.definition.spi.dto.ModelInput;
-import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
-import ai.timefold.solver.service.definition.spi.metrics.InputMetricsAware;
-import ai.timefold.solver.service.definition.spi.metrics.OutputMetricsAware;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.SolverModel;
+import ai.timefold.solver.service.definition.api.metrics.InputMetricsAware;
+import ai.timefold.solver.service.definition.api.metrics.OutputMetricsAware;
 import ai.timefold.solver.service.testmodel.EmployeeScheduleInputMetrics;
 import ai.timefold.solver.service.testmodel.EmployeeScheduleOutputMetrics;
 

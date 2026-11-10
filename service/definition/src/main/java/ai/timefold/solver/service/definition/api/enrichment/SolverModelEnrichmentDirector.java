@@ -1,7 +1,7 @@
-package ai.timefold.solver.service.definition.spi.enrichment;
+package ai.timefold.solver.service.definition.api.enrichment;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 
 /**
  * Provides a model-specific way of enriching a solver model, typically for models using multiple enrichers depending on each

@@ -47,13 +47,13 @@ import ai.timefold.solver.service.definition.impl.validation.ValidationIssueType
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.spi.dto.ModelConstraintJustification;
-import ai.timefold.solver.service.definition.spi.dto.ModelInput;
-import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
-import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
-import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
-import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.scoreanalysis.ModelConstraintJustification;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;

@@ -2,7 +2,7 @@ package ai.timefold.solver.service.definition.internal.events;
 
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 
 /**
  * This event is sent when a new best solution is found during the solving process.

@@ -8,9 +8,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.interceptor.Interceptor;
 
-import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
 import ai.timefold.solver.service.definition.internal.dataset.ModelPostProcessor;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 import ai.timefold.solver.service.maps.service.integration.impl.WaypointsService;

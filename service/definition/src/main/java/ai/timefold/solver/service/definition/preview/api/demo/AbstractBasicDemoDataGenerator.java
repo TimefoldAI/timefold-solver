@@ -3,8 +3,8 @@ package ai.timefold.solver.service.definition.preview.api.demo;
 import java.util.List;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.spi.dto.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
 
 /**
  * Default {@link DemoDataGenerator} implementation for models that provide only a single demo data set with ID

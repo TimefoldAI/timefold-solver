@@ -29,7 +29,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import ai.timefold.solver.core.api.score.HardMediumSoftScore;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
 import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
 import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
