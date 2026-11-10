@@ -2,7 +2,7 @@ package ai.timefold.solver.service.definition.internal.events;
 
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 
 /**
  * Sent when the solver worker produces the final best solution upon termination conditions.

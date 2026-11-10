@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.definition.internal.events;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
-import ai.timefold.solver.service.definition.spi.validation.ModelValidator;
+import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 
 /**
  * Sent when a dataset is successfully validated by {@link ModelValidator}.

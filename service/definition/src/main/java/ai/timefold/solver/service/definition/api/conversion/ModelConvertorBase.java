@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.spi.conversion;
+package ai.timefold.solver.service.definition.api.conversion;
 
 /**
  * Root interface for all {@link ModelConvertor} implementations.

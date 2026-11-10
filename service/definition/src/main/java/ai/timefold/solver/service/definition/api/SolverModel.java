@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.spi.model;
+package ai.timefold.solver.service.definition.api;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;

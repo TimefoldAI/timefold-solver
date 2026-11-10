@@ -2,7 +2,7 @@ package ai.timefold.solver.service.maps.service.integration.api;
 
 import java.util.List;
 
-import ai.timefold.solver.service.definition.spi.model.SolverModel;
+import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.maps.api.model.Waypoints;
 
 public non-sealed interface WaypointsExtractor<SolverModel_ extends SolverModel<?>> extends WaypointsExtractorBase {

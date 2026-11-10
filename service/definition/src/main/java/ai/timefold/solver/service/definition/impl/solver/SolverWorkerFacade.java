@@ -10,11 +10,11 @@ import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
 import ai.timefold.solver.service.definition.api.dto.log.LogInfo;
 import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.spi.dto.ModelInput;
-import ai.timefold.solver.service.definition.spi.dto.ModelOutput;
-import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
-import ai.timefold.solver.service.definition.spi.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 
 /**
  * Facade used by the REST layer to interact with dataset storage and the solver worker,

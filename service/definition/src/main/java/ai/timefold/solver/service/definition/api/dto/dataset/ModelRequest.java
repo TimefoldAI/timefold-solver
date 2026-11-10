@@ -1,8 +1,5 @@
 package ai.timefold.solver.service.definition.api.dto.dataset;
 
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.spi.dto.ModelInput;
-
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

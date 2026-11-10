@@ -1,6 +1,6 @@
 package ai.timefold.solver.service.quarkus.deployment.defaults;
 
-import ai.timefold.solver.service.definition.spi.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 

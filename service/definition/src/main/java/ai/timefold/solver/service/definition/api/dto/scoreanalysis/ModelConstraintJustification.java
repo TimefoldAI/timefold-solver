@@ -1,4 +1,4 @@
-package ai.timefold.solver.service.definition.spi.dto;
+package ai.timefold.solver.service.definition.api.dto.scoreanalysis;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 

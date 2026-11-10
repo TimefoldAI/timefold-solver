@@ -2,7 +2,7 @@ package ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigrefere
 
 import ai.timefold.solver.service.definition.api.description.ConstraintReference;
 import ai.timefold.solver.service.definition.internal.descriptor.ParameterKind;
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
 
 public class TestdataModelConfigOverrides implements ModelConfigOverrides {
 

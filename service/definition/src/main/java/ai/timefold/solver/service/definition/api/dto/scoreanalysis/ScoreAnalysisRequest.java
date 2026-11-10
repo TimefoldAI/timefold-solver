@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.definition.api.dto.scoreanalysis;
 
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.spi.dto.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

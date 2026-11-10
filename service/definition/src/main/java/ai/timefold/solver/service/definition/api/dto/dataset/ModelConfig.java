@@ -1,7 +1,5 @@
 package ai.timefold.solver.service.definition.api.dto.dataset;
 
-import ai.timefold.solver.service.definition.spi.dto.ModelConfigOverrides;
-
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
