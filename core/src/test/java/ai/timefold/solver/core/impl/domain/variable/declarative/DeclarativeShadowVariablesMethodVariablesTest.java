@@ -9,11 +9,11 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesBaseValue;
-import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedBaseValue;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedSubclassValue;
 import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesEntity;
 import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesSolution;
-import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesSubclassValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,9 +25,9 @@ class DeclarativeShadowVariablesMethodVariablesTest {
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withSolutionClass(TestdataDeclarativeMethodVariablesSolution.class)
                 .withEntityClasses(TestdataDeclarativeMethodVariablesEntity.class,
-                        TestdataDeclarativeMethodVariablesBaseValue.class,
-                        TestdataDeclarativeMethodVariablesSubclassValue.class)
-                .withConstraintProviderClass(TestdataDeclarativeMethodVariablesConstraintProvider.class)
+                        TestdataDeclarativeExtendedBaseValue.class,
+                        TestdataDeclarativeExtendedSubclassValue.class)
+                .withConstraintProviderClass(TestdataDeclarativeExtendedConstraintProvider.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withScoreCalculationCountLimit(1000L));
 
@@ -38,9 +38,9 @@ class DeclarativeShadowVariablesMethodVariablesTest {
         var entityA = new TestdataDeclarativeMethodVariablesEntity("A");
         var entityB = new TestdataDeclarativeMethodVariablesEntity("B");
 
-        var value1 = new TestdataDeclarativeMethodVariablesSubclassValue("1");
-        var value2 = new TestdataDeclarativeMethodVariablesSubclassValue("2");
-        var value31 = new TestdataDeclarativeMethodVariablesSubclassValue("31");
+        var value1 = new TestdataDeclarativeExtendedSubclassValue("1");
+        var value2 = new TestdataDeclarativeExtendedSubclassValue("2");
+        var value31 = new TestdataDeclarativeExtendedSubclassValue("31");
 
         problem.setEntities(List.of(entityA, entityB));
         problem.setValues(List.of(value1, value2, value31));

@@ -12,13 +12,14 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
 
 @PlanningSolution
 public class TestdataDynamicFollowerSolution extends TestdataObject {
 
     public static SolutionDescriptor<TestdataDynamicFollowerSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
-                TestdataDynamicFollowerSolution.class, TestdataDynamicLeaderEntity.class, TestdataDynamicFollowerEntity.class);
+                TestdataDynamicFollowerSolution.class, TestdataLeaderEntity.class, TestdataDynamicFollowerEntity.class);
     }
 
     public static PlanningSolutionMetaModel<TestdataDynamicFollowerSolution> buildMetaModel() {
@@ -27,7 +28,7 @@ public class TestdataDynamicFollowerSolution extends TestdataObject {
 
     @PlanningEntityCollectionProperty
     @ValueRangeProvider
-    List<TestdataDynamicLeaderEntity> leaders;
+    List<TestdataLeaderEntity> leaders;
 
     @PlanningEntityCollectionProperty
     List<TestdataDynamicFollowerEntity> followers;
@@ -41,7 +42,7 @@ public class TestdataDynamicFollowerSolution extends TestdataObject {
     public TestdataDynamicFollowerSolution() {
     }
 
-    public TestdataDynamicFollowerSolution(String code, List<TestdataDynamicLeaderEntity> leaders,
+    public TestdataDynamicFollowerSolution(String code, List<TestdataLeaderEntity> leaders,
             List<TestdataDynamicFollowerEntity> followers,
             List<TestdataValue> values) {
         super(code);
@@ -51,12 +52,12 @@ public class TestdataDynamicFollowerSolution extends TestdataObject {
     }
 
     public static TestdataDynamicFollowerSolution generateSolution(int leaderCount, int followerCount, int valueCount) {
-        var leaders = new ArrayList<TestdataDynamicLeaderEntity>(leaderCount);
+        var leaders = new ArrayList<TestdataLeaderEntity>(leaderCount);
         var followers = new ArrayList<TestdataDynamicFollowerEntity>(followerCount);
         var values = new ArrayList<TestdataValue>(valueCount);
 
         for (int i = 0; i < leaderCount; i++) {
-            leaders.add(new TestdataDynamicLeaderEntity("Leader %d".formatted(i)));
+            leaders.add(new TestdataLeaderEntity("Leader %d".formatted(i)));
         }
 
         for (var i = 0; i < followerCount; i++) {
@@ -70,11 +71,11 @@ public class TestdataDynamicFollowerSolution extends TestdataObject {
         return new TestdataDynamicFollowerSolution("Solution", leaders, followers, values);
     }
 
-    public List<TestdataDynamicLeaderEntity> getLeaders() {
+    public List<TestdataLeaderEntity> getLeaders() {
         return leaders;
     }
 
-    public void setLeaders(List<TestdataDynamicLeaderEntity> leaders) {
+    public void setLeaders(List<TestdataLeaderEntity> leaders) {
         this.leaders = leaders;
     }
 

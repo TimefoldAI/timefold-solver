@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordEntity;
-import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordValue;
+import ai.timefold.solver.core.testdomain.record.TestdataRecordValue;
 
 @PlanningSolution
 public class TestdataSolution extends TestdataObject {
