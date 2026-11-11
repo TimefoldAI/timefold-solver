@@ -41,7 +41,8 @@ public final class BiasedRandomChooser<Item_> implements RandomChooser<Item_> {
     }
 
     /**
-     * @param livePredicate tested once per item, at the first choice; a rejected item is never live, also after
+     * @param livePredicate tested once per item with a weight other than 0, at the first choice; a rejected item is never live,
+     *        also after
      *        {@link #reset()}
      */
     public BiasedRandomChooser(List<Item_> itemList, double[] weightArray, @Nullable Predicate<Item_> livePredicate,
@@ -110,7 +111,8 @@ public final class BiasedRandomChooser<Item_> implements RandomChooser<Item_> {
         }
         if (livePredicate != null) {
             for (var i = 0; i < itemList.size(); i++) {
-                excludedArray[i] = !livePredicate.test(itemList.get(i));
+                // Items with weight 0 are never live, so their predicate is not tested.
+                excludedArray[i] = weightArray[i] != 0.0 && !livePredicate.test(itemList.get(i));
             }
             livePredicate = null;
         }

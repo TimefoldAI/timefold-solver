@@ -94,6 +94,17 @@ class BiasedRandomChooserTest {
     }
 
     @Test
+    void livePredicateNotTestedForZeroWeight() {
+        var chooser = new BiasedRandomChooser<>(List.of("a", "b"), new double[] { 0, 1 }, item -> {
+            if (item.equals("a")) {
+                throw new IllegalStateException("Not tested for an item with weight 0.");
+            }
+            return true;
+        }, new TestRandom(0.5));
+        assertThat(chooser.choose()).isEqualTo("b");
+    }
+
+    @Test
     void removeChosenWithoutChoiceFails() {
         var chooser = new BiasedRandomChooser<>(List.of("a"), new double[] { 1 }, new TestRandom(0.5));
         assertThatIllegalStateException().isThrownBy(chooser::removeChosen);
