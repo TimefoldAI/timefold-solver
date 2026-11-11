@@ -118,8 +118,8 @@ class AndCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
         when(termination1.calculateSolverTimeGradient(solverScope)).thenReturn(-1.0);
         when(termination2.calculateSolverTimeGradient(solverScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored, min(unsupported,unsupported) = 1.0 (default)
-        assertThat(compositeTermination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculateSolverTimeGradient(solverScope)).isEqualTo(-1.0, offset(0.0));
 
         when(termination1.calculateSolverTimeGradient(solverScope)).thenReturn(0.5);
         when(termination2.calculateSolverTimeGradient(solverScope)).thenReturn(-1.0);
@@ -158,8 +158,8 @@ class AndCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
         when(termination1.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(termination2.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored, min(unsupported,unsupported) = 1.0 (default)
-        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(-1.0, offset(0.0));
 
         when(termination1.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         when(termination2.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
@@ -198,18 +198,31 @@ class AndCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
         when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored, min(unsupported,unsupported) = 1.0 (default)
-        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(-1.0, offset(0.0));
 
         when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
-        // Negative time gradient values are unsupported and ignored = 1.0 (default)
-        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
+        // No applicable termination supports a time gradient.
+        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(-1.0, offset(0.0));
 
         when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         // Negative time gradient values are unsupported and ignored
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.5, offset(0.0));
+    }
+
+    @Test
+    void nestedCompositeWithoutTimeGradientIsIgnored() {
+        PhaseTermination<TestdataSolution> unsupportedTermination = mockPhaseTermination();
+        PhaseTermination<TestdataSolution> supportedTermination = mockPhaseTermination();
+        UniversalTermination<TestdataSolution> compositeTermination = new AndCompositeTermination<>(
+                new OrCompositeTermination<>(unsupportedTermination), supportedTermination);
+        AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
+
+        when(unsupportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
+        when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.4);
+        assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.4, offset(0.0));
     }
 
 }

@@ -349,6 +349,33 @@ class DefaultSolverTest {
     }
 
     @Test
+    void solverLevelAndWaitsForPhaseOnlyTermination() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
+                        .withMoveCountLimit(10L)
+                        .withStepCountLimit(100));
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        // Every local search step evaluates at least one move.
+        assertThat(summary.moveEvaluationCount()).isGreaterThanOrEqualTo(100L);
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.AND, null, 0, null));
+    }
+
+    @Test
+    void solverLevelAndOfPhaseOnlyTerminationsRunsThePhases() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
+                        .withStepCountLimit(10)
+                        .withUnimprovedStepCountLimit(5));
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.moveEvaluationCount()).isGreaterThanOrEqualTo(10L);
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.AND, null, 0, null));
+    }
+
+    @Test
     void summaryWithAndTermination() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())

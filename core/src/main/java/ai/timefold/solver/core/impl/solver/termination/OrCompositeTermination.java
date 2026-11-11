@@ -56,8 +56,11 @@ final class OrCompositeTermination<Solution_>
     }
 
     /**
+     * Only a phase can check the terminations that can only end a phase,
+     * see {@link #isSolverTerminatedForPhase(AbstractPhaseScope)}.
+     *
      * @param solverScope never null
-     * @return true if any one of the terminations is terminated.
+     * @return true if any one of the solver terminations is terminated.
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -90,15 +93,26 @@ final class OrCompositeTermination<Solution_>
         return false;
     }
 
+    @Override
+    boolean isSolverTerminatedForPhase(AbstractPhaseScope<Solution_> phaseScope) {
+        for (var termination : terminationList) {
+            if (isTerminatedForPhase(termination, phaseScope)) {
+                recordTermination(phaseScope.getSolverScope(), termination);
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @return the maximum timeGradient of the terminations.
+     * @return the maximum timeGradient of the terminations, or -1.0 if none of them supports it.
      */
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        var timeGradient = 0.0;
+        var timeGradient = -1.0;
         for (var termination : solverTerminationList) {
             var nextTimeGradient = termination.calculateSolverTimeGradient(solverScope);
             if (nextTimeGradient >= 0.0) {
@@ -112,11 +126,11 @@ final class OrCompositeTermination<Solution_>
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @return the maximum timeGradient of the supported terminations.
+     * @return the maximum timeGradient of the supported terminations, or -1.0 if none of them supports it.
      */
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        var timeGradient = 0.0;
+        var timeGradient = -1.0;
         for (var termination : phaseTerminationList) {
             if (!termination.isApplicableTo(phaseScope.getClass())) {
                 continue;
@@ -127,6 +141,11 @@ final class OrCompositeTermination<Solution_>
             }
         }
         return timeGradient;
+    }
+
+    @Override
+    double combineTimeGradients(double timeGradient, double otherTimeGradient) {
+        return Math.max(timeGradient, otherTimeGradient);
     }
 
     @Override
