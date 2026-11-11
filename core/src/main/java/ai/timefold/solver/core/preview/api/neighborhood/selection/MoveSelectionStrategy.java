@@ -18,7 +18,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Call order: {@link #phaseStarted(PhaseContext)} once;
  * then for each step {@link #stepStarted(StepContext)},
- * followed by {@link #nextMoveSource()} and {@link #moveSourceExhausted(MoveSource)} in any mix.
+ * followed by {@link #nextMoveSource()} for each move,
+ * and {@link #moveSourceExhausted()} when the move source returned last has no more moves.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
@@ -33,10 +34,11 @@ public interface MoveSelectionStrategy<Solution_> {
     void stepStarted(StepContext<Solution_> context);
 
     /**
-     * The move source has no more moves in this step.
+     * The move source that {@link #nextMoveSource()} returned last has no more moves in this step.
+     * The solver calls this either right after that move source was returned or right after its last move.
      * {@link #nextMoveSource()} must not return it again before the next {@link #stepStarted(StepContext)}.
      */
-    void moveSourceExhausted(MoveSource<Solution_> moveSource);
+    void moveSourceExhausted();
 
     /**
      * The solver calls this only while at least one move source is available.

@@ -47,7 +47,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final boolean reinitializeVariableFilterEnabled;
     private final boolean unassignedValuesAllowed;
     private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-    private final @Nullable Class<? extends NeighborhoodProvider> neighborhoodProviderClass;
+    private final @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass;
     private final @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory;
     private final RandomSource random;
 
@@ -130,7 +130,7 @@ public class HeuristicConfigPolicy<Solution_> {
     /**
      * @return the solver-level setting; a phase may override it
      */
-    public @Nullable Class<? extends NeighborhoodProvider> getNeighborhoodProviderClass() {
+    public @Nullable Class<? extends NeighborhoodProvider<Solution_>> getNeighborhoodProviderClass() {
         return neighborhoodProviderClass;
     }
 
@@ -315,7 +315,7 @@ public class HeuristicConfigPolicy<Solution_> {
         private boolean unassignedValuesAllowed = false;
 
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-        private @Nullable Class<? extends NeighborhoodProvider> neighborhoodProviderClass;
+        private @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass;
         private @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory;
         private RandomSource random;
 
@@ -351,7 +351,8 @@ public class HeuristicConfigPolicy<Solution_> {
         }
 
         public Builder<Solution_>
-                withNeighborhoodProviderClass(@Nullable Class<? extends NeighborhoodProvider> neighborhoodProviderClass) {
+                withNeighborhoodProviderClass(
+                        @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
             this.neighborhoodProviderClass = neighborhoodProviderClass;
             return this;
         }

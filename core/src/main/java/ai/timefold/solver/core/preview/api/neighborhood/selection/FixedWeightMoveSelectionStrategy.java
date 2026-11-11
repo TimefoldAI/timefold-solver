@@ -1,10 +1,6 @@
 package ai.timefold.solver.core.preview.api.neighborhood.selection;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -39,7 +35,7 @@ public class FixedWeightMoveSelectionStrategy<Solution_> implements MoveSelectio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FixedWeightMoveSelectionStrategy.class);
 
-    private final Set<MoveSource<Solution_>> exhaustedSet = Collections.newSetFromMap(new IdentityHashMap<>());
+    private boolean exhaustedInStep = false;
     private @Nullable RandomChooser<MoveSource<Solution_>> chooser = null;
 
     /**
@@ -86,24 +82,26 @@ public class FixedWeightMoveSelectionStrategy<Solution_> implements MoveSelectio
                             .mapToObj(i -> moveSourceList.get(i).id() + "=" + weightArray[i])
                             .collect(Collectors.joining(", ")));
         }
-        exhaustedSet.clear();
-        Predicate<MoveSource<Solution_>> livePredicate = moveSource -> !exhaustedSet.contains(moveSource);
+        exhaustedInStep = false;
         // The default uses the uniform algorithm of move selector unions, a subclass the biased one.
         chooser = getClass() == FixedWeightMoveSelectionStrategy.class
-                ? new UniformRandomChooser<>(moveSourceList, livePredicate, context.random())
-                : new BiasedRandomChooser<>(moveSourceList, weightArray, livePredicate, context.random());
+                ? new UniformRandomChooser<>(moveSourceList, context.random())
+                : new BiasedRandomChooser<>(moveSourceList, weightArray, context.random());
     }
 
     @Override
     public final void stepStarted(StepContext<Solution_> context) {
-        exhaustedSet.clear();
-        chooser.markStale();
+        // Without exhausted move sources, the live move sources are unchanged.
+        if (exhaustedInStep) {
+            exhaustedInStep = false;
+            chooser.reset();
+        }
     }
 
     @Override
-    public final void moveSourceExhausted(MoveSource<Solution_> moveSource) {
-        exhaustedSet.add(moveSource);
-        chooser.markStale();
+    public final void moveSourceExhausted() {
+        exhaustedInStep = true;
+        chooser.removeChosen();
     }
 
     @Override

@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.solver.random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
-import java.util.HashSet;
 import java.util.List;
 
 import ai.timefold.solver.core.testutil.TestRandom;
@@ -12,29 +12,16 @@ import org.junit.jupiter.api.Test;
 class UniformRandomChooserTest {
 
     @Test
-    void refreshKeepsItemListOrder() {
-        var deadSet = new HashSet<>(List.of("b"));
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), item -> !deadSet.contains(item),
-                new TestRandom(0, 1, 2));
-        chooser.markStale();
-
-        // Live list after refresh: a, c, d.
+    void choosesByIndexInItemListOrder() {
+        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c"), new TestRandom(0, 1, 2));
         assertThat(chooser.choose()).isEqualTo("a");
-        assertThat(chooser.choose()).isEqualTo("c");
-        assertThat(chooser.choose()).isEqualTo("d");
-    }
-
-    @Test
-    void allItemsStartLiveWithoutPredicate() {
-        var chooser = new UniformRandomChooser<>(List.of("a", "b"), item -> {
-            throw new IllegalStateException("Not evaluated before markStale().");
-        }, new TestRandom(1));
         assertThat(chooser.choose()).isEqualTo("b");
+        assertThat(chooser.choose()).isEqualTo("c");
     }
 
     @Test
     void removeChosenMovesLastItemIntoGap() {
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), item -> true, new TestRandom(1, 1, 2));
+        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), new TestRandom(1, 1, 2));
         assertThat(chooser.choose()).isEqualTo("b");
 
         chooser.removeChosen();
@@ -44,30 +31,37 @@ class UniformRandomChooserTest {
     }
 
     @Test
-    void markStaleDoesNotRestoreDeadItems() {
-        var deadSet = new HashSet<String>();
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c"), item -> !deadSet.contains(item),
-                new TestRandom(0, 0, 1));
+    void resetRestoresAllItemsInItemListOrder() {
+        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c"), new TestRandom(0, 1, 1));
         assertThat(chooser.choose()).isEqualTo("a");
-        deadSet.add("a");
         chooser.removeChosen();
-        chooser.markStale();
-
-        // Live list after refresh: b, c.
+        // Live list: c, b.
         assertThat(chooser.choose()).isEqualTo("b");
-        assertThat(chooser.choose()).isEqualTo("c");
+
+        chooser.reset();
+        // Live list: a, b, c.
+        assertThat(chooser.choose()).isEqualTo("b");
+    }
+
+    @Test
+    void removeChosenWithoutChoiceFails() {
+        var chooser = new UniformRandomChooser<>(List.of("a"), new TestRandom(new int[0]));
+        assertThatIllegalStateException().isThrownBy(chooser::removeChosen);
+        assertThat(chooser.choose()).isEqualTo("a");
+        chooser.removeChosen();
+        assertThatIllegalStateException().isThrownBy(chooser::removeChosen);
     }
 
     @Test
     void oneLiveItemUsesNoRandom() {
         // TestRandom fails when asked for a number it was not given.
-        var chooser = new UniformRandomChooser<>(List.of("a"), item -> true, new TestRandom(new int[0]));
+        var chooser = new UniformRandomChooser<>(List.of("a"), new TestRandom(new int[0]));
         assertThat(chooser.choose()).isEqualTo("a");
     }
 
     @Test
     void emptyGivesNull() {
-        var chooser = new UniformRandomChooser<>(List.of("a", "b"), item -> true, new TestRandom(0));
+        var chooser = new UniformRandomChooser<>(List.of("a", "b"), new TestRandom(0));
         assertThat(chooser.choose()).isEqualTo("a");
         chooser.removeChosen();
         assertThat(chooser.choose()).isEqualTo("b");

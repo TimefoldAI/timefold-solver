@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.solver.random;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import org.jspecify.annotations.NullMarked;
@@ -10,11 +9,10 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Chooses a random live item; every live item has the same chance.
- * With one live item, it uses no random number.
- * <p>
  * All items start live.
- * After {@link #markStale()}, the live items are found again with the livePredicate, in the order of the item list.
- * Removing a live item moves the last live item into its place.
+ * With one live item, it uses no random number.
+ * Removing a live item moves the last live item into its place;
+ * {@link #reset()} restores the order of the item list.
  *
  * @param <Item_> the type of the items
  */
@@ -22,40 +20,26 @@ import org.jspecify.annotations.Nullable;
 public final class UniformRandomChooser<Item_> implements RandomChooser<Item_> {
 
     private final List<Item_> itemList;
-    private final Predicate<Item_> livePredicate;
     private final List<Item_> liveItemList;
     private final RandomGenerator random;
-    private boolean stale = false;
     private int chosenIndex = -1;
 
     /**
-     * @param itemList all items, all live at the start; the chooser keeps it, so do not change it
-     * @param livePredicate true if the item can be chosen; evaluated only after {@link #markStale()}
+     * @param itemList all items; the chooser keeps it, so do not change it
      */
-    public UniformRandomChooser(List<Item_> itemList, Predicate<Item_> livePredicate, RandomGenerator random) {
+    public UniformRandomChooser(List<Item_> itemList, RandomGenerator random) {
         this.itemList = itemList;
-        this.livePredicate = livePredicate;
         this.liveItemList = new ArrayList<>(itemList);
         this.random = random;
     }
 
     @Override
-    public void markStale() {
-        stale = true;
-    }
-
-    @Override
     public boolean isEmpty() {
-        refresh();
         return liveItemList.isEmpty();
     }
 
-    /**
-     * @return null if no item is live
-     */
     @Override
     public @Nullable Item_ choose() {
-        refresh();
         var size = liveItemList.size();
         chosenIndex = switch (size) {
             case 0 -> -1;
@@ -70,29 +54,18 @@ public final class UniformRandomChooser<Item_> implements RandomChooser<Item_> {
         if (chosenIndex < 0) {
             throw new IllegalStateException("Impossible state: no chosen item to remove.");
         }
-        removeAt(chosenIndex);
-    }
-
-    private void removeAt(int index) {
         var lastItem = liveItemList.removeLast();
-        if (index != liveItemList.size()) {
+        if (chosenIndex != liveItemList.size()) {
             // The list order carries no meaning, so the last item fills the gap.
-            liveItemList.set(index, lastItem);
+            liveItemList.set(chosenIndex, lastItem);
         }
         chosenIndex = -1;
     }
 
-    private void refresh() {
-        if (!stale) {
-            return;
-        }
+    @Override
+    public void reset() {
         liveItemList.clear();
-        for (var item : itemList) {
-            if (livePredicate.test(item)) {
-                liveItemList.add(item);
-            }
-        }
-        stale = false;
+        liveItemList.addAll(itemList);
         chosenIndex = -1;
     }
 

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -216,6 +217,7 @@ class StrategyUnionMoveIteratorTest {
         private final Function<List<MoveSource<TestdataSolution>>, @Nullable MoveSource<TestdataSolution>> chooseFunction;
         private final List<String> eventList = new ArrayList<>();
         private final List<MoveSource<TestdataSolution>> moveSourceList;
+        private @Nullable MoveSource<TestdataSolution> lastMoveSource = null;
 
         private RecordingStrategy(List<? extends MoveSource<TestdataSolution>> moveSourceList,
                 Function<List<MoveSource<TestdataSolution>>, @Nullable MoveSource<TestdataSolution>> chooseFunction) {
@@ -234,14 +236,15 @@ class StrategyUnionMoveIteratorTest {
         }
 
         @Override
-        public void moveSourceExhausted(MoveSource<TestdataSolution> moveSource) {
-            eventList.add("exhausted " + moveSource.id());
+        public void moveSourceExhausted() {
+            eventList.add("exhausted " + Objects.requireNonNull(lastMoveSource).id());
         }
 
         @Override
         public @Nullable MoveSource<TestdataSolution> nextMoveSource() {
             eventList.add("next");
-            return chooseFunction.apply(moveSourceList);
+            lastMoveSource = chooseFunction.apply(moveSourceList);
+            return lastMoveSource;
         }
 
     }

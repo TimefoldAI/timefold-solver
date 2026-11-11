@@ -34,7 +34,7 @@ class FixedWeightMoveSelectionStrategyTest {
             var moveSource = strategy.nextMoveSource();
             pickList.add(moveSource.id());
             if (remainingMap.merge(moveSource, -1, Integer::sum) == 0) {
-                strategy.moveSourceExhausted(moveSource);
+                strategy.moveSourceExhausted();
             }
         }
 
@@ -52,8 +52,9 @@ class FixedWeightMoveSelectionStrategyTest {
 
     @Test
     void exhaustedNotChosenUntilStepStarted() {
-        var strategy = started(Map.of("a", 1.0, "b", 1.0, "c", 1.0), List.of(A, B, C), new TestRandom(0.0, 0.0));
-        strategy.moveSourceExhausted(A);
+        var strategy = started(Map.of("a", 1.0, "b", 1.0, "c", 1.0), List.of(A, B, C), new TestRandom(0.0, 0.0, 0.0));
+        assertThat(strategy.nextMoveSource()).isSameAs(A);
+        strategy.moveSourceExhausted();
 
         // Offsets: b [0, 1), c [1, 2).
         assertThat(strategy.nextMoveSource()).isSameAs(B);
@@ -69,7 +70,7 @@ class FixedWeightMoveSelectionStrategyTest {
         assertThat(strategy.nextMoveSource()).isSameAs(B);
         assertThat(strategy.nextMoveSource()).isSameAs(B);
 
-        strategy.moveSourceExhausted(B);
+        strategy.moveSourceExhausted();
         // Only zero-weight move sources are left: the step ends.
         assertThat(strategy.nextMoveSource()).isNull();
     }
@@ -118,18 +119,22 @@ class FixedWeightMoveSelectionStrategyTest {
     void defaultUsesUniformAlgorithm() {
         var strategy = new FixedWeightMoveSelectionStrategy<TestdataSolution>();
         // TestRandom fails when asked for a number it was not given.
-        strategy.phaseStarted(new TestPhaseContext(List.of(A, B, C), new TestRandom(2, 1)));
+        strategy.phaseStarted(new TestPhaseContext(List.of(A, B, C), new TestRandom(2, 0, 1)));
         strategy.stepStarted(STEP_CONTEXT);
 
         assertThat(strategy.nextMoveSource()).isSameAs(C);
-        strategy.moveSourceExhausted(A);
-        // Available, in registration order: b, c.
-        assertThat(strategy.nextMoveSource()).isSameAs(C);
-        strategy.moveSourceExhausted(C);
+        strategy.moveSourceExhausted();
+        // Available: a, b.
+        assertThat(strategy.nextMoveSource()).isSameAs(A);
+        strategy.moveSourceExhausted();
         // One available move source: no random number.
         assertThat(strategy.nextMoveSource()).isSameAs(B);
-        strategy.moveSourceExhausted(B);
+        strategy.moveSourceExhausted();
         assertThat(strategy.nextMoveSource()).isNull();
+
+        strategy.stepStarted(STEP_CONTEXT);
+        // Available again, in registration order: a, b, c.
+        assertThat(strategy.nextMoveSource()).isSameAs(B);
     }
 
     private static MoveSelectionStrategy<TestdataSolution> started(Map<String, Double> weightMap,

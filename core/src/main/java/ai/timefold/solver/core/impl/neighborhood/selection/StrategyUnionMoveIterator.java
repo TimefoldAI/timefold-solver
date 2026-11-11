@@ -111,7 +111,7 @@ public final class StrategyUnionMoveIterator<Solution_> implements Iterator<Move
     private void exhaust(int index) {
         exhaustedArray[index] = true;
         exhaustedCount++;
-        strategy.moveSourceExhausted(moveSourceList.get(index));
+        strategy.moveSourceExhausted();
     }
 
     @Override

@@ -1505,7 +1505,7 @@ public interface MoveSelectionStrategy<Solution_> {
 
     void stepStarted(StepContext<Solution_> context);
 
-    void moveSourceExhausted(MoveSource<Solution_> moveSource);
+    void moveSourceExhausted();
 
     @Nullable MoveSource<Solution_> nextMoveSource();
 
@@ -1518,7 +1518,8 @@ The solver uses the strategy as follows:
 The `PhaseContext` gives all move sources of the neighborhood, in the order you added them,
 and the random generator of the phase.
 - At the start of each step, it calls `stepStarted`. All move sources are available again.
-- Then it calls `nextMoveSource` for each move, and `moveSourceExhausted` when a move source has no more moves in this step.
+- Then it calls `nextMoveSource` for each move.
+When the move source you returned last has no more moves in this step, it calls `moveSourceExhausted`.
 The solver gets the moves of a move source only when you first return it in a step,
 so a move source can be exhausted right after you return it.
 Never return an exhausted move source before the next `stepStarted`.

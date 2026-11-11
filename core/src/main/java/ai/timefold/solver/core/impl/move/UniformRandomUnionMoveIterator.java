@@ -47,7 +47,7 @@ public final class UniformRandomUnionMoveIterator<Solution_>
     private final RandomChooser<Iterator<Move<Solution_>>> chooser;
 
     private UniformRandomUnionMoveIterator(List<Iterator<Move<Solution_>>> moveIteratorList, RandomGenerator workingRandom) {
-        this.chooser = new UniformRandomChooser<>(moveIteratorList, Iterator::hasNext, workingRandom);
+        this.chooser = new UniformRandomChooser<>(moveIteratorList, workingRandom);
     }
 
     @Override

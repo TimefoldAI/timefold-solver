@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -105,6 +106,31 @@ class MoveSelectionStrategySolverTest {
     }
 
     @Test
+    void propertiesChangedAfterBuildDoNotReachTheStrategy() {
+        try (var recorder = Recorder.open()) {
+            var solverProperties = new HashMap<>(recorder.properties("label", "before"));
+            var phaseProperties = new HashMap<>(recorder.properties("label", "before"));
+            var solverConfig = baseConfig()
+                    .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                            .withMoveSelectionStrategyCustomProperties(solverProperties))
+                    .withPhases(
+                            new LocalSearchPhaseConfig()
+                                    .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)),
+                            new LocalSearchPhaseConfig()
+                                    .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                                            .withMoveSelectionStrategyCustomProperties(phaseProperties))
+                                    .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+            var solver = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+            solverProperties.put("label", "after");
+            phaseProperties.put("label", "after");
+            solver.solve(solution(3, 3));
+            assertThat(recorder.strategyList).extracting(r -> r.label).containsExactly("before", "before");
+        }
+    }
+
+    @Test
     void solverLevelForGeneratedAndExplicitPhases() {
         try (var recorder = Recorder.open()) {
             var generated = baseConfig()
@@ -147,7 +173,7 @@ class MoveSelectionStrategySolverTest {
                                     .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
             solve(solverConfig, solution(3, 3));
 
-            // NoChangeStrategy has no setter for "unused"; it would fail if the solver-level properties leaked.
+            // RecordingStrategy has no setter for "unused"; it would fail if the solver-level properties leaked.
             assertThat(recorder.strategyList).extracting(r -> r.label).containsExactly("phase", null);
         }
     }
@@ -186,19 +212,42 @@ class MoveSelectionStrategySolverTest {
                 .withPhases(new LocalSearchPhaseConfig());
         assertThatThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("moveSelectionStrategyClass")
+                .hasMessageContaining("solver-level neighborhoods element")
                 .hasMessageContaining("NEIGHBORHOODS");
     }
 
     @Test
     void propertiesWithoutClassFail() {
-        var solverConfig = baseConfig()
+        var phaseLevelConfig = baseConfig()
                 .withPhases(new LocalSearchPhaseConfig()
                         .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
                                 .withMoveSelectionStrategyCustomProperties(Map.of("label", "phase"))));
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
+                .isThrownBy(() -> SolverFactory.create(phaseLevelConfig).buildSolver())
                 .withMessageContaining("phase-level moveSelectionStrategyCustomProperties");
+
+        var solverLevelConfig = baseConfig()
+                .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                        .withMoveSelectionStrategyCustomProperties(Map.of("label", "solver")))
+                .withPhases(new LocalSearchPhaseConfig());
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> SolverFactory.create(solverLevelConfig).buildSolver())
+                .withMessageContaining("solver-level moveSelectionStrategyCustomProperties");
+    }
+
+    @Test
+    void phaseLevelSettingsWithoutNeighborhoodsFail() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DistinctValueScoreCalculator.class)
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                .withMoveSelectionStrategyClass(RecordingStrategy.class)));
+        assertThatThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("phase-level neighborhoods element")
+                .hasMessageContaining("NEIGHBORHOODS");
     }
 
     @Test
@@ -209,8 +258,29 @@ class MoveSelectionStrategySolverTest {
                 .withPhases(new LocalSearchPhaseConfig().withMoveSelectorConfig(new ChangeMoveSelectorConfig()));
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
-                .withMessageContaining("cannot be used in a phase with a move selector")
+                .withMessageContaining(
+                        "The solver-level moveSelectionStrategyClass cannot be used in a phase with a move selector")
                 .withMessageContaining("remove the strategy class or the move selectors");
+
+        var phaseLevelConfig = baseConfig()
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(new ChangeMoveSelectorConfig())
+                        .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                .withMoveSelectionStrategyClass(RecordingStrategy.class)));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> SolverFactory.create(phaseLevelConfig).buildSolver())
+                .withMessageContaining("The phase-level moveSelectionStrategyClass (%s) cannot be used"
+                        .formatted(RecordingStrategy.class.getName()));
+    }
+
+    @Test
+    void providerWithMoveSelectorsIsAllowed() {
+        var solverConfig = baseConfig()
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(new ChangeMoveSelectorConfig())
+                        .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                .withNeighborhoodProviderClass(ChangeOnlyNeighborhoodProvider.class)));
+        assertThat(SolverFactory.create(solverConfig).buildSolver()).isNotNull();
     }
 
     @Test
@@ -295,6 +365,10 @@ class MoveSelectionStrategySolverTest {
         @Override
         protected double getWeight(MoveSource<TestdataSolution> moveSource, PhaseContext<TestdataSolution> context) {
             return moveSource.id().equals("change") ? 0.0 : 1.0;
+        }
+
+        public void setUnused(String unused) {
+            // Accepts the property and ignores it.
         }
 
     }
@@ -384,8 +458,8 @@ class MoveSelectionStrategySolverTest {
         }
 
         @Override
-        public void moveSourceExhausted(MoveSource<TestdataSolution> moveSource) {
-            delegate.moveSourceExhausted(moveSource);
+        public void moveSourceExhausted() {
+            delegate.moveSourceExhausted();
         }
 
         @Override
