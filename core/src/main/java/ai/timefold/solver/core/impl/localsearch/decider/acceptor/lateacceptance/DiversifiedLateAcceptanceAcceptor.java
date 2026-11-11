@@ -51,13 +51,13 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public @Nullable <Score_ extends Score<Score_>> Score_ acceptedScoreLowerBound(LocalSearchStepScope<Solution_> stepScope,
+    public @Nullable <Score_ extends Score<Score_>> Score_ getAcceptedMoveScoreLowerBound(
+            LocalSearchStepScope<Solution_> stepScope,
             boolean allowDecreasingDuringStep) {
-        var currentScore = (Score_) stepScope.getPhaseScope()
-                .getLastCompletedStepScope().getScore().raw();
+        var currentScore = stepScope.getPhaseScope()
+                .getLastCompletedStepScope().<Score_> getScore().raw();
         if (allowDecreasingDuringStep) {
-            var lateScore = (Score_) getLateWorseScore().raw();
+            var lateScore = this.<Score_> getLateWorseScore().raw();
             if (currentScore.compareTo(lateScore) <= 0) {
                 return currentScore;
             } else {
