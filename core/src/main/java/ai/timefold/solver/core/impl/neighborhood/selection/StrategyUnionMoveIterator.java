@@ -92,7 +92,7 @@ public final class StrategyUnionMoveIterator<Solution_> implements Iterator<Move
         if (!(moveSource instanceof DefaultMoveSource<Solution_> defaultMoveSource)
                 || defaultMoveSource.index() < 0
                 || defaultMoveSource.index() >= moveSourceList.size()
-                || moveSourceList.get(defaultMoveSource.index()) != defaultMoveSource) {
+                || !Objects.equals(moveSourceList.get(defaultMoveSource.index()), defaultMoveSource)) {
             throw new IllegalStateException("""
                     The move selection strategy (%s) chose an unknown move source (%s).
                     Maybe return only move sources from the phase context."""

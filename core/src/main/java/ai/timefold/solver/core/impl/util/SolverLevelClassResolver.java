@@ -34,7 +34,7 @@ public final class SolverLevelClassResolver {
             NeighborhoodProvider.class, "neighborhoodProviderClass",
             solverConfig -> solverNeighborhoods(solverConfig).getNeighborhoodProviderClass(),
             phaseConfig -> phaseNeighborhoods(phaseConfig).getNeighborhoodProviderClass(),
-            (solverConfig, clazz) -> solverNeighborhoodsOrNew(solverConfig).setNeighborhoodProviderClass(clazz), false);
+            (solverConfig, clazz) -> attachedSolverNeighborhoods(solverConfig).setNeighborhoodProviderClass(clazz), false);
     /**
      * A phase with move selectors rejects a strategy, so a solver with such a phase never gets one.
      */
@@ -42,17 +42,19 @@ public final class SolverLevelClassResolver {
             MoveSelectionStrategy.class, "moveSelectionStrategyClass",
             solverConfig -> solverNeighborhoods(solverConfig).getMoveSelectionStrategyClass(),
             phaseConfig -> phaseNeighborhoods(phaseConfig).getMoveSelectionStrategyClass(),
-            (solverConfig, clazz) -> solverNeighborhoodsOrNew(solverConfig).setMoveSelectionStrategyClass(clazz), true);
+            (solverConfig, clazz) -> attachedSolverNeighborhoods(solverConfig).setMoveSelectionStrategyClass(clazz), true);
 
     private static NeighborhoodsConfig solverNeighborhoods(SolverConfig solverConfig) {
         return Objects.requireNonNullElseGet(solverConfig.getNeighborhoodsConfig(), NeighborhoodsConfig::new);
     }
 
-    private static NeighborhoodsConfig solverNeighborhoodsOrNew(SolverConfig solverConfig) {
-        if (solverConfig.getNeighborhoodsConfig() == null) {
-            solverConfig.setNeighborhoodsConfig(new NeighborhoodsConfig());
+    private static NeighborhoodsConfig attachedSolverNeighborhoods(SolverConfig solverConfig) {
+        var neighborhoodsConfig = solverConfig.getNeighborhoodsConfig();
+        if (neighborhoodsConfig == null) {
+            neighborhoodsConfig = new NeighborhoodsConfig();
+            solverConfig.setNeighborhoodsConfig(neighborhoodsConfig);
         }
-        return solverConfig.getNeighborhoodsConfig();
+        return neighborhoodsConfig;
     }
 
     private static LocalSearchNeighborhoodsConfig phaseNeighborhoods(LocalSearchPhaseConfig phaseConfig) {

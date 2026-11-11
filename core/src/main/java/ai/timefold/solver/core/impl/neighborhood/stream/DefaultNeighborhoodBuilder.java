@@ -38,8 +38,9 @@ public final class DefaultNeighborhoodBuilder<Solution_> implements Neighborhood
 
     @Override
     public DefaultNeighborhood<Solution_> build() {
-        var moveProviderMap = new LinkedHashMap<String, MoveProvider<Solution_>>(entryList.size());
-        var idByProviderMap = new LinkedHashMap<MoveProvider<Solution_>, String>(entryList.size());
+        var entryCount = entryList.size();
+        var moveProviderMap = LinkedHashMap.<String, MoveProvider<Solution_>> newLinkedHashMap(entryCount);
+        var idByProviderMap = LinkedHashMap.<MoveProvider<Solution_>, String> newLinkedHashMap(entryCount);
         for (var entry : entryList) {
             var previousId = idByProviderMap.get(entry.moveProvider());
             if (previousId != null) {

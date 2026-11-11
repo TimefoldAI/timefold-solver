@@ -361,7 +361,14 @@ class MoveSelectionStrategySolverTest {
             this.movesPerStep = movesPerStep;
         }
 
-        private void record(String event, TestdataSolution solution) {
+        @Override
+        public void phaseStarted(PhaseContext<TestdataSolution> context) {
+            Objects.requireNonNull(recorder, "recorderId").strategyList.add(this);
+            recordEvent("phaseStarted", context.solution());
+            delegate.phaseStarted(context);
+        }
+
+        private void recordEvent(String event, TestdataSolution solution) {
             eventList.add(event);
             threadSet.add(Thread.currentThread());
             solutionSet.add(solution);
@@ -372,15 +379,8 @@ class MoveSelectionStrategySolverTest {
         }
 
         @Override
-        public void phaseStarted(PhaseContext<TestdataSolution> context) {
-            Objects.requireNonNull(recorder, "recorderId").strategyList.add(this);
-            record("phaseStarted", context.solution());
-            delegate.phaseStarted(context);
-        }
-
-        @Override
         public void stepStarted(StepContext<TestdataSolution> context) {
-            record("stepStarted", context.solution());
+            recordEvent("stepStarted", context.solution());
             stepContextSet.add(context);
             movesInStep = 0;
             delegate.stepStarted(context);
