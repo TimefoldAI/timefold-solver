@@ -27,6 +27,14 @@ class BiasedRandomChooserTest {
     }
 
     @Test
+    void offsetRoundedUpToTotalChoosesLastItem() {
+        // 0.75 * Double.MIN_VALUE rounds up to Double.MIN_VALUE, the total weight.
+        var chooser = new BiasedRandomChooser<>(List.of("a", "b"), new double[] { 0, Double.MIN_VALUE }, item -> true,
+                new TestRandom(0.75));
+        assertThat(chooser.choose()).isEqualTo("b");
+    }
+
+    @Test
     void neverChoosesZeroWeight() {
         var chooser = new BiasedRandomChooser<>(List.of("a", "b", "c"), new double[] { 0, 1, 0 }, item -> true,
                 new TestRandom(0.0, 0.99));

@@ -2,8 +2,18 @@ package ai.timefold.solver.core.impl.neighborhood;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhood;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -106,10 +116,56 @@ class DefaultNeighborhoodProviderTest {
                 "ListUnassignMoveProvider(TestdataAllowsUnassignedValuesListEntity.valueList)");
     }
 
+    @Test
+    void sameEntitySimpleNameGetsFullName() {
+        var solutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TwoTaskSolution.class,
+                FirstHolder.Task.class, SecondHolder.Task.class).getMetaModel();
+        assertThat(idsOf(solutionMetaModel)).containsExactlyInAnyOrder(
+                "ChangeMoveProvider(Task.value,noCrossingNull)@" + FirstHolder.Task.class.getName(),
+                "SwapMoveProvider(Task.value)@" + FirstHolder.Task.class.getName(),
+                "ChangeMoveProvider(Task.value,noCrossingNull)@" + SecondHolder.Task.class.getName(),
+                "SwapMoveProvider(Task.value)@" + SecondHolder.Task.class.getName());
+    }
+
     private static <Solution_> Set<String> idsOf(PlanningSolutionMetaModel<Solution_> solutionMetaModel) {
         var neighborhood = (DefaultNeighborhood<Solution_>) new DefaultNeighborhoodProvider<Solution_>()
                 .defineNeighborhood(new DefaultNeighborhoodBuilder<>(solutionMetaModel));
         return neighborhood.moveProviderMap().keySet();
+    }
+
+    @PlanningSolution
+    public static class TwoTaskSolution {
+
+        @ValueRangeProvider
+        @ProblemFactCollectionProperty
+        public List<String> valueList = List.of("a", "b");
+        @PlanningEntityCollectionProperty
+        public List<FirstHolder.Task> firstTaskList = List.of();
+        @PlanningEntityCollectionProperty
+        public List<SecondHolder.Task> secondTaskList = List.of();
+        @PlanningScore
+        public SimpleScore score;
+
+    }
+
+    public static class FirstHolder {
+
+        @PlanningEntity
+        public static class Task {
+            @PlanningVariable
+            public String value;
+        }
+
+    }
+
+    public static class SecondHolder {
+
+        @PlanningEntity
+        public static class Task {
+            @PlanningVariable
+            public String value;
+        }
+
     }
 
 }

@@ -33,12 +33,7 @@ class TimefoldProcessorNeighborhoodUnusedTest {
                             TestdataQuarkusConstraintProvider.class)
                     .addClasses(TestdataQuarkusNeighborhoodProvider.class, OtherQuarkusNeighborhoodProvider.class,
                             TestdataQuarkusMoveSelectionStrategy.class)
-                    .addAsResource(XML))
-            .assertException(t -> assertThat(t)
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Unused classes")
-                    .hasMessageContaining(OtherQuarkusNeighborhoodProvider.class.getName())
-                    .hasMessageContaining("NeighborhoodProvider"));
+                    .addAsResource(XML));
 
     @Inject
     @Named("solver1")
@@ -48,8 +43,9 @@ class TimefoldProcessorNeighborhoodUnusedTest {
     SolverManager<TestdataQuarkusSolution> solverManager2;
 
     @Test
-    void test() {
-        throw new IllegalStateException("The build should have failed.");
+    void unusedClassesAllowed() {
+        assertThat(solverManager1).isNotNull();
+        assertThat(solverManager2).isNotNull();
     }
 
 }

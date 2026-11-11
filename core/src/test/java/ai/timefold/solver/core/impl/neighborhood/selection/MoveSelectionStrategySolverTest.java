@@ -66,7 +66,6 @@ class MoveSelectionStrategySolverTest {
             assertThat(eventList).filteredOn("stepStarted"::equals).hasSize(20);
             assertThat(eventList.get(1)).isEqualTo("stepStarted");
             assertThat(recording.threadSet).containsExactly(Thread.currentThread());
-            assertThat(recording.stepContextSet).hasSize(1);
             assertThat(recording.solutionSet).hasSize(1);
             assertThat(recording.scoreMismatchList).isEmpty();
         }
@@ -341,7 +340,6 @@ class MoveSelectionStrategySolverTest {
                 new FixedWeightMoveSelectionStrategy<>();
         private final List<String> eventList = new ArrayList<>();
         private final Set<Thread> threadSet = new HashSet<>();
-        private final Set<Object> stepContextSet = Collections.newSetFromMap(new IdentityHashMap<>());
         private final Set<Object> solutionSet = Collections.newSetFromMap(new IdentityHashMap<>());
         private final List<String> scoreMismatchList = new ArrayList<>();
         private @Nullable Recorder recorder = null;
@@ -381,7 +379,6 @@ class MoveSelectionStrategySolverTest {
         @Override
         public void stepStarted(StepContext<TestdataSolution> context) {
             recordEvent("stepStarted", context.solution());
-            stepContextSet.add(context);
             movesInStep = 0;
             delegate.stepStarted(context);
         }

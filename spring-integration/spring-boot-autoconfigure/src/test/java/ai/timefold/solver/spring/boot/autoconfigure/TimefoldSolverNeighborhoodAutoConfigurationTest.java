@@ -99,14 +99,12 @@ class TimefoldSolverNeighborhoodAutoConfigurationTest {
     }
 
     @Test
-    void unusedClassesFail() {
+    void unusedClassesAllowed() {
         var xml = "ai/timefold/solver/spring/boot/autoconfigure/neighborhoodSinglePhaseLevelSolverConfig.xml";
-        assertThatCode(() -> multipleRunner
+        multipleRunner
                 .withPropertyValues("timefold.solver.solver1.solver-config-xml=" + xml)
                 .withPropertyValues("timefold.solver.solver2.solver-config-xml=" + xml)
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains("Unused classes", TestdataOtherSpringNeighborhoodProvider.class.getName(),
-                        "NeighborhoodProvider");
+                .run(context -> assertThat(context.getBean("solver1")).isNotNull());
     }
 
     @Test

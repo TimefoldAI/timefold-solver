@@ -43,7 +43,7 @@ as it finds your `ConstraintProvider`:
 It does not set a move selection strategy on a solver that has a phase with move selectors.
 - It never changes a setting that the solver configuration already has, and never changes the settings of a phase.
 - If it finds several implementations, configure the one to use in the solver configuration XML.
-With several solvers, every solver that needs one must configure it, and every implementation must be used.
+With several solvers, every solver that needs one must configure it.
 
 [#integrationWithQuarkusManagedResources]
 == Injecting managed resources

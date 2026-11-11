@@ -9,8 +9,9 @@ import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.neighborhood.selection.DefaultMoveSelectionContext;
 import ai.timefold.solver.core.impl.neighborhood.selection.DefaultMoveSource;
+import ai.timefold.solver.core.impl.neighborhood.selection.DefaultPhaseContext;
+import ai.timefold.solver.core.impl.neighborhood.selection.DefaultStepContext;
 import ai.timefold.solver.core.impl.neighborhood.selection.StrategyUnionMoveIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSession;
@@ -38,8 +39,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
 
     private @Nullable DefaultNeighborhoodSession<Solution_> neighborhoodSession;
     private @Nullable List<MoveIterable<Solution_>> moveIterableList;
-    private final DefaultMoveSelectionContext<Solution_> phaseContext;
-    private final DefaultMoveSelectionContext<Solution_> stepContext;
+    private final List<MoveSource<Solution_>> publicMoveSourceList;
     private @Nullable RandomGenerator workingRandom;
     // A new instance for each phase run, so that no state of an earlier run reaches a custom strategy.
     private @Nullable MoveSelectionStrategy<Solution_> strategy;
@@ -62,9 +62,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
         this.moveSourceList = List.copyOf(sourceList);
         this.moveStreamList = List.copyOf(streamList);
         this.strategyFactory = Objects.requireNonNull(strategyFactory);
-        List<MoveSource<Solution_>> publicMoveSourceList = List.copyOf(moveSourceList);
-        this.phaseContext = new DefaultMoveSelectionContext<>(publicMoveSourceList);
-        this.stepContext = new DefaultMoveSelectionContext<>(publicMoveSourceList);
+        this.publicMoveSourceList = List.copyOf(moveSourceList);
     }
 
     @Override
@@ -108,18 +106,15 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         workingRandom = phaseScope.getWorkingRandom().moveIteratorUsage();
         phaseScope.getScoreDirector().setMoveRepository(this);
-        phaseContext.setRandom(workingRandom);
         strategy = strategyFactory.get();
-        phaseContext.setSolution(currentSolution(phaseScope));
-        strategy.phaseStarted(phaseContext);
+        strategy.phaseStarted(new DefaultPhaseContext<>(publicMoveSourceList, currentSolution(phaseScope), workingRandom));
     }
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         neighborhoodSession.settle(); // In tests, the stepEnded() might not have been called. Do it here as well, just in case.
         stepIndex = stepScope.getStepIndex();
-        stepContext.setSolution(currentSolution(stepScope.getPhaseScope()));
-        strategy.stepStarted(stepContext);
+        strategy.stepStarted(new DefaultStepContext<>(currentSolution(stepScope.getPhaseScope())));
     }
 
     /**
@@ -145,7 +140,6 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
         moveIterableList = null;
         workingRandom = null;
         strategy = null;
-        phaseContext.setRandom(null);
         phaseScope.getScoreDirector().setMoveRepository(null);
     }
 

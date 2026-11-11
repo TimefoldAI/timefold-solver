@@ -2,16 +2,13 @@ package ai.timefold.solver.core.impl.util;
 
 import static java.util.stream.Collectors.joining;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.NeighborhoodsConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
@@ -32,21 +29,21 @@ public final class SolverLevelClassResolver {
 
     public static final SolverLevelClassResolver NEIGHBORHOOD_PROVIDER = new SolverLevelClassResolver(
             NeighborhoodProvider.class, "neighborhoodProviderClass",
-            solverConfig -> solverNeighborhoods(solverConfig).getNeighborhoodProviderClass(),
-            phaseConfig -> phaseNeighborhoods(phaseConfig).getNeighborhoodProviderClass(),
+            solverConfig -> solverConfig.getNeighborhoodsConfig() == null ? null
+                    : solverConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass(),
+            phaseConfig -> phaseConfig.getNeighborhoodsConfig() == null ? null
+                    : phaseConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass(),
             (solverConfig, clazz) -> attachedSolverNeighborhoods(solverConfig).setNeighborhoodProviderClass(clazz), false);
     /**
      * A phase with move selectors rejects a strategy, so a solver with such a phase never gets one.
      */
     public static final SolverLevelClassResolver MOVE_SELECTION_STRATEGY = new SolverLevelClassResolver(
             MoveSelectionStrategy.class, "moveSelectionStrategyClass",
-            solverConfig -> solverNeighborhoods(solverConfig).getMoveSelectionStrategyClass(),
-            phaseConfig -> phaseNeighborhoods(phaseConfig).getMoveSelectionStrategyClass(),
+            solverConfig -> solverConfig.getNeighborhoodsConfig() == null ? null
+                    : solverConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass(),
+            phaseConfig -> phaseConfig.getNeighborhoodsConfig() == null ? null
+                    : phaseConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass(),
             (solverConfig, clazz) -> attachedSolverNeighborhoods(solverConfig).setMoveSelectionStrategyClass(clazz), true);
-
-    private static NeighborhoodsConfig solverNeighborhoods(SolverConfig solverConfig) {
-        return Objects.requireNonNullElseGet(solverConfig.getNeighborhoodsConfig(), NeighborhoodsConfig::new);
-    }
 
     private static NeighborhoodsConfig attachedSolverNeighborhoods(SolverConfig solverConfig) {
         var neighborhoodsConfig = solverConfig.getNeighborhoodsConfig();
@@ -55,10 +52,6 @@ public final class SolverLevelClassResolver {
             solverConfig.setNeighborhoodsConfig(neighborhoodsConfig);
         }
         return neighborhoodsConfig;
-    }
-
-    private static LocalSearchNeighborhoodsConfig phaseNeighborhoods(LocalSearchPhaseConfig phaseConfig) {
-        return Objects.requireNonNullElseGet(phaseConfig.getNeighborhoodsConfig(), LocalSearchNeighborhoodsConfig::new);
     }
 
     private final Class<?> type;
@@ -125,27 +118,8 @@ public final class SolverLevelClassResolver {
                     or remove the unnecessary classes from the classpath."""
                     .formatted(String.join(", ", needingSolverNameList), typeName, propertyName, classNames, propertyName));
         }
-        var usedClassNameSet = new HashSet<String>();
-        for (var solverConfig : neighborhoodsSolverConfigMap.values()) {
-            var solverLevelClass = solverLevelGetter.apply(solverConfig);
-            if (solverLevelClass != null) {
-                usedClassNameSet.add(solverLevelClass.getName());
-            }
-            for (var phaseConfig : localSearchPhaseConfigs(solverConfig)) {
-                var phaseLevelClass = phaseLevelGetter.apply(phaseConfig);
-                if (phaseLevelClass != null) {
-                    usedClassNameSet.add(phaseLevelClass.getName());
-                }
-            }
-        }
-        var unusedClassNameList = classList.stream()
-                .map(Class::getName)
-                .filter(className -> !usedClassNameSet.contains(className))
-                .toList();
-        if (!unusedClassNameList.isEmpty()) {
-            throw new IllegalStateException("Unused classes ([%s]) that implements %s were found."
-                    .formatted(String.join(", ", unusedClassNameList), typeName));
-        }
+        // Unlike score calculators, unused classes are allowed: every solver that needs a class has one,
+        // and a solver can use several neighborhood providers, so a class on the classpath may stay unused on purpose.
     }
 
     private boolean needsSolverLevelClass(SolverConfig solverConfig) {

@@ -79,7 +79,8 @@ public final class BiasedRandomChooser<Item_> implements RandomChooser<Item_> {
         var index = Arrays.binarySearch(liveUpperBoundArray, 0, liveCount, randomOffset);
         // The first live item with an upper bound above the offset.
         var liveIndex = index >= 0 ? index + 1 : -index - 1;
-        return itemList.get(liveIndexArray[liveIndex]);
+        // Rounding can make the offset equal to the total; that offset belongs to the last live item.
+        return itemList.get(liveIndexArray[Math.min(liveIndex, liveCount - 1)]);
     }
 
     private void refresh() {
