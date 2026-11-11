@@ -230,6 +230,8 @@ public interface SolutionView<Solution_> {
      * Entities pinned only up to an index ({@link PlanningPinToIndex}) are included.
      * If the value range is defined on {@link PlanningSolution},
      * every movable entity is returned if the range contains the value, and none if it does not.
+     * The returned list contains only instances of the variable meta model's entity class (and its subclasses),
+     * also if the variable is inherited from a superclass.
      * The returned list may contain the entity which currently has the value assigned.
      * <p>
      * Do not keep the list beyond the current move iterator; it is invalid after a problem change.
@@ -238,7 +240,8 @@ public interface SolutionView<Solution_> {
      *
      * @param variableMetaModel variable in question.
      * @param value value to look up.
-     * @param <Entity_> generic type of the entity that the variable is defined on.
+     * @param <Entity_> generic type of the variable meta model's entity;
+     *        can be a subclass of the class that declares the variable.
      * @param <Value_> generic type of the value that the variable can take.
      * @return unmodifiable, with fast random access; empty if no movable entity accepts the value.
      */

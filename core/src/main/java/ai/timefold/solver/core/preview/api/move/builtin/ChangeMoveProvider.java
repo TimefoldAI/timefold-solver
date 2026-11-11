@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.builtin.ValueRangeChangeMoveIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
@@ -71,9 +72,9 @@ public final class ChangeMoveProvider<Solution_, Entity_, Value_>
         var entityDataset = entities.asCachedDataset();
         // Values come from the entity's own value range, so an out-of-range value is never drawn.
         return moveStreamFactory.buildMoveStream((session, random) -> {
-            var entityInstance = session.getInstance(entityDataset);
+            var entityInstance = (DefaultUniDatasetInstance<Solution_, Entity_>) session.getInstance(entityDataset);
             return new ValueRangeChangeMoveIterator<>(variableMetaModel, session.getSolutionView(),
-                    entityInstance.iterator(random), entityInstance.size(), random, crossingNull);
+                    entityInstance.retiringRandomIterator(random), random, crossingNull);
         });
     }
 

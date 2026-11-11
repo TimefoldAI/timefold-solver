@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -12,6 +13,9 @@ import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeSolution;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
@@ -80,6 +84,42 @@ class SwapMoveProviderTest {
         context.producesNoneOf(
                 Moves.swap(variableMetaModelList, e1, e3), // No-op: e1 and e3 share values.
                 Moves.swap(variableMetaModelList, e3, e1));
+    }
+
+    @Test
+    void endsWhenNoEntityHasAPartner() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class);
+        // A single value: every entity has it, so every swap is a no-op.
+        var solution = TestdataSolution.generateSolution(1, 3);
+
+        var iterator = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsIterator(move -> move);
+        assertThat(iterator.hasNext()).isFalse();
+    }
+
+    @Test
+    void subclassOfInheritedVariableSwapsOnlyWithSubclass() {
+        var solutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataEntityRangeSolution.class,
+                TestdataEntityRangeBaseEntity.class, TestdataEntityRangeChildEntity.class).getMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntityRangeChildEntity.class);
+        var range = List.of("a", "b");
+        var base = new TestdataEntityRangeBaseEntity(0, range);
+        base.setValue("a");
+        var child1 = new TestdataEntityRangeChildEntity(1, range);
+        child1.setValue("b");
+        var child2 = new TestdataEntityRangeChildEntity(2, range);
+        child2.setValue("a");
+        var solution = new TestdataEntityRangeSolution();
+        solution.setEntityList(List.of(base, child1, child2));
+
+        var iterator = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsIterator(move -> move);
+        for (var i = 0; i < 100; i++) {
+            assertThat(iterator.next().getPlanningEntities()).containsExactlyInAnyOrder(child1, child2);
+        }
     }
 
     @Test

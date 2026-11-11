@@ -34,6 +34,8 @@ public final class DefaultMoveStreamFactory<Solution_>
     private final DatasetSessionFactory<Solution_> datasetSessionFactory;
     // In order for node sharing to work properly, the function instances must be identical.
     // Since these functions require the variable meta model, we need to cache them per variable meta model.
+    // An inherited variable's parent and child meta models are equal and share an entry;
+    // the functions must not use entity().
     private final Map<GenuineVariableMetaModel<Solution_, ?, ?>, NodeSharingSupportFunctions<Solution_, ?, ?>> nodeSharingSupportFunctionMap =
             new HashMap<>();
     private final Map<PlanningListVariableMetaModel<Solution_, ?, ?>, ListVariableNodeSharingSupportFunctions<Solution_, ?, ?>> listVariableNodeSharingSupportFunctionsMap =

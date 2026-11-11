@@ -52,6 +52,9 @@ import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascading
 import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingEntity;
 import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingSolution;
 import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingValue;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.entityrange.TestdataEntityRangeSolution;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.pinned.TestdataExtendedPinnedEntity;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.pinned.TestdataExtendedPinnedSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -2806,6 +2809,93 @@ class MoveDirectorTest {
 
         assertThat(moveDirector.getEntitiesWithValueInRange(variableMetaModel, v1))
                 .containsExactlyInAnyOrder(movable, movableSubclass);
+    }
+
+    @Test
+    void isPinnedOfInheritedVariableSeesPinDeclaredOnSubclass() {
+        var solutionDescriptor = TestdataExtendedPinnedSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataPinnedEntity.class)
+                .basicVariable("value", TestdataValue.class);
+        var v1 = new TestdataValue("v1");
+        var movable = new TestdataPinnedEntity("movable", v1, false);
+        var pinnedByParent = new TestdataExtendedPinnedEntity("pinnedByParent", v1, true, v1, false);
+        var pinnedBySubclass = new TestdataExtendedPinnedEntity("pinnedBySubclass", v1, false, v1, true);
+        var movableSubclass = new TestdataExtendedPinnedEntity("movableSubclass", v1, false, v1, false);
+        var solution = new TestdataExtendedPinnedSolution("s");
+        solution.setValueList(List.of(v1));
+        solution.setSubValueList(List.of(v1));
+        solution.setEntityList(List.of(movable, pinnedByParent, pinnedBySubclass, movableSubclass));
+        var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor,
+                s -> SimpleScore.ZERO,
+                EnvironmentMode.PHASE_ASSERT)
+                .buildScoreDirector();
+        scoreDirector.setWorkingSolution(solution);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+
+        assertSoftly(softly -> {
+            softly.assertThat(moveDirector.isPinned(variableMetaModel, movable)).isFalse();
+            softly.assertThat(moveDirector.isPinned(variableMetaModel, pinnedByParent)).isTrue();
+            softly.assertThat(moveDirector.isPinned(variableMetaModel, pinnedBySubclass)).isTrue();
+            softly.assertThat(moveDirector.isPinned(variableMetaModel, movableSubclass)).isFalse();
+        });
+    }
+
+    @Test
+    void getEntitiesWithValueInRangeOfInheritedVariableReturnsOnlySubclassForSolutionRange() {
+        var solutionDescriptor = TestdataExtendedPinnedSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataExtendedPinnedEntity.class)
+                .basicVariable("value", TestdataValue.class);
+        var v1 = new TestdataValue("v1");
+        var movable = new TestdataPinnedEntity("movable", v1, false);
+        var movableSubclass = new TestdataExtendedPinnedEntity("movableSubclass", v1, false, v1, false);
+        var solution = new TestdataExtendedPinnedSolution("s");
+        solution.setValueList(List.of(v1));
+        solution.setSubValueList(List.of(v1));
+        solution.setEntityList(List.of(movable, movableSubclass));
+        var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor,
+                s -> SimpleScore.ZERO,
+                EnvironmentMode.PHASE_ASSERT)
+                .buildScoreDirector();
+        scoreDirector.setWorkingSolution(solution);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+
+        assertThat(moveDirector.getEntitiesWithValueInRange(variableMetaModel, v1))
+                .containsExactly(movableSubclass);
+    }
+
+    @Test
+    void getEntitiesWithValueInRangeOfInheritedVariableReturnsOnlySubclassForEntityRange() {
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataEntityRangeSolution.class,
+                TestdataEntityRangeBaseEntity.class, TestdataEntityRangeChildEntity.class);
+        var baseMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataEntityRangeBaseEntity.class)
+                .basicVariable("value", String.class);
+        var childMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataEntityRangeChildEntity.class)
+                .basicVariable("value", String.class);
+        var base = new TestdataEntityRangeBaseEntity(0, List.of("a", "b"));
+        var child = new TestdataEntityRangeChildEntity(1, List.of("a", "b"));
+        var solution = new TestdataEntityRangeSolution();
+        solution.setEntityList(List.of(base, child));
+        var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor,
+                s -> SimpleScore.ZERO,
+                EnvironmentMode.PHASE_ASSERT)
+                .buildScoreDirector();
+        scoreDirector.setWorkingSolution(solution);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+
+        assertSoftly(softly -> {
+            softly.assertThat(moveDirector.getEntitiesWithValueInRange(childMetaModel, "a")).containsExactly(child);
+            softly.assertThat(moveDirector.getEntitiesWithValueInRange(baseMetaModel, "a"))
+                    .containsExactlyInAnyOrder(base, child);
+            // The filtered list is cached.
+            softly.assertThat(moveDirector.getEntitiesWithValueInRange(childMetaModel, "a"))
+                    .isSameAs(moveDirector.getEntitiesWithValueInRange(childMetaModel, "a"));
+        });
+        var list = moveDirector.getEntitiesWithValueInRange(childMetaModel, "a");
+        assertThatThrownBy(() -> list.add(child)).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test

@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.move.builtin;
 
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public final class ValueRangeChangeMoveIterator<Solution_, Entity_, Value_>
-        extends LeftDrivenMoveIterator<Solution_, Entity_> {
+        extends AbstractLeftDrivenMoveIterator<Solution_, Entity_> {
 
     private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final SolutionView<Solution_> solutionView;
@@ -31,14 +31,13 @@ public final class ValueRangeChangeMoveIterator<Solution_, Entity_, Value_>
     private final boolean nullAllowed;
 
     /**
-     * @param entityIterator draws the entities to change, with replacement
-     * @param entityCount the size of the population behind the entity iterator
+     * @param entityIterator draws the entities to change, at random from the entities not yet retired
      * @param nullAllowed whether null is an acceptable new value
      */
     public ValueRangeChangeMoveIterator(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            SolutionView<Solution_> solutionView, Iterator<? extends @Nullable Entity_> entityIterator, long entityCount,
+            SolutionView<Solution_> solutionView, RetiringRandomIterator<@Nullable Entity_> entityIterator,
             RandomGenerator random, boolean nullAllowed) {
-        super(entityIterator, entityCount);
+        super(entityIterator);
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.solutionView = Objects.requireNonNull(solutionView);
         this.random = Objects.requireNonNull(random);

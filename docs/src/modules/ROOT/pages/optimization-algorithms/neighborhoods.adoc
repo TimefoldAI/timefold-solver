@@ -1046,6 +1046,7 @@ In that case, draw the candidates from the value ranges instead:
 - `SolutionView.getValueRange(variable, entity)` returns the values which the entity accepts.
 - `SolutionView.getEntitiesWithValueInRange(variable, value)` returns the movable entities which accept the value.
 It never returns pinned entities.
+If the variable is inherited, it returns only the instances of the entity class of the variable meta model.
 
 The same pattern applies to other building blocks as well, such as `join`, `ifExists` and `groupBy`;
 essentially, the `solutionView` argument was added to every predicate or function where it could be useful.

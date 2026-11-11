@@ -1,10 +1,12 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +37,7 @@ public final class ReachableValues<Entity_, Value_> {
     private final @Nullable Predicate<Entity_> movableEntityFilter;
     private @Nullable List<Entity_>[] onDemandRandomAccessEntity;
     private @Nullable List<Entity_>[] onDemandRandomAccessMovableEntity;
+    private @Nullable Map<Class<?>, @Nullable List<Entity_>[]> onDemandRandomAccessMovableEntityByClass;
     private @Nullable List<Value_>[] onDemandRandomAccessValue;
     private @Nullable ReachableItemValue<Entity_, Value_> firstCachedObject;
     private @Nullable ReachableItemValue<Entity_, Value_> secondCachedObject;
@@ -117,6 +120,41 @@ public final class ReachableValues<Entity_, Value_> {
                     .filter(movableEntityFilter)
                     .toList();
             onDemandRandomAccessMovableEntity[itemValue.ordinal] = entityList;
+        }
+        return entityList;
+    }
+
+    /**
+     * As {@link #extractMovableEntitiesAsList(Object)}, but only the instances of the given class.
+     * Used for a subclass whose variable is inherited and indexed for the whole class hierarchy.
+     *
+     * @return random access, unmodifiable, shared with other callers
+     */
+    @SuppressWarnings("unchecked")
+    public List<Entity_> extractMovableEntitiesAsList(Object value, Class<?> entityClass) {
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
+        }
+        if (onDemandRandomAccessMovableEntityByClass == null) {
+            onDemandRandomAccessMovableEntityByClass = new HashMap<>();
+        }
+        var entityListArray = onDemandRandomAccessMovableEntityByClass.get(entityClass);
+        if (entityListArray == null) {
+            entityListArray = new List[valuesIndex.allItems().size()];
+            onDemandRandomAccessMovableEntityByClass.put(entityClass, entityListArray);
+        }
+        var entityList = entityListArray[itemValue.ordinal];
+        if (entityList == null) {
+            var movableEntityList = extractMovableEntitiesAsList(value);
+            var filteredList = new ArrayList<Entity_>(movableEntityList.size());
+            for (var entity : movableEntityList) {
+                if (entityClass.isInstance(entity)) {
+                    filteredList.add(entity);
+                }
+            }
+            entityList = Collections.unmodifiableList(filteredList);
+            entityListArray[itemValue.ordinal] = entityList;
         }
         return entityList;
     }
@@ -207,6 +245,7 @@ public final class ReachableValues<Entity_, Value_> {
         var valueCount = valuesIndex.allItems().size();
         this.onDemandRandomAccessEntity = new List[valueCount];
         this.onDemandRandomAccessMovableEntity = new List[valueCount];
+        this.onDemandRandomAccessMovableEntityByClass = null;
         this.onDemandRandomAccessValue = new List[valueCount];
     }
 

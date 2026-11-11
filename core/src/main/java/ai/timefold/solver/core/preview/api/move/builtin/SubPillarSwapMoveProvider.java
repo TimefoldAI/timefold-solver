@@ -205,7 +205,6 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
                 pendingLeftPillar = null;
                 return Collections.emptyIterator();
             }
-            var leftRangesPerVariable = MoveProviderUtil.rangesPerVariableOf(leftPillar, variableMetaModelList, solutionView);
             // Right keys come from the members of valid partner pillars only (see MoveProviderUtil.swapCandidatesOf).
             // Each candidate key is checked cheaply first (it must differ from leftKey) before paying to assemble the
             // right subpillar and run isValidSwap; a match sets pendingLeftPillar/pendingRightPillar as a side effect
@@ -233,6 +232,7 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
                 keyIterator = Stream.generate(() -> candidateKeyList.get(random.nextInt(candidateKeyList.size()))).iterator();
                 bailOutSize = candidateKeyList.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
             }
+            var leftRangesPerVariable = MoveProviderUtil.rangesPerVariableOf(leftPillar, variableMetaModelList, solutionView);
             return new FilteringIterator<>(keyIterator, candidateKey -> {
                 if (Objects.equals(candidateKey, leftKey)) {
                     return false;

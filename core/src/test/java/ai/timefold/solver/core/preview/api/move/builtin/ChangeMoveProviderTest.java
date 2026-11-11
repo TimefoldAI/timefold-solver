@@ -53,6 +53,20 @@ class ChangeMoveProviderTest {
     }
 
     @Test
+    void endsWhenNoEntityCanChange() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable();
+        // A single value: every entity already has it.
+        var solution = TestdataSolution.generateSolution(1, 3);
+
+        var iterator = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsIterator(move -> move);
+        assertThat(iterator.hasNext()).isFalse();
+    }
+
+    @Test
     void fromSolutionIncompleteValueRange() {
         var solutionMetaModel = TestdataIncompleteValueRangeSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)

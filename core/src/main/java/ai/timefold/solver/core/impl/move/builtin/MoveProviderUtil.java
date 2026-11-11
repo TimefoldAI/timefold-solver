@@ -216,6 +216,7 @@ public final class MoveProviderUtil {
             if (Objects.equals(oldLeftValue, oldRightValue)) {
                 continue;
             }
+            // Left side first: the candidate list already guarantees the right side for one variable.
             if (leftRangesPerVariable.get(i).containsInEvery(oldRightValue)
                     && rightRangesPerVariable.get(i).containsInEvery(oldLeftValue)) {
                 change = true;

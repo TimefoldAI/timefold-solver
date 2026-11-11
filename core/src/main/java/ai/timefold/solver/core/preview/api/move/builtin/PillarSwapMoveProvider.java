@@ -5,6 +5,7 @@ import java.util.List;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.move.builtin.PillarSwapMoveIterator;
 import ai.timefold.solver.core.impl.move.builtin.PillarWithRanges;
+import ai.timefold.solver.core.impl.neighborhood.stream.dataset.CachedBiDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -83,7 +84,9 @@ public final class PillarSwapMoveProvider<Solution_, Entity_>
                                 MoveProviderUtil.rangesPerVariableOf(pillar, variableMetaModelList, solutionView)))
                 .asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new PillarSwapMoveIterator<>(session.getSolutionView(),
-                random, variableMetaModelList, session.getInstance(pillarDataset)));
+                random, variableMetaModelList,
+                (CachedBiDatasetInstance<Solution_, List<Object>, PillarWithRanges<Entity_>>) session
+                        .getInstance(pillarDataset)));
     }
 
 }

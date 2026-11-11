@@ -4,6 +4,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.move.builtin.SwapMoveIterator;
+import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
@@ -61,7 +62,8 @@ public final class SwapMoveProvider<Solution_, Entity_>
         var entityDataset = moveStreamFactory.forEach(entityMetaModel.type(), false).asCachedDataset();
         // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
         return moveStreamFactory.buildMoveStream((session, random) -> new SwapMoveIterator<>(variableMetaModelList,
-                session.getSolutionView(), session.getInstance(entityDataset), random));
+                session.getSolutionView(),
+                (DefaultUniDatasetInstance<Solution_, Entity_>) session.getInstance(entityDataset), random));
     }
 
 }
