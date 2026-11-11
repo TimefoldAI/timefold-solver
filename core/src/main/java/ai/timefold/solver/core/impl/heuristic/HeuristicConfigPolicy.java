@@ -50,6 +50,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass;
     private final @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory;
     private final RandomSource random;
+    private final boolean isTieredScoreCalculationEnabled;
 
     private final Map<String, EntityMimicRecorder<Solution_>> entityMimicRecorderMap = new HashMap<>();
     private final Map<String, SubListMimicRecorder<Solution_>> subListMimicRecorderMap = new HashMap<>();
@@ -73,6 +74,7 @@ public class HeuristicConfigPolicy<Solution_> {
         this.neighborhoodProviderClass = builder.neighborhoodProviderClass;
         this.moveSelectionStrategyFactory = builder.moveSelectionStrategyFactory;
         this.random = builder.random;
+        this.isTieredScoreCalculationEnabled = builder.isTieredScoreCalculationEnabled;
     }
 
     public EnvironmentMode getEnvironmentMode() {
@@ -145,6 +147,10 @@ public class HeuristicConfigPolicy<Solution_> {
         return random;
     }
 
+    public boolean isTieredScoreCalculationEnabled() {
+        return isTieredScoreCalculationEnabled;
+    }
+
     // ************************************************************************
     // Builder methods
     // ************************************************************************
@@ -163,7 +169,8 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withNearbyDistanceMeterClass(nearbyDistanceMeterClass)
                 .withNeighborhoodProviderClass(neighborhoodProviderClass)
                 .withMoveSelectionStrategyFactory(moveSelectionStrategyFactory)
-                .withRandom(random);
+                .withRandom(random)
+                .withIsTieredScoreCalculationEnabled(isTieredScoreCalculationEnabled);
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
@@ -319,6 +326,8 @@ public class HeuristicConfigPolicy<Solution_> {
         private @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory;
         private RandomSource random;
 
+        private boolean isTieredScoreCalculationEnabled = false;
+
         public Builder<Solution_> withPreviewFeatureSet(Set<PreviewFeature> previewFeatureSet) {
             this.previewFeatureSet = previewFeatureSet;
             return this;
@@ -405,6 +414,11 @@ public class HeuristicConfigPolicy<Solution_> {
 
         public Builder<Solution_> withUnassignedValuesAllowed(boolean unassignedValuesAllowed) {
             this.unassignedValuesAllowed = unassignedValuesAllowed;
+            return this;
+        }
+
+        public Builder<Solution_> withIsTieredScoreCalculationEnabled(boolean isTieredScoreCalculationEnabled) {
+            this.isTieredScoreCalculationEnabled = isTieredScoreCalculationEnabled;
             return this;
         }
 

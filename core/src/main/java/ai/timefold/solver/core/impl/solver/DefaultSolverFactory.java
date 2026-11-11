@@ -180,8 +180,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
+        var useTieredScoreCalculation = false;
         if (scoreDirectorFactoryConfig != null) {
             var profilingEnabled = scoreDirectorFactoryConfig.getConstraintStreamProfilingEnabled();
+            useTieredScoreCalculation =
+                    Objects.requireNonNullElse(scoreDirectorFactoryConfig.getUseTieredScoreCalculation(), false);
             if (moveThreadCount != null && profilingEnabled != null && profilingEnabled) {
                 throw new UnsupportedOperationException(
                         "Multithreaded solving is not supported together with constraintStreamProfilingEnabled (%s)."
@@ -203,6 +206,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())
+                .withIsTieredScoreCalculationEnabled(useTieredScoreCalculation)
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);

@@ -303,6 +303,10 @@ public class TimefoldSolverAutoConfiguration
             Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
                     .setConstraintStreamProfilingEnabled(solverProperties.getConstraintStreamProfilingEnabled());
         }
+        if (solverProperties.getUseTieredScoreCalculation() != null) {
+            Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                    .setUseTieredScoreCalculation(solverProperties.getUseTieredScoreCalculation());
+        }
         if (solverProperties.getEnvironmentMode() != null) {
             solverConfig.setEnvironmentMode(solverProperties.getEnvironmentMode());
         }

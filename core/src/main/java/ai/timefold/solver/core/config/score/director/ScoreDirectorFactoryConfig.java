@@ -24,6 +24,7 @@ import org.jspecify.annotations.Nullable;
         "constraintProviderCustomProperties",
         "constraintStreamAutomaticNodeSharing",
         "constraintStreamProfilingEnabled",
+        "useTieredScoreCalculation",
         "incrementalScoreCalculatorClass",
         "incrementalScoreCalculatorCustomProperties",
         "initializingScoreTrend",
@@ -43,6 +44,8 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     @Nullable
     private Boolean constraintStreamAutomaticNodeSharing;
     private Boolean constraintStreamProfilingEnabled;
+    @Nullable
+    private Boolean useTieredScoreCalculation;
 
     private String incrementalScoreCalculatorClass = null;
 
@@ -108,6 +111,14 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
 
     public void setConstraintStreamProfilingEnabled(Boolean constraintStreamProfilingEnabled) {
         this.constraintStreamProfilingEnabled = constraintStreamProfilingEnabled;
+    }
+
+    public @Nullable Boolean getUseTieredScoreCalculation() {
+        return useTieredScoreCalculation;
+    }
+
+    public void setUseTieredScoreCalculation(@Nullable Boolean useTieredScoreCalculation) {
+        this.useTieredScoreCalculation = useTieredScoreCalculation;
     }
 
     public @Nullable Class<? extends IncrementalScoreCalculator> getIncrementalScoreCalculatorClass() {
@@ -187,6 +198,11 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
         return this;
     }
 
+    public @NonNull ScoreDirectorFactoryConfig withUseTieredScoreCalculation(@NonNull Boolean useTieredScoreCalculation) {
+        this.useTieredScoreCalculation = useTieredScoreCalculation;
+        return this;
+    }
+
     public @NonNull ScoreDirectorFactoryConfig
             withIncrementalScoreCalculatorClass(
                     @NonNull Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
@@ -226,6 +242,8 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
                 inheritedConfig.getConstraintStreamAutomaticNodeSharing());
         constraintStreamProfilingEnabled = ConfigUtils.inheritOverwritableProperty(constraintStreamProfilingEnabled,
                 inheritedConfig.getConstraintStreamProfilingEnabled());
+        useTieredScoreCalculation = ConfigUtils.inheritOverwritableProperty(useTieredScoreCalculation,
+                inheritedConfig.getUseTieredScoreCalculation());
         incrementalScoreCalculatorClass = ConfigUtils.inheritOverwritableProperty(
                 incrementalScoreCalculatorClass, inheritedConfig.incrementalScoreCalculatorClass);
         incrementalScoreCalculatorCustomProperties = ConfigUtils.inheritMergeableMapProperty(

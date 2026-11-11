@@ -45,7 +45,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         var constraintProvider = ConfigUtils.newInstance(config, "constraintProviderClass", constraintProviderClass);
         var profilingEnabled =
                 Objects.requireNonNullElse(config.getConstraintStreamProfilingEnabled(), false);
-        var useTieredScoreCalculation = solutionDescriptor.isTieredScoreCalculationEnabled();
+        var useTieredScoreCalculation = Objects.requireNonNullElse(config.getUseTieredScoreCalculation(), false);
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
         return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, globalEnvironmentMode,
@@ -74,8 +74,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode) {
-        this(solutionDescriptor, constraintProvider, globalEnvironmentMode, false,
-                solutionDescriptor.isTieredScoreCalculationEnabled());
+        this(solutionDescriptor, constraintProvider, globalEnvironmentMode, false, false);
     }
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
@@ -134,7 +133,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
     @Override
     public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>
             createScoreDirectorBuilder(EnvironmentMode environmentMode) {
-        if (solutionDescriptor.isTieredScoreCalculationEnabled()) {
+        if (useTieredScoreCalculation) {
             return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.TIERED_SCORE_CALCULATION)
                     .getTieredBavetScoreDirectorBuilder(this, environmentMode);
         } else {

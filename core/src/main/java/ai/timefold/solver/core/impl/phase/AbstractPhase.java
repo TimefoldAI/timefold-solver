@@ -39,6 +39,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final boolean assertStepScoreFromScratch;
     protected final boolean assertExpectedStepScore;
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
+    protected final boolean isTieredScoreCalculationEnabled;
 
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
@@ -52,6 +53,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         assertStepScoreFromScratch = builder.assertStepScoreFromScratch;
         assertExpectedStepScore = builder.assertExpectedStepScore;
         assertShadowVariablesAreNotStaleAfterStep = builder.assertShadowVariablesAreNotStaleAfterStep;
+        isTieredScoreCalculationEnabled = builder.isTieredScoreCalculationEnabled;
     }
 
     public int getPhaseIndex() {
@@ -72,6 +74,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     public boolean isAssertShadowVariablesAreNotStaleAfterStep() {
         return assertShadowVariablesAreNotStaleAfterStep;
+    }
+
+    public boolean isTieredScoreCalculationEnabled() {
+        return isTieredScoreCalculationEnabled;
     }
 
     // ************************************************************************
@@ -181,10 +187,11 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected <Score_ extends Score<Score_>> void predictWorkingStepScore(AbstractStepScope<Solution_> stepScope,
             Object completedAction) {
         var phaseScope = stepScope.getPhaseScope();
-        if ((assertStepScoreFromScratch || assertExpectedStepScore || assertShadowVariablesAreNotStaleAfterStep) && phaseScope.getSolutionDescriptor().isTieredScoreCalculationEnabled()) {
+        if ((assertStepScoreFromScratch || assertExpectedStepScore || assertShadowVariablesAreNotStaleAfterStep)
+                && isTieredScoreCalculationEnabled) {
             // The score from the step score might be incomplete if the forager bailed out due
             // to termination or interruption (which can pick a move below the lower bound)
-            var newScore = phaseScope.<Score_>calculateScore();
+            var newScore = phaseScope.<Score_> calculateScore();
             stepScope.setScore(newScore);
             phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), newScore.raw());
         } else {
@@ -278,6 +285,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private boolean assertStepScoreFromScratch = false;
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
+        private boolean isTieredScoreCalculationEnabled = false;
 
         protected AbstractPhaseBuilder(int phaseIndex, EnvironmentMode environmentMode, String logIndentation,
                 PhaseTermination<Solution_> phaseTermination) {
@@ -294,6 +302,12 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             assertExpectedStepScore = environmentMode.isIntrusivelyAsserted();
             assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusivelyAsserted();
             return (Builder_) this;
+        }
+
+        public AbstractPhaseBuilder<Solution_, Phase_> withIsTieredScoreCalculationEnabled(
+                boolean isTieredScoreCalculationEnabled) {
+            this.isTieredScoreCalculationEnabled = isTieredScoreCalculationEnabled;
+            return this;
         }
 
         public abstract Phase_ build();
