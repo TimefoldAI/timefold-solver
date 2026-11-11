@@ -132,6 +132,16 @@ public final class MassChangeMoveProvider<Solution_, Entity_, Value_>
     }
 
     /**
+     * @return {@code MassChangeMoveProvider(<Entity>.<variable>,<sampler>,crossingNull|noCrossingNull)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(MassChangeMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler),
+                MoveProviderUtil.flag("crossingNull", crossingNull));
+    }
+
+    /**
      * Draws {@link Sample}s of size 2 or more from {@code sourceDataset},
      * with no grouping key,
      * and pairs each with a destination value legal for every member,

@@ -5,16 +5,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.PillarChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
@@ -239,6 +242,60 @@ public final class MoveProviderUtil {
 
     private MoveProviderUtil() {
         // No external instances.
+    }
+
+    /**
+     * @return {@code <provider class simple name>(<entity simple name>.<variable names>[,<setting>...])}, no spaces
+     */
+    public static String id(Class<?> providerClass, List<? extends VariableMetaModel<?, ?, ?>> variableMetaModelList,
+            String... settings) {
+        var id = new StringBuilder(providerClass.getSimpleName())
+                .append('(')
+                .append(variableMetaModelList.getFirst().entity().type().getSimpleName())
+                .append('.')
+                .append(variableMetaModelList.stream().map(VariableMetaModel::name).collect(Collectors.joining(",")));
+        for (var setting : settings) {
+            id.append(',').append(setting);
+        }
+        return id.append(')').toString();
+    }
+
+    public static String id(Class<?> providerClass, VariableMetaModel<?, ?, ?> variableMetaModel, String... settings) {
+        return id(providerClass, List.of(variableMetaModel), settings);
+    }
+
+    /**
+     * @return the name if true, else "no" + the capitalized name
+     */
+    public static String flag(String name, boolean value) {
+        return value ? name : "no" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
+    public static String range(int minimum, int maximum) {
+        return minimum + "-" + maximum;
+    }
+
+    /**
+     * @return the simple name of the class, or "custom" for a lambda or an anonymous class, whose names are not stable
+     */
+    public static String defaultId(Object instance) {
+        var type = instance.getClass();
+        return type.isHidden() || type.isAnonymousClass() || type.isSynthetic() ? "custom" : type.getSimpleName();
+    }
+
+    /**
+     * The ID must be the same in every run with the same configuration:
+     * move selection strategies give weights by ID, and the DEBUG log of IDs and weights is compared between runs.
+     * The built-in samplers have a stable {@code toString()}.
+     * A custom sampler may not, for example a lambda, whose default {@code toString()} contains an identity hash;
+     * so every custom sampler is "custom".
+     * The check uses the package of the class, which needs no reflection and so also works in a native image.
+     *
+     * @return the {@code toString()} of a built-in sampler, or "custom"
+     */
+    public static String samplerId(Object sampler) {
+        return sampler.getClass().getPackageName().equals(Samplers.class.getPackageName()) ? sampler.toString()
+                : "custom";
     }
 
 }

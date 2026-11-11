@@ -118,4 +118,12 @@ class MassUnassignMoveProviderTest {
                 .doesNotContain(pinnedEntity);
     }
 
+    @Test
+    void id() {
+        var unassignedVariableMetaModel = TestdataAllowsUnassignedSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedEntity.class).basicVariable("value");
+        assertThat(new MassUnassignMoveProvider<>(unassignedVariableMetaModel, Samplers.exactly(3)).getId())
+                .isEqualTo("MassUnassignMoveProvider(TestdataAllowsUnassignedEntity.value,exactly(3))");
+    }
+
 }

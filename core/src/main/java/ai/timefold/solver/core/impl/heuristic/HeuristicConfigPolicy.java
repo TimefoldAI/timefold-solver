@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
@@ -25,6 +26,10 @@ import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.MoveSelectionStrategy;
+
+import org.jspecify.annotations.Nullable;
 
 public class HeuristicConfigPolicy<Solution_> {
 
@@ -42,6 +47,8 @@ public class HeuristicConfigPolicy<Solution_> {
     private final boolean reinitializeVariableFilterEnabled;
     private final boolean unassignedValuesAllowed;
     private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
+    private final @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass;
+    private final @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory;
     private final RandomSource random;
 
     private final Map<String, EntityMimicRecorder<Solution_>> entityMimicRecorderMap = new HashMap<>();
@@ -63,6 +70,8 @@ public class HeuristicConfigPolicy<Solution_> {
         this.reinitializeVariableFilterEnabled = builder.reinitializeVariableFilterEnabled;
         this.unassignedValuesAllowed = builder.unassignedValuesAllowed;
         this.nearbyDistanceMeterClass = builder.nearbyDistanceMeterClass;
+        this.neighborhoodProviderClass = builder.neighborhoodProviderClass;
+        this.moveSelectionStrategyFactory = builder.moveSelectionStrategyFactory;
         this.random = builder.random;
     }
 
@@ -118,6 +127,20 @@ public class HeuristicConfigPolicy<Solution_> {
         return nearbyDistanceMeterClass;
     }
 
+    /**
+     * @return the solver-level setting; a phase may override it
+     */
+    public @Nullable Class<? extends NeighborhoodProvider<Solution_>> getNeighborhoodProviderClass() {
+        return neighborhoodProviderClass;
+    }
+
+    /**
+     * @return the solver-level strategy, a new instance per call; a phase may override it
+     */
+    public @Nullable Supplier<MoveSelectionStrategy<Solution_>> getMoveSelectionStrategyFactory() {
+        return moveSelectionStrategyFactory;
+    }
+
     public RandomSource getRandom() {
         return random;
     }
@@ -138,6 +161,8 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(classInstanceCache)
                 .withNearbyDistanceMeterClass(nearbyDistanceMeterClass)
+                .withNeighborhoodProviderClass(neighborhoodProviderClass)
+                .withMoveSelectionStrategyFactory(moveSelectionStrategyFactory)
                 .withRandom(random);
     }
 
@@ -290,6 +315,8 @@ public class HeuristicConfigPolicy<Solution_> {
         private boolean unassignedValuesAllowed = false;
 
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
+        private @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass;
+        private @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory;
         private RandomSource random;
 
         public Builder<Solution_> withPreviewFeatureSet(Set<PreviewFeature> previewFeatureSet) {
@@ -320,6 +347,19 @@ public class HeuristicConfigPolicy<Solution_> {
         public Builder<Solution_>
                 withNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
             this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
+            return this;
+        }
+
+        public Builder<Solution_>
+                withNeighborhoodProviderClass(
+                        @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
+            this.neighborhoodProviderClass = neighborhoodProviderClass;
+            return this;
+        }
+
+        public Builder<Solution_> withMoveSelectionStrategyFactory(
+                @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory) {
+            this.moveSelectionStrategyFactory = moveSelectionStrategyFactory;
             return this;
         }
 

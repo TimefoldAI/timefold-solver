@@ -49,6 +49,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDista
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -72,6 +73,7 @@ import org.jspecify.annotations.Nullable;
         "scoreDirectorFactoryConfig",
         "terminationConfig",
         "nearbyDistanceMeterClass",
+        "neighborhoodsConfig",
         "phaseConfigList",
 })
 public final class SolverConfig extends AbstractConfig<SolverConfig> {
@@ -234,6 +236,9 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     private TerminationConfig terminationConfig;
 
     private String nearbyDistanceMeterClass = null;
+
+    @XmlElement(name = NeighborhoodsConfig.XML_ELEMENT_NAME)
+    private NeighborhoodsConfig neighborhoodsConfig = null;
 
     @XmlElements({
             @XmlElement(name = ConstructionHeuristicPhaseConfig.XML_ELEMENT_NAME,
@@ -432,6 +437,17 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.nearbyDistanceMeterClass = nearbyDistanceMeterClass == null ? null : nearbyDistanceMeterClass.getName();
     }
 
+    /**
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
+    public @Nullable NeighborhoodsConfig getNeighborhoodsConfig() {
+        return neighborhoodsConfig;
+    }
+
+    public void setNeighborhoodsConfig(@Nullable NeighborhoodsConfig neighborhoodsConfig) {
+        this.neighborhoodsConfig = neighborhoodsConfig;
+    }
+
     public @Nullable List<@NonNull PhaseConfig> getPhaseConfigList() {
         return phaseConfigList;
     }
@@ -585,6 +601,28 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
+    /**
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
+    public @NonNull SolverConfig withNeighborhoodsConfig(@NonNull NeighborhoodsConfig neighborhoodsConfig) {
+        this.neighborhoodsConfig = neighborhoodsConfig;
+        return this;
+    }
+
+    /**
+     * As defined by {@link NeighborhoodsConfig#withNeighborhoodProviderClass(Class)}, but returns this.
+     * <p>
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
+    public @NonNull SolverConfig
+            withNeighborhoodProviderClass(@NonNull Class<? extends NeighborhoodProvider<?>> neighborhoodProviderClass) {
+        if (neighborhoodsConfig == null) {
+            neighborhoodsConfig = new NeighborhoodsConfig();
+        }
+        neighborhoodsConfig.withNeighborhoodProviderClass(neighborhoodProviderClass);
+        return this;
+    }
+
     public @NonNull SolverConfig withPhaseList(@NonNull List<@NonNull PhaseConfig> phaseConfigList) {
         this.phaseConfigList = phaseConfigList;
         return this;
@@ -675,6 +713,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         terminationConfig = ConfigUtils.inheritConfig(terminationConfig, inheritedConfig.getTerminationConfig());
         nearbyDistanceMeterClass = ConfigUtils.inheritOverwritableProperty(nearbyDistanceMeterClass,
                 inheritedConfig.nearbyDistanceMeterClass);
+        neighborhoodsConfig = ConfigUtils.inheritConfig(neighborhoodsConfig, inheritedConfig.getNeighborhoodsConfig());
         phaseConfigList = ConfigUtils.inheritMergeableListConfig(phaseConfigList, inheritedConfig.getPhaseConfigList());
         monitoringConfig = ConfigUtils.inheritConfig(monitoringConfig, inheritedConfig.getMonitoringConfig());
         return this;
@@ -697,6 +736,9 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         }
         if (nearbyDistanceMeterClass != null) {
             classVisitor.accept(getNearbyDistanceMeterClass());
+        }
+        if (neighborhoodsConfig != null) {
+            neighborhoodsConfig.visitReferencedClasses(classVisitor);
         }
         if (terminationConfig != null) {
             terminationConfig.visitReferencedClasses(classVisitor);

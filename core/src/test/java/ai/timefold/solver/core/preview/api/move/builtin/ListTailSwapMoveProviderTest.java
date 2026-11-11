@@ -161,4 +161,12 @@ class ListTailSwapMoveProviderTest {
                 Moves.swap(variableMetaModel, new Range<>(e2, 0, 2), new Range<>(e1, 0, 1), true));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataListSolution.buildMetaModel().genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList");
+        assertThat(new ListTailSwapMoveProvider<>(variableMetaModel, false).getId())
+                .isEqualTo("ListTailSwapMoveProvider(TestdataListEntity.valueList,noReversing)");
+    }
+
 }

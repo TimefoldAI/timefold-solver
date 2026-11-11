@@ -28,7 +28,11 @@ public final class IncrementalScoreDirectorFactory<Solution_, Score_ extends Sco
     public static <Solution_, Score_ extends Score<Score_>> IncrementalScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
                     EnvironmentMode globalEnvironmentMode) {
-        if (!IncrementalScoreCalculator.class.isAssignableFrom(config.getIncrementalScoreCalculatorClass())) {
+        if (IncrementalScoreCalculator.class.isAssignableFrom(config.getIncrementalScoreCalculatorClass())) {
+            ConfigUtils.assertCustomPropertiesSettable(config.getIncrementalScoreCalculatorClass(),
+                    "incrementalScoreCalculatorClass", config.getIncrementalScoreCalculatorCustomProperties(),
+                    "incrementalScoreCalculatorCustomProperties");
+        } else {
             throw new IllegalArgumentException("The incrementalScoreCalculatorClass (%s) does not implement %s."
                     .formatted(config.getIncrementalScoreCalculatorClass(), IncrementalScoreCalculator.class.getSimpleName()));
         }

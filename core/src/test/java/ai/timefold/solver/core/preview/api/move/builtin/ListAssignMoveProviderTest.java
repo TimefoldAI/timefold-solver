@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -105,6 +106,14 @@ class ListAssignMoveProviderTest {
                         Moves.assign(variableMetaModel, v2, e1, 0),
                         Moves.assign(variableMetaModel, v2, e2, 0),
                         Moves.assign(variableMetaModel, v2, e2, 1));
+    }
+
+    @Test
+    void id() {
+        var variableMetaModel = TestdataAllowsUnassignedValuesListSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class).listVariable("valueList");
+        assertThat(new ListAssignMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("ListAssignMoveProvider(TestdataAllowsUnassignedValuesListEntity.valueList)");
     }
 
 }

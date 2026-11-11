@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
@@ -91,6 +92,16 @@ public final class MassListChangeMoveProvider<Solution_, Entity_, Value_>
                 .asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new MassListDestinationMoveIterator<>(session, random,
                 variableMetaModel, sourceDataset, destinationDataset, sampler));
+    }
+
+    /**
+     * @return {@code MassListChangeMoveProvider(<Entity>.<variable>,<sampler>,crossingNull|noCrossingNull)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(MassListChangeMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler),
+                MoveProviderUtil.flag("crossingNull", crossingNull));
     }
 
 }

@@ -316,4 +316,12 @@ class MassListChangeMoveProviderTest {
                 });
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataAllowsUnassignedValuesListSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class).listVariable("valueList");
+        assertThat(new MassListChangeMoveProvider<>(variableMetaModel, Samplers.all(), true).getId())
+                .isEqualTo("MassListChangeMoveProvider(TestdataAllowsUnassignedValuesListEntity.valueList,all,crossingNull)");
+    }
+
 }

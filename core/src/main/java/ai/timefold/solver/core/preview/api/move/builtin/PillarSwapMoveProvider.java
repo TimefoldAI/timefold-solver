@@ -99,6 +99,14 @@ public final class PillarSwapMoveProvider<Solution_, Entity_>
     }
 
     /**
+     * @return {@code PillarSwapMoveProvider(<Entity>.<variable>,<variable>...)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(PillarSwapMoveProvider.class, variableMetaModelList);
+    }
+
+    /**
      * A pillar bundled with its per-variable {@link SampleValueRanges}, computed once when the {@code .map(...)} step
      * settles for a dirty group (see {@link #build}), not once per candidate probe - the row is stable, and reused,
      * for as long as the pillar's group is unchanged, which can span many local search steps, unlike a cache field

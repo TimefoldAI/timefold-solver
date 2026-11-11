@@ -206,6 +206,55 @@ This section lists all such changes,
 so that users of preview features can adapt.
 All feedback is much appreciated!
 
+icon:info-circle[role=yellow,set=fas] Timefold Solver 2.9.0 moves phase-level `neighborhoodProviderClass` into the `neighborhoods` element
+[%collapsible%open]
+====
+The Neighborhoods API settings of a Local Search phase are now in a `neighborhoods` element.
+A `neighborhoodProviderClass` directly in a `localSearch` element is no longer supported.
+
+Before:
+
+[source,xml]
+----
+<localSearch>
+  <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+</localSearch>
+----
+
+After:
+
+[source,xml]
+----
+<localSearch>
+  <neighborhoods>
+    <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  </neighborhoods>
+</localSearch>
+----
+
+In Java, replace `LocalSearchPhaseConfig.withMoveProviderClass(...)`
+with `withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig().withNeighborhoodProviderClass(...))`.
+To use one neighborhood provider in all Local Search phases,
+set it on the solver instead, with `SolverConfig.withNeighborhoodProviderClass(...)`;
+see xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsConfiguration[configuring Neighborhoods].
+====
+
+'''
+
+icon:info-circle[role=yellow,set=fas] Timefold Solver 2.9.0 requires move providers to have a unique IDs
+[%collapsible%open]
+====
+Every move provider in a neighborhood now has an ID, and the IDs must be unique.
+A move provider added with `add(moveProvider)` gets the simple name of its class as its ID,
+or `custom` for a lambda or an anonymous class.
+A neighborhood that adds two instances of the same move provider class, or two lambdas,
+now fails when it is built.
+Give each of them its own ID with `add(id, moveProvider)`;
+see xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsWeightedSelection[weighted selection].
+====
+
+'''
+
 === Timefold Solver 2.7.0 hides move implementations
 
 The concrete `Move` implementations of the Neighborhoods API (such as `ChangeMove` and `ListChangeMove`) are no longer public.

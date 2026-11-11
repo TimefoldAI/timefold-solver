@@ -242,4 +242,12 @@ class SubListSwapMoveProviderTest {
                 .isThrownBy(() -> new SubListSwapMoveProvider<>(variableMetaModel, 1, 5, 5, 2));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataListSolution.buildMetaModel().genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList");
+        assertThat(new SubListSwapMoveProvider<>(variableMetaModel, 1, 5, 2, 3).getId())
+                .isEqualTo("SubListSwapMoveProvider(TestdataListEntity.valueList,1-5,2-3,reversing)");
+    }
+
 }

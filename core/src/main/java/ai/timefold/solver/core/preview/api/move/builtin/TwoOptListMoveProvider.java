@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -111,6 +112,15 @@ public final class TwoOptListMoveProvider<Solution_, Entity_, Value_> implements
         var rightSize = solutionView.countValues(variableMetaModel, rightEntity);
         return Moves.swap(variableMetaModel, new Range<>(leftEntity, left.index(), leftSize),
                 new Range<>(rightEntity, right.index(), rightSize), false);
+    }
+
+    /**
+     * @return {@code TwoOptListMoveProvider(<Entity>.<variable>,crossingEntity|noCrossingEntity)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(TwoOptListMoveProvider.class, variableMetaModel,
+                MoveProviderUtil.flag("crossingEntity", crossingEntity));
     }
 
 }

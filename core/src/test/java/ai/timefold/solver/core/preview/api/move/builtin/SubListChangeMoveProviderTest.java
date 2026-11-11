@@ -309,4 +309,14 @@ class SubListChangeMoveProviderTest {
                 .isThrownBy(() -> new SubListChangeMoveProvider<>(variableMetaModel, 1, 5));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataListSolution.buildMetaModel().genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList");
+        assertThat(new SubListChangeMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("SubListChangeMoveProvider(TestdataListEntity.valueList,2-10,reversing,noCrossingNull)");
+        assertThat(new SubListChangeMoveProvider<>(variableMetaModel, 2, 5, false, false).getId())
+                .isEqualTo("SubListChangeMoveProvider(TestdataListEntity.valueList,2-5,noReversing,noCrossingNull)");
+    }
+
 }

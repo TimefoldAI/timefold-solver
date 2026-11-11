@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.move.builtin.MassChangeMove;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -170,6 +172,17 @@ class SubPillarChangeMoveProviderTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(
                         () -> new SubPillarChangeMoveProvider<>(variableMetaModel, Samplers.pillar(Samplers.exactly(2)), true));
+    }
+
+    @Test
+    void id() {
+        var variableMetaModel = TestdataSolution.buildMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value");
+        assertThat(new SubPillarChangeMoveProvider<>(variableMetaModel, Samplers.pillar(Samplers.between(2, 3))).getId())
+                .isEqualTo("SubPillarChangeMoveProvider(TestdataEntity.value,pillar(between(2-3)),noCrossingNull)");
+        Sampler<TestdataEntity> lambdaSampler = (sizeSoFar, candidate) -> Sample.Decision.ACCEPT;
+        assertThat(new SubPillarChangeMoveProvider<>(variableMetaModel, Samplers.pillar(lambdaSampler)).getId())
+                .isEqualTo("SubPillarChangeMoveProvider(TestdataEntity.value,pillar(custom),noCrossingNull)");
     }
 
 }

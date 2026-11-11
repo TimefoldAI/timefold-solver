@@ -101,4 +101,12 @@ public final class SwapMoveProvider<Solution_, Entity_>
         return change;
     }
 
+    /**
+     * @return {@code SwapMoveProvider(<Entity>.<variable>,<variable>...)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(SwapMoveProvider.class, variableMetaModelList);
+    }
+
 }

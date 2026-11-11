@@ -69,6 +69,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
+import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
@@ -626,7 +627,8 @@ class DefaultSolverTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProviderClass(TestingNeighborhoodProvider.class));
+                        .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                .withNeighborhoodProviderClass(TestingNeighborhoodProvider.class)));
 
         var solution = TestdataSolution.generateSolution(3, 2);
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))

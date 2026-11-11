@@ -202,4 +202,12 @@ class ListChangeMoveProviderTest {
                 Moves.assign(variableMetaModel, unassignedValue, e2, 0));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataListSolution.buildMetaModel().genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList");
+        assertThat(new ListChangeMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("ListChangeMoveProvider(TestdataListEntity.valueList,noCrossingNull)");
+    }
+
 }

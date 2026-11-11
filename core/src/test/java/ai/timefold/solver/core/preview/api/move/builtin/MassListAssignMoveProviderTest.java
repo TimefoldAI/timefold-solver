@@ -169,4 +169,12 @@ class MassListAssignMoveProviderTest {
                 });
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataAllowsUnassignedValuesListSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class).listVariable("valueList");
+        assertThat(new MassListAssignMoveProvider<>(variableMetaModel, Samplers.all(7)).getId())
+                .isEqualTo("MassListAssignMoveProvider(TestdataAllowsUnassignedValuesListEntity.valueList,all(7))");
+    }
+
 }

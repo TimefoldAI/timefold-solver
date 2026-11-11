@@ -2,6 +2,8 @@ package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample;
 
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample.Decision;
 
@@ -24,6 +26,11 @@ import org.jspecify.annotations.Nullable;
  * not because a key-aware policy exists yet.
  * Move generation is single-threaded;
  * see {@link Sampler} for what that means for sampler state.
+ * <p>
+ * The default IDs of built-in move providers describe the built-in samplers from {@link Samplers},
+ * and show every other sampler as "custom".
+ * To tell two move providers apart that differ only in such a sampler,
+ * give them your own IDs with {@link NeighborhoodBuilder#add(String, MoveProvider)}.
  *
  * @param <Key_> the type of the key the sample was drawn under, such as the slice selector
  * @param <A> the type of the sample's members

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample.Decision;
 
@@ -20,7 +21,19 @@ public final class Samplers {
      *         so a sample drains its whole source or slice
      */
     public static <A> Sampler<A> all() {
-        return (sizeSoFar, candidate) -> Decision.ACCEPT;
+        return new Sampler<>() {
+
+            @Override
+            public Decision evaluate(int sizeSoFar, @Nullable A candidate) {
+                return Decision.ACCEPT;
+            }
+
+            @Override
+            public String toString() {
+                return "all";
+            }
+
+        };
     }
 
     /**
@@ -51,6 +64,11 @@ public final class Samplers {
             @Override
             public Decision evaluate(int sizeSoFar, @Nullable A candidate) {
                 return Decision.ACCEPT;
+            }
+
+            @Override
+            public String toString() {
+                return "all(%d)".formatted(expectedSize);
             }
 
         };
@@ -119,6 +137,11 @@ public final class Samplers {
             @Override
             public Decision evaluate(int sizeSoFar, @Nullable A candidate) {
                 return sampler.evaluate(sizeSoFar, candidate);
+            }
+
+            @Override
+            public String toString() {
+                return "pillar(" + MoveProviderUtil.samplerId(sampler) + ")";
             }
 
         };

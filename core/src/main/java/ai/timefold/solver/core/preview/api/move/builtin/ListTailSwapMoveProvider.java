@@ -7,6 +7,7 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
@@ -72,6 +73,15 @@ public final class ListTailSwapMoveProvider<Solution_, Entity_, Value_> implemen
         var valueDataset = moveStreamFactory.forEachAssignedValue(variableMetaModel).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new ListTailSwapMoveIterator<>(session, random,
                 variableMetaModel, valueDataset, selectReversingMoveToo));
+    }
+
+    /**
+     * @return {@code ListTailSwapMoveProvider(<Entity>.<variable>,reversing|noReversing)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(ListTailSwapMoveProvider.class, variableMetaModel,
+                MoveProviderUtil.flag("reversing", selectReversingMoveToo));
     }
 
     /**

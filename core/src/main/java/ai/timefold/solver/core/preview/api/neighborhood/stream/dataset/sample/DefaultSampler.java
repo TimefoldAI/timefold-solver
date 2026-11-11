@@ -53,4 +53,12 @@ final class DefaultSampler<A> implements Sampler<A> {
         return sizeSoFar + 1 >= targetSize ? Decision.ACCEPT_AND_STOP : Decision.ACCEPT;
     }
 
+    @Override
+    public String toString() {
+        if (minimumSize == maximumSize) {
+            return "exactly(%d)".formatted(minimumSize);
+        }
+        return minimumSize == 1 ? "upTo(%d)".formatted(maximumSize) : "between(%d-%d)".formatted(minimumSize, maximumSize);
+    }
+
 }

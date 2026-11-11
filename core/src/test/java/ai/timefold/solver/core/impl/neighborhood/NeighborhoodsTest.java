@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -37,6 +39,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMeta
 import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMoveSelectionStrategy;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
@@ -65,8 +68,10 @@ class NeighborhoodsTest {
 
         var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class).basicVariable();
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
+        var changeMoveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveRepository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
-                List.of(new ChangeMoveProvider<>(variableMetaModel)));
+                new LinkedHashMap<>(Map.of(changeMoveProvider.getId(), changeMoveProvider)),
+                FixedWeightMoveSelectionStrategy::new);
 
         var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig().withLateAcceptanceSize(400))
                 .buildAcceptor(heuristicConfigPolicy);

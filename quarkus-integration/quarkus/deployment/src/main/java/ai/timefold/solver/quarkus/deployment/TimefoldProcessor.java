@@ -46,6 +46,7 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSour
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.util.SolverLevelClassResolver;
 import ai.timefold.solver.core.impl.util.SolverVersionUtils;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
@@ -275,6 +276,17 @@ class TimefoldProcessor {
         Set<Class<?>> reflectiveClassSet = new LinkedHashSet<>();
         solverConfigMap.forEach((solverName, solverConfig) -> loadSolverConfig(indexView, reflectiveHierarchyClass,
                 solverConfig, solverName, reflectiveClassSet));
+        // After step 3, because it applies the preview features; then register the detected classes too.
+        for (var resolver : List.of(SolverLevelClassResolver.NEIGHBORHOOD_PROVIDER,
+                SolverLevelClassResolver.MOVE_SELECTION_STRATEGY)) {
+            resolver.resolve(solverConfigMap,
+                    () -> indexView.getAllKnownImplementations(DotName.createSimple(resolver.getType())).stream()
+                            .filter(UNIQUENESS_PREDICATE)
+                            .<Class<?>> map(this::convertClassInfoToClass)
+                            .toList());
+        }
+        solverConfigMap.values().forEach(solverConfig -> registerCustomClassesFromSolverConfig(solverConfig,
+                reflectiveClassSet));
 
         // Register all annotated domain model classes
         registerClassesFromAnnotations(indexView, reflectiveClassSet);
@@ -1190,5 +1202,4 @@ class TimefoldProcessor {
             }
         });
     }
-
 }

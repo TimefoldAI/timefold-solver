@@ -159,4 +159,12 @@ class ListSwapMoveProviderTest {
                 .producesNoneOf(Moves.swap(variableMetaModel, e2, 0, e2, 0));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataListSolution.buildMetaModel().genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList");
+        assertThat(new ListSwapMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("ListSwapMoveProvider(TestdataListEntity.valueList)");
+    }
+
 }
