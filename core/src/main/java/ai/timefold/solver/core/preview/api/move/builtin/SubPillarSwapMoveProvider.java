@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
+import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
@@ -146,12 +147,11 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
      * a different subpillar for the same left key on each attempt (and a different subpillar can have different legal
      * ranges, since fewer members mean fewer constraints), so caching the first one would turn
      * {@link RetiringBiWalk}'s remaining probes into deterministic no-ops for the left side.
-     * The right side is drawn fresh per candidate probed, same as the whole-pillar variant.
+     * The right key is drawn uniformly from the distinct keys of {@link MoveProviderUtil#swapCandidatesOfKey},
+     * or from all keys if that pool is smaller. The right subpillar is drawn fresh per candidate probed.
      * <p>
      * Legality is checked against the subpillars' own {@link ValueRange}s ({@link SampleValueRanges#of})
-     * rather than by an {@code isValueInRange} call per member: the candidate partner subpillar still has to be searched
-     * for (its "value" is the other side's current value, not something drawn from a range),
-     * therefore the {@link FilteringIterator} search.
+     * rather than by an {@code isValueInRange} call per member.
      *
      * @param <Solution_> the solution type
      * @param <Entity_> the entity type
@@ -168,6 +168,8 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
         private final RetiringRandomIterator<List<Object>> leftKeyIterator;
         private final DefaultUniDatasetInstance<Solution_, List<Object>> distinctKeysInstance;
         private final BiDatasetInstance<List<Object>, Entity_> pillarSourceInstance;
+        // With only solution value ranges, the candidates are all movable entities; never fewer than the keys.
+        private final boolean candidatesMayNarrow;
 
         private @Nullable Move<Solution_> nextMove = null;
         private @Nullable Sample<Entity_> pendingLeftPillar = null;
@@ -186,6 +188,7 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
             this.distinctKeysInstance = (DefaultUniDatasetInstance<Solution_, List<Object>>) session.getInstance(distinctKeys);
             this.leftKeyIterator = distinctKeysInstance.retiringRandomIterator(random);
             this.pillarSourceInstance = session.getInstance(pillarSourceDataset);
+            this.candidatesMayNarrow = variableMetaModelList.stream().anyMatch(v -> !v.isValueRangeOnSolution());
         }
 
         @Override
@@ -213,13 +216,34 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
                 pendingLeftPillar = null;
                 return Collections.emptyIterator();
             }
-            var leftRangesPerVariable = MoveProviderUtil.rangesPerVariableOf(leftPillar, variableMetaModelList, solutionView);
-            // Scaled to the candidate pool's size.
+            // Right keys come from the members of valid partner pillars only (see MoveProviderUtil.swapCandidatesOf).
             // Each candidate key is checked cheaply first (it must differ from leftKey) before paying to assemble the
             // right subpillar and run isValidSwap; a match sets pendingLeftPillar/pendingRightPillar as a side effect
             // for accept() to consume.
-            var keyIterator = distinctKeysInstance.iterator(random);
-            var bailOutSize = distinctKeysInstance.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+            var candidateList = candidatesMayNarrow
+                    ? MoveProviderUtil.swapCandidatesOfKey(solutionView, variableMetaModelList, leftKey)
+                    : null;
+            Iterator<List<Object>> keyIterator;
+            long bailOutSize;
+            // Both ways give every valid pillar the same chance; take the smaller pool.
+            // A null list means that no value narrows the candidates.
+            var drawFromCandidates = candidateList != null && candidateList.size() < distinctKeysInstance.size();
+            if (!drawFromCandidates) {
+                keyIterator = distinctKeysInstance.iterator(random);
+                bailOutSize = distinctKeysInstance.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+            } else if (candidateList.isEmpty()) {
+                pendingLeftPillar = null;
+                return Collections.emptyIterator();
+            } else {
+                // A pillar with at least one candidate member can give a valid subpillar; all such pillars get the same chance.
+                var candidateKeyList = candidateList.stream()
+                        .map(entity -> MoveProviderUtil.compositeKeyOf(entity, variableMetaModelList))
+                        .distinct()
+                        .toList();
+                keyIterator = Stream.generate(() -> candidateKeyList.get(random.nextInt(candidateKeyList.size()))).iterator();
+                bailOutSize = candidateKeyList.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+            }
+            var leftRangesPerVariable = MoveProviderUtil.rangesPerVariableOf(leftPillar, variableMetaModelList, solutionView);
             return new FilteringIterator<>(keyIterator, candidateKey -> {
                 if (Objects.equals(candidateKey, leftKey)) {
                     return false;

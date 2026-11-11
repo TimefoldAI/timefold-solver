@@ -1,15 +1,18 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
@@ -31,19 +34,37 @@ public final class ReachableValues<Entity_, Value_> {
     private final Class<?> expectedSupertypeOfValue;
     private final @Nullable ValueRangeSorter<Value_> valueRangeSorter;
     private final boolean acceptsNullValue;
+    private final @Nullable Predicate<Entity_> movableEntityFilter;
+    private final @Nullable Predicate<Value_> movableValueFilter;
     private @Nullable List<Entity_>[] onDemandRandomAccessEntity;
+    private @Nullable List<Entity_>[] onDemandRandomAccessMovableEntity;
+    private @Nullable Map<Class<?>, @Nullable List<Entity_>[]> onDemandRandomAccessMovableEntityByClass;
     private @Nullable List<Value_>[] onDemandRandomAccessValue;
+    private @Nullable List<Value_>[] onDemandRandomAccessMovableValue;
     private @Nullable ReachableItemValue<Entity_, Value_> firstCachedObject;
     private @Nullable ReachableItemValue<Entity_, Value_> secondCachedObject;
 
     public ReachableValues(ReachableValuesIndex<Entity_, Entity_> entitiesIndex,
             ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex, Class<?> expectedSupertypeOfValue,
             @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue) {
+        this(entitiesIndex, valuesIndex, expectedSupertypeOfValue, valueRangeSorter, acceptsNullValue, null, null);
+    }
+
+    /**
+     * @param movableEntityFilter null if every entity is movable
+     * @param movableValueFilter null if every value is movable; only list variable values can be pinned
+     */
+    public ReachableValues(ReachableValuesIndex<Entity_, Entity_> entitiesIndex,
+            ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex, Class<?> expectedSupertypeOfValue,
+            @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue,
+            @Nullable Predicate<Entity_> movableEntityFilter, @Nullable Predicate<Value_> movableValueFilter) {
         this.entitiesIndex = entitiesIndex;
         this.valuesIndex = valuesIndex;
         this.expectedSupertypeOfValue = expectedSupertypeOfValue;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
+        this.movableEntityFilter = movableEntityFilter;
+        this.movableValueFilter = movableValueFilter;
         clear();
     }
 
@@ -83,6 +104,63 @@ public final class ReachableValues<Entity_, Value_> {
         return entityList;
     }
 
+    /**
+     * As {@link #extractEntitiesAsList(Object)}, but without the entities that are not movable.
+     * The movability is cached and only changes with a problem change, which rebuilds this instance.
+     *
+     * @return unmodifiable, random access, shared with other callers
+     */
+    public List<Entity_> extractMovableEntitiesAsList(Object value) {
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
+        }
+        var entityList = onDemandRandomAccessMovableEntity[itemValue.ordinal];
+        if (entityList == null) {
+            entityList = movableEntityFilter == null ? Collections.unmodifiableList(extractEntitiesAsList(value))
+                    : extractEntitiesAsList(value).stream()
+                            .filter(movableEntityFilter)
+                            .toList();
+            onDemandRandomAccessMovableEntity[itemValue.ordinal] = entityList;
+        }
+        return entityList;
+    }
+
+    /**
+     * As {@link #extractMovableEntitiesAsList(Object)}, but only the instances of the given class.
+     * Used for a subclass whose variable is inherited and indexed for the whole class hierarchy.
+     *
+     * @return random access, unmodifiable, shared with other callers
+     */
+    @SuppressWarnings("unchecked")
+    public List<Entity_> extractMovableEntitiesAsList(Object value, Class<?> entityClass) {
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
+        }
+        if (onDemandRandomAccessMovableEntityByClass == null) {
+            onDemandRandomAccessMovableEntityByClass = new HashMap<>();
+        }
+        var entityListArray = onDemandRandomAccessMovableEntityByClass.get(entityClass);
+        if (entityListArray == null) {
+            entityListArray = new List[valuesIndex.allItems().size()];
+            onDemandRandomAccessMovableEntityByClass.put(entityClass, entityListArray);
+        }
+        var entityList = entityListArray[itemValue.ordinal];
+        if (entityList == null) {
+            var movableEntityList = extractMovableEntitiesAsList(value);
+            var filteredList = new ArrayList<Entity_>(movableEntityList.size());
+            for (var entity : movableEntityList) {
+                if (entityClass.isInstance(entity)) {
+                    filteredList.add(entity);
+                }
+            }
+            entityList = Collections.unmodifiableList(filteredList);
+            entityListArray[itemValue.ordinal] = entityList;
+        }
+        return entityList;
+    }
+
     public int getReachableEntitiesSize(Object value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
@@ -100,6 +178,28 @@ public final class ReachableValues<Entity_, Value_> {
         if (valueList == null) {
             valueList = itemValue.getRandomAccessValueList(valuesIndex.allItems(), valueRangeSorter);
             onDemandRandomAccessValue[itemValue.ordinal] = valueList;
+        }
+        return valueList;
+    }
+
+    /**
+     * As {@link #extractValuesAsList(Object)}, but without the values that are not movable.
+     * The movability is cached and only changes with a problem change, which rebuilds this instance.
+     *
+     * @return unmodifiable, random access, shared with other callers
+     */
+    public List<Value_> extractMovableValuesAsList(Object value) {
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
+        }
+        var valueList = onDemandRandomAccessMovableValue[itemValue.ordinal];
+        if (valueList == null) {
+            valueList = movableValueFilter == null ? Collections.unmodifiableList(extractValuesAsList(value))
+                    : extractValuesAsList(value).stream()
+                            .filter(movableValueFilter)
+                            .toList();
+            onDemandRandomAccessMovableValue[itemValue.ordinal] = valueList;
         }
         return valueList;
     }
@@ -158,7 +258,8 @@ public final class ReachableValues<Entity_, Value_> {
     }
 
     public ReachableValues<Entity_, Value_> copy(ValueRangeSorter<Value_> sorterAdapter) {
-        return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue);
+        return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue,
+                movableEntityFilter, movableValueFilter);
     }
 
     @SuppressWarnings("unchecked")
@@ -167,7 +268,10 @@ public final class ReachableValues<Entity_, Value_> {
         secondCachedObject = null;
         var valueCount = valuesIndex.allItems().size();
         this.onDemandRandomAccessEntity = new List[valueCount];
+        this.onDemandRandomAccessMovableEntity = new List[valueCount];
+        this.onDemandRandomAccessMovableEntityByClass = null;
         this.onDemandRandomAccessValue = new List[valueCount];
+        this.onDemandRandomAccessMovableValue = new List[valueCount];
     }
 
     @NullMarked

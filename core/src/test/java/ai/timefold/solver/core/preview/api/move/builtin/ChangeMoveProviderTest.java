@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import java.util.Collections;
+import java.util.List;
 
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -15,9 +16,12 @@ import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassigned
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.incomplete.TestdataIncompleteValueRangeSolution;
+import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -47,6 +51,20 @@ class ChangeMoveProviderTest {
         context.producesNoneOf(
                 Moves.change(variableMetaModel, firstEntity, firstValue),
                 Moves.change(variableMetaModel, secondEntity, secondValue));
+    }
+
+    @Test
+    void endsWhenNoEntityCanChange() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable();
+        // A single value: every entity already has it.
+        var solution = TestdataSolution.generateSolution(1, 3);
+
+        var iterator = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsIterator(move -> move);
+        assertThat(iterator.hasNext()).isFalse();
     }
 
     @Test
@@ -263,6 +281,55 @@ class ChangeMoveProviderTest {
                 .isEqualTo("ChangeMoveProvider(TestdataEntity.value,noCrossingNull)");
         assertThat(new ChangeMoveProvider<>(unassignedVariableMetaModel).getId())
                 .isEqualTo("ChangeMoveProvider(TestdataAllowsUnassignedEntity.value,crossingNull)");
+    }
+
+    @Test
+    void entityRangeWithPinnedEntityDrawsOnlyInRangeValues() {
+        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var pinned = new TestdataPinnedEntityProvidingEntity("pinned", List.of(v1, v2), v1, true);
+        var e2 = new TestdataPinnedEntityProvidingEntity("e2", List.of(v1, v2), v1, false);
+        var e3 = new TestdataPinnedEntityProvidingEntity("e3", List.of(v3), v3, false);
+        var solution = new TestdataPinnedEntityProvidingSolution("s", List.of(pinned, e2, e3));
+
+        // e3 has no other value in its range, and the pinned entity must never move.
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        var validMove = Moves.change(variableMetaModel, e2, v2);
+        assertThat(context.getMovesAsStream().limit(1_000).toList())
+                .hasSize(1_000)
+                .allSatisfy(move -> assertThat(move).isEqualTo(validMove));
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValid() {
+        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
+        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        MoveProviderAssertions.assertDrawnMovesKeepSolutionValid(context, List.of(variableMetaModel),
+                solution.getEntityList(), 2_000);
+    }
+
+    @Test
+    void everyValidValueIsDrawnEquallyOften() {
+        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
+        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
+        var entity = solution.getEntityList().get(1);
+        var expectedValues = entity.getValueRange().stream().filter(value -> value != entity.getValue()).toList();
+        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        var movesOfEntity = context.getMovesAsStream()
+                .limit(40_000)
+                .filter(move -> move.getPlanningEntities().getFirst() == entity)
+                .toList();
+        MoveProviderAssertions.assertEquallyOften(movesOfEntity, move -> move.getPlanningValues().getFirst(),
+                expectedValues, 0.3);
     }
 
 }

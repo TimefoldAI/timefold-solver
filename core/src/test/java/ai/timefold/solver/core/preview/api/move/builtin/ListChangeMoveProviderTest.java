@@ -4,18 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -208,6 +217,74 @@ class ListChangeMoveProviderTest {
                 .listVariable("valueList");
         assertThat(new ListChangeMoveProvider<>(variableMetaModel).getId())
                 .isEqualTo("ListChangeMoveProvider(TestdataListEntity.valueList,noCrossingNull)");
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithEntityRange() {
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var context =
+                NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataListPinnedEntityProvidingEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithEntityRangeAndUnassignedValues() {
+        var solutionMetaModel = TestdataListUnassignedPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel =
+                solutionMetaModel.genuineEntity(TestdataListUnassignedPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listUnassignedPinnedSolution(MoveProviderAssertions.listValues());
+        var context =
+                NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataListUnassignedPinnedEntityProvidingEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithEntityRangeWithoutCrossingNull() {
+        var solutionMetaModel = TestdataListUnassignedPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel =
+                solutionMetaModel.genuineEntity(TestdataListUnassignedPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listUnassignedPinnedSolution(MoveProviderAssertions.listValues());
+        var context = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel, false), solutionMetaModel)
+                .using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataListUnassignedPinnedEntityProvidingEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithSolutionRange() {
+        var solutionMetaModel = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedWithIndexListEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listSolutionRangeSolution();
+        var context =
+                NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataPinnedWithIndexListEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyValidDestinationInOtherEntitiesIsDrawnEquallyOften() {
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var entities = solution.getEntityList();
+        var e1 = entities.get(1);
+        var e2 = entities.get(2);
+        var e3 = entities.get(3);
+        var e4 = entities.get(4);
+        // v6 at e2[0] fits e1 (from its pin index 2), e3 (anywhere) and e4 (only its end slot, as it is pinned up to its size).
+        var expectedMoves =
+                List.of(Moves.change(variableMetaModel, e2, 0, e1, 2), Moves.change(variableMetaModel, e2, 0, e1, 3),
+                        Moves.change(variableMetaModel, e2, 0, e3, 0), Moves.change(variableMetaModel, e2, 0, e3, 1),
+                        Moves.change(variableMetaModel, e2, 0, e3, 2), Moves.change(variableMetaModel, e2, 0, e3, 3),
+                        Moves.change(variableMetaModel, e2, 0, e3, 4), Moves.change(variableMetaModel, e2, 0, e4, 2));
+        var context = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        var moves = context.getMovesAsStream().limit(200_000).filter(expectedMoves::contains).toList();
+        MoveProviderAssertions.assertEquallyOften(moves, move -> move, expectedMoves, 0.3);
     }
 
 }

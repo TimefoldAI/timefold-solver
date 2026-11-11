@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -35,6 +34,8 @@ public final class DefaultMoveStreamFactory<Solution_>
     private final DatasetSessionFactory<Solution_> datasetSessionFactory;
     // In order for node sharing to work properly, the function instances must be identical.
     // Since these functions require the variable meta model, we need to cache them per variable meta model.
+    // An inherited variable's parent and child meta models are equal and share an entry;
+    // the functions must not use entity().
     private final Map<GenuineVariableMetaModel<Solution_, ?, ?>, NodeSharingSupportFunctions<Solution_, ?, ?>> nodeSharingSupportFunctionMap =
             new HashMap<>();
     private final Map<PlanningListVariableMetaModel<Solution_, ?, ?>, ListVariableNodeSharingSupportFunctions<Solution_, ?, ?>> listVariableNodeSharingSupportFunctionsMap =
@@ -53,13 +54,10 @@ public final class DefaultMoveStreamFactory<Solution_>
     @Override
     public <A> UniEnumeratingStream<Solution_, A> forEach(Class<A> sourceClass, boolean includeNull) {
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(sourceClass);
-        if (entityDescriptor == null) { // Not an entity, can't be pinned.
-            return enumeratingStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
-        }
-        if (entityDescriptor.isGenuine()) { // Genuine entity can be pinned.
+        if (entityDescriptor != null && entityDescriptor.isGenuine()) { // Genuine entity can be pinned.
             return enumeratingStreamFactory.forEachExcludingPinned(sourceClass, includeNull);
         }
-        // From now on, we are testing a shadow entity.
+        // From now on, we are testing a shadow entity or a problem fact; only a list variable value can be pinned.
         var listVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (listVariableDescriptor == null) { // Can't be pinned when there are only basic variables.
             return enumeratingStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
@@ -166,22 +164,17 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniNeighborhoodsPredicate<Solution_, Entity_> assignedValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> differentValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter) {
+            UniNeighborhoodsPredicate<Solution_, Entity_> assignedValueFilter) {
 
         public NodeSharingSupportFunctions(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
-                    (solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null,
-                    (solutionView, entity, value) -> !Objects.equals(solutionView.getValue(variableMetaModel, entity), value),
-                    (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value));
+                    (solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null);
         }
 
     }
 
     public record ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniNeighborhoodsPredicate<Solution_, Value_> assignedValueOrNullFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> assignedValueFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> unassignedValueFilter,
             BiNeighborhoodsPredicate<Solution_, Value_, PositionInList> valueInRangeFilterForPosition,
@@ -193,7 +186,6 @@ public final class DefaultMoveStreamFactory<Solution_>
         public ListVariableNodeSharingSupportFunctions(
                 PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
-                    (solutionView, value) -> value == null || solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> !solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value, positionInList) -> {

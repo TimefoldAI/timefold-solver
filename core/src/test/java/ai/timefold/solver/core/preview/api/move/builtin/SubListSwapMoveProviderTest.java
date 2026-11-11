@@ -16,6 +16,9 @@ import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -248,6 +251,38 @@ class SubListSwapMoveProviderTest {
                 .listVariable("valueList");
         assertThat(new SubListSwapMoveProvider<>(variableMetaModel, 1, 5, 2, 3).getId())
                 .isEqualTo("SubListSwapMoveProvider(TestdataListEntity.valueList,1-5,2-3,reversing)");
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithEntityRange() {
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var context =
+                NeighborhoodTester.build(new SubListSwapMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataListPinnedEntityProvidingEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithSolutionRange() {
+        var solutionMetaModel = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedWithIndexListEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listSolutionRangeSolution();
+        var context =
+                NeighborhoodTester.build(new SubListSwapMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataPinnedWithIndexListEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void rareValidMovesDoNotEndTheIteratorEarly() {
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.sparseSolution();
+        var context =
+                NeighborhoodTester.build(new SubListSwapMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        assertThat(MoveProviderAssertions.movesBeforeEnd(context, 500)).isEqualTo(500);
     }
 
 }

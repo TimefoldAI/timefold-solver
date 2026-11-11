@@ -1,16 +1,25 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
@@ -47,6 +56,8 @@ public final class ValueRangeManager<Solution_> {
     private final @Nullable ValueRangeState<Solution_, ?, ?> @Nullable [] multipleValueRangeState;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable ValueRangeStatistics<Solution_> statistics;
+    private @Nullable Map<EntityDescriptor<Solution_>, List<Object>> movableEntityListMap;
+    private @Nullable Map<AbstractValueRangeDescriptor<Solution_>, List<Object>> valueListMap;
 
     public static <Solution_> ValueRangeManager<Solution_> of(SolutionDescriptor<Solution_> solutionDescriptor,
             Solution_ solution) {
@@ -202,8 +213,139 @@ public final class ValueRangeManager<Solution_> {
         return descriptor.getReachableValues(variableDescriptor, sorter);
     }
 
+    /**
+     * Movability only changes with a problem change, which calls {@link #reset(Object)}.
+     *
+     * @return unmodifiable, random access; the movable entities of the given descriptor in the working solution
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    @SuppressWarnings("unchecked")
+    public <Entity_> List<Entity_> getMovableEntityList(EntityDescriptor<Solution_> entityDescriptor) {
+        var solution = requireWorkingSolution("movable entities", entityDescriptor);
+        if (movableEntityListMap == null) {
+            movableEntityListMap = new IdentityHashMap<>();
+        }
+        return (List<Entity_>) movableEntityListMap.computeIfAbsent(entityDescriptor, descriptor -> {
+            var movableFilter = movableEntityFilter(descriptor, solution);
+            var entities = descriptor.extractEntities(solution).stream();
+            return (movableFilter == null ? entities : entities.filter(movableFilter)).toList();
+        });
+    }
+
+    private Solution_ requireWorkingSolution(String what, Object requestedFor) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException("Impossible state: %s (%s) requested before the working solution is known."
+                    .formatted(what, requestedFor));
+        }
+        return cachedWorkingSolution;
+    }
+
+    /**
+     * Checks each entity with the descriptor of its own class, so that pins declared on a subclass also apply.
+     *
+     * @return null if no entity of the given descriptor's class or of its subclasses can be pinned
+     */
+    static <Solution_, Entity_> @Nullable Predicate<Entity_> movableEntityFilter(EntityDescriptor<Solution_> entityDescriptor,
+            Solution_ solution) {
+        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
+        var entityClass = entityDescriptor.getEntityClass();
+        var canPin = solutionDescriptor.getGenuineEntityDescriptors().stream()
+                .anyMatch(descriptor -> entityClass.isAssignableFrom(descriptor.getEntityClass())
+                        && descriptor.hasEffectiveMovableEntityFilter());
+        if (!canPin) {
+            return null;
+        }
+        return entity -> solutionDescriptor.findEntityDescriptorOrFail(entity.getClass()).isMovable(solution, entity);
+    }
+
+    /**
+     * @return unmodifiable, random access; the values of the given list variable's solution value range,
+     *         without null and without pinned values
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    @SuppressWarnings("unchecked")
+    public <Value_> List<Value_> getMovableValueList(ListVariableDescriptor<Solution_> variableDescriptor) {
+        var solution = requireWorkingSolution("movable values", variableDescriptor);
+        if (valueListMap == null) {
+            valueListMap = new IdentityHashMap<>();
+        }
+        return (List<Value_>) valueListMap.computeIfAbsent(variableDescriptor.getValueRangeDescriptor(), descriptor -> {
+            var movableValueFilter = movableValueFilter(variableDescriptor, solution);
+            var valueList = new ArrayList<>();
+            var iterator = getFromSolution(descriptor).createOriginalIterator();
+            while (iterator.hasNext()) {
+                var value = iterator.next();
+                if (value != null && (movableValueFilter == null || movableValueFilter.test(value))) {
+                    valueList.add(value);
+                }
+            }
+            return Collections.unmodifiableList(valueList);
+        });
+    }
+
+    /**
+     * A list variable value is pinned if its entity is pinned, or if it is below the entity's first unpinned index.
+     * Each entity is checked with the descriptor of its own class, as in {@link #movableEntityFilter}.
+     * Moves never change which values are pinned; only a problem change does.
+     *
+     * @return null if no value of the variable can be pinned
+     */
+    static <Solution_, Value_> @Nullable Predicate<Value_> movableValueFilter(
+            GenuineVariableDescriptor<Solution_> variableDescriptor, Solution_ solution) {
+        if (!(variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor)) {
+            return null;
+        }
+        var movableEntityFilter = movableEntityFilter(listVariableDescriptor.getEntityDescriptor(), solution);
+        if (movableEntityFilter == null && !listVariableDescriptor.supportsPinning()) {
+            return null;
+        }
+        return new MovableValueFilter<>(listVariableDescriptor, movableEntityFilter, solution);
+    }
+
+    /**
+     * Collects the pinned values on the first test, as most users of the filter never test a value.
+     */
+    @NullMarked
+    private static final class MovableValueFilter<Solution_, Value_> implements Predicate<Value_> {
+
+        private final ListVariableDescriptor<Solution_> listVariableDescriptor;
+        private final @Nullable Predicate<Object> movableEntityFilter;
+        private final Solution_ solution;
+        private @Nullable Set<Object> pinnedValueSet;
+
+        private MovableValueFilter(ListVariableDescriptor<Solution_> listVariableDescriptor,
+                @Nullable Predicate<Object> movableEntityFilter, Solution_ solution) {
+            this.listVariableDescriptor = listVariableDescriptor;
+            this.movableEntityFilter = movableEntityFilter;
+            this.solution = solution;
+        }
+
+        @Override
+        public boolean test(Value_ value) {
+            if (pinnedValueSet == null) {
+                pinnedValueSet = collectPinnedValues();
+            }
+            return !pinnedValueSet.contains(value);
+        }
+
+        private Set<Object> collectPinnedValues() {
+            var result = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
+            for (var entity : listVariableDescriptor.getEntityDescriptor().extractEntities(solution)) {
+                var valueList = listVariableDescriptor.getValue(entity);
+                // The pinned values of an entity are a prefix of its list; all of them if the entity is pinned.
+                var pinnedCount = movableEntityFilter != null && !movableEntityFilter.test(entity) ? valueList.size()
+                        : Math.min(valueList.size(), listVariableDescriptor.getFirstUnpinnedIndex(entity));
+                result.addAll(valueList.subList(0, pinnedCount));
+            }
+            return result;
+        }
+
+    }
+
     public void reset(@Nullable Solution_ workingSolution) {
         singleValueRangeState = null;
+        movableEntityListMap = null;
+        valueListMap = null;
         if (multipleValueRangeState != null) {
             Arrays.fill(multipleValueRangeState, null);
         }

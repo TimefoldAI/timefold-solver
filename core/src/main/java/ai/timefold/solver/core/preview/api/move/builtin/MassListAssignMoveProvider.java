@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.impl.move.builtin.MassListDestinationMoveIterator;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -65,11 +66,16 @@ public final class MassListAssignMoveProvider<Solution_, Entity_, Value_>
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var sourceDataset = moveStreamFactory.forEachUnassignedValue(variableMetaModel).asCachedDataset();
-        var destinationDataset = moveStreamFactory.forEachDestination(variableMetaModel)
-                .map((solutionView, position) -> (ElementPosition) position)
-                .asCachedDataset();
+        // With entity value ranges, destinations come from the entities and values which share a value range with a member.
+        var destinationDataset = variableMetaModel.isValueRangeOnSolution()
+                ? moveStreamFactory.forEachDestination(variableMetaModel)
+                        .map((solutionView, position) -> (ElementPosition) position)
+                        .asCachedDataset()
+                : null;
+        var entityDataset = variableMetaModel.isValueRangeOnSolution() ? null
+                : moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new MassListDestinationMoveIterator<>(session, random,
-                variableMetaModel, sourceDataset, destinationDataset, sampler));
+                variableMetaModel, sourceDataset, destinationDataset, entityDataset, false, sampler));
     }
 
     /**

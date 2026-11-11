@@ -7,13 +7,19 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.move.builtin.SubListSwapMove;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Range;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -167,6 +173,64 @@ class ListTailSwapMoveProviderTest {
                 .listVariable("valueList");
         assertThat(new ListTailSwapMoveProvider<>(variableMetaModel, false).getId())
                 .isEqualTo("ListTailSwapMoveProvider(TestdataListEntity.valueList,noReversing)");
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithEntityRange() {
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var context =
+                NeighborhoodTester.build(new ListTailSwapMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataListPinnedEntityProvidingEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithSolutionRange() {
+        var solutionMetaModel = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedWithIndexListEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listSolutionRangeSolution();
+        var context =
+                NeighborhoodTester.build(new ListTailSwapMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataPinnedWithIndexListEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyValidPartnerIsDrawnEquallyOftenWithEntityRange() {
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var movableEntities = solution.getEntityList().stream().filter(entity -> !entity.isPinned()).toList();
+        // The left value with the most valid partners; a partner accepts the left tail, and the left entity its tail.
+        List<Move<TestdataListPinnedEntityProvidingSolution>> expectedMoves = List.of();
+        for (var left : movableEntities) {
+            var leftList = left.getValueList();
+            for (var leftIndex = left.getPinIndex(); leftIndex < leftList.size(); leftIndex++) {
+                var leftTail = leftList.subList(leftIndex, leftList.size());
+                var moves = new ArrayList<Move<TestdataListPinnedEntityProvidingSolution>>();
+                for (var right : movableEntities) {
+                    var rightList = right.getValueList();
+                    for (var rightIndex = right.getPinIndex(); rightIndex < rightList.size(); rightIndex++) {
+                        if (right != left && right.getValueRange().containsAll(leftTail)
+                                && left.getValueRange().containsAll(rightList.subList(rightIndex, rightList.size()))) {
+                            moves.add(Moves.swap(variableMetaModel, new Range<>(left, leftIndex, leftList.size()),
+                                    new Range<>(right, rightIndex, rightList.size()), false));
+                        }
+                    }
+                }
+                if (moves.size() > expectedMoves.size()) {
+                    expectedMoves = moves;
+                }
+            }
+        }
+        assertThat(expectedMoves).hasSizeGreaterThan(1);
+        var context = NeighborhoodTester.build(new ListTailSwapMoveProvider<>(variableMetaModel, false), solutionMetaModel)
+                .using(solution);
+        var expected = expectedMoves;
+        var moves = context.getMovesAsStream().limit(200_000).filter(expected::contains).toList();
+        MoveProviderAssertions.assertEquallyOften(moves, move -> move, expected, 0.3);
     }
 
 }
