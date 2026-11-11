@@ -170,9 +170,8 @@ class SamplersTest {
     }
 
     @Test
-    void pillarOfSamplerWithoutToStringHasStableDescription() {
-        Sampler<Integer> lambdaSampler = (sizeSoFar, candidate) -> Decision.ACCEPT_AND_STOP;
-        assertThat(Samplers.pillar(lambdaSampler)).hasToString("pillar(custom)");
+    void pillarDescribesBuiltInSampler() {
+        // A custom sampler is tested in SubPillarChangeMoveProviderTest; samplers of this package count as built-in.
         assertThat(Samplers.pillar(Samplers.upTo(4))).hasToString("pillar(upTo(4))");
     }
 
