@@ -3,6 +3,8 @@ package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample;
 import java.util.Iterator;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample.Decision;
 
 import org.jspecify.annotations.NullMarked;
@@ -36,8 +38,10 @@ import org.jspecify.annotations.Nullable;
  * without it ever leaking into another sample.
  * This makes a sampler instance safe to share between separate neighborhood providers.
  * <p>
- * Implement {@link Object#toString()} with a short, stable description of the settings, without spaces;
- * the IDs of built-in move providers contain it, or "custom" if it is not implemented.
+ * The default IDs of built-in move providers describe the built-in samplers from {@link Samplers},
+ * and show every other sampler as "custom".
+ * To tell two move providers apart that differ only in such a sampler,
+ * give them your own IDs with {@link NeighborhoodBuilder#add(String, MoveProvider)}.
  *
  * @param <A> the type of the sample's members
  */

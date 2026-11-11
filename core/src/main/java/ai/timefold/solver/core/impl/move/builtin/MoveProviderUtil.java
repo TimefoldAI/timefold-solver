@@ -17,6 +17,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
@@ -283,16 +284,18 @@ public final class MoveProviderUtil {
     }
 
     /**
-     * @return the {@code toString()} of the sampler, or "custom" if its class does not override it,
-     *         because the default {@code toString()} is not stable between runs
+     * The ID must be the same in every run with the same configuration:
+     * move selection strategies give weights by ID, and the DEBUG log of IDs and weights is compared between runs.
+     * The built-in samplers have a stable {@code toString()}.
+     * A custom sampler may not, for example a lambda, whose default {@code toString()} contains an identity hash;
+     * so every custom sampler is "custom".
+     * The check uses the package of the class, which needs no reflection and so also works in a native image.
+     *
+     * @return the {@code toString()} of a built-in sampler, or "custom"
      */
     public static String samplerId(Object sampler) {
-        try {
-            var declaringClass = sampler.getClass().getMethod("toString").getDeclaringClass();
-            return declaringClass == Object.class ? "custom" : sampler.toString();
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Impossible state: every class has toString().", e);
-        }
+        return sampler.getClass().getPackageName().equals(Samplers.class.getPackageName()) ? sampler.toString()
+                : "custom";
     }
 
 }

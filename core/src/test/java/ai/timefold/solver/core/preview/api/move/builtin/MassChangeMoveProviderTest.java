@@ -296,6 +296,20 @@ class MassChangeMoveProviderTest {
         Sampler<TestdataEntity> lambdaSampler = (sizeSoFar, candidate) -> Sample.Decision.ACCEPT;
         assertThat(new MassChangeMoveProvider<>(variableMetaModel, lambdaSampler).getId())
                 .isEqualTo("MassChangeMoveProvider(TestdataEntity.value,custom,noCrossingNull)");
+        var namedSampler = new Sampler<TestdataEntity>() {
+            @Override
+            public Sample.Decision evaluate(int sizeSoFar, TestdataEntity candidate) {
+                return Sample.Decision.ACCEPT;
+            }
+
+            @Override
+            public String toString() {
+                return "named";
+            }
+        };
+        // Only the built-in samplers appear in the ID.
+        assertThat(new MassChangeMoveProvider<>(variableMetaModel, namedSampler).getId())
+                .isEqualTo("MassChangeMoveProvider(TestdataEntity.value,custom,noCrossingNull)");
     }
 
 }
