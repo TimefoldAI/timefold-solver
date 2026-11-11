@@ -53,8 +53,8 @@ public final class MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<Sol
         var factory = environmentModeToFactoryMap.computeIfAbsent(environmentMode,
                 mode -> scoreDirectorFactoryFactory.buildConcreteScoreDirectorFactory(mode, getSolutionDescriptor()));
         // The factory was built for this mode, so its own builder is the one which runs in it.
-        return (AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_,
-                Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>) factory.createScoreDirectorBuilder();
+        return (AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>) factory
+                .createScoreDirectorBuilder();
     }
 
 }
