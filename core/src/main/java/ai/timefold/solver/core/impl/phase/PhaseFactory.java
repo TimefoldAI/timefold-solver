@@ -50,10 +50,12 @@ public interface PhaseFactory<Solution_> {
             var phaseConfig = phaseConfigList.get(phaseIndex);
             if (phaseIndex > 0) {
                 PhaseConfig previousPhaseConfig = phaseConfigList.get(phaseIndex - 1);
-                if (!canTerminate(previousPhaseConfig) && !canSolverTerminationEndPhase(termination, previousPhaseConfig)) {
-                    throw new IllegalStateException("Solver configuration contains an unreachable phase. "
-                            + "Phase #" + phaseIndex + " (" + phaseConfig + ") follows a phase "
-                            + "without a configured termination (" + previousPhaseConfig + ").");
+                if (!canTerminate(previousPhaseConfig)
+                        && !canSolverTerminationEndLocalSearchPhase(termination, previousPhaseConfig)) {
+                    throw new IllegalStateException("""
+                            Solver configuration contains an unreachable phase. \
+                            Phase #%d (%s) follows a phase without a configured termination (%s)."""
+                            .formatted(phaseIndex, phaseConfig, previousPhaseConfig));
                 }
             }
             var isConstructionPhase = ConstructionHeuristicPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
@@ -92,7 +94,7 @@ public interface PhaseFactory<Solution_> {
      * A phase-only termination in the solver termination ends the phase but not the solver,
      * so the next phase runs.
      */
-    private static <Solution_> boolean canSolverTerminationEndPhase(SolverTermination<Solution_> termination,
+    private static <Solution_> boolean canSolverTerminationEndLocalSearchPhase(SolverTermination<Solution_> termination,
             PhaseConfig<?> phaseConfig) {
         return phaseConfig instanceof LocalSearchPhaseConfig
                 && termination instanceof UniversalTermination<Solution_> universalTermination

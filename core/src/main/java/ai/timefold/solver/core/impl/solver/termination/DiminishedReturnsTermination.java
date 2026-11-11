@@ -226,6 +226,10 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         return isGracePeriodStarted;
     }
 
+    boolean isGracePeriodActive() {
+        return isGracePeriodActive;
+    }
+
     long getGracePeriodStartTimeNanos() {
         return gracePeriodStartTimeNanos;
     }

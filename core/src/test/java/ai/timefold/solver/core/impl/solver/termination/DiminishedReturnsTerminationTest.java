@@ -310,6 +310,22 @@ class DiminishedReturnsTerminationTest {
     }
 
     @Test
+    void stepEndedEndsGracePeriodWithoutIsPhaseTerminated() {
+        // An AND skips isPhaseTerminated() of its later terminations while an earlier one is not met.
+        // The baseline improvement must still cover only the first sliding window.
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 0.5);
+        termination.start(System.nanoTime() - 20 * NANOS_PER_MILLISECOND, InnerScore.fullyAssigned(SimpleScore.ZERO));
+        var phaseScope = mock(LocalSearchPhaseScope.class);
+        doReturn(InnerScore.fullyAssigned(SimpleScore.ONE)).when(phaseScope).getBestScore();
+        var stepScope = mock(AbstractStepScope.class);
+        doReturn(phaseScope).when(stepScope).getPhaseScope();
+
+        termination.stepEnded(stepScope);
+
+        assertThat(termination.isGracePeriodActive()).isFalse();
+    }
+
+    @Test
     void phaseTimeGradientIsSupported() {
         var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10_000, 0.5);
         termination.start(System.nanoTime(), InnerScore.fullyAssigned(SimpleScore.ZERO));
