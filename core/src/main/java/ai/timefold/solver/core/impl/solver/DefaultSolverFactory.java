@@ -22,6 +22,7 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.NeighborhoodsConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
@@ -33,6 +34,7 @@ import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
+import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsConfigUtils;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
@@ -167,6 +169,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
 
         var randomFactory = buildRandomSupplier(globalEnvironmentMode);
+        var neighborhoodsConfig = Objects.requireNonNullElseGet(solverConfig.getNeighborhoodsConfig(),
+                NeighborhoodsConfig::new);
+        var neighborhoodProviderClass = neighborhoodsConfig.<Solution_> getNeighborhoodProviderClass();
+        var strategyClass = neighborhoodsConfig.<Solution_> getMoveSelectionStrategyClass();
+        var strategyProperties = neighborhoodsConfig.getMoveSelectionStrategyCustomProperties();
+        NeighborhoodsConfigUtils.failWithoutNeighborhoods(solverConfig.getNeighborhoodsConfig(), "solver",
+                HeuristicConfigPolicy.isPreviewFeatureEnabled(PreviewFeature.NEIGHBORHOODS, previewFeaturesEnabled));
+        NeighborhoodsConfigUtils.failPropertiesWithoutClass(strategyClass, strategyProperties, "solver");
         var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
                 .withPreviewFeatureSet(previewFeaturesEnabled)
                 .withEnvironmentMode(globalEnvironmentMode)
@@ -174,7 +184,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
                 .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
-                .withNeighborhoodsConfig(solverConfig.getNeighborhoodsConfig())
+                .withNeighborhoodProviderClass(neighborhoodProviderClass)
+                .withMoveSelectionStrategyFactory(strategyClass == null ? null
+                        : NeighborhoodsConfigUtils.buildStrategyFactory(strategyClass, strategyProperties))
                 .withRandom(randomFactory.get())
                 .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)
