@@ -47,4 +47,15 @@ public interface SolverRuntimeConfig {
      * Configuration of the random seed.
      */
     Optional<Long> randomSeed();
+
+    /**
+     * Note: this setting is only available in Timefold Solver
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
+     * Enable tiered score calculation,
+     * which causes the solver to only calculate constraints affecting softer score levels if they can change if a move is
+     * accepted.
+     * For instance, if a move broke multiple hard constraints, then Timefold Solver may skip the medium and soft constraints.
+     * Defaults to "false".
+     */
+    Optional<Boolean> useTieredScoreCalculation();
 }

@@ -297,6 +297,8 @@
                     
           <xs:element minOccurs="0" name="constraintStreamProfilingEnabled" type="xs:boolean"/>
                     
+          <xs:element minOccurs="0" name="useTieredScoreCalculation" type="xs:boolean"/>
+                    
           <xs:element minOccurs="0" name="incrementalScoreCalculatorClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="incrementalScoreCalculatorCustomProperties" type="tns:jaxbAdaptedMap"/>
@@ -1660,8 +1662,6 @@
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
             
       <xs:enumeration value="NEIGHBORHOODS"/>
-            
-      <xs:enumeration value="TIERED_SCORE_CALCULATION"/>
           
     </xs:restriction>
       

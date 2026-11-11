@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirector;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.MultiEnvironmentBavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -131,6 +132,25 @@ class ScoreDirectorFactoryFactoryTest {
     void constraintStreams() {
         assertThat(buildFactory(constraintStreamConfig()))
                 .isExactlyInstanceOf(BavetConstraintStreamScoreDirectorFactory.class);
+    }
+
+    @Test
+    void useTieredScoreCalculationDisabledByDefault() {
+        var scoreDirectorFactory = buildFactory(constraintStreamConfig());
+        assertThat(scoreDirectorFactory.createScoreDirectorBuilder(EnvironmentMode.PHASE_ASSERT))
+                .isInstanceOf(BavetConstraintStreamScoreDirector.Builder.class);
+    }
+
+    @Test
+    void useTieredScoreCalculationFromConfigRequiresEnterprise() {
+        var config = new ScoreDirectorFactoryConfig()
+                .withConstraintProviderClass(DummyConstraintProvider.class)
+                .withUseTieredScoreCalculation(true);
+        var scoreDirectorFactory = buildFactory(config);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> scoreDirectorFactory.createScoreDirectorBuilder(EnvironmentMode.PHASE_ASSERT))
+                .withMessageContainingAll("Tiered score calculation",
+                        "remove tiered score calculation from solver configuration");
     }
 
     @Test

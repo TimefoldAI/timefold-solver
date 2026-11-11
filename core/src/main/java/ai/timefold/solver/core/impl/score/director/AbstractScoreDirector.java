@@ -889,7 +889,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         assertScoreFromScratch(workingScore, completedAction, true, null);
     }
 
-    protected void assertWorkingScoreAboveBoundFromScratch(Score_ lowerBound, InnerScore<Score_> workingScore, Object completedAction) {
+    protected void assertWorkingScoreAboveBoundFromScratch(Score_ lowerBound, InnerScore<Score_> workingScore,
+            Object completedAction) {
         assertScoreFromScratch(workingScore, completedAction, false, lowerBound);
     }
 

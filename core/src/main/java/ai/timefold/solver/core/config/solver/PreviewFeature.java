@@ -26,7 +26,6 @@ public enum PreviewFeature {
      * It is intended to simplify the creation of custom moves, eventually replacing move selectors.
      * The component is under development, and many key features are yet to be delivered.
      */
-    NEIGHBORHOODS,
-    TIERED_SCORE_CALCULATION
+    NEIGHBORHOODS
 
 }

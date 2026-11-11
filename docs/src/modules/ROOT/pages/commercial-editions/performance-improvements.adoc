@@ -89,3 +89,53 @@ To be functionally equivalent, the following must be true:
 * The building blocks must have functionally equivalent inputs.
 
 When all of the above is the case, Timefold Solver can rewrite the `ConstraintProvider` code at runtime to benefit from the performance improvements node sharing brings.
+
+[#tieredScoreCalculation]
+== Tiered score calculation
+
+include::./_only-enterprise.adoc[]
+
+With tiered score calculation, Timefold Solver only calculate constraints affecting softer score levels if they can change if a move is accepted.
+For instance, if a move broke multiple hard constraints, then Timefold Solver may skip the medium and soft constraints.
+For planning problems where soft constraints take a significant amount of time, this can significantly speed up move evaluation.
+
+This feature is disabled by default.
+You can enable it by changing the following setting.
+
+[#tieredScoreCalculationConfiguration]
+=== Configuration
+
+[ tabs]
+====
+XML::
+
+* Add `<useTieredScoreCalculation>true</useTieredScoreCalculation>` in your `solverConfig.xml`:
++
+[source,xml,options="nowrap"]
+----
+<!-- ... -->
+<scoreDirectorFactory>
+  <constraintProviderClass>org.acme.MyConstraintProvider</constraintProviderClass>
+  <useTieredScoreCalculation>true</useTieredScoreCalculation>
+</scoreDirectorFactory>
+<!-- ... -->
+----
+
+Spring Boot::
+
+Set the property `timefold.solver.use-tiered-score-calculation` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+timefold.solver.use-tiered-score-calculation=true
+----
+
+Quarkus::
+
+Set the property `quarkus.timefold.solver.use-tiered-score-calculation` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.solver.use-tiered-score-calculation=true
+----
+====
