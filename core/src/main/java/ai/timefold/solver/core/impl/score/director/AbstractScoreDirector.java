@@ -272,10 +272,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lastVariableUpdateSuccessful) {
             return innerCalculateScore();
         } else {
-            // invalid scores are worse than any valid score, even those with unassigned values
-            var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
-            getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
-            return invalidScore;
+            return markWorkingSolutionAsStructurallyFlawed();
         }
     }
 
@@ -284,11 +281,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lastVariableUpdateSuccessful) {
             return innerCalculateScoreAboveBound(lowerBound);
         } else {
-            // invalid scores are worse than any valid score, even those with unassigned values
-            var invalidScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
-            getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
-            return invalidScore;
+            return markWorkingSolutionAsStructurallyFlawed();
         }
+    }
+
+    private InnerScore<Score_> markWorkingSolutionAsStructurallyFlawed() {
+        // structurally flawed scores are worse than any valid score, even those with unassigned values
+        var structurallyFlawedScore = InnerScore.fullyAssigned(getScoreDefinition().getStructurallyFlawedScore());
+        getSolutionDescriptor().setScore(workingSolution, structurallyFlawedScore.raw());
+        return structurallyFlawedScore;
     }
 
     /**

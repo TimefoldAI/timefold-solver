@@ -87,11 +87,18 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * Like {@link #calculateScore()}, but returns a partial calculation if it can prove the resulting
-     * score will be below the given lower bound.
+     * score will be below the given lower bound. For instance, this method may not calculate soft
+     * constraints if after calculating all hard constraints, the calculated hard score is less than
+     * the {@code lowerBound}'s hard score. When a partial score is returned by this method, the only
+     * guarantee is that it must be less than the given {@code lowerBound}. It may differ from
+     * {@link #calculateScore()} in both hard score and soft score (for example, if the {@code lowerBound}
+     * has a hard score of 0, and there are only negative hard constraints, the {@link InnerScoreDirector}
+     * can exit early on the first hard constraint violation and avoid checking the other hard constraints.
      *
      * @param lowerBound The minimum score that would be accepted, inclusive.
-     * @return never null, the {@link Score} of the {@link PlanningSolution working solution} if it would
-     *         be above the lower bound, and a partial score otherwise.
+     * @return never null, the same {@link Score} as {@link #calculateScore()} if it cannot prove
+     *         the calculated score would be below given {@code lowerBound}, and a {@link Score} below {@code lowerBound}
+     *         otherwise.
      */
     default InnerScore<Score_> calculateScoreAboveBound(Score_ lowerBound) {
         return calculateScore();

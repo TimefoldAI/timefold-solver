@@ -135,7 +135,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
             createScoreDirectorBuilder(EnvironmentMode environmentMode) {
         if (useTieredScoreCalculation) {
             return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.TIERED_SCORE_CALCULATION)
-                    .getTieredBavetScoreDirectorBuilder(this, environmentMode);
+                    .createTieredBavetScoreDirectorBuilder(this, environmentMode);
         } else {
             return new Builder<>(this, environmentMode);
         }

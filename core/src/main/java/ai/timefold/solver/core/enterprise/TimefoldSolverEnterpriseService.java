@@ -194,7 +194,7 @@ public interface TimefoldSolverEnterpriseService {
 
     <Solution_, Score_ extends Score<Score_>>
             AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>
-            getTieredBavetScoreDirectorBuilder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> factory,
+            createTieredBavetScoreDirectorBuilder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> factory,
                     EnvironmentMode environmentMode);
 
     <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(PhaseTermination<Solution_> termination,

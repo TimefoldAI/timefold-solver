@@ -40,7 +40,7 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
 
     @Override
     @SuppressWarnings("unchecked")
-    public @Nullable <Score_ extends Score<Score_>> Score_ scoreLowerBound() {
+    public @Nullable <Score_ extends Score<Score_>> Score_ getForagedMoveScoreLowerBound() {
         if (maxScoreMoveScope == null) {
             return null;
         }
