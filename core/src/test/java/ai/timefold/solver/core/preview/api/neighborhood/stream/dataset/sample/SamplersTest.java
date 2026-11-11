@@ -170,6 +170,13 @@ class SamplersTest {
     }
 
     @Test
+    void pillarOfSamplerWithoutToStringHasStableDescription() {
+        Sampler<Integer> lambdaSampler = (sizeSoFar, candidate) -> Decision.ACCEPT_AND_STOP;
+        assertThat(Samplers.pillar(lambdaSampler)).hasToString("pillar(custom)");
+        assertThat(Samplers.pillar(Samplers.upTo(4))).hasToString("pillar(upTo(4))");
+    }
+
+    @Test
     void resetRunsBeforeTheFirstEvaluateCall() {
         var callOrder = new ArrayList<String>();
         var sampler = new Sampler<Integer>() {

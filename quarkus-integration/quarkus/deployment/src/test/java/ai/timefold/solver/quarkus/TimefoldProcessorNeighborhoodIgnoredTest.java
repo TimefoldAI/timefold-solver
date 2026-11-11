@@ -36,8 +36,7 @@ class TimefoldProcessorNeighborhoodIgnoredTest {
 
     @Test
     void ignoredWithoutNeighborhoods() {
-        assertThat(solverConfig.getNeighborhoodProviderClass()).isNull();
-        assertThat(solverConfig.getMoveSelectionStrategyClass()).isNull();
+        assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
     }
 
 }

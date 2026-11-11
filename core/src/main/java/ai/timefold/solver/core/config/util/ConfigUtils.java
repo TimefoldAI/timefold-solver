@@ -298,11 +298,11 @@ public class ConfigUtils {
      * {@link #mergeProperty(Object, Object)}</li>
      * </ul>
      *
-     * @see #mergeProperty(Object, Object)
      * @param a property {@code a}
      * @param b property {@code b}
      * @param <T> the type of property {@code a} and {@code b}
      * @return sometimes null
+     * @see #mergeProperty(Object, Object)
      */
     public static <T> @Nullable T meldProperty(@Nullable T a, @Nullable T b) {
         if (a == null && b == null) {
@@ -325,10 +325,10 @@ public class ConfigUtils {
      * Divides and ceils the result without using floating point arithmetic. For floor division,
      * see {@link Math#floorDiv(long, long)}.
      *
-     * @throws ArithmeticException if {@code divisor == 0}
      * @param dividend the dividend
      * @param divisor the divisor
      * @return dividend / divisor, ceiled
+     * @throws ArithmeticException if {@code divisor == 0}
      */
     public static int ceilDivide(int dividend, int divisor) {
         if (divisor == 0) {
@@ -530,8 +530,8 @@ public class ConfigUtils {
      * This method is heavy, and it is effectively a computed constant.
      * It is recommended that its results are cached at call sites.
      *
-     * @return null if no accessor found
      * @param <C> the class type
+     * @return null if no accessor found
      */
     public static <C> @Nullable MemberAccessor findPlanningIdMemberAccessor(@NonNull Class<C> clazz,
             @NonNull MemberAccessorFactory memberAccessorFactory, @NonNull DomainAccessType domainAccessType) {
@@ -629,11 +629,6 @@ public class ConfigUtils {
     }
 
     /**
-     * @param containingClass never null
-     * @param propertyName never null
-     * @return null if it doesn't exist
-     */
-    /**
      * Fails fast, before any instance exists, if a custom property has no public setter on the bean class.
      */
     public static void assertCustomPropertiesSettable(@NonNull Class<?> beanClass, @NonNull String beanClassPropertyName,
@@ -661,6 +656,11 @@ public class ConfigUtils {
         return setterMethod;
     }
 
+    /**
+     * @param containingClass never null
+     * @param propertyName never null
+     * @return null if it doesn't exist
+     */
     private static Method getSetterMethod(Class<?> containingClass, String propertyName) {
         String setterName = ReflectionHelper.PROPERTY_MUTATOR_PREFIX + ReflectionHelper.capitalizePropertyName(propertyName);
         Method[] methods = Arrays.stream(containingClass.getMethods())

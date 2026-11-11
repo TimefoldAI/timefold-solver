@@ -6,7 +6,9 @@
     <termination>
       <stepCountLimit>2</stepCountLimit>
     </termination>
-    <neighborhoodProviderClass>ai.timefold.solver.quarkus.testdomain.neighborhood.TestdataQuarkusNeighborhoodProvider</neighborhoodProviderClass>
-    <moveSelectionStrategyClass>ai.timefold.solver.quarkus.testdomain.neighborhood.TestdataQuarkusMoveSelectionStrategy</moveSelectionStrategyClass>
+    <neighborhoods>
+      <neighborhoodProviderClass>ai.timefold.solver.quarkus.testdomain.neighborhood.TestdataQuarkusNeighborhoodProvider</neighborhoodProviderClass>
+      <moveSelectionStrategyClass>ai.timefold.solver.quarkus.testdomain.neighborhood.TestdataQuarkusMoveSelectionStrategy</moveSelectionStrategyClass>
+    </neighborhoods>
   </localSearch>
 </solver>

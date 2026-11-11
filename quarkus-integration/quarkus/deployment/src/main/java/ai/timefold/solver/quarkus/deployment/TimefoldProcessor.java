@@ -46,7 +46,7 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSour
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
-import ai.timefold.solver.core.impl.solver.SolverLevelClassDetector;
+import ai.timefold.solver.core.impl.util.SolverLevelClassResolver;
 import ai.timefold.solver.core.impl.util.SolverVersionUtils;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
@@ -277,10 +277,10 @@ class TimefoldProcessor {
         solverConfigMap.forEach((solverName, solverConfig) -> loadSolverConfig(indexView, reflectiveHierarchyClass,
                 solverConfig, solverName, reflectiveClassSet));
         // After step 3, because it applies the preview features; then register the detected classes too.
-        for (var detector : List.of(SolverLevelClassDetector.NEIGHBORHOOD_PROVIDER,
-                SolverLevelClassDetector.MOVE_SELECTION_STRATEGY)) {
-            detector.detect(solverConfigMap,
-                    () -> indexView.getAllKnownImplementations(DotName.createSimple(detector.getType())).stream()
+        for (var resolver : List.of(SolverLevelClassResolver.NEIGHBORHOOD_PROVIDER,
+                SolverLevelClassResolver.MOVE_SELECTION_STRATEGY)) {
+            resolver.resolve(solverConfigMap,
+                    () -> indexView.getAllKnownImplementations(DotName.createSimple(resolver.getType())).stream()
                             .filter(UNIQUENESS_PREDICATE)
                             .<Class<?>> map(this::convertClassInfoToClass)
                             .toList());

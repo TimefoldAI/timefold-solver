@@ -39,14 +39,15 @@ class TimefoldProcessorNeighborhoodPhaseLevelTest {
 
     @Test
     void phaseLevelOnEveryPhaseNeedsNoDetection() {
-        assertThat(solverConfig.getNeighborhoodProviderClass()).isNull();
-        assertThat(solverConfig.getMoveSelectionStrategyClass()).isNull();
+        assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
         var phaseList = solverConfig.getPhaseConfigList().stream()
                 .map(LocalSearchPhaseConfig.class::cast)
                 .toList();
-        assertThat(phaseList).<Class<?>> extracting(phaseConfig -> phaseConfig.getNeighborhoodProviderClass())
+        assertThat(phaseList)
+                .<Class<?>> extracting(phaseConfig -> phaseConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
                 .containsExactly(TestdataQuarkusNeighborhoodProvider.class, OtherQuarkusNeighborhoodProvider.class);
-        assertThat(phaseList).<Class<?>> extracting(phaseConfig -> phaseConfig.getMoveSelectionStrategyClass())
+        assertThat(phaseList)
+                .<Class<?>> extracting(phaseConfig -> phaseConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
                 .containsExactly(TestdataQuarkusMoveSelectionStrategy.class, OtherQuarkusMoveSelectionStrategy.class);
     }
 

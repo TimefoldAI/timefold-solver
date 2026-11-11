@@ -6,14 +6,18 @@
     <termination>
       <stepCountLimit>2</stepCountLimit>
     </termination>
-    <neighborhoodProviderClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringNeighborhoodProvider</neighborhoodProviderClass>
-    <moveSelectionStrategyClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringMoveSelectionStrategy</moveSelectionStrategyClass>
+    <neighborhoods>
+      <neighborhoodProviderClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringNeighborhoodProvider</neighborhoodProviderClass>
+      <moveSelectionStrategyClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringMoveSelectionStrategy</moveSelectionStrategyClass>
+    </neighborhoods>
   </localSearch>
   <localSearch>
     <termination>
       <stepCountLimit>2</stepCountLimit>
     </termination>
-    <neighborhoodProviderClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.TestdataOtherSpringNeighborhoodProvider</neighborhoodProviderClass>
-    <moveSelectionStrategyClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.TestdataOtherSpringMoveSelectionStrategy</moveSelectionStrategyClass>
+    <neighborhoods>
+      <neighborhoodProviderClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.TestdataOtherSpringNeighborhoodProvider</neighborhoodProviderClass>
+      <moveSelectionStrategyClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.TestdataOtherSpringMoveSelectionStrategy</moveSelectionStrategyClass>
+    </neighborhoods>
   </localSearch>
 </solver>

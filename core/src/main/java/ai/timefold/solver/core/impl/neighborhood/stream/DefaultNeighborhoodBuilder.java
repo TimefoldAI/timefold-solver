@@ -27,11 +27,6 @@ public final class DefaultNeighborhoodBuilder<Solution_> implements Neighborhood
     }
 
     @Override
-    public NeighborhoodBuilder<Solution_> add(MoveProvider<Solution_> moveProvider) {
-        return add(Objects.requireNonNull(moveProvider, "moveProvider").getId(), moveProvider);
-    }
-
-    @Override
     public NeighborhoodBuilder<Solution_> add(String id, MoveProvider<Solution_> moveProvider) {
         if (id.isBlank()) {
             throw new IllegalArgumentException("The id (%s) of the move provider (%s) must not be blank."

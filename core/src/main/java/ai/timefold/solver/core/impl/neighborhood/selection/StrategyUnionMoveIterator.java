@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.neighborhood.selection;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -12,12 +12,15 @@ import ai.timefold.solver.core.preview.api.neighborhood.selection.MoveSource;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveIterable;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Gives the moves of one step; the {@link MoveSelectionStrategy} chooses the move source of each move.
  * {@link #hasNext()} asks the strategy, {@link #next()} takes the move from the chosen move source.
+ * The move iterator of a move source is created only when the strategy first chooses it,
+ * so that move sources the strategy does not choose cost nothing.
  */
 @NullMarked
 public final class StrategyUnionMoveIterator<Solution_> implements Iterator<Move<Solution_>> {
@@ -26,37 +29,30 @@ public final class StrategyUnionMoveIterator<Solution_> implements Iterator<Move
 
     private final MoveSelectionStrategy<Solution_> strategy;
     private final List<DefaultMoveSource<Solution_>> moveSourceList;
-    private final List<Iterator<Move<Solution_>>> moveIteratorList;
-    private final boolean[] availableArray;
+    private final List<MoveIterable<Solution_>> moveIterableList;
+    private final @Nullable Iterator<Move<Solution_>>[] moveIteratorArray;
+    private final boolean[] exhaustedArray;
     private final RandomGenerator random;
     private final int stepIndex;
-    private int availableCount = 0;
+    private int exhaustedCount = 0;
     private int chosenIndex = -1;
     private boolean ended = false;
-    private boolean moveGiven = false;
 
     /**
      * @param moveIterableList the move iterable of each move source, at the same index
+     * @param random gives the move iterators their randomness
      */
+    @SuppressWarnings("unchecked")
     public StrategyUnionMoveIterator(MoveSelectionStrategy<Solution_> strategy,
             List<DefaultMoveSource<Solution_>> moveSourceList, List<MoveIterable<Solution_>> moveIterableList,
             RandomGenerator random, int stepIndex) {
         this.strategy = strategy;
         this.moveSourceList = moveSourceList;
-        this.moveIteratorList = new ArrayList<>(moveSourceList.size());
-        this.availableArray = new boolean[moveSourceList.size()];
+        this.moveIterableList = moveIterableList;
+        this.moveIteratorArray = new Iterator[moveSourceList.size()];
+        this.exhaustedArray = new boolean[moveSourceList.size()];
         this.random = random;
         this.stepIndex = stepIndex;
-        for (var i = 0; i < moveSourceList.size(); i++) {
-            var moveIterator = moveIterableList.get(i).iterator(random);
-            moveIteratorList.add(moveIterator);
-            if (moveIterator.hasNext()) {
-                availableArray[i] = true;
-                availableCount++;
-            } else {
-                strategy.moveSourceExhausted(moveSourceList.get(i));
-            }
-        }
     }
 
     @Override
@@ -64,30 +60,32 @@ public final class StrategyUnionMoveIterator<Solution_> implements Iterator<Move
         if (chosenIndex >= 0) {
             return true;
         }
-        if (ended) {
-            return false;
-        }
-        if (availableCount == 0) {
-            ended = true;
-            LOGGER.debug("The step index ({}) ended because all move sources are exhausted.", stepIndex);
-            return false;
-        }
-        var moveSource = strategy.nextMoveSource(random);
-        if (moveSource == null) {
-            if (!moveGiven) {
-                throw new IllegalStateException("""
-                        The move selection strategy (%s) gave no move source at step index (%d), \
-                        but no move was selected in that step yet and (%d) move sources are still available.
-                        Maybe return a move source before returning null in a step."""
-                        .formatted(strategy.getClass().getSimpleName(), stepIndex, availableCount));
+        while (!ended) {
+            if (exhaustedCount == moveSourceList.size()) {
+                ended = true;
+                LOGGER.debug("The step index ({}) ended because all move sources are exhausted.", stepIndex);
+                return false;
             }
-            ended = true;
-            LOGGER.debug("The step index ({}) ended because the move selection strategy ({}) gave no more move sources.",
-                    stepIndex, strategy.getClass().getSimpleName());
-            return false;
+            var moveSource = strategy.nextMoveSource();
+            if (moveSource == null) {
+                ended = true;
+                LOGGER.debug("The step index ({}) ended because the move selection strategy ({}) gave no more move sources.",
+                        stepIndex, strategy.getClass().getSimpleName());
+                return false;
+            }
+            var index = toAvailableIndex(moveSource);
+            var moveIterator = moveIteratorArray[index];
+            if (moveIterator == null) {
+                moveIterator = moveIterableList.get(index).iterator(random);
+                moveIteratorArray[index] = moveIterator;
+            }
+            if (moveIterator.hasNext()) {
+                chosenIndex = index;
+                return true;
+            }
+            exhaust(index);
         }
-        chosenIndex = toAvailableIndex(moveSource);
-        return true;
+        return false;
     }
 
     private int toAvailableIndex(MoveSource<Solution_> moveSource) {
@@ -101,13 +99,19 @@ public final class StrategyUnionMoveIterator<Solution_> implements Iterator<Move
                     .formatted(strategy.getClass().getSimpleName(), moveSource));
         }
         var index = defaultMoveSource.index();
-        if (!availableArray[index]) {
+        if (exhaustedArray[index]) {
             throw new IllegalStateException("""
                     The move selection strategy (%s) chose the exhausted move source (%s) at step index (%d).
                     Maybe do not return a move source after moveSourceExhausted() until the next stepStarted()."""
                     .formatted(strategy.getClass().getSimpleName(), moveSource, stepIndex));
         }
         return index;
+    }
+
+    private void exhaust(int index) {
+        exhaustedArray[index] = true;
+        exhaustedCount++;
+        strategy.moveSourceExhausted(moveSourceList.get(index));
     }
 
     @Override
@@ -117,13 +121,10 @@ public final class StrategyUnionMoveIterator<Solution_> implements Iterator<Move
         }
         var index = chosenIndex;
         chosenIndex = -1;
-        var moveIterator = moveIteratorList.get(index);
+        var moveIterator = Objects.requireNonNull(moveIteratorArray[index]);
         var move = moveIterator.next();
-        moveGiven = true;
         if (!moveIterator.hasNext()) {
-            availableArray[index] = false;
-            availableCount--;
-            strategy.moveSourceExhausted(moveSourceList.get(index));
+            exhaust(index);
         }
         return move;
     }

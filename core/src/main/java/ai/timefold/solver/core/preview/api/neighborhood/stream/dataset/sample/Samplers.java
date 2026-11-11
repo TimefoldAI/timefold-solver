@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample.Decision;
 
@@ -140,7 +141,7 @@ public final class Samplers {
 
             @Override
             public String toString() {
-                return "pillar(" + sampler + ")";
+                return "pillar(" + MoveProviderUtil.samplerId(sampler) + ")";
             }
 
         };

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.neighborhood.selection;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.preview.api.neighborhood.selection.MoveSource;
 import ai.timefold.solver.core.preview.api.neighborhood.selection.PhaseContext;
@@ -18,14 +19,18 @@ public final class DefaultMoveSelectionContext<Solution_> implements PhaseContex
 
     private final List<MoveSource<Solution_>> moveSourceList;
     private @Nullable Solution_ solution = null;
+    private @Nullable RandomGenerator random = null;
 
     public DefaultMoveSelectionContext(List<MoveSource<Solution_>> moveSourceList) {
         this.moveSourceList = moveSourceList;
     }
 
-    public DefaultMoveSelectionContext<Solution_> withSolution(Solution_ solution) {
+    public void setRandom(@Nullable RandomGenerator random) {
+        this.random = random;
+    }
+
+    public void setSolution(Solution_ solution) {
         this.solution = solution;
-        return this;
     }
 
     @Override
@@ -36,6 +41,11 @@ public final class DefaultMoveSelectionContext<Solution_> implements PhaseContex
     @Override
     public Solution_ solution() {
         return Objects.requireNonNull(solution);
+    }
+
+    @Override
+    public RandomGenerator random() {
+        return Objects.requireNonNull(random);
     }
 
 }

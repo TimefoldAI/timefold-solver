@@ -65,14 +65,26 @@
         },
         {
           "ignore": true,
+          "code": "java.method.removed",
+          "old": "method <Solution_> java.lang.Class<? extends ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider<Solution_>> ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig::getNeighborhoodProviderClass()",
+          "justification": "Preview feature NEIGHBORHOODS: the phase-level neighborhoodProviderClass moves into LocalSearchNeighborhoodsConfig."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.removed",
+          "old": "method void ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig::setNeighborhoodProviderClass(java.lang.Class<? extends ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider>)",
+          "justification": "Preview feature NEIGHBORHOODS: the phase-level neighborhoodProviderClass moves into LocalSearchNeighborhoodsConfig."
+        },
+        {
+          "ignore": true,
           "code": "java.annotation.attributeValueChanged",
           "old": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
           "new": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
           "annotationType": "jakarta.xml.bind.annotation.XmlType",
           "attribute": "propOrder",
           "oldValue": "{\"localSearchType\", \"moveSelectorConfig\", \"neighborhoodProviderClass\", \"acceptorConfig\", \"foragerConfig\"}",
-          "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"neighborhoodProviderClass\", \"moveSelectionStrategyClass\", \"moveSelectionStrategyCustomProperties\", \"acceptorConfig\", \"foragerConfig\"}",
-          "justification": "Solver-level neighborhoods and the move selection strategy; new optional XML elements."
+          "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"neighborhoodsConfig\", \"acceptorConfig\", \"foragerConfig\"}",
+          "justification": "Preview feature NEIGHBORHOODS: the phase-level neighborhoodProviderClass moves into the neighborhoods element."
         },
         {
           "ignore": true,
@@ -82,8 +94,8 @@
           "annotationType": "jakarta.xml.bind.annotation.XmlType",
           "attribute": "propOrder",
           "oldValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\"}",
-          "newValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"neighborhoodProviderClass\", \"moveSelectionStrategyClass\", \"moveSelectionStrategyCustomProperties\", \"phaseConfigList\"}",
-          "justification": "Solver-level neighborhoods and the move selection strategy; new optional XML elements."
+          "newValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"neighborhoodsConfig\", \"phaseConfigList\"}",
+          "justification": "Preview feature NEIGHBORHOODS: new optional neighborhoods element."
         },
         {
           "ignore": true,

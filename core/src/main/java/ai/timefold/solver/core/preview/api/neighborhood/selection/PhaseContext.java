@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.preview.api.neighborhood.selection;
 
 import java.util.List;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
@@ -25,5 +26,11 @@ public interface PhaseContext<Solution_> {
      * @return the working solution, with its {@link PlanningSolution} score field up to date; read it, never change it
      */
     Solution_ solution();
+
+    /**
+     * @return the random generator for all random decisions of the strategy;
+     *         the strategy may keep it for the phase run
+     */
+    RandomGenerator random();
 
 }

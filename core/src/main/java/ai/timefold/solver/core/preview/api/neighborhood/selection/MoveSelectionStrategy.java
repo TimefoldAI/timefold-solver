@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.preview.api.neighborhood.selection;
 
-import java.util.random.RandomGenerator;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 
@@ -20,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Call order: {@link #phaseStarted(PhaseContext)} once;
  * then for each step {@link #stepStarted(StepContext)},
- * followed by {@link #nextMoveSource(RandomGenerator)} and {@link #moveSourceExhausted(MoveSource)} in any mix.
+ * followed by {@link #nextMoveSource()} and {@link #moveSourceExhausted(MoveSource)} in any mix.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
@@ -36,20 +34,21 @@ public interface MoveSelectionStrategy<Solution_> {
 
     /**
      * The move source has no more moves in this step.
-     * {@link #nextMoveSource(RandomGenerator)} must not return it again before the next {@link #stepStarted(StepContext)}.
+     * {@link #nextMoveSource()} must not return it again before the next {@link #stepStarted(StepContext)}.
      */
     void moveSourceExhausted(MoveSource<Solution_> moveSource);
 
     /**
      * The solver calls this only while at least one move source is available.
+     * The solver gets the moves of a move source only when this method first returns it in a step,
+     * so a move source can be exhausted right after it is returned.
      * If the step ends before any move was accepted, the solver takes the best move that it evaluated.
+     * For random decisions, use only {@link PhaseContext#random()}, so that runs are reproducible.
      *
-     * @param random use only this for random decisions, so that runs are reproducible
      * @return an available move source from {@link PhaseContext#moveSources()}, or null to end the step;
-     *         an exhausted or unknown move source makes the solver fail,
-     *         and so does null before the first move of a step
+     *         an exhausted or unknown move source makes the solver fail
      */
     @Nullable
-    MoveSource<Solution_> nextMoveSource(RandomGenerator random);
+    MoveSource<Solution_> nextMoveSource();
 
 }

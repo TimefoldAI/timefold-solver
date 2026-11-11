@@ -10,12 +10,12 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.solver.random.BiasedRandomChooser;
+import ai.timefold.solver.core.impl.solver.random.RandomChooser;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<Move<Solution_>> {
 
-    private final BiasedRandomChooser<Iterator<Move<Solution_>>> chooser;
-    private final RandomGenerator workingRandom;
+    private final RandomChooser<Iterator<Move<Solution_>>> chooser;
 
     public BiasedRandomUnionMoveIterator(List<MoveSelector<Solution_>> childMoveSelectorList,
             ToDoubleFunction<MoveSelector<Solution_>> probabilityWeightFunction,
@@ -27,8 +27,8 @@ final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<M
             moveIteratorList.add(moveSelector.iterator());
             probabilityWeightArray[i] = probabilityWeightFunction.applyAsDouble(moveSelector);
         }
-        this.chooser = new BiasedRandomChooser<>(moveIteratorList, probabilityWeightArray, Iterator::hasNext);
-        this.workingRandom = workingRandom;
+        this.chooser = new BiasedRandomChooser<>(moveIteratorList, probabilityWeightArray, Iterator::hasNext,
+                workingRandom);
     }
 
     @Override
@@ -38,13 +38,13 @@ final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<M
 
     @Override
     public Move<Solution_> next() {
-        var moveIterator = chooser.choose(workingRandom);
+        var moveIterator = chooser.choose();
         if (moveIterator == null) {
             throw new NoSuchElementException();
         }
         var move = moveIterator.next();
         if (!moveIterator.hasNext()) {
-            chooser.markStale();
+            chooser.removeChosen();
         }
         return move;
     }

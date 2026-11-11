@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.solver;
+package ai.timefold.solver.core.impl.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -15,7 +15,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMov
 
 import org.junit.jupiter.api.Test;
 
-class SolverLevelClassDetectorTest {
+class SolverLevelClassResolverTest {
 
     private static SolverConfig neighborhoodsSolverConfig(LocalSearchPhaseConfig... phaseConfigs) {
         return new SolverConfig()
@@ -26,18 +26,36 @@ class SolverLevelClassDetectorTest {
     @Test
     void oneClassSetsSolverLevel() {
         var solverConfig = neighborhoodsSolverConfig();
-        SolverLevelClassDetector.MOVE_SELECTION_STRATEGY.detect(Map.of("solver", solverConfig),
+        SolverLevelClassResolver.MOVE_SELECTION_STRATEGY.resolve(Map.of("solver", solverConfig),
                 () -> List.of(FixedWeightMoveSelectionStrategy.class));
-        assertThat(solverConfig.getMoveSelectionStrategyClass()).isEqualTo(FixedWeightMoveSelectionStrategy.class);
+        assertThat(solverConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(FixedWeightMoveSelectionStrategy.class);
+    }
+
+    @Test
+    void oneClassSetsEverySolverThatNeedsIt() {
+        var solverConfig1 = neighborhoodsSolverConfig();
+        var solverConfig2 = neighborhoodsSolverConfig();
+        var solverConfigMap = Map.of("solver1", solverConfig1, "solver2", solverConfig2);
+        SolverLevelClassResolver.NEIGHBORHOOD_PROVIDER.resolve(solverConfigMap,
+                () -> List.of(DefaultNeighborhoodProvider.class));
+        SolverLevelClassResolver.MOVE_SELECTION_STRATEGY.resolve(solverConfigMap,
+                () -> List.of(FixedWeightMoveSelectionStrategy.class));
+        for (var solverConfig : List.of(solverConfig1, solverConfig2)) {
+            assertThat(solverConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
+                    .isEqualTo(DefaultNeighborhoodProvider.class);
+            assertThat(solverConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                    .isEqualTo(FixedWeightMoveSelectionStrategy.class);
+        }
     }
 
     @Test
     void ignoredWithoutNeighborhoods() {
         var solverConfig = new SolverConfig();
-        SolverLevelClassDetector.MOVE_SELECTION_STRATEGY.detect(Map.of("solver", solverConfig), () -> {
+        SolverLevelClassResolver.MOVE_SELECTION_STRATEGY.resolve(Map.of("solver", solverConfig), () -> {
             throw new IllegalStateException("Not called without NEIGHBORHOODS.");
         });
-        assertThat(solverConfig.getMoveSelectionStrategyClass()).isNull();
+        assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
     }
 
     @Test
@@ -45,21 +63,23 @@ class SolverLevelClassDetectorTest {
         var solverConfig = neighborhoodsSolverConfig(
                 new LocalSearchPhaseConfig().withMoveSelectorConfig(new ChangeMoveSelectorConfig()),
                 new LocalSearchPhaseConfig());
-        SolverLevelClassDetector.MOVE_SELECTION_STRATEGY.detect(Map.of("solver", solverConfig),
+        SolverLevelClassResolver.MOVE_SELECTION_STRATEGY.resolve(Map.of("solver", solverConfig),
                 () -> List.of(FixedWeightMoveSelectionStrategy.class));
-        assertThat(solverConfig.getMoveSelectionStrategyClass()).isNull();
+        assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
 
         // The neighborhood provider also applies to phases with move selectors.
-        SolverLevelClassDetector.NEIGHBORHOOD_PROVIDER.detect(Map.of("solver", solverConfig),
+        SolverLevelClassResolver.NEIGHBORHOOD_PROVIDER.resolve(Map.of("solver", solverConfig),
                 () -> List.of(DefaultNeighborhoodProvider.class));
-        assertThat(solverConfig.getNeighborhoodProviderClass()).isEqualTo(DefaultNeighborhoodProvider.class);
+        assertThat(solverConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
+                .isEqualTo(DefaultNeighborhoodProvider.class);
+        assertThat(solverConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass()).isNull();
     }
 
     @Test
     void multipleClassesFail() {
         var solverConfig = neighborhoodsSolverConfig();
         assertThatIllegalStateException()
-                .isThrownBy(() -> SolverLevelClassDetector.MOVE_SELECTION_STRATEGY.detect(Map.of("solver", solverConfig),
+                .isThrownBy(() -> SolverLevelClassResolver.MOVE_SELECTION_STRATEGY.resolve(Map.of("solver", solverConfig),
                         () -> List.of(FixedWeightMoveSelectionStrategy.class, SubclassStrategy.class)))
                 .withMessageContaining("Multiple classes");
     }

@@ -1313,7 +1313,9 @@ and reference the implementation class in the solver configuration:
 <solver xmlns="https://timefold.ai/xsd/solver">
   ...
   <enablePreviewFeature>NEIGHBORHOODS</enablePreviewFeature>
-  <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  <neighborhoods>
+    <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  </neighborhoods>
   ...
 </solver>
 ----
@@ -1374,7 +1376,9 @@ It then uses that provider instead of the solver-level one:
 <solver xmlns="https://timefold.ai/xsd/solver">
   ...
   <enablePreviewFeature>NEIGHBORHOODS</enablePreviewFeature>
-  <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  <neighborhoods>
+    <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  </neighborhoods>
   <constructionHeuristic/>
   <localSearch>
     <termination>
@@ -1382,7 +1386,9 @@ It then uses that provider instead of the solver-level one:
     </termination>
   </localSearch>
   <localSearch>
-    <neighborhoodProviderClass>com.acme.MyFineTuningNeighborhoodProvider</neighborhoodProviderClass>
+    <neighborhoods>
+      <neighborhoodProviderClass>com.acme.MyFineTuningNeighborhoodProvider</neighborhoodProviderClass>
+    </neighborhoods>
   </localSearch>
 </solver>
 ----
@@ -1423,13 +1429,17 @@ Reference the strategy in the solver configuration:
 <solver xmlns="https://timefold.ai/xsd/solver">
   ...
   <enablePreviewFeature>NEIGHBORHOODS</enablePreviewFeature>
-  <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
-  <moveSelectionStrategyClass>com.acme.MyMoveSelectionStrategy</moveSelectionStrategyClass>
+  <neighborhoods>
+    <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+    <moveSelectionStrategyClass>com.acme.MyMoveSelectionStrategy</moveSelectionStrategyClass>
+  </neighborhoods>
   ...
 </solver>
 ----
 
-As with the neighborhood provider, a Local Search phase can set its own `moveSelectionStrategyClass`.
+As with the neighborhood provider, a Local Search phase can set its own `moveSelectionStrategyClass`
+in its own `neighborhoods` element.
+The neighborhood provider and the strategy override the solver-level settings separately.
 
 The strategy tells the move providers apart by their IDs.
 We recommend that you give each move provider your own ID when you add it to the neighborhood:
@@ -1445,6 +1455,10 @@ IDs must be unique in a neighborhood.
 A move provider added without an ID gets a default ID.
 That ID is specific, but hard to read;
 the Javadoc of each built-in move provider describes it.
+For your own move provider, the default ID is the simple name of its class,
+or `custom` for a lambda or an anonymous class.
+If you add two instances of the same class, or two lambdas, give each its own ID,
+otherwise `build()` fails.
 To see the IDs and the weights that a phase uses, enable `DEBUG` logging for
 `ai.timefold.solver.core.preview.api.neighborhood.selection`.
 
@@ -1459,10 +1473,12 @@ The solver sets each custom property through a public setter on the strategy:
 ----
 <solver xmlns="https://timefold.ai/xsd/solver">
   ...
-  <moveSelectionStrategyClass>com.acme.MyMoveSelectionStrategy</moveSelectionStrategyClass>
-  <moveSelectionStrategyCustomProperties>
-    <property name="swapWeight" value="2.5"/>
-  </moveSelectionStrategyCustomProperties>
+  <neighborhoods>
+    <moveSelectionStrategyClass>com.acme.MyMoveSelectionStrategy</moveSelectionStrategyClass>
+    <moveSelectionStrategyCustomProperties>
+      <property name="swapWeight" value="2.5"/>
+    </moveSelectionStrategyCustomProperties>
+  </neighborhoods>
   ...
 </solver>
 ----
@@ -1491,7 +1507,7 @@ public interface MoveSelectionStrategy<Solution_> {
 
     void moveSourceExhausted(MoveSource<Solution_> moveSource);
 
-    @Nullable MoveSource<Solution_> nextMoveSource(RandomGenerator random);
+    @Nullable MoveSource<Solution_> nextMoveSource();
 
 }
 ----
@@ -1499,15 +1515,18 @@ public interface MoveSelectionStrategy<Solution_> {
 The solver uses the strategy as follows:
 
 - It creates a new instance for each phase, and calls `phaseStarted` once.
-The `PhaseContext` gives all move sources of the neighborhood, in the order you added them.
+The `PhaseContext` gives all move sources of the neighborhood, in the order you added them,
+and the random generator of the phase.
 - At the start of each step, it calls `stepStarted`. All move sources are available again.
 - Then it calls `nextMoveSource` for each move, and `moveSourceExhausted` when a move source has no more moves in this step.
+The solver gets the moves of a move source only when you first return it in a step,
+so a move source can be exhausted right after you return it.
 Never return an exhausted move source before the next `stepStarted`.
-Return `null` to end the step, but only after at least one move in that step.
+Return `null` to end the step.
 - The contexts give the working solution. Read it, but never change it.
 Its score is up to date.
 
-Use only the given `RandomGenerator` for random decisions, so that the solver stays reproducible.
+Use only the random generator of the `PhaseContext` for random decisions, so that the solver stays reproducible.
 The class needs a public no-arg constructor,
 and the solver calls it from one thread only.
 

@@ -39,6 +39,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMeta
 import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMoveSelectionStrategy;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
@@ -69,7 +70,8 @@ class NeighborhoodsTest {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var changeMoveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveRepository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
-                new LinkedHashMap<>(Map.of(changeMoveProvider.getId(), changeMoveProvider)));
+                new LinkedHashMap<>(Map.of(changeMoveProvider.getId(), changeMoveProvider)),
+                FixedWeightMoveSelectionStrategy::new);
 
         var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig().withLateAcceptanceSize(400))
                 .buildAcceptor(heuristicConfigPolicy);

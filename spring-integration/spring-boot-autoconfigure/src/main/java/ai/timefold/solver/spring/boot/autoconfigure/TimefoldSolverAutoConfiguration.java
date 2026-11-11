@@ -38,7 +38,7 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
-import ai.timefold.solver.core.impl.solver.SolverLevelClassDetector;
+import ai.timefold.solver.core.impl.util.SolverLevelClassResolver;
 import ai.timefold.solver.spring.boot.autoconfigure.config.DiminishedReturnsProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TerminationProperties;
@@ -155,9 +155,9 @@ public class TimefoldSolverAutoConfiguration
         solverConfigMap.forEach(
                 (solverName, solverConfig) -> loadSolverConfig(entityScanner, timefoldProperties, solverName, solverConfig));
         // After step 3, because it applies the preview features.
-        for (var detector : List.of(SolverLevelClassDetector.NEIGHBORHOOD_PROVIDER,
-                SolverLevelClassDetector.MOVE_SELECTION_STRATEGY)) {
-            detector.detect(solverConfigMap, () -> entityScanner.findImplementingClassList(detector.getType()).stream()
+        for (var resolver : List.of(SolverLevelClassResolver.NEIGHBORHOOD_PROVIDER,
+                SolverLevelClassResolver.MOVE_SELECTION_STRATEGY)) {
+            resolver.resolve(solverConfigMap, () -> entityScanner.findImplementingClassList(resolver.getType()).stream()
                     .filter(UNIQUENESS_PREDICATE)
                     .<Class<?>> map(c -> c)
                     .toList());

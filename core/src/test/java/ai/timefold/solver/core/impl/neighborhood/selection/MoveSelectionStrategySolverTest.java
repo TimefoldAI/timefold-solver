@@ -15,14 +15,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
+import ai.timefold.solver.core.config.solver.NeighborhoodsConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -51,8 +52,9 @@ class MoveSelectionStrategySolverTest {
     void lifecycle() {
         try (var recorder = Recorder.open()) {
             var solverConfig = baseConfig()
-                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                    .withMoveSelectionStrategyCustomProperties(recorder.properties())
+                    .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                            .withMoveSelectionStrategyCustomProperties(recorder.properties()))
                     .withPhases(new LocalSearchPhaseConfig()
                             .withTerminationConfig(new TerminationConfig().withStepCountLimit(20)));
             solve(solverConfig, solution(4, 6));
@@ -74,8 +76,9 @@ class MoveSelectionStrategySolverTest {
     void newInstancePerSolve() {
         try (var recorder = Recorder.open()) {
             var solverConfig = baseConfig()
-                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                    .withMoveSelectionStrategyCustomProperties(recorder.properties())
+                    .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                            .withMoveSelectionStrategyCustomProperties(recorder.properties()))
                     .withPhases(new LocalSearchPhaseConfig()
                             .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
             solve(solverConfig, solution(3, 3));
@@ -92,8 +95,9 @@ class MoveSelectionStrategySolverTest {
         var problem = solution(3, 6);
         var initialScore = new DistinctValueScoreCalculator().calculateScore(problem);
         var solverConfig = baseConfig()
-                .withNeighborhoodProviderClass(ChangeAndSwapNeighborhoodProvider.class)
-                .withMoveSelectionStrategyClass(NoChangeStrategy.class)
+                .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                        .withNeighborhoodProviderClass(ChangeAndSwapNeighborhoodProvider.class)
+                        .withMoveSelectionStrategyClass(NoChangeStrategy.class))
                 .withPhases(new LocalSearchPhaseConfig()
                         .withTerminationConfig(new TerminationConfig().withStepCountLimit(50)));
 
@@ -105,16 +109,18 @@ class MoveSelectionStrategySolverTest {
     void solverLevelForGeneratedAndExplicitPhases() {
         try (var recorder = Recorder.open()) {
             var generated = baseConfig()
-                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                    .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "solver"))
+                    .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                            .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "solver")))
                     .withTerminationConfig(new TerminationConfig().withStepCountLimit(3));
             solve(generated, solution(3, 3));
             assertThat(recorder.strategyList).extracting(r -> r.label).containsExactly("solver");
         }
         try (var recorder = Recorder.open()) {
             var explicit = baseConfig()
-                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                    .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "solver"))
+                    .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                            .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "solver")))
                     .withPhases(new LocalSearchPhaseConfig()
                             .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
             solve(explicit, solution(3, 3));
@@ -126,16 +132,19 @@ class MoveSelectionStrategySolverTest {
     void phaseOverridesAndPropertiesNeverMixLevels() {
         try (var recorder = Recorder.open()) {
             var solverConfig = baseConfig()
-                    .withMoveSelectionStrategyClass(NoChangeStrategy.class)
-                    .withMoveSelectionStrategyCustomProperties(Map.of("unused", "solver"))
+                    .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                            .withMoveSelectionStrategyClass(NoChangeStrategy.class)
+                            .withMoveSelectionStrategyCustomProperties(Map.of("unused", "solver")))
                     .withPhases(
                             new LocalSearchPhaseConfig()
-                                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                                    .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "phase"))
+                                    .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                                            .withMoveSelectionStrategyCustomProperties(recorder.properties("label", "phase")))
                                     .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)),
                             new LocalSearchPhaseConfig()
-                                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                                    .withMoveSelectionStrategyCustomProperties(recorder.properties())
+                                    .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                                            .withMoveSelectionStrategyCustomProperties(recorder.properties()))
                                     .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
             solve(solverConfig, solution(3, 3));
 
@@ -152,9 +161,10 @@ class MoveSelectionStrategySolverTest {
         problem.getEntityList().forEach(entity -> entity.setValue(value));
         try (var recorder = Recorder.open()) {
             var solverConfig = baseConfig()
-                    .withNeighborhoodProviderClass(ChangeOnlyNeighborhoodProvider.class)
-                    .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                    .withMoveSelectionStrategyCustomProperties(recorder.properties("movesPerStep", "3"))
+                    .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                            .withNeighborhoodProviderClass(ChangeOnlyNeighborhoodProvider.class)
+                            .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                            .withMoveSelectionStrategyCustomProperties(recorder.properties("movesPerStep", "3")))
                     .withPhases(new LocalSearchPhaseConfig()
                             .withLocalSearchType(LocalSearchType.HILL_CLIMBING)
                             .withTerminationConfig(new TerminationConfig().withStepCountLimit(10)));
@@ -172,7 +182,8 @@ class MoveSelectionStrategySolverTest {
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withEasyScoreCalculatorClass(DistinctValueScoreCalculator.class)
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                        .withMoveSelectionStrategyClass(RecordingStrategy.class))
                 .withPhases(new LocalSearchPhaseConfig());
         assertThatThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
                 .isInstanceOf(UnsupportedOperationException.class)
@@ -184,7 +195,8 @@ class MoveSelectionStrategySolverTest {
     void propertiesWithoutClassFail() {
         var solverConfig = baseConfig()
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveSelectionStrategyCustomProperties(Map.of("label", "phase")));
+                        .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                .withMoveSelectionStrategyCustomProperties(Map.of("label", "phase"))));
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
                 .withMessageContaining("phase-level moveSelectionStrategyCustomProperties");
@@ -193,7 +205,8 @@ class MoveSelectionStrategySolverTest {
     @Test
     void strategyWithMoveSelectorsFails() {
         var solverConfig = baseConfig()
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                        .withMoveSelectionStrategyClass(RecordingStrategy.class))
                 .withPhases(new LocalSearchPhaseConfig().withMoveSelectorConfig(new ChangeMoveSelectorConfig()));
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
@@ -204,8 +217,9 @@ class MoveSelectionStrategySolverTest {
     @Test
     void unknownCustomPropertyFailsAtBuild() {
         var solverConfig = baseConfig()
-                .withMoveSelectionStrategyClass(RecordingStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("unknown", "x"))
+                .withNeighborhoodsConfig(new NeighborhoodsConfig()
+                        .withMoveSelectionStrategyClass(RecordingStrategy.class)
+                        .withMoveSelectionStrategyCustomProperties(Map.of("unknown", "x")))
                 .withPhases(new LocalSearchPhaseConfig());
         assertThatIllegalStateException()
                 .isThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
@@ -378,11 +392,11 @@ class MoveSelectionStrategySolverTest {
         }
 
         @Override
-        public @Nullable MoveSource<TestdataSolution> nextMoveSource(RandomGenerator random) {
+        public @Nullable MoveSource<TestdataSolution> nextMoveSource() {
             if (movesInStep++ >= movesPerStep) {
                 return null;
             }
-            return delegate.nextMoveSource(random);
+            return delegate.nextMoveSource();
         }
 
     }

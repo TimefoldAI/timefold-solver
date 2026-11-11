@@ -13,7 +13,9 @@ public interface NeighborhoodBuilder<Solution_> {
     /**
      * As {@link #add(String, MoveProvider)}, with {@link MoveProvider#getId()} as the ID.
      */
-    NeighborhoodBuilder<Solution_> add(MoveProvider<Solution_> moveProvider);
+    default NeighborhoodBuilder<Solution_> add(MoveProvider<Solution_> moveProvider) {
+        return add(moveProvider.getId(), moveProvider);
+    }
 
     /**
      * Registers the move provider under the given ID.

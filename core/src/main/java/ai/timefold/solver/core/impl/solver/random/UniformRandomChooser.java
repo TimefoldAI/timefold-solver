@@ -15,16 +15,16 @@ import org.jspecify.annotations.Nullable;
  * All items start live.
  * After {@link #markStale()}, the live items are found again with the livePredicate, in the order of the item list.
  * Removing a live item moves the last live item into its place.
- * Shared by move selectors and neighborhoods, so that both select the same way.
  *
  * @param <Item_> the type of the items
  */
 @NullMarked
-public final class UniformRandomChooser<Item_> {
+public final class UniformRandomChooser<Item_> implements RandomChooser<Item_> {
 
     private final List<Item_> itemList;
     private final Predicate<Item_> livePredicate;
     private final List<Item_> liveItemList;
+    private final RandomGenerator random;
     private boolean stale = false;
     private int chosenIndex = -1;
 
@@ -32,16 +32,19 @@ public final class UniformRandomChooser<Item_> {
      * @param itemList all items, all live at the start; the chooser keeps it, so do not change it
      * @param livePredicate true if the item can be chosen; evaluated only after {@link #markStale()}
      */
-    public UniformRandomChooser(List<Item_> itemList, Predicate<Item_> livePredicate) {
+    public UniformRandomChooser(List<Item_> itemList, Predicate<Item_> livePredicate, RandomGenerator random) {
         this.itemList = itemList;
         this.livePredicate = livePredicate;
         this.liveItemList = new ArrayList<>(itemList);
+        this.random = random;
     }
 
+    @Override
     public void markStale() {
         stale = true;
     }
 
+    @Override
     public boolean isEmpty() {
         refresh();
         return liveItemList.isEmpty();
@@ -50,7 +53,8 @@ public final class UniformRandomChooser<Item_> {
     /**
      * @return null if no item is live
      */
-    public @Nullable Item_ choose(RandomGenerator random) {
+    @Override
+    public @Nullable Item_ choose() {
         refresh();
         var size = liveItemList.size();
         chosenIndex = switch (size) {
@@ -61,30 +65,12 @@ public final class UniformRandomChooser<Item_> {
         return chosenIndex < 0 ? null : liveItemList.get(chosenIndex);
     }
 
-    /**
-     * Makes the item that {@link #choose(RandomGenerator)} returned last not live.
-     */
+    @Override
     public void removeChosen() {
         if (chosenIndex < 0) {
             throw new IllegalStateException("Impossible state: no chosen item to remove.");
         }
         removeAt(chosenIndex);
-    }
-
-    /**
-     * Makes the item not live.
-     * While stale, it has no effect; the livePredicate must then exclude the item.
-     */
-    public void remove(Item_ item) {
-        if (stale) {
-            return;
-        }
-        for (var i = liveItemList.size() - 1; i >= 0; i--) {
-            if (liveItemList.get(i) == item) {
-                removeAt(i);
-                return;
-            }
-        }
     }
 
     private void removeAt(int index) {

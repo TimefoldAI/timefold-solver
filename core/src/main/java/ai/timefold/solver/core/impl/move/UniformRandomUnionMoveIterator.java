@@ -8,6 +8,7 @@ import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.solver.random.RandomChooser;
 import ai.timefold.solver.core.impl.solver.random.UniformRandomChooser;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -43,12 +44,10 @@ public final class UniformRandomUnionMoveIterator<Solution_>
         };
     }
 
-    private final UniformRandomChooser<Iterator<Move<Solution_>>> chooser;
-    private final RandomGenerator workingRandom;
+    private final RandomChooser<Iterator<Move<Solution_>>> chooser;
 
     private UniformRandomUnionMoveIterator(List<Iterator<Move<Solution_>>> moveIteratorList, RandomGenerator workingRandom) {
-        this.chooser = new UniformRandomChooser<>(moveIteratorList, Iterator::hasNext);
-        this.workingRandom = workingRandom;
+        this.chooser = new UniformRandomChooser<>(moveIteratorList, Iterator::hasNext, workingRandom);
     }
 
     @Override
@@ -58,7 +57,7 @@ public final class UniformRandomUnionMoveIterator<Solution_>
 
     @Override
     public Move<Solution_> next() {
-        var moveIterator = chooser.choose(workingRandom);
+        var moveIterator = chooser.choose();
         if (moveIterator == null) {
             throw new NoSuchElementException();
         }

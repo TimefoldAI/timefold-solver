@@ -4,13 +4,14 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.random.RandomGenerator;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.NeighborhoodsConfig;
 import ai.timefold.solver.core.impl.solver.random.BiasedRandomChooser;
+import ai.timefold.solver.core.impl.solver.random.RandomChooser;
 import ai.timefold.solver.core.impl.solver.random.UniformRandomChooser;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * This is the default {@link MoveSelectionStrategy}; all weights are then 1.
  * <p>
  * To give your own weights, extend this class and override {@link #getWeight(MoveSource, PhaseContext)};
- * your implementation may use {@link SolverConfig#getMoveSelectionStrategyCustomProperties() custom properties}.
+ * your implementation may use {@link NeighborhoodsConfig#getMoveSelectionStrategyCustomProperties() custom properties}.
  * Use {@link MoveSource#id()} to tell the {@link MoveProvider}s apart;
  * give them your own IDs with {@link NeighborhoodBuilder#add(String, MoveProvider)}.
  * The solver reads the weights once per phase run, at the start of the phase.
@@ -38,11 +39,8 @@ public class FixedWeightMoveSelectionStrategy<Solution_> implements MoveSelectio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FixedWeightMoveSelectionStrategy.class);
 
-    // The default uses the uniform algorithm of move selector unions, a subclass the biased one.
-    private final boolean uniform = getClass() == FixedWeightMoveSelectionStrategy.class;
     private final Set<MoveSource<Solution_>> exhaustedSet = Collections.newSetFromMap(new IdentityHashMap<>());
-    private @Nullable BiasedRandomChooser<MoveSource<Solution_>> biasedChooser = null;
-    private @Nullable UniformRandomChooser<MoveSource<Solution_>> uniformChooser = null;
+    private @Nullable RandomChooser<MoveSource<Solution_>> chooser = null;
 
     /**
      * Called once per move source per phase run, in {@link #phaseStarted(PhaseContext)}.
@@ -89,37 +87,28 @@ public class FixedWeightMoveSelectionStrategy<Solution_> implements MoveSelectio
                             .collect(Collectors.joining(", ")));
         }
         exhaustedSet.clear();
-        if (uniform) {
-            uniformChooser = new UniformRandomChooser<>(moveSourceList, moveSource -> !exhaustedSet.contains(moveSource));
-        } else {
-            biasedChooser = new BiasedRandomChooser<>(moveSourceList, weightArray,
-                    moveSource -> !exhaustedSet.contains(moveSource));
-        }
+        Predicate<MoveSource<Solution_>> livePredicate = moveSource -> !exhaustedSet.contains(moveSource);
+        // The default uses the uniform algorithm of move selector unions, a subclass the biased one.
+        chooser = getClass() == FixedWeightMoveSelectionStrategy.class
+                ? new UniformRandomChooser<>(moveSourceList, livePredicate, context.random())
+                : new BiasedRandomChooser<>(moveSourceList, weightArray, livePredicate, context.random());
     }
 
     @Override
     public final void stepStarted(StepContext<Solution_> context) {
         exhaustedSet.clear();
-        if (uniform) {
-            uniformChooser.markStale();
-        } else {
-            biasedChooser.markStale();
-        }
+        chooser.markStale();
     }
 
     @Override
     public final void moveSourceExhausted(MoveSource<Solution_> moveSource) {
         exhaustedSet.add(moveSource);
-        if (uniform) {
-            uniformChooser.remove(moveSource);
-        } else {
-            biasedChooser.markStale();
-        }
+        chooser.markStale();
     }
 
     @Override
-    public final @Nullable MoveSource<Solution_> nextMoveSource(RandomGenerator random) {
-        return uniform ? uniformChooser.choose(random) : biasedChooser.choose(random);
+    public final @Nullable MoveSource<Solution_> nextMoveSource() {
+        return chooser.choose();
     }
 
 }

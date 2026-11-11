@@ -14,88 +14,67 @@ class UniformRandomChooserTest {
     @Test
     void refreshKeepsItemListOrder() {
         var deadSet = new HashSet<>(List.of("b"));
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), item -> !deadSet.contains(item));
+        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), item -> !deadSet.contains(item),
+                new TestRandom(0, 1, 2));
         chooser.markStale();
 
         // Live list after refresh: a, c, d.
-        assertThat(chooser.choose(new TestRandom(0))).isEqualTo("a");
-        assertThat(chooser.choose(new TestRandom(1))).isEqualTo("c");
-        assertThat(chooser.choose(new TestRandom(2))).isEqualTo("d");
-    }
-
-    @Test
-    void removeMovesLastItemIntoGap() {
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), item -> true);
-        assertThat(chooser.isEmpty()).isFalse();
-
-        chooser.remove("b");
-        // Live list: a, d, c.
-        assertThat(chooser.choose(new TestRandom(1))).isEqualTo("d");
-        assertThat(chooser.choose(new TestRandom(2))).isEqualTo("c");
-    }
-
-    @Test
-    void removeWhileStaleHasNoEffect() {
-        var deadSet = new HashSet<String>();
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c"), item -> !deadSet.contains(item));
-        chooser.markStale();
-        chooser.remove("a");
-        deadSet.add("b");
-
-        // Live list after refresh: a, c.
-        assertThat(chooser.choose(new TestRandom(0))).isEqualTo("a");
-        assertThat(chooser.choose(new TestRandom(1))).isEqualTo("c");
+        assertThat(chooser.choose()).isEqualTo("a");
+        assertThat(chooser.choose()).isEqualTo("c");
+        assertThat(chooser.choose()).isEqualTo("d");
     }
 
     @Test
     void allItemsStartLiveWithoutPredicate() {
         var chooser = new UniformRandomChooser<>(List.of("a", "b"), item -> {
             throw new IllegalStateException("Not evaluated before markStale().");
-        });
-        assertThat(chooser.choose(new TestRandom(1))).isEqualTo("b");
+        }, new TestRandom(1));
+        assertThat(chooser.choose()).isEqualTo("b");
     }
 
     @Test
     void removeChosenMovesLastItemIntoGap() {
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), item -> true);
-        assertThat(chooser.choose(new TestRandom(1))).isEqualTo("b");
+        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c", "d"), item -> true, new TestRandom(1, 1, 2));
+        assertThat(chooser.choose()).isEqualTo("b");
 
         chooser.removeChosen();
         // Live list: a, d, c.
-        assertThat(chooser.choose(new TestRandom(1))).isEqualTo("d");
-        assertThat(chooser.choose(new TestRandom(2))).isEqualTo("c");
+        assertThat(chooser.choose()).isEqualTo("d");
+        assertThat(chooser.choose()).isEqualTo("c");
     }
 
     @Test
     void markStaleDoesNotRestoreDeadItems() {
         var deadSet = new HashSet<String>();
-        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c"), item -> !deadSet.contains(item));
-        assertThat(chooser.choose(new TestRandom(0))).isEqualTo("a");
+        var chooser = new UniformRandomChooser<>(List.of("a", "b", "c"), item -> !deadSet.contains(item),
+                new TestRandom(0, 0, 1));
+        assertThat(chooser.choose()).isEqualTo("a");
         deadSet.add("a");
         chooser.removeChosen();
         chooser.markStale();
 
         // Live list after refresh: b, c.
-        assertThat(chooser.choose(new TestRandom(0))).isEqualTo("b");
-        assertThat(chooser.choose(new TestRandom(1))).isEqualTo("c");
+        assertThat(chooser.choose()).isEqualTo("b");
+        assertThat(chooser.choose()).isEqualTo("c");
     }
 
     @Test
     void oneLiveItemUsesNoRandom() {
-        var chooser = new UniformRandomChooser<>(List.of("a"), item -> true);
         // TestRandom fails when asked for a number it was not given.
-        assertThat(chooser.choose(new TestRandom(new int[0]))).isEqualTo("a");
+        var chooser = new UniformRandomChooser<>(List.of("a"), item -> true, new TestRandom(new int[0]));
+        assertThat(chooser.choose()).isEqualTo("a");
     }
 
     @Test
     void emptyGivesNull() {
-        var chooser = new UniformRandomChooser<>(List.of("a", "b"), item -> true);
-        chooser.isEmpty();
-        chooser.remove("a");
-        chooser.remove("b");
+        var chooser = new UniformRandomChooser<>(List.of("a", "b"), item -> true, new TestRandom(0));
+        assertThat(chooser.choose()).isEqualTo("a");
+        chooser.removeChosen();
+        assertThat(chooser.choose()).isEqualTo("b");
+        chooser.removeChosen();
 
         assertThat(chooser.isEmpty()).isTrue();
-        assertThat(chooser.choose(new TestRandom(0))).isNull();
+        assertThat(chooser.choose()).isNull();
     }
 
 }

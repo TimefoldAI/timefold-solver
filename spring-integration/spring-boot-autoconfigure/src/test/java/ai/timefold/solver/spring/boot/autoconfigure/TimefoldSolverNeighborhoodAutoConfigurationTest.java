@@ -36,8 +36,7 @@ class TimefoldSolverNeighborhoodAutoConfigurationTest {
     void ignoredWithoutNeighborhoods() {
         singleRunner.run(context -> {
             var solverConfig = context.getBean(SolverConfig.class);
-            assertThat(solverConfig.getNeighborhoodProviderClass()).isNull();
-            assertThat(solverConfig.getMoveSelectionStrategyClass()).isNull();
+            assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
         });
     }
 
@@ -47,9 +46,9 @@ class TimefoldSolverNeighborhoodAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.enabled-preview-features=NEIGHBORHOODS")
                 .run(context -> {
                     var solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig.getNeighborhoodProviderClass())
+                    assertThat(solverConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
                             .isEqualTo(TestdataSpringNeighborhoodProvider.class);
-                    assertThat(solverConfig.getMoveSelectionStrategyClass())
+                    assertThat(solverConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
                             .isEqualTo(TestdataSpringMoveSelectionStrategy.class);
                     assertThat(SolverFactory.create(solverConfig).buildSolver()).isNotNull();
                 });
@@ -72,15 +71,18 @@ class TimefoldSolverNeighborhoodAutoConfigurationTest {
                 .withPropertyValues("timefold.solver-config-xml=" + PHASE_LEVEL_XML)
                 .run(context -> {
                     var solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig.getNeighborhoodProviderClass()).isNull();
-                    assertThat(solverConfig.getMoveSelectionStrategyClass()).isNull();
+                    assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
                     var phaseList = solverConfig.getPhaseConfigList().stream()
                             .map(LocalSearchPhaseConfig.class::cast)
                             .toList();
-                    assertThat(phaseList).<Class<?>> extracting(phaseConfig -> phaseConfig.getNeighborhoodProviderClass())
+                    assertThat(phaseList)
+                            .<Class<?>> extracting(
+                                    phaseConfig -> phaseConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
                             .containsExactly(TestdataSpringNeighborhoodProvider.class,
                                     TestdataOtherSpringNeighborhoodProvider.class);
-                    assertThat(phaseList).<Class<?>> extracting(phaseConfig -> phaseConfig.getMoveSelectionStrategyClass())
+                    assertThat(phaseList)
+                            .<Class<?>> extracting(
+                                    phaseConfig -> phaseConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
                             .containsExactly(TestdataSpringMoveSelectionStrategy.class,
                                     TestdataOtherSpringMoveSelectionStrategy.class);
                 });

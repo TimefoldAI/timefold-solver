@@ -63,6 +63,7 @@ class FixedWeightMoveSelectionStrategyBiasIT extends AbstractBiasIT {
         solverScope.setWorkingRandom(new MockRandomSource(splitFrom(new Random(0))));
         solverScope.setScoreDirector(scoreDirector);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        phaseScope.reset();
         var stepScope = new LocalSearchStepScope<>(phaseScope);
 
         var moveProviderMap = new LinkedHashMap<String, MoveProvider<TestdataSolution>>();

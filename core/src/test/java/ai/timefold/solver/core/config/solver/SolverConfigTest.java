@@ -34,6 +34,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
@@ -210,48 +211,63 @@ class SolverConfigTest {
 
     @Test
     void inheritMergesMoveSelectionStrategyCustomProperties() {
-        var parent = new SolverConfig()
+        var parent = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
                 .withMoveSelectionStrategyClass(DummyMoveSelectionStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1", "b", "2"));
-        var child = new SolverConfig()
-                .withMoveSelectionStrategyCustomProperties(Map.of("b", "3"));
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1", "b", "2")));
+        var child = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
+                .withMoveSelectionStrategyCustomProperties(Map.of("b", "3")));
         child.inherit(parent);
-        assertThat(child.getMoveSelectionStrategyClass()).isEqualTo(DummyMoveSelectionStrategy.class);
-        assertThat(child.getMoveSelectionStrategyCustomProperties())
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyMoveSelectionStrategy.class);
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties())
                 .containsExactlyInAnyOrderEntriesOf(Map.of("a", "1", "b", "3"));
 
-        var parentPhase = new LocalSearchPhaseConfig()
+        var parentPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
                 .withMoveSelectionStrategyClass(DummyPhaseMoveSelectionStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1"));
-        var childPhase = new LocalSearchPhaseConfig()
-                .withMoveSelectionStrategyCustomProperties(Map.of("c", "4"));
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1")));
+        var childPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                .withMoveSelectionStrategyCustomProperties(Map.of("c", "4")));
         childPhase.inherit(parentPhase);
-        assertThat(childPhase.getMoveSelectionStrategyClass()).isEqualTo(DummyPhaseMoveSelectionStrategy.class);
-        assertThat(childPhase.getMoveSelectionStrategyCustomProperties())
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyPhaseMoveSelectionStrategy.class);
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties())
                 .containsExactlyInAnyOrderEntriesOf(Map.of("a", "1", "c", "4"));
     }
 
     @Test
     void inheritDoesNotMixMoveSelectionStrategyClasses() {
-        var parent = new SolverConfig()
+        var parent = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
+                .withNeighborhoodProviderClass(DummyNeighborhoodProvider.class)
                 .withMoveSelectionStrategyClass(DummyMoveSelectionStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1"));
-        var child = new SolverConfig()
-                .withMoveSelectionStrategyClass(DummyPhaseMoveSelectionStrategy.class);
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1")));
+        var child = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
+                .withMoveSelectionStrategyClass(DummyPhaseMoveSelectionStrategy.class));
         child.inherit(parent);
-        assertThat(child.getMoveSelectionStrategyClass()).isEqualTo(DummyPhaseMoveSelectionStrategy.class);
-        assertThat(child.getMoveSelectionStrategyCustomProperties()).isNull();
+        assertThat(child.getNeighborhoodsConfig().getNeighborhoodProviderClass()).isEqualTo(DummyNeighborhoodProvider.class);
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyPhaseMoveSelectionStrategy.class);
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties()).isNull();
 
-        var parentPhase = new LocalSearchPhaseConfig()
+        var parentPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
                 .withMoveSelectionStrategyClass(DummyPhaseMoveSelectionStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1"));
-        var childPhase = new LocalSearchPhaseConfig()
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1")));
+        var childPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
                 .withMoveSelectionStrategyClass(DummyMoveSelectionStrategy.class)
-                .withMoveSelectionStrategyCustomProperties(Map.of("c", "4"));
+                .withMoveSelectionStrategyCustomProperties(Map.of("c", "4")));
         childPhase.inherit(parentPhase);
-        assertThat(childPhase.getMoveSelectionStrategyClass()).isEqualTo(DummyMoveSelectionStrategy.class);
-        assertThat(childPhase.getMoveSelectionStrategyCustomProperties())
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyMoveSelectionStrategy.class);
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties())
                 .containsExactlyInAnyOrderEntriesOf(Map.of("c", "4"));
+    }
+
+    @Test
+    void withNeighborhoodProviderClassShortcut() {
+        var solverConfig = new SolverConfig();
+        assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
+        solverConfig.withNeighborhoodProviderClass(DummyNeighborhoodProvider.class);
+        assertThat(solverConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
+                .isEqualTo(DummyNeighborhoodProvider.class);
     }
 
     @Test

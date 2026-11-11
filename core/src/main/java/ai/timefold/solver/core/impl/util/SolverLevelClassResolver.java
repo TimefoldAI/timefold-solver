@@ -1,16 +1,19 @@
-package ai.timefold.solver.core.impl.solver;
+package ai.timefold.solver.core.impl.util;
 
 import static java.util.stream.Collectors.joining;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.solver.NeighborhoodsConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
@@ -25,17 +28,36 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 @SuppressWarnings({ "rawtypes" })
-public final class SolverLevelClassDetector {
+public final class SolverLevelClassResolver {
 
-    public static final SolverLevelClassDetector NEIGHBORHOOD_PROVIDER = new SolverLevelClassDetector(
-            NeighborhoodProvider.class, "neighborhoodProviderClass", SolverConfig::getNeighborhoodProviderClass,
-            LocalSearchPhaseConfig::getNeighborhoodProviderClass, SolverConfig::setNeighborhoodProviderClass, false);
+    public static final SolverLevelClassResolver NEIGHBORHOOD_PROVIDER = new SolverLevelClassResolver(
+            NeighborhoodProvider.class, "neighborhoodProviderClass",
+            solverConfig -> solverNeighborhoods(solverConfig).getNeighborhoodProviderClass(),
+            phaseConfig -> phaseNeighborhoods(phaseConfig).getNeighborhoodProviderClass(),
+            (solverConfig, clazz) -> solverNeighborhoodsOrNew(solverConfig).setNeighborhoodProviderClass(clazz), false);
     /**
      * A phase with move selectors rejects a strategy, so a solver with such a phase never gets one.
      */
-    public static final SolverLevelClassDetector MOVE_SELECTION_STRATEGY = new SolverLevelClassDetector(
-            MoveSelectionStrategy.class, "moveSelectionStrategyClass", SolverConfig::getMoveSelectionStrategyClass,
-            LocalSearchPhaseConfig::getMoveSelectionStrategyClass, SolverConfig::setMoveSelectionStrategyClass, true);
+    public static final SolverLevelClassResolver MOVE_SELECTION_STRATEGY = new SolverLevelClassResolver(
+            MoveSelectionStrategy.class, "moveSelectionStrategyClass",
+            solverConfig -> solverNeighborhoods(solverConfig).getMoveSelectionStrategyClass(),
+            phaseConfig -> phaseNeighborhoods(phaseConfig).getMoveSelectionStrategyClass(),
+            (solverConfig, clazz) -> solverNeighborhoodsOrNew(solverConfig).setMoveSelectionStrategyClass(clazz), true);
+
+    private static NeighborhoodsConfig solverNeighborhoods(SolverConfig solverConfig) {
+        return Objects.requireNonNullElseGet(solverConfig.getNeighborhoodsConfig(), NeighborhoodsConfig::new);
+    }
+
+    private static NeighborhoodsConfig solverNeighborhoodsOrNew(SolverConfig solverConfig) {
+        if (solverConfig.getNeighborhoodsConfig() == null) {
+            solverConfig.setNeighborhoodsConfig(new NeighborhoodsConfig());
+        }
+        return solverConfig.getNeighborhoodsConfig();
+    }
+
+    private static LocalSearchNeighborhoodsConfig phaseNeighborhoods(LocalSearchPhaseConfig phaseConfig) {
+        return Objects.requireNonNullElseGet(phaseConfig.getNeighborhoodsConfig(), LocalSearchNeighborhoodsConfig::new);
+    }
 
     private final Class<?> type;
     private final String propertyName;
@@ -44,7 +66,7 @@ public final class SolverLevelClassDetector {
     private final BiConsumer<SolverConfig, Class> solverLevelSetter;
     private final boolean excludedByMoveSelectors;
 
-    private SolverLevelClassDetector(Class<?> type, String propertyName, Function<SolverConfig, Class<?>> solverLevelGetter,
+    private SolverLevelClassResolver(Class<?> type, String propertyName, Function<SolverConfig, Class<?>> solverLevelGetter,
             Function<LocalSearchPhaseConfig, Class<?>> phaseLevelGetter, BiConsumer<SolverConfig, Class> solverLevelSetter,
             boolean excludedByMoveSelectors) {
         this.type = type;
@@ -64,7 +86,7 @@ public final class SolverLevelClassDetector {
      * @param classListSupplier the implementations of {@link #getType()} found by the integration;
      *        called only if a solver has {@link PreviewFeature#NEIGHBORHOODS}
      */
-    public void detect(Map<String, SolverConfig> solverConfigMap, Supplier<List<Class<?>>> classListSupplier) {
+    public void resolve(Map<String, SolverConfig> solverConfigMap, Supplier<List<Class<?>>> classListSupplier) {
         var neighborhoodsSolverConfigMap = new TreeMap<String, SolverConfig>();
         solverConfigMap.forEach((solverName, solverConfig) -> {
             var previewFeatureSet = solverConfig.getEnablePreviewFeatureSet();

@@ -26,7 +26,6 @@ import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -47,12 +46,10 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.impl.io.jaxb.JaxbCustomPropertiesAdapter;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
-import ai.timefold.solver.core.preview.api.neighborhood.selection.MoveSelectionStrategy;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -76,9 +73,7 @@ import org.jspecify.annotations.Nullable;
         "scoreDirectorFactoryConfig",
         "terminationConfig",
         "nearbyDistanceMeterClass",
-        "neighborhoodProviderClass",
-        "moveSelectionStrategyClass",
-        "moveSelectionStrategyCustomProperties",
+        "neighborhoodsConfig",
         "phaseConfigList",
 })
 public final class SolverConfig extends AbstractConfig<SolverConfig> {
@@ -242,10 +237,8 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
 
     private String nearbyDistanceMeterClass = null;
 
-    private String neighborhoodProviderClass = null;
-    private String moveSelectionStrategyClass = null;
-    @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    private Map<String, String> moveSelectionStrategyCustomProperties = null;
+    @XmlElement(name = NeighborhoodsConfig.XML_ELEMENT_NAME)
+    private NeighborhoodsConfig neighborhoodsConfig = null;
 
     @XmlElements({
             @XmlElement(name = ConstructionHeuristicPhaseConfig.XML_ELEMENT_NAME,
@@ -445,54 +438,14 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     /**
-     * The {@link NeighborhoodProvider} of every Local Search phase that does not set its own.
-     * <p>
      * Part of {@link PreviewFeature#NEIGHBORHOODS}.
      */
-    @SuppressWarnings("unchecked")
-    public @Nullable <Solution_> Class<? extends NeighborhoodProvider<Solution_>> getNeighborhoodProviderClass() {
-        return ConfigUtils.resolveClass(neighborhoodProviderClass, "neighborhoodProviderClass", this);
+    public @Nullable NeighborhoodsConfig getNeighborhoodsConfig() {
+        return neighborhoodsConfig;
     }
 
-    /**
-     * @see #getNeighborhoodProviderClass()
-     */
-    @SuppressWarnings("rawtypes")
-    public void setNeighborhoodProviderClass(@Nullable Class<? extends NeighborhoodProvider> neighborhoodProviderClass) {
-        this.neighborhoodProviderClass = neighborhoodProviderClass == null ? null : neighborhoodProviderClass.getName();
-    }
-
-    /**
-     * The {@link MoveSelectionStrategy} of every Local Search phase that does not set its own.
-     * <p>
-     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
-     */
-    @SuppressWarnings("unchecked")
-    public @Nullable <Solution_> Class<? extends MoveSelectionStrategy<Solution_>> getMoveSelectionStrategyClass() {
-        return ConfigUtils.resolveClass(moveSelectionStrategyClass, "moveSelectionStrategyClass", this);
-    }
-
-    /**
-     * @see #getMoveSelectionStrategyClass()
-     */
-    @SuppressWarnings("rawtypes")
-    public void setMoveSelectionStrategyClass(@Nullable Class<? extends MoveSelectionStrategy> moveSelectionStrategyClass) {
-        this.moveSelectionStrategyClass = moveSelectionStrategyClass == null ? null : moveSelectionStrategyClass.getName();
-    }
-
-    /**
-     * Applied to the {@link #getMoveSelectionStrategyClass()} of this config only,
-     * never to a strategy class that a phase sets itself.
-     * <p>
-     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
-     */
-    public @Nullable Map<@NonNull String, @NonNull String> getMoveSelectionStrategyCustomProperties() {
-        return moveSelectionStrategyCustomProperties;
-    }
-
-    public void setMoveSelectionStrategyCustomProperties(
-            @Nullable Map<@NonNull String, @NonNull String> moveSelectionStrategyCustomProperties) {
-        this.moveSelectionStrategyCustomProperties = moveSelectionStrategyCustomProperties;
+    public void setNeighborhoodsConfig(@Nullable NeighborhoodsConfig neighborhoodsConfig) {
+        this.neighborhoodsConfig = neighborhoodsConfig;
     }
 
     public @Nullable List<@NonNull PhaseConfig> getPhaseConfigList() {
@@ -651,27 +604,22 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     /**
      * Part of {@link PreviewFeature#NEIGHBORHOODS}.
      */
+    public @NonNull SolverConfig withNeighborhoodsConfig(@NonNull NeighborhoodsConfig neighborhoodsConfig) {
+        this.neighborhoodsConfig = neighborhoodsConfig;
+        return this;
+    }
+
+    /**
+     * As defined by {@link NeighborhoodsConfig#withNeighborhoodProviderClass(Class)}, but returns this.
+     * <p>
+     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     */
     public @NonNull SolverConfig
             withNeighborhoodProviderClass(@NonNull Class<? extends NeighborhoodProvider<?>> neighborhoodProviderClass) {
-        this.neighborhoodProviderClass = neighborhoodProviderClass.getName();
-        return this;
-    }
-
-    /**
-     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
-     */
-    public @NonNull SolverConfig withMoveSelectionStrategyClass(
-            @NonNull Class<? extends MoveSelectionStrategy<?>> moveSelectionStrategyClass) {
-        this.moveSelectionStrategyClass = moveSelectionStrategyClass.getName();
-        return this;
-    }
-
-    /**
-     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
-     */
-    public @NonNull SolverConfig withMoveSelectionStrategyCustomProperties(
-            @NonNull Map<@NonNull String, @NonNull String> moveSelectionStrategyCustomProperties) {
-        this.moveSelectionStrategyCustomProperties = moveSelectionStrategyCustomProperties;
+        if (neighborhoodsConfig == null) {
+            neighborhoodsConfig = new NeighborhoodsConfig();
+        }
+        neighborhoodsConfig.withNeighborhoodProviderClass(neighborhoodProviderClass);
         return this;
     }
 
@@ -765,15 +713,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         terminationConfig = ConfigUtils.inheritConfig(terminationConfig, inheritedConfig.getTerminationConfig());
         nearbyDistanceMeterClass = ConfigUtils.inheritOverwritableProperty(nearbyDistanceMeterClass,
                 inheritedConfig.nearbyDistanceMeterClass);
-        neighborhoodProviderClass = ConfigUtils.inheritOverwritableProperty(neighborhoodProviderClass,
-                inheritedConfig.neighborhoodProviderClass);
-        // The class and its properties go together: properties of another class are not inherited.
-        if (moveSelectionStrategyClass == null
-                || Objects.equals(moveSelectionStrategyClass, inheritedConfig.moveSelectionStrategyClass)) {
-            moveSelectionStrategyClass = inheritedConfig.moveSelectionStrategyClass;
-            moveSelectionStrategyCustomProperties = ConfigUtils.inheritMergeableMapProperty(
-                    moveSelectionStrategyCustomProperties, inheritedConfig.getMoveSelectionStrategyCustomProperties());
-        }
+        neighborhoodsConfig = ConfigUtils.inheritConfig(neighborhoodsConfig, inheritedConfig.getNeighborhoodsConfig());
         phaseConfigList = ConfigUtils.inheritMergeableListConfig(phaseConfigList, inheritedConfig.getPhaseConfigList());
         monitoringConfig = ConfigUtils.inheritConfig(monitoringConfig, inheritedConfig.getMonitoringConfig());
         return this;
@@ -797,11 +737,8 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         if (nearbyDistanceMeterClass != null) {
             classVisitor.accept(getNearbyDistanceMeterClass());
         }
-        if (neighborhoodProviderClass != null) {
-            classVisitor.accept(getNeighborhoodProviderClass());
-        }
-        if (moveSelectionStrategyClass != null) {
-            classVisitor.accept(getMoveSelectionStrategyClass());
+        if (neighborhoodsConfig != null) {
+            neighborhoodsConfig.visitReferencedClasses(classVisitor);
         }
         if (terminationConfig != null) {
             terminationConfig.visitReferencedClasses(classVisitor);

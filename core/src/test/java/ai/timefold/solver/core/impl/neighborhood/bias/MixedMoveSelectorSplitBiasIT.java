@@ -26,6 +26,7 @@ import ai.timefold.solver.core.impl.solver.random.MockRandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMoveSelectionStrategy;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.jspecify.annotations.NonNull;
@@ -54,6 +55,7 @@ class MixedMoveSelectorSplitBiasIT extends AbstractBiasIT {
         solverScope.setScoreDirector(scoreDirector);
 
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        phaseScope.reset();
         var stepScope = new LocalSearchStepScope<>(phaseScope);
 
         // Classic side: 3 leaf move selectors, each an endless source of "classic" moves.
@@ -93,7 +95,8 @@ class MixedMoveSelectorSplitBiasIT extends AbstractBiasIT {
         neighborhoodProviderMap.put("neighborhood-a", neverEndingMoveProvider("neighborhood-a"));
         neighborhoodProviderMap.put("neighborhood-b", neverEndingMoveProvider("neighborhood-b"));
         var neighborhoodsMoveRepository =
-                new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, neighborhoodProviderMap);
+                new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, neighborhoodProviderMap,
+                        FixedWeightMoveSelectionStrategy::new);
         return new NeighborhoodsMoveSelector<>(neighborhoodsMoveRepository);
     }
 

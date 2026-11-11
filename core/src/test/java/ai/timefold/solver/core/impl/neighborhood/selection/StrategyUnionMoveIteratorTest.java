@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.move.UniformRandomUnionMoveIterator;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
@@ -30,47 +29,43 @@ class StrategyUnionMoveIteratorTest {
     private static final StepContext<TestdataSolution> STEP_CONTEXT = TestdataSolution::new;
 
     @Test
-    void defaultStrategyWiringGivesSameMovesAsUniformRandomUnionMoveIterator() {
-        // Both use UniformRandomChooser; this checks the wiring: the order of the exhausted move sources and the random calls.
-        var moveCounts = new int[] { 3, 0, 1, 5, 0, 2 };
-        for (var seed = 0; seed < 20; seed++) {
-            var expectedIterator = UniformRandomUnionMoveIterator.of(new Random(seed), iterableList(moveCounts),
-                    MoveIterable::iterator);
-            var expectedList = drain(expectedIterator);
+    void moveIteratorCreatedOnlyWhenChosen() {
+        var sourceList = sourceList(3);
+        var createdList = new ArrayList<Integer>();
+        var callCount = new int[1];
+        var strategy = new RecordingStrategy(sourceList, sources -> callCount[0]++ < 2 ? sources.get(1) : null);
+        var iterator = new StrategyUnionMoveIterator<>(strategy, sourceList, iterableList(new int[] { 1, 2, 1 }, createdList),
+                new Random(0), 0);
+        assertThat(createdList).isEmpty();
 
-            var sourceList = sourceList(moveCounts.length);
-            var strategy = new FixedWeightMoveSelectionStrategy<TestdataSolution>();
-            strategy.phaseStarted(new TestPhaseContext(List.copyOf(sourceList)));
-            strategy.stepStarted(STEP_CONTEXT);
-            var actualIterator = new StrategyUnionMoveIterator<>(strategy, sourceList, iterableList(moveCounts),
-                    new Random(seed), 0);
-
-            assertThat(drain(actualIterator)).as("seed %d", seed).isEqualTo(expectedList);
-        }
+        assertThat(drain(iterator)).containsExactly("1.0", "1.1");
+        assertThat(createdList).containsExactly(1);
     }
 
     @Test
-    void emptySourcesExhaustedBeforeFirstChoice() {
+    void emptySourceExhaustedWhenChosen() {
         var sourceList = sourceList(3);
-        var strategy = new RecordingStrategy(sourceList, sources -> sources.get(0));
+        var callCount = new int[1];
+        var strategy = new RecordingStrategy(sourceList, sources -> sources.get(callCount[0]++ == 0 ? 1 : 0));
         var iterator = new StrategyUnionMoveIterator<>(strategy, sourceList, iterableList(new int[] { 1, 0, 0 }),
                 new Random(0), 0);
-        assertThat(strategy.eventList).containsExactly("exhausted s1", "exhausted s2");
+        assertThat(strategy.eventList).isEmpty();
 
         iterator.next();
-        assertThat(strategy.eventList).containsExactly("exhausted s1", "exhausted s2", "next", "exhausted s0");
+        assertThat(strategy.eventList).containsExactly("next", "exhausted s1", "next", "exhausted s0");
     }
 
     @Test
     void allExhaustedEndsWithoutAsking() {
         var sourceList = sourceList(2);
-        var strategy = new RecordingStrategy(sourceList, sources -> sources.get(0));
+        var callCount = new int[1];
+        var strategy = new RecordingStrategy(sourceList, sources -> sources.get(callCount[0]++));
         var iterator = new StrategyUnionMoveIterator<>(strategy, sourceList, iterableList(new int[] { 0, 0 }),
                 new Random(0), 0);
 
         assertThat(iterator.hasNext()).isFalse();
         assertThat(iterator.hasNext()).isFalse();
-        assertThat(strategy.eventList).containsExactly("exhausted s0", "exhausted s1");
+        assertThat(strategy.eventList).containsExactly("next", "exhausted s0", "next", "exhausted s1");
     }
 
     @Test
@@ -100,16 +95,31 @@ class StrategyUnionMoveIteratorTest {
     }
 
     @Test
-    void nullBeforeFirstMoveFails() {
+    void nullBeforeFirstMoveEndsStep() {
         var sourceList = sourceList(2);
         var strategy = new RecordingStrategy(sourceList, sources -> null);
         var iterator = new StrategyUnionMoveIterator<>(strategy, sourceList, iterableList(new int[] { 5, 5 }),
                 new Random(0), 3);
 
-        assertThatIllegalStateException()
-                .isThrownBy(iterator::hasNext)
-                .withMessageContaining("step index (3)")
-                .withMessageContaining("(2) move sources are still available");
+        assertThat(iterator.hasNext()).isFalse();
+        assertThat(strategy.eventList).containsExactly("next");
+    }
+
+    @Test
+    void onlyZeroWeightSourcesWithMovesEndStep() {
+        var sourceList = sourceList(2);
+        var strategy = new FixedWeightMoveSelectionStrategy<TestdataSolution>() {
+            @Override
+            protected double getWeight(MoveSource<TestdataSolution> moveSource, PhaseContext<TestdataSolution> context) {
+                return moveSource.id().equals("s0") ? 0.0 : 1.0;
+            }
+        };
+        strategy.phaseStarted(new TestPhaseContext(List.copyOf(sourceList), new Random(0)));
+        strategy.stepStarted(STEP_CONTEXT);
+        var iterator = new StrategyUnionMoveIterator<>(strategy, sourceList, iterableList(new int[] { 5, 0 }),
+                new Random(0), 0);
+
+        assertThat(iterator.hasNext()).isFalse();
     }
 
     @Test
@@ -166,11 +176,18 @@ class StrategyUnionMoveIteratorTest {
     }
 
     private static List<MoveIterable<TestdataSolution>> iterableList(int[] moveCounts) {
+        return iterableList(moveCounts, new ArrayList<>());
+    }
+
+    private static List<MoveIterable<TestdataSolution>> iterableList(int[] moveCounts, List<Integer> createdList) {
         var iterableList = new ArrayList<MoveIterable<TestdataSolution>>(moveCounts.length);
         for (var i = 0; i < moveCounts.length; i++) {
             var sourceIndex = i;
             var moveCount = moveCounts[i];
-            iterableList.add(random -> new FiniteMoveIterator(sourceIndex, moveCount));
+            iterableList.add(random -> {
+                createdList.add(sourceIndex);
+                return new FiniteMoveIterator(sourceIndex, moveCount);
+            });
         }
         return iterableList;
     }
@@ -183,7 +200,7 @@ class StrategyUnionMoveIteratorTest {
         return labelList;
     }
 
-    private record TestPhaseContext(List<MoveSource<TestdataSolution>> moveSources)
+    private record TestPhaseContext(List<MoveSource<TestdataSolution>> moveSources, RandomGenerator random)
             implements
                 PhaseContext<TestdataSolution> {
 
@@ -222,7 +239,7 @@ class StrategyUnionMoveIteratorTest {
         }
 
         @Override
-        public @Nullable MoveSource<TestdataSolution> nextMoveSource(RandomGenerator random) {
+        public @Nullable MoveSource<TestdataSolution> nextMoveSource() {
             eventList.add("next");
             return chooseFunction.apply(moveSourceList);
         }

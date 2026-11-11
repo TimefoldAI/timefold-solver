@@ -37,8 +37,10 @@ class TimefoldProcessorNeighborhoodDetectionTest {
 
     @Test
     void detectedAndUsed() {
-        assertThat(solverConfig.getNeighborhoodProviderClass()).isEqualTo(TestdataQuarkusNeighborhoodProvider.class);
-        assertThat(solverConfig.getMoveSelectionStrategyClass()).isEqualTo(TestdataQuarkusMoveSelectionStrategy.class);
+        assertThat(solverConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
+                .isEqualTo(TestdataQuarkusNeighborhoodProvider.class);
+        assertThat(solverConfig.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(TestdataQuarkusMoveSelectionStrategy.class);
         assertThat(solverFactory.buildSolver()).isNotNull();
     }
 
