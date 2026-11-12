@@ -1592,7 +1592,7 @@
         "type" : "object",
         "properties" : {
           "type" : {
-            "description" : "The type of the issue type detail.",
+            "description" : "The type of the issue metadata.",
             "type" : "string",
             "readOnly" : true
           },
@@ -1605,7 +1605,7 @@
         "type" : "object",
         "properties" : {
           "type" : {
-            "description" : "The type of the issue type detail.",
+            "description" : "The type of the issue metadata.",
             "type" : "string",
             "readOnly" : true
           }
@@ -2168,8 +2168,7 @@
               "type" : "string"
             }
           }
-        },
-        "additionalProperties" : false
+        }
       },
       "ScoreAnalysisConfigModelConfigOverrides" : {
         "type" : "object",
