@@ -86,6 +86,13 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     InnerScore<Score_> calculateScore();
 
     /**
+     * @return true if this score director implements tiered score calculation, false otherwise.
+     */
+    default boolean isTieredScoreCalculationEnabled() {
+        return false;
+    }
+
+    /**
      * Like {@link #calculateScore()}, but returns a partial calculation if it can prove the resulting
      * score will be below the given lower bound. For instance, this method may not calculate soft
      * constraints if after calculating all hard constraints, the calculated hard score is less than
