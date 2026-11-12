@@ -21,6 +21,8 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSubsetRangeEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSubsetRangeSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingEntity;
@@ -191,6 +193,18 @@ class MassListAssignMoveProviderTest {
                 .using(solution);
         MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
                 TestdataListUnassignedPinnedEntityProvidingEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void neverAssignsAValueOutsideTheSolutionValueRange() {
+        var solutionMetaModel = TestdataListSubsetRangeSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListSubsetRangeEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listSubsetRangeSolution();
+        var context = NeighborhoodTester
+                .build(new MassListAssignMoveProvider<>(variableMetaModel, Samplers.exactly(2)), solutionMetaModel)
+                .using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                entity -> false, 1_000);
     }
 
 }

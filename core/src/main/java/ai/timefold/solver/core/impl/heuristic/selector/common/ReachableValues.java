@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
@@ -98,7 +97,7 @@ public final class ReachableValues<Entity_, Value_> {
         }
         var entityList = onDemandRandomAccessEntity[itemValue.ordinal];
         if (entityList == null) {
-            entityList = itemValue.getRandomAccessEntityList(entitiesIndex.allItems());
+            entityList = itemValue.getRandomAccessEntityList(entitiesIndex.allItems(), null);
             onDemandRandomAccessEntity[itemValue.ordinal] = entityList;
         }
         return entityList;
@@ -117,10 +116,9 @@ public final class ReachableValues<Entity_, Value_> {
         }
         var entityList = onDemandRandomAccessMovableEntity[itemValue.ordinal];
         if (entityList == null) {
-            entityList = movableEntityFilter == null ? Collections.unmodifiableList(extractEntitiesAsList(value))
-                    : extractEntitiesAsList(value).stream()
-                            .filter(movableEntityFilter)
-                            .toList();
+            // Built in one pass from the index; the list of all entities is only built if asked for.
+            entityList = Collections.unmodifiableList(movableEntityFilter == null ? extractEntitiesAsList(value)
+                    : itemValue.getRandomAccessEntityList(entitiesIndex.allItems(), movableEntityFilter));
             onDemandRandomAccessMovableEntity[itemValue.ordinal] = entityList;
         }
         return entityList;
@@ -148,14 +146,12 @@ public final class ReachableValues<Entity_, Value_> {
         }
         var entityList = entityListArray[itemValue.ordinal];
         if (entityList == null) {
-            var movableEntityList = extractMovableEntitiesAsList(value);
-            var filteredList = new ArrayList<Entity_>(movableEntityList.size());
-            for (var entity : movableEntityList) {
-                if (entityClass.isInstance(entity)) {
-                    filteredList.add(entity);
-                }
+            // The class check first: it is cheaper, and the movable filter can assume the class.
+            Predicate<Entity_> filter = entityClass::isInstance;
+            if (movableEntityFilter != null) {
+                filter = filter.and(movableEntityFilter);
             }
-            entityList = Collections.unmodifiableList(filteredList);
+            entityList = Collections.unmodifiableList(itemValue.getRandomAccessEntityList(entitiesIndex.allItems(), filter));
             entityListArray[itemValue.ordinal] = entityList;
         }
         return entityList;
@@ -176,7 +172,7 @@ public final class ReachableValues<Entity_, Value_> {
         }
         var valueList = onDemandRandomAccessValue[itemValue.ordinal];
         if (valueList == null) {
-            valueList = itemValue.getRandomAccessValueList(valuesIndex.allItems(), valueRangeSorter);
+            valueList = itemValue.getRandomAccessValueList(valuesIndex.allItems(), valueRangeSorter, null);
             onDemandRandomAccessValue[itemValue.ordinal] = valueList;
         }
         return valueList;
@@ -195,10 +191,9 @@ public final class ReachableValues<Entity_, Value_> {
         }
         var valueList = onDemandRandomAccessMovableValue[itemValue.ordinal];
         if (valueList == null) {
-            valueList = movableValueFilter == null ? Collections.unmodifiableList(extractValuesAsList(value))
-                    : extractValuesAsList(value).stream()
-                            .filter(movableValueFilter)
-                            .toList();
+            // Built in one pass from the index; the list of all values is only built if asked for.
+            valueList = Collections.unmodifiableList(movableValueFilter == null ? extractValuesAsList(value)
+                    : itemValue.getRandomAccessValueList(valuesIndex.allItems(), valueRangeSorter, movableValueFilter));
             onDemandRandomAccessMovableValue[itemValue.ordinal] = valueList;
         }
         return valueList;
@@ -309,13 +304,19 @@ public final class ReachableValues<Entity_, Value_> {
             return entityBitSet.cardinality();
         }
 
-        List<Entity_> getRandomAccessEntityList(List<Entity_> allEntities) {
-            return new BitSetIndexedList<>(allEntities, entityBitSet);
+        /**
+         * @param filter null to keep every reachable entity
+         */
+        List<Entity_> getRandomAccessEntityList(List<Entity_> allEntities, @Nullable Predicate<Entity_> filter) {
+            return new BitSetIndexedList<>(allEntities, entityBitSet, Function.identity(), filter);
         }
 
+        /**
+         * @param filter null to keep every reachable value
+         */
         List<Value_> getRandomAccessValueList(List<ReachableItemValue<Entity_, Value_>> allValues,
-                @Nullable ValueRangeSorter<Value_> valueRangeSorter) {
-            var valuesList = new BitSetIndexedList<>(allValues, valueBitSet, v -> v.value);
+                @Nullable ValueRangeSorter<Value_> valueRangeSorter, @Nullable Predicate<Value_> filter) {
+            var valuesList = new BitSetIndexedList<>(allValues, valueBitSet, v -> v.value, filter);
             if (valueRangeSorter != null) {
                 valueRangeSorter.sort(valuesList);
             }
@@ -333,27 +334,21 @@ public final class ReachableValues<Entity_, Value_> {
 
         private final Value_[] values;
 
-        @SuppressWarnings("unchecked")
-        private BitSetIndexedList(List<Value_> availableValueList, BitSet containedValueIndex) {
-            var valueCount = 0;
-            var index = containedValueIndex.nextSetBit(0);
-            this.values = (Value_[]) new Object[containedValueIndex.cardinality()];
-            while (index >= 0) {
-                this.values[valueCount++] = availableValueList.get(index);
-                index = containedValueIndex.nextSetBit(index + 1);
-            }
-        }
-
+        /**
+         * @param filter null to keep every item in the index
+         */
         @SuppressWarnings("unchecked")
         private BitSetIndexedList(List<Type_> availableValueList, BitSet containedValueIndex,
-                Function<Type_, Value_> valueExtractor) {
+                Function<Type_, Value_> valueExtractor, @Nullable Predicate<? super Value_> filter) {
+            var valueArray = (Value_[]) new Object[containedValueIndex.cardinality()];
             var valueCount = 0;
-            var index = containedValueIndex.nextSetBit(0);
-            this.values = (Value_[]) new Object[containedValueIndex.cardinality()];
-            while (index >= 0) {
-                this.values[valueCount++] = valueExtractor.apply(availableValueList.get(index));
-                index = containedValueIndex.nextSetBit(index + 1);
+            for (var index = containedValueIndex.nextSetBit(0); index >= 0; index = containedValueIndex.nextSetBit(index + 1)) {
+                var value = valueExtractor.apply(availableValueList.get(index));
+                if (filter == null || filter.test(value)) {
+                    valueArray[valueCount++] = value;
+                }
             }
+            this.values = valueCount == valueArray.length ? valueArray : Arrays.copyOf(valueArray, valueCount);
         }
 
         @Override

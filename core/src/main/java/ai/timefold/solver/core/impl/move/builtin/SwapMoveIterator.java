@@ -20,7 +20,8 @@ import org.jspecify.annotations.Nullable;
  * Each candidate already accepts the left entity's value of one variable,
  * so a draw fails only if the left entity rejects the candidate's value,
  * instead of if either side rejects the other's; with narrow value ranges, far fewer draws fail.
- * {@code isValidSwap} still checks both sides, because the list guarantees only one variable.
+ * With one variable, {@code isValidSwap} therefore checks only the left side;
+ * with several, it checks both sides, because the list guarantees only one variable.
  */
 @NullMarked
 public final class SwapMoveIterator<Solution_, Entity_> extends AbstractRepeatedDrawMoveIterator<Solution_, Entity_> {
@@ -50,15 +51,21 @@ public final class SwapMoveIterator<Solution_, Entity_> extends AbstractRepeated
                 anyEntityIterator = entityInstance.iterator(random);
             }
             rightEntity = drawMatching(anyEntityIterator, entityInstance.size(),
-                    candidate -> candidate != null && isValidSwap(solutionView, leftEntity, candidate));
+                    candidate -> candidate != null && isValidSwap(solutionView, leftEntity, candidate, false));
         } else {
+            // With one variable, every candidate accepts the left value; only the left side is checked.
+            var rightAcceptsLeft = variableMetaModelList.size() == 1;
             rightEntity = drawMatching(candidateList, random,
-                    candidate -> isValidSwap(solutionView, leftEntity, candidate));
+                    candidate -> isValidSwap(solutionView, leftEntity, candidate, rightAcceptsLeft));
         }
         return rightEntity == null ? null : Moves.swap(variableMetaModelList, leftEntity, rightEntity);
     }
 
-    private boolean isValidSwap(SolutionView<Solution_> solutionView, Entity_ leftEntity, Entity_ rightEntity) {
+    /**
+     * @param rightAcceptsLeft true if the right entity is known to accept the left entity's value of the only variable
+     */
+    private boolean isValidSwap(SolutionView<Solution_> solutionView, Entity_ leftEntity, Entity_ rightEntity,
+            boolean rightAcceptsLeft) {
         if (leftEntity == rightEntity) {
             return false;
         }
@@ -71,9 +78,11 @@ public final class SwapMoveIterator<Solution_, Entity_> extends AbstractRepeated
             if (Objects.equals(oldLeftValue, oldRightValue)) {
                 continue;
             }
-            // Left side first: the candidate list already guarantees the right side for one variable.
-            if (solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
-                    && solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)) {
+            // A solution value range accepts every value, except null if the variable does not allow it.
+            if ((variableMetaModel.isValueRangeOnSolution() && oldLeftValue != null && oldRightValue != null)
+                    || (solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
+                            && (rightAcceptsLeft
+                                    || solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)))) {
                 change = true;
             } else {
                 // One of the swaps falls out of range, skip this pair altogether.

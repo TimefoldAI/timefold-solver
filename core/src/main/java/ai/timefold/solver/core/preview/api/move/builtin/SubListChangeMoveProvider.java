@@ -2,6 +2,8 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
+import ai.timefold.solver.core.impl.move.builtin.ListDatasetCandidateSource;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.move.builtin.SubListChangeMoveIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
@@ -97,17 +99,18 @@ public final class SubListChangeMoveProvider<Solution_, Entity_, Value_>
                             .map((solutionView, position) -> (ElementPosition) position))
                     .asCachedDataset();
             return moveStreamFactory.buildMoveStream((session, random) -> new SubListChangeMoveIterator<>(session, random,
-                    variableMetaModel, crossingNull,
-                    (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset),
-                    session.getInstance(destinationDataset),
-                    null, minimumSubListSize, maximumSubListSize, selectReversingMoveToo));
+                    variableMetaModel, (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset),
+                    new ListDatasetCandidateSource<>(session.getSolutionView(), variableMetaModel, random,
+                            session.getInstance(destinationDataset), null),
+                    minimumSubListSize, maximumSubListSize, selectReversingMoveToo));
         }
         // Destinations come from the entities and values which share a value range with the span.
         var entityDataset = moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new SubListChangeMoveIterator<>(session, random,
-                variableMetaModel, crossingNull,
-                (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset), null,
-                session.getInstance(entityDataset), minimumSubListSize, maximumSubListSize, selectReversingMoveToo));
+                variableMetaModel, (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset),
+                ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random, session.getInstance(entityDataset),
+                        crossingNull),
+                minimumSubListSize, maximumSubListSize, selectReversingMoveToo));
     }
 
     /**

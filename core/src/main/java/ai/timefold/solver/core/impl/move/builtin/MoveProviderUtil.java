@@ -9,6 +9,7 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -223,9 +224,10 @@ public final class MoveProviderUtil {
             if (Objects.equals(oldLeftValue, oldRightValue)) {
                 continue;
             }
-            // Left side first: the candidate list already guarantees the right side for one variable.
-            if (leftRangesPerVariable.get(i).containsInEvery(oldRightValue)
-                    && rightRangesPerVariable.get(i).containsInEvery(oldLeftValue)) {
+            // A solution value range accepts every value, except null if the variable does not allow it.
+            if ((variableMetaModel.isValueRangeOnSolution() && oldLeftValue != null && oldRightValue != null)
+                    || (leftRangesPerVariable.get(i).containsInEvery(oldRightValue)
+                            && rightRangesPerVariable.get(i).containsInEvery(oldLeftValue))) {
                 change = true;
             } else {
                 // One of the swaps falls out of range, skip this pair altogether.
@@ -375,4 +377,18 @@ public final class MoveProviderUtil {
         return true;
     }
 
+    /**
+     * With a solution value range, keeps only the values in it, as the solution can hold other values of that class.
+     * The filter runs once per change of a value, not on every draw; entity value ranges need no filter.
+     */
+    public static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, Value_> inValueRange(
+            MoveStreamFactory<Solution_> moveStreamFactory,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            UniEnumeratingStream<Solution_, Value_> valueStream) {
+        if (!variableMetaModel.isValueRangeOnSolution()) {
+            return valueStream;
+        }
+        return valueStream.filter(((DefaultMoveStreamFactory<Solution_>) moveStreamFactory)
+                .getNodeSharingSupportFunctions(variableMetaModel).inSolutionValueRangeFilter());
+    }
 }

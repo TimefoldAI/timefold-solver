@@ -19,7 +19,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.picking.UniPickingStream;
@@ -177,7 +176,7 @@ public final class DefaultMoveStreamFactory<Solution_>
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             UniNeighborhoodsPredicate<Solution_, Value_> assignedValueFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> unassignedValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Value_, PositionInList> valueInRangeFilterForPosition,
+            UniNeighborhoodsPredicate<Solution_, Value_> inSolutionValueRangeFilter,
             UniNeighborhoodsMapper<Solution_, Value_, PositionInList> toOwnPositionMapper,
             UniNeighborhoodsMapper<Solution_, Entity_, PositionInList> toEndOfListPositionMapper,
             UniNeighborhoodsPredicate<Solution_, Entity_> isNullEntityFilter,
@@ -188,14 +187,8 @@ public final class DefaultMoveStreamFactory<Solution_>
             this(variableMetaModel,
                     (solutionView, value) -> solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> !solutionView.isAssigned(variableMetaModel, value),
-                    (solutionView, value, positionInList) -> {
-                        Entity_ entity = positionInList.entity();
-                        if (value == null) {
-                            // Necessary for the null to survive until the later stage, where we will use it as a special marker to move it to the end of list.
-                            return true;
-                        }
-                        return solutionView.isValueInRange(variableMetaModel, entity, value);
-                    },
+                    // Only for a solution value range; the solution can hold values of the same class outside it.
+                    (solutionView, value) -> solutionView.isValueInRange(variableMetaModel, value),
                     // Insert-before this value: the value's own current position.
                     (solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value).ensureAssigned(),
                     // Insert at the end of this entity's list.

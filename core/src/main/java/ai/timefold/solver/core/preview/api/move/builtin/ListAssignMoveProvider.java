@@ -5,7 +5,6 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.move.builtin.AbstractRepeatedDrawMoveIterator;
 import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
-import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -13,7 +12,6 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -47,12 +45,11 @@ public final class ListAssignMoveProvider<Solution_, Entity_, Value_>
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         if (variableMetaModel.isValueRangeOnSolution()) {
-            var nodeSharingSupportFunctions = ((DefaultMoveStreamFactory<Solution_>) moveStreamFactory)
-                    .getNodeSharingSupportFunctions(variableMetaModel);
-            return moveStreamFactory.pick(moveStreamFactory.forEachUnassignedValue(variableMetaModel))
-                    .pick(moveStreamFactory.forEachDestination(variableMetaModel),
-                            NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilterForPosition()))
-                    .asMove((view, value, pos) -> Moves.assign(variableMetaModel, Objects.requireNonNull(value), pos));
+            // Every destination accepts every value, so any pair is a valid move.
+            return moveStreamFactory.pick(MoveProviderUtil.inValueRange(moveStreamFactory, variableMetaModel,
+                    moveStreamFactory.forEachUnassignedValue(variableMetaModel)))
+                    .pick(moveStreamFactory.forEachDestination(variableMetaModel))
+                    .asMove((view, value, pos) -> Moves.assign(variableMetaModel, value, pos));
         }
         // Destinations come from the entities and values which share a value range with the value.
         var valueDataset = moveStreamFactory.forEachUnassignedValue(variableMetaModel).asCachedDataset();
@@ -60,11 +57,11 @@ public final class ListAssignMoveProvider<Solution_, Entity_, Value_>
         return moveStreamFactory.buildMoveStream((session, random) -> {
             var valueInstance = (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(valueDataset);
             var candidatePool = ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random,
-                    session.getInstance(entityDataset));
+                    session.getInstance(entityDataset), false);
             return new AbstractRepeatedDrawMoveIterator<>(valueInstance.retiringRandomIterator(random)) {
                 @Override
                 protected @Nullable Move<Solution_> tryBuildMove(Value_ value) {
-                    var destination = candidatePool.drawDestination(value, false, position -> true);
+                    var destination = candidatePool.drawDestination(value, position -> true);
                     return destination == null ? null
                             : Moves.assign(variableMetaModel, value, (PositionInList) destination);
                 }

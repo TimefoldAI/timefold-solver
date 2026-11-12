@@ -20,6 +20,8 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSubsetRangeEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSubsetRangeSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingEntity;
@@ -285,6 +287,17 @@ class ListChangeMoveProviderTest {
                 .using(solution);
         var moves = context.getMovesAsStream().limit(200_000).filter(expectedMoves::contains).toList();
         MoveProviderAssertions.assertEquallyOften(moves, move -> move, expectedMoves, 0.3);
+    }
+
+    @Test
+    void neverAssignsAValueOutsideTheSolutionValueRange() {
+        var solutionMetaModel = TestdataListSubsetRangeSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListSubsetRangeEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listSubsetRangeSolution();
+        var context = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel, true), solutionMetaModel)
+                .using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                entity -> false, 1_000);
     }
 
 }

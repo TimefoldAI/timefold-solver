@@ -877,6 +877,13 @@ based on the current state of the working solution.
 These moves allow the solver to transition from one solution to a neighboring solution,
 and Move Streams define which moves will be available.
 
+IMPORTANT: Do not use the source code of the built-in move providers as a template for your own.
+The built-in providers are generic, so they handle every case that a model can have:
+value ranges on the solution or on an entity, pinned entities and values, unassigned values, and more.
+This makes them complex.
+A move provider written for your domain handles only the cases that your domain has.
+It is usually much simpler, and it often has little in common with the built-in providers.
+
 For users familiar with the xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams API],
 many of the concepts of Move Streams will feel familiar.
 We retain the declarative nature of the API with its underlying incremental evaluation and resulting excellent performance characteristics,

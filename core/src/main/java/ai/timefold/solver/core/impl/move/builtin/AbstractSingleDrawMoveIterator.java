@@ -15,9 +15,14 @@ import org.jspecify.annotations.Nullable;
  * Each draw of a left element calls {@link #tryBuildMove} once,
  * which makes one draw from a pool that is the same for every left element.
  * A left element with more moves therefore succeeds more often.
- * After a failure, this iterator draws another left element instead of retrying the same one,
- * so every move has about the same chance, however many moves its left element has.
- * A retry of the same left element would give every left element the same chance instead.
+ * After a failure, {@link #keepsAfterFailedDraw} keeps the element in the pool
+ * and the loop in {@link AbstractLeftDrivenMoveIterator#hasNext()} draws the next left element;
+ * it does not retry the same one.
+ * So every move has about the same chance, however many moves its left element has.
+ * For example, with a pool of 10 candidates, a left element A with 4 valid candidates and B with 1:
+ * A gives a move in 4 of 10 draws and B in 1 of 10, so each of the 5 moves has the same chance.
+ * A retry of the same left element until success would give A and B the same chance instead,
+ * and each move of B would be 4 times as likely as each move of A.
  * <p>
  * A failed single draw does not show that the left element has no move.
  * Before it retires the element, this iterator calls {@link #hasMove}
@@ -61,6 +66,7 @@ public abstract non-sealed class AbstractSingleDrawMoveIterator<Solution_, Left_
         return tryBuildMove(left);
     }
 
+    // True keeps the element and makes the loop in AbstractLeftDrivenMoveIterator.hasNext() draw the next one.
     @Override
     final boolean keepsAfterFailedDraw(Left_ left) {
         if (leftsWithMove.contains(left)) {

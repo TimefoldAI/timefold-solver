@@ -30,14 +30,13 @@ import org.jspecify.annotations.Nullable;
 public final class ListTailSwapMoveIterator<Solution_, Entity_, Value_>
         extends AbstractRepeatedDrawMoveIterator<Solution_, Value_> {
 
-    private static final int SAMPLED_PARTNER_DRAW_COUNT = 10;
-
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final boolean selectReversingMoveToo;
     private final RandomGenerator random;
     private final SolutionView<Solution_> solutionView;
     private final DefaultUniDatasetInstance<Solution_, Value_> valueInstance;
-    private final Iterator<Value_> rightValueIterator;
+    // Only with a solution value range.
+    private final @Nullable Iterator<Value_> rightValueIterator;
 
     public ListTailSwapMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
@@ -48,7 +47,7 @@ public final class ListTailSwapMoveIterator<Solution_, Entity_, Value_>
         this.random = Objects.requireNonNull(random);
         this.solutionView = session.getSolutionView();
         this.valueInstance = valueInstance;
-        this.rightValueIterator = valueInstance.iterator(random);
+        this.rightValueIterator = variableMetaModel.isValueRangeOnSolution() ? valueInstance.iterator(random) : null;
     }
 
     @Override
@@ -57,40 +56,13 @@ public final class ListTailSwapMoveIterator<Solution_, Entity_, Value_>
         Value_ rightValue;
         if (variableMetaModel.isValueRangeOnSolution()) {
             // No per-entity value range to violate; a same-entity tail swap is degenerate, as the tails would overlap.
-            rightValue = drawMatching(rightValueIterator, valueInstance.size(),
+            rightValue = drawMatching(Objects.requireNonNull(rightValueIterator), valueInstance.size(),
                     candidateValue -> ((PositionInList) solutionView
                             .getPositionOf(variableMetaModel, candidateValue)).entity() != leftPosition.entity());
         } else {
-            rightValue = drawSampledPartner(leftPosition);
-            if (rightValue == null) {
-                rightValue = drawValidPartner(leftPosition);
-            }
+            rightValue = drawValidPartner(leftPosition);
         }
         return rightValue == null ? null : buildMove(leftPosition, rightValue);
-    }
-
-    /**
-     * With broad entity value ranges, most drawn values are valid partners, so a few draws are cheaper than a scan.
-     * Every valid partner has the same chance.
-     *
-     * @return null if no draw gave a valid partner
-     */
-    private @Nullable Value_ drawSampledPartner(PositionInList leftPosition) {
-        Entity_ leftEntity = leftPosition.entity();
-        var leftSize = solutionView.countValues(variableMetaModel, leftEntity);
-        for (var draw = 0; draw < SAMPLED_PARTNER_DRAW_COUNT && rightValueIterator.hasNext(); draw++) {
-            var candidateValue = rightValueIterator.next();
-            var candidatePosition = (PositionInList) solutionView.getPositionOf(variableMetaModel, candidateValue);
-            Entity_ candidateEntity = candidatePosition.entity();
-            if (candidateEntity != leftEntity
-                    && MoveProviderUtil.acceptsAll(solutionView, variableMetaModel, candidateEntity, leftEntity,
-                            leftPosition.index(), leftSize)
-                    && MoveProviderUtil.acceptsAll(solutionView, variableMetaModel, leftEntity, candidateEntity,
-                            candidatePosition.index(), solutionView.countValues(variableMetaModel, candidateEntity))) {
-                return candidateValue;
-            }
-        }
-        return null;
     }
 
     /**

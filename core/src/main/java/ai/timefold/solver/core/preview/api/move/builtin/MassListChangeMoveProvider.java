@@ -3,6 +3,8 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
+import ai.timefold.solver.core.impl.move.builtin.ListDatasetCandidateSource;
 import ai.timefold.solver.core.impl.move.builtin.MassListDestinationMoveIterator;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
@@ -97,7 +99,13 @@ public final class MassListChangeMoveProvider<Solution_, Entity_, Value_>
         var entityDataset = variableMetaModel.isValueRangeOnSolution() ? null
                 : moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new MassListDestinationMoveIterator<>(session, random,
-                variableMetaModel, sourceDataset, destinationDataset, entityDataset, crossingNull, sampler));
+                variableMetaModel, sourceDataset,
+                destinationDataset != null
+                        ? new ListDatasetCandidateSource<>(session.getSolutionView(), variableMetaModel, random,
+                                session.getInstance(destinationDataset), null)
+                        : ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random,
+                                session.getInstance(Objects.requireNonNull(entityDataset)), crossingNull),
+                sampler));
     }
 
     /**

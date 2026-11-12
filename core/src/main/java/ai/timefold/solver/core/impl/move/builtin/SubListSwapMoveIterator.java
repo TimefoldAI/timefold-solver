@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.move.builtin;
 
-import java.util.Iterator;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
@@ -12,7 +10,6 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Range;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.SubListSampler;
@@ -41,17 +38,18 @@ public final class SubListSwapMoveIterator<Solution_, Entity_, Value_>
     private final boolean selectReversingMoveToo;
     private final RandomGenerator random;
     private final SolutionView<Solution_> solutionView;
-    private final DefaultUniDatasetInstance<Solution_, Value_> valueInstance;
     private final SubListSampler<Solution_, Entity_, Value_> leftSampler;
     private final SubListSampler<Solution_, Entity_, Value_> rightSampler;
-    // Exactly one of these is null: the pool with entity value ranges, the iterator with a solution value range.
-    private final @Nullable ListCandidatePool<Solution_, Entity_, Value_> candidatePool;
-    private final @Nullable Iterator<Value_> rightValueIterator;
+    private final ListCandidateSource<Solution_, Entity_, Value_> candidateSource;
 
+    /**
+     * @param valueInstance the seed values of the left spans
+     * @param candidateSource the seed values of the right spans
+     */
     public SubListSwapMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             DefaultUniDatasetInstance<Solution_, Value_> valueInstance,
-            @Nullable UniDatasetInstance<Entity_> entityInstance,
+            ListCandidateSource<Solution_, Entity_, Value_> candidateSource,
             int leftMinimumSubListSize, int leftMaximumSubListSize,
             int rightMinimumSubListSize, int rightMaximumSubListSize, boolean selectReversingMoveToo) {
         super(valueInstance.retiringRandomIterator(random));
@@ -59,13 +57,10 @@ public final class SubListSwapMoveIterator<Solution_, Entity_, Value_>
         this.selectReversingMoveToo = selectReversingMoveToo;
         this.random = Objects.requireNonNull(random);
         this.solutionView = session.getSolutionView();
-        this.valueInstance = valueInstance;
         this.leftSampler = Samplers.subList(variableMetaModel, leftMinimumSubListSize, leftMaximumSubListSize, random);
         this.rightSampler =
                 Samplers.subList(variableMetaModel, rightMinimumSubListSize, rightMaximumSubListSize, random);
-        this.candidatePool = entityInstance == null ? null
-                : ListCandidatePool.of(solutionView, variableMetaModel, random, entityInstance);
-        this.rightValueIterator = entityInstance == null ? valueInstance.iterator(random) : null;
+        this.candidateSource = Objects.requireNonNull(candidateSource);
     }
 
     @Override
@@ -74,13 +69,7 @@ public final class SubListSwapMoveIterator<Solution_, Entity_, Value_>
         if (leftRange == null) {
             return null;
         }
-        Value_ rightValue;
-        if (candidatePool != null) {
-            rightValue = candidatePool.drawPartnerOnce(value -> true);
-        } else {
-            var iterator = Objects.requireNonNull(rightValueIterator);
-            rightValue = iterator.hasNext() ? iterator.next() : null;
-        }
+        var rightValue = candidateSource.drawPartnerOnce(value -> true);
         if (rightValue == null) {
             return null;
         }
@@ -101,19 +90,12 @@ public final class SubListSwapMoveIterator<Solution_, Entity_, Value_>
             if (leftRange == null) {
                 return false;
             }
-            Predicate<Value_> filter = candidateValue -> {
+            // Only the entities which accept the narrowest value can accept the left span; the budget fits that pool.
+            var narrowestValue = candidateSource.narrowestValue(leftRange.entity(), leftRange.fromIndex(), leftRange.toIndex());
+            var rightValue = candidateSource.drawPartner(narrowestValue, candidateValue -> {
                 var rightRange = rightSampler.byValue(solutionView, candidateValue);
                 return rightRange != null && isValidSwap(leftRange, rightRange);
-            };
-            Value_ rightValue;
-            if (candidatePool != null) {
-                // Only the entities which accept the narrowest value can accept the left span; the budget fits that pool.
-                var narrowestValue =
-                        candidatePool.narrowestValue(leftRange.entity(), leftRange.fromIndex(), leftRange.toIndex());
-                rightValue = candidatePool.drawPartner(narrowestValue, false, filter);
-            } else {
-                rightValue = drawMatching(Objects.requireNonNull(rightValueIterator), valueInstance.size(), filter);
-            }
+            });
             if (rightValue != null) {
                 return true;
             }

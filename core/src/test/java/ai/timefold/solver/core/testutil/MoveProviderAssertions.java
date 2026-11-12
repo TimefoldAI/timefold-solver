@@ -23,6 +23,8 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSubsetRangeEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSubsetRangeSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingEntity;
@@ -249,6 +251,20 @@ public final class MoveProviderAssertions {
         solution.getEntityList().get(0).setPinned(true);
         solution.getEntityList().get(1).setPinIndex(1);
         return solution;
+    }
+
+    /**
+     * e1 holds v1, e2 holds v2, v3 and v4 are in the value range and unassigned,
+     * and vOut is a problem fact of the same class outside the value range.
+     */
+    public static TestdataListSubsetRangeSolution listSubsetRangeSolution() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var v4 = new TestdataValue("v4");
+        var vOut = new TestdataValue("vOut");
+        return new TestdataListSubsetRangeSolution(List.of(v1, v2, v3, v4, vOut), List.of(v1, v2, v3, v4),
+                List.of(new TestdataListSubsetRangeEntity("e1", v1), new TestdataListSubsetRangeEntity("e2", v2)));
     }
 
     public static List<TestdataValue> listValues() {

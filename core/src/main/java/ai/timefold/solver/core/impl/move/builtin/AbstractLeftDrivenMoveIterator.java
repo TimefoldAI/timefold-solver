@@ -126,7 +126,8 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
      * @param randomIterator may return null only if the filter rejects it
      * @param candidateCount the size of the population behind the iterator
      */
-    protected static <T> @Nullable T drawMatching(Iterator<T> randomIterator, long candidateCount, Predicate<T> filter) {
+    protected static <T extends @Nullable Object> @Nullable T drawMatching(Iterator<T> randomIterator, long candidateCount,
+            Predicate<T> filter) {
         var budget = bailOutBudget(candidateCount);
         for (var attempt = 0L; attempt < budget && randomIterator.hasNext(); attempt++) {
             var candidate = randomIterator.next();

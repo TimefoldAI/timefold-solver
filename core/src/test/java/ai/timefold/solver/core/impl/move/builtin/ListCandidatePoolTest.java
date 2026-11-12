@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
@@ -41,7 +42,7 @@ class ListCandidatePoolTest {
         var movableEntities = entities.stream().filter(entity -> !entity.isPinned()).toList();
         MoveTester.build(solutionMetaModel).using(solution).executeTemporarily(view -> {
         }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> test.accept(new ListCandidatePool<>(view,
-                variableMetaModel, new Random(0), movableEntities, List.of())));
+                variableMetaModel, new Random(0), () -> movableEntities, List::of, false)));
     }
 
     private ElementPosition at(int entityIndex, int index) {
@@ -53,7 +54,7 @@ class ListCandidatePoolTest {
         withPool(pool -> {
             var draws = new ArrayList<ElementPosition>();
             for (var i = 0; i < DRAW_COUNT; i++) {
-                draws.add(pool.drawDestinationOnce(false, position -> true));
+                draws.add(pool.drawDestinationOnce(position -> true));
             }
             MoveProviderAssertions.assertEquallyOften(draws, position -> position,
                     List.of(at(1, 2), at(1, 3), at(2, 0), at(2, 1), at(2, 2), at(2, 3), at(3, 0), at(3, 1), at(3, 2),
@@ -83,7 +84,7 @@ class ListCandidatePoolTest {
         withPool(pool -> {
             var draws = new ArrayList<ElementPosition>();
             for (var i = 0; i < DRAW_COUNT; i++) {
-                draws.add(pool.drawDestination(values.get(9), false, position -> true));
+                draws.add(pool.drawDestination(values.get(9), position -> true));
             }
             MoveProviderAssertions.assertEquallyOften(draws, position -> position,
                     List.of(at(2, 0), at(2, 1), at(2, 2), at(2, 3), at(3, 0), at(3, 1), at(3, 2), at(3, 3), at(3, 4)),
@@ -106,11 +107,50 @@ class ListCandidatePoolTest {
     }
 
     @Test
+    void searchingDrawsAreUniformWhenOneListIsMuchLongerThanTheOthers() {
+        // e0 holds six values, e1 to e5 none: padding to e0 would be most of the slots, so prefix sums are used.
+        var heldValues = IntStream.range(0, 6).mapToObj(i -> new TestdataValue("h" + i)).toList();
+        var value = new TestdataValue("x");
+        var range = new ArrayList<>(heldValues);
+        range.add(value);
+        var skewedEntities = IntStream.range(0, 6).mapToObj(i -> {
+            var entity = new TestdataListPinnedEntityProvidingEntity("e" + i, range);
+            entity.setValueList(new ArrayList<>(i == 0 ? heldValues : List.of()));
+            return entity;
+        }).toList();
+        var skewedSolution = new TestdataListPinnedEntityProvidingSolution();
+        skewedSolution.setEntityList(skewedEntities);
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        PlanningListVariableMetaModel<TestdataListPinnedEntityProvidingSolution, TestdataListPinnedEntityProvidingEntity, TestdataValue> variableMetaModel =
+                solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        MoveTester.build(solutionMetaModel).using(skewedSolution).executeTemporarily(view -> {
+        }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> {
+            var pool = new ListCandidatePool<>(view, variableMetaModel, new Random(0), () -> skewedEntities, List::of,
+                    false);
+            var destinations = new ArrayList<ElementPosition>();
+            var partners = new ArrayList<TestdataValue>();
+            for (var i = 0; i < DRAW_COUNT; i++) {
+                destinations.add(pool.drawDestination(value, position -> true));
+                partners.add(pool.drawPartner(value, position -> true));
+            }
+            var expectedDestinations = new ArrayList<ElementPosition>();
+            for (var index = 0; index <= heldValues.size(); index++) {
+                expectedDestinations.add(ElementPosition.of(skewedEntities.getFirst(), index));
+            }
+            for (var entity : skewedEntities.subList(1, skewedEntities.size())) {
+                expectedDestinations.add(ElementPosition.of(entity, 0));
+            }
+            MoveProviderAssertions.assertEquallyOften(destinations, position -> position, expectedDestinations, 0.1);
+            MoveProviderAssertions.assertEquallyOften(partners, partner -> partner, heldValues, 0.1);
+        });
+    }
+
+    @Test
     void drawsGiveUpWhenNothingIsAccepted() {
         withPool(pool -> {
-            assertThat(pool.drawDestination(values.get(9), true, position -> false)).isNull();
+            assertThat(pool.drawDestination(values.get(9), position -> false)).isNull();
             assertThat(pool.drawPartner(values.get(9), false, value -> false)).isNull();
-            assertThat(pool.drawDestinationOnce(true, position -> false)).isNull();
+            assertThat(pool.drawDestinationOnce(position -> false)).isNull();
             assertThat(pool.drawPartnerOnce(value -> false)).isNull();
         });
     }
@@ -138,8 +178,9 @@ class ListCandidatePoolTest {
         PlanningListVariableMetaModel<TestdataListPinnedEntityProvidingSolution, TestdataListPinnedEntityProvidingEntity, TestdataValue> variableMetaModel =
                 solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
         MoveTester.build(solutionMetaModel).using(solution).executeTemporarily(view -> {
-        }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> ListCandidatePool.of(view, variableMetaModel,
-                random, instance));
+        }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> ListCandidatePool
+                // The pool copies the dataset on its first single draw.
+                .of(view, variableMetaModel, random, instance, false).drawDestinationOnce(position -> true));
 
         var drawnEntities = new HashSet<TestdataListPinnedEntityProvidingEntity>();
         for (var i = 0; i < 1_000 && leftIterator.hasNext(); i++) {

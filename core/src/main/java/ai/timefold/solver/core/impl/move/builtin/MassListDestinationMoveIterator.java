@@ -15,7 +15,6 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
 
@@ -47,27 +46,19 @@ public final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> i
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final SolutionView<Solution_> solutionView;
     private final Iterator<Sample<Value_>> sampleIterator;
-    private final @Nullable UniDatasetInstance<ElementPosition> destinationInstance;
-    private final boolean includeUnassigned;
-    // Null with a solution value range.
-    private final @Nullable ListCandidatePool<Solution_, Entity_, Value_> candidatePool;
-    private final RandomGenerator random;
+    private final ListCandidateSource<Solution_, Entity_, Value_> candidateSource;
 
     private @Nullable Move<Solution_> nextMove = null;
 
     public MassListDestinationMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniDataset<Solution_, Value_> sourceDataset, @Nullable UniDataset<Solution_, ElementPosition> destinationDataset,
-            @Nullable UniDataset<Solution_, Entity_> entityDataset, boolean includeUnassigned, Sampler<Value_> sampler) {
+            UniDataset<Solution_, Value_> sourceDataset, ListCandidateSource<Solution_, Entity_, Value_> candidateSource,
+            Sampler<Value_> sampler) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.random = Objects.requireNonNull(random);
         this.solutionView = session.getSolutionView();
         var sourceInstance = session.getInstance(sourceDataset);
         this.sampleIterator = sourceInstance.samplingIterator(Objects.requireNonNull(sampler), random);
-        this.destinationInstance = destinationDataset == null ? null : session.getInstance(destinationDataset);
-        this.includeUnassigned = includeUnassigned;
-        this.candidatePool = entityDataset == null ? null
-                : ListCandidatePool.of(solutionView, variableMetaModel, random, session.getInstance(entityDataset));
+        this.candidateSource = Objects.requireNonNull(candidateSource);
     }
 
     @Override
@@ -86,13 +77,8 @@ public final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> i
                 failedSampleDraws++;
                 continue;
             }
-            var destination = candidatePool != null
-                    ? candidatePool.drawDestination(ListCandidatePool.narrowestValue(solutionView, variableMetaModel, sample),
-                            includeUnassigned,
-                            position -> isValidDestination(sample, position))
-                    : AbstractLeftDrivenMoveIterator.drawMatching(Objects.requireNonNull(destinationInstance).iterator(random),
-                            destinationInstance.size(),
-                            position -> isValidDestination(sample, position));
+            var destination = candidateSource.drawDestination(candidateSource.narrowestValue(sample),
+                    position -> isValidDestination(sample, position));
             if (destination == null) {
                 failedSampleDraws++;
                 continue;

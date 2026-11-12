@@ -83,6 +83,73 @@ class PillarSwapMoveProviderTest {
     }
 
     @Test
+    void drawsAfterAPillarChangeOfThePreviousStep() {
+        var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntityProvidingEntity.class);
+        var valueList = new ArrayList<TestdataValue>();
+        var entityList = new ArrayList<TestdataEntityProvidingEntity>();
+        for (var i = 0; i < 10; i++) {
+            valueList.add(new TestdataValue("v" + i));
+        }
+        // Narrow ranges: fewer entities accept a value than there are pillars, so the right pillar is looked up by key.
+        for (var i = 0; i < 10; i++) {
+            var entity = new TestdataEntityProvidingEntity("e" + i,
+                    List.of(valueList.get((i + 9) % 10), valueList.get(i), valueList.get((i + 1) % 10)));
+            entity.setValue(valueList.get(i));
+            entityList.add(entity);
+        }
+        var solution = new TestdataEntityProvidingSolution("s");
+        solution.setEntityList(entityList);
+        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution);
+        // Removes the pillar of v0 from the dataset, which leaves a gap there.
+        context.getMoveTestContext()
+                .execute(
+                        Moves.change(entityMetaModel.<TestdataValue> basicVariable(), entityList.getFirst(), valueList.get(1)));
+
+        assertThat(context.getMovesAsStream().limit(1_000).toList()).hasSize(1_000);
+        // Neighbors accept each other's values, so these single-entity pillars swap; none may be lost to a moved slot.
+        var variableMetaModelList = allVariables(entityMetaModel);
+        context.producesAllOf(
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(2))),
+                        Sample.of(List.of(entityList.get(3)))),
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(3))),
+                        Sample.of(List.of(entityList.get(2)))),
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(8))),
+                        Sample.of(List.of(entityList.get(9)))),
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(9))),
+                        Sample.of(List.of(entityList.get(8)))));
+    }
+
+    @Test
+    void uninitializedPillarNeverGivesNullToAVariableWhichDoesNotAllowIt() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class);
+        var variableMetaModelList = allVariables(entityMetaModel);
+        var solution = TestdataSolution.generateSolution(2, 6);
+        var entityList = solution.getEntityList();
+        var valueList = solution.getValueList();
+        entityList.get(0).setValue(null);
+        entityList.get(1).setValue(null);
+        entityList.get(2).setValue(valueList.get(0));
+        for (var i = 3; i < 6; i++) {
+            entityList.get(i).setValue(valueList.get(1));
+        }
+        var uninitializedPillar = Sample.of(List.copyOf(entityList.subList(0, 2)));
+        var pillarA = Sample.of(List.of(entityList.get(2)));
+        var pillarB = Sample.of(List.copyOf(entityList.subList(3, 6)));
+
+        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution);
+        context.producesAllOf(Moves.pillarSwap(variableMetaModelList, pillarA, pillarB));
+        context.producesNoneOf(
+                Moves.pillarSwap(variableMetaModelList, uninitializedPillar, pillarA),
+                Moves.pillarSwap(variableMetaModelList, pillarA, uninitializedPillar),
+                Moves.pillarSwap(variableMetaModelList, uninitializedPillar, pillarB),
+                Moves.pillarSwap(variableMetaModelList, pillarB, uninitializedPillar));
+    }
+
+    @Test
     void outOfRangeCrossValueRejectsWholePair() {
         var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
         var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntityProvidingEntity.class);

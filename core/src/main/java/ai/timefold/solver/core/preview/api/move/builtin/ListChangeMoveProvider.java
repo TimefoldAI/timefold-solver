@@ -2,7 +2,9 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
 import ai.timefold.solver.core.impl.move.builtin.ListChangeMoveIterator;
+import ai.timefold.solver.core.impl.move.builtin.ListDatasetCandidateSource;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
@@ -75,7 +77,9 @@ public final class ListChangeMoveProvider<Solution_, Entity_, Value_>
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         // Unassigned values are admitted too when crossingNull, unconditionally otherwise excluded,
         // mirroring ChangeMoveProvider's own source-side widening.
-        var sourceDataset = (crossingNull ? moveStreamFactory.forEach(variableMetaModel.type(), false)
+        var sourceDataset = (crossingNull
+                ? MoveProviderUtil.inValueRange(moveStreamFactory, variableMetaModel,
+                        moveStreamFactory.forEach(variableMetaModel.type(), false))
                 : moveStreamFactory.forEachAssignedValue(variableMetaModel))
                 .asCachedDataset();
         if (variableMetaModel.isValueRangeOnSolution()) {
@@ -89,17 +93,16 @@ public final class ListChangeMoveProvider<Solution_, Entity_, Value_>
                             .map((solutionView, position) -> (ElementPosition) position))
                     .asCachedDataset();
             return moveStreamFactory.buildMoveStream((session, random) -> new ListChangeMoveIterator<>(session, random,
-                    variableMetaModel, crossingNull,
-                    (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset),
-                    session.getInstance(destinationDataset),
-                    null));
+                    variableMetaModel, (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset),
+                    new ListDatasetCandidateSource<>(session.getSolutionView(), variableMetaModel, random,
+                            session.getInstance(destinationDataset), null)));
         }
         // Destinations come from the entities which accept the source value.
         var entityDataset = moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new ListChangeMoveIterator<>(session, random,
-                variableMetaModel, crossingNull,
-                (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset), null,
-                session.getInstance(entityDataset)));
+                variableMetaModel, (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(sourceDataset),
+                ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random, session.getInstance(entityDataset),
+                        crossingNull)));
     }
 
     /**

@@ -143,6 +143,55 @@ class SwapMoveProviderTest {
     }
 
     @Test
+    void uninitializedEntityNeverGivesNullToAVariableWhichDoesNotAllowIt() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class);
+        var variableMetaModel = entityMetaModel.basicVariable();
+        var solution = TestdataSolution.generateSolution(2, 3);
+        var e1 = solution.getEntityList().get(0);
+        var e2 = solution.getEntityList().get(1);
+        var e3 = solution.getEntityList().get(2);
+        e1.setValue(null);
+
+        var context = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution);
+        context.producesAllOf(Moves.swap(variableMetaModel, e2, e3));
+        context.producesNoneOf(
+                Moves.swap(variableMetaModel, e1, e2),
+                Moves.swap(variableMetaModel, e2, e1),
+                Moves.swap(variableMetaModel, e1, e3),
+                Moves.swap(variableMetaModel, e3, e1));
+    }
+
+    @Test
+    void singleVariableChecksTheLeftSideOfEveryCandidate() {
+        var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntityProvidingEntity.class);
+        var variableMetaModel = entityMetaModel.basicVariable();
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var e1 = new TestdataEntityProvidingEntity("e1", List.of(v1, v2));
+        e1.setValue(v1);
+        // e2 accepts v1, so it is a candidate for e1; but e1 does not accept v3.
+        var e2 = new TestdataEntityProvidingEntity("e2", List.of(v1, v3));
+        e2.setValue(v3);
+        var e3 = new TestdataEntityProvidingEntity("e3", List.of(v1, v2));
+        e3.setValue(v2);
+        var solution = new TestdataEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var context = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution);
+        context.producesAllOf(
+                Moves.swap(variableMetaModel, e1, e3),
+                Moves.swap(variableMetaModel, e3, e1));
+        context.producesNoneOf(
+                Moves.swap(variableMetaModel, e1, e2),
+                Moves.swap(variableMetaModel, e2, e1));
+    }
+
+    @Test
     void fromEntity() {
         var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
         var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntityProvidingEntity.class);

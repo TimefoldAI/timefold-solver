@@ -5,15 +5,16 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
-import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.CachedBiDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDatasetInstance;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiIterator;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -46,32 +47,33 @@ public final class PillarSwapMoveIterator<Solution_, Entity_>
     public PillarSwapMoveIterator(SolutionView<Solution_> solutionView, RandomGenerator random,
             List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList,
             CachedBiDatasetInstance<Solution_, List<Object>, PillarWithRanges<Entity_>> pillarInstance) {
-        super(pillarInstance.retiringRandomIteratorOfB(random));
+        super(leftIteratorAfterKeyIndex(pillarInstance, usesKeyedLookup(variableMetaModelList), random));
         this.variableMetaModelList = Objects.requireNonNull(variableMetaModelList);
         this.random = Objects.requireNonNull(random);
         this.solutionView = Objects.requireNonNull(solutionView);
         this.pillarInstance = Objects.requireNonNull(pillarInstance);
-        this.candidatesMayNarrow = variableMetaModelList.stream().anyMatch(v -> !v.isValueRangeOnSolution());
+        this.candidatesMayNarrow = usesKeyedLookup(variableMetaModelList);
     }
 
-    private static <Entity_> Iterator<@Nullable PillarWithRanges<Entity_>> rowIterator(
-            BiDatasetInstance<List<Object>, PillarWithRanges<Entity_>> pillarInstance, RandomGenerator random) {
-        var biIterator = pillarInstance.iterator(random);
-        return new Iterator<>() {
-            @Override
-            public boolean hasNext() {
-                return biIterator.hasNext();
-            }
+    /**
+     * Only entity value ranges narrow the candidates, and only narrowed candidates are looked up by key.
+     */
+    private static <Solution_, Entity_> boolean usesKeyedLookup(
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
+        return variableMetaModelList.stream().anyMatch(v -> !v.isValueRangeOnSolution());
+    }
 
-            @Override
-            public @Nullable PillarWithRanges<Entity_> next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-                biIterator.next();
-                return biIterator.b();
-            }
-        };
+    /**
+     * shortcut: building the key index compacts the pillar dataset and would move the left iterator's slots,
+     * so it is built first; remove once reading a dataset no longer compacts it.
+     */
+    private static <Solution_, Entity_> RetiringRandomIterator<@Nullable PillarWithRanges<Entity_>> leftIteratorAfterKeyIndex(
+            CachedBiDatasetInstance<Solution_, List<Object>, PillarWithRanges<Entity_>> pillarInstance,
+            boolean usesKeyedLookup, RandomGenerator random) {
+        if (usesKeyedLookup) {
+            pillarInstance.size(null); // Builds the key index; the dataset does not change until the step ends.
+        }
+        return pillarInstance.retiringRandomIteratorOfB(random);
     }
 
     @Override
@@ -85,7 +87,7 @@ public final class PillarSwapMoveIterator<Solution_, Entity_>
         // A null list means that no value narrows the candidates.
         if (candidateList == null || pillarInstance.size() <= candidateList.size()) {
             if (anyPillarIterator == null) {
-                anyPillarIterator = rowIterator(pillarInstance, random);
+                anyPillarIterator = new RowIterator<>(pillarInstance.iterator(random));
             }
             rightEntry = drawMatching(anyPillarIterator, pillarInstance.size(),
                     candidate -> candidate != null && isValidSwap(leftEntry, candidate));
@@ -104,15 +106,11 @@ public final class PillarSwapMoveIterator<Solution_, Entity_>
      */
     private @Nullable PillarWithRanges<Entity_> drawPillarOfCandidate(PillarWithRanges<Entity_> leftEntry,
             List<Entity_> candidateList) {
-        var size = candidateList.size();
-        if (size == 0) {
+        if (candidateList.isEmpty()) {
             return null;
         }
-        return drawMatching(Stream.<@Nullable PillarWithRanges<Entity_>> generate(() -> {
-            var entity = candidateList.get(random.nextInt(size));
-            var rowIterator = pillarInstance.iterator(MoveProviderUtil.compositeKeyOf(entity, variableMetaModelList), random);
-            return rowIterator.hasNext() ? rowIterator.next() : null;
-        }).iterator(), size,
+        var candidateIterator = new CandidateIterator(candidateList);
+        return drawMatching(candidateIterator, candidateList.size(),
                 // Identity first: members of the left pillar are always candidates, and need no random draw.
                 candidate -> candidate != null && candidate != leftEntry && random.nextInt(candidate.pillar().size()) == 0
                         && isValidSwap(leftEntry, candidate));
@@ -122,6 +120,48 @@ public final class PillarSwapMoveIterator<Solution_, Entity_>
         // Rows are cached and reused for as long as their group is unchanged, so identity detects a self-swap.
         return rightEntry != leftEntry && MoveProviderUtil.isValidSwap(solutionView, variableMetaModelList,
                 leftEntry.pillar(), leftEntry.rangesPerVariable(), rightEntry.pillar(), rightEntry.rangesPerVariable());
+    }
+
+    private record RowIterator<Entity_>(BiIterator<List<Object>, PillarWithRanges<Entity_>> biIterator)
+            implements
+                Iterator<@Nullable PillarWithRanges<Entity_>> {
+
+        @Override
+        public boolean hasNext() {
+            return biIterator.hasNext();
+        }
+
+        @Override
+        public @Nullable PillarWithRanges<Entity_> next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            biIterator.next();
+            return biIterator.b();
+        }
+    }
+
+    private final class CandidateIterator
+            implements Iterator<@Nullable PillarWithRanges<Entity_>> {
+        private final List<Entity_> candidateList;
+        private final int size;
+
+        private CandidateIterator(List<Entity_> candidateList) {
+            this.candidateList = candidateList;
+            this.size = candidateList.size();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return true;
+        }
+
+        @Override
+        public @Nullable PillarWithRanges<Entity_> next() {
+            var entity = candidateList.get(random.nextInt(size));
+            var rowIterator = pillarInstance.iterator(MoveProviderUtil.compositeKeyOf(entity, variableMetaModelList), random);
+            return rowIterator.hasNext() ? rowIterator.next() : null;
+        }
     }
 
 }

@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.move.builtin;
 
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
@@ -14,7 +13,6 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Range;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.SubListSampler;
@@ -41,36 +39,28 @@ public final class SubListChangeMoveIterator<Solution_, Entity_, Value_>
         extends AbstractSingleDrawMoveIterator<Solution_, Value_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    private final boolean crossingNull;
     private final boolean selectReversingMoveToo;
     private final RandomGenerator random;
     private final SolutionView<Solution_> solutionView;
-    private final @Nullable UniDatasetInstance<ElementPosition> destinationInstance;
-    private final @Nullable Iterator<ElementPosition> destinationIterator;
     private final SubListSampler<Solution_, Entity_, Value_> sampler;
-    private final @Nullable ListCandidatePool<Solution_, Entity_, Value_> candidatePool;
+    private final ListCandidateSource<Solution_, Entity_, Value_> candidateSource;
 
     /**
-     * @param destinationInstance null to draw destinations from {@link ListCandidatePool}
-     * @param entityInstance the movable entities; null to draw destinations from the destination instance
+     * @param sourceInstance the seed values of the spans
+     * @param candidateSource the destinations; it decides whether the unassigned destination is one of them
      */
     public SubListChangeMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, boolean crossingNull,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             DefaultUniDatasetInstance<Solution_, Value_> sourceInstance,
-            @Nullable UniDatasetInstance<ElementPosition> destinationInstance,
-            @Nullable UniDatasetInstance<Entity_> entityInstance, int minimumSubListSize,
+            ListCandidateSource<Solution_, Entity_, Value_> candidateSource, int minimumSubListSize,
             int maximumSubListSize, boolean selectReversingMoveToo) {
         super(sourceInstance.retiringRandomIterator(random));
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.crossingNull = crossingNull;
         this.selectReversingMoveToo = selectReversingMoveToo;
         this.random = Objects.requireNonNull(random);
         this.solutionView = session.getSolutionView();
-        this.destinationInstance = destinationInstance;
-        this.destinationIterator = destinationInstance == null ? null : destinationInstance.iterator(random);
         this.sampler = Samplers.subList(variableMetaModel, minimumSubListSize, maximumSubListSize, random);
-        this.candidatePool = entityInstance == null ? null
-                : ListCandidatePool.of(solutionView, variableMetaModel, random, entityInstance);
+        this.candidateSource = Objects.requireNonNull(candidateSource);
     }
 
     @Override
@@ -79,16 +69,7 @@ public final class SubListChangeMoveIterator<Solution_, Entity_, Value_>
         if (range == null) {
             return null;
         }
-        ElementPosition destination;
-        if (candidatePool != null) {
-            destination = candidatePool.drawDestinationOnce(crossingNull, position -> isValidChange(range, position));
-        } else {
-            var iterator = Objects.requireNonNull(destinationIterator);
-            destination = iterator.hasNext() ? iterator.next() : null;
-            if (destination != null && !isValidChange(range, destination)) {
-                destination = null;
-            }
-        }
+        var destination = candidateSource.drawDestinationOnce(position -> isValidChange(range, position));
         return destination == null ? null : buildMove(range, destination);
     }
 
@@ -100,17 +81,9 @@ public final class SubListChangeMoveIterator<Solution_, Entity_, Value_>
             if (range == null) {
                 return false;
             }
-            ElementPosition destination;
-            if (candidatePool != null) {
-                // Only the entities which accept the narrowest value can accept the span; the budget fits that pool.
-                var narrowestValue = candidatePool.narrowestValue(range.entity(), range.fromIndex(), range.toIndex());
-                destination = candidatePool.drawDestination(narrowestValue, crossingNull,
-                        position -> isValidChange(range, position));
-            } else {
-                destination = drawMatching(Objects.requireNonNull(destinationIterator),
-                        Objects.requireNonNull(destinationInstance).size(), position -> isValidChange(range, position));
-            }
-            if (destination != null) {
+            // Only the entities which accept the narrowest value can accept the span; the budget fits that pool.
+            var narrowestValue = candidateSource.narrowestValue(range.entity(), range.fromIndex(), range.toIndex());
+            if (candidateSource.drawDestination(narrowestValue, position -> isValidChange(range, position)) != null) {
                 return true;
             }
         }
