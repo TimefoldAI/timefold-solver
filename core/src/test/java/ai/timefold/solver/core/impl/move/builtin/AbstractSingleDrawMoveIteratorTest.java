@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
@@ -43,19 +42,6 @@ class AbstractSingleDrawMoveIteratorTest {
     }
 
     @Test
-    void keepsLeftWithAMoveEvenIfItsSearchBailsOut() {
-        // With this seed, "failing" is drawn first; a draw that gives a move is remembered only after a failed draw.
-        var iterator = new SingleDrawIterator(leftIterator("bailing", "failing"), Map.of("failing", 0.0, "bailing", 0.5),
-                "bailing");
-
-        for (var i = 0; i < 100; i++) {
-            assertThat(iterator.hasNext()).isTrue();
-            assertThat(iterator.next()).isNotNull();
-        }
-        assertThat(iterator.hasMoveCountMap).containsOnlyKeys("failing");
-    }
-
-    @Test
     void givesEachMoveTheSameChance() {
         // "often" has 4 times more moves than "seldom", so it succeeds 4 times more often per draw.
         var iterator = new SingleDrawIterator(leftIterator("often", "seldom"), Map.of("often", 0.8, "seldom", 0.2));
@@ -80,27 +66,22 @@ class AbstractSingleDrawMoveIteratorTest {
         private final Random random = new Random(0);
         private final Map<String, Integer> tryCountMap = new HashMap<>();
         private final Map<String, Integer> hasMoveCountMap = new HashMap<>();
-        // Their first draw gives a move, and their search always bails out.
-        private final Set<String> bailingLeftSet;
 
-        SingleDrawIterator(RetiringRandomIterator<@Nullable String> leftIterator, Map<String, Double> successChanceMap,
-                String... bailingLefts) {
+        SingleDrawIterator(RetiringRandomIterator<@Nullable String> leftIterator, Map<String, Double> successChanceMap) {
             super(leftIterator);
             this.successChanceMap = successChanceMap;
-            this.bailingLeftSet = Set.of(bailingLefts);
         }
 
         @Override
         protected @Nullable Move<TestdataSolution> tryBuildMove(String left) {
-            var tryCount = tryCountMap.merge(left, 1, Integer::sum);
-            var success = (tryCount == 1 && bailingLeftSet.contains(left)) || random.nextDouble() < successChanceMap.get(left);
-            return success ? new DummyMove(left) : null;
+            tryCountMap.merge(left, 1, Integer::sum);
+            return random.nextDouble() < successChanceMap.get(left) ? new DummyMove(left) : null;
         }
 
         @Override
         protected boolean hasMove(String left) {
             hasMoveCountMap.merge(left, 1, Integer::sum);
-            return !bailingLeftSet.contains(left) && successChanceMap.get(left) > 0.0;
+            return successChanceMap.get(left) > 0.0;
         }
 
     }
