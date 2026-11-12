@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.definition.internal.dataset;
 
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
 import ai.timefold.solver.service.definition.api.SolverModel;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
 
 public interface ModelPostProcessor {
 

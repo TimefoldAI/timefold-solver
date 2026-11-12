@@ -3,8 +3,8 @@ package ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema
 import java.math.BigDecimal;
 import java.time.Duration;
 
-import ai.timefold.solver.service.definition.api.metrics.DataFormat;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.metrics.DataFormat;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

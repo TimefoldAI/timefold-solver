@@ -9,11 +9,11 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
 import ai.timefold.solver.service.definition.api.metrics.InputMetricsAware;
 import ai.timefold.solver.service.definition.api.metrics.OutputMetricsAware;
-import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelInputMetrics;
 import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelOutputMetrics;
 

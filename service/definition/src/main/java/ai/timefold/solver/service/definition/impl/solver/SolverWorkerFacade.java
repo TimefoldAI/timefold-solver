@@ -5,16 +5,16 @@ import java.util.Set;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
 import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
 import ai.timefold.solver.service.definition.api.dto.log.LogInfo;
 import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
-import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
+import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
 
 /**
  * Facade used by the REST layer to interact with dataset storage and the solver worker,

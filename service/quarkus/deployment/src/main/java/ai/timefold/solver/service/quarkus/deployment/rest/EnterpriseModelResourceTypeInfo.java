@@ -1,8 +1,8 @@
 package ai.timefold.solver.service.quarkus.deployment.rest;
 
+import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.impl.solver.SolverWorkerFacade;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;
-import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
 
 import org.jboss.jandex.DotName;
