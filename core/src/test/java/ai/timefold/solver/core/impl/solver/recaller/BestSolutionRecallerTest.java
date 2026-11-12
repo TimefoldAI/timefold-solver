@@ -3,6 +3,9 @@ package ai.timefold.solver.core.impl.solver.recaller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -35,7 +38,9 @@ class BestSolutionRecallerTest {
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
         ConstructionHeuristicStepScope<Solution_> stepScope = mock(ConstructionHeuristicStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
-        when(stepScope.getScoreDirector()).thenReturn(solverScope.getScoreDirector());
+        // Cannot call methods on a spy inside `thenReturn` for Mockito.
+        var scoreDirector = solverScope.<SimpleScore> getScoreDirector();
+        when(stepScope.<SimpleScore> getScoreDirector()).thenReturn(scoreDirector);
         return stepScope;
     }
 
@@ -189,6 +194,33 @@ class BestSolutionRecallerTest {
             assertThat(solverScope.getBestSolution()).isEqualTo(originalBestSolution);
             assertThat(solverScope.getBestScore()).isEqualTo(originalBestScore.innerScore);
         }
+    }
+
+    @Test
+    protected void recalculatesStepScoreWhenTieredScoreCalculationIsUsed() {
+        SolverScope<TestdataSolution> solverScope = spy(createSolverScope());
+        var originalBestSolution = mock(TestdataSolution.class);
+        var scoreDirector = solverScope.<SimpleScore> getScoreDirector();
+        var oldBestScore = InnerScore.fullyAssigned(SimpleScore.of(0));
+        var staleStepScore = InnerScore.fullyAssigned(SimpleScore.of(1));
+        var newStepScore = InnerScore.fullyAssigned(SimpleScore.of(2));
+        when(scoreDirector.isTieredScoreCalculationEnabled()).thenReturn(true);
+        when(scoreDirector.calculateScore()).thenReturn(newStepScore);
+        solverScope.setBestSolution(originalBestSolution);
+        solverScope.setBestScore(oldBestScore);
+
+        var stepScope = setupConstructionHeuristics(solverScope);
+        var stepSolution = mock(TestdataSolution.class);
+        doReturn(staleStepScore).when(stepScope).getScore();
+        when(stepScope.cloneWorkingSolution()).thenReturn(stepSolution);
+        when(scoreDirector.getWorkingInitScore()).thenReturn(-newStepScore.unassignedCount());
+        when(scoreDirector.getSolutionDescriptor().getScore(stepSolution))
+                .thenReturn(newStepScore.raw());
+
+        BestSolutionRecaller<TestdataSolution> recaller = createBestSolutionRecaller();
+        recaller.processWorkingSolutionDuringStep(stepScope);
+        verify(stepScope, times(1)).setScore(newStepScore);
+        verify(solverScope, times(1)).setBestScore(newStepScore);
     }
 
 }

@@ -79,6 +79,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     }
 
     public void processWorkingSolutionDuringConstructionHeuristicsStep(AbstractStepScope<Solution_> stepScope) {
+        recalculateTieredStepScore(stepScope);
         AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
         SolverScope<Solution_> solverScope = phaseScope.getSolverScope();
         stepScope.setBestScoreImproved(true);
@@ -90,6 +91,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     }
 
     public <Score_ extends Score<Score_>> void processWorkingSolutionDuringStep(AbstractStepScope<Solution_> stepScope) {
+        recalculateTieredStepScore(stepScope);
         var phaseScope = stepScope.getPhaseScope();
         var score = stepScope.<Score_> getScore();
         var solverScope = phaseScope.getSolverScope();
@@ -103,6 +105,15 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             updateBestSolutionAndFire(solverScope, phaseScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
+        }
+    }
+
+    private static <Solution_> void recalculateTieredStepScore(AbstractStepScope<Solution_> stepScope) {
+        var scoreDirector = stepScope.getScoreDirector();
+        if (scoreDirector.isTieredScoreCalculationEnabled()) {
+            // The accepted step might be partially calculated if the forager bailed out
+            // calculateScore updates the score on the working solution
+            stepScope.setScore(scoreDirector.calculateScore());
         }
     }
 
