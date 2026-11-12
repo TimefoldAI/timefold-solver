@@ -29,6 +29,8 @@ import org.jspecify.annotations.Nullable;
  * up to {@link RetiringBiWalk#PROBE_ATTEMPT_COUNT} times, because one failure can be a random bail-out.
  * A left element known to have a move is remembered until the iterator ends,
  * so {@link #hasMove} runs at most a few times per left element.
+ * A draw that gives a move is remembered only after the first failed draw;
+ * when moves are common, this skips the cost, and when they are rare, the first draws fail.
  *
  * @param <Solution_> the solution type
  * @param <Left_> the type of the left element
@@ -38,6 +40,7 @@ public abstract non-sealed class AbstractSingleDrawMoveIterator<Solution_, Left_
         extends AbstractLeftDrivenMoveIterator<Solution_, Left_> {
 
     private final Set<Left_> leftsWithMove = Collections.newSetFromMap(new IdentityHashMap<>());
+    private boolean failedDrawSeen = false;
 
     /**
      * @param leftIterator draws at random from the elements not yet retired
@@ -63,12 +66,17 @@ public abstract non-sealed class AbstractSingleDrawMoveIterator<Solution_, Left_
 
     @Override
     final @Nullable Move<Solution_> drawMove(Left_ left) {
-        return tryBuildMove(left);
+        var move = tryBuildMove(left);
+        if (move != null && failedDrawSeen) {
+            leftsWithMove.add(left);
+        }
+        return move;
     }
 
     // True keeps the element and makes the loop in AbstractLeftDrivenMoveIterator.hasNext() draw the next one.
     @Override
     final boolean keepsAfterFailedDraw(Left_ left) {
+        failedDrawSeen = true;
         if (leftsWithMove.contains(left)) {
             return true;
         }
