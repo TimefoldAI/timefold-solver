@@ -64,18 +64,34 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
         if (nextMove != null) {
             return true;
         }
-        while (leftIterator.hasNext()) {
-            var left = leftIterator.next();
-            if (left != null) {
-                nextMove = drawMove(left);
-                if (nextMove != null) {
-                    return true;
-                }
-                if (keepsAfterFailedDraw(left)) {
-                    continue;
-                }
+        // One draw first, the loop only after a failure: the JIT then keeps the hot code small,
+        // instead of inlining the whole move build into the loop, which can run 30% slower.
+        return tryDraw() || drawAfterFailure();
+    }
+
+    private boolean tryDraw() {
+        if (!leftIterator.hasNext()) {
+            return false;
+        }
+        var left = leftIterator.next();
+        if (left != null) {
+            var move = drawMove(left);
+            if (move != null) {
+                nextMove = move;
+                return true;
             }
+        }
+        if (left == null || !keepsAfterFailedDraw(left)) {
             leftIterator.retire();
+        }
+        return false;
+    }
+
+    private boolean drawAfterFailure() {
+        while (leftIterator.hasNext()) {
+            if (tryDraw()) {
+                return true;
+            }
         }
         return false;
     }
