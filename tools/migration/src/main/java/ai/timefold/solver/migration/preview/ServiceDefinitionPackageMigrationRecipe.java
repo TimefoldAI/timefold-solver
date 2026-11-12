@@ -105,6 +105,7 @@ public class ServiceDefinitionPackageMigrationRecipe extends AbstractRecipe {
                 new ChangeType(API + "data.DemoDataConfigEntry", NEW_PREVIEW_API + "demo.DemoDataConfigEntry", true),
                 new ChangeType(API + "data.DemoDataGenerator", NEW_PREVIEW_API + "demo.DemoDataGenerator", true),
                 new ChangeType(API + "data.DemoMetaData", NEW_PREVIEW_API + "demo.DemoMetaData", true),
+                new ChangeType(INTERNAL + "Headers", INTERNAL + "rest.Headers", true),
                 new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisConstraintDetail",
                         ENTERPRISE_API + "dto.scoreanalysis.ScoreAnalysisConstraintDetail", true),
                 new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisDetail",
