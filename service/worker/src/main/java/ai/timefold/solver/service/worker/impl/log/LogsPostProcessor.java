@@ -14,13 +14,13 @@ import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
+import ai.timefold.solver.service.definition.api.SolverModel;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
 import ai.timefold.solver.service.definition.api.dto.log.LogInfo;
 import ai.timefold.solver.service.definition.impl.log.LoggingConstants;
 import ai.timefold.solver.service.definition.internal.dataset.ModelPostProcessor;
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
-import ai.timefold.solver.service.definition.api.SolverModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

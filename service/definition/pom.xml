@@ -58,6 +58,10 @@
       <plugin>
         <groupId>org.revapi</groupId>
         <artifactId>revapi-maven-plugin</artifactId>
+        <configuration>
+          <!-- Temporary override to skip the package changes introduced in 2.9.0. -->
+          <skip>true</skip>
+        </configuration>
       </plugin>
     </plugins>
   </build>

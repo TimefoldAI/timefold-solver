@@ -3,12 +3,12 @@ package ai.timefold.solver.service.definition.api.validation.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.service.definition.api.dto.validation.issue.AbstractIssue;
-import ai.timefold.solver.service.definition.api.dto.validation.issue.Issue;
-import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueSeverity;
 import ai.timefold.solver.service.definition.api.dto.validation.LegacyValidationResult;
 import ai.timefold.solver.service.definition.api.dto.validation.ValidationResult;
 import ai.timefold.solver.service.definition.api.dto.validation.ValidationStatus;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.AbstractIssue;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.Issue;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueSeverity;
 import ai.timefold.solver.service.definition.api.dto.validation.issue.metadata.IssueMessage;
 import ai.timefold.solver.service.definition.impl.validation.AbstractLegacyIssue;
 

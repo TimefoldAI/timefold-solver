@@ -14,17 +14,17 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.dto.scoreanalysis.ModelConstraintJustification;
+import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
+import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.impl.storage.CompressionUtils;
 import ai.timefold.solver.service.definition.impl.storage.StorageObjectMapperWrapper;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.dto.scoreanalysis.ModelConstraintJustification;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
-import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
-import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

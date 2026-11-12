@@ -21,6 +21,10 @@ import org.openrewrite.java.ChangeType;
  * <li>demo data types became a preview API in {@code preview.api.demo},</li>
  * <li>types that are not meant to be used by models moved to {@code internal.*}.</li>
  * </ul>
+ * The score analysis types of the enterprise service definition module
+ * ({@code ai.timefold.solver.enterprise.service.definition.api.analysis}) moved to {@code api.scoreanalysis}
+ * and, in case of DTOs, to {@code api.dto.scoreanalysis}.
+ * <p>
  * The removed {@code ai.timefold.solver.service.definition.api.UserModel} has no replacement and is not migrated.
  */
 public class ServiceDefinitionPackageMigrationRecipe extends AbstractRecipe {
@@ -28,6 +32,7 @@ public class ServiceDefinitionPackageMigrationRecipe extends AbstractRecipe {
     private static final String API = "ai.timefold.solver.service.definition.api.";
     private static final String NEW_PREVIEW_API = "ai.timefold.solver.service.definition.preview.api.";
     private static final String INTERNAL = "ai.timefold.solver.service.definition.internal.";
+    private static final String ENTERPRISE_API = "ai.timefold.solver.enterprise.service.definition.api.";
 
     @Override
     public String getDisplayName() {
@@ -99,6 +104,20 @@ public class ServiceDefinitionPackageMigrationRecipe extends AbstractRecipe {
                 new ChangeType(API + "data.DemoData", NEW_PREVIEW_API + "demo.DemoData", true),
                 new ChangeType(API + "data.DemoDataConfigEntry", NEW_PREVIEW_API + "demo.DemoDataConfigEntry", true),
                 new ChangeType(API + "data.DemoDataGenerator", NEW_PREVIEW_API + "demo.DemoDataGenerator", true),
-                new ChangeType(API + "data.DemoMetaData", NEW_PREVIEW_API + "demo.DemoMetaData", true));
+                new ChangeType(API + "data.DemoMetaData", NEW_PREVIEW_API + "demo.DemoMetaData", true),
+                new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisConstraintDetail",
+                        ENTERPRISE_API + "dto.scoreanalysis.ScoreAnalysisConstraintDetail", true),
+                new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisDetail",
+                        ENTERPRISE_API + "dto.scoreanalysis.ScoreAnalysisDetail", true),
+                new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisMatchDetail",
+                        ENTERPRISE_API + "dto.scoreanalysis.ScoreAnalysisMatchDetail", true),
+                new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisFacade",
+                        ENTERPRISE_API + "scoreanalysis.ScoreAnalysisFacade", true),
+                new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisFacadeBase",
+                        ENTERPRISE_API + "scoreanalysis.ScoreAnalysisFacadeBase", true),
+                new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisService",
+                        ENTERPRISE_API + "scoreanalysis.ScoreAnalysisService", true),
+                new ChangeType(ENTERPRISE_API + "analysis.ScoreAnalysisServiceBase",
+                        ENTERPRISE_API + "scoreanalysis.ScoreAnalysisServiceBase", true));
     }
 }

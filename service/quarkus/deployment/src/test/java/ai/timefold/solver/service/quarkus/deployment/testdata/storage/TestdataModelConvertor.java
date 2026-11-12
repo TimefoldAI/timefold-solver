@@ -5,8 +5,8 @@ import java.util.Optional;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
 import ai.timefold.solver.service.definition.api.conversion.ModelConvertor;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
 
 @ApplicationScoped
 public class TestdataModelConvertor implements

@@ -42,7 +42,9 @@ class ServiceDefinitionPackageMigrationRecipeTest extends AbstractRecipeTest {
                                 "package ai.timefold.solver.service.definition.api.validation.dto; public record ValidationResult(String status) {}",
                                 "package ai.timefold.solver.service.definition.api.validation.metadata; public record IssueMessage(String message) {}",
                                 "package ai.timefold.solver.service.definition.api.data; public record DemoData(Object metaData, Object modelRequest) {}",
-                                "package ai.timefold.solver.service.definition.api.data; public interface DemoDataGenerator {}"));
+                                "package ai.timefold.solver.service.definition.api.data; public interface DemoDataGenerator {}",
+                                "package ai.timefold.solver.enterprise.service.definition.api.analysis; public record ScoreAnalysisDetail(String score) {}",
+                                "package ai.timefold.solver.enterprise.service.definition.api.analysis; public interface ScoreAnalysisService {}"));
     }
 
     @Test
@@ -182,6 +184,31 @@ class ServiceDefinitionPackageMigrationRecipeTest extends AbstractRecipeTest {
                         public class Test {
                                 DemoDataGenerator generator;
                                 DemoData demoData;
+                        }"""));
+    }
+
+    @Test
+    void migrateEnterpriseScoreAnalysisTypes() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.enterprise.service.definition.api.analysis.ScoreAnalysisDetail;
+                        import ai.timefold.solver.enterprise.service.definition.api.analysis.ScoreAnalysisService;
+
+                        public class Test {
+                                ScoreAnalysisService service;
+                                ScoreAnalysisDetail detail;
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.enterprise.service.definition.api.dto.scoreanalysis.ScoreAnalysisDetail;
+                        import ai.timefold.solver.enterprise.service.definition.api.scoreanalysis.ScoreAnalysisService;
+
+                        public class Test {
+                                ScoreAnalysisService service;
+                                ScoreAnalysisDetail detail;
                         }"""));
     }
 

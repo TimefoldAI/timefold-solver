@@ -4,14 +4,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
-import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
+import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.api.conversion.ModelConvertor;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
-import ai.timefold.solver.service.definition.api.SolverModel;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
 
 import org.jspecify.annotations.NullMarked;
 

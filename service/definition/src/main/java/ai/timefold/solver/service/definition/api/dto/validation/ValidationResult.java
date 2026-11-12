@@ -3,6 +3,7 @@ package ai.timefold.solver.service.definition.api.dto.validation;
 import java.util.Collection;
 
 import ai.timefold.solver.service.definition.api.dto.validation.issue.Issue;
+
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
