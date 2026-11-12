@@ -46,13 +46,13 @@ public final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> i
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final SolutionView<Solution_> solutionView;
     private final Iterator<Sample<Value_>> sampleIterator;
-    private final ListCandidateSource<Solution_, Entity_, Value_> candidateSource;
+    private final ListCandidateSource<Entity_, Value_> candidateSource;
 
     private @Nullable Move<Solution_> nextMove = null;
 
     public MassListDestinationMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniDataset<Solution_, Value_> sourceDataset, ListCandidateSource<Solution_, Entity_, Value_> candidateSource,
+            UniDataset<Solution_, Value_> sourceDataset, ListCandidateSource<Entity_, Value_> candidateSource,
             Sampler<Value_> sampler) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.solutionView = session.getSolutionView();

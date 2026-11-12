@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public final class ListDatasetCandidateSource<Solution_, Entity_, Value_>
-        implements ListCandidateSource<Solution_, Entity_, Value_> {
+        implements ListCandidateSource<Entity_, Value_> {
 
     private final SolutionView<Solution_> solutionView;
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;

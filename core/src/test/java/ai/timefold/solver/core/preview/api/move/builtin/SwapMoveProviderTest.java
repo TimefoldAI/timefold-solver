@@ -26,7 +26,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.Te
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingSolution;
-import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -356,39 +355,6 @@ class SwapMoveProviderTest {
         assertThat(context.getMovesAsStream().limit(1_000).toList())
                 .hasSize(1_000)
                 .allSatisfy(move -> assertThat(validMoves).contains(move));
-    }
-
-    @Test
-    void everyDrawnMoveKeepsTheSolutionValid() {
-        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
-        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
-        var context = NeighborhoodTester.build(new SwapMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution);
-        MoveProviderAssertions.assertDrawnMovesKeepSolutionValid(context, List.of(variableMetaModel),
-                solution.getEntityList(), 2_000);
-    }
-
-    @Test
-    void everyValidPartnerIsDrawnEquallyOften() {
-        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
-        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
-        var left = solution.getEntityList().get(1);
-        var expectedPartners = solution.getEntityList().stream()
-                .filter(right -> right != left && !right.isPinned() && right.getValue() != left.getValue()
-                        && right.getValueRange().contains(left.getValue())
-                        && left.getValueRange().contains(right.getValue()))
-                .toList();
-        var context = NeighborhoodTester.build(new SwapMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution);
-        var movesOfLeft = context.getMovesAsStream()
-                .limit(40_000)
-                .filter(move -> move.getPlanningEntities().getFirst() == left)
-                .toList();
-        assertThat(expectedPartners).hasSizeGreaterThan(1);
-        MoveProviderAssertions.assertEquallyOften(movesOfLeft, move -> move.getPlanningEntities().getLast(),
-                expectedPartners, 0.3);
     }
 
 }

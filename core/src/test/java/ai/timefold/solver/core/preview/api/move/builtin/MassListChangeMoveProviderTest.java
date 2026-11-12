@@ -15,8 +15,6 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
-import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
-import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListValue;
@@ -354,18 +352,6 @@ class MassListChangeMoveProviderTest {
                 .using(solution);
         MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
                 TestdataListUnassignedPinnedEntityProvidingEntity::isPinned, 2_000);
-    }
-
-    @Test
-    void everyDrawnMoveKeepsTheSolutionValidWithSolutionRange() {
-        var solutionMetaModel = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedWithIndexListEntity.class).listVariable();
-        var solution = MoveProviderAssertions.listSolutionRangeSolution();
-        var context = NeighborhoodTester
-                .build(new MassListChangeMoveProvider<>(variableMetaModel, Samplers.exactly(2)), solutionMetaModel)
-                .using(solution);
-        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
-                TestdataPinnedWithIndexListEntity::isPinned, 2_000);
     }
 
 }

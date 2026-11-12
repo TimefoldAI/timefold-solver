@@ -1072,7 +1072,8 @@ class ValueRangeManagerTest {
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        assertThatThrownBy(() -> valueRangeManager.getMovableEntityList(listVariableDescriptor.getEntityDescriptor()))
+        var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
+        assertThatThrownBy(() -> valueRangeManager.getMovableEntityList(entityDescriptor))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("movable entities");
         assertThatThrownBy(() -> valueRangeManager.getMovableValueList(listVariableDescriptor))

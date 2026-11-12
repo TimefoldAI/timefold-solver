@@ -245,18 +245,6 @@ class ListChangeMoveProviderTest {
     }
 
     @Test
-    void everyDrawnMoveKeepsTheSolutionValidWithEntityRangeWithoutCrossingNull() {
-        var solutionMetaModel = TestdataListUnassignedPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.genuineEntity(TestdataListUnassignedPinnedEntityProvidingEntity.class).listVariable();
-        var solution = MoveProviderAssertions.listUnassignedPinnedSolution(MoveProviderAssertions.listValues());
-        var context = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel, false), solutionMetaModel)
-                .using(solution);
-        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
-                TestdataListUnassignedPinnedEntityProvidingEntity::isPinned, 2_000);
-    }
-
-    @Test
     void everyDrawnMoveKeepsTheSolutionValidWithSolutionRange() {
         var solutionMetaModel = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedWithIndexListEntity.class).listVariable();

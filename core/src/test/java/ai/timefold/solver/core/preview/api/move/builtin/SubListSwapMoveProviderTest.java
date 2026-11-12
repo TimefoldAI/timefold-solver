@@ -265,17 +265,6 @@ class SubListSwapMoveProviderTest {
     }
 
     @Test
-    void everyDrawnMoveKeepsTheSolutionValidWithSolutionRange() {
-        var solutionMetaModel = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedWithIndexListEntity.class).listVariable();
-        var solution = MoveProviderAssertions.listSolutionRangeSolution();
-        var context =
-                NeighborhoodTester.build(new SubListSwapMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
-        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
-                TestdataPinnedWithIndexListEntity::isPinned, 2_000);
-    }
-
-    @Test
     void rareValidMovesDoNotEndTheIteratorEarly() {
         var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();

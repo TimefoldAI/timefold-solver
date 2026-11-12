@@ -3,13 +3,17 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.move.builtin.SubListSwapMove;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Range;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -179,7 +183,7 @@ class ListTailSwapMoveProviderTest {
     void everyDrawnMoveKeepsTheSolutionValidWithEntityRange() {
         var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
-        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var solution = tailSwapSolution();
         var context =
                 NeighborhoodTester.build(new ListTailSwapMoveProvider<>(variableMetaModel), solutionMetaModel).using(solution);
         MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
@@ -201,7 +205,7 @@ class ListTailSwapMoveProviderTest {
     void everyValidPartnerIsDrawnEquallyOftenWithEntityRange() {
         var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
-        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var solution = tailSwapSolution();
         var movableEntities = solution.getEntityList().stream().filter(entity -> !entity.isPinned()).toList();
         // The left value with the most valid partners; a partner accepts the left tail, and the left entity its tail.
         List<Move<TestdataListPinnedEntityProvidingSolution>> expectedMoves = List.of();
@@ -231,6 +235,37 @@ class ListTailSwapMoveProviderTest {
         var expected = expectedMoves;
         var moves = context.getMovesAsStream().limit(200_000).filter(expected::contains).toList();
         MoveProviderAssertions.assertEquallyOften(moves, move -> move, expected, 0.3);
+    }
+
+    /**
+     * Partners of v3 lie in 3 entities with 2, 4 and 1 valid tails;
+     * e3 and e5 accept only part of some tails, and v0 is pinned by index.
+     */
+    private static TestdataListPinnedEntityProvidingSolution tailSwapSolution() {
+        var v = IntStream.range(0, 12).mapToObj(i -> new TestdataValue("v" + i)).toList();
+        Function<int[], List<TestdataValue>> pick = indices -> Arrays.stream(indices).mapToObj(v::get).toList();
+        var solution = new TestdataListPinnedEntityProvidingSolution();
+        solution.setEntityList(List.of(
+                tailSwapEntity("e0", pick.apply(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 9 }), pick.apply(new int[] { 0, 1, 2 }),
+                        false, 1),
+                tailSwapEntity("e1", pick.apply(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 9 }), pick.apply(new int[] { 3 }), false,
+                        0),
+                tailSwapEntity("e2", pick.apply(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }),
+                        pick.apply(new int[] { 4, 5, 6, 7 }), false, 0),
+                tailSwapEntity("e3", pick.apply(new int[] { 0, 1, 2, 3, 4, 5, 8, 9, 10 }), pick.apply(new int[] { 8, 9 }),
+                        false, 0),
+                tailSwapEntity("e4", pick.apply(new int[] { 11 }), pick.apply(new int[] { 11 }), true, 0),
+                tailSwapEntity("e5", pick.apply(new int[] { 0, 1, 2, 3, 8, 10 }), pick.apply(new int[] { 10 }), false, 0)));
+        return solution;
+    }
+
+    private static TestdataListPinnedEntityProvidingEntity tailSwapEntity(String code, List<TestdataValue> range,
+            List<TestdataValue> list, boolean pinned, int pinIndex) {
+        var entity = new TestdataListPinnedEntityProvidingEntity(code, range);
+        entity.setValueList(new ArrayList<>(list));
+        entity.setPinned(pinned);
+        entity.setPinIndex(pinIndex);
+        return entity;
     }
 
 }

@@ -2951,8 +2951,14 @@ class MoveDirectorTest {
         expected.removeAll(pinned.getValueList());
         expected.remove(partiallyPinned.getValueList().getFirst());
 
-        assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, solution.getValueList().getFirst()))
-                .containsExactlyElementsOf(expected);
+        var list = moveDirector.getValuesSharingRangeWith(variableMetaModel, solution.getValueList().getFirst());
+        assertSoftly(softly -> {
+            softly.assertThat(list).containsExactlyElementsOf(expected);
+            softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel,
+                    new TestdataPinnedWithIndexListValue("unknown"))).isEmpty();
+        });
+        var first = list.getFirst();
+        assertThatThrownBy(() -> list.add(first)).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
@@ -2969,7 +2975,8 @@ class MoveDirectorTest {
         e1.setValueList(new ArrayList<>(List.of(v1)));
         e1.setPinned(true);
         var e2 = new TestdataListPinnedEntityProvidingEntity("e2", List.of(v2, v3));
-        var e3 = new TestdataListPinnedEntityProvidingEntity("e3", List.of(v4));
+        var v7 = new TestdataValue("v7");
+        var e3 = new TestdataListPinnedEntityProvidingEntity("e3", List.of(v4, v7));
         var v5 = new TestdataValue("v5");
         var v6 = new TestdataValue("v6");
         var e4 = new TestdataListPinnedEntityProvidingEntity("e4", List.of(v2, v5, v6));
@@ -2989,38 +2996,14 @@ class MoveDirectorTest {
             softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, v1)).containsExactly(v2);
             softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, v2)).isSubsetOf(v2, v3, v6)
                     .contains(v3, v6);
-            softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, v4)).isSubsetOf(v4);
+            softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, v4)).isSubsetOf(v4, v7)
+                    .contains(v7);
             softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, new TestdataValue("unknown")))
                     .isEmpty();
         });
         var list = moveDirector.getValuesSharingRangeWith(variableMetaModel, v2);
         assertThatThrownBy(() -> list.add(v4)).isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() -> list.sort(null)).isInstanceOf(UnsupportedOperationException.class);
-    }
-
-    @Test
-    void getValuesSharingRangeWithForSolutionRange() {
-        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataListEntity.class)
-                .<TestdataListValue> listVariable();
-        var solution = TestdataListSolution.generateUninitializedSolution(3, 2);
-        var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor,
-                s -> SimpleScore.ZERO,
-                EnvironmentMode.PHASE_ASSERT)
-                .buildScoreDirector();
-        scoreDirector.setWorkingSolution(solution);
-        var moveDirector = new MoveDirector<>(scoreDirector);
-        var valueList = solution.getValueList();
-
-        assertSoftly(softly -> {
-            softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, valueList.getFirst()))
-                    .containsExactlyElementsOf(valueList);
-            softly.assertThat(moveDirector.getValuesSharingRangeWith(variableMetaModel, new TestdataListValue("unknown")))
-                    .isEmpty();
-        });
-        var list = moveDirector.getValuesSharingRangeWith(variableMetaModel, valueList.getFirst());
-        assertThatThrownBy(() -> list.add(valueList.getFirst())).isInstanceOf(UnsupportedOperationException.class);
     }
 
 }

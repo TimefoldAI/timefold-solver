@@ -19,12 +19,11 @@ import org.jspecify.annotations.Nullable;
  * The single draws ({@code drawDestinationOnce}, {@code drawPartnerOnce}) make one draw
  * from a pool that is the same for every value, for {@link AbstractSingleDrawMoveIterator}.
  *
- * @param <Solution_> the solution type
  * @param <Entity_> the entity type
  * @param <Value_> the variable type
  */
 @NullMarked
-public sealed interface ListCandidateSource<Solution_, Entity_, Value_>
+public sealed interface ListCandidateSource<Entity_, Value_>
         permits ListCandidatePool, ListDatasetCandidateSource {
 
     /**

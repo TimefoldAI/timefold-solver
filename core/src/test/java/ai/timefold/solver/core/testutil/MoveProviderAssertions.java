@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.test.MoveTestContext;
@@ -27,68 +26,11 @@ import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSub
 import ai.timefold.solver.core.testdomain.list.valuerange.subset.TestdataListSubsetRangeSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingSolution;
 
 /**
  * Checks the moves a provider draws against the rules, without a list of the expected moves.
  */
 public final class MoveProviderAssertions {
-
-    /**
-     * Runs each drawn move temporarily and checks that every value is in its entity's range
-     * and that no pinned entity changed.
-     *
-     * @return the drawn moves
-     */
-    public static <Solution_, Entity_> List<Move<Solution_>> assertDrawnMovesKeepSolutionValid(
-            NeighborhoodTestContext<Solution_> context,
-            List<? extends PlanningVariableMetaModel<Solution_, Entity_, ?>> variableMetaModelList,
-            Collection<Entity_> entities, int drawCount) {
-        var moveContext = context.getMoveTestContext();
-        var pinnedValueMap = new HashMap<List<Object>, Object>();
-        moveContext.executeTemporarily(view -> {
-        }, view -> {
-            for (var variableMetaModel : variableMetaModelList) {
-                for (var entity : entities) {
-                    if (view.isPinned(variableMetaModel, entity)) {
-                        pinnedValueMap.put(List.of(variableMetaModel, entity),
-                                new ValueHolder(view.getValue(variableMetaModel, entity)));
-                    }
-                }
-            }
-        });
-        var moveList = context.getMovesAsStream().limit(drawCount).toList();
-        assertThat(moveList).hasSize(drawCount);
-        for (var move : moveList) {
-            moveContext.executeTemporarily(move, view -> {
-                for (var variableMetaModel : variableMetaModelList) {
-                    for (var entity : entities) {
-                        var pinnedValue = pinnedValueMap.get(List.of(variableMetaModel, entity));
-                        if (pinnedValue != null) {
-                            assertThat(new ValueHolder(view.getValue(variableMetaModel, entity)))
-                                    .as("Pinned entity (%s) changed by move (%s).", entity, move)
-                                    .isEqualTo(pinnedValue);
-                        } else {
-                            assertThat(isValid(view, variableMetaModel, entity))
-                                    .as("Entity (%s) has a value outside its range after move (%s).", entity, move)
-                                    .isTrue();
-                        }
-                    }
-                }
-            });
-        }
-        return moveList;
-    }
-
-    private static <Solution_, Entity_, Value_> boolean isValid(SolutionView<Solution_> view,
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity) {
-        var value = view.getValue(variableMetaModel, entity);
-        if (value == null) {
-            return variableMetaModel.allowsUnassigned();
-        }
-        return view.isValueInRange(variableMetaModel, entity, value);
-    }
 
     /**
      * Checks that each expected key occurs, that no other key occurs,
@@ -104,22 +46,6 @@ public final class MoveProviderAssertions {
                     .as("Count of (%s) in %s.", entry.getKey(), countMap)
                     .isBetween(mean * (1 - tolerance), mean * (1 + tolerance));
         }
-    }
-
-    /**
-     * Entity i holds value {@code i % valueCount} and accepts {@code rangeWidth} values from there on;
-     * every sixth entity, from the first, is pinned.
-     * Entities with the same value form pillars.
-     */
-    public static TestdataPinnedEntityProvidingSolution pinnedEntityRangeSolution(int valueCount, int entityCount,
-            int rangeWidth) {
-        var valueList = IntStream.range(0, valueCount).mapToObj(i -> new TestdataValue("v" + i)).toList();
-        var entityList = IntStream.range(0, entityCount)
-                .mapToObj(i -> new TestdataPinnedEntityProvidingEntity("e" + i,
-                        IntStream.range(0, rangeWidth).mapToObj(k -> valueList.get((i + k) % valueCount)).toList(),
-                        valueList.get(i % valueCount), i % 6 == 0))
-                .toList();
-        return new TestdataPinnedEntityProvidingSolution("s", entityList);
     }
 
     /**
@@ -204,7 +130,7 @@ public final class MoveProviderAssertions {
      * one entity pinned up to index 2 (e1), one entity pinned up to its size (e4) and two free entities.
      * With unassigned values, v14 and v15 are unassigned and e1 and e2 accept them; otherwise they are not used.
      */
-    public static <Entity_> List<Entity_> listEntityRangeEntities(List<TestdataValue> values, boolean withUnassignedValue,
+    private static <Entity_> List<Entity_> listEntityRangeEntities(List<TestdataValue> values, boolean withUnassignedValue,
             ListEntityFactory<Entity_> factory) {
         Function<int[], List<TestdataValue>> pick = indices -> Arrays.stream(indices).mapToObj(values::get).toList();
         var unassigned = withUnassignedValue ? new int[] { 14, 15 } : new int[0];
@@ -308,10 +234,6 @@ public final class MoveProviderAssertions {
             count++;
         }
         return count;
-    }
-
-    // Wraps a value, so that null can be stored in a map.
-    private record ValueHolder(Object value) {
     }
 
     private MoveProviderAssertions() {

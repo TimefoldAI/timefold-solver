@@ -52,7 +52,7 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
                     protected @Nullable Move<Solution_> tryBuildMove(FullElementPosition<Value_> left) {
                         var partner = drawMatching(partnerIterator, valueInstance.size(),
                                 right -> right != null && isSwap(left.elementPosition(), right.elementPosition()));
-                        return partner == null ? null : buildMove(solutionView, left, partner);
+                        return partner == null ? null : buildMove(left, partner);
                     }
                 };
             });
@@ -78,13 +78,13 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
                             unassignedValueDataset != null && left.elementPosition() instanceof PositionInList,
                             value -> isValidPartner(solutionView, left, value));
                     return partner == null ? null
-                            : buildMove(solutionView, left, positionOf(solutionView, partner));
+                            : buildMove(left, positionOf(solutionView, partner));
                 }
             };
         });
     }
 
-    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, FullElementPosition<Value_> a,
+    private Move<Solution_> buildMove(FullElementPosition<Value_> a,
             FullElementPosition<Value_> b) {
         if (a.elementPosition() instanceof PositionInList aPosition
                 && b.elementPosition() instanceof PositionInList bPosition) {

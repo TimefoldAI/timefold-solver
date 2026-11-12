@@ -12,6 +12,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
@@ -89,13 +90,7 @@ public final class MassListChangeMoveProvider<Solution_, Entity_, Value_>
         // which entity-provided value ranges cannot resolve -
         // avoid tripping that path when this provider has no use for it anyway.
         // With entity value ranges, destinations come from the entities and values which share a value range with a member.
-        var destinationDataset = variableMetaModel.isValueRangeOnSolution()
-                ? (crossingNull
-                        ? moveStreamFactory.forEachDestinationIncludingUnassigned(variableMetaModel)
-                        : moveStreamFactory.forEachDestination(variableMetaModel)
-                                .map((solutionView, position) -> (ElementPosition) position))
-                        .asCachedDataset()
-                : null;
+        var destinationDataset = variableMetaModel.isValueRangeOnSolution() ? destinationDataset(moveStreamFactory) : null;
         var entityDataset = variableMetaModel.isValueRangeOnSolution() ? null
                 : moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new MassListDestinationMoveIterator<>(session, random,
@@ -116,6 +111,15 @@ public final class MassListChangeMoveProvider<Solution_, Entity_, Value_>
     public String getId() {
         return MoveProviderUtil.id(MassListChangeMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler),
                 MoveProviderUtil.flag("crossingNull", crossingNull));
+    }
+
+    private UniDataset<Solution_, ElementPosition> destinationDataset(MoveStreamFactory<Solution_> moveStreamFactory) {
+        if (crossingNull) {
+            return moveStreamFactory.forEachDestinationIncludingUnassigned(variableMetaModel).asCachedDataset();
+        }
+        return moveStreamFactory.forEachDestination(variableMetaModel)
+                .map((solutionView, position) -> (ElementPosition) position)
+                .asCachedDataset();
     }
 
 }

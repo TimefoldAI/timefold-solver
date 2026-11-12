@@ -345,7 +345,8 @@ public final class ReachableValues<Entity_, Value_> {
             for (var index = containedValueIndex.nextSetBit(0); index >= 0; index = containedValueIndex.nextSetBit(index + 1)) {
                 var value = valueExtractor.apply(availableValueList.get(index));
                 if (filter == null || filter.test(value)) {
-                    valueArray[valueCount++] = value;
+                    valueArray[valueCount] = value;
+                    valueCount++;
                 }
             }
             this.values = valueCount == valueArray.length ? valueArray : Arrays.copyOf(valueArray, valueCount);

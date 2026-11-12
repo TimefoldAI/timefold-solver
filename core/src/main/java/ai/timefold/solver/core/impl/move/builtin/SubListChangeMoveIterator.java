@@ -43,7 +43,7 @@ public final class SubListChangeMoveIterator<Solution_, Entity_, Value_>
     private final RandomGenerator random;
     private final SolutionView<Solution_> solutionView;
     private final SubListSampler<Solution_, Entity_, Value_> sampler;
-    private final ListCandidateSource<Solution_, Entity_, Value_> candidateSource;
+    private final ListCandidateSource<Entity_, Value_> candidateSource;
 
     /**
      * @param sourceInstance the seed values of the spans
@@ -52,7 +52,7 @@ public final class SubListChangeMoveIterator<Solution_, Entity_, Value_>
     public SubListChangeMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             DefaultUniDatasetInstance<Solution_, Value_> sourceInstance,
-            ListCandidateSource<Solution_, Entity_, Value_> candidateSource, int minimumSubListSize,
+            ListCandidateSource<Entity_, Value_> candidateSource, int minimumSubListSize,
             int maximumSubListSize, boolean selectReversingMoveToo) {
         super(sourceInstance.retiringRandomIterator(random));
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);

@@ -36,7 +36,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public final class ListCandidatePool<Solution_, Entity_, Value_>
-        implements ListCandidateSource<Solution_, Entity_, Value_> {
+        implements ListCandidateSource<Entity_, Value_> {
 
     /**
      * @param solutionView the view of the working solution
@@ -192,7 +192,15 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
      * @param maximumCount the most positions (or values) of any of the entities
      * @param cumulativeCounts null to pad; otherwise the prefix sums of the counts
      */
-    private record SearchShape(int maximumCount, long @Nullable [] cumulativeCounts) {
+    private static final class SearchShape {
+
+        private final int maximumCount;
+        private final long @Nullable [] cumulativeCounts;
+
+        private SearchShape(int maximumCount, long @Nullable [] cumulativeCounts) {
+            this.maximumCount = maximumCount;
+            this.cumulativeCounts = cumulativeCounts;
+        }
 
         long slotCount(int entityCount) {
             return cumulativeCounts == null ? (long) entityCount * maximumCount : total(cumulativeCounts);
@@ -219,11 +227,12 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
      */
     private @Nullable PositionInList searchPosition(List<Entity_> entityList, SearchShape shape, int excludedPerEntity,
             long slot) {
-        if (shape.cumulativeCounts() != null) {
-            return cumulativePosition(entityList, shape.cumulativeCounts(), slot);
+        var cumulativeCounts = shape.cumulativeCounts;
+        if (cumulativeCounts != null) {
+            return cumulativePosition(entityList, cumulativeCounts, slot);
         }
-        var entity = entityList.get((int) (slot / shape.maximumCount()));
-        var offset = (int) (slot % shape.maximumCount());
+        var entity = entityList.get((int) (slot / shape.maximumCount));
+        var offset = (int) (slot % shape.maximumCount);
         if (offset >= positionCount(entity) - excludedPerEntity) {
             return null;
         }

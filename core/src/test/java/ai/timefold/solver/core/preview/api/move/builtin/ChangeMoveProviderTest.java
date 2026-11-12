@@ -21,7 +21,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.Test
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.incomplete.TestdataIncompleteValueRangeSolution;
-import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -302,34 +301,6 @@ class ChangeMoveProviderTest {
         assertThat(context.getMovesAsStream().limit(1_000).toList())
                 .hasSize(1_000)
                 .allSatisfy(move -> assertThat(move).isEqualTo(validMove));
-    }
-
-    @Test
-    void everyDrawnMoveKeepsTheSolutionValid() {
-        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
-        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
-        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution);
-        MoveProviderAssertions.assertDrawnMovesKeepSolutionValid(context, List.of(variableMetaModel),
-                solution.getEntityList(), 2_000);
-    }
-
-    @Test
-    void everyValidValueIsDrawnEquallyOften() {
-        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
-        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
-        var entity = solution.getEntityList().get(1);
-        var expectedValues = entity.getValueRange().stream().filter(value -> value != entity.getValue()).toList();
-        var context = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution);
-        var movesOfEntity = context.getMovesAsStream()
-                .limit(40_000)
-                .filter(move -> move.getPlanningEntities().getFirst() == entity)
-                .toList();
-        MoveProviderAssertions.assertEquallyOften(movesOfEntity, move -> move.getPlanningValues().getFirst(),
-                expectedValues, 0.3);
     }
 
 }

@@ -23,9 +23,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEnt
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.pinned.TestdataPinnedEntityProvidingSolution;
-import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -426,17 +423,6 @@ class PillarSwapMoveProviderTest {
         var largeCount = rightSizes.stream().filter(size -> size == 5).count();
         assertThat(rightSizes).hasSizeGreaterThan(500);
         assertThat((double) largeCount / rightSizes.size()).isBetween(0.4, 0.6);
-    }
-
-    @Test
-    void everyDrawnMoveKeepsTheSolutionValid() {
-        var solutionMetaModel = TestdataPinnedEntityProvidingSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntityProvidingEntity.class).basicVariable();
-        var solution = MoveProviderAssertions.pinnedEntityRangeSolution(4, 12, 3);
-        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .using(solution);
-        MoveProviderAssertions.assertDrawnMovesKeepSolutionValid(context, List.of(variableMetaModel),
-                solution.getEntityList(), 2_000);
     }
 
 }

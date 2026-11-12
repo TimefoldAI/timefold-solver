@@ -21,7 +21,7 @@ public final class ListChangeMoveIterator<Solution_, Entity_, Value_>
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final SolutionView<Solution_> solutionView;
-    private final ListCandidateSource<Solution_, Entity_, Value_> candidateSource;
+    private final ListCandidateSource<Entity_, Value_> candidateSource;
 
     /**
      * @param sourceInstance the values to move
@@ -30,7 +30,7 @@ public final class ListChangeMoveIterator<Solution_, Entity_, Value_>
     public ListChangeMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             DefaultUniDatasetInstance<Solution_, Value_> sourceInstance,
-            ListCandidateSource<Solution_, Entity_, Value_> candidateSource) {
+            ListCandidateSource<Entity_, Value_> candidateSource) {
         super(sourceInstance.retiringRandomIterator(random));
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.solutionView = session.getSolutionView();
