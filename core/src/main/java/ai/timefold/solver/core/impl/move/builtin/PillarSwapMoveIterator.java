@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
-import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.CachedBiDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -47,7 +46,7 @@ public final class PillarSwapMoveIterator<Solution_, Entity_>
     public PillarSwapMoveIterator(SolutionView<Solution_> solutionView, RandomGenerator random,
             List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList,
             CachedBiDatasetInstance<Solution_, List<Object>, PillarWithRanges<Entity_>> pillarInstance) {
-        super(leftIteratorAfterKeyIndex(pillarInstance, usesKeyedLookup(variableMetaModelList), random));
+        super(pillarInstance.retiringRandomIteratorOfB(random));
         this.variableMetaModelList = Objects.requireNonNull(variableMetaModelList);
         this.random = Objects.requireNonNull(random);
         this.solutionView = Objects.requireNonNull(solutionView);
@@ -61,19 +60,6 @@ public final class PillarSwapMoveIterator<Solution_, Entity_>
     private static <Solution_, Entity_> boolean usesKeyedLookup(
             List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
         return variableMetaModelList.stream().anyMatch(v -> !v.isValueRangeOnSolution());
-    }
-
-    /**
-     * shortcut: building the key index compacts the pillar dataset and would move the left iterator's slots,
-     * so it is built first; remove once reading a dataset no longer compacts it.
-     */
-    private static <Solution_, Entity_> RetiringRandomIterator<@Nullable PillarWithRanges<Entity_>> leftIteratorAfterKeyIndex(
-            CachedBiDatasetInstance<Solution_, List<Object>, PillarWithRanges<Entity_>> pillarInstance,
-            boolean usesKeyedLookup, RandomGenerator random) {
-        if (usesKeyedLookup) {
-            pillarInstance.size(null); // Builds the key index; the dataset does not change until the step ends.
-        }
-        return pillarInstance.retiringRandomIteratorOfB(random);
     }
 
     @Override

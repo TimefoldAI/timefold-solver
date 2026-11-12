@@ -4,6 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
@@ -70,6 +74,30 @@ class RandomAccessLeafIndexerTest extends AbstractIndexerTest {
         indexer.put(CompositeKey.none(), newTuple("Beth-F-30"));
 
         assertRepeatingRandomNeverEnds(indexer, CompositeKey.none(), 30);
+    }
+
+    @Test
+    void iteratingDoesNotMoveTheSlotsHeldByAUniqueRandomIterator() {
+        var indexer = new RandomAccessLeafIndexer<UniTuple<String>>();
+        // One gap among six slots, as after a remove in settle().
+        var removedEntry = indexer.put(CompositeKey.none(), newTuple("gap"));
+        var nameList = List.of("Ann", "Beth", "Carl", "Dan", "Eve");
+        for (var name : nameList) {
+            indexer.put(CompositeKey.none(), newTuple(name));
+        }
+        indexer.remove(CompositeKey.none(), removedEntry);
+        var uniqueIterator = indexer.uniqueRandomIterator(CompositeKey.none(), new Random(0));
+        var drawnNames = new ArrayList<String>();
+        drawnNames.add(uniqueIterator.next().getA());
+
+        // ContainingAnyOfIndexer counts and pools many keys through this iterator, during the step.
+        var iterator = indexer.iterator(CompositeKey.none());
+        while (iterator.hasNext()) {
+            iterator.next();
+        }
+
+        uniqueIterator.forEachRemaining(tuple -> drawnNames.add(tuple.getA()));
+        assertThat(drawnNames).containsExactlyInAnyOrderElementsOf(nameList);
     }
 
     private static UniTuple<String> newTuple(String factA) {

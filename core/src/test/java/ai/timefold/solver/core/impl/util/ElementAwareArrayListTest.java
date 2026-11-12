@@ -270,8 +270,8 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("Gaps before target (at last slot): trailing cleanup triggered, gapCount=0")
-        void getGapsBeforeTarget_trailingCleanup() {
+        @DisplayName("Gaps before target (at last slot): get resolves around the gap")
+        void getGapsBeforeTarget_lastSlot() {
             var list = new ElementAwareArrayList<String>();
             list.addEntry("a");
             var e2 = list.addEntry("b");
@@ -280,10 +280,9 @@ class ElementAwareArrayListTest {
             e2.remove();
             // Physical: [a, null, c], gapCount=1, lastElementPosition=2, size=2
 
-            list.get(1); // trailing cleanup: gapCount(1) == lastElementPosition(2) - index(1); [a, c]
-            assertThat(e3.toString()).contains("@1");
+            assertThat(list.get(1)).isEqualTo("c");
+            assertThat(e3.toString()).contains("@2");
             assertThat(list).hasSize(2);
-            // gapCount=0 now; subsequent access is direct
             assertThat(list.get(0)).isEqualTo("a");
             assertThat(list.get(1)).isEqualTo("c");
         }
@@ -306,7 +305,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("Target is last logical element, trailing gaps only (no prefix gaps): trailing cleanup triggered")
+        @DisplayName("Target is last logical element, after removing the trailing elements")
         void getLastElement_trailingGapsWithNoPrefix() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
@@ -316,20 +315,19 @@ class ElementAwareArrayListTest {
 
             e3.remove();
             e4.remove();
-            // Physical: [a, b, null, null], gapCount=2, lastElementPosition=3, size=2
+            // Removing the last element trims trailing gaps: [a, b], gapCount=0.
 
-            list.get(1); // trailing cleanup: gapCount(2) == lastElementPosition(3) - index(1); trim trailing nulls
+            list.get(1);
             assertThat(e1.toString()).contains("@0");
             assertThat(e2.toString()).contains("@1");
             assertThat(list).hasSize(2);
-            // Trailing cleanup set gapCount=0: subsequent access is direct.
             assertThat(list.get(0)).isEqualTo("a");
             assertThat(list.get(1)).isEqualTo("b");
         }
 
         @Test
-        @DisplayName("Target is last logical element, gaps before and after: trailing cleanup triggered")
-        void getLastElement_trailingGapsWithPrefix() {
+        @DisplayName("Target is last logical element, gaps before it: get resolves around the gaps")
+        void getLastElement_gapsBefore() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
             var e2 = list.addEntry("b");
@@ -339,13 +337,11 @@ class ElementAwareArrayListTest {
             e1.remove();
             e3.remove();
             e4.remove();
-            // Physical: [null, b, null, null], gapCount=3, lastElementPosition=3, size=1
+            // Physical: [null, b], gapCount=1, lastElementPosition=1, size=1
 
-            list.getFirst(); // b moves to slot 0; trailing cleanup: gapCount(3) == lastElementPosition(3) - index(0); [b]
-            assertThat(e2.toString()).contains("@0");
-            assertThat(list).hasSize(1);
-            // Trailing cleanup set gapCount=0: subsequent access is direct.
             assertThat(list.getFirst()).isEqualTo("b");
+            assertThat(e2.toString()).contains("@1");
+            assertThat(list).hasSize(1);
         }
 
         @Test
@@ -368,8 +364,8 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("Entry returned by partial compaction has correct position for O(1) removal")
-        void removeEntryReturnedByPartialCompact() {
+        @DisplayName("Entry found by get around a gap keeps its position for O(1) removal")
+        void removeEntryFoundAroundAGap() {
             var list = new ElementAwareArrayList<String>();
             list.addEntry("a");
             var e2 = list.addEntry("b");
@@ -379,8 +375,8 @@ class ElementAwareArrayListTest {
             e2.remove();
             // Physical: [a, null, c, d], gapCount=1, size=3
 
-            list.get(1); // trigger partial compact: c moves to position 1
-            assertThat(e3.toString()).contains("@1");
+            assertThat(list.get(1)).isEqualTo("c");
+            assertThat(e3.toString()).contains("@2");
 
             e3.remove(); // uses updated position
             assertThat(e3.isRemoved()).isTrue();
@@ -411,8 +407,8 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("Sequential get calls migrate gaps rightward progressively")
-        void sequentialGet_gapsProgressMigrate() {
+        @DisplayName("Sequential get calls resolve around the gaps without moving entries")
+        void sequentialGet_entriesStayInPlace() {
             var list = new ElementAwareArrayList<String>();
             list.addEntry("a");
             var e2 = list.addEntry("b");
@@ -424,15 +420,10 @@ class ElementAwareArrayListTest {
             e4.remove();
             // Physical: [a, null, c, null, e], gapCount=2, size=3
 
-            list.get(1);
-            assertThat(e3.toString()).contains("@1");
-
-            // Second call: c already at slot 1, no swap needed
             assertThat(list.get(1)).isEqualTo("c");
-
-            // Third call: e migrates to slot 2; trailing cleanup fires
+            assertThat(e3.toString()).contains("@2");
             assertThat(list.get(2)).isEqualTo("e");
-            assertThat(e5.toString()).contains("@2");
+            assertThat(e5.toString()).contains("@4");
             assertThat(list).hasSize(3);
             assertThat(copyUsingForEach(list)).containsExactly("a", "c", "e");
         }
@@ -451,7 +442,7 @@ class ElementAwareArrayListTest {
             e4.remove();
             // Physical: [a, null, c, null, e], gapCount=2
 
-            list.get(1); // Partial compact → [a, c, null, null, e]
+            list.get(1); // Reads around the gaps; moves nothing.
 
             assertThat(copyUsingForEach(list)).containsExactly("a", "c", "e");
             // After forEach: fully compacted
@@ -473,9 +464,9 @@ class ElementAwareArrayListTest {
             e2.remove();
             // Physical: [a, null, c, d], gapCount=1, size=3
 
-            list.get(1); // Partial compact → [a, c, null, d]
+            list.get(1); // Reads around the gap; moves nothing.
 
-            list.add(1, "x"); // partialCompact(0): no prefix gap; slot 1 non-null → rotate c into gap at slot 2
+            list.add(1, "x"); // Compacts, then shifts c and d up by one.
             assertThat(list).hasSize(4);
             assertThat(copyUsingForEach(list)).containsExactly("a", "x", "c", "d");
             // forEach compacts the list fully; entry positions are dense after the call.
@@ -862,7 +853,7 @@ class ElementAwareArrayListTest {
             // Physical: [a@0, null, c@2, d@3], gapCount=1
 
             list.add(1, "x");
-            // partialCompact(0): a already at slot 0, no swap; slot 1 is null → gap-fill, no shift.
+            // Compacts (c to 1, d to 2), then shifts c and d up by one.
 
             assertThat(list).hasSize(4);
             assertThat(e1.toString()).contains("@0");
@@ -907,14 +898,14 @@ class ElementAwareArrayListTest {
             // Physical: [a@0, b@1, c@2, null, e@4], gapCount=1
 
             list.add(1, "x");
-            // partialCompact(0): no prefix gap; slot 1 non-null (b) → rotate b→2, c→3 into gap at slot 3.
+            // Compacts (e to 3), then shifts b, c and e up by one.
 
             assertThat(list).hasSize(5);
-            // lastElementPosition unchanged; gapCount consumed.
+            // The gap is gone; the slot count is unchanged.
             assertThat(e1.toString()).contains("@0");
-            assertThat(e2.toString()).contains("@2"); // b rotated to slot 2
-            assertThat(e3.toString()).contains("@3"); // c rotated into the former gap slot
-            assertThat(e5.toString()).contains("@4"); // e beyond the gap: untouched
+            assertThat(e2.toString()).contains("@2"); // b shifted to slot 2
+            assertThat(e3.toString()).contains("@3"); // c shifted to slot 3
+            assertThat(e5.toString()).contains("@4"); // e compacted to slot 3, then shifted to slot 4
             assertThat(copyUsingForEach(list)).containsExactly("a", "x", "b", "c", "e");
         }
 
@@ -1268,7 +1259,7 @@ class ElementAwareArrayListTest {
 
     @Nested
     @DisplayName("compact() tests")
-    class CompactAndFirstGapPositionTests {
+    class CompactTests {
 
         @Test
         @DisplayName("compact() removes all gaps and preserves insertion order")
@@ -1313,55 +1304,33 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("get() indices below the first gap return correct elements without compacting suffix")
-        void getBeforeFirstGapFastPath() {
+        @DisplayName("get() resolves indexes before and after a gap")
+        void getAroundAGap() {
             var list = new ElementAwareArrayList<String>();
             list.addEntry("a");
             list.addEntry("b");
             var e2 = list.addEntry("c");
             list.addEntry("d");
-            e2.remove(); // gap at physical 2; firstGapPosition ≤ 2
+            e2.remove(); // A gap at slot 2.
 
-            // get(0) and get(1) are below the boundary — return correct values
             assertThat(list.get(0)).isEqualTo("a");
             assertThat(list.get(1)).isEqualTo("b");
-            // get(2) is at/above the boundary — triggers compaction
             assertThat(list.get(2)).isEqualTo("d");
         }
 
         @Test
-        @DisplayName("firstGapPosition advances after partialCompact; prefix stays fast-path-valid")
-        void firstGapAdvancesAfterPartialCompact() {
-            var list = new ElementAwareArrayList<String>();
-            list.addEntry("a");
-            var e1 = list.addEntry("b");
-            list.addEntry("c");
-            var e2 = list.addEntry("d");
-            list.addEntry("e");
-            e1.remove();
-            e2.remove();
-
-            assertThat(list.get(1)).isEqualTo("c"); // triggers partialCompact(1), firstGapPosition advances
-            assertThat(list.get(0)).isEqualTo("a"); // still correct after boundary move
-            assertThat(list.get(1)).isEqualTo("c");
-            assertThat(list.get(2)).isEqualTo("e"); // next compaction round
-            assertThat(list).containsExactly("a", "c", "e");
-        }
-
-        @Test
-        @DisplayName("remove that lowers the boundary still compacts correctly on next get")
-        void removeLoweringBoundaryStillCompacts() {
+        @DisplayName("get() after removals before and after an earlier read")
+        void getAfterInterleavedRemovals() {
             var list = new ElementAwareArrayList<String>();
             var e0 = list.addEntry("a");
             list.addEntry("b");
             var e2 = list.addEntry("c");
             list.addEntry("d");
 
-            e2.remove(); // gap at 2; firstGapPosition ≤ 2
-            list.get(2); // compact to index 2; firstGapPosition = 3
-            e0.remove(); // gap at 0; firstGapPosition must drop back to ≤ 0
+            e2.remove();
+            assertThat(list.get(2)).isEqualTo("d");
+            e0.remove();
 
-            // After removing a0, logical list = [b, d]; get(0) must still work
             assertThat(list.get(0)).isEqualTo("b");
             assertThat(list.get(1)).isEqualTo("d");
             assertThat(list).containsExactly("b", "d");
@@ -1392,7 +1361,7 @@ class ElementAwareArrayListTest {
                         reference.remove(entry.element());
                         entry.remove();
                     }
-                    case 3 -> { // get(int) — exercises firstGapPosition fast-path + partialCompact
+                    case 3 -> { // get(int), around any gaps
                         var idx = random.nextInt(reference.size());
                         assertThat(list.get(idx)).isEqualTo(reference.get(idx));
                     }
@@ -1443,7 +1412,7 @@ class ElementAwareArrayListTest {
             var removed = list.addEntry("b");
             list.addEntry("c");
             list.addEntry("d");
-            list.addEntry("e"); // Enough elements that one removal stays under the compaction threshold.
+            list.addEntry("e");
 
             removed.remove();
 
@@ -1489,7 +1458,7 @@ class ElementAwareArrayListTest {
     class GrowthGuardTests {
 
         @Test
-        @DisplayName("Interleaved removals and appends keep the slot space within 1.25x the size")
+        @DisplayName("Interleaved removals and appends keep the slot space within 2.5x the size")
         void slotSpaceStaysBounded() {
             var list = new ElementAwareArrayList<String>();
             var entryList = new ArrayList<>(fill(list, 2000));
@@ -1500,8 +1469,8 @@ class ElementAwareArrayListTest {
                 var victim = entryList.remove(random.nextInt(entryList.size()));
                 victim.remove();
                 entryList.add(list.addEntry("e" + nextElement++));
-                // Without the guard in remove(), the slot space would grow without bound.
-                assertThat(list.slotCount() * 4).isLessThanOrEqualTo(list.size() * 5);
+                // Without the compaction in addEntry(), the slot space would grow without bound.
+                assertThat(list.slotCount() * 2).isLessThanOrEqualTo(list.size() * 5);
             }
 
             assertThat(list).hasSize(2000);
@@ -1509,29 +1478,83 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("Entries stay removable and correctly positioned across a guard-triggered compaction")
-        void entriesSurviveCompaction() {
+        @DisplayName("Removals past a quarter of the size leave every other entry in its slot")
+        void removeNeverCompacts() {
             var list = new ElementAwareArrayList<String>();
-            var entryList = fill(list, 20);
+            var entryList = fill(list, 10);
 
-            for (var i = 0; i < 10; i++) { // Enough removals to push past the threshold at least once.
+            for (var i = 0; i < 4; i++) {
                 entryList.get(i * 2).remove();
             }
 
-            assertThat(list).hasSize(10);
-            assertThat(copyUsingForEach(list))
-                    .containsExactly("e1", "e3", "e5", "e7", "e9", "e11", "e13", "e15", "e17", "e19");
-            // Survivors were relocated by the compaction, but their entries tracked the move.
-            for (var i = 0; i < 10; i++) {
-                assertThat(entryList.get(i * 2 + 1).toString()).contains("@" + i);
+            assertThat(list.slotCount()).isEqualTo(10);
+            for (var i = 0; i < 5; i++) {
+                assertThat(entryList.get(i * 2 + 1).toString()).contains("@" + (i * 2 + 1));
             }
-            entryList.get(5).remove();
-            assertThat(copyUsingForEach(list)).doesNotContain("e5");
         }
 
         @Test
-        @DisplayName("Removing everything through the list iterator survives compaction mid-iteration")
-        void listIteratorRemoveAllAcrossCompaction() {
+        @DisplayName("Appending to a full array with many gaps compacts in place, in insertion order")
+        void appendToFullArrayCompacts() {
+            var list = new ElementAwareArrayList<String>();
+            var entryList = fill(list, 16); // The backing array is exactly full.
+            for (var i = 0; i < 7; i++) {
+                entryList.get(i * 2).remove();
+            }
+
+            var newEntry = list.addEntry("new");
+
+            assertThat(list.slotCount()).isEqualTo(10);
+            for (var i = 0; i < 9; i++) {
+                var entry = list.entryAt(i);
+                assertThat(entry).isNotNull();
+                assertThat(entry.toString()).contains("@" + i);
+            }
+            assertThat(newEntry.toString()).isEqualTo("new@9");
+            assertThat(list).containsExactly("e1", "e3", "e5", "e7", "e9", "e11", "e13", "e14", "e15", "new");
+            entryList.get(5).remove();
+            assertThat(list).doesNotContain("e5");
+        }
+
+        @Test
+        @DisplayName("compactIfGappy compacts only once the gaps pass a quarter of the size")
+        void compactIfGappyThreshold() {
+            var list = new ElementAwareArrayList<String>();
+            var entryList = fill(list, 10);
+            entryList.get(1).remove();
+            entryList.get(3).remove(); // 2 gaps, 8 elements: not past a quarter.
+
+            assertThat(list.compactIfGappy()).isFalse();
+            assertThat(list.slotCount()).isEqualTo(10);
+
+            entryList.get(5).remove(); // 3 gaps, 7 elements.
+            assertThat(list.compactIfGappy()).isTrue();
+            assertThat(list.slotCount()).isEqualTo(7);
+            assertThat(list).containsExactly("e0", "e2", "e4", "e6", "e7", "e8", "e9");
+        }
+
+        @Test
+        @DisplayName("Iterating a list with gaps does not move any entry")
+        void iterationNeverCompacts() {
+            var list = new ElementAwareArrayList<String>();
+            var entryList = fill(list, 10);
+            for (var i = 0; i < 4; i++) {
+                entryList.get(i * 2).remove();
+            }
+
+            assertThat(list).containsExactly("e1", "e3", "e5", "e7", "e8", "e9"); // Uses iterator().
+            var listIterator = list.listIterator(2);
+            assertThat(listIterator.next()).isEqualTo("e5");
+            assertThat(listIterator.previous()).isEqualTo("e5");
+            assertThat(listIterator.previous()).isEqualTo("e3");
+
+            assertThat(list.slotCount()).isEqualTo(10);
+            assertThat(entryList.get(9).toString()).isEqualTo("e9@9");
+        }
+
+        @Test
+        @DisplayName("Removing everything through the list iterator")
+        void listIteratorRemoveAll() {
             var list = new ElementAwareArrayList<String>();
             fill(list, 50);
 
@@ -1539,7 +1562,7 @@ class ElementAwareArrayListTest {
             var seen = new ArrayList<String>();
             while (iterator.hasNext()) {
                 seen.add(iterator.next());
-                iterator.remove(); // Eventually trips the guard, relocating everything under the iterator.
+                iterator.remove();
             }
 
             assertThat(seen).hasSize(50).startsWith("e0", "e1").endsWith("e48", "e49");
@@ -1548,7 +1571,7 @@ class ElementAwareArrayListTest {
 
         @Test
         @DisplayName("Interleaved list iterator removal and traversal stays in insertion order")
-        void listIteratorPartialRemoveAcrossCompaction() {
+        void listIteratorPartialRemove() {
             var list = new ElementAwareArrayList<String>();
             fill(list, 40);
 
@@ -1578,8 +1601,7 @@ class ElementAwareArrayListTest {
     }
 
     /**
-     * Builds a list big enough that a handful of removals stay below the compaction threshold in
-     * {@link ElementAwareArrayList.Entry#remove()}, so that tests which need to observe gaps actually get them.
+     * Appends the elements {@code e0} to {@code e(elementCount - 1)}.
      */
     private static List<ElementAwareArrayList<String>.Entry> fill(ElementAwareArrayList<String> list, int elementCount) {
         var entryList = new ArrayList<ElementAwareArrayList<String>.Entry>(elementCount);

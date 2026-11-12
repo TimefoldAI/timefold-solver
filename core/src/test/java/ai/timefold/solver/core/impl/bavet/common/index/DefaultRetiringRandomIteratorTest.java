@@ -33,6 +33,20 @@ class DefaultRetiringRandomIteratorTest {
     }
 
     @Test
+    void makingTheIteratorCompactsOnlyPastAQuarterOfGaps() {
+        var list = new ElementAwareArrayList<String>();
+        var entryList = IntStream.range(0, 8).mapToObj(i -> list.addEntry("e" + i)).toList();
+        entryList.get(1).remove(); // 1 gap, 7 elements.
+
+        new DefaultRetiringRandomIterator<>(list, new Random(0));
+        assertThat(entryList.get(7).toString()).isEqualTo("e7@7");
+
+        entryList.get(3).remove(); // 2 gaps, 6 elements.
+        new DefaultRetiringRandomIterator<>(list, new Random(0));
+        assertThat(entryList.get(7).toString()).isEqualTo("e7@5");
+    }
+
+    @Test
     void singleElementSetPickAndRetire() {
         var list = List.of("A");
         var set = new DefaultRetiringRandomIterator<>(toEntries(list), new Random(0));
@@ -127,7 +141,7 @@ class DefaultRetiringRandomIteratorTest {
         var entryList = IntStream.range(0, 100)
                 .mapToObj(source::addEntry)
                 .toList();
-        // Remove every fifth element, staying under the list's own compaction threshold so the gaps survive.
+        // Remove every fifth element, staying under the compaction threshold of the iterator so the gaps survive.
         for (var i = 0; i < 100; i += 5) {
             entryList.get(i).remove();
         }

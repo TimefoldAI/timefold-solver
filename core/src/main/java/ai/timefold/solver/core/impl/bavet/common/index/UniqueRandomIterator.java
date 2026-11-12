@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Exists to support random unique selection.
- * It accepts a list of unique items on input, and does not copy or modify it.
+ * It accepts a list of unique items on input, and does not copy it; it may compact it when it is made.
  * <p>
  * Every element for the underlying list is eventually returned exactly once,
  * and then the iterator ends, without any cooperation from the caller:
