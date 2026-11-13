@@ -37,6 +37,8 @@ public final class ListTailSwapMoveIterator<Solution_, Entity_, Value_>
     private final DefaultUniDatasetInstance<Solution_, Value_> valueInstance;
     // Only with a solution value range.
     private final @Nullable Iterator<Value_> rightValueIterator;
+    // The partner scan does not depend on the draw, so the retries of a left value without partners skip it.
+    private @Nullable Value_ leftValueWithoutPartner;
 
     public ListTailSwapMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
@@ -52,6 +54,9 @@ public final class ListTailSwapMoveIterator<Solution_, Entity_, Value_>
 
     @Override
     protected @Nullable Move<Solution_> tryBuildMove(Value_ leftValue) {
+        if (leftValue == leftValueWithoutPartner) {
+            return null;
+        }
         var leftPosition = (PositionInList) solutionView.getPositionOf(variableMetaModel, leftValue);
         Value_ rightValue;
         if (variableMetaModel.isValueRangeOnSolution()) {
@@ -61,6 +66,9 @@ public final class ListTailSwapMoveIterator<Solution_, Entity_, Value_>
                             .getPositionOf(variableMetaModel, candidateValue)).entity() != leftPosition.entity());
         } else {
             rightValue = drawValidPartner(leftPosition);
+            if (rightValue == null) {
+                leftValueWithoutPartner = leftValue;
+            }
         }
         return rightValue == null ? null : buildMove(leftPosition, rightValue);
     }

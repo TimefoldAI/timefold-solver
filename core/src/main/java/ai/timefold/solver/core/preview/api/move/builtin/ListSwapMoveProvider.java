@@ -88,7 +88,7 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
                 && b.elementPosition() instanceof PositionInList bPosition) {
             return Moves.swap(variableMetaModel, aPosition, bPosition);
         }
-        // Exactly one side is unassigned (isSwap already excluded both-unassigned):
+        // Exactly one side is unassigned (isValidSwap already excluded both-unassigned):
         // unassign the assigned side, then assign the incoming value at the same index.
         var assignedPosition = (PositionInList) (a.elementPosition() instanceof PositionInList
                 ? a.elementPosition()

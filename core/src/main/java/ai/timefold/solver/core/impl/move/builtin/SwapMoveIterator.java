@@ -30,6 +30,8 @@ public final class SwapMoveIterator<Solution_, Entity_> extends AbstractRepeated
     private final SolutionView<Solution_> solutionView;
     private final DefaultUniDatasetInstance<Solution_, Entity_> entityInstance;
     private final RandomGenerator random;
+    // With only solution value ranges, every movable entity is a candidate; looking them up narrows nothing.
+    private final boolean candidatesMayNarrow;
     private @Nullable Iterator<@Nullable Entity_> anyEntityIterator;
 
     public SwapMoveIterator(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList,
@@ -40,13 +42,15 @@ public final class SwapMoveIterator<Solution_, Entity_> extends AbstractRepeated
         this.solutionView = solutionView;
         this.entityInstance = entityInstance;
         this.random = random;
+        this.candidatesMayNarrow = variableMetaModelList.stream().anyMatch(v -> !v.isValueRangeOnSolution());
     }
 
     @Override
     protected @Nullable Move<Solution_> tryBuildMove(Entity_ leftEntity) {
-        var candidateList = MoveProviderUtil.swapCandidatesOf(solutionView, variableMetaModelList, leftEntity);
+        var candidateList =
+                candidatesMayNarrow ? MoveProviderUtil.swapCandidatesOf(solutionView, variableMetaModelList, leftEntity) : null;
         Entity_ rightEntity;
-        if (candidateList == null) { // Every variable is unassigned; no value narrows the candidates.
+        if (candidateList == null) { // No value narrows the candidates.
             if (anyEntityIterator == null) {
                 anyEntityIterator = entityInstance.iterator(random);
             }

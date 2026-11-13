@@ -144,8 +144,9 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
 
     @Override
     public @Nullable ElementPosition drawDestination(Value_ value, Predicate<ElementPosition> filter) {
-        var entityList = solutionView.getEntitiesWithValueInRange(variableMetaModel, value);
-        var layout = destinationLayoutMap.computeIfAbsent(value, v -> new SlotLayout(entityList, SlotKind.DESTINATION, true));
+        var layout = destinationLayoutMap.computeIfAbsent(value,
+                v -> new SlotLayout(solutionView.getEntitiesWithValueInRange(variableMetaModel, v), SlotKind.DESTINATION,
+                        true));
         var slotCount = layout.slotCount + (includeUnassignedDestination ? 1 : 0);
         if (slotCount == 0) {
             return null;
@@ -173,7 +174,6 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
      * @return null if no partner was accepted within the bail-out budget
      */
     public @Nullable Value_ drawPartner(Value_ value, boolean includeUnassigned, Predicate<Value_> filter) {
-        var entityList = solutionView.getEntitiesWithValueInRange(variableMetaModel, value);
         List<Value_> unassignedCandidateList = List.of();
         var unassignedValueList = includeUnassigned ? unassignedValues() : List.<Value_> of();
         if (!unassignedValueList.isEmpty()) {
@@ -182,7 +182,8 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
             var sharingList = solutionView.getValuesSharingRangeWith(variableMetaModel, value);
             unassignedCandidateList = sharingList.size() < unassignedValueList.size() ? sharingList : unassignedValueList;
         }
-        var layout = partnerLayoutMap.computeIfAbsent(value, v -> new SlotLayout(entityList, SlotKind.VALUE, true));
+        var layout = partnerLayoutMap.computeIfAbsent(value,
+                v -> new SlotLayout(solutionView.getEntitiesWithValueInRange(variableMetaModel, v), SlotKind.VALUE, true));
         var slotCount = layout.slotCount + unassignedCandidateList.size();
         if (slotCount == 0) {
             return null;
