@@ -52,6 +52,16 @@ public final class DefaultUniDatasetInstance<Solution_, A> implements UniDataset
     }
 
     /**
+     * Every row once, in insertion order, without compacting the dataset;
+     * compacting would move the slots that other iterators of the step hold.
+     * Not part of {@link UniDatasetInstance}:
+     * insertion order without compaction is an implementation guarantee, and only built-in providers need it.
+     */
+    public Iterator<@Nullable A> iterator() {
+        return new FactIterator<>(delegate.iterator());
+    }
+
+    /**
      * Maps a tuple iterator to its fact.
      * Uniqueness or endlessness are entirely a property of the wrapped {@code tupleIterator};
      * this class neither removes nor limits anything itself.
