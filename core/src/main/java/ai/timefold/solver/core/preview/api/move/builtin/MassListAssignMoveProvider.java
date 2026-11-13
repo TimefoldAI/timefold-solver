@@ -3,11 +3,10 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePoolSource;
 import ai.timefold.solver.core.impl.move.builtin.ListDatasetCandidateSource;
 import ai.timefold.solver.core.impl.move.builtin.MassListDestinationMoveIterator;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
@@ -71,9 +70,7 @@ public final class MassListAssignMoveProvider<Solution_, Entity_, Value_>
                 moveStreamFactory.forEachUnassignedValue(variableMetaModel)).asCachedDataset();
         // With entity value ranges, destinations come from the entities and values which share a value range with a member.
         var destinationDataset = variableMetaModel.isValueRangeOnSolution()
-                ? moveStreamFactory.forEachDestination(variableMetaModel)
-                        .map((solutionView, position) -> (ElementPosition) position)
-                        .asCachedDataset()
+                ? MoveProviderUtil.destinations(moveStreamFactory, variableMetaModel, false).asCachedDataset()
                 : null;
         var entityDataset = variableMetaModel.isValueRangeOnSolution() ? null
                 : moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
@@ -82,7 +79,7 @@ public final class MassListAssignMoveProvider<Solution_, Entity_, Value_>
                 destinationDataset != null
                         ? new ListDatasetCandidateSource<>(session.getSolutionView(), variableMetaModel, random,
                                 session.getInstance(destinationDataset), null)
-                        : ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random,
+                        : ListCandidatePoolSource.of(session.getSolutionView(), variableMetaModel, random,
                                 session.getInstance(Objects.requireNonNull(entityDataset)), false),
                 sampler));
     }

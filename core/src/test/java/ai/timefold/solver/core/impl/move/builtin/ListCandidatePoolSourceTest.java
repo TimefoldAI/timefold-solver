@@ -25,7 +25,7 @@ import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.junit.jupiter.api.Test;
 
-class ListCandidatePoolTest {
+class ListCandidatePoolSourceTest {
 
     private static final int DRAW_COUNT = 120_000;
 
@@ -35,13 +35,13 @@ class ListCandidatePoolTest {
 
     // e0 is pinned; e1 is pinned up to index 2; e4 is pinned up to its size.
     private void withPool(
-            Consumer<ListCandidatePool<TestdataListPinnedEntityProvidingSolution, TestdataListPinnedEntityProvidingEntity, TestdataValue>> test) {
+            Consumer<ListCandidatePoolSource<TestdataListPinnedEntityProvidingSolution, TestdataListPinnedEntityProvidingEntity, TestdataValue>> test) {
         var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
         PlanningListVariableMetaModel<TestdataListPinnedEntityProvidingSolution, TestdataListPinnedEntityProvidingEntity, TestdataValue> variableMetaModel =
                 solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
         var movableEntities = entities.stream().filter(entity -> !entity.isPinned()).toList();
         MoveTester.build(solutionMetaModel).using(solution).executeTemporarily(view -> {
-        }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> test.accept(new ListCandidatePool<>(view,
+        }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> test.accept(new ListCandidatePoolSource<>(view,
                 variableMetaModel, new Random(0), () -> movableEntities, List::of, false)));
     }
 
@@ -125,7 +125,7 @@ class ListCandidatePoolTest {
                 solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
         MoveTester.build(solutionMetaModel).using(skewedSolution).executeTemporarily(view -> {
         }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> {
-            var pool = new ListCandidatePool<>(view, variableMetaModel, new Random(0), () -> skewedEntities, List::of,
+            var pool = new ListCandidatePoolSource<>(view, variableMetaModel, new Random(0), () -> skewedEntities, List::of,
                     false);
             var destinations = new ArrayList<ElementPosition>();
             var partners = new ArrayList<TestdataValue>();
@@ -178,7 +178,7 @@ class ListCandidatePoolTest {
         PlanningListVariableMetaModel<TestdataListPinnedEntityProvidingSolution, TestdataListPinnedEntityProvidingEntity, TestdataValue> variableMetaModel =
                 solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
         MoveTester.build(solutionMetaModel).using(solution).executeTemporarily(view -> {
-        }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> ListCandidatePool
+        }, (SolutionView<TestdataListPinnedEntityProvidingSolution> view) -> ListCandidatePoolSource
                 // The pool copies the dataset on its first single draw.
                 .of(view, variableMetaModel, random, instance, false).drawDestinationOnce(position -> true));
 

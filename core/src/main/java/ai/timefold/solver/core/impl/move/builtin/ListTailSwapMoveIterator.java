@@ -81,7 +81,7 @@ public final class ListTailSwapMoveIterator<Solution_, Entity_, Value_>
             leftTail.add(solutionView.getValueAtIndex(variableMetaModel, leftEntity, index));
         }
         var narrowestList = solutionView.getEntitiesWithValueInRange(variableMetaModel,
-                ListCandidatePool.narrowestValue(solutionView, variableMetaModel, leftTail));
+                ListCandidatePoolSource.narrowestValue(solutionView, variableMetaModel, leftTail));
         var partnerEntityList = new ArrayList<Entity_>();
         var firstStartList = new ArrayList<Integer>();
         var partnerCount = 0;

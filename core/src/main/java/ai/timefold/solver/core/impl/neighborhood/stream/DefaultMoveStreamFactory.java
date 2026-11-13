@@ -187,7 +187,7 @@ public final class DefaultMoveStreamFactory<Solution_>
             this(variableMetaModel,
                     (solutionView, value) -> solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> !solutionView.isAssigned(variableMetaModel, value),
-                    // Only for a solution value range; the solution can hold values of the same class outside it.
+                    // Used only with a solution value range, which can omit instances of the value class that are in the solution.
                     (solutionView, value) -> solutionView.isValueInRange(variableMetaModel, value),
                     // Insert-before this value: the value's own current position.
                     (solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value).ensureAssigned(),

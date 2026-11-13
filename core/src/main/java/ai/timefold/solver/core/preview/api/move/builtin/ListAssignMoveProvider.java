@@ -3,7 +3,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.builtin.AbstractRepeatedDrawMoveIterator;
-import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePoolSource;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -51,12 +51,12 @@ public final class ListAssignMoveProvider<Solution_, Entity_, Value_>
                     .pick(moveStreamFactory.forEachDestination(variableMetaModel))
                     .asMove((view, value, pos) -> Moves.assign(variableMetaModel, value, pos));
         }
-        // Destinations come from the entities and values which share a value range with the value.
+        // Most destinations would not accept the value; draw only from the entities whose value range holds it.
         var valueDataset = moveStreamFactory.forEachUnassignedValue(variableMetaModel).asCachedDataset();
         var entityDataset = moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> {
             var valueInstance = (DefaultUniDatasetInstance<Solution_, Value_>) session.getInstance(valueDataset);
-            var candidatePool = ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random,
+            var candidatePool = ListCandidatePoolSource.of(session.getSolutionView(), variableMetaModel, random,
                     session.getInstance(entityDataset), false);
             return new AbstractRepeatedDrawMoveIterator<>(valueInstance.retiringRandomIterator(random)) {
                 @Override

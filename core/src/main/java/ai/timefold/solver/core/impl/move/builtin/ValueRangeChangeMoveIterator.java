@@ -54,11 +54,18 @@ public final class ValueRangeChangeMoveIterator<Solution_, Entity_, Value_>
         var valueIterator = valueRange.createRandomIterator(random);
         for (var attempt = 0L; attempt < budget && valueIterator.hasNext(); attempt++) {
             var value = valueIterator.next();
-            if (value == null ? nullAllowed && currentValue != null : !value.equals(currentValue)) {
+            if (isChange(value, currentValue)) {
                 return Moves.change(variableMetaModel, entity, value);
             }
         }
         return null;
+    }
+
+    private boolean isChange(@Nullable Value_ value, @Nullable Value_ currentValue) {
+        if (value == null) {
+            return nullAllowed && currentValue != null;
+        }
+        return !value.equals(currentValue);
     }
 
 }

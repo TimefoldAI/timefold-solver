@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
  * Draws destinations or swap partners for the values of a list variable,
  * so that a move iterator does not depend on where its value range is defined.
  * <ul>
- * <li>{@link ListCandidatePool}: entity value ranges; only the entities which accept the value are drawn from.</li>
+ * <li>{@link ListCandidatePoolSource}: entity value ranges; only the entities which accept the value are drawn from.</li>
  * <li>{@link ListDatasetCandidateSource}: a solution value range; every entity accepts every value.</li>
  * </ul>
  * The searching draws ({@code drawDestination}, {@code drawPartner}) retry until the filter accepts,
@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public sealed interface ListCandidateSource<Entity_, Value_>
-        permits ListCandidatePool, ListDatasetCandidateSource {
+        permits ListCandidatePoolSource, ListDatasetCandidateSource {
 
     /**
      * @param value the value to find a destination for

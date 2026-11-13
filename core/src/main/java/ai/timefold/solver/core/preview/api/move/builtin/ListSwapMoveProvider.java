@@ -3,7 +3,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.builtin.AbstractRepeatedDrawMoveIterator;
-import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePoolSource;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
@@ -32,12 +32,10 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
         // Unassigned values are admitted only when the variable allows them:
         // the one-side-unassigned case below composes unassign+assign, which would otherwise
         // leave a value unassigned on a variable that forbids it.
-        var valueStream = (variableMetaModel.allowsUnassignedValues()
-                ? MoveProviderUtil.inValueRange(moveStreamFactory, variableMetaModel,
-                        moveStreamFactory.forEach(variableMetaModel.type(), false))
-                : moveStreamFactory.forEachAssignedValue(variableMetaModel))
-                .map((solutionView, value) -> new FullElementPosition<>(value,
-                        solutionView.getPositionOf(variableMetaModel, value)));
+        var valueStream =
+                MoveProviderUtil.values(moveStreamFactory, variableMetaModel, variableMetaModel.allowsUnassignedValues())
+                        .map((solutionView, value) -> new FullElementPosition<>(value,
+                                solutionView.getPositionOf(variableMetaModel, value)));
         // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
         var valueDataset = valueStream.asCachedDataset();
         if (variableMetaModel.isValueRangeOnSolution()) {
@@ -45,13 +43,12 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
             return moveStreamFactory.buildMoveStream((session, random) -> {
                 var valueInstance =
                         (DefaultUniDatasetInstance<Solution_, FullElementPosition<Value_>>) session.getInstance(valueDataset);
-                var solutionView = session.getSolutionView();
                 var partnerIterator = valueInstance.iterator(random);
                 return new AbstractRepeatedDrawMoveIterator<>(valueInstance.retiringRandomIterator(random)) {
                     @Override
                     protected @Nullable Move<Solution_> tryBuildMove(FullElementPosition<Value_> left) {
                         var partner = drawMatching(partnerIterator, valueInstance.size(),
-                                right -> right != null && isSwap(left.elementPosition(), right.elementPosition()));
+                                right -> right != null && isValidSwap(left.elementPosition(), right.elementPosition()));
                         return partner == null ? null : buildMove(left, partner);
                     }
                 };
@@ -67,9 +64,10 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
                     (DefaultUniDatasetInstance<Solution_, FullElementPosition<Value_>>) session.getInstance(valueDataset);
             var solutionView = session.getSolutionView();
             var candidatePool = unassignedValueDataset != null
-                    ? ListCandidatePool.of(solutionView, variableMetaModel, random, session.getInstance(entityDataset),
+                    ? ListCandidatePoolSource.of(solutionView, variableMetaModel, random, session.getInstance(entityDataset),
                             session.getInstance(unassignedValueDataset))
-                    : ListCandidatePool.of(solutionView, variableMetaModel, random, session.getInstance(entityDataset), false);
+                    : ListCandidatePoolSource.of(solutionView, variableMetaModel, random, session.getInstance(entityDataset),
+                            false);
             return new AbstractRepeatedDrawMoveIterator<>(valueInstance.retiringRandomIterator(random)) {
                 @Override
                 protected @Nullable Move<Solution_> tryBuildMove(FullElementPosition<Value_> left) {
@@ -108,7 +106,7 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
     /**
      * @return false if both positions are the same, or both are unassigned
      */
-    private static boolean isSwap(ElementPosition left, ElementPosition right) {
+    private static boolean isValidSwap(ElementPosition left, ElementPosition right) {
         return !left.equals(right) && (left instanceof PositionInList || right instanceof PositionInList);
     }
 
@@ -118,7 +116,7 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
      */
     private boolean isValidPartner(SolutionView<Solution_> solutionView, FullElementPosition<Value_> left, Value_ partner) {
         var leftPosition = left.elementPosition();
-        if (!isSwap(leftPosition, solutionView.getPositionOf(variableMetaModel, partner))) {
+        if (!isValidSwap(leftPosition, solutionView.getPositionOf(variableMetaModel, partner))) {
             return false;
         }
         return !(leftPosition instanceof PositionInList leftAssigned)

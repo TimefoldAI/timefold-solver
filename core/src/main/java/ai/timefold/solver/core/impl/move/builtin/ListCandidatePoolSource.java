@@ -36,7 +36,7 @@ import org.jspecify.annotations.Nullable;
  * Create one instance per move iterator: the solution does not change while the iterator runs.
  */
 @NullMarked
-public final class ListCandidatePool<Solution_, Entity_, Value_>
+public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
         implements ListCandidateSource<Entity_, Value_> {
 
     /**
@@ -47,10 +47,10 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
      * @param includeUnassignedDestination whether the unassigned destination is part of the destinations,
      *        with the weight of one position
      */
-    public static <Solution_, Entity_, Value_> ListCandidatePool<Solution_, Entity_, Value_> of(
+    public static <Solution_, Entity_, Value_> ListCandidatePoolSource<Solution_, Entity_, Value_> of(
             SolutionView<Solution_> solutionView, PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             RandomGenerator random, UniDatasetInstance<Entity_> entityInstance, boolean includeUnassignedDestination) {
-        return new ListCandidatePool<>(solutionView, variableMetaModel, random, () -> toList(entityInstance, random),
+        return new ListCandidatePoolSource<>(solutionView, variableMetaModel, random, () -> toList(entityInstance, random),
                 List::of, includeUnassignedDestination);
     }
 
@@ -60,11 +60,11 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
      *
      * @param unassignedValueInstance the unassigned values, as swap partners
      */
-    public static <Solution_, Entity_, Value_> ListCandidatePool<Solution_, Entity_, Value_> of(
+    public static <Solution_, Entity_, Value_> ListCandidatePoolSource<Solution_, Entity_, Value_> of(
             SolutionView<Solution_> solutionView, PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             RandomGenerator random, UniDatasetInstance<Entity_> entityInstance,
             UniDatasetInstance<Value_> unassignedValueInstance) {
-        return new ListCandidatePool<>(solutionView, variableMetaModel, random, () -> toList(entityInstance, random),
+        return new ListCandidatePoolSource<>(solutionView, variableMetaModel, random, () -> toList(entityInstance, random),
                 () -> toList(unassignedValueInstance, random), false);
     }
 
@@ -93,7 +93,7 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
      *        called at most once
      * @param includeUnassignedDestination whether the unassigned destination is part of the destinations
      */
-    ListCandidatePool(SolutionView<Solution_> solutionView,
+    ListCandidatePoolSource(SolutionView<Solution_> solutionView,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, RandomGenerator random,
             Supplier<List<Entity_>> movableEntitySupplier, Supplier<List<Value_>> unassignedValueSupplier,
             boolean includeUnassignedDestination) {
@@ -136,121 +136,16 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
         return list;
     }
 
-    private enum SlotKind {
-        /** One slot before each unpinned value, plus the end slot. */
-        DESTINATION,
-        /** One slot per unpinned value. */
-        VALUE
-    }
-
     private int slotCount(Entity_ entity, SlotKind kind) {
         var destinationCount = solutionView.countValues(variableMetaModel, entity)
                 - solutionView.getFirstUnpinnedIndex(variableMetaModel, entity) + 1;
         return kind == SlotKind.DESTINATION ? destinationCount : destinationCount - 1;
     }
 
-    /**
-     * Pads each entity to the longest one, and rejects the padding;
-     * a searching layout uses prefix sums instead when padding would be more than half of the slots,
-     * so that a failed search costs at most twice the real slots.
-     */
-    private SlotLayout searchLayout(List<Entity_> entityList, SlotKind kind) {
-        var layout = new SlotLayout(entityList, kind);
-        var paddedCount = (long) entityList.size() * layout.maximumCount;
-        return paddedCount > 2 * layout.realCount ? layout : layout.padded();
-    }
-
-    /**
-     * The slots of one kind over a list of entities, numbered in the order of the entities.
-     * Either through prefix sums of the counts (no padding), or padded: each entity gets the same number of slots.
-     */
-    private final class SlotLayout {
-
-        private final List<Entity_> entityList;
-        private final SlotKind kind;
-        private final long @Nullable [] cumulativeCounts;
-        private final int maximumCount;
-        private final long realCount;
-        private final long slotCount;
-
-        private SlotLayout(List<Entity_> entityList, SlotKind kind) {
-            this.entityList = entityList;
-            this.kind = kind;
-            var counts = new long[entityList.size()];
-            var sum = 0L;
-            var maximum = 0;
-            for (var i = 0; i < counts.length; i++) {
-                var count = slotCount(entityList.get(i), kind);
-                maximum = Math.max(maximum, count);
-                sum += count;
-                counts[i] = sum;
-            }
-            this.cumulativeCounts = counts;
-            this.maximumCount = maximum;
-            this.realCount = sum;
-            this.slotCount = sum;
-        }
-
-        private SlotLayout(SlotLayout layout) {
-            this.entityList = layout.entityList;
-            this.kind = layout.kind;
-            this.cumulativeCounts = null;
-            this.maximumCount = layout.maximumCount;
-            this.realCount = layout.realCount;
-            this.slotCount = (long) entityList.size() * maximumCount;
-        }
-
-        private SlotLayout padded() {
-            return new SlotLayout(this);
-        }
-
-        /**
-         * @param slot below {@link #slotCount}
-         * @return null if the slot is padding
-         */
-        private @Nullable PositionInList position(long slot) {
-            var counts = cumulativeCounts;
-            return counts == null ? paddedPosition(slot) : prefixPosition(counts, slot);
-        }
-
-        private @Nullable PositionInList paddedPosition(long slot) {
-            var entity = entityList.get((int) (slot / maximumCount));
-            var offset = (int) (slot % maximumCount);
-            return offset < slotCount(entity, kind) ? positionAt(entity, offset) : null;
-        }
-
-        /**
-         * @param slot below {@link #slotCount}
-         */
-        private PositionInList prefixPosition(long slot) {
-            return prefixPosition(Objects.requireNonNull(cumulativeCounts), slot);
-        }
-
-        private PositionInList prefixPosition(long[] counts, long slot) {
-            // The first entity whose cumulative count is above the slot; entities without slots repeat a count.
-            var index = 0;
-            var high = counts.length - 1;
-            while (index < high) {
-                var middle = (index + high) >>> 1;
-                if (counts[middle] > slot) {
-                    high = middle;
-                } else {
-                    index = middle + 1;
-                }
-            }
-            return positionAt(entityList.get(index), (int) (slot - (index == 0 ? 0 : counts[index - 1])));
-        }
-
-        private PositionInList positionAt(Entity_ entity, int offset) {
-            return ElementPosition.of(entity, solutionView.getFirstUnpinnedIndex(variableMetaModel, entity) + offset);
-        }
-
-    }
-
     @Override
     public @Nullable ElementPosition drawDestination(Value_ value, Predicate<ElementPosition> filter) {
         var entityList = solutionView.getEntitiesWithValueInRange(variableMetaModel, value);
-        var layout = destinationLayoutMap.computeIfAbsent(value, v -> searchLayout(entityList, SlotKind.DESTINATION));
+        var layout = destinationLayoutMap.computeIfAbsent(value, v -> new SlotLayout(entityList, SlotKind.DESTINATION, true));
         var slotCount = layout.slotCount + (includeUnassignedDestination ? 1 : 0);
         if (slotCount == 0) {
             return null;
@@ -287,7 +182,7 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
             var sharingList = solutionView.getValuesSharingRangeWith(variableMetaModel, value);
             unassignedCandidateList = sharingList.size() < unassignedValueList.size() ? sharingList : unassignedValueList;
         }
-        var layout = partnerLayoutMap.computeIfAbsent(value, v -> searchLayout(entityList, SlotKind.VALUE));
+        var layout = partnerLayoutMap.computeIfAbsent(value, v -> new SlotLayout(entityList, SlotKind.VALUE, true));
         var slotCount = layout.slotCount + unassignedCandidateList.size();
         if (slotCount == 0) {
             return null;
@@ -305,7 +200,7 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
     @Override
     public @Nullable ElementPosition drawDestinationOnce(Predicate<ElementPosition> filter) {
         if (allDestinationLayout == null) {
-            allDestinationLayout = new SlotLayout(movableEntities(), SlotKind.DESTINATION);
+            allDestinationLayout = new SlotLayout(movableEntities(), SlotKind.DESTINATION, false);
         }
         var slotCount = allDestinationLayout.slotCount + (includeUnassignedDestination ? 1L : 0L);
         if (slotCount == 0) {
@@ -324,7 +219,7 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
     @Override
     public @Nullable Value_ drawPartnerOnce(Predicate<Value_> filter) {
         if (allPartnerLayout == null) {
-            allPartnerLayout = new SlotLayout(movableEntities(), SlotKind.VALUE);
+            allPartnerLayout = new SlotLayout(movableEntities(), SlotKind.VALUE, false);
         }
         if (allPartnerLayout.slotCount == 0) {
             return null;
@@ -437,6 +332,89 @@ public final class ListCandidatePool<Solution_, Entity_, Value_>
             // Assigned values are reached through their entity.
             return solutionView.isAssigned(variableMetaModel, partner) ? null : partner;
         }
+    }
+
+    private enum SlotKind {
+        /** One slot before each unpinned value, plus the end slot. */
+        DESTINATION,
+        /** One slot per unpinned value. */
+        VALUE
+    }
+
+    /**
+     * The slots of one kind over a list of entities, numbered in the order of the entities.
+     * Either through prefix sums of the counts (no padding), or padded: each entity gets the same number of slots,
+     * and a draw rejects the padding.
+     */
+    private final class SlotLayout {
+
+        private final List<Entity_> entityList;
+        private final SlotKind kind;
+        private final long[] cumulativeCounts;
+        private final boolean padded;
+        private final int maximumCount;
+        private final long slotCount;
+
+        /**
+         * @param mayPad whether to pad when padding is at most half of the slots,
+         *        so that a failed search costs at most twice the real slots
+         */
+        private SlotLayout(List<Entity_> entityList, SlotKind kind, boolean mayPad) {
+            this.entityList = entityList;
+            this.kind = kind;
+            var counts = new long[entityList.size()];
+            var sum = 0L;
+            var maximum = 0;
+            for (var i = 0; i < counts.length; i++) {
+                var count = slotCount(entityList.get(i), kind);
+                maximum = Math.max(maximum, count);
+                sum += count;
+                counts[i] = sum;
+            }
+            var paddedCount = (long) counts.length * maximum;
+            this.cumulativeCounts = counts;
+            this.padded = mayPad && paddedCount <= 2 * sum;
+            this.maximumCount = maximum;
+            this.slotCount = padded ? paddedCount : sum;
+        }
+
+        /**
+         * @param slot below {@link #slotCount}
+         * @return null if the slot is padding
+         */
+        private @Nullable PositionInList position(long slot) {
+            return padded ? paddedPosition(slot) : prefixPosition(slot);
+        }
+
+        // Rejects a padding slot instead of taking the next real one, so that every real slot has the same chance.
+        private @Nullable PositionInList paddedPosition(long slot) {
+            var entity = entityList.get((int) (slot / maximumCount));
+            var offset = (int) (slot % maximumCount);
+            return offset < slotCount(entity, kind) ? positionAt(entity, offset) : null;
+        }
+
+        /**
+         * @param slot below {@link #slotCount}
+         */
+        private PositionInList prefixPosition(long slot) {
+            // The first entity whose cumulative count is above the slot; entities without slots repeat a count.
+            var index = 0;
+            var high = cumulativeCounts.length - 1;
+            while (index < high) {
+                var middle = (index + high) >>> 1;
+                if (cumulativeCounts[middle] > slot) {
+                    high = middle;
+                } else {
+                    index = middle + 1;
+                }
+            }
+            return positionAt(entityList.get(index), (int) (slot - (index == 0 ? 0 : cumulativeCounts[index - 1])));
+        }
+
+        private PositionInList positionAt(Entity_ entity, int offset) {
+            return ElementPosition.of(entity, solutionView.getFirstUnpinnedIndex(variableMetaModel, entity) + offset);
+        }
+
     }
 
 }

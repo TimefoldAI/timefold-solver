@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
@@ -33,7 +32,7 @@ import org.jspecify.annotations.Nullable;
  * since each call tries a fresh source.
  * It otherwise bounds itself with a flat {@link RetiringBiWalk#PROBE_ATTEMPT_COUNT} failed-draw budget.
  * The destination search itself is a separate, pool-scaled budget.
- * With entity value ranges, destinations come from {@link ListCandidatePool},
+ * With entity value ranges, destinations come from {@link ListCandidatePoolSource},
  * seeded by the sample member with the smallest pool.
  *
  * @param <Solution_> the solution type
@@ -83,24 +82,19 @@ public final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> i
                 failedSampleDraws++;
                 continue;
             }
-            nextMove = (destination instanceof UnassignedElement)
-                    ? Moves.massChange(variableMetaModel, sample, null)
-                    : Moves.massChange(variableMetaModel, sample, (PositionInList) destination);
+            nextMove = (destination instanceof PositionInList positionInList)
+                    ? Moves.massChange(variableMetaModel, sample, positionInList)
+                    : Moves.massChange(variableMetaModel, sample, null);
         }
         return nextMove != null;
     }
 
     private boolean isValidDestination(Sample<Value_> sample, ElementPosition destination) {
-        if (destination instanceof UnassignedElement) {
+        // A solution value range has no per-entity value range to violate.
+        if (!(destination instanceof PositionInList assignedDestination) || variableMetaModel.isValueRangeOnSolution()) {
             return true;
         }
-        var assignedDestination = (PositionInList) destination;
-        Entity_ destinationEntity = assignedDestination.entity();
-        if (variableMetaModel.isValueRangeOnSolution()) {
-            // We can move freely between entities, no per-entity value range to violate.
-            return true;
-        }
-        return MoveProviderUtil.acceptsAll(solutionView, variableMetaModel, destinationEntity, sample);
+        return MoveProviderUtil.acceptsAll(solutionView, variableMetaModel, assignedDestination.entity(), sample);
     }
 
     @Override

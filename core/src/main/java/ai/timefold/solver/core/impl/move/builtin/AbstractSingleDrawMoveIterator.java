@@ -54,10 +54,10 @@ public abstract non-sealed class AbstractSingleDrawMoveIterator<Solution_, Left_
     protected abstract @Nullable Move<Solution_> tryBuildMove(Left_ left);
 
     /**
-     * Searches for a move of the left element, with as many draws as needed.
-     * A move it finds is not used: using it would give the left element an extra chance.
+     * Decides whether the left element can be retired, because one failed draw does not prove that it has no move.
+     * It may search a narrowed pool, and it builds no move: using what it finds would give the left element an extra chance.
      *
-     * @return true if a move was found for this left element
+     * @return true if the left element has a move
      */
     protected abstract boolean hasMove(Left_ left);
 

@@ -141,6 +141,9 @@ public final class PillarSwapMoveIterator<Solution_, Entity_>
         }
     }
 
+    /**
+     * Draws with replacement from a list which is never empty; {@link #drawPillarOfCandidate} handles an empty one.
+     */
     private final class CandidateIterator
             implements Iterator<@Nullable PillarWithRanges<Entity_>> {
         private final List<Entity_> candidateList;

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -390,5 +391,33 @@ public final class MoveProviderUtil {
         }
         return valueStream.filter(((DefaultMoveStreamFactory<Solution_>) moveStreamFactory)
                 .getNodeSharingSupportFunctions(variableMetaModel).inSolutionValueRangeFilter());
+    }
+
+    /**
+     * The unassigned destination is included only on request:
+     * {@link MoveStreamFactory#forEachDestinationIncludingUnassigned} represents it with a null entity,
+     * which entity value ranges cannot resolve.
+     */
+    public static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, ElementPosition> destinations(
+            MoveStreamFactory<Solution_> moveStreamFactory,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, boolean includeUnassigned) {
+        if (includeUnassigned) {
+            return moveStreamFactory.forEachDestinationIncludingUnassigned(variableMetaModel);
+        }
+        return moveStreamFactory.forEachDestination(variableMetaModel)
+                .map((solutionView, position) -> (ElementPosition) position);
+    }
+
+    /**
+     * @return the assigned values, or all values in the value range if {@code includeUnassigned}
+     */
+    public static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, Value_> values(
+            MoveStreamFactory<Solution_> moveStreamFactory,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, boolean includeUnassigned) {
+        if (includeUnassigned) {
+            return inValueRange(moveStreamFactory, variableMetaModel,
+                    moveStreamFactory.forEach(variableMetaModel.type(), false));
+        }
+        return moveStreamFactory.forEachAssignedValue(variableMetaModel);
     }
 }

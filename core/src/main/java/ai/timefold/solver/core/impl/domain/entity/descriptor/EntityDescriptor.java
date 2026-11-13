@@ -20,6 +20,7 @@ import java.util.SequencedCollection;
 import java.util.SequencedMap;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -582,6 +583,21 @@ public class EntityDescriptor<Solution_> {
 
     public boolean hasEffectiveMovableEntityFilter() {
         return effectiveMovableEntityFilter != null;
+    }
+
+    /**
+     * Checks each entity with the descriptor of its own class, so that pins declared on a subclass also apply.
+     *
+     * @return null if no entity of this class or of its subclasses can be pinned
+     */
+    public <Entity_> @Nullable Predicate<Entity_> createMovableEntityFilter(Solution_ solution) {
+        var canPin = solutionDescriptor.getGenuineEntityDescriptors().stream()
+                .anyMatch(descriptor -> entityClass.isAssignableFrom(descriptor.getEntityClass())
+                        && descriptor.hasEffectiveMovableEntityFilter());
+        if (!canPin) {
+            return null;
+        }
+        return entity -> solutionDescriptor.findEntityDescriptorOrFail(entity.getClass()).isMovable(solution, entity);
     }
 
     public boolean supportsPinning() {

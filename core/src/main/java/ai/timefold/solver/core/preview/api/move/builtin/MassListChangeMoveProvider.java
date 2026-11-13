@@ -3,16 +3,14 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePoolSource;
 import ai.timefold.solver.core.impl.move.builtin.ListDatasetCandidateSource;
 import ai.timefold.solver.core.impl.move.builtin.MassListDestinationMoveIterator;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Samplers;
@@ -85,12 +83,10 @@ public final class MassListChangeMoveProvider<Solution_, Entity_, Value_>
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var sourceDataset = moveStreamFactory.forEachAssignedValue(variableMetaModel).asCachedDataset();
-        // Only widen to forEachDestinationIncludingUnassigned when crossingNull:
-        // unlike forEachDestination, it represents the unassigned destination with a null entity internally,
-        // which entity-provided value ranges cannot resolve -
-        // avoid tripping that path when this provider has no use for it anyway.
         // With entity value ranges, destinations come from the entities and values which share a value range with a member.
-        var destinationDataset = variableMetaModel.isValueRangeOnSolution() ? destinationDataset(moveStreamFactory) : null;
+        var destinationDataset = variableMetaModel.isValueRangeOnSolution()
+                ? MoveProviderUtil.destinations(moveStreamFactory, variableMetaModel, crossingNull).asCachedDataset()
+                : null;
         var entityDataset = variableMetaModel.isValueRangeOnSolution() ? null
                 : moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new MassListDestinationMoveIterator<>(session, random,
@@ -98,7 +94,7 @@ public final class MassListChangeMoveProvider<Solution_, Entity_, Value_>
                 destinationDataset != null
                         ? new ListDatasetCandidateSource<>(session.getSolutionView(), variableMetaModel, random,
                                 session.getInstance(destinationDataset), null)
-                        : ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random,
+                        : ListCandidatePoolSource.of(session.getSolutionView(), variableMetaModel, random,
                                 session.getInstance(Objects.requireNonNull(entityDataset)), crossingNull),
                 sampler));
     }
@@ -111,15 +107,6 @@ public final class MassListChangeMoveProvider<Solution_, Entity_, Value_>
     public String getId() {
         return MoveProviderUtil.id(MassListChangeMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler),
                 MoveProviderUtil.flag("crossingNull", crossingNull));
-    }
-
-    private UniDataset<Solution_, ElementPosition> destinationDataset(MoveStreamFactory<Solution_> moveStreamFactory) {
-        if (crossingNull) {
-            return moveStreamFactory.forEachDestinationIncludingUnassigned(variableMetaModel).asCachedDataset();
-        }
-        return moveStreamFactory.forEachDestination(variableMetaModel)
-                .map((solutionView, position) -> (ElementPosition) position)
-                .asCachedDataset();
     }
 
 }

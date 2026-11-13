@@ -2,7 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.move.builtin.ListCandidatePool;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePoolSource;
 import ai.timefold.solver.core.impl.move.builtin.ListDatasetCandidateSource;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.move.builtin.SubListSwapMoveIterator;
@@ -82,7 +82,7 @@ public final class SubListSwapMoveProvider<Solution_, Entity_, Value_>
                 entityDataset == null
                         ? new ListDatasetCandidateSource<>(session.getSolutionView(), variableMetaModel, random, null,
                                 session.getInstance(valueDataset))
-                        : ListCandidatePool.of(session.getSolutionView(), variableMetaModel, random,
+                        : ListCandidatePoolSource.of(session.getSolutionView(), variableMetaModel, random,
                                 session.getInstance(entityDataset), false),
                 leftMinimumSubListSize,
                 leftMaximumSubListSize,

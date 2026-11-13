@@ -29,6 +29,8 @@ import org.jspecify.annotations.Nullable;
  * (see {@link AbstractSingleDrawMoveIterator});
  * every valid pair of a span and a destination therefore has the same chance,
  * and short spans, which fit more destinations, are drawn more often than long ones.
+ * This is the distribution of {@code RandomSubListChangeMoveSelector}, which rejects invalid pairs;
+ * a pool narrowed to the span would change it.
  *
  * @param <Solution_> the solution type
  * @param <Entity_> the entity type
