@@ -3,12 +3,12 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
-import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
+import ai.timefold.solver.core.impl.move.builtin.ValueRangeChangeMoveIterator;
+import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -46,14 +46,15 @@ public final class AssignMoveProvider<Solution_, Entity_, Value_>
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var nodeSharingSupportFunctions = ((DefaultMoveStreamFactory<Solution_>) moveStreamFactory)
-                .getNodeSharingSupportFunctions(variableMetaModel);
-        var unassignedEntities = moveStreamFactory.forEach(variableMetaModel.entity().type(), false)
-                .filter((view, e) -> view.getValue(variableMetaModel, e) == null);
-        return moveStreamFactory.pick(unassignedEntities)
-                .pick(moveStreamFactory.forEach(variableMetaModel.type(), false),
-                        NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter()))
-                .asMove((view, entity, value) -> Moves.change(variableMetaModel, Objects.requireNonNull(entity), value));
+        var unassignedEntityDataset = moveStreamFactory.forEach(variableMetaModel.entity().type(), false)
+                .filter((view, e) -> view.getValue(variableMetaModel, e) == null)
+                .asCachedDataset();
+        // Values come from the entity's own value range, so an out-of-range value is never drawn.
+        return moveStreamFactory.buildMoveStream((session, random) -> {
+            var entityInstance = (DefaultUniDatasetInstance<Solution_, Entity_>) session.getInstance(unassignedEntityDataset);
+            return new ValueRangeChangeMoveIterator<>(variableMetaModel, session.getSolutionView(),
+                    entityInstance.retiringRandomIterator(random), random, false);
+        });
     }
 
     /**

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.move.builtin.PillarSwapMove;
@@ -76,6 +77,73 @@ class PillarSwapMoveProviderTest {
         context.producesAllOf(
                 Moves.pillarSwap(variableMetaModelList, pillarA, pillarB),
                 Moves.pillarSwap(variableMetaModelList, pillarB, pillarA));
+    }
+
+    @Test
+    void drawsAfterAPillarChangeOfThePreviousStep() {
+        var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntityProvidingEntity.class);
+        var valueList = new ArrayList<TestdataValue>();
+        var entityList = new ArrayList<TestdataEntityProvidingEntity>();
+        for (var i = 0; i < 10; i++) {
+            valueList.add(new TestdataValue("v" + i));
+        }
+        // Narrow ranges: fewer entities accept a value than there are pillars, so the right pillar is looked up by key.
+        for (var i = 0; i < 10; i++) {
+            var entity = new TestdataEntityProvidingEntity("e" + i,
+                    List.of(valueList.get((i + 9) % 10), valueList.get(i), valueList.get((i + 1) % 10)));
+            entity.setValue(valueList.get(i));
+            entityList.add(entity);
+        }
+        var solution = new TestdataEntityProvidingSolution("s");
+        solution.setEntityList(entityList);
+        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution);
+        // Removes the pillar of v0 from the dataset, which leaves a gap there.
+        context.getMoveTestContext()
+                .execute(
+                        Moves.change(entityMetaModel.<TestdataValue> basicVariable(), entityList.getFirst(), valueList.get(1)));
+
+        assertThat(context.getMovesAsStream().limit(1_000).toList()).hasSize(1_000);
+        // Neighbors accept each other's values, so these single-entity pillars swap; none may be lost to a moved slot.
+        var variableMetaModelList = allVariables(entityMetaModel);
+        context.producesAllOf(
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(2))),
+                        Sample.of(List.of(entityList.get(3)))),
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(3))),
+                        Sample.of(List.of(entityList.get(2)))),
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(8))),
+                        Sample.of(List.of(entityList.get(9)))),
+                Moves.pillarSwap(variableMetaModelList, Sample.of(List.of(entityList.get(9))),
+                        Sample.of(List.of(entityList.get(8)))));
+    }
+
+    @Test
+    void uninitializedPillarNeverGivesNullToAVariableWhichDoesNotAllowIt() {
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class);
+        var variableMetaModelList = allVariables(entityMetaModel);
+        var solution = TestdataSolution.generateSolution(2, 6);
+        var entityList = solution.getEntityList();
+        var valueList = solution.getValueList();
+        entityList.get(0).setValue(null);
+        entityList.get(1).setValue(null);
+        entityList.get(2).setValue(valueList.get(0));
+        for (var i = 3; i < 6; i++) {
+            entityList.get(i).setValue(valueList.get(1));
+        }
+        var uninitializedPillar = Sample.of(List.copyOf(entityList.subList(0, 2)));
+        var pillarA = Sample.of(List.of(entityList.get(2)));
+        var pillarB = Sample.of(List.copyOf(entityList.subList(3, 6)));
+
+        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution);
+        context.producesAllOf(Moves.pillarSwap(variableMetaModelList, pillarA, pillarB));
+        context.producesNoneOf(
+                Moves.pillarSwap(variableMetaModelList, uninitializedPillar, pillarA),
+                Moves.pillarSwap(variableMetaModelList, pillarA, uninitializedPillar),
+                Moves.pillarSwap(variableMetaModelList, uninitializedPillar, pillarB),
+                Moves.pillarSwap(variableMetaModelList, pillarB, uninitializedPillar));
     }
 
     @Test
@@ -315,6 +383,46 @@ class PillarSwapMoveProviderTest {
                 List.of(entityMetaModel.basicVariable("secondaryValue"), entityMetaModel.basicVariable("primaryValue"));
         assertThat(new PillarSwapMoveProvider<>(variableList).getId())
                 .isEqualTo("PillarSwapMoveProvider(TestdataMultiVarEntity.primaryValue,secondaryValue)");
+    }
+
+    @Test
+    void everyValidPillarIsDrawnEquallyOftenRegardlessOfItsSize() {
+        var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntityProvidingEntity.class).basicVariable();
+        var a = new TestdataValue("a");
+        var b = new TestdataValue("b");
+        var c = new TestdataValue("c");
+        var range = List.of(a, b, c);
+        var entityList = new ArrayList<TestdataEntityProvidingEntity>();
+        var single = new TestdataEntityProvidingEntity("single", range, a);
+        entityList.add(single);
+        for (var i = 0; i < 5; i++) {
+            entityList.add(new TestdataEntityProvidingEntity("large" + i, range, b));
+        }
+        var small = new TestdataEntityProvidingEntity("small", range, c);
+        entityList.add(small);
+        // Pillars which cannot take "a"; they make the pool of all pillars larger than the candidate list,
+        // so that the right pillar is drawn through the candidate list and the size correction applies.
+        for (var i = 0; i < 10; i++) {
+            var other = new TestdataValue("other" + i);
+            entityList.add(new TestdataEntityProvidingEntity("other" + i, List.of(other), other));
+        }
+        var solution = new TestdataEntityProvidingSolution("s");
+        solution.setEntityList(entityList);
+
+        // With "single" on the left, the 5-member pillar has 5 members in the candidate list and the 1-member pillar 1;
+        // both are valid partners, so both must be chosen equally often.
+        var context = NeighborhoodTester.build(new PillarSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        var rightSizes = context
+                .getMovesAsStream(move -> (PillarSwapMove<TestdataEntityProvidingSolution, TestdataEntityProvidingEntity>) move)
+                .limit(20_000)
+                .filter(move -> move.getLeftPillar().contains(single))
+                .map(move -> move.getRightPillar().size())
+                .toList();
+        var largeCount = rightSizes.stream().filter(size -> size == 5).count();
+        assertThat(rightSizes).hasSizeGreaterThan(500);
+        assertThat((double) largeCount / rightSizes.size()).isBetween(0.4, 0.6);
     }
 
 }

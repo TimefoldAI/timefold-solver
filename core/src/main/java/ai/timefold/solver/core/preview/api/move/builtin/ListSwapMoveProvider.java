@@ -2,7 +2,10 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.move.builtin.AbstractRepeatedDrawMoveIterator;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePoolSource;
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
+import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -11,9 +14,9 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements MoveProvider<Solution_> {
@@ -29,20 +32,57 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
         // Unassigned values are admitted only when the variable allows them:
         // the one-side-unassigned case below composes unassign+assign, which would otherwise
         // leave a value unassigned on a variable that forbids it.
-        var valueStream = (variableMetaModel.allowsUnassignedValues()
-                ? moveStreamFactory.forEach(variableMetaModel.type(), false)
-                : moveStreamFactory.forEachAssignedValue(variableMetaModel))
-                .map((solutionView, value) -> new FullElementPosition<>(value,
-                        solutionView.getPositionOf(variableMetaModel, value)));
+        var valueStream =
+                MoveProviderUtil.values(moveStreamFactory, variableMetaModel, variableMetaModel.allowsUnassignedValues())
+                        .map((solutionView, value) -> new FullElementPosition<>(value,
+                                solutionView.getPositionOf(variableMetaModel, value)));
         // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
-        // Move selectors don't do anything about duplicate moves either.
-        return moveStreamFactory.pick(valueStream)
-                .pick(valueStream,
-                        NeighborhoodsJoiners.filtering(this::isValidSwap))
-                .asMove(this::buildMove);
+        var valueDataset = valueStream.asCachedDataset();
+        if (variableMetaModel.isValueRangeOnSolution()) {
+            // Every entity accepts every value; only the swap itself can be invalid, so no range is checked.
+            return moveStreamFactory.buildMoveStream((session, random) -> {
+                var valueInstance =
+                        (DefaultUniDatasetInstance<Solution_, FullElementPosition<Value_>>) session.getInstance(valueDataset);
+                var partnerIterator = valueInstance.iterator(random);
+                return new AbstractRepeatedDrawMoveIterator<>(valueInstance.retiringRandomIterator(random)) {
+                    @Override
+                    protected @Nullable Move<Solution_> tryBuildMove(FullElementPosition<Value_> left) {
+                        var partner = drawMatching(partnerIterator, valueInstance.size(),
+                                right -> right != null && isValidSwap(left.elementPosition(), right.elementPosition()));
+                        return partner == null ? null : buildMove(left, partner);
+                    }
+                };
+            });
+        }
+        // Partners come from the values which share a value range with the left value.
+        var entityDataset = moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
+        var unassignedValueDataset = variableMetaModel.allowsUnassignedValues()
+                ? moveStreamFactory.forEachUnassignedValue(variableMetaModel).asCachedDataset()
+                : null;
+        return moveStreamFactory.buildMoveStream((session, random) -> {
+            var valueInstance =
+                    (DefaultUniDatasetInstance<Solution_, FullElementPosition<Value_>>) session.getInstance(valueDataset);
+            var solutionView = session.getSolutionView();
+            var candidatePool = unassignedValueDataset != null
+                    ? ListCandidatePoolSource.of(solutionView, variableMetaModel, random, session.getInstance(entityDataset),
+                            session.getInstance(unassignedValueDataset))
+                    : ListCandidatePoolSource.of(solutionView, variableMetaModel, random, session.getInstance(entityDataset),
+                            false);
+            return new AbstractRepeatedDrawMoveIterator<>(valueInstance.retiringRandomIterator(random)) {
+                @Override
+                protected @Nullable Move<Solution_> tryBuildMove(FullElementPosition<Value_> left) {
+                    // An unassigned left value needs an assigned partner.
+                    var partner = candidatePool.drawPartner(left.value(),
+                            unassignedValueDataset != null && left.elementPosition() instanceof PositionInList,
+                            value -> isValidPartner(solutionView, left, value));
+                    return partner == null ? null
+                            : buildMove(left, positionOf(solutionView, partner));
+                }
+            };
+        });
     }
 
-    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, FullElementPosition<Value_> a,
+    private Move<Solution_> buildMove(FullElementPosition<Value_> a,
             FullElementPosition<Value_> b) {
         if (a.elementPosition() instanceof PositionInList aPosition
                 && b.elementPosition() instanceof PositionInList bPosition) {
@@ -59,23 +99,28 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
                 Moves.assign(variableMetaModel, incomingValue, assignedPosition));
     }
 
-    private boolean isValidSwap(SolutionView<Solution_> solutionView, FullElementPosition<Value_> leftPosition,
-            FullElementPosition<Value_> rightPosition) {
-        if (Objects.equals(leftPosition, rightPosition)) {
+    private FullElementPosition<Value_> positionOf(SolutionView<Solution_> solutionView, Value_ value) {
+        return new FullElementPosition<>(value, solutionView.getPositionOf(variableMetaModel, value));
+    }
+
+    /**
+     * @return false if both positions are the same, or both are unassigned
+     */
+    private static boolean isValidSwap(ElementPosition left, ElementPosition right) {
+        return !left.equals(right) && (left instanceof PositionInList || right instanceof PositionInList);
+    }
+
+    /**
+     * The candidate pool only gives an assigned partner from an entity which accepts the left value,
+     * so only the left entity is checked.
+     */
+    private boolean isValidPartner(SolutionView<Solution_> solutionView, FullElementPosition<Value_> left, Value_ partner) {
+        var leftPosition = left.elementPosition();
+        if (!isValidSwap(leftPosition, solutionView.getPositionOf(variableMetaModel, partner))) {
             return false;
         }
-        var left = leftPosition.elementPosition();
-        var right = rightPosition.elementPosition();
-        if (left instanceof PositionInList leftAssigned && right instanceof PositionInList rightAssigned) {
-            return solutionView.isValueInRange(variableMetaModel, rightAssigned.entity(), leftPosition.value())
-                    && solutionView.isValueInRange(variableMetaModel, leftAssigned.entity(), rightPosition.value());
-        } else if (left instanceof PositionInList leftAssigned) {
-            return solutionView.isValueInRange(variableMetaModel, leftAssigned.entity(), rightPosition.value());
-        } else if (right instanceof PositionInList rightAssigned) {
-            return solutionView.isValueInRange(variableMetaModel, rightAssigned.entity(), leftPosition.value());
-        } else {
-            return false; // Both unassigned: a no-op, never emitted.
-        }
+        return !(leftPosition instanceof PositionInList leftAssigned)
+                || solutionView.isValueInRange(variableMetaModel, leftAssigned.entity(), partner);
     }
 
     /**

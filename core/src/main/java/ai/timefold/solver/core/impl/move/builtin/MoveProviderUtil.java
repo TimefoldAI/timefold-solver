@@ -5,10 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -147,6 +151,49 @@ public final class MoveProviderUtil {
     }
 
     /**
+     * The movable entities which can be a swap partner of the given entity.
+     * A valid partner either accepts the entity's value of a variable, or already has it;
+     * either way, it is in that variable's list, so the smallest list over all variables is enough.
+     * This assumes that every entity's value is in its own value range.
+     * A partner whose shared value is outside its range is not found;
+     * only an input solution can have such a value, and the swap would keep it.
+     *
+     * @return null if every variable of the entity is unassigned, so that no value narrows the candidates
+     */
+    public static <Solution_, Entity_> @Nullable List<Entity_> swapCandidatesOf(SolutionView<Solution_> solutionView,
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ entity) {
+        return smallestCandidateList(solutionView, variableMetaModelList,
+                index -> solutionView.getValue(variableMetaModelList.get(index), entity));
+    }
+
+    /**
+     * As {@link #swapCandidatesOf(SolutionView, List, Object)},
+     * but for the entities whose values are the given {@link #compositeKeyOf composite key}.
+     */
+    public static <Solution_, Entity_> @Nullable List<Entity_> swapCandidatesOfKey(SolutionView<Solution_> solutionView,
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, List<Object> compositeKey) {
+        return smallestCandidateList(solutionView, variableMetaModelList, compositeKey::get);
+    }
+
+    private static <Solution_, Entity_> @Nullable List<Entity_> smallestCandidateList(SolutionView<Solution_> solutionView,
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList,
+            IntFunction<@Nullable Object> valueByVariableIndex) {
+        List<Entity_> candidateList = null;
+        for (var index = 0; index < variableMetaModelList.size(); index++) {
+            var variableMetaModel = variableMetaModelList.get(index);
+            var value = valueByVariableIndex.apply(index);
+            if (value == null) {
+                continue;
+            }
+            var entityList = solutionView.getEntitiesWithValueInRange(variableMetaModel, value);
+            if (candidateList == null || entityList.size() < candidateList.size()) {
+                candidateList = entityList;
+            }
+        }
+        return candidateList;
+    }
+
+    /**
      * Whether swapping {@code leftPillar} and {@code rightPillar} is legal across every variable in
      * {@code variableMetaModelList},
      * checked against each pillar's own {@link SampleValueRanges} ({@code leftRangesPerVariable},
@@ -178,8 +225,10 @@ public final class MoveProviderUtil {
             if (Objects.equals(oldLeftValue, oldRightValue)) {
                 continue;
             }
-            if (leftRangesPerVariable.get(i).containsInEvery(oldRightValue)
-                    && rightRangesPerVariable.get(i).containsInEvery(oldLeftValue)) {
+            // A solution value range accepts every value, except null if the variable does not allow it.
+            if ((variableMetaModel.isValueRangeOnSolution() && oldLeftValue != null && oldRightValue != null)
+                    || (leftRangesPerVariable.get(i).containsInEvery(oldRightValue)
+                            && rightRangesPerVariable.get(i).containsInEvery(oldLeftValue))) {
                 change = true;
             } else {
                 // One of the swaps falls out of range, skip this pair altogether.
@@ -298,4 +347,77 @@ public final class MoveProviderUtil {
                 : "custom";
     }
 
+    /**
+     * @return true if the entity's value range contains every value
+     */
+    public static <Solution_, Entity_, Value_> boolean acceptsAll(SolutionView<Solution_> solutionView,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+            Iterable<Value_> values) {
+        var range = solutionView.getValueRange(variableMetaModel, entity);
+        for (var value : values) {
+            if (!range.contains(value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @return true if the entity's value range contains every value of the source entity
+     *         from {@code fromIndex} (inclusive) to {@code toIndex} (exclusive)
+     */
+    public static <Solution_, Entity_, Value_> boolean acceptsAll(SolutionView<Solution_> solutionView,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+            Entity_ sourceEntity, int fromIndex, int toIndex) {
+        var range = solutionView.getValueRange(variableMetaModel, entity);
+        for (var index = fromIndex; index < toIndex; index++) {
+            if (!range.contains(solutionView.getValueAtIndex(variableMetaModel, sourceEntity, index))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * With a solution value range, keeps only the values in it, as the solution can hold other values of that class.
+     * The filter runs once per change of a value, not on every draw; entity value ranges need no filter.
+     */
+    public static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, Value_> inValueRange(
+            MoveStreamFactory<Solution_> moveStreamFactory,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            UniEnumeratingStream<Solution_, Value_> valueStream) {
+        if (!variableMetaModel.isValueRangeOnSolution()) {
+            return valueStream;
+        }
+        return valueStream.filter(((DefaultMoveStreamFactory<Solution_>) moveStreamFactory)
+                .getNodeSharingSupportFunctions(variableMetaModel).inSolutionValueRangeFilter());
+    }
+
+    /**
+     * The unassigned destination is included only on request:
+     * {@link MoveStreamFactory#forEachDestinationIncludingUnassigned} represents it with a null entity,
+     * which entity value ranges cannot resolve.
+     */
+    public static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, ElementPosition> destinations(
+            MoveStreamFactory<Solution_> moveStreamFactory,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, boolean includeUnassigned) {
+        if (includeUnassigned) {
+            return moveStreamFactory.forEachDestinationIncludingUnassigned(variableMetaModel);
+        }
+        return moveStreamFactory.forEachDestination(variableMetaModel)
+                .map((solutionView, position) -> (ElementPosition) position);
+    }
+
+    /**
+     * @return the assigned values, or all values in the value range if {@code includeUnassigned}
+     */
+    public static <Solution_, Entity_, Value_> UniEnumeratingStream<Solution_, Value_> values(
+            MoveStreamFactory<Solution_> moveStreamFactory,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, boolean includeUnassigned) {
+        if (includeUnassigned) {
+            return inValueRange(moveStreamFactory, variableMetaModel,
+                    moveStreamFactory.forEach(variableMetaModel.type(), false));
+        }
+        return moveStreamFactory.forEachAssignedValue(variableMetaModel);
+    }
 }

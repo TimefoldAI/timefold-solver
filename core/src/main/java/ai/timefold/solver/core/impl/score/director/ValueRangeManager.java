@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import java.util.Arrays;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -8,9 +11,11 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
@@ -47,6 +52,7 @@ public final class ValueRangeManager<Solution_> {
     private final @Nullable ValueRangeState<Solution_, ?, ?> @Nullable [] multipleValueRangeState;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable ValueRangeStatistics<Solution_> statistics;
+    private @Nullable Map<EntityDescriptor<Solution_>, List<Object>> movableEntityListMap;
 
     public static <Solution_> ValueRangeManager<Solution_> of(SolutionDescriptor<Solution_> solutionDescriptor,
             Solution_ solution) {
@@ -202,8 +208,47 @@ public final class ValueRangeManager<Solution_> {
         return descriptor.getReachableValues(variableDescriptor, sorter);
     }
 
+    /**
+     * Movability only changes with a problem change, which calls {@link #reset(Object)}.
+     *
+     * @return unmodifiable, random access; the movable entities of the given descriptor in the working solution
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    @SuppressWarnings("unchecked")
+    public <Entity_> List<Entity_> getMovableEntityList(EntityDescriptor<Solution_> entityDescriptor) {
+        var solution = requireWorkingSolution("movable entities", entityDescriptor);
+        if (movableEntityListMap == null) {
+            movableEntityListMap = new IdentityHashMap<>();
+        }
+        return (List<Entity_>) movableEntityListMap.computeIfAbsent(entityDescriptor, descriptor -> {
+            var movableFilter = descriptor.<Object> createMovableEntityFilter(solution);
+            var entities = descriptor.extractEntities(solution).stream();
+            return (movableFilter == null ? entities : entities.filter(movableFilter)).toList();
+        });
+    }
+
+    private Solution_ requireWorkingSolution(String what, Object requestedFor) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException("Impossible state: %s (%s) requested before the working solution is known."
+                    .formatted(what, requestedFor));
+        }
+        return cachedWorkingSolution;
+    }
+
+    /**
+     * @return unmodifiable, random access; the values of the given list variable's solution value range,
+     *         without null and without pinned values
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    public <Value_> List<Value_> getMovableValueList(ListVariableDescriptor<Solution_> variableDescriptor) {
+        requireWorkingSolution("movable values", variableDescriptor);
+        return this.<Object, Value_> fromDescriptor(variableDescriptor.getValueRangeDescriptor())
+                .getMovableValueList(variableDescriptor);
+    }
+
     public void reset(@Nullable Solution_ workingSolution) {
         singleValueRangeState = null;
+        movableEntityListMap = null;
         if (multipleValueRangeState != null) {
             Arrays.fill(multipleValueRangeState, null);
         }

@@ -3,12 +3,13 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
+import ai.timefold.solver.core.impl.move.builtin.ValueRangeChangeMoveIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -21,7 +22,7 @@ import org.jspecify.annotations.NullMarked;
  * this provider also creates null-to-non-null (assign) and non-null-to-null (unassign) moves.
  * This does not remove the need for {@code AssignMoveProvider} and {@code UnassignMoveProvider}:
  * here, a null-crossing move is one candidate among many, so it arrives rarely -
- * an unassign draw has probability {@code 1/(v+1)} where {@code v} is the number of registered values,
+ * an unassign draw has probability {@code 1/(v+1)} where {@code v} is the size of the entity's value range,
  * and an assign draw only when the randomly drawn entity happens to already be unassigned.
  * A configuration that wants such moves often should add {@code AssignMoveProvider}/{@code UnassignMoveProvider}
  * in addition to turning this flag off to avoid further oversampling.
@@ -69,11 +70,13 @@ public final class ChangeMoveProvider<Solution_, Entity_, Value_>
         if (!crossingNull && variableMetaModel.allowsUnassigned()) {
             entities = entities.filter(nodeSharingSupportFunctions.assignedValueFilter());
         }
-        return moveStreamFactory.pick(entities)
-                .pick(moveStreamFactory.forEach(variableMetaModel.type(), crossingNull),
-                        NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.differentValueFilter()),
-                        NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter()))
-                .asMove((solution, entity, value) -> Moves.change(variableMetaModel, Objects.requireNonNull(entity), value));
+        var entityDataset = entities.asCachedDataset();
+        // Values come from the entity's own value range, so an out-of-range value is never drawn.
+        return moveStreamFactory.buildMoveStream((session, random) -> {
+            var entityInstance = (DefaultUniDatasetInstance<Solution_, Entity_>) session.getInstance(entityDataset);
+            return new ValueRangeChangeMoveIterator<>(variableMetaModel, session.getSolutionView(),
+                    entityInstance.retiringRandomIterator(random), random, crossingNull);
+        });
     }
 
     /**

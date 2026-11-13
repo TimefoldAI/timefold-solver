@@ -24,8 +24,13 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.MoveProviderAssertions;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -322,6 +327,31 @@ class MassListChangeMoveProviderTest {
                 .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class).listVariable("valueList");
         assertThat(new MassListChangeMoveProvider<>(variableMetaModel, Samplers.all(), true).getId())
                 .isEqualTo("MassListChangeMoveProvider(TestdataAllowsUnassignedValuesListEntity.valueList,all,crossingNull)");
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithEntityRange() {
+        var solutionMetaModel = TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listPinnedSolution(MoveProviderAssertions.listValues());
+        var context = NeighborhoodTester
+                .build(new MassListChangeMoveProvider<>(variableMetaModel, Samplers.exactly(2)), solutionMetaModel)
+                .using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataListPinnedEntityProvidingEntity::isPinned, 2_000);
+    }
+
+    @Test
+    void everyDrawnMoveKeepsTheSolutionValidWithEntityRangeAndUnassignedValues() {
+        var solutionMetaModel = TestdataListUnassignedPinnedEntityProvidingSolution.buildSolutionDescriptor().getMetaModel();
+        var variableMetaModel =
+                solutionMetaModel.genuineEntity(TestdataListUnassignedPinnedEntityProvidingEntity.class).listVariable();
+        var solution = MoveProviderAssertions.listUnassignedPinnedSolution(MoveProviderAssertions.listValues());
+        var context = NeighborhoodTester
+                .build(new MassListChangeMoveProvider<>(variableMetaModel, Samplers.exactly(2)), solutionMetaModel)
+                .using(solution);
+        MoveProviderAssertions.assertDrawnListMovesKeepSolutionValid(context, variableMetaModel, solution.getEntityList(),
+                TestdataListUnassignedPinnedEntityProvidingEntity::isPinned, 2_000);
     }
 
 }
