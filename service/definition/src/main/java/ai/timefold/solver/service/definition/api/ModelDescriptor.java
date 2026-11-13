@@ -1,6 +1,7 @@
 package ai.timefold.solver.service.definition.api;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,23 +42,23 @@ public class ModelDescriptor {
 
     protected String imageRefNative;
 
-    protected Map<String, String> environment = Collections.emptyMap();
+    protected Map<String, String> environment = new HashMap<>();
 
-    protected List<String> features = Collections.emptyList();
+    protected List<String> features = new ArrayList<>();
 
-    protected List<ConstraintGroupDescriptor> constraintGroupDescriptors = Collections.emptyList();
+    protected List<ConstraintGroupDescriptor> constraintGroupDescriptors = new ArrayList<>();
 
     protected ModelConfigDescriptor modelConfigDescriptor;
 
-    protected List<InputMetricDescriptor> inputMetricDescriptors = Collections.emptyList();
+    protected List<InputMetricDescriptor> inputMetricDescriptors = new ArrayList<>();
 
-    protected List<OutputMetricDescriptor> outputMetricDescriptors = Collections.emptyList();
+    protected List<OutputMetricDescriptor> outputMetricDescriptors = new ArrayList<>();
 
     protected Integer maxThreadCount;
 
     protected String logoUrl;
 
-    protected List<String> images = Collections.emptyList();
+    protected List<String> images = new ArrayList<>();
 
     protected TrialConfig trialConfig;
 
@@ -67,11 +68,11 @@ public class ModelDescriptor {
 
     protected DocumentationDescriptor documentationDescriptor;
 
-    protected List<VisualizationPageDescriptor> visualizationPages = Collections.emptyList();
+    protected List<VisualizationPageDescriptor> visualizationPages = new ArrayList<>();
 
     protected boolean requiresMap = false;
 
-    protected List<UniqueResource> uniqueResources = Collections.emptyList();
+    protected List<UniqueResource> uniqueResources = new ArrayList<>();
 
     /**
      * @return Unique id, composed by model id and version. Ex: employee-scheduling_v1
@@ -289,7 +290,7 @@ public class ModelDescriptor {
     }
 
     public static ModelDescriptor from(ModelDescriptor descriptor) {
-        var copy = new ModelDescriptor();
+        ModelDescriptor copy = new ModelDescriptor();
         copy.setId(descriptor.getId());
         copy.setModel(descriptor.getModel());
         copy.setName(descriptor.getName());
