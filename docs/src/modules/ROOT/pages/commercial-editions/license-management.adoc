@@ -26,13 +26,13 @@ When the trial ends, you need a paid subscription to keep creating new licenses.
 
 == Managing licenses
 
-Creating licenses requires the *admin* role within your company.
-Regular users can view and download their own licenses only.
+Every user can add licenses for themselves, and view and download their own licenses.
+Users with the *admin* role within your company can also add licenses for other users in your company, and view and download all of your company's licenses.
 
 === View your licenses
 
 Click *Licenses* in the sidebar to see your active licenses, or switch to the *Expired* tab to see past ones.
-Each license card shows its type, expiration date, and a download button.
+In the licenses table, each active license shows its owner, creation date, expiration date, type, and a download button.
 
 .The Licenses list in the Timefold License Manager
 image::commercial-editions/license-manager-view-licenses.png[The Licenses list in the Timefold License Manager, showing active license cards with type, expiration date, and a download button]
@@ -42,7 +42,7 @@ image::commercial-editions/license-manager-view-licenses.png[The Licenses list i
 . Click *Licenses* → *Add license key*.
 . Select an expiration date.
 It can't exceed your company's contract end date.
-. Optionally, assign the license to a specific user in your company.
+. If you have the *admin* role, optionally assign the license to another user in your company.
 . Click *Add license key*.
 
 Your company's plan determines the license type; you don't need to select it manually.
@@ -60,7 +60,9 @@ Don't commit it to source control; inject it at runtime using your secret manage
 
 === Expired licenses
 
-Expired licenses remain visible under the *Expired* tab, and you can still download them to review, but they're no longer accepted by the solver.
+Expired licenses remain visible under the *Expired* tab.
+You can't download an expired license, and the solver no longer accepts it.
+To keep using the solver, add a new license with an expiration date no later than your company's contract end date.
 
 [IMPORTANT]
 ====
@@ -90,9 +92,9 @@ Inviting and managing team members requires the *admin* role within your company
 
 Open your company from the sidebar, go to the *Users* tab, and click *Invite user*.
 The invitee receives an email with an acceptance link that is valid for 14 days.
-Once they accept, they join your company with the *user* role.
+Once they accept, they join your company with the role you selected when you sent the invite: *admin* or *user*.
 
-If an invitation expires or wasn't received, find it in the *Users* tab and click *Resend* to send a fresh 14-day link.
+If an invite expires or wasn't received, find it in the *Users* tab and click *Resend* to send a fresh 14-day link.
 
 === Change a user's role or remove a user
 
