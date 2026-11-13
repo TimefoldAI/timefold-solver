@@ -263,8 +263,6 @@ public interface SolutionView<Solution_> {
      * and those before an entity's {@link PlanningPinToIndex}.
      * The result does not depend on which values are currently assigned, so it can contain unassigned values;
      * check the entity of each value before using it.
-     * A value assigned to an entity whose value range does not contain it (an invalid solution)
-     * is not reached through this list.
      * If the value range is defined on {@link PlanningSolution},
      * every movable value of the range is returned if the range contains the given value, and none if it does not;
      * in that case, the list may contain the given value itself.

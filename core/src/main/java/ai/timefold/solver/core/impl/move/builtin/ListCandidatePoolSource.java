@@ -387,8 +387,8 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
             return padded ? paddedPosition(slot) : prefixPosition(slot);
         }
 
-        // Rejects a padding slot instead of taking the next real one, so that every real slot has the same chance.
         private @Nullable PositionInList paddedPosition(long slot) {
+            // Rejects a padding slot instead of taking the next real one, so that every real slot has the same chance.
             var entity = entityList.get((int) (slot / maximumCount));
             var offset = (int) (slot % maximumCount);
             return offset < slotCount(entity, kind) ? positionAt(entity, offset) : null;
