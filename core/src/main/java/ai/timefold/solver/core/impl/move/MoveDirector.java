@@ -688,17 +688,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      */
     public final @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
             TemporaryScorePostprocessor<Score_, Result_> postprocessor) {
-        var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
-        var workingSolution = backingScoreDirector.getWorkingSolution();
-        var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
-        var ephemeralMoveDirector = ephemeral();
-        ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
-        var score = backingScoreDirector.calculateScore();
-        var result = postprocessor.apply(score);
-        ephemeralMoveDirector.close(); // This undoes the move.
-        // Restore the previous working score
-        solutionDescriptor.setScore(workingSolution, previousScore);
-        return result;
+        return executeTemporary(move, null, postprocessor);
     }
 
     /**
@@ -724,21 +714,22 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         // After the consumer, so that a live undo move never reaches caller code.
         var undoMove = ephemeralMoveDirector.createUndoMove();
         ephemeralMoveDirector.close(); // This undoes the move.
+        backingScoreDirector.afterUndoExecuted();
         // Restore the previous working score
         solutionDescriptor.setScore(workingSolution, previousScore);
         return undoMove;
     }
 
-    public @Nullable <Result_> Result_ executeTemporaryAboveBound(Move<Solution_> move,
-            Score_ lowerBound, TemporaryScorePostprocessor<Score_, @Nullable Result_> postprocessor) {
+    public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
+            @Nullable Score_ lowerBound, TemporaryScorePostprocessor<Score_, @Nullable Result_> postprocessor) {
         var solutionDescriptor = backingScoreDirector.getSolutionDescriptor();
         var workingSolution = backingScoreDirector.getWorkingSolution();
         var previousScore = solutionDescriptor.<Score_> getScore(workingSolution);
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.executeAllowingStructurallyFlawedSolutions(move);
-        var result = postprocessor.apply(backingScoreDirector.calculateScoreAboveBound(lowerBound));
+        var result = postprocessor.apply(backingScoreDirector.calculateScore(lowerBound));
         ephemeralMoveDirector.close(); // This undoes the move.
-        backingScoreDirector.undoCalculateScoreAboveBound();
+        backingScoreDirector.afterUndoExecuted();
         // Restore the previous working score
         solutionDescriptor.setScore(workingSolution, previousScore);
         return result;
@@ -754,6 +745,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         ephemeralMoveDirector.execute(move, true);
         var result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
         ephemeralMoveDirector.close(); // This undoes the move.
+        backingScoreDirector.afterUndoExecuted();
         if (guaranteeFreshScore) {
             backingScoreDirector.calculateScore();
         } else {
@@ -780,6 +772,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
         }
         ephemeralMoveDirector.close(); // This undoes the move.
+        backingScoreDirector.afterUndoExecuted();
         if (guaranteeFreshScore) {
             backingScoreDirector.calculateScore();
         } else {
@@ -812,6 +805,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         ephemeralMoveDirector.execute(move);
         var result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
         ephemeralMoveDirector.close(); // This undoes the move.
+        backingScoreDirector.afterUndoExecuted();
         return result;
     }
 

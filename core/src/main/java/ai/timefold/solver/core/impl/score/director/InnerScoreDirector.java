@@ -83,13 +83,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *
      * @return never null, the {@link Score} of the {@link PlanningSolution working solution}
      */
-    InnerScore<Score_> calculateScore();
-
-    /**
-     * @return true if this score director implements tiered score calculation, false otherwise.
-     */
-    default boolean isTieredScoreCalculationEnabled() {
-        return false;
+    default InnerScore<Score_> calculateScore() {
+        return calculateScore(null);
     }
 
     /**
@@ -107,11 +102,16 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *         the calculated score would be below given {@code lowerBound}, and a {@link Score} below {@code lowerBound}
      *         otherwise.
      */
-    default InnerScore<Score_> calculateScoreAboveBound(Score_ lowerBound) {
-        return calculateScore();
+    InnerScore<Score_> calculateScore(@Nullable Score_ lowerBound);
+
+    /**
+     * @return true if this score director implements tiered score calculation, false otherwise.
+     */
+    default boolean isTieredScoreCalculationEnabled() {
+        return false;
     }
 
-    default void undoCalculateScoreAboveBound() {
+    default void afterUndoExecuted() {
     }
 
     /**
@@ -167,16 +167,16 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * As defined by {@link #executeTemporaryMove(Move, Consumer, boolean)}, but with no consumer.
      */
     default InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
-        return executeTemporaryMove(move, null, assertMoveScoreFromScratch);
+        return executeTemporaryMove(move, null, null, assertMoveScoreFromScratch);
     }
 
-    InnerScore<Score_> executeTemporaryMoveAboveBound(Move<Solution_> move, Score_ lowerBound,
+    InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Score_ lowerBound,
             @Nullable Consumer<SolutionView<Solution_>> consumer,
             boolean assertMoveScoreFromScratch);
 
-    default InnerScore<Score_> executeTemporaryMoveAboveBound(Move<Solution_> move, Score_ lowerBound,
+    default InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Score_ lowerBound,
             boolean assertMoveScoreFromScratch) {
-        return executeTemporaryMoveAboveBound(move, lowerBound, null, assertMoveScoreFromScratch);
+        return executeTemporaryMove(move, lowerBound, null, assertMoveScoreFromScratch);
     }
 
     /**

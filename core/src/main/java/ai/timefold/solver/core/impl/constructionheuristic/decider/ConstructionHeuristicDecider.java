@@ -153,12 +153,7 @@ public class ConstructionHeuristicDecider<Solution_> {
         var scoreDirector = moveScope.<Score_> getScoreDirector();
         InnerScore<?> score;
         var lowerBound = forager.<Score_> getForagedMoveScoreLowerBound();
-        if (lowerBound != null) {
-            score = scoreDirector.executeTemporaryMoveAboveBound(moveScope.getMove(), lowerBound,
-                    assertMoveScoreFromScratch);
-        } else {
-            score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
-        }
+        score = scoreDirector.executeTemporaryMove(moveScope.getMove(), lowerBound, assertMoveScoreFromScratch);
         moveScope.setScore(score);
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {

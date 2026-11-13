@@ -261,25 +261,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Complex methods
     // ************************************************************************
 
-    public abstract InnerScore<Score_> innerCalculateScore();
-
-    public InnerScore<Score_> innerCalculateScoreAboveBound(Score_ lowerBound) {
-        return innerCalculateScore();
-    }
+    public abstract InnerScore<Score_> innerCalculateScore(@Nullable Score_ lowerBound);
 
     @Override
-    public final InnerScore<Score_> calculateScore() {
+    public final InnerScore<Score_> calculateScore(@Nullable Score_ lowerBound) {
         if (lastVariableUpdateSuccessful) {
-            return innerCalculateScore();
-        } else {
-            return markWorkingSolutionAsStructurallyFlawed();
-        }
-    }
-
-    @Override
-    public final InnerScore<Score_> calculateScoreAboveBound(Score_ lowerBound) {
-        if (lastVariableUpdateSuccessful) {
-            return innerCalculateScoreAboveBound(lowerBound);
+            return innerCalculateScore(lowerBound);
         } else {
             return markWorkingSolutionAsStructurallyFlawed();
         }
@@ -495,13 +482,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public InnerScore<Score_> executeTemporaryMoveAboveBound(Move<Solution_> move, Score_ lowerBound,
+    public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Score_ lowerBound,
             @Nullable Consumer<SolutionView<Solution_>> consumer,
             boolean assertMoveScoreFromScratch) {
         if (solutionTracker != null) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        var result = moveDirector.executeTemporaryAboveBound(move, lowerBound, score -> {
+        var result = moveDirector.executeTemporary(move, lowerBound, score -> {
             if (solutionTracker != null) {
                 solutionTracker.setAfterMoveSolution(workingSolution);
             }
@@ -909,7 +896,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             uncorruptedScoreDirector.setWorkingSolution(Objects.requireNonNull(workingSolution));
             InnerScore<Score_> uncorruptedInnerScore;
             if (lowerBound != null) {
-                uncorruptedInnerScore = uncorruptedScoreDirector.calculateScoreAboveBound(lowerBound);
+                uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore(lowerBound);
             } else {
                 uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
             }

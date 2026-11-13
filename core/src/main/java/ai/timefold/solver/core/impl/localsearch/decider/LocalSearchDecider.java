@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
-import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
@@ -117,12 +116,7 @@ public class LocalSearchDecider<Solution_> {
         }
         @SuppressWarnings("unchecked")
         var lowerBound = (Score_) acceptor.getAcceptedMoveScoreLowerBound(moveScope.getStepScope(), true);
-        InnerScore<Score_> score;
-        if (lowerBound == null) {
-            score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
-        } else {
-            score = scoreDirector.executeTemporaryMoveAboveBound(move, lowerBound, assertMoveScoreFromScratch);
-        }
+        var score = scoreDirector.executeTemporaryMove(move, lowerBound, assertMoveScoreFromScratch);
         moveScope.setScore(score);
         moveScope.setAccepted(acceptor.isAccepted(moveScope));
         forager.addMove(moveScope);
