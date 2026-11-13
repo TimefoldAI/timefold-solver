@@ -238,7 +238,7 @@ public interface SolutionView<Solution_> {
      * <p>
      * Do not keep the list beyond the current move iterator; it is invalid after a problem change.
      * For value ranges defined on an entity, the first call for a variable builds an index
-     * whose size is proportional to the number of values times the number of distinct value ranges.
+     * whose size is proportional to the number of values times the number of entities.
      *
      * @param variableMetaModel variable in question.
      * @param value value to look up.
@@ -264,12 +264,12 @@ public interface SolutionView<Solution_> {
      * The result does not depend on which values are currently assigned, so it can contain unassigned values;
      * check the entity of each value before using it.
      * If the value range is defined on {@link PlanningSolution},
-     * every movable value of the range is returned if the range contains the given value, and none if it does not.
-     * The list may contain the given value itself; skip it if it is not a valid partner.
+     * every movable value of the range is returned if the range contains the given value, and none if it does not;
+     * in that case, the list may contain the given value itself.
      * <p>
      * Do not keep the list beyond the current move iterator; it is invalid after a problem change.
      * For value ranges defined on an entity, the first call for a variable builds an index
-     * whose size is proportional to the number of values times the number of distinct value ranges.
+     * whose size is proportional to the number of values times the number of values and entities.
      *
      * @param variableMetaModel variable in question.
      * @param value value to look up.

@@ -34,8 +34,7 @@ public final class ListSwapMoveProvider<Solution_, Entity_, Value_> implements M
         // leave a value unassigned on a variable that forbids it.
         var valueStream =
                 MoveProviderUtil.values(moveStreamFactory, variableMetaModel, variableMetaModel.allowsUnassignedValues())
-                        // No diamond: ECJ infers a type from it that makes the casts below fail to compile.
-                        .map((solutionView, value) -> new FullElementPosition<Value_>(value,
+                        .map((solutionView, value) -> new FullElementPosition<>(value,
                                 solutionView.getPositionOf(variableMetaModel, value)));
         // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
         var valueDataset = valueStream.asCachedDataset();

@@ -446,7 +446,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         @Override
         void load(Entity_ replayedEntity) {
             this.currentReplayedEntity = replayedEntity;
-            Value_ value = basicVariableDescriptor.getValue(replayedEntity);
+            var value = basicVariableDescriptor.getValue(replayedEntity);
             if (value != null) {
                 this.oneSideValidation = true;
                 var entityList = reachableValues.extractEntitiesAsList(value);
