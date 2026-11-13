@@ -135,17 +135,17 @@ class ScoreDirectorFactoryFactoryTest {
     }
 
     @Test
-    void useTieredScoreCalculationDisabledByDefault() {
+    void constraintStreamTieredScoreCalculationDisabledByDefault() {
         var scoreDirectorFactory = buildFactory(constraintStreamConfig());
         assertThat(scoreDirectorFactory.createScoreDirectorBuilder(EnvironmentMode.PHASE_ASSERT))
                 .isInstanceOf(BavetConstraintStreamScoreDirector.Builder.class);
     }
 
     @Test
-    void useTieredScoreCalculationFromConfigRequiresEnterprise() {
+    void constraintStreamTieredScoreCalculationFromConfigRequiresEnterprise() {
         var config = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(DummyConstraintProvider.class)
-                .withUseTieredScoreCalculation(true);
+                .withConstraintStreamTieredScoreCalculation(true);
         var scoreDirectorFactory = buildFactory(config);
         assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(() -> scoreDirectorFactory.createScoreDirectorBuilder(EnvironmentMode.PHASE_ASSERT))

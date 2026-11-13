@@ -141,14 +141,15 @@ public class TimefoldRecorder {
                 .ifPresent(solverConfig::setMoveThreadCount);
         maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::randomSeed)
                 .ifPresent(solverConfig::setRandomSeed);
-        maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::useTieredScoreCalculation)
-                .ifPresent(useTieredScoreCalculation -> {
+        maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::constraintStreamTieredScoreCalculation)
+                .ifPresent(constraintStreamTieredScoreCalculation -> {
                     var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
                     if (scoreDirectorFactoryConfig == null) {
                         scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
                         solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
                     }
-                    scoreDirectorFactoryConfig.setUseTieredScoreCalculation(useTieredScoreCalculation);
+                    scoreDirectorFactoryConfig
+                            .setConstraintStreamTieredScoreCalculation(constraintStreamTieredScoreCalculation);
                 });
         maybeSolverRuntimeConfig.flatMap(config -> config.termination().diminishedReturns())
                 .ifPresent(diminishedReturnsConfig -> setDiminishedReturns(solverConfig, diminishedReturnsConfig));

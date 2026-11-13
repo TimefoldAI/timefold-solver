@@ -57,5 +57,5 @@ public interface SolverRuntimeConfig {
      * For instance, if a move broke multiple hard constraints, then Timefold Solver may skip the medium and soft constraints.
      * Defaults to "false".
      */
-    Optional<Boolean> useTieredScoreCalculation();
+    Optional<Boolean> constraintStreamTieredScoreCalculation();
 }

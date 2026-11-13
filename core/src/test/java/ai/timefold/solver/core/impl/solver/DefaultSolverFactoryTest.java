@@ -177,7 +177,7 @@ class DefaultSolverFactoryTest {
                 .withEntityClasses(TestdataEntity.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(TestdataConstraintProvider.class)
-                        .withUseTieredScoreCalculation(true));
+                        .withConstraintStreamTieredScoreCalculation(true));
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
                 .hasMessageContainingAll("Tiered score calculation",
                         "remove tiered score calculation from solver configuration");

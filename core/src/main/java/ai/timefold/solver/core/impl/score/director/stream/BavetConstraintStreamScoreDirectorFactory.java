@@ -45,11 +45,12 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         var constraintProvider = ConfigUtils.newInstance(config, "constraintProviderClass", constraintProviderClass);
         var profilingEnabled =
                 Objects.requireNonNullElse(config.getConstraintStreamProfilingEnabled(), false);
-        var useTieredScoreCalculation = Objects.requireNonNullElse(config.getUseTieredScoreCalculation(), false);
+        var constraintStreamTieredScoreCalculation =
+                Objects.requireNonNullElse(config.getConstraintStreamTieredScoreCalculation(), false);
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
-        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, globalEnvironmentMode,
-                profilingEnabled, useTieredScoreCalculation);
+        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
+                globalEnvironmentMode, profilingEnabled, constraintStreamTieredScoreCalculation);
     }
 
     private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config,
@@ -70,7 +71,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
     private final DefaultBavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;
     private final ConstraintMetaModel constraintMetaModel;
     private final boolean profilingEnabled;
-    private final boolean useTieredScoreCalculation;
+    private final boolean constraintStreamTieredScoreCalculation;
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode) {
@@ -79,11 +80,11 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode, boolean profilingEnabled,
-            boolean useTieredScoreCalculation) {
+            boolean constraintStreamTieredScoreCalculation) {
         super(solutionDescriptor, globalEnvironmentMode);
         var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, globalEnvironmentMode);
         this.profilingEnabled = profilingEnabled;
-        this.useTieredScoreCalculation = useTieredScoreCalculation;
+        this.constraintStreamTieredScoreCalculation = constraintStreamTieredScoreCalculation;
         constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
         constraintSessionFactory =
                 new DefaultBavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
@@ -101,7 +102,8 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         this.initializingScoreTrend = inheritedScoreDirectorFactory.initializingScoreTrend;
         this.assertionScoreDirectorFactory = inheritedScoreDirectorFactory.assertionScoreDirectorFactory;
         this.profilingEnabled = inheritedScoreDirectorFactory.profilingEnabled;
-        this.useTieredScoreCalculation = inheritedScoreDirectorFactory.useTieredScoreCalculation;
+        this.constraintStreamTieredScoreCalculation =
+                inheritedScoreDirectorFactory.constraintStreamTieredScoreCalculation;
     }
 
     public BavetConstraintSession<Score_> newSession(@Nullable Solution_ workingSolution,
@@ -133,7 +135,7 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
     @Override
     public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>
             createScoreDirectorBuilder(EnvironmentMode environmentMode) {
-        if (useTieredScoreCalculation) {
+        if (constraintStreamTieredScoreCalculation) {
             return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.TIERED_SCORE_CALCULATION)
                     .createTieredBavetScoreDirectorBuilder(this, environmentMode);
         } else {

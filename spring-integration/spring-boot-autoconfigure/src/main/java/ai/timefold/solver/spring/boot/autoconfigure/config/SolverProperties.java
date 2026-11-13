@@ -70,7 +70,7 @@ public class SolverProperties {
      * For instance, if a move broke multiple hard constraints, then Timefold Solver may skip the medium and soft constraints.
      * Defaults to "false".
      */
-    private Boolean useTieredScoreCalculation;
+    private Boolean constraintStreamTieredScoreCalculation;
 
     /**
      * Configuration of the random seed.
@@ -148,12 +148,12 @@ public class SolverProperties {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
     }
 
-    public Boolean getUseTieredScoreCalculation() {
-        return useTieredScoreCalculation;
+    public Boolean getConstraintStreamTieredScoreCalculation() {
+        return constraintStreamTieredScoreCalculation;
     }
 
-    public void setUseTieredScoreCalculation(Boolean useTieredScoreCalculation) {
-        this.useTieredScoreCalculation = useTieredScoreCalculation;
+    public void setConstraintStreamTieredScoreCalculation(Boolean constraintStreamTieredScoreCalculation) {
+        this.constraintStreamTieredScoreCalculation = constraintStreamTieredScoreCalculation;
     }
 
     public Long getRandomSeed() {
