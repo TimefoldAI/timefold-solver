@@ -99,43 +99,45 @@ With tiered score calculation, Timefold Solver only calculate constraints affect
 For instance, if a move broke multiple hard constraints, then Timefold Solver may skip the medium and soft constraints.
 For planning problems where soft constraints take a significant amount of time, this can significantly speed up move evaluation.
 
-This feature is disabled by default.
-You can enable it by changing the following setting.
+NOTE: This feature can reduce the potential of xref:automaticNodeSharing[automatic node sharing], as nodes between tiers cannot be shared. If significant code is shared between hard and soft constraints, it might be more performant to disable this feature.
 
 [#tieredScoreCalculationConfiguration]
 === Configuration
+
+Tiered score calculation is automatically enabled when running Timefold Solver Enterprise.
+You can disable the feature by changing the following settings.
 
 [ tabs]
 ====
 XML::
 
-* Add `<constraintStreamTieredScoreCalculation>true</constraintStreamTieredScoreCalculation>` in your `solverConfig.xml`:
+* Add `<constraintStreamTieredScoreCalculation>false</constraintStreamTieredScoreCalculation>` in your `solverConfig.xml`:
 +
 [source,xml,options="nowrap"]
 ----
 <!-- ... -->
 <scoreDirectorFactory>
   <constraintProviderClass>org.acme.MyConstraintProvider</constraintProviderClass>
-  <constraintStreamTieredScoreCalculation>true</constraintStreamTieredScoreCalculation>
+  <constraintStreamTieredScoreCalculation>false</constraintStreamTieredScoreCalculation>
 </scoreDirectorFactory>
 <!-- ... -->
 ----
 
 Spring Boot::
 
-Set the property `timefold.solver.constraint-stream-tiered-score-calculation` to `true` in `application.properties`:
+Set the property `timefold.solver.constraint-stream-tiered-score-calculation` to `false` in `application.properties`:
 +
 [source,properties,options="nowrap"]
 ----
-timefold.solver.constraint-stream-tiered-score-calculation=true
+timefold.solver.constraint-stream-tiered-score-calculation=false
 ----
 
 Quarkus::
 
-Set the property `quarkus.timefold.solver.constraint-stream-tiered-score-calculation` to `true` in `application.properties`:
+Set the property `quarkus.timefold.solver.constraint-stream-tiered-score-calculation` to `false` in `application.properties`:
 +
 [source,properties,options="nowrap"]
 ----
-quarkus.timefold.solver.constraint-stream-tiered-score-calculation=true
+quarkus.timefold.solver.constraint-stream-tiered-score-calculation=false
 ----
 ====

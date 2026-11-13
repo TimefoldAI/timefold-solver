@@ -46,7 +46,9 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         var profilingEnabled =
                 Objects.requireNonNullElse(config.getConstraintStreamProfilingEnabled(), false);
         var constraintStreamTieredScoreCalculation =
-                Objects.requireNonNullElse(config.getConstraintStreamTieredScoreCalculation(), false);
+                Objects.requireNonNullElse(config.getConstraintStreamTieredScoreCalculation(),
+                        TimefoldSolverEnterpriseService.loadOrDefault(ignored -> true,
+                                () -> false));
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
         return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
