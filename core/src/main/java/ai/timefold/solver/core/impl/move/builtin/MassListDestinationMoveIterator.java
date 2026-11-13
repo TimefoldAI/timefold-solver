@@ -1,21 +1,19 @@
-package ai.timefold.solver.core.preview.api.move.builtin;
+package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorSession;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDataset;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.UniDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sampler;
 
@@ -33,34 +31,33 @@ import org.jspecify.annotations.Nullable;
  * and {@link #hasNext()} then simply ends too, with no hang,
  * since each call tries a fresh source.
  * It otherwise bounds itself with a flat {@link RetiringBiWalk#PROBE_ATTEMPT_COUNT} failed-draw budget.
- * The destination search itself is a separate, pool-scaled budget,
- * matching {@code SubListChangeMoveProvider.SubListChangeMoveIterator.createRightIterator}.
+ * The destination search itself is a separate, pool-scaled budget.
+ * With entity value ranges, destinations come from {@link ListCandidatePoolSource},
+ * seeded by the sample member with the smallest pool.
  *
  * @param <Solution_> the solution type
  * @param <Entity_> the entity type
  * @param <Value_> the variable type
  */
 @NullMarked
-final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> implements Iterator<Move<Solution_>> {
+public final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> implements Iterator<Move<Solution_>> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final SolutionView<Solution_> solutionView;
     private final Iterator<Sample<Value_>> sampleIterator;
-    private final UniDatasetInstance<ElementPosition> destinationInstance;
-    private final RandomGenerator random;
+    private final ListCandidateSource<Entity_, Value_> candidateSource;
 
     private @Nullable Move<Solution_> nextMove = null;
 
-    MassListDestinationMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
+    public MassListDestinationMoveIterator(MoveIteratorSession<Solution_> session, RandomGenerator random,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniDataset<Solution_, Value_> sourceDataset, UniDataset<Solution_, ElementPosition> destinationDataset,
+            UniDataset<Solution_, Value_> sourceDataset, ListCandidateSource<Entity_, Value_> candidateSource,
             Sampler<Value_> sampler) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.random = Objects.requireNonNull(random);
         this.solutionView = session.getSolutionView();
         var sourceInstance = session.getInstance(sourceDataset);
         this.sampleIterator = sourceInstance.samplingIterator(Objects.requireNonNull(sampler), random);
-        this.destinationInstance = session.getInstance(destinationDataset);
+        this.candidateSource = Objects.requireNonNull(candidateSource);
     }
 
     @Override
@@ -79,37 +76,25 @@ final class MassListDestinationMoveIterator<Solution_, Entity_, Value_> implemen
                 failedSampleDraws++;
                 continue;
             }
-            var bailOutSize = destinationInstance.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
-            var destinationIterator = new FilteringIterator<>(destinationInstance.iterator(random),
-                    destination -> isValidDestination(sample, destination), bailOutSize);
-            if (!destinationIterator.hasNext()) {
+            var destination = candidateSource.drawDestination(candidateSource.narrowestValue(sample),
+                    position -> isValidDestination(sample, position));
+            if (destination == null) {
                 failedSampleDraws++;
                 continue;
             }
-            var destination = destinationIterator.next();
-            nextMove = (destination instanceof UnassignedElement)
-                    ? Moves.massChange(variableMetaModel, sample, null)
-                    : Moves.massChange(variableMetaModel, sample, (PositionInList) destination);
+            nextMove = (destination instanceof PositionInList positionInList)
+                    ? Moves.massChange(variableMetaModel, sample, positionInList)
+                    : Moves.massChange(variableMetaModel, sample, null);
         }
         return nextMove != null;
     }
 
     private boolean isValidDestination(Sample<Value_> sample, ElementPosition destination) {
-        if (destination instanceof UnassignedElement) {
+        // A solution value range has no per-entity value range to violate.
+        if (!(destination instanceof PositionInList assignedDestination) || variableMetaModel.isValueRangeOnSolution()) {
             return true;
         }
-        var assignedDestination = (PositionInList) destination;
-        Entity_ destinationEntity = assignedDestination.entity();
-        if (variableMetaModel.isValueRangeOnSolution()) {
-            // We can move freely between entities, no per-entity value range to violate.
-            return true;
-        }
-        for (var member : sample) {
-            if (!solutionView.isValueInRange(variableMetaModel, destinationEntity, member)) {
-                return false;
-            }
-        }
-        return true;
+        return MoveProviderUtil.acceptsAll(solutionView, variableMetaModel, assignedDestination.entity(), sample);
     }
 
     @Override

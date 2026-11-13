@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.move;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
@@ -217,5 +219,65 @@ public interface SolutionView<Solution_> {
      */
     <Entity_, Value_> ValueRange<Value_> getValueRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @Nullable Entity_ entity);
+
+    /**
+     * Returns the movable entities whose value range of a genuine planning variable contains the given value.
+     * Use it to draw only valid candidates for a move,
+     * instead of drawing from all entities and rejecting those that cannot take the value;
+     * the latter is slow when the value ranges are narrow.
+     * <p>
+     * Pinned entities ({@link PlanningPin}) are never included.
+     * Entities pinned only up to an index ({@link PlanningPinToIndex}) are included.
+     * If the value range is defined on {@link PlanningSolution},
+     * every movable entity is returned if the range contains the value, and none if it does not.
+     * The returned list contains only instances of the variable meta model's entity class (and its subclasses),
+     * also if the variable is inherited from a superclass.
+     * The returned list may contain the entity which currently has the value assigned.
+     * The result does not depend on the current values of the entities,
+     * so it can contain entities whose variable is unassigned or whose list is empty.
+     * <p>
+     * Do not keep the list beyond the current move iterator; it is invalid after a problem change.
+     * For value ranges defined on an entity, the first call for a variable builds an index
+     * whose size is proportional to the number of values times the number of entities.
+     *
+     * @param variableMetaModel variable in question.
+     * @param value value to look up.
+     * @param <Entity_> generic type of the variable meta model's entity;
+     *        can be a subclass of the class that declares the variable.
+     * @param <Value_> generic type of the value that the variable can take.
+     * @return unmodifiable, with fast random access; empty if no movable entity accepts the value.
+     */
+    <Entity_, Value_> List<Entity_> getEntitiesWithValueInRange(
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value);
+
+    /**
+     * Returns the values which are in at least one entity's value range of a list variable together with the given value.
+     * Every movable value which can share an entity's list with the given value is in this list.
+     * It can also contain values which share a value range only with a pinned entity,
+     * so that no movable entity can hold both.
+     * Use it together with {@link #getEntitiesWithValueInRange(GenuineVariableMetaModel, Object)}
+     * to draw only candidate positions or partners for the given value,
+     * instead of drawing from all values and rejecting those whose entity cannot take the value.
+     * <p>
+     * Pinned values are never included: those of a pinned entity ({@link PlanningPin})
+     * and those before an entity's {@link PlanningPinToIndex}.
+     * The result does not depend on which values are currently assigned, so it can contain unassigned values;
+     * check the entity of each value before using it.
+     * If the value range is defined on {@link PlanningSolution},
+     * every movable value of the range is returned if the range contains the given value, and none if it does not;
+     * in that case, the list may contain the given value itself.
+     * <p>
+     * Do not keep the list beyond the current move iterator; it is invalid after a problem change.
+     * For value ranges defined on an entity, the first call for a variable builds an index
+     * whose size is proportional to the number of values times the number of values and entities.
+     *
+     * @param variableMetaModel variable in question.
+     * @param value value to look up.
+     * @param <Entity_> generic type of the entity that the variable is defined on.
+     * @param <Value_> generic type of the values in the list variable.
+     * @return unmodifiable, with fast random access; empty if no entity accepts the value.
+     */
+    <Entity_, Value_> List<Value_> getValuesSharingRangeWith(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value);
 
 }

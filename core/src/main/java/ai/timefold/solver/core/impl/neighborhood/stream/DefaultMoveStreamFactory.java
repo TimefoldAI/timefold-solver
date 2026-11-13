@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -20,7 +19,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.MoveIteratorProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.picking.UniPickingStream;
@@ -35,6 +33,8 @@ public final class DefaultMoveStreamFactory<Solution_>
     private final DatasetSessionFactory<Solution_> datasetSessionFactory;
     // In order for node sharing to work properly, the function instances must be identical.
     // Since these functions require the variable meta model, we need to cache them per variable meta model.
+    // An inherited variable's parent and child meta models are equal and share an entry;
+    // the functions must not use entity().
     private final Map<GenuineVariableMetaModel<Solution_, ?, ?>, NodeSharingSupportFunctions<Solution_, ?, ?>> nodeSharingSupportFunctionMap =
             new HashMap<>();
     private final Map<PlanningListVariableMetaModel<Solution_, ?, ?>, ListVariableNodeSharingSupportFunctions<Solution_, ?, ?>> listVariableNodeSharingSupportFunctionsMap =
@@ -53,13 +53,10 @@ public final class DefaultMoveStreamFactory<Solution_>
     @Override
     public <A> UniEnumeratingStream<Solution_, A> forEach(Class<A> sourceClass, boolean includeNull) {
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(sourceClass);
-        if (entityDescriptor == null) { // Not an entity, can't be pinned.
-            return enumeratingStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
-        }
-        if (entityDescriptor.isGenuine()) { // Genuine entity can be pinned.
+        if (entityDescriptor != null && entityDescriptor.isGenuine()) { // Genuine entity can be pinned.
             return enumeratingStreamFactory.forEachExcludingPinned(sourceClass, includeNull);
         }
-        // From now on, we are testing a shadow entity.
+        // From now on, we are testing a shadow entity or a problem fact; only a list variable value can be pinned.
         var listVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (listVariableDescriptor == null) { // Can't be pinned when there are only basic variables.
             return enumeratingStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
@@ -166,25 +163,20 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniNeighborhoodsPredicate<Solution_, Entity_> assignedValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> differentValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter) {
+            UniNeighborhoodsPredicate<Solution_, Entity_> assignedValueFilter) {
 
         public NodeSharingSupportFunctions(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
-                    (solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null,
-                    (solutionView, entity, value) -> !Objects.equals(solutionView.getValue(variableMetaModel, entity), value),
-                    (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value));
+                    (solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null);
         }
 
     }
 
     public record ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniNeighborhoodsPredicate<Solution_, Value_> assignedValueOrNullFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> assignedValueFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> unassignedValueFilter,
-            BiNeighborhoodsPredicate<Solution_, Value_, PositionInList> valueInRangeFilterForPosition,
+            UniNeighborhoodsPredicate<Solution_, Value_> inSolutionValueRangeFilter,
             UniNeighborhoodsMapper<Solution_, Value_, PositionInList> toOwnPositionMapper,
             UniNeighborhoodsMapper<Solution_, Entity_, PositionInList> toEndOfListPositionMapper,
             UniNeighborhoodsPredicate<Solution_, Entity_> isNullEntityFilter,
@@ -193,17 +185,10 @@ public final class DefaultMoveStreamFactory<Solution_>
         public ListVariableNodeSharingSupportFunctions(
                 PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
-                    (solutionView, value) -> value == null || solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> solutionView.isAssigned(variableMetaModel, value),
                     (solutionView, value) -> !solutionView.isAssigned(variableMetaModel, value),
-                    (solutionView, value, positionInList) -> {
-                        Entity_ entity = positionInList.entity();
-                        if (value == null) {
-                            // Necessary for the null to survive until the later stage, where we will use it as a special marker to move it to the end of list.
-                            return true;
-                        }
-                        return solutionView.isValueInRange(variableMetaModel, entity, value);
-                    },
+                    // Used only with a solution value range, which can omit instances of the value class that are in the solution.
+                    (solutionView, value) -> solutionView.isValueInRange(variableMetaModel, value),
                     // Insert-before this value: the value's own current position.
                     (solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value).ensureAssigned(),
                     // Insert at the end of this entity's list.

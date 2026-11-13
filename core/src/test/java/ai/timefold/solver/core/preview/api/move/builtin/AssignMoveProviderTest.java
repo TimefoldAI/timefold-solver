@@ -112,4 +112,19 @@ class AssignMoveProviderTest {
                 .isEqualTo("AssignMoveProvider(TestdataAllowsUnassignedEntity.value)");
     }
 
+    @Test
+    void fromEntityNeverAssignsNull() {
+        var solutionMetaModel = TestdataAllowsUnassignedEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataAllowsUnassignedEntityProvidingEntity.class)
+                .basicVariable();
+        var solution = TestdataAllowsUnassignedEntityProvidingSolution.generateSolution();
+
+        // The entity's range holds null as an extra element, as the variable allows unassigned values.
+        var context = NeighborhoodTester.build(new AssignMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        assertThat(context.getMovesAsStream().limit(1_000).toList())
+                .hasSize(1_000)
+                .allSatisfy(move -> assertThat(move.getPlanningValues()).doesNotContainNull());
+    }
+
 }
