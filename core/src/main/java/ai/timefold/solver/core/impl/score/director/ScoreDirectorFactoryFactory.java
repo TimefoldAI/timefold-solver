@@ -196,6 +196,13 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                     "If there is no constraintProviderClass (%s), then constraintStreamProfilingEnabled (%s) must be false."
                             .formatted(constraintProviderClass, config.getConstraintStreamProfilingEnabled()));
         }
+        if (config.getConstraintStreamTieredScoreCalculation() != null
+                && config.getConstraintStreamTieredScoreCalculation()
+                && !hasConstraintProvider) {
+            throw new IllegalStateException(
+                    "If there is no constraintProviderClass (%s), then constraintStreamTieredScoreCalculation (%s) must be false."
+                            .formatted(constraintProviderClass, config.getConstraintStreamTieredScoreCalculation()));
+        }
         if (hasEasyScoreCalculator && (hasIncrementalScoreCalculator || hasConstraintProvider)
                 || (hasIncrementalScoreCalculator && hasConstraintProvider)) {
             var scoreDirectorFactoryPropertyList = new ArrayList<String>(3);
