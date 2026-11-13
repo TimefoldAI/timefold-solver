@@ -9,7 +9,8 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Picks a random element out of the given list, with replacement, forever.
- * It accepts a list of items on input, and does not copy or modify it.
+ * It accepts a list of items on input, and does not copy it.
+ * It compacts the list when it is made if the list has many gaps; see {@link ElementAwareArrayList#compactIfGappy()}.
  *
  * @param <T>
  */
@@ -27,6 +28,7 @@ final class DefaultRepeatingRandomIterator<T> implements RepeatingRandomIterator
     private final RandomGenerator workingRandom;
 
     DefaultRepeatingRandomIterator(ElementAwareArrayList<T> source, RandomGenerator workingRandom) {
+        source.compactIfGappy();
         this.source = source;
         this.workingRandom = workingRandom;
     }

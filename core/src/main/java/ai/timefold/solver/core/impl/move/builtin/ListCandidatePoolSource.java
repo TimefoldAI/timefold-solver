@@ -120,12 +120,10 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
     }
 
     /**
-     * Copies the dataset: its list can have gaps that make random access scan, and compacting it moves other slots.
-     * Once datasets have no gaps during a step, this copy can become a view of the dataset's list.
+     * Copies the dataset, through its only full walk; its list can have gaps that make random access scan.
      */
     private static <A> List<A> toList(UniDatasetInstance<A> instance, RandomGenerator random) {
         var list = new ArrayList<A>(instance.size());
-        // Not a plain iterator: it compacts the dataset, which moves the slots that other move iterators hold.
         var iterator = instance.exhaustiveIterator(random);
         while (iterator.hasNext()) {
             var item = iterator.next();

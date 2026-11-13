@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Exists to support random selection with replacement over a shrinking live pool.
- * It accepts a list of items on input, and does not copy or modify it.
+ * It accepts a list of items on input, and does not copy it; it may compact it when it is made.
  * <p>
  * Unlike {@link UniqueRandomIterator},
  * this iterator never ends by itself (unless the underlying list is empty)

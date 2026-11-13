@@ -98,7 +98,7 @@ public abstract class AbstractBiasIT {
      * Filler entries are interleaved and then removed,
      * leaving the list logically equal to {@link #toEntries(List)} but physically gappy.
      * <p>
-     * The list compacts itself once its gaps pass a quarter of its size,
+     * The iterators compact the list once its gaps pass a quarter of its size,
      * so at most {@code elements.size() / 4} fillers can survive;
      * asking for more would make the list compact them all away
      * and silently hand back a gapless fixture which tests nothing.

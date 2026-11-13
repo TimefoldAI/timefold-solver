@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Exists to support random selection with replacement.
- * It accepts a list of items on input, and does not copy or modify it.
+ * It accepts a list of items on input, and does not copy it; it may compact it when it is made.
  * Does not allow null values.
  * <p>
  * Unlike {@link UniqueRandomIterator},
