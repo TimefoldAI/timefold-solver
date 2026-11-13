@@ -219,7 +219,7 @@
           "annotationType": "jakarta.xml.bind.annotation.XmlType",
           "attribute": "propOrder",
           "oldValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamAutomaticNodeSharing\", \"constraintStreamProfilingEnabled\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
-          "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamAutomaticNodeSharing\", \"constraintStreamProfilingEnabled\", \"useTieredScoreCalculation\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamAutomaticNodeSharing\", \"constraintStreamProfilingEnabled\", \"constraintStreamTieredScoreCalculation\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
           "justification": "Add new tiered score calculation enterprise feature."
         }
       ]

@@ -109,33 +109,33 @@ You can enable it by changing the following setting.
 ====
 XML::
 
-* Add `<useTieredScoreCalculation>true</useTieredScoreCalculation>` in your `solverConfig.xml`:
+* Add `<constraintStreamTieredScoreCalculation>true</constraintStreamTieredScoreCalculation>` in your `solverConfig.xml`:
 +
 [source,xml,options="nowrap"]
 ----
 <!-- ... -->
 <scoreDirectorFactory>
   <constraintProviderClass>org.acme.MyConstraintProvider</constraintProviderClass>
-  <useTieredScoreCalculation>true</useTieredScoreCalculation>
+  <constraintStreamTieredScoreCalculation>true</constraintStreamTieredScoreCalculation>
 </scoreDirectorFactory>
 <!-- ... -->
 ----
 
 Spring Boot::
 
-Set the property `timefold.solver.use-tiered-score-calculation` to `true` in `application.properties`:
+Set the property `timefold.solver.constraint-stream-tiered-score-calculation` to `true` in `application.properties`:
 +
 [source,properties,options="nowrap"]
 ----
-timefold.solver.use-tiered-score-calculation=true
+timefold.solver.constraint-stream-tiered-score-calculation=true
 ----
 
 Quarkus::
 
-Set the property `quarkus.timefold.solver.use-tiered-score-calculation` to `true` in `application.properties`:
+Set the property `quarkus.timefold.solver.constraint-stream-tiered-score-calculation` to `true` in `application.properties`:
 +
 [source,properties,options="nowrap"]
 ----
-quarkus.timefold.solver.use-tiered-score-calculation=true
+quarkus.timefold.solver.constraint-stream-tiered-score-calculation=true
 ----
 ====
