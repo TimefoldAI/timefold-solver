@@ -200,6 +200,26 @@ class ScoreDirectorFactoryFactoryTest {
                 .withMessageContaining("together");
     }
 
+    @Test
+    void constraintProfilingOnNonConstraintProvider_throwsException() {
+        var config = easyConfig()
+                .withConstraintStreamProfilingEnabled(true);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> factoryFactory(config))
+                .withMessageContaining("no constraintProviderClass")
+                .withMessageContaining("constraintStreamProfilingEnabled");
+    }
+
+    @Test
+    void constraintTieredOnNonConstraintProvider_throwsException() {
+        var config = easyConfig()
+                .withConstraintStreamTieredScoreCalculation(true);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> factoryFactory(config))
+                .withMessageContaining("no constraintProviderClass")
+                .withMessageContaining("constraintStreamTieredScoreCalculation");
+    }
+
     // ************************************************************************
     // Deciding whether more than one environment mode is served
     // ************************************************************************
