@@ -419,10 +419,10 @@ class ListChangeMoveSelectorTest {
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[1]}",
-                "3 {B[0]->B[0]}",
-                "3 {B[0]->B[0]}",
                 "3 {B[0]->B[1]}",
-                "3 {B[0]->B[1]}");
+                "1 {A[1]->A[1]}",
+                "3 {B[0]->B[1]}",
+                "3 {B[0]->B[0]}");
     }
 
     @Test
@@ -455,7 +455,7 @@ class ListChangeMoveSelectorTest {
                 "1 {A[1]->A[1]}",
                 "3 {B[0]->A[0]}",
                 "3 {B[0]->B[0]}",
-                "3 {B[0]->A[2]}",
+                "3 {B[0]->A[1]}",
                 "3 {B[0]->A[1]}");
     }
 
@@ -619,9 +619,9 @@ class ListChangeMoveSelectorTest {
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[1]}",
                 "3 {B[0]->B[1]}",
+                "1 {A[1]->A[0]}",
                 "3 {B[0]->B[1]}",
-                "3 {B[0]->B[1]}",
-                "3 {B[0]->B[1]}");
+                "3 {B[0]->B[0]}");
     }
 
     public static class IgnoreBValueSelectionFilter

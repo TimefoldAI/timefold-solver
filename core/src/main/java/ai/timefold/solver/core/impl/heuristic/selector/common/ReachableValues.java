@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.RandomAccess;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
@@ -22,6 +22,16 @@ import org.jspecify.annotations.Nullable;
 /**
  * This class records the relationship between each planning value and all entities that include the related value
  * within its value range.
+ * <p>
+ * Each entity has exactly one value range, and equal ranges are deduplicated.
+ * A value records the ranges that contain it, not the entities or values it reaches.
+ * A value reaches an entity if the entity's range contains the value,
+ * and it reaches another value if one range contains both.
+ * This takes O(V·R) memory for V values and R distinct ranges, instead of O(V²).
+ * <p>
+ * Values that are in the same ranges form a group, and reach the same entities and values (apart from themselves).
+ * The entity and value lists are built on first use, once for each group, and shared by its values;
+ * so a value list also contains the value itself.
  *
  * @see FromEntityPropertyValueRangeDescriptor
  */
@@ -29,36 +39,35 @@ import org.jspecify.annotations.Nullable;
 public final class ReachableValues<Entity_, Value_> {
 
     private final ReachableValuesIndex<Entity_, Entity_> entitiesIndex;
-    private final ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex;
+    private final ReachableValuesIndex<Value_, ReachableItemValue<Value_>> valuesIndex;
+    private final RangeIndex rangeIndex;
     private final Class<?> expectedSupertypeOfValue;
     private final @Nullable ValueRangeSorter<Value_> valueRangeSorter;
     private final boolean acceptsNullValue;
     private final @Nullable Predicate<Entity_> movableEntityFilter;
     private final @Nullable Predicate<Value_> movableValueFilter;
-    private @Nullable List<Entity_>[] onDemandRandomAccessEntity;
-    private @Nullable List<Entity_>[] onDemandRandomAccessMovableEntity;
-    private @Nullable Map<Class<?>, @Nullable List<Entity_>[]> onDemandRandomAccessMovableEntityByClass;
-    private @Nullable List<Value_>[] onDemandRandomAccessValue;
-    private @Nullable List<Value_>[] onDemandRandomAccessMovableValue;
-    private @Nullable ReachableItemValue<Entity_, Value_> firstCachedObject;
-    private @Nullable ReachableItemValue<Entity_, Value_> secondCachedObject;
-
-    public ReachableValues(ReachableValuesIndex<Entity_, Entity_> entitiesIndex,
-            ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex, Class<?> expectedSupertypeOfValue,
-            @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue) {
-        this(entitiesIndex, valuesIndex, expectedSupertypeOfValue, valueRangeSorter, acceptsNullValue, null, null);
-    }
+    private @Nullable List<Entity_>[] entityListByGroup;
+    private @Nullable List<Entity_>[] movableEntityListByGroup;
+    private @Nullable Map<Class<?>, @Nullable List<Entity_>[]> movableEntityListByGroupByClass;
+    private @Nullable ArrayBackedList<Value_>[] valueListByGroup;
+    private @Nullable ArrayBackedList<Value_>[] movableValueListByGroup;
+    private @Nullable ReachableItemValue<Value_> firstCachedObject;
+    private @Nullable ReachableItemValue<Value_> secondCachedObject;
+    private @Nullable ReachableItemValue<Value_> repeatedOrigin;
+    private int repeatedOriginCount;
+    private @Nullable BitSet repeatedOriginValues;
 
     /**
      * @param movableEntityFilter null if every entity is movable
      * @param movableValueFilter null if every value is movable; only list variable values can be pinned
      */
     public ReachableValues(ReachableValuesIndex<Entity_, Entity_> entitiesIndex,
-            ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex, Class<?> expectedSupertypeOfValue,
-            @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue,
+            ReachableValuesIndex<Value_, ReachableItemValue<Value_>> valuesIndex, RangeIndex rangeIndex,
+            Class<?> expectedSupertypeOfValue, @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue,
             @Nullable Predicate<Entity_> movableEntityFilter, @Nullable Predicate<Value_> movableValueFilter) {
         this.entitiesIndex = entitiesIndex;
         this.valuesIndex = valuesIndex;
+        this.rangeIndex = rangeIndex;
         this.expectedSupertypeOfValue = expectedSupertypeOfValue;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
@@ -67,8 +76,8 @@ public final class ReachableValues<Entity_, Value_> {
         clear();
     }
 
-    private @Nullable ReachableItemValue<Entity_, Value_> fetchItemValue(Object value) {
-        ReachableItemValue<Entity_, Value_> selected = null;
+    private @Nullable ReachableItemValue<Value_> fetchItemValue(Value_ value) {
+        ReachableItemValue<Value_> selected = null;
         if (firstCachedObject != null && firstCachedObject.value == value) {
             selected = firstCachedObject;
         } else if (secondCachedObject != null && secondCachedObject.value == value) {
@@ -90,15 +99,18 @@ public final class ReachableValues<Entity_, Value_> {
         return selected;
     }
 
-    public List<Entity_> extractEntitiesAsList(Object value) {
+    /**
+     * @return random access, unmodifiable, in the order of the entity index, shared with other callers
+     */
+    public List<Entity_> extractEntitiesAsList(Value_ value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        var entityList = onDemandRandomAccessEntity[itemValue.ordinal];
+        var entityList = entityListByGroup[itemValue.group];
         if (entityList == null) {
-            entityList = itemValue.getRandomAccessEntityList(entitiesIndex.allItems(), null);
-            onDemandRandomAccessEntity[itemValue.ordinal] = entityList;
+            entityList = buildEntityList(itemValue, null);
+            entityListByGroup[itemValue.group] = entityList;
         }
         return entityList;
     }
@@ -109,17 +121,18 @@ public final class ReachableValues<Entity_, Value_> {
      *
      * @return unmodifiable, random access, shared with other callers
      */
-    public List<Entity_> extractMovableEntitiesAsList(Object value) {
+    public List<Entity_> extractMovableEntitiesAsList(Value_ value) {
+        if (movableEntityFilter == null) {
+            return extractEntitiesAsList(value);
+        }
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        var entityList = onDemandRandomAccessMovableEntity[itemValue.ordinal];
+        var entityList = movableEntityListByGroup[itemValue.group];
         if (entityList == null) {
-            // Built in one pass from the index; the list of all entities is only built if asked for.
-            entityList = Collections.unmodifiableList(movableEntityFilter == null ? extractEntitiesAsList(value)
-                    : itemValue.getRandomAccessEntityList(entitiesIndex.allItems(), movableEntityFilter));
-            onDemandRandomAccessMovableEntity[itemValue.ordinal] = entityList;
+            entityList = buildEntityList(itemValue, movableEntityFilter);
+            movableEntityListByGroup[itemValue.group] = entityList;
         }
         return entityList;
     }
@@ -131,49 +144,87 @@ public final class ReachableValues<Entity_, Value_> {
      * @return random access, unmodifiable, shared with other callers
      */
     @SuppressWarnings("unchecked")
-    public List<Entity_> extractMovableEntitiesAsList(Object value, Class<?> entityClass) {
+    public List<Entity_> extractMovableEntitiesAsList(Value_ value, Class<?> entityClass) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        if (onDemandRandomAccessMovableEntityByClass == null) {
-            onDemandRandomAccessMovableEntityByClass = new HashMap<>();
+        if (movableEntityListByGroupByClass == null) {
+            movableEntityListByGroupByClass = new HashMap<>();
         }
-        var entityListArray = onDemandRandomAccessMovableEntityByClass.get(entityClass);
+        var entityListArray = movableEntityListByGroupByClass.get(entityClass);
         if (entityListArray == null) {
-            entityListArray = new List[valuesIndex.allItems().size()];
-            onDemandRandomAccessMovableEntityByClass.put(entityClass, entityListArray);
+            entityListArray = new List[rangeIndex.groupCount()];
+            movableEntityListByGroupByClass.put(entityClass, entityListArray);
         }
-        var entityList = entityListArray[itemValue.ordinal];
+        var entityList = entityListArray[itemValue.group];
         if (entityList == null) {
             // The class check first: it is cheaper, and the movable filter can assume the class.
             Predicate<Entity_> filter = entityClass::isInstance;
             if (movableEntityFilter != null) {
                 filter = filter.and(movableEntityFilter);
             }
-            entityList = Collections.unmodifiableList(itemValue.getRandomAccessEntityList(entitiesIndex.allItems(), filter));
-            entityListArray[itemValue.ordinal] = entityList;
+            entityList = buildEntityList(itemValue, filter);
+            entityListArray[itemValue.group] = entityList;
         }
         return entityList;
     }
 
-    public int getReachableEntitiesSize(Object value) {
+    @SuppressWarnings("unchecked")
+    private List<Entity_> buildEntityList(ReachableItemValue<Value_> itemValue,
+            @Nullable Predicate<Entity_> filter) {
+        var ranges = itemValue.ranges;
+        var allEntities = entitiesIndex.allItems();
+        // A bitset restores the entity index order.
+        var entityIndices = new BitSet(allEntities.size());
+        var size = 0;
+        for (var range = ranges.nextSetBit(0); range >= 0; range = ranges.nextSetBit(range + 1)) {
+            for (var entityIndex : rangeIndex.entitiesOfRange()[range]) {
+                entityIndices.set(entityIndex);
+                size++;
+            }
+        }
+        var entityArray = (Entity_[]) new Object[size];
+        var entityCount = 0;
+        for (var index = entityIndices.nextSetBit(0); index >= 0; index = entityIndices.nextSetBit(index + 1)) {
+            var entity = allEntities.get(index);
+            if (filter == null || filter.test(entity)) {
+                entityArray[entityCount++] = entity;
+            }
+        }
+        return new ArrayBackedList<>(entityArray, entityCount);
+    }
+
+    public int getReachableEntitiesSize(Value_ value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return 0;
         }
-        return itemValue.getReachableEntitySize();
+        return getReachableEntitiesSize(itemValue);
     }
 
-    public List<Value_> extractValuesAsList(Object value) {
+    private int getReachableEntitiesSize(ReachableItemValue<Value_> itemValue) {
+        var ranges = itemValue.ranges;
+        var size = 0;
+        for (var range = ranges.nextSetBit(0); range >= 0; range = ranges.nextSetBit(range + 1)) {
+            size += rangeIndex.entitiesOfRange()[range].length;
+        }
+        return size;
+    }
+
+    /**
+     * @return the values that share a range with the given value, including the given value;
+     *         random access, unmodifiable, sorted if this instance has a sorter, shared with other callers
+     */
+    public List<Value_> extractValuesAsList(Value_ value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        var valueList = onDemandRandomAccessValue[itemValue.ordinal];
+        var valueList = valueListByGroup[itemValue.group];
         if (valueList == null) {
-            valueList = itemValue.getRandomAccessValueList(valuesIndex.allItems(), valueRangeSorter, null);
-            onDemandRandomAccessValue[itemValue.ordinal] = valueList;
+            valueList = buildValueList(itemValue, null);
+            valueListByGroup[itemValue.group] = valueList;
         }
         return valueList;
     }
@@ -184,19 +235,54 @@ public final class ReachableValues<Entity_, Value_> {
      *
      * @return unmodifiable, random access, shared with other callers
      */
-    public List<Value_> extractMovableValuesAsList(Object value) {
+    public List<Value_> extractMovableValuesAsList(Value_ value) {
+        if (movableValueFilter == null) {
+            return extractValuesAsList(value);
+        }
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        var valueList = onDemandRandomAccessMovableValue[itemValue.ordinal];
+        var valueList = movableValueListByGroup[itemValue.group];
         if (valueList == null) {
-            // Built in one pass from the index; the list of all values is only built if asked for.
-            valueList = Collections.unmodifiableList(movableValueFilter == null ? extractValuesAsList(value)
-                    : itemValue.getRandomAccessValueList(valuesIndex.allItems(), valueRangeSorter, movableValueFilter));
-            onDemandRandomAccessMovableValue[itemValue.ordinal] = valueList;
+            valueList = buildValueList(itemValue, movableValueFilter);
+            movableValueListByGroup[itemValue.group] = valueList;
         }
         return valueList;
+    }
+
+    /**
+     * @return the values of all ranges of the given value's group, including the given value
+     */
+    @SuppressWarnings("unchecked")
+    private ArrayBackedList<Value_> buildValueList(ReachableItemValue<Value_> itemValue,
+            @Nullable Predicate<Value_> filter) {
+        var allValues = valuesIndex.allItems();
+        var valueIndices = buildValueIndices(itemValue);
+        var valueArray = (Value_[]) new Object[valueIndices.cardinality()];
+        var valueCount = 0;
+        for (var index = valueIndices.nextSetBit(0); index >= 0; index = valueIndices.nextSetBit(index + 1)) {
+            var value = allValues.get(index).value;
+            if (filter == null || filter.test(value)) {
+                valueArray[valueCount++] = value;
+            }
+        }
+        if (valueRangeSorter != null) {
+            valueRangeSorter.sort(Arrays.asList(valueArray).subList(0, valueCount));
+        }
+        return new ArrayBackedList<>(valueArray, valueCount);
+    }
+
+    /**
+     * @return the indices of the values in all ranges of the given value, including the given value
+     */
+    private BitSet buildValueIndices(ReachableItemValue<Value_> itemValue) {
+        var ranges = itemValue.ranges;
+        var valueIndices = new BitSet(valuesIndex.allItems().size());
+        for (var range = ranges.nextSetBit(0); range >= 0; range = ranges.nextSetBit(range + 1)) {
+            valueIndices.or(rangeIndex.valuesOfRange()[range]);
+        }
+        return valueIndices;
     }
 
     public Set<Entity_> extractAllEntitiesAsSet() {
@@ -226,7 +312,7 @@ public final class ReachableValues<Entity_, Value_> {
         if (entityIndex == null) {
             throw new IllegalStateException("The entity %s is not indexed.".formatted(entity));
         }
-        return originItemValue.containsEntity(entityIndex);
+        return originItemValue.ranges.get(rangeIndex.rangeOfEntity()[entityIndex]);
     }
 
     public boolean isValueReachable(Value_ origin, @Nullable Value_ otherValue) {
@@ -238,10 +324,41 @@ public final class ReachableValues<Entity_, Value_> {
             return acceptsNullValue;
         }
         var otherValueIndex = valuesIndex.indexMap().get(Objects.requireNonNull(otherValue));
-        if (otherValueIndex == null) {
+        if (otherValueIndex == null || otherValueIndex == originItemValue.ordinal) {
             return false;
         }
-        return originItemValue.containsValue(otherValueIndex);
+        if (originItemValue != repeatedOrigin) {
+            repeatedOrigin = originItemValue;
+            repeatedOriginCount = 0;
+            repeatedOriginValues = null;
+        }
+        if (repeatedOriginValues == null && ++repeatedOriginCount >= getRepeatedOriginThreshold(originItemValue)) {
+            repeatedOriginValues = buildValueIndices(originItemValue);
+        }
+        if (repeatedOriginValues != null) {
+            // A bit of the origin's own bitset stays in the CPU cache; the other value's ranges would not.
+            return repeatedOriginValues.get(otherValueIndex);
+        }
+        var otherItemValue = valuesIndex.allItems().get(otherValueIndex);
+        return originItemValue.group == otherItemValue.group || originItemValue.ranges.intersects(otherItemValue.ranges);
+    }
+
+    /**
+     * Nearby distance matrices ask about one origin and many other values in a row.
+     * After this many calls, the range intersections have cost as much as building the origin's value bitset,
+     * so building it keeps the total cost at most twice the cost of the better choice.
+     */
+    private int getRepeatedOriginThreshold(ReachableItemValue<Value_> originItemValue) {
+        if (originItemValue.repeatedOriginThreshold < 0) {
+            var rangeWords = toWordCount(rangeIndex.valuesOfRange().length);
+            var buildCost = (long) originItemValue.ranges.cardinality() * toWordCount(valuesIndex.allItems().size());
+            originItemValue.repeatedOriginThreshold = Math.clamp(buildCost / rangeWords, 1, Integer.MAX_VALUE);
+        }
+        return originItemValue.repeatedOriginThreshold;
+    }
+
+    private static int toWordCount(int bitCount) {
+        return (bitCount + Long.SIZE - 1) / Long.SIZE;
     }
 
     public boolean acceptsNullValue() {
@@ -253,75 +370,57 @@ public final class ReachableValues<Entity_, Value_> {
     }
 
     public ReachableValues<Entity_, Value_> copy(ValueRangeSorter<Value_> sorterAdapter) {
-        return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue,
-                movableEntityFilter, movableValueFilter);
+        return new ReachableValues<>(entitiesIndex, valuesIndex, rangeIndex, expectedSupertypeOfValue, sorterAdapter,
+                acceptsNullValue, movableEntityFilter, movableValueFilter);
     }
 
     @SuppressWarnings("unchecked")
     public void clear() {
         firstCachedObject = null;
         secondCachedObject = null;
-        var valueCount = valuesIndex.allItems().size();
-        this.onDemandRandomAccessEntity = new List[valueCount];
-        this.onDemandRandomAccessMovableEntity = new List[valueCount];
-        this.onDemandRandomAccessMovableEntityByClass = null;
-        this.onDemandRandomAccessValue = new List[valueCount];
-        this.onDemandRandomAccessMovableValue = new List[valueCount];
+        repeatedOrigin = null;
+        repeatedOriginCount = 0;
+        repeatedOriginValues = null;
+        var groupCount = rangeIndex.groupCount();
+        this.entityListByGroup = new List[groupCount];
+        this.movableEntityListByGroup = new List[groupCount];
+        this.movableEntityListByGroupByClass = null;
+        this.valueListByGroup = new ArrayBackedList[groupCount];
+        this.movableValueListByGroup = new ArrayBackedList[groupCount];
     }
 
     @NullMarked
-    public static final class ReachableItemValue<Entity_, Value_> {
+    public static final class ReachableItemValue<Value_> {
         private final int ordinal;
         private final Value_ value;
-        private final BitSet entityBitSet;
-        private final BitSet valueBitSet;
+        private final BitSet ranges;
+        private int group = -1;
+        private int repeatedOriginThreshold = -1;
 
-        public ReachableItemValue(int ordinal, Value_ value, int entityListSize, int valueListSize) {
+        public ReachableItemValue(int ordinal, Value_ value, int rangeCount) {
             this.ordinal = ordinal;
             this.value = value;
-            this.entityBitSet = new BitSet(entityListSize);
-            this.valueBitSet = new BitSet(valueListSize);
+            this.ranges = new BitSet(rangeCount);
         }
 
-        public void addEntity(int entityIndex) {
-            entityBitSet.set(entityIndex);
-        }
-
-        public void addValuesExcept(BitSet values, int exceptValueIndex) {
-            valueBitSet.or(values);
-            valueBitSet.clear(exceptValueIndex);
-        }
-
-        boolean containsEntity(int entityIndex) {
-            return entityBitSet.get(entityIndex);
-        }
-
-        boolean containsValue(int valueIndex) {
-            return valueBitSet.get(valueIndex);
-        }
-
-        int getReachableEntitySize() {
-            return entityBitSet.cardinality();
+        public void addRange(int rangeIndex) {
+            ranges.set(rangeIndex);
         }
 
         /**
-         * @param filter null to keep every reachable entity
+         * @return the indices of the ranges that contain this value; do not modify
          */
-        List<Entity_> getRandomAccessEntityList(List<Entity_> allEntities, @Nullable Predicate<Entity_> filter) {
-            return new BitSetIndexedList<>(allEntities, entityBitSet, Function.identity(), filter);
+        public BitSet getRanges() {
+            return ranges;
         }
 
         /**
-         * @param filter null to keep every reachable value
+         * @param group the same for all values with equal {@link #getRanges()}
          */
-        List<Value_> getRandomAccessValueList(List<ReachableItemValue<Entity_, Value_>> allValues,
-                @Nullable ValueRangeSorter<Value_> valueRangeSorter, @Nullable Predicate<Value_> filter) {
-            var valuesList = new BitSetIndexedList<>(allValues, valueBitSet, v -> v.value, filter);
-            if (valueRangeSorter != null) {
-                valueRangeSorter.sort(valuesList);
-            }
-            return valuesList;
+        public void setGroup(int group) {
+            this.group = group;
         }
+
     }
 
     @NullMarked
@@ -329,45 +428,42 @@ public final class ReachableValues<Entity_, Value_> {
 
     }
 
+    /**
+     * @param rangeOfEntity for each entity index, the index of its range
+     * @param entitiesOfRange for each range index, the sorted indices of the entities with that range
+     * @param valuesOfRange for each range index, the indices of the values in that range
+     * @param groupCount the number of distinct range sets among the values
+     */
     @NullMarked
-    private static final class BitSetIndexedList<Type_, Value_> extends AbstractList<Value_> {
+    public record RangeIndex(int[] rangeOfEntity, int[][] entitiesOfRange, BitSet[] valuesOfRange, int groupCount) {
+
+    }
+
+    @NullMarked
+    private static final class ArrayBackedList<Value_> extends AbstractList<Value_> implements RandomAccess {
 
         private final Value_[] values;
+        private final int size;
 
-        /**
-         * @param filter null to keep every item in the index
-         */
-        @SuppressWarnings("unchecked")
-        private BitSetIndexedList(List<Type_> availableValueList, BitSet containedValueIndex,
-                Function<Type_, Value_> valueExtractor, @Nullable Predicate<? super Value_> filter) {
-            var valueArray = (Value_[]) new Object[containedValueIndex.cardinality()];
-            var valueCount = 0;
-            for (var index = containedValueIndex.nextSetBit(0); index >= 0; index = containedValueIndex.nextSetBit(index + 1)) {
-                var value = valueExtractor.apply(availableValueList.get(index));
-                if (filter == null || filter.test(value)) {
-                    valueArray[valueCount] = value;
-                    valueCount++;
-                }
-            }
-            this.values = valueCount == valueArray.length ? valueArray : Arrays.copyOf(valueArray, valueCount);
+        private ArrayBackedList(Value_[] values, int size) {
+            this.values = values;
+            this.size = size;
         }
 
         @Override
         public Value_ get(int index) {
+            Objects.checkIndex(index, size);
             return values[index];
         }
 
         @Override
         public void sort(@Nullable Comparator<? super Value_> comparator) {
-            if (comparator == null) {
-                return;
-            }
-            Arrays.sort(values, comparator);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public int size() {
-            return values.length;
+            return size;
         }
     }
 
