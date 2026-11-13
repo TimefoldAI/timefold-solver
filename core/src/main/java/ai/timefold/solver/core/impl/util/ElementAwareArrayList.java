@@ -77,14 +77,13 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     }
 
     /**
-     * Compacts when the gaps pass a quarter of {@link #size()}, otherwise grows the backing array.
+     * Compacts when the gaps pass a quarter of {@link #size()}, then grows the backing array if it is still full.
      *
      * @return the slot for the next element
      */
     private int makeRoom() {
-        if (!compactIfGappy()) {
-            resize(lastElementPosition + 2);
-        }
+        compactIfGappy();
+        resize(lastElementPosition + 2);
         return lastElementPosition + 1;
     }
 
@@ -153,15 +152,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     @Override
     public T get(int index) {
         return getEntry(index).element();
-    }
-
-    /**
-     * Resolves a logical index to its entry without compacting,
-     * so that reads never relocate an element out from under a caller holding a physical slot.
-     * Runs in O(1) on a gapless list, and otherwise scans.
-     */
-    private int slotOf(int index) {
-        return getEntry(index).position;
     }
 
     private Entry getEntry(int index) {
@@ -434,6 +424,15 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             logicalPosition = startingPosition;
         }
 
+        /**
+         * Resolves a logical index to its slot without compacting,
+         * so that reads never relocate an element out from under a caller holding a physical slot.
+         * Runs in O(1) on a gapless list, and otherwise scans.
+         */
+        private int slotOf(int index) {
+            return getEntry(index).position;
+        }
+
         @Override
         public boolean hasNext() {
             return logicalPosition < size();
@@ -512,7 +511,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             ElementAwareArrayList.this.add(logicalPosition, element);
             logicalPosition++;
             // Appended entries land at physical lastElementPosition (may exceed logicalPosition when gaps exist);
-            // interior inserts land at physical logicalPosition (prefix is compacted by add(int,T)).
+            // interior inserts land at physical logicalPosition (add(int,T) compacts the list first).
             currentPosition = appending ? lastElementPosition + 1 : logicalPosition;
             lastEntry = null;
         }

@@ -220,8 +220,8 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("forEach compacts when tail gaps are encountered")
-        void forEachCompactsWithTailGaps() {
+        @DisplayName("forEach after trailing removals: remove trims them, so no gap remains")
+        void forEachAfterTrailingRemovals() {
             var list = new ElementAwareArrayList<String>();
             var entry1 = list.addEntry("first");
             var entry2 = list.addEntry("second");
@@ -288,17 +288,17 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("Gaps only after target: target found immediately without any swaps")
-        void getGapsOnlyAfterTarget() {
+        @DisplayName("Trailing removal leaves no gap; the read moves nothing")
+        void getAfterTrailingRemoval() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
             var e2 = list.addEntry("b");
             var e3 = list.addEntry("c");
 
             e3.remove();
-            // Physical: [a, b, null], gapCount=1, size=2
+            // Removing the last element trims it: [a, b], gapCount=0.
 
-            list.getFirst(); // a found at i=0 immediately; no gaps before → no swaps
+            list.getFirst();
             assertThat(e1.toString()).contains("@0");
             assertThat(e2.toString()).contains("@1"); // unchanged
             assertThat(list).hasSize(2);
@@ -326,8 +326,8 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("Target is last logical element, gaps before it: get resolves around the gaps")
-        void getLastElement_gapsBefore() {
+        @DisplayName("Target is last logical element, a gap before it: get resolves around the gap")
+        void getLastElement_gapBefore() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
             var e2 = list.addEntry("b");
@@ -338,6 +338,7 @@ class ElementAwareArrayListTest {
             e3.remove();
             e4.remove();
             // Physical: [null, b], gapCount=1, lastElementPosition=1, size=1
+            assertThat(list.slotCount()).isEqualTo(2);
 
             assertThat(list.getFirst()).isEqualTo("b");
             assertThat(e2.toString()).contains("@1");
@@ -378,14 +379,14 @@ class ElementAwareArrayListTest {
             assertThat(list.get(1)).isEqualTo("c");
             assertThat(e3.toString()).contains("@2");
 
-            e3.remove(); // uses updated position
+            e3.remove(); // Uses its unchanged position.
             assertThat(e3.isRemoved()).isTrue();
             assertThat(list).hasSize(2);
             assertThat(copyUsingForEach(list)).containsExactly("a", "d");
         }
 
         @Test
-        @DisplayName("Suffix entry (position not yet updated) retains valid raw position for removal")
+        @DisplayName("Entry after a read keeps its position for removal")
         void removeSuffixEntry_positionUnchanged() {
             var list = new ElementAwareArrayList<String>();
             list.addEntry("a");
@@ -398,9 +399,9 @@ class ElementAwareArrayListTest {
             e4.remove();
             // Physical: [a, null, c, null, e], gapCount=2, size=3
 
-            list.get(1); // c moves to slot 1; e5.position=4 unchanged
+            list.get(1); // Reads around the gaps; moves nothing.
 
-            e5.remove(); // uses raw position 4, still valid (backing list not shrunk)
+            e5.remove(); // Uses its unchanged position 4.
             assertThat(e5.isRemoved()).isTrue();
             assertThat(list).hasSize(2);
             assertThat(copyUsingForEach(list)).containsExactly("a", "c");
@@ -429,7 +430,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("forEach fully compacts list that was previously partially compacted")
+        @DisplayName("forEach fully compacts a gappy list after a read")
         void getThenForEach_fullCompactCorrect() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
@@ -453,7 +454,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("addAt compacts prefix then rotates entry into gap; all positions correct")
+        @DisplayName("addAt after a read compacts, then shifts; all positions correct")
         void getThenAddAt_fullCompactCorrect() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
@@ -464,16 +465,15 @@ class ElementAwareArrayListTest {
             e2.remove();
             // Physical: [a, null, c, d], gapCount=1, size=3
 
-            list.get(1); // Reads around the gap; moves nothing.
+            assertThat(list.get(1)).isEqualTo("c"); // Reads around the gap; moves nothing.
 
             list.add(1, "x"); // Compacts, then shifts c and d up by one.
             assertThat(list).hasSize(4);
             assertThat(copyUsingForEach(list)).containsExactly("a", "x", "c", "d");
-            // forEach compacts the list fully; entry positions are dense after the call.
+            // add(int, E) compacted the list; entry positions are dense.
             assertThat(e1.toString()).contains("@0");
             assertThat(e3.toString()).contains("@2");
             assertThat(e4.toString()).contains("@3");
-            // gapCount is 0 after forEach; subsequent get() is direct.
             assertThat(list.get(0)).isEqualTo("a");
             assertThat(list.get(2)).isEqualTo("c");
             assertThat(list.get(3)).isEqualTo("d");
@@ -702,12 +702,12 @@ class ElementAwareArrayListTest {
             var entries = new ArrayList<ElementAwareArrayList<Integer>.Entry>();
 
             // Add 100 elements
-            for (int i = 0; i < 100; i++) {
+            for (var i = 0; i < 100; i++) {
                 entries.add(list.addEntry(i));
             }
 
             // Remove every other element
-            for (int i = 0; i < 100; i += 2) {
+            for (var i = 0; i < 100; i += 2) {
                 entries.get(i).remove();
             }
 
@@ -715,7 +715,7 @@ class ElementAwareArrayListTest {
 
             var result = copyUsingForEach(list);
             assertThat(result).hasSize(50);
-            for (int i = 0; i < 50; i++) {
+            for (var i = 0; i < 50; i++) {
                 assertThat(result.get(i)).isEqualTo(i * 2 + 1);
             }
         }
@@ -824,7 +824,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("addAt partially compacts prefix then fills gap")
+        @DisplayName("addAt on a list with a leading gap compacts first")
         void addAtCompactsFirst() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
@@ -841,7 +841,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("addAt fills a gap directly when the target slot is null after prefix compaction")
+        @DisplayName("addAt at a gap slot compacts, then shifts")
         void addAtFillsGap() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
@@ -857,7 +857,7 @@ class ElementAwareArrayListTest {
 
             assertThat(list).hasSize(4);
             assertThat(e1.toString()).contains("@0");
-            assertThat(e3.toString()).contains("@2"); // suffix positions unchanged
+            assertThat(e3.toString()).contains("@2"); // Compacted to slot 1, then shifted to slot 2.
             assertThat(e4.toString()).contains("@3");
             assertThat(copyUsingForEach(list)).containsExactly("a", "x", "c", "d");
         }
@@ -885,7 +885,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("addAt rotates entries into the nearest suffix gap when target slot is non-null")
+        @DisplayName("addAt before a later gap compacts, then shifts")
         void addAtRotatesIntoGap() {
             var list = new ElementAwareArrayList<String>();
             var e1 = list.addEntry("a");
@@ -937,7 +937,7 @@ class ElementAwareArrayListTest {
             var entry = list.addEntry("b");
             list.add("c");
             entry.remove();
-            // logical size = 2, backing size = 3
+            // size = 2, slotCount = 3
 
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
@@ -1182,7 +1182,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("iterator remove on list that already has gaps")
+        @DisplayName("iterator remove on list that already has a gap")
         void removeViaIteratorOnGappyList() {
             var list = new ElementAwareArrayList<String>();
             list.add("a");
@@ -1190,7 +1190,7 @@ class ElementAwareArrayListTest {
             list.add("c");
             list.add("d");
             entryB.remove();
-            // listIterator() compacts the b-gap away first; the gap under test is the one it.remove() creates mid-iteration.
+            // listIterator() does not compact, so the b-gap is still present during iteration.
 
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
@@ -1206,7 +1206,7 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("next-remove-next-previous cycle with pre-existing gaps")
+        @DisplayName("next-remove-next-previous cycle with a pre-existing gap")
         void nextRemoveNextPreviousCycle() {
             var list = new ElementAwareArrayList<String>();
             list.add("a");
@@ -1214,7 +1214,7 @@ class ElementAwareArrayListTest {
             list.add("b");
             list.add("c");
             entryX.remove();
-            // listIterator() compacts the x-gap away first; the gap under test is the one it.remove() creates mid-iteration.
+            // listIterator() does not compact, so the x-gap is still present during iteration.
 
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
@@ -1510,7 +1510,7 @@ class ElementAwareArrayListTest {
                 assertThat(entry).isNotNull();
                 assertThat(entry.toString()).contains("@" + i);
             }
-            assertThat(newEntry.toString()).isEqualTo("new@9");
+            assertThat(newEntry).hasToString("new@9");
             assertThat(list).containsExactly("e1", "e3", "e5", "e7", "e9", "e11", "e13", "e14", "e15", "new");
             entryList.get(5).remove();
             assertThat(list).doesNotContain("e5");
@@ -1549,7 +1549,7 @@ class ElementAwareArrayListTest {
             assertThat(listIterator.previous()).isEqualTo("e3");
 
             assertThat(list.slotCount()).isEqualTo(10);
-            assertThat(entryList.get(9).toString()).isEqualTo("e9@9");
+            assertThat(entryList.get(9)).hasToString("e9@9");
         }
 
         @Test

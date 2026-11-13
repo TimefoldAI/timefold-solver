@@ -39,11 +39,11 @@ class DefaultRetiringRandomIteratorTest {
         entryList.get(1).remove(); // 1 gap, 7 elements.
 
         new DefaultRetiringRandomIterator<>(list, new Random(0));
-        assertThat(entryList.get(7).toString()).isEqualTo("e7@7");
+        assertThat(entryList.get(7)).hasToString("e7@7");
 
         entryList.get(3).remove(); // 2 gaps, 6 elements.
         new DefaultRetiringRandomIterator<>(list, new Random(0));
-        assertThat(entryList.get(7).toString()).isEqualTo("e7@5");
+        assertThat(entryList.get(7)).hasToString("e7@5");
     }
 
     @Test
