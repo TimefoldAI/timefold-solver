@@ -2,15 +2,16 @@ package ai.timefold.solver.core.impl.move.builtin;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -50,8 +51,8 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
     public static <Solution_, Entity_, Value_> ListCandidatePoolSource<Solution_, Entity_, Value_> of(
             SolutionView<Solution_> solutionView, PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             RandomGenerator random, UniDatasetInstance<Entity_> entityInstance, boolean includeUnassignedDestination) {
-        return new ListCandidatePoolSource<>(solutionView, variableMetaModel, random, () -> toList(entityInstance, random),
-                List::of, includeUnassignedDestination);
+        return new ListCandidatePoolSource<>(solutionView, variableMetaModel, random, orderedRows(entityInstance), null,
+                includeUnassignedDestination);
     }
 
     /**
@@ -64,18 +65,18 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
             SolutionView<Solution_> solutionView, PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             RandomGenerator random, UniDatasetInstance<Entity_> entityInstance,
             UniDatasetInstance<Value_> unassignedValueInstance) {
-        return new ListCandidatePoolSource<>(solutionView, variableMetaModel, random, () -> toList(entityInstance, random),
-                () -> toList(unassignedValueInstance, random), false);
+        return new ListCandidatePoolSource<>(solutionView, variableMetaModel, random, orderedRows(entityInstance),
+                Objects.requireNonNull(unassignedValueInstance), false);
     }
 
     private final SolutionView<Solution_> solutionView;
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final RandomGenerator random;
-    // Copied on first use: only the single draws read the entities, and only swaps read the unassigned values.
-    private final Supplier<List<Entity_>> movableEntitySupplier;
-    private final Supplier<List<Value_>> unassignedValueSupplier;
-    private @Nullable List<Entity_> movableEntities;
-    private @Nullable List<Value_> unassignedValues;
+    // Read once, by the first single draw, while it builds its layout.
+    private final Iterable<@Nullable Entity_> movableEntities;
+    // Drawn from directly: a draw only needs one random unassigned value.
+    private final @Nullable UniDatasetInstance<Value_> unassignedValueInstance;
+    private @Nullable Iterator<@Nullable Value_> unassignedValueIterator;
     private final boolean includeUnassignedDestination;
     // Per value: the slots of its accepting entities.
     private final Map<Value_, SlotLayout> destinationLayoutMap = new IdentityHashMap<>();
@@ -88,50 +89,39 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
      * @param solutionView the view of the working solution
      * @param variableMetaModel the list variable
      * @param random the random generator of the move iterator
-     * @param movableEntitySupplier the movable entities of the variable, random access; called at most once
-     * @param unassignedValueSupplier the unassigned values, for swap partners, random access; empty if none are acceptable;
-     *        called at most once
+     * @param movableEntities the movable entities of the variable; read at most twice, by the first single draw of each kind
+     * @param unassignedValueInstance the unassigned values, for swap partners; null if none are acceptable
      * @param includeUnassignedDestination whether the unassigned destination is part of the destinations
      */
     ListCandidatePoolSource(SolutionView<Solution_> solutionView,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, RandomGenerator random,
-            Supplier<List<Entity_>> movableEntitySupplier, Supplier<List<Value_>> unassignedValueSupplier,
+            Iterable<@Nullable Entity_> movableEntities, @Nullable UniDatasetInstance<Value_> unassignedValueInstance,
             boolean includeUnassignedDestination) {
         this.solutionView = Objects.requireNonNull(solutionView);
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.random = Objects.requireNonNull(random);
-        this.movableEntitySupplier = Objects.requireNonNull(movableEntitySupplier);
-        this.unassignedValueSupplier = Objects.requireNonNull(unassignedValueSupplier);
+        this.movableEntities = Objects.requireNonNull(movableEntities);
+        this.unassignedValueInstance = unassignedValueInstance;
         this.includeUnassignedDestination = includeUnassignedDestination;
     }
 
-    private List<Entity_> movableEntities() {
-        if (movableEntities == null) {
-            movableEntities = movableEntitySupplier.get();
+    /**
+     * Uniform over the unassigned values, with replacement; it skips the gaps of the dataset's list without copying it.
+     */
+    private Iterator<@Nullable Value_> unassignedValueIterator() {
+        if (unassignedValueIterator == null) {
+            unassignedValueIterator = Objects.requireNonNull(unassignedValueInstance).iterator(random);
         }
-        return movableEntities;
-    }
-
-    private List<Value_> unassignedValues() {
-        if (unassignedValues == null) {
-            unassignedValues = unassignedValueSupplier.get();
-        }
-        return unassignedValues;
+        return unassignedValueIterator;
     }
 
     /**
-     * Copies the dataset, through its only full walk; its list can have gaps that make random access scan.
+     * The rows in insertion order, without compacting the dataset (see {@link DefaultUniDatasetInstance#iterator()}).
      */
-    private static <A> List<A> toList(UniDatasetInstance<A> instance, RandomGenerator random) {
-        var list = new ArrayList<A>(instance.size());
-        var iterator = instance.exhaustiveIterator(random);
-        while (iterator.hasNext()) {
-            var item = iterator.next();
-            if (item != null) {
-                list.add(item);
-            }
-        }
-        return list;
+    @SuppressWarnings("unchecked")
+    private static <Solution_, A> Iterable<@Nullable A> orderedRows(UniDatasetInstance<A> instance) {
+        var defaultInstance = (DefaultUniDatasetInstance<Solution_, A>) instance;
+        return defaultInstance::iterator;
     }
 
     private int slotCount(Entity_ entity, SlotKind kind) {
@@ -167,27 +157,36 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
      * from the smaller of {@link SolutionView#getValuesSharingRangeWith} and the unassigned values.
      *
      * @param value the value to find a partner for
-     * @param includeUnassigned whether unassigned values are acceptable partners
+     * @param includeUnassigned whether unassigned values are acceptable partners;
+     *        true only if this source was made with the unassigned values
      * @param filter the caller's validity check
      * @return null if no partner was accepted within the bail-out budget
      */
     public @Nullable Value_ drawPartner(Value_ value, boolean includeUnassigned, Predicate<Value_> filter) {
-        List<Value_> unassignedCandidateList = List.of();
-        var unassignedValueList = includeUnassigned ? unassignedValues() : List.<Value_> of();
-        if (!unassignedValueList.isEmpty()) {
-            // Both lists hold every unassigned value which shares a range with the value, each once;
+        // Null: the unassigned candidates are drawn from the unassigned values.
+        List<Value_> unassignedCandidateList = null;
+        var unassignedCandidateCount = 0;
+        var unassignedValueCount = includeUnassigned ? Objects.requireNonNull(unassignedValueInstance).size() : 0;
+        if (unassignedValueCount > 0) {
+            // Both hold every unassigned value which shares a range with the value, each once;
             // the smaller one rejects fewer draws, and either keeps every valid partner at the same chance.
             var sharingList = solutionView.getValuesSharingRangeWith(variableMetaModel, value);
-            unassignedCandidateList = sharingList.size() < unassignedValueList.size() ? sharingList : unassignedValueList;
+            if (sharingList.size() < unassignedValueCount) {
+                unassignedCandidateList = sharingList;
+                unassignedCandidateCount = sharingList.size();
+            } else {
+                unassignedCandidateCount = unassignedValueCount;
+            }
         }
         var layout = partnerLayoutMap.computeIfAbsent(value,
                 v -> new SlotLayout(solutionView.getEntitiesWithValueInRange(variableMetaModel, v), SlotKind.VALUE, true));
-        var slotCount = layout.slotCount + unassignedCandidateList.size();
+        var slotCount = layout.slotCount + unassignedCandidateCount;
         if (slotCount == 0) {
             return null;
         }
-        return AbstractLeftDrivenMoveIterator.drawMatching(new PartnerIterator(layout, unassignedCandidateList, slotCount),
-                slotCount, partner -> partner != null && filter.test(partner));
+        return AbstractLeftDrivenMoveIterator.drawMatching(
+                new PartnerIterator(layout, unassignedCandidateList, slotCount), slotCount,
+                partner -> partner != null && filter.test(partner));
     }
 
     /**
@@ -199,7 +198,7 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
     @Override
     public @Nullable ElementPosition drawDestinationOnce(Predicate<ElementPosition> filter) {
         if (allDestinationLayout == null) {
-            allDestinationLayout = new SlotLayout(movableEntities(), SlotKind.DESTINATION, false);
+            allDestinationLayout = new SlotLayout(movableEntities, SlotKind.DESTINATION);
         }
         var slotCount = allDestinationLayout.slotCount + (includeUnassignedDestination ? 1L : 0L);
         if (slotCount == 0) {
@@ -218,7 +217,7 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
     @Override
     public @Nullable Value_ drawPartnerOnce(Predicate<Value_> filter) {
         if (allPartnerLayout == null) {
-            allPartnerLayout = new SlotLayout(movableEntities(), SlotKind.VALUE, false);
+            allPartnerLayout = new SlotLayout(movableEntities, SlotKind.VALUE);
         }
         if (allPartnerLayout.slotCount == 0) {
             return null;
@@ -304,11 +303,12 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
             implements Iterator<@Nullable Value_> {
 
         private final SlotLayout layout;
-        private final List<Value_> unassignedCandidateList;
+        // Null: draw the unassigned candidates from the unassigned values.
+        private final @Nullable List<Value_> unassignedCandidateList;
         // The slots of the layout, plus one per unassigned candidate.
         private final long slotCount;
 
-        private PartnerIterator(SlotLayout layout, List<Value_> unassignedCandidateList, long slotCount) {
+        private PartnerIterator(SlotLayout layout, @Nullable List<Value_> unassignedCandidateList, long slotCount) {
             this.layout = layout;
             this.unassignedCandidateList = unassignedCandidateList;
             this.slotCount = slotCount;
@@ -327,9 +327,11 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
                 return position == null ? null
                         : solutionView.getValueAtIndex(variableMetaModel, position.entity(), position.index());
             }
-            var partner = unassignedCandidateList.get((int) (slot - layout.slotCount));
+            // Each unassigned candidate has one slot; a draw from the unassigned values is uniform over them too.
+            var partner = unassignedCandidateList != null ? unassignedCandidateList.get((int) (slot - layout.slotCount))
+                    : unassignedValueIterator().next();
             // Assigned values are reached through their entity.
-            return solutionView.isAssigned(variableMetaModel, partner) ? null : partner;
+            return partner == null || solutionView.isAssigned(variableMetaModel, partner) ? null : partner;
         }
     }
 
@@ -375,6 +377,37 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
             this.padded = mayPad && paddedCount <= 2 * sum;
             this.maximumCount = maximum;
             this.slotCount = padded ? paddedCount : sum;
+        }
+
+        /**
+         * Without padding; reads the entities once, in order, and keeps them by position.
+         *
+         * @param entities null items are skipped
+         */
+        private SlotLayout(Iterable<@Nullable Entity_> entities, SlotKind kind) {
+            var entityList = new ArrayList<Entity_>();
+            var counts = new long[16];
+            var sum = 0L;
+            var maximum = 0;
+            for (var entity : entities) {
+                if (entity == null) {
+                    continue;
+                }
+                var count = slotCount(entity, kind);
+                maximum = Math.max(maximum, count);
+                sum += count;
+                if (entityList.size() == counts.length) {
+                    counts = Arrays.copyOf(counts, counts.length * 2);
+                }
+                counts[entityList.size()] = sum;
+                entityList.add(entity);
+            }
+            this.entityList = entityList;
+            this.kind = kind;
+            this.cumulativeCounts = Arrays.copyOf(counts, entityList.size());
+            this.padded = false;
+            this.maximumCount = maximum;
+            this.slotCount = sum;
         }
 
         /**
