@@ -244,7 +244,8 @@ class MoveSelectionStrategySolverTest {
                 .withPhases(new LocalSearchPhaseConfig()
                         .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
                                 .withMoveSelectionStrategyClass(RecordingStrategy.class)));
-        assertThatThrownBy(() -> SolverFactory.create(solverConfig).buildSolver())
+        var solverFactory = SolverFactory.create(solverConfig);
+        assertThatThrownBy(solverFactory::buildSolver)
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("phase-level neighborhoods element")
                 .hasMessageContaining("NEIGHBORHOODS");

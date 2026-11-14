@@ -194,10 +194,7 @@ public final class TerminationFactory<Solution_> {
     }
 
     private TerminationCompositionStyle getCompositionStyle() {
-        if (terminationConfig.getTerminationCompositionStyle() != null) {
-            return terminationConfig.getTerminationCompositionStyle();
-        }
-        return TerminationCompositionStyle.OR;
+        return Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);
     }
 
     @SuppressWarnings("unchecked")

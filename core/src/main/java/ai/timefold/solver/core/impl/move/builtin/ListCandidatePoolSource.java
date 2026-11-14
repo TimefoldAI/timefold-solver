@@ -385,7 +385,7 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
          * @param entities null items are skipped
          */
         private SlotLayout(Iterable<@Nullable Entity_> entities, SlotKind kind) {
-            var entityList = new ArrayList<Entity_>();
+            var readEntityList = new ArrayList<Entity_>();
             var counts = new long[16];
             var sum = 0L;
             var maximum = 0;
@@ -396,15 +396,15 @@ public final class ListCandidatePoolSource<Solution_, Entity_, Value_>
                 var count = slotCount(entity, kind);
                 maximum = Math.max(maximum, count);
                 sum += count;
-                if (entityList.size() == counts.length) {
+                if (readEntityList.size() == counts.length) {
                     counts = Arrays.copyOf(counts, counts.length * 2);
                 }
-                counts[entityList.size()] = sum;
-                entityList.add(entity);
+                counts[readEntityList.size()] = sum;
+                readEntityList.add(entity);
             }
-            this.entityList = entityList;
+            this.entityList = readEntityList;
             this.kind = kind;
-            this.cumulativeCounts = Arrays.copyOf(counts, entityList.size());
+            this.cumulativeCounts = Arrays.copyOf(counts, readEntityList.size());
             this.padded = false;
             this.maximumCount = maximum;
             this.slotCount = sum;

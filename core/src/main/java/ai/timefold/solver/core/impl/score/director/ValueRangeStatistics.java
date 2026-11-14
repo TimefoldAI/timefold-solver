@@ -205,7 +205,7 @@ final class ValueRangeStatistics<Solution_> {
     }
 
     private LinkedHashMap<String, Long> getVariableToValueCount(EntityDescriptor<Solution_> entityDescriptor) {
-        var solutionValueCountArray = Objects.requireNonNull(this.solutionValueCountArray);
+        var valueCountArray = Objects.requireNonNull(solutionValueCountArray);
         var entityValueCountRow = Objects.requireNonNull(entityValueCountArray)[entityDescriptor.getOrdinal()];
         var variableToValueCount = new LinkedHashMap<String, Long>();
         var genuineVariableList = entityDescriptor.getGenuineVariableDescriptorList();
@@ -213,7 +213,7 @@ final class ValueRangeStatistics<Solution_> {
             var genuineVariable = genuineVariableList.get(i);
             variableToValueCount.put(genuineVariable.getVariableName(),
                     genuineVariable.canExtractValueRangeFromSolution()
-                            ? solutionValueCountArray[genuineVariable.getGlobalOrdinal()]
+                            ? valueCountArray[genuineVariable.getGlobalOrdinal()]
                             : entityValueCountRow[i]);
         }
         return variableToValueCount;
