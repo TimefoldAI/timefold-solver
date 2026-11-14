@@ -1,4 +1,4 @@
-Create the `src/main/resource/logback.xml` file:
+Create the `src/main/resources/logback.xml` file:
 
 [source,xml]
 ----
