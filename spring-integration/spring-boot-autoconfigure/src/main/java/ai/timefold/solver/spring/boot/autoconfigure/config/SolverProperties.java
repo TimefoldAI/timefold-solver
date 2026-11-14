@@ -62,6 +62,17 @@ public class SolverProperties {
     private Boolean constraintStreamAutomaticNodeSharing;
 
     /**
+     * Note: this setting is only available in Timefold Solver
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
+     * Enable tiered score calculation,
+     * which causes the solver to only calculate constraints affecting softer score levels if they can change if a move is
+     * accepted.
+     * For instance, if a move broke multiple hard constraints, then Timefold Solver may skip the medium and soft constraints.
+     * Defaults to "false".
+     */
+    private Boolean constraintStreamTieredScoreCalculation;
+
+    /**
      * Configuration of the random seed.
      */
     private Long randomSeed;
@@ -135,6 +146,14 @@ public class SolverProperties {
 
     public void setConstraintStreamAutomaticNodeSharing(Boolean constraintStreamAutomaticNodeSharing) {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
+    }
+
+    public Boolean getConstraintStreamTieredScoreCalculation() {
+        return constraintStreamTieredScoreCalculation;
+    }
+
+    public void setConstraintStreamTieredScoreCalculation(Boolean constraintStreamTieredScoreCalculation) {
+        this.constraintStreamTieredScoreCalculation = constraintStreamTieredScoreCalculation;
     }
 
     public Long getRandomSeed() {

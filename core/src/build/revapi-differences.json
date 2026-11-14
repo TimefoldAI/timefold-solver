@@ -210,6 +210,17 @@
           "code": "java.method.addedToInterface",
           "new": "method ai.timefold.solver.core.api.solver.SolverRunResult<Solution_> ai.timefold.solver.core.api.solver.SolverJob<Solution_>::getResult() throws java.lang.InterruptedException, java.util.concurrent.ExecutionException",
           "justification": "Return end-of-run statistics; SolverJob is implemented by the solver, not by user code."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "new": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamAutomaticNodeSharing\", \"constraintStreamProfilingEnabled\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamAutomaticNodeSharing\", \"constraintStreamProfilingEnabled\", \"constraintStreamTieredScoreCalculation\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "justification": "Add new tiered score calculation enterprise feature."
         }
       ]
     }

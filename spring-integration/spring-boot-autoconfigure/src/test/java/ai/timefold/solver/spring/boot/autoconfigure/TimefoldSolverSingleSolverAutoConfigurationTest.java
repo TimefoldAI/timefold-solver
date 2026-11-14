@@ -132,6 +132,19 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
     }
 
     @Test
+    void solveWithTieredScoreCalculation() {
+        contextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.solver.constraint-stream-tiered-score-calculation=true")
+                .run(context -> {
+                    var solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                            .getConstraintStreamTieredScoreCalculation())
+                            .isTrue();
+                });
+    }
+
+    @Test
     void solveWithParallelSolverCount() {
         contextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)

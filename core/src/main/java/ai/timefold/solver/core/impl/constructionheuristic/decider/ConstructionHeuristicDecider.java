@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.decider;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
@@ -12,6 +13,7 @@ import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -147,9 +149,11 @@ public class ConstructionHeuristicDecider<Solution_> {
         }
     }
 
-    protected void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
-        var scoreDirector = moveScope.getScoreDirector();
-        var score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
+    protected <Score_ extends Score<Score_>> void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
+        var scoreDirector = moveScope.<Score_> getScoreDirector();
+        InnerScore<?> score;
+        var lowerBound = forager.<Score_> getForagedMoveScoreLowerBound();
+        score = scoreDirector.executeTemporaryMove(moveScope.getMove(), lowerBound, assertMoveScoreFromScratch);
         moveScope.setScore(score);
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {

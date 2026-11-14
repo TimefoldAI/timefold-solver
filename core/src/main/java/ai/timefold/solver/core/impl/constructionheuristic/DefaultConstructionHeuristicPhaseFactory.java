@@ -74,6 +74,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
                 phaseConfigPolicy.getEnvironmentMode(), phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination))
+                .withIsTieredScoreCalculationEnabled(phaseConfigPolicy.isTieredScoreCalculationEnabled())
                 .enableAssertions();
     }
 

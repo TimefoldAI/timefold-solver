@@ -308,7 +308,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
 
         @Override
-        public InnerScore<Score_> innerCalculateScore() {
+        public InnerScore<Score_> innerCalculateScore(Score_ lowerBound) {
             throw new UnsupportedOperationException();
         }
 

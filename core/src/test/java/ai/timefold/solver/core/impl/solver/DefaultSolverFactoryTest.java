@@ -171,6 +171,19 @@ class DefaultSolverFactoryTest {
     }
 
     @Test
+    void testInvalidTieredScoreCalculationWithoutEnterprise() {
+        SolverConfig solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withConstraintProviderClass(TestdataConstraintProvider.class)
+                        .withConstraintStreamTieredScoreCalculation(true));
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
+                .hasMessageContainingAll("Tiered score calculation",
+                        "remove tiered score calculation from solver configuration");
+    }
+
+    @Test
     void assertEnvironmentModeWithoutPhases() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)

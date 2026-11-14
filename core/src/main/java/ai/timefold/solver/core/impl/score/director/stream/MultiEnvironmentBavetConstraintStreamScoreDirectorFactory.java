@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 
@@ -41,7 +42,7 @@ public final class MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<Sol
 
     @SuppressWarnings("unchecked")
     @Override
-    public BavetConstraintStreamScoreDirector.Builder<Solution_, Score_>
+    public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>
             createScoreDirectorBuilder(EnvironmentMode environmentMode) {
         if (environmentMode == globalEnvironmentMode) {
             // The inherited constraint network was built for this mode.
@@ -52,7 +53,8 @@ public final class MultiEnvironmentBavetConstraintStreamScoreDirectorFactory<Sol
         var factory = environmentModeToFactoryMap.computeIfAbsent(environmentMode,
                 mode -> scoreDirectorFactoryFactory.buildConcreteScoreDirectorFactory(mode, getSolutionDescriptor()));
         // The factory was built for this mode, so its own builder is the one which runs in it.
-        return (BavetConstraintStreamScoreDirector.Builder<Solution_, Score_>) factory.createScoreDirectorBuilder();
+        return (AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>) factory
+                .createScoreDirectorBuilder();
     }
 
 }

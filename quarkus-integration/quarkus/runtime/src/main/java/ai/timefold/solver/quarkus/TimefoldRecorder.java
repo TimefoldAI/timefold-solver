@@ -13,6 +13,7 @@ import jakarta.inject.Named;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
@@ -140,6 +141,16 @@ public class TimefoldRecorder {
                 .ifPresent(solverConfig::setMoveThreadCount);
         maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::randomSeed)
                 .ifPresent(solverConfig::setRandomSeed);
+        maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::constraintStreamTieredScoreCalculation)
+                .ifPresent(constraintStreamTieredScoreCalculation -> {
+                    var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
+                    if (scoreDirectorFactoryConfig == null) {
+                        scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
+                        solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
+                    }
+                    scoreDirectorFactoryConfig
+                            .setConstraintStreamTieredScoreCalculation(constraintStreamTieredScoreCalculation);
+                });
         maybeSolverRuntimeConfig.flatMap(config -> config.termination().diminishedReturns())
                 .ifPresent(diminishedReturnsConfig -> setDiminishedReturns(solverConfig, diminishedReturnsConfig));
     }

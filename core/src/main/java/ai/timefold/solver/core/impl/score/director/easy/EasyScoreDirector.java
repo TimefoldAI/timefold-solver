@@ -45,7 +45,7 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public InnerScore<Score_> innerCalculateScore() {
+    public InnerScore<Score_> innerCalculateScore(Score_ lowerBound) {
         variableSupport.assertShadowVariablesAreUpToDate();
         var score = easyScoreCalculator.calculateScore(workingSolution);
         setCalculatedScore(score);
