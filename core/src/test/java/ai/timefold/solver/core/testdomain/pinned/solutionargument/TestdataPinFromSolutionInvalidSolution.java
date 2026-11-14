@@ -1,0 +1,46 @@
+package ai.timefold.solver.core.testdomain.pinned.solutionargument;
+
+import java.util.List;
+
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+
+@PlanningSolution
+public class TestdataPinFromSolutionInvalidSolution {
+
+    public static SolutionDescriptor<TestdataPinFromSolutionInvalidSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataPinFromSolutionInvalidSolution.class,
+                TestdataPinFromSolutionInvalidEntity.class);
+    }
+
+    private List<TestdataValue> valueList;
+    private List<TestdataPinFromSolutionInvalidEntity> entityList;
+    private SimpleScore score;
+
+    @ValueRangeProvider(id = "valueRange")
+    @ProblemFactCollectionProperty
+    public List<TestdataValue> getValueList() {
+        return valueList;
+    }
+
+    @PlanningEntityCollectionProperty
+    public List<TestdataPinFromSolutionInvalidEntity> getEntityList() {
+        return entityList;
+    }
+
+    @PlanningScore
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
+
+}
