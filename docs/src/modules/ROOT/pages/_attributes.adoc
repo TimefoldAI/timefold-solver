@@ -3,6 +3,6 @@
 :quickstarts-archive-url: https://github.com/TimefoldAI/timefold-quickstarts/archive/refs/heads/stable.tar.gz
 :hello-world-java-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/hello-world
 :spring-boot-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/spring-boot-integration
-:quarkus-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/school-timetabling
+:quarkus-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/use-cases/school-timetabling
 :vrp-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/vehicle-routing
 :service-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/service
