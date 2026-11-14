@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -180,5 +181,51 @@ class FilteringValueRangeSelectorTest {
         valueSelector.phaseEnded(phaseScopeB);
 
         valueSelector.solvingEnded(solverScope);
+    }
+
+    @Test
+    void noUpcomingValueOriginal() {
+        assertNoUpcomingValue(false);
+    }
+
+    @Test
+    void noUpcomingValueRandom() {
+        assertNoUpcomingValue(true);
+    }
+
+    private static void assertNoUpcomingValue(boolean randomSelection) {
+        var variableDescriptor = TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
+        var fromEntityPropertySelector = new FromEntityPropertyValueSelector<>(variableDescriptor.getValueRangeDescriptor(),
+                new TestdataObjectSorter<>(), randomSelection);
+        var iterableValueSelector = new IterableFromEntityPropertyValueSelector<>(fromEntityPropertySelector,
+                SelectionCacheType.PHASE, randomSelection);
+        var mimicRecorder = new ManualValueMimicRecorder<>(iterableValueSelector);
+        var replayingValueSelector = new MimicReplayingValueSelector<>(mimicRecorder);
+        var valueSelector = new FilteringValueRangeSelector<>(iterableValueSelector, replayingValueSelector,
+                randomSelection, false);
+
+        var jan = new TestdataListEntityProvidingValue("jan");
+        var feb = new TestdataListEntityProvidingValue("feb");
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(new TestdataListEntityProvidingEntity("e1", List.of(jan, feb))));
+
+        SolverScope<TestdataListEntityProvidingSolution> solverScope = mockSolverScope();
+        InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
+        doReturn(scoreDirector).when(solverScope).getScoreDirector();
+        doReturn(solution).when(scoreDirector).getWorkingSolution();
+        doReturn(ValueRangeManager.of(TestdataListEntityProvidingSolution.buildSolutionDescriptor(), solution))
+                .when(scoreDirector)
+                .getValueRangeManager();
+        var listVariableState = mock(ListVariableState.class);
+        doReturn(listVariableState).when(scoreDirector).getListVariableState(any());
+        doReturn(variableDescriptor).when(listVariableState).getSourceVariableDescriptor();
+        valueSelector.solvingStarted(solverScope);
+        var phaseScope = mock(AbstractPhaseScope.class);
+        when(phaseScope.getSolverScope()).thenReturn(solverScope);
+        when(phaseScope.getScoreDirector()).thenReturn(scoreDirector);
+        valueSelector.phaseStarted(phaseScope);
+
+        replayingValueSelector.recordedHasNext(false);
+        assertThat(valueSelector.iterator().hasNext()).isFalse();
     }
 }

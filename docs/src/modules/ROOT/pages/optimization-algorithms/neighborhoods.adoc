@@ -1057,7 +1057,7 @@ If the variable is inherited, it returns only the instances of the entity class 
 - `SolutionView.getValuesSharingRangeWith(listVariable, value)` returns the values which share an entity's value range
 with the value, for a list variable.
 It never returns pinned values.
-It can return unassigned values, and for a solution value range also the value itself; check each one before you use it.
+It can return unassigned values and the value itself; check each one before you use it.
 
 The same pattern applies to other building blocks as well, such as `join`, `ifExists` and `groupBy`;
 essentially, the `solutionView` argument was added to every predicate or function where it could be useful.
