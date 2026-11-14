@@ -2,7 +2,7 @@ package ai.timefold.solver.service.quarkus.deployment.testdata.validationduplica
 
 import java.util.List;
 
-import ai.timefold.solver.service.definition.api.validation.IssueSeverity;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueSeverity;
 
 public class DuplicateTestIssue extends TestdataAbstractIssue {
 

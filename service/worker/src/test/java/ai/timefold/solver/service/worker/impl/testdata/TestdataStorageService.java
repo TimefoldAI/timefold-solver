@@ -1,7 +1,7 @@
 package ai.timefold.solver.service.worker.impl.testdata;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
 import ai.timefold.solver.service.definition.impl.storage.StorageObjectMapperWrapper;
 import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
 import ai.timefold.solver.service.definition.internal.storage.Storage;

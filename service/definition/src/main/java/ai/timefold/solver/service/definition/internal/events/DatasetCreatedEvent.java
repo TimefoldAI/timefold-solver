@@ -1,6 +1,6 @@
 package ai.timefold.solver.service.definition.internal.events;
 
-import ai.timefold.solver.service.definition.api.domain.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
 
 /**
  * Event that a new dataset is submitted via the API.

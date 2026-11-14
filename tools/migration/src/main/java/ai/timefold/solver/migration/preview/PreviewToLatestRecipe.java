@@ -26,7 +26,8 @@ public final class PreviewToLatestRecipe extends AbstractRecipe {
     @Override
     public List<Recipe> getRecipeList() {
         return List.of(
-                new NeighborhoodsMigrationRecipe());
+                new NeighborhoodsMigrationRecipe(),
+                new ServiceDefinitionPackageMigrationRecipe());
     }
 
 }

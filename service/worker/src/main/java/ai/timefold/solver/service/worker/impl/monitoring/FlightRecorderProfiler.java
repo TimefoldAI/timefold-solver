@@ -13,9 +13,9 @@ import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.interceptor.Interceptor;
 
-import ai.timefold.solver.service.definition.api.ModelOutput;
-import ai.timefold.solver.service.definition.api.ModelPostProcessor;
 import ai.timefold.solver.service.definition.api.SolverModel;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.internal.dataset.ModelPostProcessor;
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;

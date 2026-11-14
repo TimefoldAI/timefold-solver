@@ -22,9 +22,9 @@ import jakarta.ws.rs.ext.Provider;
 import jakarta.ws.rs.ext.ReaderInterceptor;
 import jakarta.ws.rs.ext.ReaderInterceptorContext;
 
-import ai.timefold.solver.service.definition.api.ModelDescriptor;
-import ai.timefold.solver.service.definition.api.validation.Validated;
-import ai.timefold.solver.service.definition.api.validation.Validator;
+import ai.timefold.solver.service.definition.api.validation.schema.Validated;
+import ai.timefold.solver.service.definition.internal.descriptor.ModelDescriptor;
+import ai.timefold.solver.service.definition.internal.validation.schema.Validator;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;

@@ -2,7 +2,7 @@ package ai.timefold.solver.service.quarkus.deployment.validation;
 
 import java.util.List;
 
-import ai.timefold.solver.service.definition.api.validation.IssueType;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueType;
 
 import io.quarkus.builder.item.SimpleBuildItem;
 

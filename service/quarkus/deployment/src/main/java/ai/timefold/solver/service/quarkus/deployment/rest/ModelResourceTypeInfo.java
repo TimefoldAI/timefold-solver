@@ -12,7 +12,7 @@ public interface ModelResourceTypeInfo {
             DotName.createSimple("ai.timefold.solver.service.maps.service.integration.impl.WaypointsService");
 
     DotName SCORE_ANALYSIS_FACADE_BASE =
-            DotName.createSimple("ai.timefold.solver.enterprise.service.definition.api.analysis.ScoreAnalysisFacadeBase");
+            DotName.createSimple("ai.timefold.solver.enterprise.service.definition.api.scoreanalysis.ScoreAnalysisFacadeBase");
 
     DotName modelResourceSuperClassName();
 

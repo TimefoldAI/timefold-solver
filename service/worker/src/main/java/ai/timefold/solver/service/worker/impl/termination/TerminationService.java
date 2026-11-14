@@ -14,7 +14,7 @@ import jakarta.inject.Inject;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.service.definition.api.termination.SolverTerminationConfig;
+import ai.timefold.solver.service.definition.api.dto.solve.SolverTerminationConfig;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 

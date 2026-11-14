@@ -1,6 +1,6 @@
 package ai.timefold.solver.service.definition.internal.descriptor;
 
-import ai.timefold.solver.service.definition.api.domain.DataFormat;
+import ai.timefold.solver.service.definition.api.metrics.DataFormat;
 
 /**
  * Defines Output Metric of the model where information is retrieved from <code>ModelOutputMetrics</code> class of the model
