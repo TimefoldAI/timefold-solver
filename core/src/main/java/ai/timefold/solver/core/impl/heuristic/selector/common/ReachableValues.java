@@ -188,7 +188,8 @@ public final class ReachableValues<Entity_, Value_> {
         for (var index = entityIndices.nextSetBit(0); index >= 0; index = entityIndices.nextSetBit(index + 1)) {
             var entity = allEntities.get(index);
             if (filter == null || filter.test(entity)) {
-                entityArray[entityCount++] = entity;
+                entityArray[entityCount] = entity;
+                entityCount++;
             }
         }
         return toSharedList(entityArray, entityCount);
@@ -295,7 +296,8 @@ public final class ReachableValues<Entity_, Value_> {
         for (var index = valueIndices.nextSetBit(0); index >= 0; index = valueIndices.nextSetBit(index + 1)) {
             var value = allValues.get(index).value;
             if (filter == null || filter.test(value)) {
-                valueArray[valueCount++] = value;
+                valueArray[valueCount] = value;
+                valueCount++;
             }
         }
         if (valueRangeSorter != null) {
@@ -363,8 +365,11 @@ public final class ReachableValues<Entity_, Value_> {
             repeatedOriginCount = 0;
             repeatedOriginValues = null;
         }
-        if (repeatedOriginValues == null && ++repeatedOriginCount >= originItemValue.repeatedOriginThreshold) {
-            repeatedOriginValues = buildValueIndices(originItemValue);
+        if (repeatedOriginValues == null) {
+            repeatedOriginCount++;
+            if (repeatedOriginCount >= originItemValue.repeatedOriginThreshold) {
+                repeatedOriginValues = buildValueIndices(originItemValue);
+            }
         }
         if (repeatedOriginValues != null) {
             // A bit of the origin's own bitset stays in the CPU cache; the other value's ranges would not.
@@ -475,11 +480,11 @@ public final class ReachableValues<Entity_, Value_> {
 
         @Override
         public boolean equals(Object other) {
-            return other instanceof RangeIndex that
-                    && groupCount == that.groupCount
-                    && Arrays.equals(rangeOfEntity, that.rangeOfEntity)
-                    && Arrays.deepEquals(entitiesOfRange, that.entitiesOfRange)
-                    && Arrays.equals(valuesOfRange, that.valuesOfRange);
+            return other instanceof RangeIndex(var otherRangeOfEntity, var otherEntitiesOfRange, var otherValuesOfRange, var otherGroupCount)
+                    && groupCount == otherGroupCount
+                    && Arrays.equals(rangeOfEntity, otherRangeOfEntity)
+                    && Arrays.deepEquals(entitiesOfRange, otherEntitiesOfRange)
+                    && Arrays.equals(valuesOfRange, otherValuesOfRange);
         }
 
         @Override
