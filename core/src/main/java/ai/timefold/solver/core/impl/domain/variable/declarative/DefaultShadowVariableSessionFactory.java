@@ -337,7 +337,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     var updater = new VariableUpdaterInfo<>(
                             declarativeShadowVariableDescriptor,
                             graphDescriptor,
-                            nextGroupId++);
+                            nextGroupId);
+                    nextGroupId++;
                     var alignmentKeyMap = declarativeShadowVariableDescriptor.getAlignmentKeyMap();
                     if (alignmentKeyMap != null) {
                         var alignmentKeyToAlignedEntities =

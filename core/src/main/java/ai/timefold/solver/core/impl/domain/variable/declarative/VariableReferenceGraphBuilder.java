@@ -295,7 +295,8 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             if (componentIndexOfNode[i] >= 0) {
                 nodeToVertex[i] = componentIndexOfNode[i];
             } else {
-                nodeToVertex[i] = vertexCount++;
+                nodeToVertex[i] = vertexCount;
+                vertexCount++;
             }
         }
         var contractedGraph = new DefaultTopologicalOrderGraph(vertexCount);
