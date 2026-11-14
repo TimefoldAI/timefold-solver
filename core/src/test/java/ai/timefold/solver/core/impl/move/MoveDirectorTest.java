@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -40,6 +41,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.exception.UndoMoveCorruptionException;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
@@ -2699,6 +2701,272 @@ class MoveDirectorTest {
             // guaranteeFreshScore is true, so the score is recalculated on the undone (reverted) solution,
             // which must equal the score from before the temporary move.
             softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailure() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var result = moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            // The score is calculated while the move is applied, so the previous score must be restored afterwards.
+            scoreDirector.calculateScore();
+            return sol.getEntityList().getFirst().getValue().getCode();
+        });
+
+        assertSoftly(softly -> {
+            softly.assertThat(result).isEqualTo("bad");
+            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureUndoesMoveWhenPostprocessorThrows() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+        var previousScore = solutionDescriptor.<SimpleScore> getScore(solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            scoreDirector.calculateScore();
+            throw new IllegalStateException("Postprocessor failure.");
+        })).isInstanceOf(IllegalStateException.class)
+                .hasMessage("Postprocessor failure.")
+                .hasNoSuppressedExceptions();
+
+        assertSoftly(softly -> {
+            softly.assertThat(entity.getValue()).isEqualTo(goodValue);
+            softly.assertThat(solutionDescriptor.<SimpleScore> getScore(solution)).isEqualTo(previousScore);
+            // The undo is complete: a fresh calculation agrees with the restored score.
+            softly.assertThat(scoreDirector.calculateScore().raw()).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureDoesNotUndoMoveWhenPostprocessorThrowsError() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+
+        Move<TestdataSolution> move = solutionView -> solutionView.changeVariable(variableMetaModel, entity, badValue);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            throw new AssertionError("Postprocessor failure.");
+        })).isInstanceOf(AssertionError.class)
+                .hasMessage("Postprocessor failure.");
+
+        // Only a RuntimeException has the move undone; the caller must treat the working solution as corrupted.
+        assertThat(entity.getValue()).isEqualTo(badValue);
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureUndoesStructurallyFlawedMove() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        b2.setDependencies(List.of(b1));
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+        var previousScore = solutionDescriptor.<HardSoftScore> getScore(solution);
+
+        // Swapping the two values makes b2 (which depends on b1) precede b1, creating a dependency cycle.
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var postprocessorCalled = new AtomicBoolean(false);
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            postprocessorCalled.set(true);
+            return null;
+        })).isInstanceOf(StructurallyFlawedMoveException.class)
+                .hasNoSuppressedExceptions()
+                .hasMessageContainingAll("caused the solution to become structurally flawed.",
+                        "Maybe check that the move does not make shadow variables depend on each other in a cycle.");
+
+        assertSoftly(softly -> {
+            // The move director checks the flaw itself, before the postprocessor.
+            softly.assertThat(postprocessorCalled).isFalse();
+            softly.assertThat(e1.getValues()).containsExactly(b1, b2);
+            softly.assertThat(solutionDescriptor.<HardSoftScore> getScore(solution)).isEqualTo(previousScore);
+            // The undo also makes the score director sound again, so the caller can keep using it.
+            softly.assertThat(scoreDirector.isLastVariableUpdateSuccessful()).isTrue();
+            var scoreAfterUndo = scoreDirector.calculateScore();
+            softly.assertThat(scoreAfterUndo.isStructurallyFlawed()).isFalse();
+            softly.assertThat(scoreAfterUndo.raw()).isEqualTo(previousScore);
+        });
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureReportsUndoFailureWhenMoveCannotBePrinted() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        // No dependencies, so the swap is structurally sound.
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        // Emptying the list behind the move director makes the undo fail on stale indexes,
+        // and the swap's toString() as well, as it reads the values at those indexes.
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            e1.getValues().clear();
+            return null;
+        })).isInstanceOf(UndoMoveCorruptionException.class)
+                .hasMessageContaining("Undoing the move (" + move.describe() + ") failed")
+                .hasCauseInstanceOf(IndexOutOfBoundsException.class);
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureKeepsPostprocessorFailureWhenUndoFails() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        // No dependencies, so the swap is structurally sound.
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        // Emptying the list behind the move director makes the undo fail on stale indexes.
+        // The postprocessor's failure stays primary; the undo failure is suppressed.
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            e1.getValues().clear();
+            throw new IllegalStateException("Postprocessor failure.");
+        })).isInstanceOf(IllegalStateException.class)
+                .hasMessage("Postprocessor failure.")
+                .satisfies(e -> assertThat(e.getSuppressed()).singleElement()
+                        .isInstanceOf(UndoMoveCorruptionException.class)
+                        .extracting(Throwable::getCause)
+                        .isInstanceOf(IndexOutOfBoundsException.class));
+    }
+
+    @Test
+    void executeRejectsStructurallyFlawedMove() {
+        var solutionDescriptor = TestdataDependencyNoInconsistentFieldSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+        b2.setDependencies(List.of(b1));
+        e1.setValues(new ArrayList<>(List.of(b1, b2)));
+        var solution = new TestdataDependencyNoInconsistentFieldSolution(List.of(e1), List.of(b1, b2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                new TestdataDependencyNoInconsistentFieldConstraintProvider(), EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f, EnvironmentMode.FULL_ASSERT).build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        // Swapping the two values makes b2 (which depends on b1) precede b1, creating a dependency cycle.
+        var move = Moves.swap(variableMetaModel, e1, 0, e1, 1);
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        assertThatThrownBy(() -> moveDirector.execute(move))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("caused the solution to become structurally flawed.",
+                        "Maybe check that the move does not make shadow variables depend on each other in a cycle.");
+    }
+
+    @Test
+    void executeTemporaryUndoingOnFailureDoesNotUndoMoveThatThrows() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var goodValue = new TestdataValue("good");
+        var badValue = new TestdataValue("bad");
+        var entity = new TestdataEntity("A", goodValue);
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(goodValue, badValue));
+
+        var scoreDirector = buildScoreDirector(solutionDescriptor, solution);
+
+        Move<TestdataSolution> move = solutionView -> {
+            solutionView.changeVariable(variableMetaModel, entity, badValue);
+            throw new IllegalStateException("Move failure.");
+        };
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        var postprocessorCalled = new AtomicBoolean();
+        assertThatThrownBy(() -> moveDirector.executeTemporaryUndoingOnFailure(move, sol -> {
+            postprocessorCalled.set(true);
+            return null;
+        })).isInstanceOf(IllegalStateException.class)
+                .hasMessage("Move failure.");
+
+        assertSoftly(softly -> {
+            softly.assertThat(postprocessorCalled).isFalse();
+            // The move may be half-applied, so it is deliberately not undone.
+            softly.assertThat(entity.getValue()).isEqualTo(badValue);
         });
     }
 

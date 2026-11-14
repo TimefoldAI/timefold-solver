@@ -9,8 +9,10 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.score.calculator.AnalyzableIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.impl.domain.variable.ShadowVariableUpdateHelper;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
@@ -289,5 +291,31 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(Solution_ solution,
             EntityOrElement_ evaluatedEntityOrElement, Function<EntityOrElement_, @Nullable Proposition_> propositionFunction,
             ScoreAnalysisFetchPolicy fetchPolicy);
+
+    /**
+     * Creates a {@link MoveEvaluator} for the given solution,
+     * allowing to execute moves on it and evaluate their impact on the score,
+     * without running the solver.
+     * See {@link MoveEvaluator} Javadoc for details.
+     * <p>
+     * The evaluator works on a planning clone of the given solution, its {@link MoveEvaluator#getWorkingSolution()
+     * working solution}.
+     * To obtain the working solution counterpart of an entity or fact of the given solution,
+     * use {@link MoveEvaluator#lookUpWorkingObject(Object)}.
+     * <p>
+     * Unlike the other methods of this class, the returned evaluator is stateful and not thread-safe.
+     * It must be closed after use.
+     * <p>
+     * Note: The move evaluator is exclusive to Timefold Solver Enterprise Edition.
+     * This method will throw an exception if the binaries can't be found.
+     *
+     * @param solution the solution to be cloned and on which the moves will be evaluated
+     * @return a new evaluator, to be closed when no longer needed
+     * @throws InconsistentSolutionException if the solution is structurally flawed
+     * @throws IllegalStateException if the score calculator does not support constraint matching,
+     *         such as an Easy score calculator, or an Incremental score calculator which does not implement
+     *         {@link AnalyzableIncrementalScoreCalculator}
+     */
+    MoveEvaluator<Solution_, Score_> moveEvaluator(Solution_ solution);
 
 }
