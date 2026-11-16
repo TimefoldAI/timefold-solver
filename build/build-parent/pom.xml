@@ -49,8 +49,8 @@
     <version.org.wiremock>3.13.2</version.org.wiremock>
     <version.ow2.asm>9.11.1</version.ow2.asm>
     <!-- Upgrade Jackson and its annotations together; otherwise there may be runtime errors. -->
-    <version.tools.jackson>3.2.4</version.tools.jackson>
-    <version.com.fasterxml.jackson.core>2.22</version.com.fasterxml.jackson.core>
+    <version.tools.jackson>3.3.0</version.tools.jackson>
+    <version.com.fasterxml.jackson.core>2.23</version.com.fasterxml.jackson.core>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -63,17 +63,17 @@
     <version.compiler.plugin>3.16.0</version.compiler.plugin>
     <version.dependency.plugin>3.11.0</version.dependency.plugin>
     <version.deploy.plugin>3.2.0</version.deploy.plugin>
-    <version.exec.plugin>3.6.4</version.exec.plugin>
+    <version.exec.plugin>3.7.0</version.exec.plugin>
     <version.enforcer.plugin>3.7.0</version.enforcer.plugin>
     <version.install.plugin>3.2.0</version.install.plugin>
     <version.jacoco.plugin>0.8.16</version.jacoco.plugin>
     <version.jandex.plugin>3.6.0</version.jandex.plugin>
     <version.jar.plugin>3.5.1</version.jar.plugin>
-    <version.jaxb2.plugin>4.2.0</version.jaxb2.plugin>
+    <version.jaxb2.plugin>4.3.0</version.jaxb2.plugin>
     <version.maven-plugin.plugin>3.16.0</version.maven-plugin.plugin>
     <version.maven-plugin.plugin-testing>3.5.1</version.maven-plugin.plugin-testing>
     <version.native.plugin>1.1.18</version.native.plugin>
-    <version.properties.plugin>1.3.1</version.properties.plugin>
+    <version.properties.plugin>1.4.0</version.properties.plugin>
     <version.resources.plugin>3.5.0</version.resources.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
     <version.rewrite.plugin>6.46.1</version.rewrite.plugin>
@@ -82,7 +82,7 @@
     <version.source.plugin>3.4.0</version.source.plugin>
     <version.spotless.plugin>3.11.0</version.spotless.plugin>
     <version.surefire.plugin>3.6.1</version.surefire.plugin>
-    <version.versions.plugin>2.23.0</version.versions.plugin>
+    <version.versions.plugin>2.25.1</version.versions.plugin>
     <version.git-commit-id.plugin>10.0.1</version.git-commit-id.plugin>
 
     <!-- Plugin configuration properties -->
