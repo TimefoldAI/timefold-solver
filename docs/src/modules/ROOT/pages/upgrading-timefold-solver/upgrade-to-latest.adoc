@@ -206,6 +206,18 @@ This section lists all such changes,
 so that users of preview features can adapt.
 All feedback is much appreciated!
 
+icon:info-circle[role=yellow,set=fas] Timefold Solver 2.9.0 reorganizes packages of the service definition module.
+[%collapsible%open]
+====
+Specifically:
+
+- REST payloads moved to `ai.timefold.solver.service.definition.api.dto.*`, for example `ModelInput`, `ModelOutput`, `ModelConfigOverrides`, `ModelRequest` and `ErrorInfo`.
+- Model description types, such as `ConstraintReference` and `ModelMaturityLevel`, moved to `ai.timefold.solver.service.definition.api.description`.
+- `ModelConvertor` and `ModelConvertorBase` moved to `ai.timefold.solver.service.definition.api.conversion`.
+- Demo data types moved to the preview API in `ai.timefold.solver.service.definition.preview.api.demo`.
+- `UserModel` was removed without a replacement.
+====
+
 icon:info-circle[role=yellow,set=fas] Timefold Solver 2.9.0 moves phase-level `neighborhoodProviderClass` into the `neighborhoods` element
 [%collapsible%open]
 ====

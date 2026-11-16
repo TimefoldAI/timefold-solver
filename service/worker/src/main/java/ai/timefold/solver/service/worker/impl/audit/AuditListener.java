@@ -2,7 +2,7 @@ package ai.timefold.solver.service.worker.impl.audit;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import ai.timefold.solver.service.definition.api.SolvingStatus;
+import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.DatasetComputedEvent;
 import ai.timefold.solver.service.definition.internal.events.DatasetCreatedEvent;

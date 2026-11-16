@@ -2,7 +2,7 @@ package ai.timefold.solver.service.definition.impl.validation;
 
 import java.util.Collection;
 
-import ai.timefold.solver.service.definition.api.validation.IssueType;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueType;
 
 /**
  * Provides all supported {@link IssueType validation issue types}.

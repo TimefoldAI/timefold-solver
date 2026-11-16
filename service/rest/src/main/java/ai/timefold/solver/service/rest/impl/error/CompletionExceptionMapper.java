@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
-import ai.timefold.solver.service.definition.api.error.ErrorInfo;
+import ai.timefold.solver.service.definition.api.dto.error.ErrorInfo;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;

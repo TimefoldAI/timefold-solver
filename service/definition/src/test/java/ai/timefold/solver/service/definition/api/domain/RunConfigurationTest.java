@@ -6,7 +6,8 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 
-import ai.timefold.solver.service.definition.api.termination.SolverTerminationConfig;
+import ai.timefold.solver.service.definition.api.dto.dataset.RunConfiguration;
+import ai.timefold.solver.service.definition.api.dto.solve.SolverTerminationConfig;
 
 import org.junit.jupiter.api.Test;
 

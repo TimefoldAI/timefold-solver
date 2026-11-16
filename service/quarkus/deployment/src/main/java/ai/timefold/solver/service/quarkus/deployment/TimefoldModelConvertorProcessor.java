@@ -6,8 +6,8 @@ import java.util.Objects;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import ai.timefold.solver.service.definition.api.ModelConvertor;
-import ai.timefold.solver.service.definition.api.ModelInput;
+import ai.timefold.solver.service.definition.api.conversion.ModelConvertor;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelConvertorBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.RestComponentsBuildItem;
