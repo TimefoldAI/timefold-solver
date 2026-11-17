@@ -226,6 +226,43 @@ public class EmployeeScheduleResourceTest {
         assertThat(response.outputMetrics().assignedShifts()).isZero();
     }
 
+    static Stream<Arguments> fromPatchNameScenarios() {
+        return Stream.of(
+                Arguments.of(null, "from-patch-config-name"),
+                Arguments.of("from-patch-query-name", "from-patch-query-name"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("fromPatchNameScenarios")
+    void fromPatchTakesTheNameAndTagsOfTheRunConfiguration(String queryName, String expectedName) {
+        Metadata<HardMediumSoftScore> metadata = post(createInputEmployeeSchedule(), OperationOnPost.NONE);
+
+        // The name query parameter wins over config.run.name, as in from-input.
+        Metadata<HardMediumSoftScore> patchedMetadata = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {"config": {"run": {"name": "from-patch-config-name", "tags": ["from-patch-tag"]}}, "patch": []}""")
+                .when()
+                .post("/schedules/" + metadata.getId() + "/from-patch?select=UNSOLVED&operation="
+                        + OperationOnPost.NONE.name() + (queryName == null ? "" : "&name=" + queryName))
+                .then()
+                .log().ifError()
+                .statusCode(202)
+                .extract()
+                .as(new TypeRef<>() {
+                });
+
+        assertThat(patchedMetadata.getName()).isEqualTo(expectedName);
+        assertThat(patchedMetadata.getTags()).containsExactly("from-patch-tag");
+
+        // Await both datasets so the asynchronous computation cannot leak into the next test.
+        await()
+                .atMost(TEST_AWAIT_TIMEOUT_DURATION)
+                .pollInterval(TEST_POLL_INTERVAL_MILLIS)
+                .until(() -> datasetComputedSink.received().size() >= 2);
+    }
+
     @Test
     @Disabled("Flaky test")
     void solveEmployeeScheduleWithWatching() throws InterruptedException {

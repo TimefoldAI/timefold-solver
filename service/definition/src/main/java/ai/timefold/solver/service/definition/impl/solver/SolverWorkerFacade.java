@@ -96,6 +96,7 @@ public interface SolverWorkerFacade {
      * @param id the identifier of the source (parent) dataset
      * @param select whether to derive from the unsolved input or the solved output of the parent
      * @param runName a human-readable name for the new run
+     * @param tags the set of tags to attach to the new dataset
      * @param modelInputPatchRequest the patch request containing the JSON patch operations and an optional
      *        {@link Configuration} override
      * @return the {@link Metadata} of the newly created dataset
@@ -103,7 +104,7 @@ public interface SolverWorkerFacade {
      *         if no dataset exists for the given id
      */
     <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest);
 
     /**
@@ -113,6 +114,7 @@ public interface SolverWorkerFacade {
      * @param id the identifier of the source (parent) dataset
      * @param select whether to derive from the unsolved input or the solved output of the parent
      * @param runName a human-readable name for the new run
+     * @param tags the set of tags to attach to the new dataset
      * @param modelInputPatchRequest the patch request containing the JSON patch operations and an optional
      *        {@link Configuration} override
      * @return the {@link Metadata} of the newly created dataset
@@ -120,7 +122,7 @@ public interface SolverWorkerFacade {
      *         if no dataset exists for the given id
      */
     <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchAndSolveDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest);
 
     /**
