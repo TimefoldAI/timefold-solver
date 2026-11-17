@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.util;
 
 import java.util.function.IntToLongFunction;
 import java.util.function.LongSupplier;
+import java.util.function.ToLongBiFunction;
 import java.util.function.ToLongFunction;
 
 import org.jspecify.annotations.NullMarked;
@@ -23,11 +24,11 @@ public final class SelectionUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SelectionUtils.class);
 
-    public static final long MULTIPLIER = 10L;
+    public static final long BAIL_OUT_MULTIPLIER = 10L;
     /**
      * Used when the source's size is unknown or negative.
      */
-    public static final long UNKNOWN_SIZE_BAIL_OUT = Short.MAX_VALUE * MULTIPLIER;
+    public static final long UNKNOWN_SIZE_BAIL_OUT = Short.MAX_VALUE * BAIL_OUT_MULTIPLIER;
     /**
      * The largest budget; about one second of filter calls.
      */
@@ -101,6 +102,16 @@ public final class SelectionUtils {
     }
 
     /**
+     * @param count how many there are to pick from
+     * @return the sum of {@link #orderedPicks(long, long)} for {@code minimumPicks <= k <= maximumPicks};
+     *         picks above the count add nothing
+     */
+    public static long orderedPicksSum(long count, int minimumPicks, int maximumPicks) {
+        var lastPicks = (int) Math.min(maximumPicks, count);
+        return sumOf(minimumPicks, lastPicks, picks -> orderedPicks(count, picks));
+    }
+
+    /**
      * @param size computes the source's size; any exception it throws means an unknown size
      * @param subject only used for logging
      * @return never negative
@@ -110,27 +121,44 @@ public final class SelectionUtils {
         try {
             sourceSize = size.getAsLong();
         } catch (RuntimeException ex) {
-            // Not only UOE: a custom MoveIteratorFactory with a negative size makes the bridge throw IllegalStateException.
             return unknownSizeBailOut(subject);
         }
-        if (sourceSize < 0) {
-            LOGGER.trace("        Never-ending iterator or selector ({}) provided a negative size ({}), "
-                    + "choosing a bail-out size of ({}) attempts.", subject, sourceSize, UNKNOWN_SIZE_BAIL_OUT);
-        }
-        return bailOutSize(sourceSize);
+        return bailOutSize(sourceSize, subject);
     }
 
     /**
-     * For a caller that failed to compute the size itself.
+     * As {@link #bailOutSize(LongSupplier, Object)}, for a size that depends on an argument.
+     * With a non-capturing method reference, such as {@code ValueSelector::getSize}, nothing is allocated per call.
      *
-     * @param subject only used for logging
-     * @return {@link #UNKNOWN_SIZE_BAIL_OUT}
+     * @param source the selector whose size is computed; also used for logging
+     * @param size any exception it throws means an unknown size
+     * @return never negative
      */
-    public static long unknownSizeBailOut(Object subject) {
+    public static <Source_, Argument_> long bailOutSize(Source_ source, Argument_ argument,
+            ToLongBiFunction<Source_, Argument_> size) {
+        long sourceSize;
+        try {
+            sourceSize = size.applyAsLong(source, argument);
+        } catch (RuntimeException ex) {
+            return unknownSizeBailOut(source);
+        }
+        return bailOutSize(sourceSize, source);
+    }
+
+    private static long unknownSizeBailOut(Object subject) {
+        // Not only UOE: a custom MoveIteratorFactory with a negative size makes the bridge throw IllegalStateException.
         LOGGER.trace(
                 "        Never-ending iterator or selector ({}) failed to provide size, choosing a bail-out size of ({}) attempts.",
                 subject, UNKNOWN_SIZE_BAIL_OUT);
         return UNKNOWN_SIZE_BAIL_OUT;
+    }
+
+    private static long bailOutSize(long size, Object subject) {
+        if (size < 0) {
+            LOGGER.trace("        Never-ending iterator or selector ({}) provided a negative size ({}), "
+                    + "choosing a bail-out size of ({}) attempts.", subject, size, UNKNOWN_SIZE_BAIL_OUT);
+        }
+        return bailOutSize(size);
     }
 
     /**
@@ -142,7 +170,7 @@ public final class SelectionUtils {
         if (size < 0) {
             return UNKNOWN_SIZE_BAIL_OUT;
         }
-        return size > MAX_BAIL_OUT / MULTIPLIER ? MAX_BAIL_OUT : size * MULTIPLIER;
+        return size > MAX_BAIL_OUT / BAIL_OUT_MULTIPLIER ? MAX_BAIL_OUT : size * BAIL_OUT_MULTIPLIER;
     }
 
     private SelectionUtils() {

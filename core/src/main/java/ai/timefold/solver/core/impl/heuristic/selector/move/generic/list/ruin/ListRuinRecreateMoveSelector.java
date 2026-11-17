@@ -40,12 +40,8 @@ final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListM
     @Override
     public long getSize() {
         var valueCount = valueSelector.getSize();
-        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(valueCount);
-        // Picks above the count add nothing.
-        var maximumSelectedCount = (int) Math.min(maximumSelectedCountSupplier.applyAsInt(valueCount), valueCount);
-        // Order is significant, and each one can only be picked once.
-        return SelectionUtils.sumOf(minimumSelectedCount, maximumSelectedCount,
-                selectedCount -> SelectionUtils.orderedPicks(valueCount, selectedCount));
+        return SelectionUtils.orderedPicksSum(valueCount, minimumSelectedCountSupplier.applyAsInt(valueCount),
+                maximumSelectedCountSupplier.applyAsInt(valueCount));
     }
 
     @Override

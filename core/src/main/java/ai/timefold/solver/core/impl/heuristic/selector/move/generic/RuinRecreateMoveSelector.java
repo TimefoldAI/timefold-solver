@@ -36,12 +36,8 @@ final class RuinRecreateMoveSelector<Solution_> extends AbstractGenericMoveSelec
     @Override
     public long getSize() {
         var entityCount = entitySelector.getSize();
-        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(entityCount);
-        // Picks above the count add nothing.
-        var maximumSelectedCount = (int) Math.min(maximumSelectedCountSupplier.applyAsInt(entityCount), entityCount);
-        // Order is significant, and each one can only be picked once.
-        return SelectionUtils.sumOf(minimumSelectedCount, maximumSelectedCount,
-                selectedCount -> SelectionUtils.orderedPicks(entityCount, selectedCount));
+        return SelectionUtils.orderedPicksSum(entityCount, minimumSelectedCountSupplier.applyAsInt(entityCount),
+                maximumSelectedCountSupplier.applyAsInt(entityCount));
     }
 
     @Override

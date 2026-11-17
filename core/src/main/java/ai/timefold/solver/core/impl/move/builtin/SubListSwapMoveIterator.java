@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
-import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -87,7 +86,7 @@ public final class SubListSwapMoveIterator<Solution_, Entity_, Value_>
     @Override
     protected boolean hasMove(Value_ leftValue) {
         // A left span can be invalid while another left span of the same seed value is valid.
-        for (var spanAttempt = 0; spanAttempt < SelectionUtils.MULTIPLIER; spanAttempt++) {
+        for (var spanAttempt = 0; spanAttempt < SPAN_ATTEMPT_COUNT; spanAttempt++) {
             var leftRange = leftSampler.byValue(solutionView, leftValue);
             if (leftRange == null) {
                 return false;

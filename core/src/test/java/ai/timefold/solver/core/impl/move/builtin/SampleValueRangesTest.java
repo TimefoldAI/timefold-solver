@@ -178,7 +178,7 @@ class SampleValueRangesTest {
         assertThat(SampleValueRanges.of(Set.of(rangeA))).isNotEqualTo(SampleValueRanges.of(Set.of(rangeA, rangeB)));
     }
 
-    /** A range too large for {@code getSize() * MULTIPLIER} to fit in a {@code long}. */
+    /** A range too large for a bail-out budget of 10 times its size. */
     private static final class HugeValueRange implements ValueRange<Long> {
 
         private final long size;

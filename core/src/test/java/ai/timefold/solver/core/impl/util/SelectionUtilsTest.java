@@ -60,6 +60,24 @@ class SelectionUtilsTest {
     }
 
     @Test
+    void orderedPicksSum() {
+        // 3 + 3 * 2 + 3 * 2 * 1; picks above the count add nothing.
+        assertThat(SelectionUtils.orderedPicksSum(3, 1, Integer.MAX_VALUE)).isEqualTo(15);
+        assertThat(SelectionUtils.orderedPicksSum(25, 1, 2)).isEqualTo(625);
+        assertThat(SelectionUtils.orderedPicksSum(25, 20, 20)).isEqualTo(Long.MAX_VALUE);
+    }
+
+    @Test
+    void bailOutSizeWithArgument() {
+        assertThat(SelectionUtils.bailOutSize("abc", 2, (source, factor) -> source.length() * factor)).isEqualTo(60);
+        assertThat(SelectionUtils.bailOutSize("abc", -1, (source, factor) -> source.length() * factor))
+                .isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
+        assertThat(SelectionUtils.bailOutSize("abc", 1, (source, factor) -> {
+            throw new IllegalStateException();
+        })).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
+    }
+
+    @Test
     void sizeTimesMultiplier() {
         assertThat(SelectionUtils.bailOutSize(0)).isZero();
         assertThat(SelectionUtils.bailOutSize(3)).isEqualTo(30);

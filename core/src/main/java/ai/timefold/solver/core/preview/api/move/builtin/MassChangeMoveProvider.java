@@ -163,7 +163,7 @@ public final class MassChangeMoveProvider<Solution_, Entity_, Value_>
      * Only disjoint entity-dependent ranges fail systematically,
      * and there the legal samples are so rare
      * (about {@code r^(1-k)} for r regions and samples of size k)
-     * that a pool-scaled budget would pay for {@code n * SelectionUtils.MULTIPLIER} intersections every step
+     * that a pool-scaled budget would pay for {@code n * SelectionUtils.BAIL_OUT_MULTIPLIER} intersections every step
      * to recover a fraction of them.
      * That configuration wants {@link SubPillarChangeMoveProvider} or a region-aware {@link Sampler} instead.
      *

@@ -37,8 +37,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, ValueRange<Value_> smallestRange) {
 
-    private static final long MAX_SAFE_RANGE_SIZE = Long.MAX_VALUE / SelectionUtils.MULTIPLIER;
-
     /**
      * @return the sample members' distinct {@link ValueRange}s for {@code variableMetaModel}.
      *         Ranges may still be {@link NullAllowingValueRange}-wrapped; {@code null} is never a candidate destination
@@ -118,6 +116,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      * since every candidate it offers is already legal for every member and the first one is always accepted.
      * Only when sampling bails out does this fall back to {@link #pickExactly},
      * which proves the answer exactly instead of guessing again.
+     * That walk is in original order, so it always ends, but it reads the whole range.
      *
      * @return a value legal for every distinct range, or {@code null} if none exists
      */
@@ -160,7 +159,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
 
     /**
      * @return {@code true} with probability {@code 1/(size+1)},
-     *         where {@code size} is {@link #smallestRange}'s clamped size - the same probability a
+     *         where {@code size} is {@link #smallestRange}'s size - the same probability a
      *         {@link NullAllowingValueRange} wrapper on {@link #smallestRange} would have given {@code null} as a candidate,
      *         without ever handing {@code null} to {@link #findTarget}/{@link #pickExactly},
      *         where it would collide with their "not found" signal.
@@ -168,8 +167,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      *         so no range intersection is needed here - only the coin flip.
      */
     public boolean rollNull(RandomGenerator random) {
-        var size = Math.min(unwrappedSize(smallestRange), MAX_SAFE_RANGE_SIZE);
-        return RandomUtils.nextLong(random, size + 1L) == 0L;
+        return RandomUtils.nextLong(random, SelectionUtils.sum(unwrappedSize(smallestRange), 1L)) == 0L;
     }
 
     /**

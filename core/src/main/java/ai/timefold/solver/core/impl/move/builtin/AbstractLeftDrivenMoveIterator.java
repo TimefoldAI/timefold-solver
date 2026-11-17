@@ -107,15 +107,8 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
     }
 
     /**
-     * @return see {@link SelectionUtils#bailOutSize(long)}
-     */
-    protected static long bailOutBudget(long candidateCount) {
-        return SelectionUtils.bailOutSize(candidateCount);
-    }
-
-    /**
      * Draws with replacement until the filter accepts,
-     * at most {@code candidateList.size() * MULTIPLIER} times.
+     * at most {@link SelectionUtils#bailOutSize(long)} times.
      *
      * @param candidateList random access, no null elements
      * @return null if nothing was accepted
@@ -125,7 +118,7 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
         if (size == 0) {
             return null;
         }
-        var budget = bailOutBudget(size);
+        var budget = SelectionUtils.bailOutSize(size);
         for (var attempt = 0L; attempt < budget; attempt++) {
             var candidate = candidateList.get(random.nextInt(size));
             if (filter.test(candidate)) {
@@ -143,7 +136,7 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
      */
     protected static <T extends @Nullable Object> @Nullable T drawMatching(Iterator<T> randomIterator, long candidateCount,
             Predicate<T> filter) {
-        var budget = bailOutBudget(candidateCount);
+        var budget = SelectionUtils.bailOutSize(candidateCount);
         for (var attempt = 0L; attempt < budget && randomIterator.hasNext(); attempt++) {
             var candidate = randomIterator.next();
             if (filter.test(candidate)) {

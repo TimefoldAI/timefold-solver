@@ -5,6 +5,8 @@ import static ai.timefold.solver.core.impl.util.TriangularNumbers.triangularRoot
 
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+
 public final class TriangleElementFactory {
 
     private final int minimumSubListSize;
@@ -76,8 +78,7 @@ public final class TriangleElementFactory {
         // The top triangle represents all subLists of size greater or equal to maximum subList size. Remove them all.
         var topTriangleSize = listSize <= maximumSubListSize ? 0L : nthTriangle(listSize - maximumSubListSize);
         var bound = subListCount - topTriangleSize;
-        // nextInt() keeps the draws of every triangle that fits in an int.
-        var offset = bound <= Integer.MAX_VALUE ? workingRandom.nextInt((int) bound) : workingRandom.nextLong(bound);
+        var offset = RandomUtils.nextLong(workingRandom, bound);
         // Triangle elements are indexed from 1.
         var subListIndex = offset + topTriangleSize + 1;
         return TriangleElement.valueOf(subListIndex);
