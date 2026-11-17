@@ -107,7 +107,9 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
     }
 
     public static long bailOutSizeOf(ValueRange<?> range) {
-        return BailOutUtils.bailOutSize(unwrappedSize(range));
+        var size = unwrappedSize(range);
+        // A huge range keeps sampling: the exact fallback of findTarget() would read the whole range.
+        return size > MAX_SAFE_RANGE_SIZE ? MAX_SAFE_RANGE_SIZE * BailOutUtils.MULTIPLIER : BailOutUtils.bailOutSize(size);
     }
 
     /**

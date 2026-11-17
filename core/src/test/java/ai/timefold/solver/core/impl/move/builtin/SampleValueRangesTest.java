@@ -99,8 +99,14 @@ class SampleValueRangesTest {
     }
 
     @Test
-    void bailOutSizeOf_fallsBackForHugeSize() {
-        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
+    void bailOutSizeOf_keepsSamplingHugeSize() {
+        // The exact fallback would read the whole range, so sampling must not stop early.
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(Long.MAX_VALUE / 10 * 10);
+    }
+
+    @Test
+    void bailOutSizeOf_fallsBackForNegativeSize() {
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange(-1))).isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
     @Test
@@ -176,6 +182,16 @@ class SampleValueRangesTest {
     /** A range too large for {@code getSize() * MULTIPLIER} to fit in a {@code long}. */
     private static final class HugeValueRange implements ValueRange<Long> {
 
+        private final long size;
+
+        HugeValueRange() {
+            this(Long.MAX_VALUE);
+        }
+
+        HugeValueRange(long size) {
+            this.size = size;
+        }
+
         @Override
         public boolean isEmpty() {
             return false;
@@ -188,7 +204,7 @@ class SampleValueRangesTest {
 
         @Override
         public long getSize() {
-            return Long.MAX_VALUE;
+            return size;
         }
 
         @Override
