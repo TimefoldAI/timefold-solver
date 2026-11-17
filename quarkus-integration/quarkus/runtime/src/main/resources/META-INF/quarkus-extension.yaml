@@ -15,7 +15,7 @@ metadata:
   icon-url: "https://timefold.ai/uploads/images/Brand-Assets/Icon.svg"
   categories:
     - "ai"
-    - "business-automation"
+    - "automation"
   status: "stable"
   config:
     - "quarkus.timefold."
