@@ -144,6 +144,6 @@ class FilteringEntitySelectorTest {
         when(childEntitySelector.iterator()).thenReturn(iterator);
         var entitySelector = FilteringEntitySelector.of(childEntitySelector, (scoreDirector, entity) -> false);
         assertThat(entitySelector.iterator().hasNext()).isFalse();
-        assertThat(nextCount).hasValue(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
+        assertThat(nextCount).hasValue(size < 0 ? BailOutUtils.UNKNOWN_SIZE_BAIL_OUT : BailOutUtils.MAX_BAIL_OUT);
     }
 }

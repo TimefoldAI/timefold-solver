@@ -73,7 +73,7 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
         if (filter != null) {
             // Draws with replacement can never prove that no matching right tuple exists;
             // bail out after many consecutive rejections.
-            var bailOutSize = rightDatasetInstance.size(compositeKey) * BailOutUtils.MULTIPLIER;
+            var bailOutSize = BailOutUtils.bailOutSize(rightDatasetInstance.size(compositeKey));
             tupleIterator = new FilteringIterator<>(tupleIterator,
                     rightTuple -> filter.test(solutionView, a, rightTuple.getA()), bailOutSize);
         }
@@ -210,7 +210,7 @@ public final class JustInTimeBiDatasetInstance<Solution_, A, B> implements BiDat
             }
             // RetiringBiWalk.advance() retries this call up to PROBE_ATTEMPT_COUNT times before retiring the left,
             // since a single bail-out is a false negative, not proof of emptiness.
-            var bailOutSize = rightDatasetInstance.size(compositeKey) * BailOutUtils.MULTIPLIER;
+            var bailOutSize = BailOutUtils.bailOutSize(rightDatasetInstance.size(compositeKey));
             return new FilteringIterator<>(rightTupleIterator,
                     rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()), bailOutSize);
         }

@@ -114,6 +114,6 @@ class IterableFilteringValueSelectorTest {
                 (IterableValueSelector<TestdataSolution>) FilteringValueSelector.of(childValueSelector,
                         (scoreDirector, value) -> false);
         assertThat(valueSelector.iterator().hasNext()).isFalse();
-        assertThat(nextCount).hasValue(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
+        assertThat(nextCount).hasValue(size < 0 ? BailOutUtils.UNKNOWN_SIZE_BAIL_OUT : BailOutUtils.MAX_BAIL_OUT);
     }
 }

@@ -115,6 +115,6 @@ class FilteringValueSelectorTest {
         when(childValueSelector.iterator(any())).thenReturn(iterator);
         var valueSelector = FilteringValueSelector.of(childValueSelector, (scoreDirector, value) -> false);
         assertThat(valueSelector.iterator(new TestdataEntity("e")).hasNext()).isFalse();
-        assertThat(nextCount).hasValue(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
+        assertThat(nextCount).hasValue(size < 0 ? BailOutUtils.UNKNOWN_SIZE_BAIL_OUT : BailOutUtils.MAX_BAIL_OUT);
     }
 }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
  * Computes how many consecutive rejected selections a filtering iterator or selector tries
  * before it gives up on a never-ending source.
  * Trying 10 times the source's size gives reasonable confidence that no acceptable selection was missed.
+ * The budget is capped, so that never-ending random iteration always ends in practice.
  */
 @NullMarked
 public final class BailOutUtils {
@@ -18,9 +19,13 @@ public final class BailOutUtils {
 
     public static final long MULTIPLIER = 10L;
     /**
-     * Used when the source's size is unknown, negative, or too large to multiply.
+     * Used when the source's size is unknown or negative.
      */
     public static final long UNKNOWN_SIZE_BAIL_OUT = Short.MAX_VALUE * MULTIPLIER;
+    /**
+     * The largest budget; about one second of filter calls.
+     */
+    public static final long MAX_BAIL_OUT = 10_000_000L;
 
     /**
      * @param size computes the source's size; any exception it throws means an unknown size
@@ -38,8 +43,8 @@ public final class BailOutUtils {
                     subject, UNKNOWN_SIZE_BAIL_OUT);
             return UNKNOWN_SIZE_BAIL_OUT;
         }
-        if (!isUsable(sourceSize)) {
-            LOGGER.trace("        Never-ending iterator or selector ({}) provided an unusable size ({}), "
+        if (sourceSize < 0) {
+            LOGGER.trace("        Never-ending iterator or selector ({}) provided a negative size ({}), "
                     + "choosing a bail-out size of ({}) attempts.", subject, sourceSize, UNKNOWN_SIZE_BAIL_OUT);
         }
         return bailOutSize(sourceSize);
@@ -47,14 +52,14 @@ public final class BailOutUtils {
 
     /**
      * @param size the source's size
-     * @return 10 times the size, or {@link #UNKNOWN_SIZE_BAIL_OUT} if the size is negative or too large; never negative
+     * @return 10 times the size, at most {@link #MAX_BAIL_OUT};
+     *         {@link #UNKNOWN_SIZE_BAIL_OUT} if the size is negative
      */
     public static long bailOutSize(long size) {
-        return isUsable(size) ? size * MULTIPLIER : UNKNOWN_SIZE_BAIL_OUT;
-    }
-
-    private static boolean isUsable(long size) {
-        return size >= 0 && size <= Long.MAX_VALUE / MULTIPLIER;
+        if (size < 0) {
+            return UNKNOWN_SIZE_BAIL_OUT;
+        }
+        return size > MAX_BAIL_OUT / MULTIPLIER ? MAX_BAIL_OUT : size * MULTIPLIER;
     }
 
     private BailOutUtils() {

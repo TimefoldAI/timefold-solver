@@ -126,7 +126,7 @@ final class DeclarativeShadowVariableAssertions {
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
             Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
             Random random) {
-        var bailOutSize = valueList.size() * BailOutUtils.MULTIPLIER;
+        var bailOutSize = BailOutUtils.bailOutSize(valueList.size());
         var attemptsBeforeBailOut = bailOutSize;
         Move<Solution_> move;
         do {

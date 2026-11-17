@@ -99,9 +99,8 @@ class SampleValueRangesTest {
     }
 
     @Test
-    void bailOutSizeOf_keepsSamplingHugeSize() {
-        // The exact fallback would read the whole range, so sampling must not stop early.
-        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(Long.MAX_VALUE / 10 * 10);
+    void bailOutSizeOf_capsHugeSize() {
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(BailOutUtils.MAX_BAIL_OUT);
     }
 
     @Test

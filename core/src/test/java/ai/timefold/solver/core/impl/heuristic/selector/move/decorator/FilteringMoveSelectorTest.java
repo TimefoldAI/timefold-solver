@@ -21,6 +21,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -92,7 +93,7 @@ class FilteringMoveSelectorTest {
         var filteredMoveSelector = FilteringMoveSelector.of(moveSelector, (scoreDirector, selection) -> false);
         filteredMoveSelector.phaseStarted(phaseScope);
         assertThat(filteredMoveSelector.iterator().hasNext()).isFalse();
-        assertThat(nextCount).hasValue(Short.MAX_VALUE * 10L);
+        assertThat(nextCount).hasValue(size < 0 ? BailOutUtils.UNKNOWN_SIZE_BAIL_OUT : BailOutUtils.MAX_BAIL_OUT);
     }
 
     @Test

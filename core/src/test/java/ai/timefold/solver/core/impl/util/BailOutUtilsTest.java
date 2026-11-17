@@ -10,17 +10,21 @@ class BailOutUtilsTest {
     void sizeTimesMultiplier() {
         assertThat(BailOutUtils.bailOutSize(0)).isZero();
         assertThat(BailOutUtils.bailOutSize(3)).isEqualTo(30);
-        assertThat(BailOutUtils.bailOutSize(Long.MAX_VALUE / 10)).isEqualTo(Long.MAX_VALUE / 10 * 10);
+        assertThat(BailOutUtils.bailOutSize(BailOutUtils.MAX_BAIL_OUT / 10)).isEqualTo(BailOutUtils.MAX_BAIL_OUT);
         assertThat(BailOutUtils.bailOutSize(() -> 3, "subject")).isEqualTo(30);
     }
 
     @Test
-    void unusableSize() {
+    void hugeSizeIsCapped() {
+        assertThat(BailOutUtils.bailOutSize(BailOutUtils.MAX_BAIL_OUT / 10 + 1)).isEqualTo(BailOutUtils.MAX_BAIL_OUT);
+        assertThat(BailOutUtils.bailOutSize(Long.MAX_VALUE / 10 + 1)).isEqualTo(BailOutUtils.MAX_BAIL_OUT);
+        assertThat(BailOutUtils.bailOutSize(() -> Long.MAX_VALUE, "subject")).isEqualTo(BailOutUtils.MAX_BAIL_OUT);
+    }
+
+    @Test
+    void negativeSize() {
         assertThat(BailOutUtils.bailOutSize(-1)).isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
-        assertThat(BailOutUtils.bailOutSize(Long.MAX_VALUE / 10 + 1)).isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
         assertThat(BailOutUtils.bailOutSize(() -> -1, "subject")).isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
-        assertThat(BailOutUtils.bailOutSize(() -> Long.MAX_VALUE, "subject"))
-                .isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
     @Test

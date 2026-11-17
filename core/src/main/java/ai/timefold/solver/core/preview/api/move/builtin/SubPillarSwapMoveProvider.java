@@ -231,7 +231,7 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
             var drawFromCandidates = candidateList != null && candidateList.size() < distinctKeysInstance.size();
             if (!drawFromCandidates) {
                 keyIterator = distinctKeysInstance.iterator(random);
-                bailOutSize = distinctKeysInstance.size() * BailOutUtils.MULTIPLIER;
+                bailOutSize = BailOutUtils.bailOutSize(distinctKeysInstance.size());
             } else if (candidateList.isEmpty()) {
                 pendingLeftPillar = null;
                 return Collections.emptyIterator();
@@ -242,7 +242,7 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
                         .distinct()
                         .toList();
                 keyIterator = Stream.generate(() -> candidateKeyList.get(random.nextInt(candidateKeyList.size()))).iterator();
-                bailOutSize = candidateKeyList.size() * BailOutUtils.MULTIPLIER;
+                bailOutSize = BailOutUtils.bailOutSize(candidateKeyList.size());
             }
             var leftRangesPerVariable = MoveProviderUtil.rangesPerVariableOf(leftPillar, variableMetaModelList, solutionView);
             return new FilteringIterator<>(keyIterator, candidateKey -> {
