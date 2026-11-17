@@ -104,7 +104,7 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
             var totalValueSize = valueSelector.getSize()
                     - (allowsUnassignedValues ? listVariableState.getUnassignedCount() : 0);
-            var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
+            var totalSize = MathUtils.saturatingAdd(entitySelector.getSize(), totalValueSize);
             return new ElementPositionRandomIterator<>(listVariableState, entitySelector,
                     replayingValueSelector != null ? replayingValueSelector.iterator() : null, valueSelector, workingRandom,
                     totalSize, allowsUnassignedValues, allowsUnassignedValues && totalValueSize > 0);

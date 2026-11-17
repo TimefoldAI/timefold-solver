@@ -25,6 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -744,6 +745,38 @@ class ElementDestinationSelectorTest {
         var valueSelector = mockIterableValueSelector(getListVariableDescriptor(scoreDirector), new TestdataListValue("1"));
         var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
         assertThat(selector.getSize()).isEqualTo(Long.MAX_VALUE);
+    }
+
+    @Test
+    void randomIteratorAcceptsSaturatedSize() {
+        var value = new TestdataAllowsUnassignedValuesListValue("1");
+        var a = new TestdataAllowsUnassignedValuesListEntity("A");
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(a));
+        solution.setValueList(List.of(value));
+        SolutionManager.updateShadowVariables(solution);
+
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var scoreDirector = mockScoreDirector(solutionDescriptor);
+        scoreDirector.setWorkingSolution(solution);
+        var solverScope = new SolverScope<TestdataAllowsUnassignedValuesListSolution>();
+        solverScope.setScoreDirector(scoreDirector);
+        solverScope.setWorkingRandom(new MockRandomSource(new Random(0)));
+        var entitySelector = spy(new FromSolutionEntitySelector<>(
+                solutionDescriptor.findEntityDescriptorOrFail(TestdataAllowsUnassignedValuesListEntity.class),
+                SelectionCacheType.PHASE, true));
+        entitySelector.solvingStarted(solverScope);
+        entitySelector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
+        doReturn(Long.MAX_VALUE).when(entitySelector).getSize();
+
+        var valueSelector = mockIterableValueSelector(getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector), value);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        selector.solvingStarted(solverScope);
+        selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
+
+        var iterator = selector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).isNotNull();
     }
 
     @Test

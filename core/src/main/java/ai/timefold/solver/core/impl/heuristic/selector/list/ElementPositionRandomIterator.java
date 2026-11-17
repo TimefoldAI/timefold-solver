@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
@@ -107,8 +108,9 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         var entitySize = entitySelector.getSize();
         // If we support unassigned values, we have to add 1 to all the sizes
         // to account for the unassigned destination, which is an extra element.
-        var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
-        var random = RandomUtils.nextLong(workingRandom, allowsUnassignedValues ? totalSize + 1 : totalSize);
+        var entityBoundary = allowsUnassignedValues ? MathUtils.saturatingAdd(entitySize, 1L) : entitySize;
+        var random = RandomUtils.nextLong(workingRandom,
+                allowsUnassignedValues ? MathUtils.saturatingAdd(totalSize, 1L) : totalSize);
         if (allowsUnassignedValues && (random == 0 || !entityIterator.hasNext())) {
             // We have already excluded all unassigned elements,
             // the only way to get an unassigned destination is to explicitly add it.
