@@ -153,7 +153,14 @@ public class FilteringValueSelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return BailOutUtils.bailOutSize(() -> childValueSelector.getSize(entity), childValueSelector);
+        // No supplier lambda: this runs for every move.
+        long size;
+        try {
+            size = childValueSelector.getSize(entity);
+        } catch (RuntimeException ex) {
+            return BailOutUtils.unknownSizeBailOut(childValueSelector);
+        }
+        return BailOutUtils.bailOutSize(size);
     }
 
     @Override
