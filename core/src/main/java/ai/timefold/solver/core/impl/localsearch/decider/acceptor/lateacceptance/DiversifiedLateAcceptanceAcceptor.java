@@ -6,10 +6,9 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.MoveBasedMinimumScoreBound;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
-
-import org.jspecify.annotations.Nullable;
 
 public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
@@ -22,6 +21,8 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
 
     protected InnerScore<?>[] previousScores;
     protected int lateScoreIndex = -1;
+
+    private final MoveBasedMinimumScoreBound minimumScoreBound = new MoveBasedMinimumScoreBound<>();
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -41,33 +42,13 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         lateScoreIndex = 0;
         lateWorseOccurrences = lateAcceptanceSize;
         lateWorseScore = initialScore;
+        minimumScoreBound.setMinimumRequiredScore(initialScore.raw());
     }
 
     private void validate() {
         if (lateAcceptanceSize <= 0) {
             throw new IllegalArgumentException(
                     "The lateAcceptanceSize (%d) cannot be negative or zero.".formatted(lateAcceptanceSize));
-        }
-    }
-
-    @Override
-    public @Nullable <Score_ extends Score<Score_>> Score_ getAcceptedMoveScoreLowerBound(
-            LocalSearchStepScope<Solution_> stepScope,
-            boolean allowDecreasingDuringStep) {
-        var currentScore = stepScope.getPhaseScope()
-                .getLastCompletedStepScope().<Score_> getScore().raw();
-        if (allowDecreasingDuringStep) {
-            var lateScore = this.<Score_> getLateWorseScore().raw();
-            if (currentScore.compareTo(lateScore) <= 0) {
-                return currentScore;
-            } else {
-                return lateScore;
-            }
-        } else {
-            // The late score changes dynamically based on the current
-            // foraged moves' score, so there is no lower bound that can
-            // apply to the entire step
-            return null;
         }
     }
 
@@ -95,6 +76,11 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         }
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         return accept;
+    }
+
+    @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return minimumScoreBound;
     }
 
     private <Score_ extends Score<Score_>> void updateLateScore(InnerScore<Score_> newScore) {
@@ -127,6 +113,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
             }
         }
         lateWorseScore = castLateWorse;
+        minimumScoreBound.setMinimumRequiredScore(lateScore.raw());
     }
 
     @SuppressWarnings("unchecked")
@@ -146,6 +133,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         lateScoreIndex = -1;
         lateWorseScore = null;
         lateWorseOccurrences = -1;
+        minimumScoreBound.clear();
     }
 
 }

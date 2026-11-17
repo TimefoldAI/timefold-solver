@@ -206,7 +206,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())
-                .withIsTieredScoreCalculationEnabled(constraintStreamTieredScoreCalculation)
+                .withTieredScoreCalculationEnabled(constraintStreamTieredScoreCalculation)
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);

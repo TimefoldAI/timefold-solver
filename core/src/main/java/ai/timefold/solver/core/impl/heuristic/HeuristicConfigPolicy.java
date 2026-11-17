@@ -170,7 +170,7 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withNeighborhoodProviderClass(neighborhoodProviderClass)
                 .withMoveSelectionStrategyFactory(moveSelectionStrategyFactory)
                 .withRandom(random)
-                .withIsTieredScoreCalculationEnabled(isTieredScoreCalculationEnabled);
+                .withTieredScoreCalculationEnabled(isTieredScoreCalculationEnabled);
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
@@ -417,7 +417,7 @@ public class HeuristicConfigPolicy<Solution_> {
             return this;
         }
 
-        public Builder<Solution_> withIsTieredScoreCalculationEnabled(boolean isTieredScoreCalculationEnabled) {
+        public Builder<Solution_> withTieredScoreCalculationEnabled(boolean isTieredScoreCalculationEnabled) {
             this.isTieredScoreCalculationEnabled = isTieredScoreCalculationEnabled;
             return this;
         }

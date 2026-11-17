@@ -147,6 +147,8 @@ module ai.timefold.solver.core {
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.score.bound to
+            ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.constraint to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.definition

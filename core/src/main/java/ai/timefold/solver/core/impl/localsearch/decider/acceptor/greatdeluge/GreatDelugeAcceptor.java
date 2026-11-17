@@ -5,6 +5,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAccepto
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.StepBasedMinimumScoreBound;
 
 public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
@@ -15,6 +17,7 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
     private Score startingWaterLevel = null;
     private Score currentWaterLevel = null;
     private Double currentWaterLevelRatio = null;
+    private final StepBasedMinimumScoreBound minimumScoreBound = new StepBasedMinimumScoreBound<>();
 
     public Score getWaterLevelIncrementScore() {
         return this.waterLevelIncrementScore;
@@ -48,6 +51,12 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
             currentWaterLevelRatio = 0.0;
         }
         currentWaterLevel = startingWaterLevel;
+        Score startingScore = phaseScope.getLastCompletedStepScope().getScore().raw();
+        if (startingScore.compareTo(currentWaterLevel) < 0) {
+            minimumScoreBound.setMinimumRequiredScoreForStep(startingScore);
+        } else {
+            minimumScoreBound.setMinimumRequiredScoreForStep(currentWaterLevel);
+        }
     }
 
     @Override
@@ -58,6 +67,7 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
             currentWaterLevelRatio = null;
         }
         currentWaterLevel = null;
+        minimumScoreBound.clear();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -72,6 +82,11 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
     }
 
     @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return minimumScoreBound;
+    }
+
+    @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         if (waterLevelIncrementScore != null) {
@@ -83,6 +98,12 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
                     // TODO targetWaterLevel.subtract(startingWaterLevel).multiply(waterLevelIncrementRatio);
                     // Use startingWaterLevel.abs() to keep the number being positive.
                     startingWaterLevel.abs().multiply(currentWaterLevelRatio));
+        }
+        Score stepScore = stepScope.getScore().raw();
+        if (stepScore.compareTo(currentWaterLevel) < 0) {
+            minimumScoreBound.setMinimumRequiredScoreForStep(stepScore);
+        } else {
+            minimumScoreBound.setMinimumRequiredScoreForStep(currentWaterLevel);
         }
     }
 

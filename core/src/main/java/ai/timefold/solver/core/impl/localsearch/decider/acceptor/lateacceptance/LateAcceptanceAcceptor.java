@@ -5,9 +5,9 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAccepto
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.StepBasedMinimumScoreBound;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
-
-import org.jspecify.annotations.Nullable;
 
 public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
@@ -16,6 +16,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
 
     private LateAcceptanceScoreBuffer scoreBuffer;
     private LevelScoreState<Solution_> bestScoreState;
+    private final StepBasedMinimumScoreBound minimumScoreBound = new StepBasedMinimumScoreBound<>();
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -47,22 +48,6 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public @Nullable <Score_ extends Score<Score_>> Score_ getAcceptedMoveScoreLowerBound(
-            LocalSearchStepScope<Solution_> stepScope,
-            boolean allowDecreasingDuringStep) {
-        var minScore = (InnerScore<Score_>) scoreBuffer.getCurrent();
-        if (hillClimbingEnabled) {
-            var lastStepScore = (InnerScore<Score_>) stepScope.getPhaseScope()
-                    .getLastCompletedStepScope().getScore();
-            if (lastStepScore.compareTo(minScore) < 0) {
-                minScore = lastStepScore;
-            }
-        }
-        return minScore.raw();
-    }
-
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isStructurallyValidSolutionAccepted(LocalSearchMoveScope<Solution_> moveScope) {
@@ -80,9 +65,23 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     }
 
     @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return minimumScoreBound;
+    }
+
+    @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         bestScoreState.update(stepScope);
+        InnerScore minScore = scoreBuffer.getCurrent();
+        if (hillClimbingEnabled) {
+            InnerScore lastStepScore = stepScope.getPhaseScope()
+                    .getLastCompletedStepScope().getScore();
+            if (lastStepScore.compareTo(minScore) < 0) {
+                minScore = lastStepScore;
+            }
+        }
+        minimumScoreBound.setMinimumRequiredScoreForStep(minScore.raw());
     }
 
     @Override
@@ -99,10 +98,10 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         super.phaseEnded(phaseScope);
         scoreBuffer = null;
         bestScoreState = null;
+        minimumScoreBound.clear();
     }
 
     protected <Score_ extends Score<Score_>> InnerScore<Score_> getScore(int i) {
         return scoreBuffer.get(i);
     }
-
 }

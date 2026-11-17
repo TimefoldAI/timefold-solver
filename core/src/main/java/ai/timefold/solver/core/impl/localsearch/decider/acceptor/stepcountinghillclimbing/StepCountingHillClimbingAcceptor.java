@@ -1,10 +1,13 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.StepBasedMinimumScoreBound;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
@@ -14,6 +17,8 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
 
     protected InnerScore<?> thresholdScore;
     protected int count = -1;
+
+    private final StepBasedMinimumScoreBound minimumScoreBound = new StepBasedMinimumScoreBound<>();
 
     public StepCountingHillClimbingAcceptor(int stepCountingHillClimbingSize,
             StepCountingHillClimbingType stepCountingHillClimbingType) {
@@ -38,6 +43,7 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
         super.phaseStarted(phaseScope);
         thresholdScore = phaseScope.getBestScore();
         count = 0;
+        minimumScoreBound.setMinimumRequiredScoreForStep(thresholdScore.raw());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -52,12 +58,23 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
     }
 
     @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return minimumScoreBound;
+    }
+
+    @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         count += determineCountIncrement(stepScope);
         if (count >= stepCountingHillClimbingSize) {
             thresholdScore = stepScope.getScore();
             count = 0;
+        }
+        Score stepScore = stepScope.getScore().raw();
+        if (stepScore.compareTo(thresholdScore.raw()) < 0) {
+            minimumScoreBound.setMinimumRequiredScoreForStep(stepScore);
+        } else {
+            minimumScoreBound.setMinimumRequiredScoreForStep(thresholdScore.raw());
         }
     }
 
@@ -84,6 +101,7 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
         super.phaseEnded(phaseScope);
         thresholdScore = null;
         count = -1;
+        minimumScoreBound.clear();
     }
 
 }

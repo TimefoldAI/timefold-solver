@@ -114,8 +114,7 @@ public class LocalSearchDecider<Solution_> {
             throw new IllegalStateException("Impossible state: Local search move selector (%s) provided a non-doable move (%s)."
                     .formatted(moveRepository, move));
         }
-        @SuppressWarnings("unchecked")
-        var lowerBound = (Score_) acceptor.getAcceptedMoveScoreLowerBound(moveScope.getStepScope(), true);
+        var lowerBound = acceptor.<Score_> getMinimumScoreBound().getMinimumRequiredScoreForMove();
         var score = scoreDirector.executeTemporaryMove(move, lowerBound, assertMoveScoreFromScratch);
         moveScope.setScore(score);
         moveScope.setAccepted(acceptor.isAccepted(moveScope));

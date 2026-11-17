@@ -5,8 +5,6 @@ import ai.timefold.solver.core.config.constructionheuristic.decider.forager.Cons
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 
-import org.jspecify.annotations.Nullable;
-
 public class DefaultConstructionHeuristicForager<Solution_> extends AbstractConstructionHeuristicForager<Solution_> {
 
     protected final ConstructionHeuristicPickEarlyType pickEarlyType;
@@ -36,15 +34,6 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
         super.stepEnded(stepScope);
         earlyPickedMoveScope = null;
         maxScoreMoveScope = null;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public @Nullable <Score_ extends Score<Score_>> Score_ getForagedMoveScoreLowerBound() {
-        if (maxScoreMoveScope == null) {
-            return null;
-        }
-        return (Score_) maxScoreMoveScope.getScore().raw();
     }
 
     @Override
