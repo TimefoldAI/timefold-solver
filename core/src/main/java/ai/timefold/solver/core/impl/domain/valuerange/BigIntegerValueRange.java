@@ -52,7 +52,8 @@ public final class BigIntegerValueRange extends AbstractValueRange<BigInteger> {
         if (to.subtract(from).divide(incrementUnit).bitLength() > Long.SIZE - 1) {
             throw new IllegalArgumentException("The " + getClass().getSimpleName()
                     + " cannot have a from (" + from + "), to (" + to + ") and incrementUnit (" + incrementUnit
-                    + ") with more than Long.MAX_VALUE (" + Long.MAX_VALUE + ") values. Use a narrower range.");
+                    + ") with more than Long.MAX_VALUE (" + Long.MAX_VALUE
+                    + ") values.\nMaybe use a narrower range or a larger incrementUnit.");
         }
     }
 

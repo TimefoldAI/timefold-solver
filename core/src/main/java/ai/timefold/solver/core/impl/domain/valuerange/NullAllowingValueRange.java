@@ -27,7 +27,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
         var childSize = childValueRange.getSize();
         if (childSize == Long.MAX_VALUE) {
             throw new IllegalArgumentException(
-                    "The childValueRange (%s) has Long.MAX_VALUE values; with null, the count would not fit in a long. Use a narrower range."
+                    "The childValueRange (%s) has Long.MAX_VALUE values; with null, the count would not fit in a long.\nMaybe use a narrower range."
                             .formatted(childValueRange));
         }
         size = childSize + 1L;
