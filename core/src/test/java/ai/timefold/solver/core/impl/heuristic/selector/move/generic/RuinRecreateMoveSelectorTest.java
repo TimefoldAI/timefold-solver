@@ -30,6 +30,7 @@ import ai.timefold.solver.core.testutil.AbstractMeterTest;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import io.micrometer.core.instrument.Metrics;
 
@@ -153,5 +154,17 @@ class RuinRecreateMoveSelectorTest extends AbstractMeterTest {
         var hugeSelector =
                 new RuinRecreateMoveSelector<TestdataSolution>(entitySelector, null, null, count -> 20, count -> 20);
         assertThat(hugeSelector.getSize()).isEqualTo(Long.MAX_VALUE);
+    }
+
+    @Test
+    @Timeout(value = 10, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    @SuppressWarnings("unchecked")
+    void sizeEndsForHugeMaximum() {
+        var entitySelector = (EntitySelector<TestdataSolution>) mock(EntitySelector.class);
+        when(entitySelector.getSize()).thenReturn(3L);
+        // Picks above the entity count add nothing: 3 + 3 * 2 + 3 * 2 * 1.
+        var selector = new RuinRecreateMoveSelector<TestdataSolution>(entitySelector, null, null, count -> 1,
+                count -> Integer.MAX_VALUE);
+        assertThat(selector.getSize()).isEqualTo(15L);
     }
 }
