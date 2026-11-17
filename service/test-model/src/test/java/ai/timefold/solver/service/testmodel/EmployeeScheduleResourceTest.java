@@ -396,6 +396,70 @@ public class EmployeeScheduleResourceTest {
                 .statusCode(400);
     }
 
+    @Test
+    void fromPatchAcceptsModelConfigOverrides() {
+        Metadata<HardMediumSoftScore> metadata = post(createInputEmployeeSchedule(), OperationOnPost.NONE);
+
+        Metadata<HardMediumSoftScore> patchedMetadata = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {"config": {"run": {"name": "from-patch-e2e"}, "model": {"overrides": {}}}, "patch": []}""")
+                .when()
+                .post("/schedules/" + metadata.getId() + "/from-patch?select=UNSOLVED&operation="
+                        + OperationOnPost.NONE.name())
+                .then()
+                .log().ifError()
+                .statusCode(202)
+                .extract()
+                .as(new TypeRef<>() {
+                });
+
+        Configuration<EmptyModelConfigOverrides> configuration = given()
+                .accept(ContentType.JSON)
+                .when()
+                .get("/schedules/" + patchedMetadata.getId() + "/config")
+                .then()
+                .log().ifError()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>() {
+                });
+        assertThat(configuration.run().name()).isEqualTo("from-patch-e2e");
+
+        // Await both datasets so the asynchronous computation cannot leak into the next test.
+        await()
+                .atMost(TEST_AWAIT_TIMEOUT_DURATION)
+                .pollInterval(TEST_POLL_INTERVAL_MILLIS)
+                .until(() -> datasetComputedSink.received().size() >= 2);
+    }
+
+    @Test
+    void fromPatchRejectsUnknownModelConfigOverride() {
+        Metadata<HardMediumSoftScore> metadata = post(createInputEmployeeSchedule(), OperationOnPost.NONE);
+
+        // The model's own overrides class rejects the unknown property, so the request does not fail as a server error.
+        String errors = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {"config": {"model": {"overrides": {"notARealOverride": 1}}}, "patch": []}""")
+                .when()
+                .post("/schedules/" + metadata.getId() + "/from-patch?select=UNSOLVED&operation="
+                        + OperationOnPost.NONE.name())
+                .then()
+                .statusCode(400)
+                .extract()
+                .asString();
+        assertThat(errors).contains("notARealOverride", EmptyModelConfigOverrides.class.getSimpleName());
+
+        // Await the dataset so the asynchronous computation cannot leak into the next test.
+        await()
+                .atMost(TEST_AWAIT_TIMEOUT_DURATION)
+                .pollInterval(TEST_POLL_INTERVAL_MILLIS)
+                .until(() -> !datasetComputedSink.received().isEmpty());
+    }
+
     private static EmployeeSchedule awaitFeasiblyAssigned(Metadata<HardMediumSoftScore> metadata) {
         await()
                 .atMost(TEST_AWAIT_TIMEOUT_DURATION)
