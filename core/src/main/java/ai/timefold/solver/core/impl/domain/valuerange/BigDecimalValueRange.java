@@ -68,10 +68,10 @@ public final class BigDecimalValueRange extends AbstractValueRange<BigDecimal> {
         }
         if (to.unscaledValue().subtract(from.unscaledValue()).divide(incrementUnit.unscaledValue())
                 .bitLength() > Long.SIZE - 1) {
-            throw new IllegalArgumentException("The " + getClass().getSimpleName()
-                    + " cannot have a from (" + from + "), to (" + to + ") and incrementUnit (" + incrementUnit
-                    + ") with more than Long.MAX_VALUE (" + Long.MAX_VALUE
-                    + ") values.\nMaybe use a narrower range or a larger incrementUnit.");
+            throw new IllegalArgumentException("""
+                    The valueRange (%s) with from (%s), to (%s) and incrementUnit (%s) has more values than Long.MAX_VALUE (%d).
+                    Maybe use a narrower range or a larger incrementUnit."""
+                    .formatted(getClass().getSimpleName(), from, to, incrementUnit, Long.MAX_VALUE));
         }
     }
 
