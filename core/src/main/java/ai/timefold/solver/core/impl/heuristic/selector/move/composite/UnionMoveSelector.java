@@ -89,6 +89,9 @@ public final class UnionMoveSelector<Solution_> extends CompositeMoveSelector<So
         var size = 0L;
         for (var moveSelector : childMoveSelectorList) {
             size = MathUtils.saturatingAdd(size, moveSelector.getSize());
+            if (size == Long.MAX_VALUE) {
+                break;
+            }
         }
         return size;
     }

@@ -47,7 +47,7 @@ public class ChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<S
                     ((IterableSelector<Solution_, ?>) valueSelector).getSize());
         } else {
             long size = 0;
-            for (Iterator<?> it = entitySelector.endingIterator(); it.hasNext();) {
+            for (Iterator<?> it = entitySelector.endingIterator(); it.hasNext() && size < Long.MAX_VALUE;) {
                 Object entity = it.next();
                 size = MathUtils.saturatingAdd(size, valueSelector.getSize(entity));
             }

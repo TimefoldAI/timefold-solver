@@ -56,7 +56,7 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
         // Each removed edge: n choices for its first endpoint and 2 neighbors for its second.
         var endpointChoices = MathUtils.saturatingMultiply(valueSelector.getSize(), 2L);
         var total = 0L;
-        for (var k = minK; k <= maxK; k++) {
+        for (var k = minK; k <= maxK && total < Long.MAX_VALUE; k++) {
             var kOptSize = 1L;
             for (var i = 1; i <= k; i++) {
                 kOptSize = MathUtils.saturatingMultiply(kOptSize, endpointChoices);
