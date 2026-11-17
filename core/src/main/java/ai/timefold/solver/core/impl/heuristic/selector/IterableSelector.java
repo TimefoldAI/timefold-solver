@@ -9,7 +9,7 @@ public interface IterableSelector<Solution_, T> extends Selector<Solution_>, Ite
 
     /**
      * The approximate number of distinct selections: elements or moves distinct by their defining parameters,
-     * not by the solutions they lead to; a move and its mirror (such as swap (A, B) and (B, A)) count once.
+     * not by the solutions they lead to; a move and its mirror (such as swap (A, B) and (B, A)) may count once or twice.
      * A random JIT {@link Selector} with {@link #isNeverEnding()} true should return a size
      * as if it would be able to return each distinct element only once,
      * because the size can be used in {@link SelectionProbabilityWeightFactory}.
