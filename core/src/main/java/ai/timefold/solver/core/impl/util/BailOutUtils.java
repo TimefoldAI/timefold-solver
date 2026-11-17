@@ -23,7 +23,7 @@ public final class BailOutUtils {
     public static final long UNKNOWN_SIZE_BAIL_OUT = Short.MAX_VALUE * MULTIPLIER;
 
     /**
-     * @param size computes the source's size; may throw {@link UnsupportedOperationException}
+     * @param size computes the source's size; any exception it throws means an unknown size
      * @param subject only used for logging
      * @return never negative
      */
@@ -31,8 +31,8 @@ public final class BailOutUtils {
         long sourceSize;
         try {
             sourceSize = size.getAsLong();
-        } catch (UnsupportedOperationException ex) {
-            // Only an unknown size is tolerated here; any other exception signals a genuine defect and must propagate.
+        } catch (RuntimeException ex) {
+            // Not only UOE: a custom MoveIteratorFactory with a negative size makes the bridge throw IllegalStateException.
             LOGGER.trace(
                     "        Never-ending iterator or selector ({}) failed to provide size, choosing a bail-out size of ({}) attempts.",
                     subject, UNKNOWN_SIZE_BAIL_OUT);
