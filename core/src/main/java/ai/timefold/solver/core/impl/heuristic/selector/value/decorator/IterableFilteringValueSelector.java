@@ -30,7 +30,8 @@ public final class IterableFilteringValueSelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return SelectionUtils.bailOutSize(((IterableValueSelector<Solution_>) childValueSelector)::getSize, childValueSelector);
+        return SelectionUtils.bailOutSize((IterableValueSelector<Solution_>) childValueSelector,
+                IterableValueSelector::getSize);
     }
 
 }

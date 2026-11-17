@@ -78,7 +78,7 @@ public class MathUtils {
         return count * 1000L / Math.max(timeMillisSpent, 1L);
     }
 
-    private static long factorial(int n) {
+    static long factorial(int n) {
         if (n < 0) {
             throw new IllegalArgumentException("Factorial of %d is undefined."
                     .formatted(n));

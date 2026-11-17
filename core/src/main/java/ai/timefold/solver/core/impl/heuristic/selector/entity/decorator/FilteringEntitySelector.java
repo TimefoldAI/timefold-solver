@@ -166,7 +166,7 @@ public final class FilteringEntitySelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return SelectionUtils.bailOutSize(childEntitySelector::getSize, childEntitySelector);
+        return SelectionUtils.bailOutSize(childEntitySelector, EntitySelector::getSize);
     }
 
     @Override

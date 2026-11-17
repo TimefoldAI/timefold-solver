@@ -79,7 +79,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
         if (!bailOutEnabled) {
             return -1L;
         }
-        return SelectionUtils.bailOutSize(childMoveSelector::getSize, childMoveSelector);
+        return SelectionUtils.bailOutSize(childMoveSelector, MoveSelector::getSize);
     }
 
     private class JustInTimeFilteringMoveIterator extends UpcomingSelectionIterator<Move<Solution_>> {

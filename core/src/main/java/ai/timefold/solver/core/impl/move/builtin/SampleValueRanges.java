@@ -142,7 +142,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      */
     public @Nullable Value_ pickExactly(RandomGenerator random, @Nullable Value_ excludedValue) {
         Value_ chosen = null;
-        var admittedCount = 0;
+        var admittedCount = 0L;
         var iterator = smallestRange.createOriginalIterator();
         while (iterator.hasNext()) {
             var candidate = iterator.next();
@@ -150,7 +150,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
                 continue;
             }
             admittedCount++;
-            if (random.nextInt(admittedCount) == 0) {
+            if (RandomUtils.nextLong(random, admittedCount) == 0L) {
                 chosen = candidate;
             }
         }

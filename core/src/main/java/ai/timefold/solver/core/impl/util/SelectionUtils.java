@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.util;
 
 import java.util.function.IntToLongFunction;
-import java.util.function.LongSupplier;
 import java.util.function.ToLongBiFunction;
 import java.util.function.ToLongFunction;
 
@@ -91,9 +90,13 @@ public final class SelectionUtils {
 
     /**
      * @return the number of ordered picks of {@code k} out of {@code n}: {@code n! / (n - k)!};
-     *         1 if {@code k <= 0}, or {@link Long#MAX_VALUE} if that overflows
+     *         1 if {@code k <= 0}, 0 if {@code k > n},
+     *         or {@link Long#MAX_VALUE} if that overflows
      */
     public static long orderedPicks(long n, long k) {
+        if (k > n) {
+            return 0L;
+        }
         var picks = 1L;
         for (var factor = n - k + 1; factor <= n && picks != Long.MAX_VALUE; factor++) {
             picks = product(picks, factor);
@@ -112,22 +115,24 @@ public final class SelectionUtils {
     }
 
     /**
-     * @param size computes the source's size; any exception it throws means an unknown size
-     * @param subject only used for logging
+     * With a non-capturing method reference, such as {@code MoveSelector::getSize}, nothing is allocated per call.
+     *
+     * @param source the selector whose size is computed; also used for logging
+     * @param size any exception it throws means an unknown size
      * @return never negative
      */
-    public static long bailOutSize(LongSupplier size, Object subject) {
+    public static <Source_> long bailOutSize(Source_ source, ToLongFunction<Source_> size) {
         long sourceSize;
         try {
-            sourceSize = size.getAsLong();
+            sourceSize = size.applyAsLong(source);
         } catch (RuntimeException ex) {
-            return unknownSizeBailOut(subject);
+            return unknownSizeBailOut(source);
         }
-        return bailOutSize(sourceSize, subject);
+        return bailOutSize(sourceSize, source);
     }
 
     /**
-     * As {@link #bailOutSize(LongSupplier, Object)}, for a size that depends on an argument.
+     * As {@link #bailOutSize(Object, ToLongFunction)}, for a size that depends on an argument.
      * With a non-capturing method reference, such as {@code ValueSelector::getSize}, nothing is allocated per call.
      *
      * @param source the selector whose size is computed; also used for logging

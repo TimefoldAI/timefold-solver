@@ -54,6 +54,7 @@ class SelectionUtilsTest {
     void orderedPicks() {
         assertThat(SelectionUtils.orderedPicks(5, 3)).isEqualTo(60);
         assertThat(SelectionUtils.orderedPicks(5, 0)).isEqualTo(1);
+        assertThat(SelectionUtils.orderedPicks(3, Integer.MAX_VALUE)).isZero();
         assertThat(SelectionUtils.orderedPicks(20, 20)).isEqualTo(2_432_902_008_176_640_000L);
         assertThat(SelectionUtils.orderedPicks(21, 21)).isEqualTo(Long.MAX_VALUE);
         assertThat(SelectionUtils.orderedPicks(1_000_000_000_000L, 999_999_999_999L)).isEqualTo(Long.MAX_VALUE);
@@ -82,35 +83,35 @@ class SelectionUtilsTest {
         assertThat(SelectionUtils.bailOutSize(0)).isZero();
         assertThat(SelectionUtils.bailOutSize(3)).isEqualTo(30);
         assertThat(SelectionUtils.bailOutSize(SelectionUtils.MAX_BAIL_OUT / 10)).isEqualTo(SelectionUtils.MAX_BAIL_OUT);
-        assertThat(SelectionUtils.bailOutSize(() -> 3, "subject")).isEqualTo(30);
+        assertThat(SelectionUtils.bailOutSize("subject", subject -> 3)).isEqualTo(30);
     }
 
     @Test
     void hugeSizeIsCapped() {
         assertThat(SelectionUtils.bailOutSize(SelectionUtils.MAX_BAIL_OUT / 10 + 1)).isEqualTo(SelectionUtils.MAX_BAIL_OUT);
         assertThat(SelectionUtils.bailOutSize(Long.MAX_VALUE / 10 + 1)).isEqualTo(SelectionUtils.MAX_BAIL_OUT);
-        assertThat(SelectionUtils.bailOutSize(() -> Long.MAX_VALUE, "subject")).isEqualTo(SelectionUtils.MAX_BAIL_OUT);
+        assertThat(SelectionUtils.bailOutSize("subject", subject -> Long.MAX_VALUE)).isEqualTo(SelectionUtils.MAX_BAIL_OUT);
     }
 
     @Test
     void negativeSize() {
         assertThat(SelectionUtils.bailOutSize(-1)).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
-        assertThat(SelectionUtils.bailOutSize(() -> -1, "subject")).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
+        assertThat(SelectionUtils.bailOutSize("subject", subject -> -1)).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
     @Test
     void unknownSize() {
-        assertThat(SelectionUtils.bailOutSize(() -> {
+        assertThat(SelectionUtils.bailOutSize("subject", subject -> {
             throw new UnsupportedOperationException();
-        }, "subject")).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
+        })).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
     @Test
     void failingSize() {
         // A custom MoveIteratorFactory with a negative size makes the bridge throw this.
-        assertThat(SelectionUtils.bailOutSize(() -> {
+        assertThat(SelectionUtils.bailOutSize("subject", subject -> {
             throw new IllegalStateException();
-        }, "subject")).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
+        })).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
 }
