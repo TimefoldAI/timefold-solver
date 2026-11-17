@@ -28,12 +28,17 @@ class TriangleElementFactoryTest {
                 arguments(7, 4, 1),
                 arguments(8, 4, 2),
                 arguments(9, 4, 3),
-                arguments(10, 4, 4));
+                arguments(10, 4, 4),
+                // Indices where the double root is not exact.
+                arguments(4_999_950_001L, 100_000, 1),
+                arguments(5_000_050_000L, 100_000, 100_000),
+                arguments(2_305_843_005_992_468_482L, Integer.MAX_VALUE, 1),
+                arguments(2_305_843_008_139_952_128L, Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
 
     @ParameterizedTest
     @MethodSource
-    void triangleElementValueOf(int index, int level, int indexOnLevel) {
+    void triangleElementValueOf(long index, int level, int indexOnLevel) {
         var triangleElement = TriangleElement.valueOf(index);
         assertThat(triangleElement.index()).isEqualTo(index);
         assertThat(triangleElement.level()).isEqualTo(level);

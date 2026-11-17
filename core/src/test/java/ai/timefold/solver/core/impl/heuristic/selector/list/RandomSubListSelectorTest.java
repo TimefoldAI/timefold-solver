@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.util.List;
+import java.util.Random;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -241,6 +242,33 @@ class RandomSubListSelectorTest {
                 1, Integer.MAX_VALUE);
         // 100,000th triangular number; it does not fit in an int.
         assertThat(selector.getSize()).isEqualTo(5_000_050_000L);
+    }
+
+    @Test
+    void iteratorOfLongList() {
+        var values = new TestdataListValue[100_000];
+        for (var i = 0; i < values.length; i++) {
+            values[i] = new TestdataListValue(String.valueOf(i));
+        }
+        var a = new TestdataListEntity("A", values);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(a));
+        solution.setValueList(List.of(values));
+        SolutionManager.updateShadowVariables(solution);
+        var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+        var selector = new RandomSubListSelector<>(
+                mockEntitySelector(a),
+                TestdataListUtils.mockNeverEndingIterableValueSelector(getListVariableDescriptor(scoreDirector), values[0]),
+                1, Integer.MAX_VALUE);
+        var solverScope = solvingStarted(selector, scoreDirector, new Random(0));
+        phaseStarted(selector, solverScope);
+
+        var iterator = selector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        var subList = iterator.next();
+        assertThat(subList.length()).isPositive();
+        assertThat(subList.fromIndex() + subList.length()).isLessThanOrEqualTo(values.length);
     }
 
     @Test

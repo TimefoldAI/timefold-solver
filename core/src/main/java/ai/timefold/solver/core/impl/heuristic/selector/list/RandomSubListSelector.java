@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.TriangleElementFactory;
+import ai.timefold.solver.core.impl.util.TriangularNumbers;
 
 import org.jspecify.annotations.NonNull;
 
@@ -76,20 +77,15 @@ public final class RandomSubListSelector<Solution_> extends AbstractListMoveSele
             var listSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
             // Add subLists bigger than minimum subList size.
             if (listSize >= minimumSubListSize) {
-                var entitySubListCount = triangle(listSize - minimumSubListSize + 1);
+                var entitySubListCount = TriangularNumbers.nthTriangle(listSize - minimumSubListSize + 1);
                 // Subtract moves with subLists bigger than maximum subList size.
                 if (listSize > maximumSubListSize) {
-                    entitySubListCount -= triangle(listSize - maximumSubListSize);
+                    entitySubListCount -= TriangularNumbers.nthTriangle(listSize - maximumSubListSize);
                 }
                 subListCount = MathUtils.saturatingAdd(subListCount, entitySubListCount);
             }
         }
         return subListCount;
-    }
-
-    private static long triangle(int n) {
-        // In long arithmetic, n(n+1) cannot overflow for any int n.
-        return (long) n * (n + 1L) / 2;
     }
 
     @Override
