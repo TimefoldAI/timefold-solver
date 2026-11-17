@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.util.BailOutUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
@@ -144,6 +144,6 @@ class FilteringEntitySelectorTest {
         when(childEntitySelector.iterator()).thenReturn(iterator);
         var entitySelector = FilteringEntitySelector.of(childEntitySelector, (scoreDirector, entity) -> false);
         assertThat(entitySelector.iterator().hasNext()).isFalse();
-        assertThat(nextCount).hasValue(size < 0 ? BailOutUtils.UNKNOWN_SIZE_BAIL_OUT : BailOutUtils.MAX_BAIL_OUT);
+        assertThat(nextCount).hasValue(size < 0 ? SelectionUtils.UNKNOWN_SIZE_BAIL_OUT : SelectionUtils.MAX_BAIL_OUT);
     }
 }

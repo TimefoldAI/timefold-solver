@@ -12,7 +12,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.violation.ShadowVariablesAssert;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
-import ai.timefold.solver.core.impl.util.BailOutUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -126,7 +126,7 @@ final class DeclarativeShadowVariableAssertions {
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel,
             Function<Entity_, List<Value_>> listFunction, List<Entity_> entityList, List<Value_> valueList,
             Random random) {
-        var bailOutSize = BailOutUtils.bailOutSize(valueList.size());
+        var bailOutSize = SelectionUtils.bailOutSize(valueList.size());
         var attemptsBeforeBailOut = bailOutSize;
         Move<Solution_> move;
         do {

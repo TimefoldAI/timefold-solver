@@ -5,7 +5,7 @@ import java.util.Iterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.AbstractGenericMoveSelector;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public class RandomSubListChangeMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
@@ -44,8 +44,7 @@ public class RandomSubListChangeMoveSelector<Solution_> extends AbstractGenericM
     public long getSize() {
         long subListCount = subListSelector.getSize();
         long destinationCount = destinationSelector.getSize();
-        return MathUtils.saturatingMultiply(MathUtils.saturatingMultiply(subListCount, destinationCount),
-                selectReversingMoveToo ? 2 : 1);
+        return SelectionUtils.product(subListCount, destinationCount, selectReversingMoveToo ? 2 : 1);
     }
 
     boolean isSelectReversingMoveToo() {

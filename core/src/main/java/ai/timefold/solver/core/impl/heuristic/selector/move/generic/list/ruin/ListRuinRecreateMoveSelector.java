@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NonNull;
@@ -39,19 +39,13 @@ final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListM
 
     @Override
     public long getSize() {
-        var totalSize = 0L;
         var valueCount = valueSelector.getSize();
         var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(valueCount);
-        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(valueCount);
-        // Picks above the count add nothing, and a huge maximum must not keep the loop going.
-        var lastSelectedCount = Math.min(maximumSelectedCount, valueCount);
-        for (long selectedCount = minimumSelectedCount; selectedCount <= lastSelectedCount
-                && totalSize < Long.MAX_VALUE; selectedCount++) {
-            // Order is significant, and each entity can only be picked once: n! / (n - k)!
-            var selectionCount = MathUtils.saturatingProduct(valueCount - selectedCount + 1L, valueCount);
-            totalSize = MathUtils.saturatingAdd(totalSize, selectionCount);
-        }
-        return totalSize;
+        // Picks above the count add nothing.
+        var maximumSelectedCount = (int) Math.min(maximumSelectedCountSupplier.applyAsInt(valueCount), valueCount);
+        // Order is significant, and each one can only be picked once.
+        return SelectionUtils.sumOf(minimumSelectedCount, maximumSelectedCount,
+                selectedCount -> SelectionUtils.orderedPicks(valueCount, selectedCount));
     }
 
     @Override

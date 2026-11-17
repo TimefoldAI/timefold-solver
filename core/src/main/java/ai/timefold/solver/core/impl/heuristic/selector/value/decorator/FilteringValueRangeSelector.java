@@ -367,7 +367,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             }
             var upcomingValue = Objects.requireNonNull(currentUpcomingValue);
             var valueList = Objects.requireNonNull(currentUpcomingValueList);
-            // Limits one draw, not the iteration, so it does not use BailOutUtils.
+            // Limits one draw, not the iteration, so it does not use SelectionUtils.
             var bailoutSize = maxBailoutSize;
             do {
                 bailoutSize--;

@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public final class ListChangeMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
@@ -43,7 +43,7 @@ public final class ListChangeMoveSelector<Solution_> extends AbstractGenericList
 
     @Override
     public long getSize() {
-        return MathUtils.saturatingMultiply(sourceValueSelector.getSize(), destinationSelector.getSize());
+        return SelectionUtils.product(sourceValueSelector.getSize(), destinationSelector.getSize());
     }
 
     @Override

@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.util.BailOutUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 
 public class FilteringValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
@@ -158,9 +158,9 @@ public class FilteringValueSelector<Solution_>
         try {
             size = childValueSelector.getSize(entity);
         } catch (RuntimeException ex) {
-            return BailOutUtils.unknownSizeBailOut(childValueSelector);
+            return SelectionUtils.unknownSizeBailOut(childValueSelector);
         }
-        return BailOutUtils.bailOutSize(size);
+        return SelectionUtils.bailOutSize(size);
     }
 
     @Override

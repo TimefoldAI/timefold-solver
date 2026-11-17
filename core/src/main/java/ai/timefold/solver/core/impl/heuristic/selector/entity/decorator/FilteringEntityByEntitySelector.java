@@ -470,7 +470,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             if (!entityIterator.hasNext()) {
                 throw new NoSuchElementException();
             }
-            // Limits one draw, not the iteration, so it does not use BailOutUtils.
+            // Limits one draw, not the iteration, so it does not use SelectionUtils.
             var bailoutSize = iterationBailoutSize;
             do {
                 bailoutSize--;
@@ -530,7 +530,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             if (!entityIterator.hasNext()) {
                 throw new NoSuchElementException();
             }
-            // Limits one draw, not the iteration, so it does not use BailOutUtils.
+            // Limits one draw, not the iteration, so it does not use SelectionUtils.
             var bailoutSize = maxBailoutSize;
             do {
                 bailoutSize--;

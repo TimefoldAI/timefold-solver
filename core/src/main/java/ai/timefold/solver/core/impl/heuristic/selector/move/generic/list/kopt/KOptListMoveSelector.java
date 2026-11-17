@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.AbstractGenericListMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
@@ -54,17 +54,14 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
     @Override
     public long getSize() {
         // Each removed edge: n choices for its first endpoint and 2 neighbors for its second.
-        var endpointChoices = MathUtils.saturatingMultiply(valueSelector.getSize(), 2L);
-        var total = 0L;
-        for (var k = minK; k <= maxK && total < Long.MAX_VALUE; k++) {
+        var endpointChoices = SelectionUtils.product(valueSelector.getSize(), 2L);
+        return SelectionUtils.sumOf(minK, maxK, k -> {
             var kOptSize = 1L;
             for (var i = 1; i <= k; i++) {
-                kOptSize = MathUtils.saturatingMultiply(kOptSize, endpointChoices);
-                kOptSize = MathUtils.saturatingMultiply(kOptSize, 2L * i - 1);
+                kOptSize = SelectionUtils.product(kOptSize, endpointChoices, 2L * i - 1);
             }
-            total = MathUtils.saturatingAdd(total, kOptSize);
-        }
-        return total;
+            return kOptSize;
+        });
     }
 
     @Override

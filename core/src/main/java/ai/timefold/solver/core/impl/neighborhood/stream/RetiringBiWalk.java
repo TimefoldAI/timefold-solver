@@ -25,7 +25,7 @@ public interface RetiringBiWalk<L, R> {
      * How many independent, fresh right-iterator probes {@link #advance} gives a left before retiring it.
      * A {@link FilteringIterator} bail-out (see its javadoc) is a per-{@code hasNext()}-call false negative,
      * not proof of emptiness:
-     * {@code BailOutUtils.MULTIPLIER} already bounds any single probe's false-negative rate
+     * {@code SelectionUtils.MULTIPLIER} already bounds any single probe's false-negative rate
      * at about {@code e^-MULTIPLIER},
      * so 3 independent probes compound that to about {@code e^-(3 * MULTIPLIER)}.
      * This does not eliminate false retirement entirely, but bounds it significantly.

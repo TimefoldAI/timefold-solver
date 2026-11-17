@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.util.BailOutUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 
 public final class FilteringEntitySelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
@@ -166,7 +166,7 @@ public final class FilteringEntitySelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return BailOutUtils.bailOutSize(childEntitySelector::getSize, childEntitySelector);
+        return SelectionUtils.bailOutSize(childEntitySelector::getSize, childEntitySelector);
     }
 
     @Override

@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
-import ai.timefold.solver.core.impl.util.BailOutUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -126,7 +126,7 @@ final class BiRandomMoveIterator<Solution_, A, B>
         // bail out after many consecutive rejections.
         // RetiringBiWalk.advance() retries this call up to PROBE_ATTEMPT_COUNT times before retiring the left,
         // since a single bail-out is a false negative, not proof of emptiness.
-        var bailOutSize = BailOutUtils.bailOutSize(rightDatasetInstance.size(compositeKey));
+        var bailOutSize = SelectionUtils.bailOutSize(rightDatasetInstance.size(compositeKey));
         return new FilteringIterator<>(rightTupleIterator,
                 rightTuple -> filter.test(solutionView, leftFact, rightTuple.getA()), bailOutSize);
     }

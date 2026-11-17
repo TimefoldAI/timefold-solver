@@ -151,39 +151,4 @@ public class MathUtils {
         }
     }
 
-    /**
-     * @return {@code a + b}, or {@link Long#MAX_VALUE} or {@link Long#MIN_VALUE} if that overflows
-     */
-    public static long saturatingAdd(long a, long b) {
-        var result = a + b;
-        if (((a ^ result) & (b ^ result)) < 0) {
-            return a < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
-        }
-        return result;
-    }
-
-    /**
-     * @return {@code a * b}, or {@link Long#MAX_VALUE} or {@link Long#MIN_VALUE} if that overflows
-     */
-    public static long saturatingMultiply(long a, long b) {
-        var high = Math.multiplyHigh(a, b);
-        var low = a * b;
-        if ((high == 0 && low >= 0) || (high == -1 && low < 0)) {
-            return low;
-        }
-        return (a ^ b) < 0 ? Long.MIN_VALUE : Long.MAX_VALUE;
-    }
-
-    /**
-     * @return {@code from * (from + 1) * ... * to}, 1 if {@code from > to},
-     *         or {@link Long#MAX_VALUE} if that overflows; requires {@code from >= 1}
-     */
-    public static long saturatingProduct(long from, long to) {
-        var product = 1L;
-        for (var factor = from; factor <= to && product != Long.MAX_VALUE; factor++) {
-            product = saturatingMultiply(product, factor);
-        }
-        return product;
-    }
-
 }

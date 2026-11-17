@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
-import ai.timefold.solver.core.impl.util.BailOutUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
@@ -107,10 +107,10 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
     }
 
     /**
-     * @return see {@link BailOutUtils#bailOutSize(long)}
+     * @return see {@link SelectionUtils#bailOutSize(long)}
      */
     protected static long bailOutBudget(long candidateCount) {
-        return BailOutUtils.bailOutSize(candidateCount);
+        return SelectionUtils.bailOutSize(candidateCount);
     }
 
     /**

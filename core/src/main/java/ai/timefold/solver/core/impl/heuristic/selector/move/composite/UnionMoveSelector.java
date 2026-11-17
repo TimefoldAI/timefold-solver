@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.move.UniformRandomUnionMoveIterator;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NonNull;
@@ -86,14 +86,7 @@ public final class UnionMoveSelector<Solution_> extends CompositeMoveSelector<So
 
     @Override
     public long getSize() {
-        var size = 0L;
-        for (var moveSelector : childMoveSelectorList) {
-            size = MathUtils.saturatingAdd(size, moveSelector.getSize());
-            if (size == Long.MAX_VALUE) {
-                break;
-            }
-        }
-        return size;
+        return SelectionUtils.sumOf(childMoveSelectorList, MoveSelector::getSize);
     }
 
     @Override

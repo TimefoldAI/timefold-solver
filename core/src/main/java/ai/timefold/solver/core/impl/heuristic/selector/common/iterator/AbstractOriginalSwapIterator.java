@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.ListIterator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.ListIterableSelector;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public abstract class AbstractOriginalSwapIterator<Solution_, Move_ extends Move<Solution_>, SubSelection_>
@@ -13,15 +13,15 @@ public abstract class AbstractOriginalSwapIterator<Solution_, Move_ extends Move
     public static <Solution_, SubSelection_> long getSize(ListIterableSelector<Solution_, SubSelection_> leftSubSelector,
             ListIterableSelector<Solution_, SubSelection_> rightSubSelector) {
         if (leftSubSelector != rightSubSelector) {
-            return MathUtils.saturatingMultiply(leftSubSelector.getSize(), rightSubSelector.getSize());
+            return SelectionUtils.product(leftSubSelector.getSize(), rightSubSelector.getSize());
         } else {
             long leftSize = leftSubSelector.getSize();
             if (leftSize < 2L) {
                 return 0L;
             }
             // n(n-1)/2, halving the even factor first so that only the final product can overflow.
-            return leftSize % 2L == 0L ? MathUtils.saturatingMultiply(leftSize / 2L, leftSize - 1L)
-                    : MathUtils.saturatingMultiply(leftSize, (leftSize - 1L) / 2L);
+            return leftSize % 2L == 0L ? SelectionUtils.product(leftSize / 2L, leftSize - 1L)
+                    : SelectionUtils.product(leftSize, (leftSize - 1L) / 2L);
         }
     }
 

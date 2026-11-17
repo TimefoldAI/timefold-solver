@@ -18,7 +18,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.valuerange.ListValueRange;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
-import ai.timefold.solver.core.impl.util.BailOutUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
@@ -100,12 +100,12 @@ class SampleValueRangesTest {
 
     @Test
     void bailOutSizeOf_capsHugeSize() {
-        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(BailOutUtils.MAX_BAIL_OUT);
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(SelectionUtils.MAX_BAIL_OUT);
     }
 
     @Test
     void bailOutSizeOf_fallsBackForNegativeSize() {
-        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange(-1))).isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange(-1))).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
     @Test

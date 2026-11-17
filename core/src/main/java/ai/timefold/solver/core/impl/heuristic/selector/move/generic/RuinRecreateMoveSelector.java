@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class RuinRecreateMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
@@ -35,19 +35,13 @@ final class RuinRecreateMoveSelector<Solution_> extends AbstractGenericMoveSelec
 
     @Override
     public long getSize() {
-        var totalSize = 0L;
         var entityCount = entitySelector.getSize();
         var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(entityCount);
-        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(entityCount);
-        // Picks above the count add nothing, and a huge maximum must not keep the loop going.
-        var lastSelectedCount = Math.min(maximumSelectedCount, entityCount);
-        for (long selectedCount = minimumSelectedCount; selectedCount <= lastSelectedCount
-                && totalSize < Long.MAX_VALUE; selectedCount++) {
-            // Order is significant, and each entity can only be picked once: n! / (n - k)!
-            var selectionCount = MathUtils.saturatingProduct(entityCount - selectedCount + 1L, entityCount);
-            totalSize = MathUtils.saturatingAdd(totalSize, selectionCount);
-        }
-        return totalSize;
+        // Picks above the count add nothing.
+        var maximumSelectedCount = (int) Math.min(maximumSelectedCountSupplier.applyAsInt(entityCount), entityCount);
+        // Order is significant, and each one can only be picked once.
+        return SelectionUtils.sumOf(minimumSelectedCount, maximumSelectedCount,
+                selectedCount -> SelectionUtils.orderedPicks(entityCount, selectedCount));
     }
 
     @Override
