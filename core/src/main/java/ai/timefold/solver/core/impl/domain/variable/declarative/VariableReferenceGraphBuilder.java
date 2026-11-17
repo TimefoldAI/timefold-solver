@@ -31,15 +31,20 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> fixedEdges;
     final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> initialDynamicEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
-    final Map<Integer, Map<Object, GraphNode<Solution_>>> variableGroupIdToContainingNodeMap;
+    final Map<VariableUpdater<Solution_>, Map<Object, GraphNode<Solution_>>> variableUpdaterToContainingNodeMap;
     final Map<VariableMetaModel<?, ?, ?>, List<ListElementSourceLocator>> listVariableReferenceToElementLocator;
     boolean isGraphFixed;
+    /**
+     * True when a planning list variable has its elements represented by one chain node per
+     * list entity instead of a node each, so a list element source has no per-element edges.
+     */
+    boolean excludesListElements;
 
     public VariableReferenceGraphBuilder(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.changedVariableNotifier = changedVariableNotifier;
         nodeList = new ArrayList<>();
         variableReferenceToContainingNodeMap = new HashMap<>();
-        variableGroupIdToContainingNodeMap = new HashMap<>();
+        variableUpdaterToContainingNodeMap = new HashMap<>();
         variableReferenceToBeforeProcessor = new HashMap<>();
         variableReferenceToAfterProcessor = new HashMap<>();
         fixedEdges = new HashMap<>();
@@ -47,6 +52,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         entityToEntityId = new IdentityHashMap<>();
         listVariableReferenceToElementLocator = new HashMap<>();
         isGraphFixed = true;
+        excludesListElements = false;
     }
 
     /**
@@ -64,20 +70,21 @@ public final class VariableReferenceGraphBuilder<Solution_> {
 
     public void addListElementSourceLocator(VariableMetaModel<?, ?, ?> listVariableId,
             ListElementSourceLocator listElementSourceLocator) {
-        isGraphFixed = false;
+        // Without element nodes, the locator finds no edge to add or remove:
+        // it only marks its target variable changed when the list changes.
+        isGraphFixed &= excludesListElements;
         listVariableReferenceToElementLocator.computeIfAbsent(listVariableId, k -> new ArrayList<>())
                 .add(listElementSourceLocator);
     }
 
     public <Entity_> void addVariableReferenceEntity(Entity_ entity, boolean hasDynamicEdges,
-            VariableUpdaterInfo<Solution_> variableUpdater) {
-        var groupId = variableUpdater.groupId();
+            VariableUpdater<Solution_> variableUpdater) {
         var isGroup = variableUpdater.groupEntities() != null;
         var entityRepresentative = entity;
         if (isGroup) {
             entityRepresentative = (Entity_) variableUpdater.groupEntities()[0];
         }
-        var instanceMap = variableGroupIdToContainingNodeMap.get(groupId);
+        var instanceMap = variableUpdaterToContainingNodeMap.get(variableUpdater);
 
         var instance = instanceMap == null ? null : instanceMap.get(entityRepresentative);
         if (instance != null) {
@@ -85,7 +92,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         }
         if (instanceMap == null) {
             instanceMap = new IdentityHashMap<>();
-            variableGroupIdToContainingNodeMap.put(groupId, instanceMap);
+            variableUpdaterToContainingNodeMap.put(variableUpdater, instanceMap);
         }
 
         var entityId = entityToEntityId.computeIfAbsent(entityRepresentative, ignored -> entityToEntityId.size());
@@ -114,7 +121,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     private void addToInstanceMaps(Map<Object, GraphNode<Solution_>> instanceMap,
-            Object entity, GraphNode<Solution_> node, VariableUpdaterInfo<Solution_> variableUpdater) {
+            Object entity, GraphNode<Solution_> node, VariableUpdater<Solution_> variableUpdater) {
         instanceMap.put(entity, node);
         var variableInstanceMap =
                 variableReferenceToContainingNodeMap.computeIfAbsent(variableUpdater.id(), ignored -> new IdentityHashMap<>());
@@ -367,7 +374,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         var sortedNodeIds = component.stream().boxed().sorted(Comparator
                 .comparingInt(orderGraph::getTopologicalOrder)
                 .thenComparingInt(Integer::intValue)).collect(Collectors.toCollection(ArrayList::new));
-        var mergedUpdaters = new ArrayList<VariableUpdaterInfo<Solution_>>();
+        var mergedUpdaters = new ArrayList<VariableUpdater<Solution_>>();
         for (var nodeId : sortedNodeIds) {
             mergedUpdaters.addAll(nodeList.get(nodeId).variableReferences());
         }
@@ -424,7 +431,10 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         variableReferenceToContainingNodeMap.putAll(newContainingNodeMap);
     }
 
-    private void assertNoFixedLoops() {
+    /**
+     * @return a graph of this builder's fixed edges alone, to test for a fixed loop
+     */
+    DefaultTopologicalOrderGraph newFixedEdgeGraph() {
         var graph = new DefaultTopologicalOrderGraph(nodeList.size());
         for (var fixedEdge : fixedEdges.entrySet()) {
             var fromNodeId = fixedEdge.getKey().graphNodeId();
@@ -433,7 +443,11 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 graph.addEdge(fromNodeId, toNodeId);
             }
         }
+        return graph;
+    }
 
+    private void assertNoFixedLoops() {
+        var graph = newFixedEdgeGraph();
         var changedBitSet = new BitSet();
         graph.commitChanges(changedBitSet);
 
@@ -456,7 +470,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
 
         for (var cycle : nodeCycleList) {
             cycle.stream().flatMap(node -> node.variableReferences().stream())
-                    .map(VariableUpdaterInfo::id)
+                    .map(VariableUpdater::id)
                     .forEach(loopedVariables::add);
         }
 
