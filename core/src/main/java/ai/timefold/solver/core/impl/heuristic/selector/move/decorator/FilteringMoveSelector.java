@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectorBailOut;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
@@ -79,7 +79,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
         if (!bailOutEnabled) {
             return -1L;
         }
-        return SelectorBailOut.of(childMoveSelector::getSize, childMoveSelector);
+        return BailOutUtils.bailOutSize(childMoveSelector::getSize, childMoveSelector);
     }
 
     private class JustInTimeFilteringMoveIterator extends UpcomingSelectionIterator<Move<Solution_>> {

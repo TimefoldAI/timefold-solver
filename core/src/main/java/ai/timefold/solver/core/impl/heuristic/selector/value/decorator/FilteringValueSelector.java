@@ -9,12 +9,12 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectorBailOut;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 
 public class FilteringValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
@@ -153,7 +153,7 @@ public class FilteringValueSelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return SelectorBailOut.of(() -> childValueSelector.getSize(entity), childValueSelector);
+        return BailOutUtils.bailOutSize(() -> childValueSelector.getSize(entity), childValueSelector);
     }
 
     @Override

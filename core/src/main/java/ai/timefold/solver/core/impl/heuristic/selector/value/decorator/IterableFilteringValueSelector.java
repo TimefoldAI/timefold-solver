@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectorBailOut;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 
 public final class IterableFilteringValueSelector<Solution_>
         extends FilteringValueSelector<Solution_>
@@ -30,7 +30,7 @@ public final class IterableFilteringValueSelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return SelectorBailOut.of(((IterableValueSelector<Solution_>) childValueSelector)::getSize, childValueSelector);
+        return BailOutUtils.bailOutSize(((IterableValueSelector<Solution_>) childValueSelector)::getSize, childValueSelector);
     }
 
 }

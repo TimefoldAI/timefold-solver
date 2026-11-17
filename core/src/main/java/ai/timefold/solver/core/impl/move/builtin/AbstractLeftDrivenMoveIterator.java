@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
-import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
@@ -107,16 +107,16 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
     }
 
     /**
-     * @return {@code candidateCount * BAIL_OUT_SAFETY_MULTIPLIER}, or {@link Long#MAX_VALUE} if that overflows
+     * @return {@code candidateCount * MULTIPLIER}, or {@link Long#MAX_VALUE} if that overflows
      */
     protected static long bailOutBudget(long candidateCount) {
-        return candidateCount > Long.MAX_VALUE / FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER ? Long.MAX_VALUE
-                : candidateCount * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+        return candidateCount > Long.MAX_VALUE / BailOutUtils.MULTIPLIER ? Long.MAX_VALUE
+                : candidateCount * BailOutUtils.MULTIPLIER;
     }
 
     /**
      * Draws with replacement until the filter accepts,
-     * at most {@code candidateList.size() * BAIL_OUT_SAFETY_MULTIPLIER} times.
+     * at most {@code candidateList.size() * MULTIPLIER} times.
      *
      * @param candidateList random access, no null elements
      * @return null if nothing was accepted

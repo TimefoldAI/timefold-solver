@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.NullAllowingValueRange;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
@@ -36,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, ValueRange<Value_> smallestRange) {
 
-    private static final long MAX_SAFE_RANGE_SIZE = Long.MAX_VALUE / FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+    private static final long MAX_SAFE_RANGE_SIZE = Long.MAX_VALUE / BailOutUtils.MULTIPLIER;
 
     /**
      * @return the sample members' distinct {@link ValueRange}s for {@code variableMetaModel}.
@@ -109,7 +110,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
         // Clamped since a range's {@link ValueRange#getSize()} can be large enough that multiplying it here would
         // overflow a {@code long} negative - which {@link FilteringIterator} reads as "bail-out disabled",
         // turning {@code hasNext()} into an infinite loop.
-        return Math.min(unwrappedSize(range), MAX_SAFE_RANGE_SIZE) * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+        return Math.min(unwrappedSize(range), MAX_SAFE_RANGE_SIZE) * BailOutUtils.MULTIPLIER;
     }
 
     /**

@@ -14,10 +14,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectorBailOut;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -114,6 +114,6 @@ class IterableFilteringValueSelectorTest {
                 (IterableValueSelector<TestdataSolution>) FilteringValueSelector.of(childValueSelector,
                         (scoreDirector, value) -> false);
         assertThat(valueSelector.iterator().hasNext()).isFalse();
-        assertThat(nextCount).hasValue(SelectorBailOut.UNKNOWN_SIZE_BAIL_OUT);
+        assertThat(nextCount).hasValue(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 }

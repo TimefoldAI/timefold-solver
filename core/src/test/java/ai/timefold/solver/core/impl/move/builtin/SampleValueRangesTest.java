@@ -99,7 +99,7 @@ class SampleValueRangesTest {
 
     @Test
     void bailOutSizeOf_clampsHugeSizeInsteadOfOverflowing() {
-        // Long.MAX_VALUE * BAIL_OUT_SAFETY_MULTIPLIER would overflow negative,
+        // Long.MAX_VALUE * MULTIPLIER would overflow negative,
         // and FilteringIterator reads a negative bailOutSize as "bail-out disabled" - turning hasNext() into an infinite loop.
         assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isPositive();
     }
@@ -174,7 +174,7 @@ class SampleValueRangesTest {
         assertThat(SampleValueRanges.of(Set.of(rangeA))).isNotEqualTo(SampleValueRanges.of(Set.of(rangeA, rangeB)));
     }
 
-    /** A range too large for {@code getSize() * BAIL_OUT_SAFETY_MULTIPLIER} to fit in a {@code long}. */
+    /** A range too large for {@code getSize() * MULTIPLIER} to fit in a {@code long}. */
     private static final class HugeValueRange implements ValueRange<Long> {
 
         @Override

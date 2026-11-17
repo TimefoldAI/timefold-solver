@@ -7,12 +7,12 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectorBailOut;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionListIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 
 public final class FilteringEntitySelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
@@ -166,7 +166,7 @@ public final class FilteringEntitySelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return SelectorBailOut.of(childEntitySelector::getSize, childEntitySelector);
+        return BailOutUtils.bailOutSize(childEntitySelector::getSize, childEntitySelector);
     }
 
     @Override
