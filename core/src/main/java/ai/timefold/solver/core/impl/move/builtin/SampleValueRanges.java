@@ -107,10 +107,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
     }
 
     public static long bailOutSizeOf(ValueRange<?> range) {
-        // Clamped since a range's {@link ValueRange#getSize()} can be large enough that multiplying it here would
-        // overflow a {@code long} negative - which {@link FilteringIterator} reads as "bail-out disabled",
-        // turning {@code hasNext()} into an infinite loop.
-        return Math.min(unwrappedSize(range), MAX_SAFE_RANGE_SIZE) * BailOutUtils.MULTIPLIER;
+        return BailOutUtils.bailOutSize(unwrappedSize(range));
     }
 
     /**

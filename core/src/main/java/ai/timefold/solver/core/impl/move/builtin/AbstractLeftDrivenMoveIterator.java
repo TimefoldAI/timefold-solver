@@ -107,11 +107,10 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
     }
 
     /**
-     * @return {@code candidateCount * MULTIPLIER}, or {@link Long#MAX_VALUE} if that overflows
+     * @return see {@link BailOutUtils#bailOutSize(long)}
      */
     protected static long bailOutBudget(long candidateCount) {
-        return candidateCount > Long.MAX_VALUE / BailOutUtils.MULTIPLIER ? Long.MAX_VALUE
-                : candidateCount * BailOutUtils.MULTIPLIER;
+        return BailOutUtils.bailOutSize(candidateCount);
     }
 
     /**

@@ -18,6 +18,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.valuerange.ListValueRange;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
+import ai.timefold.solver.core.impl.util.BailOutUtils;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
@@ -98,10 +99,8 @@ class SampleValueRangesTest {
     }
 
     @Test
-    void bailOutSizeOf_clampsHugeSizeInsteadOfOverflowing() {
-        // Long.MAX_VALUE * MULTIPLIER would overflow negative,
-        // and FilteringIterator reads a negative bailOutSize as "bail-out disabled" - turning hasNext() into an infinite loop.
-        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isPositive();
+    void bailOutSizeOf_fallsBackForHugeSize() {
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(BailOutUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
     @Test
