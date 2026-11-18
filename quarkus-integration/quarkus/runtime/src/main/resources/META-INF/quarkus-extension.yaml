@@ -19,3 +19,4 @@ metadata:
   status: "stable"
   config:
     - "quarkus.timefold."
+scm-url: "https://github.com/TimefoldAI/timefold-solver"
