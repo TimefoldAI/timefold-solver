@@ -1109,37 +1109,37 @@ the score still uses the exact travel times.
 Distances can be asymmetric: on one-way streets, the trip from A to B can take longer than the trip back.
 Nearby selection ranks a move by the trips that the move creates,
 and measures each trip in the matrix of the item where the trip starts.
-In the table, B is the item that the move moves and D is its candidate partner:
+In the table, A is the item that the move moves and B is its candidate partner:
 
 [cols="1,2"]
 |===
-|Move |Distance that ranks D
+|Move |Distance that ranks B
 
 |List change, sub-list change
-|D→B in D's matrix, because the move puts B right after D.
-If D is a vehicle, B→D in D's matrix.
+|B→A in B's matrix, because the move puts A right after B.
+If B is a vehicle, A→B in B's matrix.
 
 |Basic change
-|B→D in D's matrix.
+|A→B in B's matrix.
 
 |List swap, sub-list swap, basic swap, k-opt
-|B→D in B's matrix plus D→B in D's matrix, because a swap creates a trip in each direction.
+|A→B in A's matrix plus B→A in B's matrix, because a swap creates a trip in each direction.
 |===
 
 For example:
 
-* *List change.* B is on a car; D is on a bike.
-B→D takes one minute by bike, and D→B takes 11 minutes by bike.
-The move puts B after D, so D ranks with 11 minutes.
-* *List swap.* B is on a car; D is on a bike.
-B→D takes four minutes by car, and D→B takes six minutes by bike.
-D ranks with ten minutes, the sum of both.
-If B moves to a bike route later, B→D is measured by bike from then on.
-* *Basic change.* An entity B can take the value D; D is on matrix 1.
-B→D takes three minutes in matrix 1, so D ranks with three minutes.
-* *Basic swap.* B is on matrix 0 and D is on matrix 1.
-B→D takes two minutes in matrix 0, and D→B takes five minutes in matrix 1.
-D ranks with seven minutes.
+* *List change.* A is on a car; B is on a bike.
+A→B takes one minute by bike, and B→A takes 11 minutes by bike.
+The move puts A after B, so B ranks with 11 minutes.
+* *List swap.* A is on a car; B is on a bike.
+A→B takes four minutes by car, and B→A takes six minutes by bike.
+B ranks with ten minutes, the sum of both.
+If A moves to a bike route later, A→B is measured by bike from then on.
+* *Basic change.* An entity A can take the value B; B is on matrix 1.
+A→B takes three minutes in matrix 1, so B ranks with three minutes.
+* *Basic swap.* A is on matrix 0 and B is on matrix 1.
+A→B takes two minutes in matrix 0, and B→A takes five minutes in matrix 1.
+B ranks with seven minutes.
 
 These rules also apply to a meter with one matrix and asymmetric distances.
 
