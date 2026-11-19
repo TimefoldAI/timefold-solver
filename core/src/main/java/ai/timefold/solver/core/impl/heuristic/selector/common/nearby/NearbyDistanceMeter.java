@@ -58,8 +58,9 @@ public interface NearbyDistanceMeter<Moved_, Neighbor_> {
     /**
      * The matrix that the item is on now, in the working solution,
      * for example the transport type of the vehicle that a visit is assigned to.
-     * The solver asks for origins and destinations alike,
-     * and also for unassigned items; return a default matrix for them, such as 0.
+     * The solver asks for neighbors, and in swaps also for moved items,
+     * because both swapped items have the same type there.
+     * It also asks for unassigned items; return a default matrix for them, such as 0.
      * <p>
      * The solver calls this method many times on every selection.
      * Read only the given item, and keep it to a few field reads.
@@ -78,7 +79,7 @@ public interface NearbyDistanceMeter<Moved_, Neighbor_> {
      * <p>
      * With more than one matrix, the solver calls only this method.
      * Keep it cheap, such as a table lookup:
-     * ordered selection calls it again for every candidate.
+     * the solver may compute a distance again when it needs it.
      * The distance must not depend on the working solution.
      *
      * @param moved never null
