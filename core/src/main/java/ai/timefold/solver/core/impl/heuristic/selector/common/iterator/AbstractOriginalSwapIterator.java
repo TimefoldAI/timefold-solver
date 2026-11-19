@@ -15,7 +15,7 @@ public abstract class AbstractOriginalSwapIterator<Solution_, Move_ extends Move
         if (leftSubSelector != rightSubSelector) {
             return SelectionUtils.product(leftSubSelector.getSize(), rightSubSelector.getSize());
         } else {
-            long leftSize = leftSubSelector.getSize();
+            var leftSize = leftSubSelector.getSize();
             if (leftSize < 2L) {
                 return 0L;
             }

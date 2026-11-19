@@ -63,6 +63,7 @@ public final class SelectionUtils {
      */
     public static long sumOf(int from, int to, IntToLongFunction size) {
         var total = 0L;
+        // i is long, so that i++ cannot overflow when to is Integer.MAX_VALUE.
         for (var i = (long) from; i <= to && total != Long.MAX_VALUE; i++) {
             total = sum(total, size.applyAsLong((int) i));
         }
@@ -106,8 +107,7 @@ public final class SelectionUtils {
 
     /**
      * @param count how many there are to pick from
-     * @return the sum of {@link #orderedPicks(long, long)} for {@code minimumPicks <= k <= maximumPicks};
-     *         picks above the count add nothing
+     * @return the sum of {@link #orderedPicks(long, long)} for {@code minimumPicks <= k <= maximumPicks}
      */
     public static long orderedPicksSum(long count, int minimumPicks, int maximumPicks) {
         var lastPicks = (int) Math.min(maximumPicks, count);

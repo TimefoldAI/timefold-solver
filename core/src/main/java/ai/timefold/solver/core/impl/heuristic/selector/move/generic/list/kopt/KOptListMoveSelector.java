@@ -45,18 +45,18 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
     }
 
     /**
-     * A provable upper bound of distinct selections: the sum over k of n^k * 2^k * (2k - 1)!!,
+     * A provable upper bound of distinct selections: the sum over k of (2n)^k * (2k - 1)!!,
      * where n is the number of values.
-     * A k-opt move is a sequence of 2k removed edge endpoints (n choices for each odd one, 2 neighbors for each even one)
-     * plus a matching of those 2k endpoints into added edges ((2k - 1)!! possibilities).
+     * A k-opt move removes k edges (2n choices each: n for the first endpoint, 2 neighbors for the second)
+     * and matches the 2k removed endpoints into added edges ((2k - 1)!! possibilities).
      * This counts degenerate and patched moves too, so it is much larger than the number of pure k-opt reconnections.
      */
     @Override
     public long getSize() {
-        // Each removed edge: n choices for its first endpoint and 2 neighbors for its second.
         var endpointChoices = SelectionUtils.product(valueSelector.getSize(), 2L);
         return SelectionUtils.sumOf(minK, maxK, k -> {
             var kOptSize = 1L;
+            // Each pass adds one removed edge (2n) and one odd factor (2i - 1) of (2k - 1)!!.
             for (var i = 1; i <= k; i++) {
                 kOptSize = SelectionUtils.product(kOptSize, endpointChoices, 2L * i - 1);
             }
