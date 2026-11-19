@@ -111,8 +111,6 @@ Building the swap candidates also asks the meter for twice as many distances.
 
 `NearbyDistanceMeter` has new default methods for xref:optimization-algorithms/move-selector-reference.adoc#nearbySelectionSeveralDistanceMatrices[several distance matrices].
 Existing meters compile and work without changes.
-A test double that mocks `NearbyDistanceMeter`, for example with Mockito, does not run the default methods:
-make `getDistanceMatrixCount()` return `1`, otherwise the solver fails fast.
 ====
 
 icon:eye[set=far] Deprecation of `@ShadowVariableInconsistent`
