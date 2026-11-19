@@ -1017,6 +1017,124 @@ to specify which destination, value, or subList should be nearby the selection.
     </unionMoveSelector>
 ----
 
+[#nearbySelectionSeveralDistanceMatrices]
+==== Several distance matrices
+
+Some models need more than one notion of "near".
+For example, a visit on a bike route is near other visits by bike paths,
+and a visit on a car route is near other visits by roads.
+Traffic can also change travel times during the day.
+For these models, a `NearbyDistanceMeter` can declare several distance matrices,
+and say which matrix each item is on in the current solution:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
+
+    @Override
+    public int getDistanceMatrixCount() {
+        return 2; // 0 = car, 1 = bike
+    }
+
+    @Override
+    public int getDistanceMatrixIndex(LocationAware item) {
+        // The transport type of the vehicle the item is on now.
+        Vehicle vehicle = item instanceof Customer customer ? customer.getVehicle() : (Vehicle) item;
+        return vehicle == null || vehicle.getTransportType() == TransportType.CAR ? 0 : 1;
+    }
+
+    @Override
+    public double getNearbyDistance(Customer origin, LocationAware destination, int matrix) {
+        return origin.getTravelTimeTo(destination, matrix);
+    }
+
+    @Override
+    public double getNearbyDistance(Customer origin, LocationAware destination) {
+        return getNearbyDistance(origin, destination, 0);
+    }
+
+}
+----
+====
+
+Follow these rules:
+
+* *Use the same unit in every matrix*, for example seconds.
+The solver compares distances across matrices.
+With seconds for cars and meters for bikes, bike destinations would always look far.
+* *Return the matrix of the item you get, from the current solution.*
+The solver also asks about unassigned items; return a default matrix for them, such as `0`.
+* *Keep `getDistanceMatrixIndex()` and the 3-argument `getNearbyDistance()` cheap*,
+such as a few field reads and a table lookup.
+The solver calls them often.
+* *Never read the solution in `getNearbyDistance()`.*
+The solver can keep distances, and can compute them again when it needs them.
+* *Declare at most 16 matrices.*
+Selection time grows with the number of matrices,
+and the work and memory to rank swap partners grow with its square.
+* *With more than one matrix, configure a size maximum* for random nearby selection,
+for example `parabolicDistributionSizeMaximum` (the default parabolic distribution has one).
+The solver fails fast at startup without it.
+
+===== How properties combine into matrices
+
+Each property that changes travel, such as transport type or time of day, has a few values.
+One matrix exists for each combination of values:
+3 transport types and 3 time slots give 9 matrices,
+and the index numbers each combination, for example `transportType * 3 + timeSlot`.
+`getDistanceMatrixCount()` returns the number of combinations,
+and `getDistanceMatrixIndex()` returns the combination of the item.
+
+Keep the number of matrices small.
+Add a property only when it changes which items are near each other,
+not only how long the trips take.
+If traffic makes every trip in an area slower by about the same factor,
+leave the time of day out and return the transport type only.
+Nearby selection only decides which moves the solver tries;
+the score still uses the exact travel times.
+
+===== Which distances rank a move
+
+Distances can be asymmetric: on one-way streets, the trip from A to B can take longer than the trip back.
+Nearby selection ranks a move by the trips that the move creates,
+and measures each trip in the matrix of the item where the trip starts.
+In the table, B is the item that the move moves and D is its candidate partner:
+
+[cols="1,2"]
+|===
+|Move |Distance that ranks D
+
+|List change, sub-list change
+|D→B in D's matrix, because the move puts B right after D.
+If D is a vehicle, B→D in D's matrix.
+
+|Basic change
+|B→D in D's matrix.
+
+|List swap, sub-list swap, basic swap, k-opt
+|B→D in B's matrix plus D→B in D's matrix, because a swap creates a trip in each direction.
+|===
+
+For example:
+
+* *List change.* B is on a car; D is on a bike.
+B→D takes 1 minute by bike, and D→B takes 11 minutes by bike.
+The move puts B after D, so D ranks with 11 minutes.
+* *List swap.* B is on a car; D is on a bike.
+B→D takes 4 minutes by car, and D→B takes 6 minutes by bike.
+D ranks with 4 + 6 = 10 minutes.
+If B moves to a bike route later, B→D is measured by bike from then on.
+* *Basic change.* An entity B can take the value D; D is on matrix 1.
+B→D takes 3 minutes in matrix 1, so D ranks with 3 minutes.
+* *Basic swap.* B is on matrix 0 and D is on matrix 1.
+B→D takes 2 minutes in matrix 0, and D→B takes 5 minutes in matrix 1, so D ranks with 7 minutes.
+
+These rules also apply to a meter with one matrix and asymmetric distances.
+
 ==== Power-tweaking distribution type
 
 The solver allows you to tweak the distribution type of the nearby selection,
