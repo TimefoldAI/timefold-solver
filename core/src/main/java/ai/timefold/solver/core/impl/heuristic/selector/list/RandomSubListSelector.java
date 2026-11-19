@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.impl.util.TriangleElementFactory;
 import ai.timefold.solver.core.impl.util.TriangularNumbers;
 
@@ -71,19 +72,17 @@ public final class RandomSubListSelector<Solution_> extends AbstractListMoveSele
 
     @Override
     public long getSize() {
-        var subListCount = 0L;
-        for (var entity : ((Iterable<Object>) entitySelector::endingIterator)) {
+        return SelectionUtils.sumOf((Iterable<Object>) entitySelector::endingIterator, entity -> {
             var listSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
-            // Add subLists bigger than minimum subList size.
-            if (listSize >= minimumSubListSize) {
-                subListCount += TriangularNumbers.nthTriangle(listSize - minimumSubListSize + 1);
-                // Subtract moves with subLists bigger than maximum subList size.
-                if (listSize > maximumSubListSize) {
-                    subListCount -= TriangularNumbers.nthTriangle(listSize - maximumSubListSize);
-                }
+            if (listSize < minimumSubListSize) {
+                return 0L;
             }
-        }
-        return subListCount;
+            // SubLists of at least the minimum size, minus those above the maximum size.
+            var entitySubListCount = TriangularNumbers.nthTriangle(listSize - minimumSubListSize + 1);
+            return listSize > maximumSubListSize
+                    ? entitySubListCount - TriangularNumbers.nthTriangle(listSize - maximumSubListSize)
+                    : entitySubListCount;
+        });
     }
 
     @Override

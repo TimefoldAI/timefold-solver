@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.util.MappingIterator;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
@@ -86,7 +87,9 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
         if (entitySelector.getSize() == 0) {
             return 0;
         }
-        return entitySelector.getSize() + valueSelector.getSize();
+        var size = SelectionUtils.sum(entitySelector.getSize(), valueSelector.getSize());
+        // The option of unassigning.
+        return listVariableDescriptor.allowsUnassignedValues() ? SelectionUtils.sum(size, 1L) : size;
     }
 
     @Override
@@ -101,7 +104,7 @@ public final class ElementDestinationSelector<Solution_> extends AbstractListMov
             // In case of list var which allows unassigned values, we need to exclude unassigned elements.
             var totalValueSize = valueSelector.getSize()
                     - (allowsUnassignedValues ? listVariableState.getUnassignedCount() : 0);
-            var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
+            var totalSize = SelectionUtils.sum(entitySelector.getSize(), totalValueSize);
             return new ElementPositionRandomIterator<>(listVariableState, entitySelector,
                     replayingValueSelector != null ? replayingValueSelector.iterator() : null, valueSelector, workingRandom,
                     totalSize, allowsUnassignedValues, allowsUnassignedValues && totalValueSize > 0);

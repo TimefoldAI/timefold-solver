@@ -34,12 +34,6 @@ import org.slf4j.LoggerFactory;
 public final class FilteringIterator<T extends @Nullable Object>
         implements Iterator<T> {
 
-    /**
-     * Multiplied by the candidate population's size to size a bail-out budget,
-     * wherever this iterator is built with one.
-     */
-    public static final long BAIL_OUT_SAFETY_MULTIPLIER = 10L;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(FilteringIterator.class);
 
     private final Iterator<T> delegate;

@@ -37,6 +37,11 @@ import org.jspecify.annotations.Nullable;
 public abstract non-sealed class AbstractSingleDrawMoveIterator<Solution_, Left_>
         extends AbstractLeftDrivenMoveIterator<Solution_, Left_> {
 
+    /**
+     * How many random spans a sub-list iterator tries for one seed value.
+     */
+    protected static final int SPAN_ATTEMPT_COUNT = 10;
+
     private final Set<Left_> leftsWithMove = Collections.newSetFromMap(new IdentityHashMap<>());
 
     /**
