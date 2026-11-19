@@ -855,8 +855,8 @@ Java::
 ----
 public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
 
-    public double getNearbyDistance(Customer origin, LocationAware destination) {
-        return origin.getDistanceTo(destination);
+    public double getNearbyDistance(Customer moved, LocationAware neighbor) {
+        return moved.getDistanceTo(neighbor);
     }
 
 }
@@ -1055,13 +1055,13 @@ public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer
     }
 
     @Override
-    public double getNearbyDistance(Customer origin, LocationAware destination, int matrix) {
-        return origin.getTravelTimeTo(destination, matrix);
+    public double getNearbyDistance(Customer moved, LocationAware neighbor, int matrix) {
+        return moved.getTravelTimeTo(neighbor, matrix);
     }
 
     @Override
-    public double getNearbyDistance(Customer origin, LocationAware destination) {
-        return getNearbyDistance(origin, destination, 0);
+    public double getNearbyDistance(Customer moved, LocationAware neighbor) {
+        return getNearbyDistance(moved, neighbor, 0);
     }
 
 }
