@@ -820,25 +820,32 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-public interface NearbyDistanceMeter<Origin_, Destination_> {
+public interface NearbyDistanceMeter<Moved_, Neighbor_> {
 
-    double getNearbyDistance(Origin_ origin, Destination_ destination);
+    double getNearbyDistance(Moved_ moved, Neighbor_ neighbor);
+
+    // Only for several distance matrices.
+    default int getDistanceMatrixCount() { return 1; }
+    default int getDistanceMatrixIndex(Neighbor_ neighbor) { return 0; }
+    default double getNearbyDistance(Moved_ moved, Neighbor_ neighbor, int matrix) {
+        return getNearbyDistance(moved, neighbor);
+    }
 
 }
 ----
 ====
 
 In a nutshell, when nearby selection is applied,
-the `Origin_` and `Destination_` types are determined by the relevant selectors within the `nearbySelection` configuration.
-For a <<basicVariableNearbySelection, basic variable>>, `Origin_`
+the `Moved_` and `Neighbor_` types are determined by the relevant selectors within the `nearbySelection` configuration.
+For a <<basicVariableNearbySelection, basic variable>>, `Moved_`
 is defined by the planning entity (for example `Lesson`) of the nearby definition,
-while `Destination_` can be either a planning value or a planning entity.
+while `Neighbor_` can be either a planning value or a planning entity.
 In the case of a <<listVariableNearbySelection, list variable>>,
-`Origin_` is always a planning value (for example `Customer`),
-but `Destination_` can be either a planning value or a planning entity.
+`Moved_` is always a planning value (for example `Customer`),
+but `Neighbor_` can be either a planning value or a planning entity.
 
 As an example, consider the Vehicle Routing Problem and a list variable to store the customer list for each vehicle.
-The distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
+The distance meter must be able to handle both `Customer` and `Vehicle` as the `Neighbor_` argument:
 
 [tabs]
 ====
@@ -1020,7 +1027,7 @@ to specify which destination, value, or subList should be nearby the selection.
 [#nearbySelectionSeveralDistanceMatrices]
 ==== Several distance matrices
 
-Some models need more than one notion of "near".
+Some models need more than one meaning of "near".
 For example, a visit on a bike route is near other visits by bike paths,
 and a visit on a car route is near other visits by roads.
 Traffic can also change travel times during the day.
@@ -1084,7 +1091,7 @@ The solver fails fast at startup without it.
 
 Each property that changes travel, such as transport type or time of day, has a few values.
 One matrix exists for each combination of values:
-3 transport types and 3 time slots give 9 matrices,
+three transport types and three time slots give nine matrices,
 and the index numbers each combination, for example `transportType * 3 + timeSlot`.
 `getDistanceMatrixCount()` returns the number of combinations,
 and `getDistanceMatrixIndex()` returns the combination of the item.
@@ -1122,16 +1129,17 @@ If D is a vehicle, B→D in D's matrix.
 For example:
 
 * *List change.* B is on a car; D is on a bike.
-B→D takes 1 minute by bike, and D→B takes 11 minutes by bike.
+B→D takes one minute by bike, and D→B takes 11 minutes by bike.
 The move puts B after D, so D ranks with 11 minutes.
 * *List swap.* B is on a car; D is on a bike.
-B→D takes 4 minutes by car, and D→B takes 6 minutes by bike.
-D ranks with 4 + 6 = 10 minutes.
+B→D takes four minutes by car, and D→B takes six minutes by bike.
+D ranks with ten minutes, the sum of both.
 If B moves to a bike route later, B→D is measured by bike from then on.
 * *Basic change.* An entity B can take the value D; D is on matrix 1.
-B→D takes 3 minutes in matrix 1, so D ranks with 3 minutes.
+B→D takes three minutes in matrix 1, so D ranks with three minutes.
 * *Basic swap.* B is on matrix 0 and D is on matrix 1.
-B→D takes 2 minutes in matrix 0, and D→B takes 5 minutes in matrix 1, so D ranks with 7 minutes.
+B→D takes two minutes in matrix 0, and D→B takes five minutes in matrix 1.
+D ranks with seven minutes.
 
 These rules also apply to a meter with one matrix and asymmetric distances.
 
