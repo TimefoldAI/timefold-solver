@@ -46,7 +46,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ModelRequestEmployeeScheduleEmptyModelConfigOverrides"
+                "$ref" : "#/components/schemas/ModelRequestEmployeeScheduleEmployeeScheduleModelConfigOverrides"
               }
             }
           },
@@ -863,7 +863,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ModelInputPatchRequestEmptyModelConfigOverrides"
+                "$ref" : "#/components/schemas/ModelInputPatchRequestEmployeeScheduleModelConfigOverrides"
               }
             }
           },
@@ -1175,7 +1175,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ModelRequestEmployeeScheduleEmptyModelConfigOverrides"
+                  "$ref" : "#/components/schemas/ModelRequestEmployeeScheduleEmployeeScheduleModelConfigOverrides"
                 }
               }
             }
@@ -1518,6 +1518,16 @@
           }
         }
       },
+      "EmployeeScheduleModelConfigOverrides" : {
+        "type" : "object",
+        "properties" : {
+          "assignShiftToEmployeeWeight" : {
+            "format" : "int64",
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }
+      },
       "EmployeeScheduleOutputMetrics" : {
         "type" : "object",
         "properties" : {
@@ -1532,9 +1542,6 @@
             "x-tf-example" : "100"
           }
         }
-      },
-      "EmptyModelConfigOverrides" : {
-        "type" : "object"
       },
       "ErrorInfo" : {
         "type" : "object",
@@ -1875,14 +1882,14 @@
           }
         }
       },
-      "ModelConfigEmptyModelConfigOverrides" : {
+      "ModelConfigEmployeeScheduleModelConfigOverrides" : {
         "type" : "object",
         "properties" : {
           "overrides" : {
             "description" : "The configuration of individual (soft) constraints weights and additional global model configuration attributes.",
             "type" : "object",
             "allOf" : [ {
-              "$ref" : "#/components/schemas/EmptyModelConfigOverrides"
+              "$ref" : "#/components/schemas/EmployeeScheduleModelConfigOverrides"
             } ],
             "nullable" : true
           }
@@ -1970,7 +1977,7 @@
             "description" : "The model configuration. Impacts the quality of solution.",
             "type" : "object",
             "allOf" : [ {
-              "$ref" : "#/components/schemas/ModelConfigEmptyModelConfigOverrides"
+              "$ref" : "#/components/schemas/ModelConfigEmployeeScheduleModelConfigOverrides"
             } ],
             "nullable" : true
           },
@@ -2026,7 +2033,7 @@
         "enum" : [ "add", "remove", "replace" ],
         "type" : "string"
       },
-      "ModelInputPatchRequestEmptyModelConfigOverrides" : {
+      "ModelInputPatchRequestEmployeeScheduleModelConfigOverrides" : {
         "required" : [ "patch" ],
         "type" : "object",
         "properties" : {
@@ -2046,7 +2053,7 @@
           }
         }
       },
-      "ModelRequestEmployeeScheduleEmptyModelConfigOverrides" : {
+      "ModelRequestEmployeeScheduleEmployeeScheduleModelConfigOverrides" : {
         "required" : [ "modelInput" ],
         "type" : "object",
         "properties" : {

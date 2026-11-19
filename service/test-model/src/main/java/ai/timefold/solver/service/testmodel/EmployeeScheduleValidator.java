@@ -5,17 +5,16 @@ import jakarta.enterprise.context.ApplicationScoped;
 import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
-import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
 import ai.timefold.solver.service.testmodel.domain.EmployeeSchedule;
 import ai.timefold.solver.service.testmodel.domain.Shift;
 
 @ApplicationScoped
 public class EmployeeScheduleValidator
-        implements ModelValidator<EmployeeSchedule, EmptyModelConfigOverrides> {
+        implements ModelValidator<EmployeeSchedule, EmployeeScheduleModelConfigOverrides> {
 
     @Override
     public void validate(ValidationBuilder validationBuilder, EmployeeSchedule modelInput,
-            ModelConfig<EmptyModelConfigOverrides> modelConfig) {
+            ModelConfig<EmployeeScheduleModelConfigOverrides> modelConfig) {
         for (var shift : modelInput.getShifts()) {
             validateShift(validationBuilder, shift);
         }
