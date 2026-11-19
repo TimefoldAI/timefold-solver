@@ -104,7 +104,7 @@ If it is asymmetric:
 - List change and sub-list change moves to a value D rank D by the distance from D to the moved value, not from the moved value to D.
 Moves to a vehicle, and basic change moves, keep the old ranking.
 - Swap moves (list, sub-list and basic) and k-opt moves rank by the sum of both directions.
-- Construction heuristics and exhaustive search with nearby selection offer the candidates in the same new order.
+- Ordered nearby selection, for example in exhaustive search, offers the candidates in the same new order.
 
 As a result, a solver run with the same random seed can give different results.
 Building the swap candidates also asks the meter for twice as many distances.
