@@ -58,7 +58,7 @@ public class DefaultBavetConstraintSessionFactory<Solution_, Score_ extends Scor
         return new BavetConstraintSession<>(scoreInliner,
                 buildNodeNetwork(workingSolution, consistencyTracker, sessionData.constraintStreamSet,
                         scoreInliner, constraintProfiler, constraintMatchPolicy.isIndictmentsEnabled(),
-                        scoreDirectorDerived));
+                        scoreDirectorDerived, 0));
     }
 
 }

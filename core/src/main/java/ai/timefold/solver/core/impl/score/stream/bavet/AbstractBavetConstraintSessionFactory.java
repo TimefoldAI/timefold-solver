@@ -144,10 +144,11 @@ public abstract class AbstractBavetConstraintSessionFactory<Solution_, Score_ ex
             ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
             AbstractScoreInliner<Score_> scoreInliner, InnerConstraintProfiler profiler,
             boolean indictmentsEnabled,
-            boolean scoreDirectorDerived) {
+            boolean scoreDirectorDerived,
+            int networkId) {
         var buildHelper =
                 new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, indictmentsEnabled,
-                        profiler);
+                        profiler, networkId);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractRootNode<?>>>();
         var nodeList =
                 buildHelper.buildNodeList(constraintStreamSet, buildHelper, BavetAbstractConstraintStream::buildNode, node -> {

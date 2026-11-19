@@ -64,7 +64,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
         var buildHelper = new ConstraintNodeBuildHelper<>(new ConsistencyTracker<>(), streamSet,
                 AbstractScoreInliner.buildScoreInliner(new SimpleScoreDefinition(), Collections.emptyMap(),
                         ConstraintMatchPolicy.DISABLED),
-                indictmentsEnabled, null);
+                indictmentsEnabled, null, 0);
 
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(streamSet, buildHelper,

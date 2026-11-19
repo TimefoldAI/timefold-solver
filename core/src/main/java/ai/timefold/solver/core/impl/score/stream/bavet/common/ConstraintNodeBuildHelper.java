@@ -45,13 +45,15 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     private final Map<EntityDescriptor<Solution_>, Map<ForEachFilteringCriteria, @Nullable Predicate<Object>>> entityDescriptorToForEachCriteriaToPredicateMap;
     private final Map<BavetAbstractConstraintStream<Solution_>, List<Set<ConstraintNodeProfileId>>> streamToProfileIdSets;
     private final Map<BavetScoringConstraintStream<Solution_>, Scorer<?>> streamToScorers = new HashMap<>();
+    private final int networkId;
 
     private int nextLifecycleProfilingId = 0;
 
     public ConstraintNodeBuildHelper(ConsistencyTracker<Solution_> consistencyTracker,
             Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet, AbstractScoreInliner<Score_> scoreInliner,
             boolean indictmentsEnabled,
-            @Nullable InnerConstraintProfiler profiler) {
+            @Nullable InnerConstraintProfiler profiler,
+            int networkId) {
         super(activeStreamSet);
         this.consistencyTracker = consistencyTracker;
         this.scoreInliner = scoreInliner;
@@ -59,13 +61,14 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         this.indictmentsEnabled = indictmentsEnabled;
         this.entityDescriptorToForEachCriteriaToPredicateMap = new HashMap<>();
         this.streamToProfileIdSets = HashMap.newHashMap(Math.max(16, activeStreamSet.size() / 2));
+        this.networkId = networkId;
     }
 
     @Override
     public <Tuple_ extends Tuple> void putInsertUpdateRetract(BavetAbstractConstraintStream<Solution_> stream,
             TupleLifecycle<Tuple_> tupleLifecycle) {
         if (constraintProfiler != null) {
-            var out = TupleLifecycle.profiling(constraintProfiler, nextLifecycleProfilingId, stream, tupleLifecycle);
+            var out = TupleLifecycle.profiling(constraintProfiler, nextLifecycleProfilingId, networkId, stream, tupleLifecycle);
             super.putInsertUpdateRetract(stream, out);
             updateConstraintProfileIdSet(stream, out);
 
@@ -149,7 +152,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
                 return node.getPropagator();
             }
             var profileKey = nextLifecycleProfilingId++;
-            var profileId = new ConstraintNodeProfileId(profileKey, node.getStreamKind(),
+            var profileId = new ConstraintNodeProfileId(profileKey, networkId, node.getStreamKind(),
                     ConstraintNodeProfileId.Qualifier.NODE, node.getLocationSet());
             constraintProfiler.register(profileId);
             var stream = getNodeCreator(node);
