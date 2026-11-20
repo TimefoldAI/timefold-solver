@@ -71,6 +71,9 @@ public final class ProbabilityValueSelector<Solution_>
 
     @Override
     public void disposeCache(SolverScope<Solution_> solverScope) {
+        if (cachedEntityMap != null) {
+            cachedEntityMap.clear();
+        }
         probabilityWeightTotal = -1.0;
     }
 
@@ -81,7 +84,7 @@ public final class ProbabilityValueSelector<Solution_>
 
     @Override
     public boolean isNeverEnding() {
-        return false;
+        return true;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -57,14 +59,27 @@ public final class SelectedCountLimitEntitySelector<Solution_>
 
     @Override
     public ListIterator<Object> listIterator() {
-        // TODO Not yet implemented
-        throw new UnsupportedOperationException();
+        return buildLimitedList().listIterator();
     }
 
     @Override
     public ListIterator<Object> listIterator(int index) {
-        // TODO Not yet implemented
-        throw new UnsupportedOperationException();
+        return buildLimitedList().listIterator(index);
+    }
+
+    private List<Object> buildLimitedList() {
+        if (randomSelection) {
+            throw new IllegalStateException("The selector (" + this
+                    + ") does not support a ListIterator with randomSelection (" + randomSelection + ").");
+        }
+        var limitedList = new ArrayList<Object>();
+        for (Object entity : childEntitySelector) {
+            if (limitedList.size() >= selectedCountLimit) {
+                break;
+            }
+            limitedList.add(entity);
+        }
+        return limitedList;
     }
 
     @Override
