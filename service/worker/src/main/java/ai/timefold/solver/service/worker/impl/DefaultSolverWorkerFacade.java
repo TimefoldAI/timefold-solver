@@ -137,18 +137,18 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
 
     @Override
     public <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest) {
-        var metadata = createPatchedDataset(id, select, runName, modelInputPatchRequest);
+        var metadata = createPatchedDataset(id, select, runName, tags, modelInputPatchRequest);
         datasetValidateComputeCommandEmitter.send(new DatasetValidateComputeCommand(metadata.getId(), false));
         return metadata;
     }
 
     @Override
     public <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchAndSolveDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest) {
-        var metadata = createPatchedDataset(id, select, runName, modelInputPatchRequest);
+        var metadata = createPatchedDataset(id, select, runName, tags, modelInputPatchRequest);
         datasetValidateComputeCommandEmitter.send(new DatasetValidateComputeCommand(metadata.getId(), true));
         return metadata;
     }
@@ -272,7 +272,7 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
         return metadata;
     }
 
-    private Metadata createPatchedDataset(String id, DatasetSelector select, String runName,
+    private Metadata createPatchedDataset(String id, DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest patchRequest) {
         var input =
                 select == DatasetSelector.UNSOLVED ? getModelInput(id) : getSolvedModelInput(id);
@@ -296,6 +296,7 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
             ModelInput patchedModelInput = mapper.treeToValue(patchedInput, input.getClass());
 
             Metadata metadata = new Metadata<>(runName);
+            metadata.setTags(tags);
             // set parent id to the id this data set is created from
             metadata.setParentId(id);
             // set origin id based on the origin id of the parent data set

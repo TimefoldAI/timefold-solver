@@ -194,7 +194,7 @@ class DefaultSolverWorkerFacadeTest {
     void patchDataset_missingParent_throwsItemNotFound() {
         ModelInputPatchRequest<?> patch = new ModelInputPatchRequest<>(null, List.of());
 
-        assertThatThrownBy(() -> facade.patchDataset("missing", DatasetSelector.UNSOLVED, uniqueRunName(), patch))
+        assertThatThrownBy(() -> facade.patchDataset("missing", DatasetSelector.UNSOLVED, uniqueRunName(), Set.of(), patch))
                 .isInstanceOf(ItemNotFoundException.class);
         assertThat(validateComputeEmitter.size()).isEqualTo(0);
     }
@@ -207,11 +207,16 @@ class DefaultSolverWorkerFacadeTest {
         var childRunName = uniqueRunName();
 
         ModelInputPatchRequest<?> patch = new ModelInputPatchRequest<>(null, List.of());
-        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, childRunName, patch);
+        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, childRunName, Set.of("patch-tag"),
+                patch);
 
         // emitter assertions
         assertThat(validateComputeEmitter.size()).isEqualTo(1);
         assertThat(validateComputeEmitter.getLastMessage().solve()).isFalse();
+
+        // metadata assertions
+        assertThat(child.getName()).isEqualTo(childRunName);
+        assertThat(child.getTags()).containsExactly("patch-tag");
 
         // storage assertions — child dataset is stored independently with parent linkage
         assertThat(child.getParentId()).isEqualTo(parent.getId());
@@ -234,7 +239,7 @@ class DefaultSolverWorkerFacadeTest {
                 uniqueRunName(), Set.of(), new TestdataModelInput("orig"), parentConfiguration);
         var patchConfiguration = Configuration.<TestdataModelConfigOverrides> empty().withRun(new RunConfiguration("child"));
 
-        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(),
+        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(), Set.of(),
                 new ModelInputPatchRequest<>(patchConfiguration, List.of()));
 
         assertThat(facade.getConfiguration(child.getId())).isEqualTo(patchConfiguration);
@@ -247,7 +252,7 @@ class DefaultSolverWorkerFacadeTest {
         Metadata<?> parent = facade.createDataset(
                 uniqueRunName(), Set.of(), new TestdataModelInput("orig"), parentConfiguration);
 
-        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(),
+        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(), Set.of(),
                 new ModelInputPatchRequest<>(null, List.of()));
 
         assertThat(facade.getConfiguration(child.getId())).isEqualTo(parentConfiguration);
@@ -262,11 +267,14 @@ class DefaultSolverWorkerFacadeTest {
 
         ModelInputPatchRequest<?> patch = new ModelInputPatchRequest<>(null, List.of());
         Metadata<?> child = facade.patchAndSolveDataset(
-                parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(), patch);
+                parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(), Set.of("patch-tag"), patch);
 
         // emitter assertions
         assertThat(validateComputeEmitter.size()).isEqualTo(1);
         assertThat(validateComputeEmitter.getLastMessage().solve()).isTrue();
+
+        // metadata assertions
+        assertThat(child.getTags()).containsExactly("patch-tag");
 
         // storage assertions
         assertThat(child.getParentId()).isEqualTo(parent.getId());

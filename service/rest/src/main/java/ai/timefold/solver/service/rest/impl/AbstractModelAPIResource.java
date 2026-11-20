@@ -232,15 +232,8 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
             @Validated(nullable = true,
                     operationId = OperationId.FROM_INPUT) Configuration<ModelConfigurationOverrides_> configuration) {
 
-        Set<String> tags = null;
-        String runName = null;
-
-        if (configuration != null && configuration.run() != null) {
-            RunConfiguration runConfiguration = configuration.run();
-            runName = runConfiguration.name();
-            tags = runConfiguration.tags();
-        }
-        runName = name == null ? runName : name;
+        String runName = runName(name, configuration);
+        Set<String> tags = runTags(configuration);
 
         return switch (operation) {
             case OperationOnPost.NONE -> solverWorkerFacade.createDataset(id, select, runName, tags, configuration);
@@ -279,10 +272,15 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
                     description = "Operation to execute on the POST request.") @DefaultValue(OperationOnPost.DEFAULT_OPERATION) @QueryParam("operation") OperationOnPost operation,
             @Validated(nullable = true,
                     operationId = OperationId.FROM_PATCH) ModelInputPatchRequest<ModelConfigurationOverrides_> patchRequest) {
+        Configuration<ModelConfigurationOverrides_> configuration = patchRequest == null ? null : patchRequest.config();
+        String runName = runName(name, configuration);
+        Set<String> tags = runTags(configuration);
+
         try {
             return switch (operation) {
-                case OperationOnPost.NONE -> solverWorkerFacade.patchDataset(id, select, name, patchRequest);
-                case OperationOnPost.SOLVE -> solverWorkerFacade.patchAndSolveDataset(id, select, name, patchRequest);
+                case OperationOnPost.NONE -> solverWorkerFacade.patchDataset(id, select, runName, tags, patchRequest);
+                case OperationOnPost.SOLVE ->
+                    solverWorkerFacade.patchAndSolveDataset(id, select, runName, tags, patchRequest);
             };
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
@@ -581,5 +579,20 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
             }
         }
         return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    /**
+     * Returns the name of a dataset that is created from another dataset: the name query parameter wins over the name
+     * of the run configuration.
+     */
+    private static String runName(String name, Configuration<?> configuration) {
+        if (name != null || configuration == null || configuration.run() == null) {
+            return name;
+        }
+        return configuration.run().name();
+    }
+
+    private static Set<String> runTags(Configuration<?> configuration) {
+        return configuration == null || configuration.run() == null ? null : configuration.run().tags();
     }
 }
