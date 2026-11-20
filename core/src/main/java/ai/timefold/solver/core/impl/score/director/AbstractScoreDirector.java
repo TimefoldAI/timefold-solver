@@ -327,6 +327,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         entityAndFactVisitor = entityAndFactVisitor.andThen(entityValidator);
         setWorkingEntityListDirty(workingSolution);
 
+        // Compute solution-aware @PlanningPin values once, before move selection reads them.
+        solutionDescriptor.visitAllEntities(workingSolution, entity -> {
+            var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
+            entityDescriptor.refreshPlanningPins(workingSolution, entity);
+        });
+
         // This visits all the entities.
         var initializationStatistics = valueRangeManager.getInitializationStatistics(entityAndFactVisitor);
         workingInitScore =

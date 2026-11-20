@@ -735,6 +735,28 @@ public class Lecture {
 In the example above, if `pinned` is `true`,
 the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
 
+The setter may take the planning solution instead of a boolean,
+so the pin can be derived from solution-level data such as the start of the planning window.
+Timefold Solver calls that setter once when the working solution is loaded.
+The setter writes the boolean, and later pin checks read that cached value.
+A xref:responding-to-change/real-time-planning.adoc#problemChange[ProblemChange] that updates the entity,
+or that changes other problem data, calls the setter again.
+
+[source,java,options="nowrap"]
+----
+@PlanningPin
+public boolean isPinned() {
+    return pinned;
+}
+
+public void setPinned(Schedule solution) {
+    pinned = start.isBefore(solution.getPlanningWindowStart());
+}
+----
+
+A `setPinned(boolean)` setter is not called by the solver.
+Without a solution setter, set the boolean yourself before solving.
+
 NOTE: Planning pin value must never change during planning.
 To change whether an entity is pinned or not,
 use xref:responding-to-change/real-time-planning.adoc#problemChange[ProblemChange].

@@ -32,6 +32,7 @@ final class MemberAccessorValidator {
                 verifyIsPublicFieldOrHasReadMethod(member, messagePrefix, true);
             case FIELD_OR_GETTER_METHOD -> verifyFieldOrGetter(member, messagePrefix);
             case VOID_METHOD -> verifyIsVoidMethod(member, messagePrefix);
+            case VOID_METHOD_WITH_PARAMETER -> verifyIsVoidMethodWithParameter(member, messagePrefix);
             case FIELD_OR_GETTER_METHOD_WITH_SETTER -> {
                 verifyFieldOrGetter(member, messagePrefix);
                 verifyIsPublicFieldOrHasPublicSetter(member, messagePrefix);
@@ -45,6 +46,17 @@ final class MemberAccessorValidator {
             throw new IllegalArgumentException(
                     "%s is not accessible because its declaring class (%s) is not public. Maybe make the class (%s) public?"
                             .formatted(messagePrefix, declaringClass.getCanonicalName(), declaringClass.getSimpleName()));
+        }
+    }
+
+    private static void verifyIsVoidMethodWithParameter(Member member, String messagePrefix) {
+        verifyIsVoidMethod(member, messagePrefix);
+        var method = (Method) member;
+        if (method.getParameterCount() != 1) {
+            throw new IllegalArgumentException("""
+                    %s is a void method, but it takes (%d) parameters instead of one.
+                    Maybe make the method (%s) take exactly one parameter?"""
+                    .formatted(messagePrefix, method.getParameterCount(), method.getName()));
         }
     }
 

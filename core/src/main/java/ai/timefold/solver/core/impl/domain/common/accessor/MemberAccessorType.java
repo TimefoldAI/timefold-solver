@@ -5,7 +5,12 @@ public enum MemberAccessorType {
     FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
     FIELD_OR_GETTER_METHOD,
     FIELD_OR_GETTER_METHOD_WITH_SETTER(true),
-    VOID_METHOD;
+    VOID_METHOD,
+    /**
+     * A public void method that takes exactly one argument.
+     * Used to invoke a {@code @PlanningPin} setter that accepts the planning solution.
+     */
+    VOID_METHOD_WITH_PARAMETER;
 
     private final boolean setterRequired;
 
