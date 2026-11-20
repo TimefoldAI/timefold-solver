@@ -3,9 +3,12 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 import java.util.Arrays;
 import java.util.List;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.bound.EmptyMinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
@@ -59,6 +62,11 @@ public class CompositeAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
             }
         }
         return true;
+    }
+
+    @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return EmptyMinimumScoreBound.getInstance();
     }
 
     @Override

@@ -27,7 +27,7 @@ final class MoveTesterScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public InnerScore<Score_> innerCalculateScore() {
+    public InnerScore<Score_> innerCalculateScore(Score_ lowerBound) {
         return InnerScore.fullyAssigned(scoreDirectorFactory.getScoreDefinition().getZeroScore());
     }
 

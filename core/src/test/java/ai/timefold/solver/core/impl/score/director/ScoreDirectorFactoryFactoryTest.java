@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirector;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.MultiEnvironmentBavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -134,6 +135,25 @@ class ScoreDirectorFactoryFactoryTest {
     }
 
     @Test
+    void constraintStreamTieredScoreCalculationDisabledByDefault() {
+        var scoreDirectorFactory = buildFactory(constraintStreamConfig());
+        assertThat(scoreDirectorFactory.createScoreDirectorBuilder(EnvironmentMode.PHASE_ASSERT))
+                .isInstanceOf(BavetConstraintStreamScoreDirector.Builder.class);
+    }
+
+    @Test
+    void constraintStreamTieredScoreCalculationFromConfigRequiresEnterprise() {
+        var config = new ScoreDirectorFactoryConfig()
+                .withConstraintProviderClass(DummyConstraintProvider.class)
+                .withConstraintStreamTieredScoreCalculation(true);
+        var scoreDirectorFactory = buildFactory(config);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> scoreDirectorFactory.createScoreDirectorBuilder(EnvironmentMode.PHASE_ASSERT))
+                .withMessageContainingAll("Tiered score calculation",
+                        "remove tiered score calculation from solver configuration");
+    }
+
+    @Test
     void factoryIsSharedWithTheScoreDirectorsItBuilds() {
         var scoreDirectorFactory = buildFactory(incrementalConfig());
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
@@ -178,6 +198,26 @@ class ScoreDirectorFactoryFactoryTest {
                 .isThrownBy(() -> factoryFactory(config))
                 .withMessageContaining("scoreDirectorFactory")
                 .withMessageContaining("together");
+    }
+
+    @Test
+    void constraintProfilingOnNonConstraintProvider_throwsException() {
+        var config = easyConfig()
+                .withConstraintStreamProfilingEnabled(true);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> factoryFactory(config))
+                .withMessageContaining("no constraintProviderClass")
+                .withMessageContaining("constraintStreamProfilingEnabled");
+    }
+
+    @Test
+    void constraintTieredOnNonConstraintProvider_throwsException() {
+        var config = easyConfig()
+                .withConstraintStreamTieredScoreCalculation(true);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> factoryFactory(config))
+                .withMessageContaining("no constraintProviderClass")
+                .withMessageContaining("constraintStreamTieredScoreCalculation");
     }
 
     // ************************************************************************

@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
@@ -12,6 +14,8 @@ import ai.timefold.solver.core.preview.api.move.Move;
  * @see AbstractAcceptor
  */
 public interface Acceptor<Solution_> extends LocalSearchPhaseLifecycleListener<Solution_> {
+
+    <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound();
 
     /**
      * @param moveScope not null

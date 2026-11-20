@@ -49,6 +49,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         return new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase, environmentMode,
                 solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination, phaseIndex),
                 customPhaseCommandList_)
+                .withIsTieredScoreCalculationEnabled(phaseConfigPolicy.isTieredScoreCalculationEnabled())
                 .enableAssertions()
                 .build();
     }
