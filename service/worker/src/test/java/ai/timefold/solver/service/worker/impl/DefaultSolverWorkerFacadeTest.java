@@ -239,7 +239,7 @@ class DefaultSolverWorkerFacadeTest {
                 uniqueRunName(), Set.of(), new TestdataModelInput("orig"), parentConfiguration);
         var patchConfiguration = Configuration.<TestdataModelConfigOverrides> empty().withRun(new RunConfiguration("child"));
 
-        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(),
+        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(), Set.of(),
                 new ModelInputPatchRequest<>(patchConfiguration, List.of()));
 
         assertThat(facade.getConfiguration(child.getId())).isEqualTo(patchConfiguration);
@@ -252,7 +252,7 @@ class DefaultSolverWorkerFacadeTest {
         Metadata<?> parent = facade.createDataset(
                 uniqueRunName(), Set.of(), new TestdataModelInput("orig"), parentConfiguration);
 
-        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(),
+        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(), Set.of(),
                 new ModelInputPatchRequest<>(null, List.of()));
 
         assertThat(facade.getConfiguration(child.getId())).isEqualTo(parentConfiguration);
