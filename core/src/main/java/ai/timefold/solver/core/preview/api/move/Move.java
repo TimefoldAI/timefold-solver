@@ -146,4 +146,22 @@ public interface Move<Solution_> {
         return getClass().getSimpleName();
     }
 
+    /**
+     * Returns {@code  toString()}, or {@link #describe()} if {@code #toString()} throws.
+     * A move's {@code #toString()} may read the working solution,
+     * which a failed move or a failed undo may have left in a state where reading it throws.
+     * Use this method to format a move in an error message,
+     * so that formatting the move never replaces the failure being reported.
+     * There is no need to override this method.
+     *
+     * @return {@code #toString()}, or {@link #describe()} if that throws
+     */
+    default String toStringSafely() {
+        try {
+            return toString();
+        } catch (RuntimeException e) {
+            return describe();
+        }
+    }
+
 }

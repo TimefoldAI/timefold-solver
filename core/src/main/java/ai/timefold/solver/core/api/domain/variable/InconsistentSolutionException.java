@@ -10,8 +10,9 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * An exception that is thrown when {@link SolutionManager#update(Object)},
- * {@link SolutionManager#updateShadowVariables(Object)} or
- * {@link SolutionManager#recommendAssignment(Object, Object, Function)} is given a
+ * {@link SolutionManager#updateShadowVariables(Object)},
+ * {@link SolutionManager#recommendAssignment(Object, Object, Function)} or
+ * {@link SolutionManager#moveEvaluator(Object)} is given a
  * structurally flawed solution.
  */
 @NullMarked

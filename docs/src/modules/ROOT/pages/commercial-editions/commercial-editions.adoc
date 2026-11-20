@@ -32,6 +32,9 @@ We also offer free licenses to non-profit organizations and for academic researc
 | xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
 | ✓
 
+| xref:responding-to-change/move-evaluator.adoc#moveEvaluator[Move Evaluator]
+| ✓
+
 | xref:commercial-editions/performance-improvements.adoc[Performance improvements]
 | ✓
 
