@@ -40,14 +40,14 @@ public final class EnumeratingStreamFactory<Solution_> {
 
     public <A> UniEnumeratingStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
-        if (!solutionDescriptor.getMetaModel().hasEntity(sourceClass)) {
-            // The sourceClass is not a planning entity, therefore it cannot be pinned.
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        var isListVariableValue = listVariableDescriptor != null && listVariableDescriptor.acceptsValueType(sourceClass);
+        if (!isListVariableValue && !solutionDescriptor.getMetaModel().hasEntity(sourceClass)) {
+            // Neither a planning entity nor a list variable value, therefore it cannot be pinned.
             return forEachNonDiscriminating(sourceClass, includeNull);
         }
-        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        // We have a basic variable, or the sourceClass is not a valid type for a list variable value.
-        // In that case, we use the standard exclusion logic.
-        if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
+        // A planning entity that is not a list variable value uses the standard exclusion logic.
+        if (!isListVariableValue) {
             var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(sourceClass);
             // The predicate is cached to allow for node-sharing, which expects identical lambdas.
             return share((AbstractUniEnumeratingStream<Solution_, A>) forEachNonDiscriminating(sourceClass, includeNull)

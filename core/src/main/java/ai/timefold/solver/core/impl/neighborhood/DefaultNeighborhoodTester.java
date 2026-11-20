@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -13,6 +14,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMoveSelectionStrategy;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTestContext;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 
@@ -36,7 +38,8 @@ public final class DefaultNeighborhoodTester<Solution_>
 
     @Override
     public NeighborhoodTestContext<Solution_> using(Solution_ solution) {
-        var repository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, List.of(moveProvider));
+        var repository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
+                new LinkedHashMap<>(Map.of(moveProvider.getId(), moveProvider)), FixedWeightMoveSelectionStrategy::new);
         var moveTestContext = (DefaultMoveTestContext<Solution_>) moveTester.using(solution);
         var scoreDirector = moveTestContext.getScoreDirector();
         var solverScope = new SolverScope<Solution_>();
@@ -44,6 +47,7 @@ public final class DefaultNeighborhoodTester<Solution_>
         solverScope.setScoreDirector(scoreDirector);
         repository.solvingStarted(solverScope);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        phaseScope.reset();
         repository.phaseStarted(phaseScope);
         return new DefaultNeighborhoodTestContext<>(repository, moveTestContext, phaseScope);
     }

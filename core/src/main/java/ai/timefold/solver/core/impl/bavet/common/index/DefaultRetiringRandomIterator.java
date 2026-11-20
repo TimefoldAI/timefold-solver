@@ -12,8 +12,8 @@ import org.jspecify.annotations.Nullable;
  * Implements a lazy Fisher-Yates shuffle over the live (not yet retired) slots,
  * so that both a single draw and a full drain are exactly uniform,
  * even after retirements.
- * It accepts a list of unique items on input,
- * and does not copy or modify it.
+ * It accepts a list of unique items on input, and does not copy it.
+ * It compacts the list when it is made if the list has many gaps; see {@link ElementAwareArrayList#compactIfGappy()}.
  * <p>
  * The shuffle runs over the list's {@link ElementAwareArrayList#slotCount() physical slots},
  * not over its logical indexes,
@@ -91,6 +91,7 @@ final class DefaultRetiringRandomIterator<T extends @Nullable Object>
     DefaultRetiringRandomIterator(ElementAwareArrayList<T> source, RandomGenerator workingRandom) {
         this.source = source;
         this.workingRandom = workingRandom;
+        source.compactIfGappy();
         this.activeCount = source.slotCount();
         this.liveRemaining = source.size();
         // activeCount only ever shrinks, so no slot outside [0, slotCount) is ever resolved.

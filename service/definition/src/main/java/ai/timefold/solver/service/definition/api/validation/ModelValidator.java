@@ -1,8 +1,9 @@
 package ai.timefold.solver.service.definition.api.validation;
 
-import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.ModelInput;
-import ai.timefold.solver.service.definition.api.domain.ModelConfig;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
 
 /**
  * Provides a complex validation of the model input before the solving, or other operation, starts.

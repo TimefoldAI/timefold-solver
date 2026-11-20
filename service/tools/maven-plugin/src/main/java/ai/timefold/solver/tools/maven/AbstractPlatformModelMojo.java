@@ -38,6 +38,8 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
 
     protected static final String PROP_MODEL_KEY = "timefold.model.key";
 
+    protected static final String PROP_MODEL_OFFSET = "timefold.model.offset";
+
     protected static final String PROP_MODEL_TENANTS = "timefold.model.tenants";
 
     protected static final String PROP_MODEL_SUBS = "timefold.model.handleSubscription";
@@ -80,6 +82,12 @@ public abstract class AbstractPlatformModelMojo extends AbstractMojo {
      */
     @Parameter(property = PROP_MODEL_KEY, required = true)
     protected String key;
+
+    /**
+     * Offset to be used when patching or unregistering
+     */
+    @Parameter(property = PROP_MODEL_OFFSET, required = false, defaultValue = "0")
+    protected String offset;
 
     /**
      * List of tenants this model should be registered for - used when type set to shared or private (in that case single tenant

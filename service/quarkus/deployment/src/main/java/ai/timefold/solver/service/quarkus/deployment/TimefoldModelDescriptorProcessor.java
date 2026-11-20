@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -35,19 +36,12 @@ import jakarta.inject.Singleton;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.util.SolverVersionUtils;
-import ai.timefold.solver.service.definition.api.ModelDescriptor;
-import ai.timefold.solver.service.definition.api.ModelMaturityLevel;
-import ai.timefold.solver.service.definition.api.ResourceType;
-import ai.timefold.solver.service.definition.api.Resources;
-import ai.timefold.solver.service.definition.api.TrialConfig;
-import ai.timefold.solver.service.definition.api.data.AbstractBasicDemoDataGenerator;
-import ai.timefold.solver.service.definition.api.data.DemoData;
-import ai.timefold.solver.service.definition.api.data.DemoDataGenerator;
 import ai.timefold.solver.service.definition.api.description.ConstraintGroupInfo;
 import ai.timefold.solver.service.definition.api.description.ConstraintInfo;
-import ai.timefold.solver.service.definition.api.domain.ConstraintReference;
-import ai.timefold.solver.service.definition.api.domain.DataFormat;
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
+import ai.timefold.solver.service.definition.api.description.ConstraintReference;
+import ai.timefold.solver.service.definition.api.description.ModelMaturityLevel;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.metrics.DataFormat;
 import ai.timefold.solver.service.definition.api.rest.OperationId;
 import ai.timefold.solver.service.definition.internal.descriptor.ConstraintDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ConstraintGroupDescriptor;
@@ -57,10 +51,17 @@ import ai.timefold.solver.service.definition.internal.descriptor.InputMetricDesc
 import ai.timefold.solver.service.definition.internal.descriptor.ModelBuildInfo;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigParameter;
+import ai.timefold.solver.service.definition.internal.descriptor.ModelDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.OutputMetricDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ParameterKind;
+import ai.timefold.solver.service.definition.internal.descriptor.ResourceType;
+import ai.timefold.solver.service.definition.internal.descriptor.Resources;
+import ai.timefold.solver.service.definition.internal.descriptor.TrialConfig;
 import ai.timefold.solver.service.definition.internal.descriptor.UISupport;
 import ai.timefold.solver.service.definition.internal.descriptor.VisualizationPageDescriptor;
+import ai.timefold.solver.service.definition.preview.api.demo.AbstractBasicDemoDataGenerator;
+import ai.timefold.solver.service.definition.preview.api.demo.DemoData;
+import ai.timefold.solver.service.definition.preview.api.demo.DemoDataGenerator;
 import ai.timefold.solver.service.jackson.impl.SdkBuildTimeObjectMapperFactory;
 import ai.timefold.solver.service.quarkus.deployment.builditem.AdditionalDescriptorFilesBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelArchiveBuildItem;
@@ -70,10 +71,12 @@ import ai.timefold.solver.service.quarkus.deployment.builditem.RestComponentsBui
 import ai.timefold.solver.service.quarkus.deployment.builditem.SingleOpenApiDocumentBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.config.VisualizationPagesConfig;
 import ai.timefold.solver.service.quarkus.deployment.descriptor.DefaultConstraintGroupDescriptorFactory;
+import ai.timefold.solver.service.quarkus.deployment.descriptor.ResourceIdPathResolver;
 import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaPostProcessor;
 import ai.timefold.solver.service.quarkus.deployment.openapi.SchemaUtils;
 
 import org.apache.commons.lang3.exception.UncheckedException;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.OASFactory;
@@ -99,6 +102,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
+import org.jspecify.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -171,6 +175,10 @@ class TimefoldModelDescriptorProcessor {
     private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "timefold.model.trial.max-extensions";
     private static final String MODEL_TRIAL_EXTENSION_DURATION_PROPERTY = "timefold.model.trial.extension-duration";
 
+    static final String MINIMAL_SOLVER_VERSION_PROPERTY = "timefold.platform.minimal-solver-version";
+    static final String MAXIMAL_SOLVER_VERSION_PROPERTY = "timefold.platform.maximal-solver-version";
+    static final String ALLOW_SOLVER_SNAPSHOT_PROPERTY = "timefold.platform.allow-solver-snapshot";
+
     private static final String MEMORY_REQUEST_PROPERTY = "timefold.model.resources.memory.request";
     private static final String MEMORY_LIMIT_PROPERTY = "timefold.model.resources.memory.limit";
     private static final String CPU_REQUEST_PROPERTY = "timefold.model.resources.cpu.request";
@@ -181,6 +189,8 @@ class TimefoldModelDescriptorProcessor {
 
     private static final String UI_SUPPORT_PROPERTY = "timefold.model.ui-support";
     private static final Path UI_SOURCE_PATH = Path.of("src", "main", "resources", "META-INF", "resources");
+    private static final Path UI_BUILD_OUTPUT_PATH = Path.of("classes", "META-INF", "resources");
+    private static final String UI_EXPECTED_LOCATIONS = "%s or %s".formatted(UI_BUILD_OUTPUT_PATH, UI_SOURCE_PATH);
 
     // To avoid depending on the whole OpenAPI, we use the fully qualified class name.
     private static final DotName OPEN_API_SCHEMA_ANNOTATION_FQCN =
@@ -360,6 +370,12 @@ class TimefoldModelDescriptorProcessor {
 
         ModelBuildInfo modelBuildInfo = new ModelBuildInfo(solverVersion, version, buildTime, branch, commit);
 
+        Config config = ConfigProvider.getConfig();
+        validateSolverVersion(solverVersion,
+                config.getOptionalValue(MINIMAL_SOLVER_VERSION_PROPERTY, String.class).orElse(null),
+                config.getOptionalValue(MAXIMAL_SOLVER_VERSION_PROPERTY, String.class).orElse(null),
+                config.getOptionalValue(ALLOW_SOLVER_SNAPSHOT_PROPERTY, Boolean.class).orElse(null));
+
         byte[] buildInfoContent = MAPPER.writeValueAsBytes(modelBuildInfo);
         Path buildInfoFile = Paths.get(out.getOutputDirectory().toString(), "timefold", "build-info.json");
 
@@ -523,6 +539,35 @@ class TimefoldModelDescriptorProcessor {
         }
     }
 
+    static boolean isSnapshotVersion(String version) {
+        return version.toLowerCase(Locale.ROOT).contains("snapshot");
+    }
+
+    static void validateSolverVersion(String solverVersion, @Nullable String minimalSolverVersion,
+            @Nullable String maximalSolverVersion, @Nullable Boolean allowSnapshot) {
+        if (Boolean.FALSE.equals(allowSnapshot) && isSnapshotVersion(solverVersion)) {
+            throw new IllegalStateException("""
+                    The solver version (%s) is a snapshot version, but the platform does not allow snapshot versions.
+                    Use a released solver version, or set the '%s' property to true."""
+                    .formatted(solverVersion, ALLOW_SOLVER_SNAPSHOT_PROPERTY));
+        }
+        var comparableSolverVersion = new ComparableVersion(solverVersion);
+        if (minimalSolverVersion != null
+                && comparableSolverVersion.compareTo(new ComparableVersion(minimalSolverVersion)) < 0) {
+            throw new IllegalStateException("""
+                    The solver version (%s) is lower than the minimal solver version (%s) that the platform requires.
+                    Upgrade the solver version, or change the '%s' property."""
+                    .formatted(solverVersion, minimalSolverVersion, MINIMAL_SOLVER_VERSION_PROPERTY));
+        }
+        if (maximalSolverVersion != null
+                && comparableSolverVersion.compareTo(new ComparableVersion(maximalSolverVersion)) > 0) {
+            throw new IllegalStateException("""
+                    The solver version (%s) is higher than the maximal solver version (%s) that the platform allows.
+                    Downgrade the solver version, or change the '%s' property."""
+                    .formatted(solverVersion, maximalSolverVersion, MAXIMAL_SOLVER_VERSION_PROPERTY));
+        }
+    }
+
     private void generateModelDescriptor(String modelId, String model, OpenAPI openAPI,
             Path outputDirectory,
             Optional<ClassInfo> restResource,
@@ -580,6 +625,9 @@ class TimefoldModelDescriptorProcessor {
         List<OutputMetricDescriptor> metrics =
                 outputMetricsFromClassInfo(combinedIndex.getIndex(), modelComponentsBuildItem.getModelOutputMetrics());
         descriptor.setOutputMetricDescriptors(metrics);
+
+        descriptor.setUniqueResources(
+                ResourceIdPathResolver.resolve(combinedIndex.getIndex(), modelComponentsBuildItem.getModelInput()));
 
         // check model specific data
         String modelMaturityLevel =
@@ -1159,7 +1207,7 @@ class TimefoldModelDescriptorProcessor {
             List<String> includedPrefixes = List.of("og-");
             // copy model images and logo
             Path imagesPath = Paths.get(outputDirectory.getParent().toString(), "model-images");
-
+            List<String> images = new ArrayList<>();
             if (Files.exists(imagesPath)) {
                 String apiPath = "/api/info/models/" + descriptor.getId() + "/model-images/";
                 try (Stream<Path> stream = Files.list(imagesPath)) {
@@ -1176,7 +1224,7 @@ class TimefoldModelDescriptorProcessor {
                             } else if (fileName.equals("logo.png")) {
                                 descriptor.setLogoUrl(apiPath + fileName);
                             } else {
-                                descriptor.getImages().add(apiPath + fileName);
+                                images.add(apiPath + fileName);
                             }
                         } catch (IOException e) {
                             LOG.error("Error processing image: " + fileName, e);
@@ -1184,7 +1232,8 @@ class TimefoldModelDescriptorProcessor {
 
                     });
                 }
-                Collections.sort(descriptor.getImages());
+                Collections.sort(images);
+                descriptor.setImages(images);
             }
         }
     }
@@ -1209,7 +1258,7 @@ class TimefoldModelDescriptorProcessor {
                 boolean success = processModelUI(descriptor, outputDirectory);
                 if (!success) {
                     throw new IllegalStateException("The model's UI resources were not found in the expected location (%s)."
-                            .formatted(UI_SOURCE_PATH.toString()));
+                            .formatted(UI_EXPECTED_LOCATIONS));
                 }
                 descriptor.setUiSupport(UISupport.APP_JS);
             }
@@ -1220,7 +1269,7 @@ class TimefoldModelDescriptorProcessor {
                 descriptor.setUiSupport(UISupport.APP_JS);
             } else {
                 LOG.debug("The model's UI resources were not found in the expected location (%s). Assuming no UI is supported."
-                        .formatted(UI_SOURCE_PATH.toString()));
+                        .formatted(UI_EXPECTED_LOCATIONS));
                 descriptor.setUiSupport(UISupport.NONE);
             }
         }
@@ -1230,8 +1279,8 @@ class TimefoldModelDescriptorProcessor {
         Objects.requireNonNull(outputDirectory);
 
         // copy model's ui resources
-        Path uiResourcesPath = Paths.get(outputDirectory.getParent().toString(), UI_SOURCE_PATH.toString());
-        boolean uiResourcesFound = Files.exists(uiResourcesPath);
+        Path uiResourcesPath = findUiResourcesPath(outputDirectory);
+        boolean uiResourcesFound = uiResourcesPath != null;
 
         if (uiResourcesFound) {
             try (Stream<Path> stream = Files.walk(uiResourcesPath)) {
@@ -1258,6 +1307,23 @@ class TimefoldModelDescriptorProcessor {
         }
 
         return uiResourcesFound;
+    }
+
+    /**
+     * The build output comes first,
+     * so a bundle that a build step writes there (for example a Vite build at generate-resources) counts as the model's UI.
+     * The source tree is the fallback for a committed bundle.
+     */
+    private static @Nullable Path findUiResourcesPath(Path outputDirectory) {
+        Path buildOutputPath = outputDirectory.resolve(UI_BUILD_OUTPUT_PATH);
+        if (Files.isDirectory(buildOutputPath)) {
+            return buildOutputPath;
+        }
+        Path sourcePath = Paths.get(outputDirectory.getParent().toString(), UI_SOURCE_PATH.toString());
+        if (Files.isDirectory(sourcePath)) {
+            return sourcePath;
+        }
+        return null;
     }
 
     private List<InputMetricDescriptor> inputMetricsFromClassInfo(ClassInfo classInfo) {

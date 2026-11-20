@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningSolution
 public class TestdataBasicInverseSolution {
@@ -21,7 +22,7 @@ public class TestdataBasicInverseSolution {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider(id = "ownerRange")
-    List<TestdataBasicInverseOwner> ownerList;
+    List<TestdataValue> ownerList;
 
     @PlanningScore
     SimpleScore score;
@@ -30,7 +31,7 @@ public class TestdataBasicInverseSolution {
     }
 
     public TestdataBasicInverseSolution(List<TestdataBasicInverseEntity> entityList,
-            List<TestdataBasicInverseGroup> groupList, List<TestdataBasicInverseOwner> ownerList) {
+            List<TestdataBasicInverseGroup> groupList, List<TestdataValue> ownerList) {
         this.entityList = entityList;
         this.groupList = groupList;
         this.ownerList = ownerList;
@@ -52,11 +53,11 @@ public class TestdataBasicInverseSolution {
         this.groupList = groupList;
     }
 
-    public List<TestdataBasicInverseOwner> getOwnerList() {
+    public List<TestdataValue> getOwnerList() {
         return ownerList;
     }
 
-    public void setOwnerList(List<TestdataBasicInverseOwner> ownerList) {
+    public void setOwnerList(List<TestdataValue> ownerList) {
         this.ownerList = ownerList;
     }
 

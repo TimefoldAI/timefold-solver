@@ -75,6 +75,26 @@ public class ConfigureMojoTest {
                                 "tenants" : [],
                                 "accountIds" : ["test"],
                                 "config" : {
+                                    "containerRegistry" : "test.registry.com",
+                                    "minimalSolverVersion" : "2.6.0",
+                                    "maximalSolverVersion" : "2.7.0",
+                                    "allowSnapshot" : false
+                                }
+                                }
+                                """)));
+
+        wm1.stubFor(get(urlPathEqualTo("/api/platform/v1/aboutme"))
+                .withHeader("Authorization", equalTo("Bearer yyyy"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                                {
+                                "user" : "test@email.com",
+                                "scopes" : ["registered-model:create"],
+                                "tenants" : [],
+                                "accountIds" : ["test"],
+                                "config" : {
                                     "containerRegistry" : "test.registry.com"
                                 }
                                 }
@@ -227,7 +247,40 @@ public class ConfigureMojoTest {
                 .containsEntry("quarkus.container-image.group", "test")
                 .containsEntry("quarkus.container-image.registry", "test.registry.com")
                 .containsEntry("quarkus.container-image.push", "true")
-                .containsEntry("image.native-suffix", "");
+                .containsEntry("image.native-suffix", "")
+                .containsEntry("timefold.platform.minimal-solver-version", "2.6.0")
+                .containsEntry("timefold.platform.maximal-solver-version", "2.7.0")
+                .containsEntry("timefold.platform.allow-solver-snapshot", "false");
+
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureSuccessfullyMissingSolverParams(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("timefold:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("yyyy"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Configured Timefold Platform integration; build properties written to", Level.INFO);
+
+        // load configured build properties and assert expected entry
+        assertThat(readBuildProperties(mojo))
+                // test is returned from aboutme endpoint as this is the namespace that access token grants
+                .containsEntry("quarkus.container-image.group", "test")
+                .containsEntry("quarkus.container-image.registry", "test.registry.com")
+                .containsEntry("quarkus.container-image.push", "true")
+                .containsEntry("image.native-suffix", "")
+                .doesNotContainKey("timefold.platform.minimal-solver-version")
+                .doesNotContainKey("timefold.platform.maximal-solver-version")
+                .doesNotContainKey("timefold.platform.allow-solver-snapshot");
     }
 
     @Test

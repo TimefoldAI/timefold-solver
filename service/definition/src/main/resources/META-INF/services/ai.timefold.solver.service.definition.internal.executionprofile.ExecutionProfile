@@ -2,3 +2,4 @@ ai.timefold.solver.service.definition.impl.executionprofile.seed.SeedExecutionPr
 ai.timefold.solver.service.definition.impl.executionprofile.verboselogging.VerboseLoggingExecutionProfile
 ai.timefold.solver.service.definition.impl.executionprofile.memorydump.MemoryDumpExecutionProfile
 ai.timefold.solver.service.definition.impl.executionprofile.distancematrix.DistanceMatrixExecutionProfile
+ai.timefold.solver.service.definition.impl.executionprofile.performanceprofiling.PerformanceProfilingExecutionProfile

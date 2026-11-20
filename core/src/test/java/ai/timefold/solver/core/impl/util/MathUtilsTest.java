@@ -248,30 +248,4 @@ class MathUtilsTest {
                 .hasMessage("Factorial of 21 is too large to fit in a long.");
     }
 
-    @CsvSource("""
-             0,  0,   1
-             1,  0,   1
-             1,  1,   1
-             5,  0,   1
-             5,  1,   5
-             5,  2,  10
-             5,  3,  10
-             5,  4,   5
-             5,  5,   1
-            10,  0,   1
-            10,  1,  10
-            10,  2,  45
-            10,  3, 120
-            10,  4, 210
-            10,  5, 252
-            10,  6, 210
-            10,  7, 120
-            10,  8,  45
-            10,  9,  10
-            10, 10,   1
-            """)
-    @ParameterizedTest
-    void binomialCoefficient(int n, int k, long coefficient) {
-        assertThat(MathUtils.binomialCoefficient(n, k)).isEqualTo(coefficient);
-    }
 }

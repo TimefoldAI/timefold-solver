@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public final class ListSwapMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
@@ -43,7 +44,7 @@ public final class ListSwapMoveSelector<Solution_> extends AbstractGenericListMo
 
     @Override
     public long getSize() {
-        return leftValueSelector.getSize() * rightValueSelector.getSize();
+        return SelectionUtils.product(leftValueSelector.getSize(), rightValueSelector.getSize());
     }
 
     @Override

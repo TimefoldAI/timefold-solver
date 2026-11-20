@@ -43,6 +43,10 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
                         entityToVariableReferenceMap::get,
                         outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier,
                         ignoreInconsistentSolutions);
+        // Compute every node once, like the other graphs do.
+        // A node without any processor nor incoming edge would otherwise never be computed,
+        // such as one whose only source goes through an empty collection of problem facts.
+        changeTracker.set(0, nodeList.size());
     }
 
     @Override

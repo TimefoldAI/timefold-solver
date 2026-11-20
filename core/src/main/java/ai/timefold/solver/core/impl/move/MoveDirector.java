@@ -14,6 +14,7 @@ import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultGenuineEntityMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
@@ -646,6 +647,43 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         }
     }
 
+    @Override
+    public final <Entity_, Value_> List<Entity_> getEntitiesWithValueInRange(
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
+        var variableDescriptor = ((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
+        // An inherited variable shares the descriptor of the declaring class; the meta model's entity class can be narrower.
+        var entityDescriptor =
+                ((DefaultGenuineEntityMetaModel<Solution_, Entity_>) variableMetaModel.entity()).entityDescriptor();
+        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+        var valueRangeManager = backingScoreDirector.getValueRangeManager();
+        if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+            if (!valueRangeManager.getFromSolution(valueRangeDescriptor).contains(value)) {
+                return List.of();
+            }
+            return valueRangeManager.getMovableEntityList(entityDescriptor);
+        }
+        var reachableValues = valueRangeManager.<Entity_, Value_> getReachableValues(variableDescriptor);
+        if (entityDescriptor != variableDescriptor.getEntityDescriptor()) {
+            return reachableValues.extractMovableEntitiesAsList(value, entityDescriptor.getEntityClass());
+        }
+        return reachableValues.extractMovableEntitiesAsList(value);
+    }
+
+    @Override
+    public final <Entity_, Value_> List<Value_> getValuesSharingRangeWith(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
+        var variableDescriptor = ((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
+        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+        var valueRangeManager = backingScoreDirector.getValueRangeManager();
+        if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+            if (!valueRangeManager.getFromSolution(valueRangeDescriptor).contains(value)) {
+                return List.of();
+            }
+            return valueRangeManager.getMovableValueList((ListVariableDescriptor<Solution_>) variableDescriptor);
+        }
+        return valueRangeManager.<Entity_, Value_> getReachableValues(variableDescriptor).extractMovableValuesAsList(value);
+    }
+
     /**
      * Execute a given move and make sure shadow variables are up to date after that.
      * Does not run a score calculation.
@@ -855,7 +893,10 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         if (entity == null) {
             return false; // Null is never pinned.
         }
-        return !entityDescriptor.isMovable(backingScoreDirector.getWorkingSolution(), entity);
+        // A subclass can declare its own pin; the descriptor of an inherited variable does not see it.
+        var ownDescriptor = entity.getClass() == entityDescriptor.getEntityClass() ? entityDescriptor
+                : entityDescriptor.getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass());
+        return !ownDescriptor.isMovable(backingScoreDirector.getWorkingSolution(), entity);
     }
 
     protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,

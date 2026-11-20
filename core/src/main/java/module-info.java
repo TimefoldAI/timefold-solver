@@ -67,6 +67,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.preview.api.move.builtin;
     exports ai.timefold.solver.core.preview.api.move.test;
     exports ai.timefold.solver.core.preview.api.neighborhood;
+    exports ai.timefold.solver.core.preview.api.neighborhood.selection;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.dataset;
@@ -179,7 +180,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.solver.thread
             to ai.timefold.solver.enterprise.core, ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.util
-            to ai.timefold.solver.jackson, ai.timefold.solver.benchmark,
+            to ai.timefold.solver.jackson, ai.timefold.solver.benchmark, ai.timefold.solver.spring.boot.autoconfigure,
             ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus.jackson,
             ai.timefold.solver.enterprise.core, ai.timefold.solver.enterprise.quarkus.deployment;
 

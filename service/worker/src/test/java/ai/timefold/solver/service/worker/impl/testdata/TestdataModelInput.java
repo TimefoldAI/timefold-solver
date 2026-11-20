@@ -2,7 +2,7 @@ package ai.timefold.solver.service.worker.impl.testdata;
 
 import java.util.Objects;
 
-import ai.timefold.solver.service.definition.api.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
 
 public class TestdataModelInput implements ModelInput {
 

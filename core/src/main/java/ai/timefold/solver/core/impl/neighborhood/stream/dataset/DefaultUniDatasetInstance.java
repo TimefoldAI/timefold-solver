@@ -40,14 +40,25 @@ public final class DefaultUniDatasetInstance<Solution_, A> implements UniDataset
     }
 
     /**
-     * Exposed for pillar move iterators,
-     * which need to retire a dead left value through {@link RetiringBiWalk}.
+     * Exposed for built-in move iterators which retire a left value without a move,
+     * such as the pillar iterators (through {@link RetiringBiWalk})
+     * and the iterators of the change, assign and swap providers.
      * Not part of {@link UniDatasetInstance}:
      * it returns an impl type this dataset instance happens to wrap,
-     * and every pillar provider already downcasts to this class regardless.
+     * so these providers downcast to this class.
      */
     public RetiringRandomIterator<A> retiringRandomIterator(RandomGenerator random) {
         return RetiringRandomIterator.mapping(delegate.retiringRandomIterator(random), UniTuple::getA);
+    }
+
+    /**
+     * Every row once, in insertion order, without compacting the dataset;
+     * compacting would move the slots that other iterators of the step hold.
+     * Not part of {@link UniDatasetInstance}:
+     * insertion order without compaction is an implementation guarantee, and only built-in providers need it.
+     */
+    public Iterator<@Nullable A> iterator() {
+        return new FactIterator<>(delegate.iterator());
     }
 
     /**

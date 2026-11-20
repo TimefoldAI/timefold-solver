@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedBaseValue;
 
 @PlanningSolution
 public class TestdataDeclarativeMethodVariablesSolution extends TestdataObject {
@@ -16,7 +17,7 @@ public class TestdataDeclarativeMethodVariablesSolution extends TestdataObject {
 
     @PlanningEntityCollectionProperty
     @ValueRangeProvider
-    List<TestdataDeclarativeMethodVariablesBaseValue> values;
+    List<TestdataDeclarativeExtendedBaseValue> values;
 
     @PlanningScore
     HardSoftScore score;
@@ -30,12 +31,12 @@ public class TestdataDeclarativeMethodVariablesSolution extends TestdataObject {
         this.entities = entities;
     }
 
-    public List<TestdataDeclarativeMethodVariablesBaseValue> getValues() {
+    public List<TestdataDeclarativeExtendedBaseValue> getValues() {
         return values;
     }
 
     public void setValues(
-            List<TestdataDeclarativeMethodVariablesBaseValue> values) {
+            List<TestdataDeclarativeExtendedBaseValue> values) {
         this.values = values;
     }
 

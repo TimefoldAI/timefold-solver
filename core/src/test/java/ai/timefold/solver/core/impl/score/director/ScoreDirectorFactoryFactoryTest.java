@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -115,6 +116,15 @@ class ScoreDirectorFactoryFactoryTest {
     void incrementalScoreCalculator() {
         assertThat(buildFactory(incrementalConfig()))
                 .isExactlyInstanceOf(IncrementalScoreDirectorFactory.class);
+    }
+
+    @Test
+    void incrementalScoreCalculatorUnknownCustomPropertyFailsAtBuild() {
+        var config = incrementalConfig()
+                .withIncrementalScoreCalculatorCustomProperties(Map.of("unknown", "x"));
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> buildFactory(config))
+                .withMessageContaining("custom property unknown");
     }
 
     @Test

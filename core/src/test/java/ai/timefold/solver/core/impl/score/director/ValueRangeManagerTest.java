@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.director;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertNonNullCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertReversedNonNullCodesOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Comparator;
@@ -1064,6 +1065,20 @@ class ValueRangeManagerTest {
                 (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
                         sorterComparatorFactory);
         assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
+    }
+
+    @Test
+    void movableListsRequireWorkingSolution() {
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
+        assertThatThrownBy(() -> valueRangeManager.getMovableEntityList(entityDescriptor))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("movable entities");
+        assertThatThrownBy(() -> valueRangeManager.getMovableValueList(listVariableDescriptor))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("movable values");
     }
 
 }

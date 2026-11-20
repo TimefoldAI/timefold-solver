@@ -96,6 +96,15 @@ public final class PillarChangeMoveProvider<Solution_, Entity_, Value_>
     }
 
     /**
+     * @return {@code PillarChangeMoveProvider(<Entity>.<variable>,crossingNull|noCrossingNull)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(PillarChangeMoveProvider.class, variableMetaModel,
+                MoveProviderUtil.flag("crossingNull", crossingNull));
+    }
+
+    /**
      * A pillar bundled with its {@link SampleValueRanges}, computed once when the {@code .map(...)} step settles for a
      * dirty group (see {@link #build}), not once per redraw across local search steps.
      */

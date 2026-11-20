@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
@@ -94,6 +95,14 @@ class UnassignMoveProviderTest {
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class).basicVariable();
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> new UnassignMoveProvider<>(variableMetaModel));
+    }
+
+    @Test
+    void id() {
+        var unassignedVariableMetaModel = TestdataAllowsUnassignedSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedEntity.class).basicVariable("value");
+        assertThat(new UnassignMoveProvider<>(unassignedVariableMetaModel).getId())
+                .isEqualTo("UnassignMoveProvider(TestdataAllowsUnassignedEntity.value)");
     }
 
 }

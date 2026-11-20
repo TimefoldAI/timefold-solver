@@ -77,10 +77,12 @@ These are the most important configuration properties for the plugin. They are s
 - `timefold.model.type` (String) — registration type ("Private" or "Shared"). If not set the plugin infers it from `timefold.model.tenants` (multiple tenants -> `Shared`, otherwise `Private`). Set via `<type>` or `-Dtimefold.model.type=Shared`.
 - `timefold.model.overwrite` (boolean, default=false) — when true and registration conflicts (HTTP 409), update existing model using PATCH. Use `-Dtimefold.model.overwrite=true`.
 - `timefold.model.deploy.skip` (boolean, default=false) — skip deploy goal.
+- `timefold.model.offset` (number, default=0) — used only for update (PATCH) to target one of existing versions within the same registration key. Allowed values: 0, 1, 2
 
 === Undeploy goal specific
 
 - `tfp.model.undeploy.skip` (boolean, default=false) — skip undeploy goal. Note: the property used by the plugin for undeploy skip is `tfp.model.undeploy.skip` (not `timefold.model.undeploy.skip`).
+- `timefold.model.offset` (number, default=0) — used to target one of existing versions within the same registration key. Allowed values: 0, 1, 2
 
 == Authentication
 

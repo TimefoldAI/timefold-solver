@@ -32,28 +32,28 @@ import ai.timefold.solver.core.api.solver.SolverRunSummary;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
-import ai.timefold.solver.service.definition.api.ModelConvertor;
-import ai.timefold.solver.service.definition.api.ModelConvertorBase;
-import ai.timefold.solver.service.definition.api.ModelInput;
-import ai.timefold.solver.service.definition.api.ModelOutput;
-import ai.timefold.solver.service.definition.api.ModelPostProcessor;
 import ai.timefold.solver.service.definition.api.SolverModel;
-import ai.timefold.solver.service.definition.api.SolvingStatus;
-import ai.timefold.solver.service.definition.api.Status;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.Metadata;
-import ai.timefold.solver.service.definition.api.domain.ModelConfig;
+import ai.timefold.solver.service.definition.api.conversion.ModelConvertor;
+import ai.timefold.solver.service.definition.api.conversion.ModelConvertorBase;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
+import ai.timefold.solver.service.definition.api.dto.validation.LegacyValidationResult;
+import ai.timefold.solver.service.definition.api.dto.validation.ValidationResult;
 import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnricherService;
 import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnrichmentDirectorService;
 import ai.timefold.solver.service.definition.api.metrics.InputMetricsAware;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.OutputMetricsAware;
-import ai.timefold.solver.service.definition.api.validation.LegacyValidationResult;
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
-import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
-import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
+import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
 import ai.timefold.solver.service.definition.impl.enrichment.MapEnrichmentContext;
+import ai.timefold.solver.service.definition.internal.dataset.ModelPostProcessor;
+import ai.timefold.solver.service.definition.internal.dataset.Status;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
@@ -363,12 +363,6 @@ public class SolverWorker {
             var modelConfig = Configuration.getSafeModelConfig(configuration);
 
             var solverModel = createSolverModel(modelInput, modelConfig);
-
-            String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
-            if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
-                LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", mapEnrichmentContext.getResolvedMapLocation(),
-                        metadata.getId());
-            }
 
             solutionManager.update(solverModel);
 
@@ -762,6 +756,7 @@ public class SolverWorker {
             storageService.storeSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
                     extractOutputMetrics(solverModel));
 
+            LOGGER.info(SolverRunSummaryMessage.of(id, solverModel.getScore(), runSummary));
             processor.onNext(metadata);
             sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
                     SolverWorkerJobState.ofTerminated(SolverStatus.NOT_SOLVING, solverJob, runSummary), planName, tenantName));

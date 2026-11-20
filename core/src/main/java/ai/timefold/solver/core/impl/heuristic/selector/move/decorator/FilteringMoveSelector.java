@@ -9,11 +9,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
-
-    private static final long BAIL_OUT_MULTIPLIER = 10L;
 
     public static <Solution_> FilteringMoveSelector<Solution_> of(MoveSelector<Solution_> moveSelector,
             SelectionFilter<Solution_, Move<Solution_>> filter) {
@@ -80,21 +79,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
         if (!bailOutEnabled) {
             return -1L;
         }
-        try {
-            return childMoveSelector.getSize() * BAIL_OUT_MULTIPLIER;
-        } catch (Exception ex) {
-            // Some move selectors throw an exception when getSize() is called.
-            // In this case, we choose to disregard it and pick a large-enough bail-out size anyway.
-            // The ${bailOutSize+1}th move could in theory show up where previous ${bailOutSize} moves did not,
-            // but we consider this to be an acceptable risk,
-            // outweighed by the benefit of the solver never running into an endless loop.
-            // The exception itself is swallowed, as it doesn't bring any useful information.
-            long bailOutSize = Short.MAX_VALUE * BAIL_OUT_MULTIPLIER;
-            logger.trace(
-                    "        Never-ending move selector ({}) failed to provide size, choosing a bail-out size of ({}) attempts.",
-                    childMoveSelector, bailOutSize);
-            return bailOutSize;
-        }
+        return SelectionUtils.bailOutSize(childMoveSelector, MoveSelector::getSize);
     }
 
     private class JustInTimeFilteringMoveIterator extends UpcomingSelectionIterator<Move<Solution_>> {

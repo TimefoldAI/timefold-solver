@@ -166,6 +166,16 @@ That is most commonly the same model already being registered under a _different
 Registering a model does not automatically subscribe your tenant to it; with `handleSubscription` set to `true`, the plugin also subscribes your tenant when it registers the model.
 Without it, your tenant won't see the model on the platform after you deploy it.
 
+The platform supports up to 3 versions of the same model and each version has assigned offset. The offset defines the lag from latest version.
+
+- 0 is the default offset, it points to the latest version of the model.
+- 1 points to the previous version of the model.
+- 2 points to the version before the previous version of the model.
+
+You can use the offset to update or undeploy a specific version of the model. The offset can be set via the `<offset>` in the Maven plugin configuration or via the command line with `-Dtimefold.model.offset=<offset>`. The offset is only used for update (PATCH) and undeploy (DELETE) operations. For example, if you want to update the previous version of the model, you can set `<offset>1</offset>` in the Maven plugin configuration or use `-Dtimefold.model.offset=1` in the command line when running the `timefold:deploy` goal. Similarly, if you want to undeploy the version before the previous version of the model, you can set `<offset>2</offset>` in the Maven plugin configuration or use `-Dtimefold.model.offset=2` in the command line when running the `timefold:undeploy` goal.
+
+In most of the situations, there is no need in setting the offset, as the default value of 0 will always point to the latest version of the model. However, if you want to patch already deployed version e.g. bug fix or security release of the model, then use offset to target which model version to update.
+
 [#_verify_on_the_platform]
 == Verify on the platform
 

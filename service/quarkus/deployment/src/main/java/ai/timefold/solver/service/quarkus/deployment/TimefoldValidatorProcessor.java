@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
-import ai.timefold.solver.service.definition.api.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.util.ProcessorUtils;

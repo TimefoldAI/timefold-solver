@@ -49,6 +49,12 @@ public final class BigIntegerValueRange extends AbstractValueRange<BigInteger> {
                     + "'s incrementUnit (" + incrementUnit
                     + ") must fit an integer number of times between from (" + from + ") and to (" + to + ").");
         }
+        if (to.subtract(from).divide(incrementUnit).bitLength() > Long.SIZE - 1) {
+            throw new IllegalArgumentException("""
+                    The valueRange (%s) with from (%s), to (%s) and incrementUnit (%s) has more values than Long.MAX_VALUE (%d).
+                    Maybe use a narrower range or a larger incrementUnit."""
+                    .formatted(getClass().getSimpleName(), from, to, incrementUnit, Long.MAX_VALUE));
+        }
     }
 
     @Override

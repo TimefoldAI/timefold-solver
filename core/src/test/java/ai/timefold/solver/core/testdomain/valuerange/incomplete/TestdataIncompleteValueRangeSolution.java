@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -19,7 +20,7 @@ public class TestdataIncompleteValueRangeSolution extends TestdataObject {
 
     public static SolutionDescriptor<TestdataIncompleteValueRangeSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataIncompleteValueRangeSolution.class,
-                TestdataIncompleteValueRangeEntity.class);
+                TestdataEntity.class);
     }
 
     public static PlanningSolutionMetaModel<TestdataIncompleteValueRangeSolution> buildMetaModel() {
@@ -47,10 +48,10 @@ public class TestdataIncompleteValueRangeSolution extends TestdataObject {
             valueList.add(value);
         }
         solution.setValueList(valueList);
-        var entityList = new ArrayList<TestdataIncompleteValueRangeEntity>(entityListSize);
+        var entityList = new ArrayList<TestdataEntity>(entityListSize);
         for (var i = 0; i < entityListSize; i++) {
             var value = initialized ? valueList.get(i % valueListSize) : null;
-            var entity = new TestdataIncompleteValueRangeEntity("Generated Entity " + i, value);
+            var entity = new TestdataEntity("Generated Entity " + i, value);
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
@@ -59,7 +60,7 @@ public class TestdataIncompleteValueRangeSolution extends TestdataObject {
 
     private List<TestdataValue> valueList;
     private List<TestdataValue> valueListNotInValueRange;
-    private List<TestdataIncompleteValueRangeEntity> entityList;
+    private List<TestdataEntity> entityList;
 
     private SimpleScore score;
 
@@ -90,11 +91,11 @@ public class TestdataIncompleteValueRangeSolution extends TestdataObject {
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataIncompleteValueRangeEntity> getEntityList() {
+    public List<TestdataEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataIncompleteValueRangeEntity> entityList) {
+    public void setEntityList(List<TestdataEntity> entityList) {
         this.entityList = entityList;
     }
 

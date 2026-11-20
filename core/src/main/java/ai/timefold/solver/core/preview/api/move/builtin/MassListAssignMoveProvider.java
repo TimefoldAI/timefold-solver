@@ -3,7 +3,10 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.impl.move.builtin.ListCandidatePoolSource;
+import ai.timefold.solver.core.impl.move.builtin.ListDatasetCandidateSource;
+import ai.timefold.solver.core.impl.move.builtin.MassListDestinationMoveIterator;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
@@ -63,12 +66,31 @@ public final class MassListAssignMoveProvider<Solution_, Entity_, Value_>
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var sourceDataset = moveStreamFactory.forEachUnassignedValue(variableMetaModel).asCachedDataset();
-        var destinationDataset = moveStreamFactory.forEachDestination(variableMetaModel)
-                .map((solutionView, position) -> (ElementPosition) position)
-                .asCachedDataset();
+        var sourceDataset = MoveProviderUtil.inValueRange(moveStreamFactory, variableMetaModel,
+                moveStreamFactory.forEachUnassignedValue(variableMetaModel)).asCachedDataset();
+        // With entity value ranges, destinations come from the entities and values which share a value range with a member.
+        var destinationDataset = variableMetaModel.isValueRangeOnSolution()
+                ? MoveProviderUtil.destinations(moveStreamFactory, variableMetaModel, false).asCachedDataset()
+                : null;
+        var entityDataset = variableMetaModel.isValueRangeOnSolution() ? null
+                : moveStreamFactory.forEach(variableMetaModel.entity().type(), false).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new MassListDestinationMoveIterator<>(session, random,
-                variableMetaModel, sourceDataset, destinationDataset, sampler));
+                variableMetaModel, sourceDataset,
+                destinationDataset != null
+                        ? new ListDatasetCandidateSource<>(session.getSolutionView(), variableMetaModel, random,
+                                session.getInstance(destinationDataset), null)
+                        : ListCandidatePoolSource.of(session.getSolutionView(), variableMetaModel, random,
+                                session.getInstance(Objects.requireNonNull(entityDataset)), false),
+                sampler));
+    }
+
+    /**
+     * @return {@code MassListAssignMoveProvider(<Entity>.<variable>,<sampler>)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(MassListAssignMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler));
     }
 
 }

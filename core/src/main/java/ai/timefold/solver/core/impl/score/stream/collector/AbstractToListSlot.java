@@ -9,6 +9,7 @@ public abstract class AbstractToListSlot<Mapped_> {
         private final ElementAwareArrayList<Mapped_> resultList = new ElementAwareArrayList<>();
 
         public List<Mapped_> result() {
+            resultList.compactIfGappy(); // Keeps get(int) cheap for downstream code.
             return resultList;
         }
     }

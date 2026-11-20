@@ -151,4 +151,12 @@ class SubPillarUnassignMoveProviderTest {
                 .doesNotContain(pinnedEntity);
     }
 
+    @Test
+    void id() {
+        var unassignedVariableMetaModel = TestdataAllowsUnassignedSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedEntity.class).basicVariable("value");
+        assertThat(new SubPillarUnassignMoveProvider<>(unassignedVariableMetaModel, Samplers.pillar(Samplers.all())).getId())
+                .isEqualTo("SubPillarUnassignMoveProvider(TestdataAllowsUnassignedEntity.value,pillar(all))");
+    }
+
 }

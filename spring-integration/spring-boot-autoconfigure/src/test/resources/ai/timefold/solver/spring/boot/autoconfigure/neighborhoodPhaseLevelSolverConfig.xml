@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <enablePreviewFeature>NEIGHBORHOODS</enablePreviewFeature>
+  <localSearch>
+    <termination>
+      <stepCountLimit>2</stepCountLimit>
+    </termination>
+    <neighborhoods>
+      <neighborhoodProviderClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringNeighborhoodProvider</neighborhoodProviderClass>
+      <moveSelectionStrategyClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.single.TestdataSpringMoveSelectionStrategy</moveSelectionStrategyClass>
+    </neighborhoods>
+  </localSearch>
+  <localSearch>
+    <termination>
+      <stepCountLimit>2</stepCountLimit>
+    </termination>
+    <neighborhoods>
+      <neighborhoodProviderClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.TestdataOtherSpringNeighborhoodProvider</neighborhoodProviderClass>
+      <moveSelectionStrategyClass>ai.timefold.solver.spring.boot.autoconfigure.neighborhood.multiple.TestdataOtherSpringMoveSelectionStrategy</moveSelectionStrategyClass>
+    </neighborhoods>
+  </localSearch>
+</solver>

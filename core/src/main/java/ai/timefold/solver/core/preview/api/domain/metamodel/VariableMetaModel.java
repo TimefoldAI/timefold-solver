@@ -10,7 +10,9 @@ import org.jspecify.annotations.NullMarked;
  * so that they can be sorted in a predictable iteration order.
  * <p>
  * Equal when describing the same variable; an inherited variable obtained from different entities
- * gives equal metamodels with a different {@link #entity()}, because moves compare variables by what they change.
+ * gives equal metamodels with a different {@link #entity()}, because moves compare variables by what they change,
+ * and because a variable must be a single key in maps, whichever entity it was obtained from.
+ * Do not read {@link #entity()} from a metamodel found by equality; it can belong to another entity in the hierarchy.
  * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>

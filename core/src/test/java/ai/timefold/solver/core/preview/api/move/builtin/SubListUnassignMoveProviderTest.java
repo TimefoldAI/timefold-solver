@@ -134,4 +134,12 @@ class SubListUnassignMoveProviderTest {
                 .isThrownBy(() -> new SubListUnassignMoveProvider<>(variableMetaModel, 1, 5));
     }
 
+    @Test
+    void id() {
+        var variableMetaModel = TestdataAllowsUnassignedValuesListSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class).listVariable("valueList");
+        assertThat(new SubListUnassignMoveProvider<>(variableMetaModel).getId())
+                .isEqualTo("SubListUnassignMoveProvider(TestdataAllowsUnassignedValuesListEntity.valueList,2-10)");
+    }
+
 }

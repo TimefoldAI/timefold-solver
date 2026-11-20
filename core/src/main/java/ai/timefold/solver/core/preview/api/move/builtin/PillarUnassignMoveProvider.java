@@ -90,4 +90,12 @@ public final class PillarUnassignMoveProvider<Solution_, Entity_, Value_>
                 .asCachedDataset();
     }
 
+    /**
+     * @return {@code PillarUnassignMoveProvider(<Entity>.<variable>)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(PillarUnassignMoveProvider.class, variableMetaModel);
+    }
+
 }

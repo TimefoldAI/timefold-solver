@@ -3,15 +3,15 @@ package ai.timefold.solver.service.definition.impl.solver;
 import java.util.List;
 import java.util.Set;
 
-import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.ModelInput;
-import ai.timefold.solver.service.definition.api.ModelOutput;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.Metadata;
-import ai.timefold.solver.service.definition.api.domain.ModelInputPatchRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelResponse;
-import ai.timefold.solver.service.definition.api.log.LogInfo;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
+import ai.timefold.solver.service.definition.api.dto.log.LogInfo;
+import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
@@ -96,6 +96,7 @@ public interface SolverWorkerFacade {
      * @param id the identifier of the source (parent) dataset
      * @param select whether to derive from the unsolved input or the solved output of the parent
      * @param runName a human-readable name for the new run
+     * @param tags the set of tags to attach to the new dataset
      * @param modelInputPatchRequest the patch request containing the JSON patch operations and an optional
      *        {@link Configuration} override
      * @return the {@link Metadata} of the newly created dataset
@@ -103,7 +104,7 @@ public interface SolverWorkerFacade {
      *         if no dataset exists for the given id
      */
     <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest);
 
     /**
@@ -113,6 +114,7 @@ public interface SolverWorkerFacade {
      * @param id the identifier of the source (parent) dataset
      * @param select whether to derive from the unsolved input or the solved output of the parent
      * @param runName a human-readable name for the new run
+     * @param tags the set of tags to attach to the new dataset
      * @param modelInputPatchRequest the patch request containing the JSON patch operations and an optional
      *        {@link Configuration} override
      * @return the {@link Metadata} of the newly created dataset
@@ -120,7 +122,7 @@ public interface SolverWorkerFacade {
      *         if no dataset exists for the given id
      */
     <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchAndSolveDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest);
 
     /**

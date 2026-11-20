@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NonNull;
@@ -39,15 +39,9 @@ final class ListRuinRecreateMoveSelector<Solution_> extends AbstractGenericListM
 
     @Override
     public long getSize() {
-        var totalSize = 0L;
         var valueCount = valueSelector.getSize();
-        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(valueCount);
-        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(valueCount);
-        for (var selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
-            // Order is significant, and each entity can only be picked once
-            totalSize += MathUtils.factorial((int) valueCount) / MathUtils.factorial(selectedCount);
-        }
-        return totalSize;
+        return SelectionUtils.orderedPicksSum(valueCount, minimumSelectedCountSupplier.applyAsInt(valueCount),
+                maximumSelectedCountSupplier.applyAsInt(valueCount));
     }
 
     @Override

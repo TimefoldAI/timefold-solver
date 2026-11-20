@@ -136,6 +136,67 @@ For `Solver`, implement `solveAndSummarize(problem)` instead of `solve(problem)`
 
 '''
 
+icon:eye[set=far] Simulated annealing cools with every termination
+[%collapsible%open]
+====
+xref:optimization-algorithms/local-search.adoc#simulatedAnnealing[Simulated annealing] cools according to the time gradient of the xref:optimization-algorithms/overview.adoc#termination[terminations].
+Before, it did not cool when xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns] was the only termination,
+when diminished returns was configured at solver level,
+or when a nested xref:optimization-algorithms/overview.adoc#combiningMultipleTerminations[`and`/`or` composite] had no termination with a time gradient;
+diminished returns now estimates the time left according to its current time window,
+and simulated annealing heats up again when that window restarts.
+So the results of simulated annealing in such configurations change.
+
+Without any termination that can estimate the time left,
+for example when only xref:optimization-algorithms/overview.adoc#asynchronousTermination[`terminateEarly()`] stops the solver,
+simulated annealing keeps its starting temperature, as before, and logs a warning.
+====
+
+'''
+
+icon:eye[set=far] Solver termination with `AND` waits for terminations that can only end a phase
+[%collapsible%open]
+====
+A solver termination that xref:optimization-algorithms/overview.adoc#combiningMultipleTerminations[combines terminations] with `AND`
+now also waits for the terminations which can only end a phase:
+xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns],
+xref:optimization-algorithms/overview.adoc#stepCountTermination[`stepCountLimit`] and xref:optimization-algorithms/overview.adoc#unimprovedStepCountTermination[`unimprovedStepCountLimit`].
+Each of them measures the current phase, and every other termination measures the whole solver.
+Before, the solver ignored them and stopped as soon as the other terminations were met.
+An `AND` of only such terminations stopped the solver before the first phase.
+
+For example, with this solver termination, Local Search now runs for at least 5 minutes from the start of the solver,
+and also until diminished returns is met:
+
+[source,xml,options="nowrap"]
+----
+<solver>
+  <termination>
+    <terminationCompositionStyle>AND</terminationCompositionStyle>
+    <minutesSpentLimit>5</minutesSpentLimit>
+    <diminishedReturns/>
+  </termination>
+  ...
+</solver>
+----
+
+Before, the solver stopped after 5 minutes.
+To keep that behavior, remove the terminations which can only end a phase:
+
+[source,xml,options="nowrap"]
+----
+<solver>
+  <termination>
+    <minutesSpentLimit>5</minutesSpentLimit>
+  </termination>
+  ...
+</solver>
+----
+
+See xref:optimization-algorithms/overview.adoc#phaseOnlyTerminationsOnTheSolver[terminations that can only end a phase].
+====
+
+
 [#previewFeatureUpgrade]
 == Changes to preview features
 
@@ -144,6 +205,67 @@ and changes based on user feedback can be expected.
 This section lists all such changes,
 so that users of preview features can adapt.
 All feedback is much appreciated!
+
+icon:info-circle[role=yellow,set=fas] Timefold Solver 2.9.0 reorganizes packages of the service definition module.
+[%collapsible%open]
+====
+Specifically:
+
+- REST payloads moved to `ai.timefold.solver.service.definition.api.dto.*`, for example `ModelInput`, `ModelOutput`, `ModelConfigOverrides`, `ModelRequest` and `ErrorInfo`.
+- Model description types, such as `ConstraintReference` and `ModelMaturityLevel`, moved to `ai.timefold.solver.service.definition.api.description`.
+- `ModelConvertor` and `ModelConvertorBase` moved to `ai.timefold.solver.service.definition.api.conversion`.
+- Demo data types moved to the preview API in `ai.timefold.solver.service.definition.preview.api.demo`.
+- `UserModel` was removed without a replacement.
+====
+
+icon:info-circle[role=yellow,set=fas] Timefold Solver 2.9.0 moves phase-level `neighborhoodProviderClass` into the `neighborhoods` element
+[%collapsible%open]
+====
+The Neighborhoods API settings of a Local Search phase are now in a `neighborhoods` element.
+A `neighborhoodProviderClass` directly in a `localSearch` element is no longer supported.
+
+Before:
+
+[source,xml]
+----
+<localSearch>
+  <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+</localSearch>
+----
+
+After:
+
+[source,xml]
+----
+<localSearch>
+  <neighborhoods>
+    <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  </neighborhoods>
+</localSearch>
+----
+
+In Java, replace `LocalSearchPhaseConfig.withMoveProviderClass(...)`
+with `withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig().withNeighborhoodProviderClass(...))`.
+To use one neighborhood provider in all Local Search phases,
+set it on the solver instead, with `SolverConfig.withNeighborhoodProviderClass(...)`;
+see xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsConfiguration[configuring Neighborhoods].
+====
+
+'''
+
+icon:info-circle[role=yellow,set=fas] Timefold Solver 2.9.0 requires move providers to have a unique IDs
+[%collapsible%open]
+====
+Every move provider in a neighborhood now has an ID, and the IDs must be unique.
+A move provider added with `add(moveProvider)` gets the simple name of its class as its ID,
+or `custom` for a lambda or an anonymous class.
+A neighborhood that adds two instances of the same move provider class, or two lambdas,
+now fails when it is built.
+Give each of them its own ID with `add(id, moveProvider)`;
+see xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsWeightedSelection[weighted selection].
+====
+
+'''
 
 === Timefold Solver 2.7.0 hides move implementations
 

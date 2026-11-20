@@ -399,6 +399,23 @@ Simulated Annealing does not always pick the move with the highest score, neithe
 At least at first.
 Instead, it gives non improving moves also a chance to be picked, depending on its score and the time gradient of the ``Termination``.
 In the end, it gradually turns into Hill Climbing, only accepting improving moves.
+It cools only with a xref:optimization-algorithms/overview.adoc#termination[termination]
+that can estimate how long the phase will continue,
+such as a xref:optimization-algorithms/overview.adoc#timeMillisSpentTermination[time limit]
+or xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns];
+without one, it keeps its starting temperature.
+
+[NOTE]
+====
+Simulated Annealing cools best with a time limit, because the end of the phase is fixed.
+With diminished returns, the end is a moving target: it moves while the score continues to improve.
+When a harder score level changes, diminished returns restarts its time window,
+and Simulated Annealing heats up again.
+The phase can end before Simulated Annealing is cold.
+xref:optimization-algorithms/overview.adoc#combiningMultipleTerminations[Combine] diminished returns with a time limit in `OR`
+to give Simulated Annealing a fixed end.
+In `AND`, the end is still a moving target.
+====
 
 
 [#simulatedAnnealingConfiguration]

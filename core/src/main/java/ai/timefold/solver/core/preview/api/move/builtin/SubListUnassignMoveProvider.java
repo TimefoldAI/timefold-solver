@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.impl.util.TriangleElementFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -72,6 +73,15 @@ public final class SubListUnassignMoveProvider<Solution_, Entity_, Value_>
         var valueDataset = moveStreamFactory.forEachAssignedValue(variableMetaModel).asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new SubListUnassignMoveIterator<>(session, random,
                 variableMetaModel, valueDataset, minimumSubListSize, maximumSubListSize));
+    }
+
+    /**
+     * @return {@code SubListUnassignMoveProvider(<Entity>.<variable>,<minimum>-<maximum>)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(SubListUnassignMoveProvider.class, variableMetaModel,
+                MoveProviderUtil.range(minimumSubListSize, maximumSubListSize));
     }
 
     /**

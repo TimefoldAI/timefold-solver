@@ -22,6 +22,7 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.NeighborhoodsConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
@@ -33,6 +34,7 @@ import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
+import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsConfigUtils;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
@@ -48,6 +50,8 @@ import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.MoveSelectionStrategy;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -93,6 +97,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final EnvironmentMode globalEnvironmentMode;
     private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
     private final DomainAccessType domainAccessType;
+    private final @Nullable Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass;
+    private final @Nullable Supplier<MoveSelectionStrategy<Solution_>> moveSelectionStrategyFactory;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
         this(solverConfig, DomainAccessType.AUTO);
@@ -106,6 +112,23 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         EnvironmentModeUtil.validate(solverConfig);
         this.globalEnvironmentMode = EnvironmentModeUtil.resolve(solverConfig);
         this.solutionDescriptor = buildSolutionDescriptor();
+        var neighborhoodsConfig = solverConfig.getNeighborhoodsConfig();
+        NeighborhoodsConfigUtils.failWithoutNeighborhoods(neighborhoodsConfig != null, "solver",
+                HeuristicConfigPolicy.isPreviewFeatureEnabled(PreviewFeature.NEIGHBORHOODS,
+                        solverConfig.getEnablePreviewFeatureSet()));
+        if (neighborhoodsConfig == null) {
+            this.neighborhoodProviderClass = null;
+            this.moveSelectionStrategyFactory = null;
+        } else {
+            this.neighborhoodProviderClass = neighborhoodsConfig.getNeighborhoodProviderClass();
+            Class<? extends MoveSelectionStrategy<Solution_>> strategyClass =
+                    neighborhoodsConfig.getMoveSelectionStrategyClass();
+            var strategyProperties = neighborhoodsConfig.getMoveSelectionStrategyCustomProperties();
+            NeighborhoodsConfigUtils.failPropertiesWithoutClass(strategyClass, strategyProperties, "solver");
+            this.moveSelectionStrategyFactory = strategyClass == null ? null
+                    : NeighborhoodsConfigUtils.buildStrategyFactory(strategyClass, strategyProperties,
+                            NeighborhoodsConfig.class);
+        }
         // Built once and shared by every solver this factory builds, as building one is expensive.
         this.scoreDirectorFactory = buildScoreDirectorFactory(globalEnvironmentMode);
     }
@@ -174,6 +197,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
                 .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
+                .withNeighborhoodProviderClass(neighborhoodProviderClass)
+                .withMoveSelectionStrategyFactory(moveSelectionStrategyFactory)
                 .withRandom(randomFactory.get())
                 .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)

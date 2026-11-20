@@ -2,6 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
@@ -59,6 +60,14 @@ public final class UnassignMoveProvider<Solution_, Entity_, Value_>
                 moveStreamFactory.forEach(variableMetaModel.entity().type(), false)
                         .filter((view, e) -> view.getValue(variableMetaModel, e) != null))
                 .asMove((view, entity) -> Moves.change(variableMetaModel, Objects.requireNonNull(entity), null));
+    }
+
+    /**
+     * @return {@code UnassignMoveProvider(<Entity>.<variable>)}
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(UnassignMoveProvider.class, variableMetaModel);
     }
 
 }

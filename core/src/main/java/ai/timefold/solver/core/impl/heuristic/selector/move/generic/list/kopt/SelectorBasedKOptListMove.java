@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SequencedCollection;
+import java.util.function.IntSupplier;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -37,17 +38,7 @@ public final class SelectorBasedKOptListMove<Solution_> extends AbstractSelector
         this.equivalent2Opts = equivalent2Opts;
         this.postShiftAmount = postShiftAmount;
         this.newEndIndices = newEndIndices;
-        if (equivalent2Opts.isEmpty()) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, 0);
-        } else if (postShiftAmount != 0) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, combinedList.size());
-        } else {
-            var currentAffectedElements = equivalent2Opts.getFirst().getAffectedElements();
-            for (var i = 1; i < equivalent2Opts.size(); i++) {
-                currentAffectedElements = currentAffectedElements.merge(equivalent2Opts.get(i).getAffectedElements());
-            }
-            affectedElementsInfo = currentAffectedElements;
-        }
+        affectedElementsInfo = computeAffectedElements(equivalent2Opts, postShiftAmount, combinedList::size);
 
         originalEntities = combinedList.delegateEntities;
     }
@@ -59,20 +50,25 @@ public final class SelectorBasedKOptListMove<Solution_> extends AbstractSelector
         this.equivalent2Opts = equivalent2Opts;
         this.postShiftAmount = postShiftAmount;
         this.newEndIndices = newEndIndices;
-        if (equivalent2Opts.isEmpty()) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0, 0);
-        } else if (postShiftAmount != 0) {
-            affectedElementsInfo = KOptAffectedElements.forMiddleRange(0,
-                    computeCombinedList(listVariableDescriptor, originalEntities).size());
-        } else {
-            var currentAffectedElements = equivalent2Opts.getFirst().getAffectedElements();
-            for (var i = 1; i < equivalent2Opts.size(); i++) {
-                currentAffectedElements = currentAffectedElements.merge(equivalent2Opts.get(i).getAffectedElements());
-            }
-            affectedElementsInfo = currentAffectedElements;
-        }
+        affectedElementsInfo = computeAffectedElements(equivalent2Opts, postShiftAmount,
+                () -> computeCombinedList(listVariableDescriptor, originalEntities).size());
 
         this.originalEntities = originalEntities;
+    }
+
+    private static KOptAffectedElements computeAffectedElements(List<FlipSublistAction> equivalent2Opts,
+            int postShiftAmount, IntSupplier combinedListSizeSupplier) {
+        if (postShiftAmount != 0) {
+            return KOptAffectedElements.forMiddleRange(0, combinedListSizeSupplier.getAsInt());
+        }
+        if (equivalent2Opts.isEmpty()) {
+            return KOptAffectedElements.forMiddleRange(0, 0);
+        }
+        var affectedElements = equivalent2Opts.getFirst().getAffectedElements();
+        for (var i = 1; i < equivalent2Opts.size(); i++) {
+            affectedElements = affectedElements.merge(equivalent2Opts.get(i).getAffectedElements());
+        }
+        return affectedElements;
     }
 
     KOptDescriptor<?> getDescriptor() {
@@ -98,9 +94,8 @@ public final class SelectorBasedKOptListMove<Solution_> extends AbstractSelector
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var doable = !equivalent2Opts.isEmpty();
-        if (!doable || listVariableDescriptor.canExtractValueRangeFromSolution()) {
-            return doable;
+        if (listVariableDescriptor.canExtractValueRangeFromSolution()) {
+            return true;
         }
         var singleEntity = originalEntities.length == 1;
         if (singleEntity) {

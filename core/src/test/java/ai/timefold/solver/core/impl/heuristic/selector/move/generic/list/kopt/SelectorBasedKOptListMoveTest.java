@@ -17,8 +17,10 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -559,7 +561,7 @@ class SelectorBasedKOptListMoveTest {
         // this move create 1 cycle (v1 -> v5 -> v4 -> v2 -> v3 -> v7 -> v6 -> v8 -> v1 -> ...)
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
 
-        kOptListMove = fromRemovedAndAddedEdges(scoreDirector, variableDescriptor,
+        var infeasibleMove = moveFromRemovedAndAddedEdges(scoreDirector, variableDescriptor, variableDescriptor,
                 List.of(
                         v1, v2,
                         v3, v4,
@@ -571,7 +573,7 @@ class SelectorBasedKOptListMoveTest {
                         v8, v6,
                         v5, v1));
         // this move create 2 cycles (v2...v3->t2...) and (v4...v5->v7...v6->v1...v8->v4...)
-        assertThat(kOptListMove.isMoveDoable(scoreDirector)).isFalse();
+        assertThat(infeasibleMove).isSameAs(SelectorBasedNoChangeMove.getInstance());
     }
 
     @Test
@@ -642,6 +644,16 @@ class SelectorBasedKOptListMoveTest {
     }
 
     private static <Solution_, Value_> SelectorBasedKOptListMove<Solution_> fromRemovedAndAddedEdges(
+            InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListVariableDescriptor<Solution_> listVariableDescriptor,
+            ListVariableDescriptor<Solution_> listVariableDescriptorSpy,
+            List<Value_> removedEdgeList,
+            List<Value_> addedEdgeList) {
+        return (SelectorBasedKOptListMove<Solution_>) moveFromRemovedAndAddedEdges(scoreDirector, listVariableDescriptor,
+                listVariableDescriptorSpy, removedEdgeList, addedEdgeList);
+    }
+
+    private static <Solution_, Value_> Move<Solution_> moveFromRemovedAndAddedEdges(
             InnerScoreDirector<Solution_, ?> scoreDirector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             ListVariableDescriptor<Solution_> listVariableDescriptorSpy,

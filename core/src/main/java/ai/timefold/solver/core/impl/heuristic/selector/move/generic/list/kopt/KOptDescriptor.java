@@ -12,6 +12,8 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  *
@@ -119,7 +121,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
     // ****************************************************
 
     /**
-     * This returns a {@link SelectorBasedKOptListMove} that corresponds to this {@link KOptDescriptor}. <br />
+     * This returns a {@link SelectorBasedKOptListMove} that corresponds to this {@link KOptDescriptor},
+     * or {@link SelectorBasedNoChangeMove} if the descriptor is infeasible or would change nothing. <br />
      * <br />
      * It implements the algorithm described in the paper
      * <a href="https://dl.acm.org/doi/pdf/10.1145/300515.300516">"Transforming Cabbage into Turnip: Polynomial
@@ -155,13 +158,10 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * </li>
      * </ul>
      */
-    public <Solution_> SelectorBasedKOptListMove<Solution_>
-            getKOptListMove(ListVariableState<Solution_, Object, Object> listVariableState) {
+    public <Solution_> Move<Solution_> getKOptListMove(ListVariableState<Solution_, Object, Object> listVariableState) {
         var listVariableDescriptor = listVariableState.getSourceVariableDescriptor();
         if (!isFeasible()) {
-            // A KOptListMove move with an empty flip move list is not feasible, since if executed, it's a no-op.
-            return new SelectorBasedKOptListMove<>(listVariableDescriptor, this, new MultipleDelegateList<>(), List.of(), 0,
-                    new int[] {});
+            return SelectorBasedNoChangeMove.getInstance();
         }
 
         var combinedList = computeCombinedList(listVariableDescriptor, listVariableState);
@@ -260,22 +260,44 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         }
 
         var startElementShift = -indexOf(originalToCurrentIndexList, 0);
-        var newEndIndices = new int[combinedList.delegates.length];
+        var originalEndIndices = new int[combinedList.delegates.length];
         var totalOffset = 0;
-        for (var i = 0; i < newEndIndices.length; i++) {
+        for (var i = 0; i < originalEndIndices.length; i++) {
             var listSize = combinedList.delegateSizes[i];
-            newEndIndices[i] = totalOffset + listSize - 1;
+            originalEndIndices[i] = totalOffset + listSize - 1;
             totalOffset += listSize;
         }
 
-        newEndIndices = IntStream.of(newEndIndices)
+        var newEndIndices = IntStream.of(originalEndIndices)
                 .map(index -> indexOf(originalToCurrentIndexList, index))
                 .sorted()
                 .toArray();
 
         newEndIndices[newEndIndices.length - 1] = originalToCurrentIndexList.length - 1;
+        if (isNoOp(originalToCurrentIndexList, startElementShift, originalEndIndices, newEndIndices)) {
+            // Degenerate descriptors can reconnect the tour as it was.
+            return SelectorBasedNoChangeMove.getInstance();
+        }
         return new SelectorBasedKOptListMove<>(listVariableDescriptor, this, combinedList, out, startElementShift,
                 newEndIndices);
+    }
+
+    /**
+     * The flips have already been applied to {@code flippedIndices}; this applies the shift on the fly.
+     *
+     * @return true if the move would leave every list as it is
+     */
+    private static boolean isNoOp(int[] flippedIndices, int shift, int[] originalEndIndices, int[] newEndIndices) {
+        if (!Arrays.equals(originalEndIndices, newEndIndices)) {
+            return false;
+        }
+        var size = flippedIndices.length;
+        for (var i = 0; i < size; i++) {
+            if (flippedIndices[Math.floorMod(i - shift, size)] != i) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

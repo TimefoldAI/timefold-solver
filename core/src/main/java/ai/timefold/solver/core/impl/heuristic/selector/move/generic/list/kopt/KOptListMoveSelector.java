@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.AbstractGenericListMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelector<Solution_> {
@@ -44,26 +44,24 @@ final class KOptListMoveSelector<Solution_> extends AbstractGenericListMoveSelec
         return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupplier);
     }
 
+    /**
+     * A provable upper bound of distinct selections: the sum over k of (2n)^k * (2k - 1)!!,
+     * where n is the number of values.
+     * A k-opt move removes k edges (2n choices each: n for the first endpoint, 2 neighbors for the second)
+     * and matches the 2k removed endpoints into added edges ((2k - 1)!! possibilities).
+     * This counts degenerate and patched moves too, so it is much larger than the number of pure k-opt reconnections.
+     */
     @Override
     public long getSize() {
-        long total = 0;
-        long valueSelectorSize = valueSelector.getSize();
-        for (int i = minK; i < Math.min(valueSelectorSize, maxK); i++) {
-            if (valueSelectorSize > i) { // need more than k nodes in order to perform a k-opt
-                long kOptMoveTypes = KOptUtils.getPureKOptMoveTypes(i);
-
-                // A tour with n nodes have n - 1 edges
-                // And we chose k of them to remove in a k-opt
-                final long edgeChoices;
-                if (valueSelectorSize <= Integer.MAX_VALUE) {
-                    edgeChoices = MathUtils.binomialCoefficient((int) (valueSelectorSize - 1), i);
-                } else {
-                    edgeChoices = Long.MAX_VALUE;
-                }
-                total += kOptMoveTypes * edgeChoices;
+        var endpointChoices = SelectionUtils.product(valueSelector.getSize(), 2L);
+        return SelectionUtils.sumOf(minK, maxK, k -> {
+            var kOptSize = 1L;
+            // Each pass adds one removed edge (2n) and one odd factor (2i - 1) of (2k - 1)!!.
+            for (var i = 1; i <= k; i++) {
+                kOptSize = SelectionUtils.product(kOptSize, endpointChoices, 2L * i - 1);
             }
-        }
-        return total;
+            return kOptSize;
+        });
     }
 
     @Override

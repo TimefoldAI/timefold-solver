@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import ai.timefold.solver.service.definition.api.validation.IssueType;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueType;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;
 
 import io.quarkus.runtime.RuntimeValue;

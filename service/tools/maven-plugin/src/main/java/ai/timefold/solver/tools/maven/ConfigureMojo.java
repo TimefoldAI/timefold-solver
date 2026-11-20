@@ -131,6 +131,19 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
                 timefoldBuildProperties.setProperty("quarkus.container-image.registry", registry);
                 timefoldBuildProperties.setProperty("quarkus.container-image.group", resolvedNamespace);
 
+                if (info.config().minimalSolverVersion() != null) {
+                    timefoldBuildProperties.setProperty("timefold.platform.minimal-solver-version",
+                            info.config().minimalSolverVersion());
+                }
+                if (info.config().maximalSolverVersion() != null) {
+                    timefoldBuildProperties.setProperty("timefold.platform.maximal-solver-version",
+                            info.config().maximalSolverVersion());
+                }
+                if (info.config().allowSnapshot() != null) {
+                    timefoldBuildProperties.setProperty("timefold.platform.allow-solver-snapshot",
+                            String.valueOf(info.config().allowSnapshot()));
+                }
+
                 // configure container image and arguments based on model parent pom settings
                 timefoldBuildProperties.setProperty("quarkus.jib.jvm-additional-arguments",
                         project.getProperties().getProperty("timefold.model.jvm-image-arguments", ""));

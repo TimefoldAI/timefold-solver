@@ -6,12 +6,13 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity(comparatorClass = TestdataMixedMultiEntityFirstEntityComparator.class)
 public class TestdataMixedMultiEntityFirstEntity extends TestdataObject {
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataMixedMultiEntityFirstValue> valueList;
+    private List<TestdataValue> valueList;
 
     private int difficulty;
 
@@ -25,11 +26,11 @@ public class TestdataMixedMultiEntityFirstEntity extends TestdataObject {
         this.difficulty = difficulty;
     }
 
-    public List<TestdataMixedMultiEntityFirstValue> getValueList() {
+    public List<TestdataValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataMixedMultiEntityFirstValue> valueList) {
+    public void setValueList(List<TestdataValue> valueList) {
         this.valueList = valueList;
     }
 

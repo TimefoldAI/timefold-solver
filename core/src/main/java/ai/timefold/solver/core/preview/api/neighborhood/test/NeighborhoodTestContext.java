@@ -39,6 +39,7 @@ public interface NeighborhoodTestContext<Solution_> extends NeighborhoodMoveAsse
      * it is reasonable to assume that the moves are returned in a random order,
      * and that the order will change between invocations.
      * Use {@link #producesAllOf}/{@link #producesNoneOf} for completeness assertions instead.
+     * See {@link #getMoveTestContext()} for when the iterator becomes invalid.
      *
      * @return an iterator over some moves
      */

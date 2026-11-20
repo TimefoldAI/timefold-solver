@@ -1,6 +1,9 @@
 
 package ai.timefold.solver.core.impl.neighborhood;
 
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.builtin.AssignMoveProvider;
@@ -13,6 +16,7 @@ import ai.timefold.solver.core.preview.api.move.builtin.ListUnassignMoveProvider
 import ai.timefold.solver.core.preview.api.move.builtin.SwapMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.TwoOptListMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.UnassignMoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
@@ -28,33 +32,40 @@ public final class DefaultNeighborhoodProvider<Solution_> implements Neighborhoo
     @Override
     public Neighborhood defineNeighborhood(NeighborhoodBuilder<Solution_> builder) {
         var solutionMetaModel = builder.getSolutionMetaModel();
+        var simpleNameCountMap = solutionMetaModel.genuineEntities().stream()
+                .collect(Collectors.groupingBy(entity -> entity.type().getSimpleName(), Collectors.counting()));
         for (var entityMetaModel : solutionMetaModel.genuineEntities()) {
+            var entityClass = entityMetaModel.type();
+            // Default IDs contain the simple name of the entity class; add the full name where that is ambiguous.
+            Consumer<MoveProvider<Solution_>> add = simpleNameCountMap.get(entityClass.getSimpleName()) > 1
+                    ? provider -> builder.add(provider.getId() + "@" + entityClass.getName(), provider)
+                    : builder::add;
             var hasBasicVariable = false;
             for (var variableMetaModel : entityMetaModel.genuineVariables()) {
                 if (variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, ?, ?> listVariableMetaModel) {
                     // ListChangeMoveProvider's crossingNull=false:
                     // ListAssignMoveProvider/ListUnassignMoveProvider below already cover those moves,
                     // at a much higher rate than ListChangeMoveProvider's flag would.
-                    builder.add(new ListChangeMoveProvider<>(listVariableMetaModel, false));
-                    builder.add(new ListSwapMoveProvider<>(listVariableMetaModel));
+                    add.accept(new ListChangeMoveProvider<>(listVariableMetaModel, false));
+                    add.accept(new ListSwapMoveProvider<>(listVariableMetaModel));
                     // TwoOptListMoveProvider's crossingEntity=false:
                     // ListTailSwapMoveProvider below already covers the cross-entity tail swap,
                     // at a much higher rate than TwoOptListMoveProvider's flag would.
-                    builder.add(new TwoOptListMoveProvider<>(listVariableMetaModel, false));
-                    builder.add(new ListTailSwapMoveProvider<>(listVariableMetaModel));
+                    add.accept(new TwoOptListMoveProvider<>(listVariableMetaModel, false));
+                    add.accept(new ListTailSwapMoveProvider<>(listVariableMetaModel));
                     if (listVariableMetaModel.allowsUnassignedValues()) {
-                        builder.add(new ListAssignMoveProvider<>(listVariableMetaModel));
-                        builder.add(new ListUnassignMoveProvider<>(listVariableMetaModel));
+                        add.accept(new ListAssignMoveProvider<>(listVariableMetaModel));
+                        add.accept(new ListUnassignMoveProvider<>(listVariableMetaModel));
                     }
                 } else if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, ?, ?> basicVariableMetaModel) {
                     hasBasicVariable = true;
                     // ChangeMoveProvider's crossingNull=false:
                     // AssignMoveProvider/UnassignMoveProvider below already cover those moves,
                     // at a much higher rate than ChangeMoveProvider's flag would.
-                    builder.add(new ChangeMoveProvider<>(basicVariableMetaModel, false));
+                    add.accept(new ChangeMoveProvider<>(basicVariableMetaModel, false));
                     if (basicVariableMetaModel.allowsUnassigned()) {
-                        builder.add(new AssignMoveProvider<>(basicVariableMetaModel));
-                        builder.add(new UnassignMoveProvider<>(basicVariableMetaModel));
+                        add.accept(new AssignMoveProvider<>(basicVariableMetaModel));
+                        add.accept(new UnassignMoveProvider<>(basicVariableMetaModel));
                     }
                 }
             }
@@ -62,7 +73,7 @@ public final class DefaultNeighborhoodProvider<Solution_> implements Neighborhoo
             // and not just one variable.
             // It only needs to be included once per entity.
             if (hasBasicVariable) {
-                builder.add(new SwapMoveProvider<>(entityMetaModel));
+                add.accept(new SwapMoveProvider<>(entityMetaModel));
             }
         }
         return builder.build();

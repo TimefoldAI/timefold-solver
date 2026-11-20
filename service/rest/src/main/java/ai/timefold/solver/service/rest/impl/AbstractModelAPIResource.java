@@ -22,33 +22,33 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.ModelConstraintJustification;
-import ai.timefold.solver.service.definition.api.ModelInput;
-import ai.timefold.solver.service.definition.api.ModelOutput;
-import ai.timefold.solver.service.definition.api.SolvingStatus;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.Metadata;
-import ai.timefold.solver.service.definition.api.domain.ModelConfig;
-import ai.timefold.solver.service.definition.api.domain.ModelInputPatchRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelResponse;
-import ai.timefold.solver.service.definition.api.domain.RunConfiguration;
-import ai.timefold.solver.service.definition.api.error.ErrorInfo;
-import ai.timefold.solver.service.definition.api.error.ValidationErrorInfo;
-import ai.timefold.solver.service.definition.api.log.LogInfo;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfig;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
+import ai.timefold.solver.service.definition.api.dto.dataset.RunConfiguration;
+import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
+import ai.timefold.solver.service.definition.api.dto.error.ErrorInfo;
+import ai.timefold.solver.service.definition.api.dto.error.ValidationErrorInfo;
+import ai.timefold.solver.service.definition.api.dto.log.LogInfo;
+import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
+import ai.timefold.solver.service.definition.api.dto.scoreanalysis.ModelConstraintJustification;
+import ai.timefold.solver.service.definition.api.dto.validation.ValidationIssueTypes;
+import ai.timefold.solver.service.definition.api.dto.validation.ValidationResult;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.Issue;
+import ai.timefold.solver.service.definition.api.dto.validation.issue.IssueCode;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
 import ai.timefold.solver.service.definition.api.rest.OperationId;
 import ai.timefold.solver.service.definition.api.rest.OperationOnPost;
-import ai.timefold.solver.service.definition.api.validation.Issue;
-import ai.timefold.solver.service.definition.api.validation.IssueCode;
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
-import ai.timefold.solver.service.definition.api.validation.Validated;
-import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
-import ai.timefold.solver.service.definition.api.validation.dto.ValidationIssueTypes;
-import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
+import ai.timefold.solver.service.definition.api.validation.model.ValidationBuilder;
+import ai.timefold.solver.service.definition.api.validation.schema.Validated;
 import ai.timefold.solver.service.definition.impl.solver.SolverWorkerFacade;
 import ai.timefold.solver.service.definition.impl.validation.ValidationIssueTypeCatalog;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
@@ -232,15 +232,8 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
             @Validated(nullable = true,
                     operationId = OperationId.FROM_INPUT) Configuration<ModelConfigurationOverrides_> configuration) {
 
-        Set<String> tags = null;
-        String runName = null;
-
-        if (configuration != null && configuration.run() != null) {
-            RunConfiguration runConfiguration = configuration.run();
-            runName = runConfiguration.name();
-            tags = runConfiguration.tags();
-        }
-        runName = name == null ? runName : name;
+        String runName = runName(name, configuration);
+        Set<String> tags = runTags(configuration);
 
         return switch (operation) {
             case OperationOnPost.NONE -> solverWorkerFacade.createDataset(id, select, runName, tags, configuration);
@@ -279,10 +272,15 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
                     description = "Operation to execute on the POST request.") @DefaultValue(OperationOnPost.DEFAULT_OPERATION) @QueryParam("operation") OperationOnPost operation,
             @Validated(nullable = true,
                     operationId = OperationId.FROM_PATCH) ModelInputPatchRequest<ModelConfigurationOverrides_> patchRequest) {
+        Configuration<ModelConfigurationOverrides_> configuration = patchRequest == null ? null : patchRequest.config();
+        String runName = runName(name, configuration);
+        Set<String> tags = runTags(configuration);
+
         try {
             return switch (operation) {
-                case OperationOnPost.NONE -> solverWorkerFacade.patchDataset(id, select, name, patchRequest);
-                case OperationOnPost.SOLVE -> solverWorkerFacade.patchAndSolveDataset(id, select, name, patchRequest);
+                case OperationOnPost.NONE -> solverWorkerFacade.patchDataset(id, select, runName, tags, patchRequest);
+                case OperationOnPost.SOLVE ->
+                    solverWorkerFacade.patchAndSolveDataset(id, select, runName, tags, patchRequest);
             };
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
@@ -581,5 +579,20 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
             }
         }
         return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    /**
+     * Returns the name of a dataset that is created from another dataset: the name query parameter wins over the name
+     * of the run configuration.
+     */
+    private static String runName(String name, Configuration<?> configuration) {
+        if (name != null || configuration == null || configuration.run() == null) {
+            return name;
+        }
+        return configuration.run().name();
+    }
+
+    private static Set<String> runTags(Configuration<?> configuration) {
+        return configuration == null || configuration.run() == null ? null : configuration.run().tags();
     }
 }

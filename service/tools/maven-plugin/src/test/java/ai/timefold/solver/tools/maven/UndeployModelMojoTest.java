@@ -3,6 +3,7 @@ package ai.timefold.solver.tools.maven;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -112,7 +113,27 @@ public class UndeployModelMojoTest {
         mojo.execute();
 
         // verify plugin performed expected HTTP call
-        wm1.verify(1, deleteRequestedFor(urlPathEqualTo("/api/platform/v1/models/existing")));
+        wm1.verify(1, deleteRequestedFor(urlPathEqualTo("/api/platform/v1/models/existing")).withQueryParam("releaseOffset",
+                equalTo("0")));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Model .* has been successfully undeployed from platform.*", Level.INFO);
+    }
+
+    @Test
+    @MojoParameter(name = "key", value = "existing")
+    @MojoParameter(name = "offset", value = "1")
+    @InjectMojo(goal = "undeploy", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testUndeployWithCustomOffset(UndeployModelMojo mojo) throws Exception {
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        // verify plugin performed expected HTTP call
+        wm1.verify(1, deleteRequestedFor(urlPathEqualTo("/api/platform/v1/models/existing")).withQueryParam("releaseOffset",
+                equalTo("1")));
 
         // assert that plugin executed and produced expected logs
         log.assertContains("Model .* has been successfully undeployed from platform.*", Level.INFO);

@@ -22,6 +22,11 @@ import org.jspecify.annotations.NullMarked;
  * The effect of this in practice would have been that,
  * if a solver-level {@link TimeMillisSpentTermination} were configured to terminate after 10 seconds,
  * each phase would effectively start a new 10-second counter.
+ * <p>
+ * A composite solver termination can also include terminations that can only end a phase.
+ * Each of its terminations is checked at its own level:
+ * solver terminations against the solver, the other terminations against the phase.
+ * The time gradient follows the same rule.
  * 
  * @param <Solution_>
  */
@@ -39,6 +44,9 @@ final class SolverBridgePhaseTermination<Solution_>
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        if (solverTermination instanceof AbstractCompositeTermination<Solution_> compositeTermination) {
+            return compositeTermination.isSolverTerminatedForPhase(phaseScope);
+        }
         var terminated = solverTermination.isSolverTerminated(phaseScope.getSolverScope());
         // If the solver is not finished yet, we need to check the phase termination
         if (!terminated && solverTermination instanceof PhaseTermination phaseTermination) {
@@ -49,6 +57,10 @@ final class SolverBridgePhaseTermination<Solution_>
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
+        if (solverTermination instanceof AbstractCompositeTermination<Solution_> compositeTermination) {
+            // Its phase-only terminations can end the phase too.
+            return compositeTermination.calculateSolverTimeGradientForPhase(phaseScope);
+        }
         return solverTermination.calculateSolverTimeGradient(phaseScope.getSolverScope());
     }
 

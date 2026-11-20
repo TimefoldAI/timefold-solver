@@ -16,6 +16,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -33,6 +34,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
@@ -43,6 +45,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBase
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
+import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMoveSelectionStrategy;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -56,6 +62,7 @@ import ai.timefold.solver.core.testdomain.record.TestdataRecordSolution;
 
 import org.apache.commons.io.IOUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -203,6 +210,67 @@ class SolverConfigTest {
     }
 
     @Test
+    void inheritMergesMoveSelectionStrategyCustomProperties() {
+        var parent = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
+                .withMoveSelectionStrategyClass(DummyMoveSelectionStrategy.class)
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1", "b", "2")));
+        var child = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
+                .withMoveSelectionStrategyCustomProperties(Map.of("b", "3")));
+        child.inherit(parent);
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyMoveSelectionStrategy.class);
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties())
+                .containsExactlyInAnyOrderEntriesOf(Map.of("a", "1", "b", "3"));
+
+        var parentPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                .withMoveSelectionStrategyClass(DummyPhaseMoveSelectionStrategy.class)
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1")));
+        var childPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                .withMoveSelectionStrategyCustomProperties(Map.of("c", "4")));
+        childPhase.inherit(parentPhase);
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyPhaseMoveSelectionStrategy.class);
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties())
+                .containsExactlyInAnyOrderEntriesOf(Map.of("a", "1", "c", "4"));
+    }
+
+    @Test
+    void inheritDoesNotMixMoveSelectionStrategyClasses() {
+        var parent = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
+                .withNeighborhoodProviderClass(DummyNeighborhoodProvider.class)
+                .withMoveSelectionStrategyClass(DummyMoveSelectionStrategy.class)
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1")));
+        var child = new SolverConfig().withNeighborhoodsConfig(new NeighborhoodsConfig()
+                .withMoveSelectionStrategyClass(DummyPhaseMoveSelectionStrategy.class));
+        child.inherit(parent);
+        assertThat(child.getNeighborhoodsConfig().getNeighborhoodProviderClass()).isEqualTo(DummyNeighborhoodProvider.class);
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyPhaseMoveSelectionStrategy.class);
+        assertThat(child.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties()).isNull();
+
+        var parentPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                .withMoveSelectionStrategyClass(DummyPhaseMoveSelectionStrategy.class)
+                .withMoveSelectionStrategyCustomProperties(Map.of("a", "1")));
+        var childPhase = new LocalSearchPhaseConfig().withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                .withMoveSelectionStrategyClass(DummyMoveSelectionStrategy.class)
+                .withMoveSelectionStrategyCustomProperties(Map.of("c", "4")));
+        childPhase.inherit(parentPhase);
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyClass())
+                .isEqualTo(DummyMoveSelectionStrategy.class);
+        assertThat(childPhase.getNeighborhoodsConfig().getMoveSelectionStrategyCustomProperties())
+                .containsExactlyInAnyOrderEntriesOf(Map.of("c", "4"));
+    }
+
+    @Test
+    void withNeighborhoodProviderClassShortcut() {
+        var solverConfig = new SolverConfig();
+        assertThat(solverConfig.getNeighborhoodsConfig()).isNull();
+        solverConfig.withNeighborhoodProviderClass(DummyNeighborhoodProvider.class);
+        assertThat(solverConfig.getNeighborhoodsConfig().getNeighborhoodProviderClass())
+                .isEqualTo(DummyNeighborhoodProvider.class);
+    }
+
+    @Test
     void inheritEnumSet() {
         var originalSolverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITH_ENUM_SET);
         var inheritedSolverConfig =
@@ -222,6 +290,9 @@ class SolverConfigTest {
         verify(classVisitor, atLeastOnce()).accept(DummyConstraintProvider.class);
         verify(classVisitor, atLeastOnce()).accept(DummyIncrementalScoreCalculator.class);
         verify(classVisitor, atLeastOnce()).accept(DummyNearbyDistanceClass.class);
+        verify(classVisitor, atLeastOnce()).accept(DummyNeighborhoodProvider.class);
+        verify(classVisitor, atLeastOnce()).accept(DummyMoveSelectionStrategy.class);
+        verify(classVisitor, atLeastOnce()).accept(DummyPhaseMoveSelectionStrategy.class);
         verify(classVisitor, atLeastOnce()).accept(DummyEntityFilter.class);
         verify(classVisitor, atLeastOnce()).accept(DummyValueFilter.class);
         verify(classVisitor, atLeastOnce()).accept(DummyChangeMoveFilter.class);
@@ -480,6 +551,22 @@ class SolverConfigTest {
     }
 
     public abstract static class DummyMoveListFactory implements MoveListFactory<TestdataSolution> {
+    }
+
+    @NullMarked
+    public static class DummyNeighborhoodProvider implements NeighborhoodProvider<TestdataSolution> {
+
+        @Override
+        public Neighborhood defineNeighborhood(NeighborhoodBuilder<TestdataSolution> builder) {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
+    public static class DummyMoveSelectionStrategy extends FixedWeightMoveSelectionStrategy<TestdataSolution> {
+    }
+
+    public static class DummyPhaseMoveSelectionStrategy extends FixedWeightMoveSelectionStrategy<TestdataSolution> {
     }
 
     public static class DummyNearbyDistanceClass implements NearbyDistanceMeter<String, String> {

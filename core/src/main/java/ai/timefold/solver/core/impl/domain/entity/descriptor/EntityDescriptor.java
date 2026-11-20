@@ -20,6 +20,7 @@ import java.util.SequencedCollection;
 import java.util.SequencedMap;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -459,6 +460,22 @@ public class EntityDescriptor<Solution_> {
             effectiveGenuineVariableDescriptorMap.putAll(inheritedEntityDescriptor.effectiveGenuineVariableDescriptorMap);
             effectiveShadowVariableDescriptorMap.putAll(inheritedEntityDescriptor.effectiveShadowVariableDescriptorMap);
         }
+        // List variable support expects exactly one entity class per list variable.
+        var inheritedListVariableDescriptor = effectiveGenuineVariableDescriptorMap.values().stream()
+                .filter(GenuineVariableDescriptor::isListVariable)
+                .findFirst();
+        if (inheritedListVariableDescriptor.isPresent()) {
+            var listVariableDescriptor = inheritedListVariableDescriptor.get();
+            throw new IllegalStateException("""
+                    The entityClass (%s) extends the entityClass (%s), which declares the @%s (%s).
+                    An entity class with a @%s must not be extended by another @%s class.
+                    Maybe keep a single entity class (%s) and model the differences as problem facts it references."""
+                    .formatted(entityClass.getCanonicalName(),
+                            listVariableDescriptor.getEntityDescriptor().getEntityClass().getCanonicalName(),
+                            PlanningListVariable.class.getSimpleName(), listVariableDescriptor.getVariableName(),
+                            PlanningListVariable.class.getSimpleName(), PlanningEntity.class.getSimpleName(),
+                            listVariableDescriptor.getEntityDescriptor().getEntityClass().getCanonicalName()));
+        }
         // It is not allowed to redefine genuine or shadow variables
         var redefinedGenuineVariables = declaredGenuineVariableDescriptorMap.keySet().stream()
                 .filter(key -> effectiveGenuineVariableDescriptorMap.containsKey(key)).toList();
@@ -582,6 +599,21 @@ public class EntityDescriptor<Solution_> {
 
     public boolean hasEffectiveMovableEntityFilter() {
         return effectiveMovableEntityFilter != null;
+    }
+
+    /**
+     * Checks each entity with the descriptor of its own class, so that pins declared on a subclass also apply.
+     *
+     * @return null if no entity of this class or of its subclasses can be pinned
+     */
+    public <Entity_> @Nullable Predicate<Entity_> createMovableEntityFilter(Solution_ solution) {
+        var canPin = solutionDescriptor.getGenuineEntityDescriptors().stream()
+                .anyMatch(descriptor -> entityClass.isAssignableFrom(descriptor.getEntityClass())
+                        && descriptor.hasEffectiveMovableEntityFilter());
+        if (!canPin) {
+            return null;
+        }
+        return entity -> solutionDescriptor.findEntityDescriptorOrFail(entity.getClass()).isMovable(solution, entity);
     }
 
     public boolean supportsPinning() {

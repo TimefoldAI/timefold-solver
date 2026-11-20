@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.BiLeftDatasetInstance;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.BiDatasetInstance;
@@ -39,6 +40,14 @@ public final class CachedBiDatasetInstance<Solution_, A, B> implements BiDataset
     @Override
     public BiIterator<A, B> exhaustiveIterator(RandomGenerator random) {
         return new TupleBiIterator<>(delegate.exhaustiveIterator(random));
+    }
+
+    /**
+     * As {@link DefaultUniDatasetInstance#retiringRandomIterator(RandomGenerator)},
+     * for a move iterator whose left element is the B fact of a row.
+     */
+    public RetiringRandomIterator<@Nullable B> retiringRandomIteratorOfB(RandomGenerator random) {
+        return RetiringRandomIterator.mapping(delegate.retiringRandomIterator(random), BiTuple::getB);
     }
 
     @Override

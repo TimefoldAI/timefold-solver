@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSe
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
@@ -39,6 +41,7 @@ import ai.timefold.solver.core.impl.neighborhood.MixedMoveSelector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.MoveSelectorBasedMoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
+import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsConfigUtils;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsMoveSelector;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhood;
@@ -48,6 +51,8 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMoveSelectionStrategy;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.MoveSelectionStrategy;
 
 import org.jspecify.annotations.NonNull;
 
@@ -72,40 +77,52 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
             PhaseTermination<Solution_> phaseTermination) {
+        // The solver-level element is checked by the solver factory.
         var neighborhoodsEnabled = phaseConfigPolicy.isPreviewFeatureEnabled(PreviewFeature.NEIGHBORHOODS);
-        var neighborhoodProviderClass = phaseConfig.<Solution_> getNeighborhoodProviderClass();
-        if (neighborhoodsEnabled) {
-            if (neighborhoodProviderClass == null) {
-                // Neighborhoods are enabled, but no provider was specified: use the default one.
-                neighborhoodProviderClass = (Class) DefaultNeighborhoodProvider.class;
-            }
-            if (phaseConfigPolicy.getNearbyDistanceMeterClass() != null) {
-                throw new IllegalArgumentException(
-                        """
-                                The neighborhoodProviderClass (%s) is not compatible with using the top-level property nearbyDistanceMeterClass (%s).
-                                The Neighborhoods API does not yet support nearby selection.
-                                You may still configure nearby selection in move selectors individually."""
-                                .formatted(neighborhoodProviderClass, phaseConfigPolicy.getNearbyDistanceMeterClass()));
-            }
-        } else if (neighborhoodProviderClass != null) {
-            throw new UnsupportedOperationException("""
-                    The neighborhoodProviderClass (%s) can only be used if the %s preview feature is enabled.
-                    Maybe add <enablePreviewFeature>%s</enablePreviewFeature> to your solver configuration file?"""
-                    .formatted(neighborhoodProviderClass.getCanonicalName(), PreviewFeature.NEIGHBORHOODS,
-                            PreviewFeature.NEIGHBORHOODS));
-        }
-        var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
-        if (moveSelectorConfig != null) {
-            if (neighborhoodsEnabled) {
-                return buildMixedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass);
-            } else {
-                return buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
-            }
-        } else if (neighborhoodsEnabled) {
-            return buildNeighborhoodsBasedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass);
-        } else { // The default branch; for now, it is move selectors.
+        NeighborhoodsConfigUtils.failWithoutNeighborhoods(phaseConfig.getNeighborhoodsConfig() != null, "phase",
+                neighborhoodsEnabled);
+        if (!neighborhoodsEnabled) {
             return buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
         }
+        var phaseNeighborhoodsConfig = Objects.requireNonNullElseGet(phaseConfig.getNeighborhoodsConfig(),
+                LocalSearchNeighborhoodsConfig::new);
+        var phaseProviderClass = phaseNeighborhoodsConfig.<Solution_> getNeighborhoodProviderClass();
+        var phaseStrategyClass = phaseNeighborhoodsConfig.<Solution_> getMoveSelectionStrategyClass();
+        var phaseStrategyProperties = phaseNeighborhoodsConfig.getMoveSelectionStrategyCustomProperties();
+        NeighborhoodsConfigUtils.failPropertiesWithoutClass(phaseStrategyClass, phaseStrategyProperties, "phase");
+        Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass = phaseProviderClass;
+        if (neighborhoodProviderClass == null) {
+            neighborhoodProviderClass = phaseConfigPolicy.getNeighborhoodProviderClass();
+        }
+        if (neighborhoodProviderClass == null) {
+            neighborhoodProviderClass = (Class) DefaultNeighborhoodProvider.class;
+        }
+        if (phaseConfigPolicy.getNearbyDistanceMeterClass() != null) {
+            throw new IllegalArgumentException(
+                    """
+                            The neighborhoodProviderClass (%s) is not compatible with using the top-level property nearbyDistanceMeterClass (%s).
+                            The Neighborhoods API does not yet support nearby selection.
+                            You may still configure nearby selection in move selectors individually."""
+                            .formatted(neighborhoodProviderClass, phaseConfigPolicy.getNearbyDistanceMeterClass()));
+        }
+        // The class and the properties of one level always go together.
+        var strategyFactory = phaseStrategyClass == null ? phaseConfigPolicy.getMoveSelectionStrategyFactory()
+                : NeighborhoodsConfigUtils.buildStrategyFactory(phaseStrategyClass, phaseStrategyProperties,
+                        LocalSearchNeighborhoodsConfig.class);
+        if (phaseConfig.getMoveSelectorConfig() != null) {
+            if (strategyFactory != null) {
+                var strategyDescription = phaseStrategyClass == null ? "The solver-level moveSelectionStrategyClass"
+                        : "The phase-level moveSelectionStrategyClass (%s)".formatted(phaseStrategyClass.getName());
+                throw new IllegalArgumentException("""
+                        %s cannot be used in a phase with a move selector (%s).
+                        Maybe remove the strategy class or the move selectors."""
+                        .formatted(strategyDescription, phaseConfig.getMoveSelectorConfig()));
+            }
+            return buildMixedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass,
+                    FixedWeightMoveSelectionStrategy::new);
+        }
+        return buildNeighborhoodsBasedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass,
+                Objects.requireNonNullElse(strategyFactory, FixedWeightMoveSelectionStrategy::new));
     }
 
     private LocalSearchDecider<Solution_> buildMoveSelectorBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
@@ -116,21 +133,22 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     private LocalSearchDecider<Solution_> buildNeighborhoodsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination,
-            Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
-        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass), configPolicy,
-                termination);
+            Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass,
+            Supplier<MoveSelectionStrategy<Solution_>> strategyFactory) {
+        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass, strategyFactory),
+                configPolicy, termination);
     }
 
     @SuppressWarnings("unchecked")
     private NeighborhoodsBasedMoveRepository<Solution_> buildNeighborhoodsBasedMoveRepository(
             HeuristicConfigPolicy<Solution_> configPolicy,
-            Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
+            Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass,
+            Supplier<MoveSelectionStrategy<Solution_>> strategyFactory) {
         if (phaseConfig.getLocalSearchType() == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
-            throw new IllegalArgumentException(
-                    """
-                            The localSearchType (%s) does not support the Neighborhoods API.
-                            Maybe use a different localSearchType."""
-                            .formatted(phaseConfig.getLocalSearchType()));
+            throw new IllegalArgumentException("""
+                    The localSearchType (%s) does not support the Neighborhoods API.
+                    Maybe use a different localSearchType."""
+                    .formatted(phaseConfig.getLocalSearchType()));
         }
         if (!NeighborhoodProvider.class.isAssignableFrom(neighborhoodProviderClass)) {
             throw new IllegalArgumentException("The neighborhoodProviderClass (%s) does not implement %s."
@@ -143,18 +161,17 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
         return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
                 ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
-                        .getMoveProviderList());
+                        .moveProviderMap(),
+                strategyFactory);
     }
 
     private LocalSearchDecider<Solution_> buildMixedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination,
-            Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
+            Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass,
+            Supplier<MoveSelectionStrategy<Solution_>> strategyFactory) {
         var legacyMoveSelector = buildMoveSelector(configPolicy, neighborhoodProviderClass != null);
-        if (legacyMoveSelector == null) { // There were no move selectors configured.
-            return buildNeighborhoodsBasedDecider(configPolicy, termination, neighborhoodProviderClass);
-        }
-        var neighborhoodsMoveSelector =
-                new NeighborhoodsMoveSelector<>(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
+        var neighborhoodsMoveSelector = new NeighborhoodsMoveSelector<>(buildNeighborhoodsBasedMoveRepository(configPolicy,
+                neighborhoodProviderClass, strategyFactory));
         var moveSelector = new MixedMoveSelector<>(legacyMoveSelector, neighborhoodsMoveSelector);
         var moveRepository = new MoveSelectorBasedMoveRepository<>(moveSelector);
         return buildDecider(moveRepository, configPolicy, termination);
@@ -189,7 +206,6 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                         "The localSearchType (%s) must not be configured if the acceptorConfig (%s) is explicitly configured."
                                 .formatted(localSearchType, acceptorConfig));
             }
-            return buildAcceptor(acceptorConfig, configPolicy);
         } else {
             var updatedLocalSearchType = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
             acceptorConfig = new LocalSearchAcceptorConfig();
@@ -200,8 +216,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             }
             var acceptorType = getAcceptorType(neighborhoodsEnabled, updatedLocalSearchType);
             acceptorConfig.setAcceptorTypeList(Collections.singletonList(acceptorType));
-            return buildAcceptor(acceptorConfig, configPolicy);
         }
+        return buildAcceptor(acceptorConfig, configPolicy);
     }
 
     private static @NonNull AcceptorType getAcceptorType(boolean neighborhoodsEnabled, LocalSearchType localSearchType) {

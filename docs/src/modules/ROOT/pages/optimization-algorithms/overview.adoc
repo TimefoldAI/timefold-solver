@@ -294,7 +294,7 @@ This is especially common during xref:responding-to-change/real-time-planning.ad
 ====
 
 For synchronous termination, configure a `Termination` on a `Solver` or a `Phase` when it needs to stop.
-Every `Termination` can calculate a _time gradient_ (needed for some optimization algorithms),
+Most terminations can calculate a _time gradient_ (needed for some optimization algorithms),
 which is a ratio between the time already spent solving and the estimated entire solving time of the `Solver` or `Phase`.
 
 
@@ -325,6 +325,10 @@ and should therefore be mostly independent of the factors listed above.
 ==== Combining multiple terminations
 
 Terminations can be combined.
+`OR` is the default composition style.
+A `<termination>` can also contain more `<termination>` elements, each with its own composition style.
+The time gradient of `OR` is the largest time gradient of its terminations, and the time gradient of `AND` is the smallest.
+
 The following example will terminate the solver when the <<diminishedReturnsTermination,rate of improvement drops off>>
 or after the solver has already run for 5 minutes,
 whichever comes first:
@@ -339,7 +343,8 @@ whichever comes first:
 ----
 
 Alternatively you can use `AND`.
-The following example will terminate after reaching a feasible score of at least `-100` and no improvements in `5` steps:
+The following example will terminate after reaching a <<bestScoreTermination,feasible score of at least `-100`>>
+and <<unimprovedStepCountTermination,no improvements in `5` steps>>:
 
 [source,xml,options="nowrap"]
 ----
@@ -353,6 +358,49 @@ The following example will terminate after reaching a feasible score of at least
 This example ensures it does not just terminate after finding a feasible solution,
 but also completes any obvious improvements on that solution before terminating.
 
+[#phaseOnlyTerminationsOnTheSolver]
+===== Terminations that can only end a phase
+
+Some terminations can only end a phase, such as
+<<diminishedReturnsTermination,diminished returns>>, <<stepCountTermination,step count>>
+and <<unimprovedStepCountTermination,unimproved step count>>.
+When placed on a phase, all terminations measure that phase.
+For example, a <<timeMillisSpentTermination,time limit>> counts from the start of the phase.
+
+When placed on the `Solver`, each termination is measured at its own level:
+
+* A termination that can only end a phase measures each phase separately,
+and only in the phases that it supports.
+For example, diminished returns does not apply to the Construction Heuristic phase.
+* Every other termination measures the whole solver.
+For example, a <<timeMillisSpentTermination,time limit>> counts from the start of the solver.
+
+With `OR`, the phase ends as soon as one termination is met.
+The solver ends as soon as one termination which measures the whole solver is met, or after the last phase.
+
+With `AND`, the phase ends only when all terminations are met,
+each measured at its own level.
+A phase that a termination does not support is not ended by the `AND`.
+Such a phase ends by itself, for example when the Construction Heuristic has initialized all planning entities.
+The solver does not skip a phase because of such an `AND`, and it ends after the last phase.
+
+The following example runs for at least 5 minutes from the start of the solver,
+and also until diminished returns is met in the Local Search phase:
+
+[source,xml,options="nowrap"]
+----
+<solver>
+  <termination>
+    <terminationCompositionStyle>AND</terminationCompositionStyle>
+    <minutesSpentLimit>5</minutesSpentLimit>
+    <diminishedReturns/>
+  </termination>
+  ...
+</solver>
+----
+
+If the same `AND` is configured on the `<localSearch>` phase instead,
+the 5 minutes count from the start of that phase.
 
 [#asynchronousTermination]
 ==== Asynchronous termination from another thread
@@ -674,7 +722,9 @@ This is useful for hardware performance independent runs.
   </localSearch>
 ----
 
-This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
+This `Termination` can only end a `Phase`.
+On the `Solver`, it measures each `Phase` separately.
+See <<phaseOnlyTerminationsOnTheSolver,terminations that can only end a phase>>.
 
 
 [#unimprovedStepCountTermination]
@@ -696,7 +746,9 @@ If the score has not improved recently, it is unlikely to improve in a reasonabl
 It has been observed that once a new best solution is found (even after a long time without improvement on the best solution),
 the next few steps tend to improve the best solution.
 
-This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
+This `Termination` can only end a `Phase`, and it does not apply to Construction Heuristic and custom phases.
+On the `Solver`, it measures each `Phase` separately.
+See <<phaseOnlyTerminationsOnTheSolver,terminations that can only end a phase>>.
 
 
 [#scoreCalculationCountTermination]
@@ -759,6 +811,10 @@ image::optimization-algorithms/overview/diminishedReturnsTermination.png[align="
     </termination>
   </localSearch>
 ----
+
+This `Termination` can only end a `Phase`, and it does not apply to Construction Heuristic and custom phases.
+On the `Solver`, it measures each `Phase` separately.
+See <<phaseOnlyTerminationsOnTheSolver,terminations that can only end a phase>>.
 
 There are two properties that can optionally be configured:
 

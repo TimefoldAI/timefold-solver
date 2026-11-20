@@ -188,6 +188,41 @@ class SolverFactoryTest {
     }
 
     @Test
+    void localSearchAfterLocalSearchEndedBySolverTermination() {
+        // Diminished returns on the solver ends each local search, not the solver, so the second one is reachable.
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withSecondsSpentLimit(10L)
+                        .withDiminishedReturns())
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig(),
+                        new LocalSearchPhaseConfig());
+
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        Assertions.assertThat(solverFactory.buildSolver()).isNotNull();
+    }
+
+    @Test
+    void localSearchAfterLocalSearchEndedOnlyWithSolver() {
+        // A time limit on the solver ends the solver too, so the second local search is unreachable.
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withSecondsSpentLimit(10L))
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig(),
+                        new LocalSearchPhaseConfig());
+
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        Assertions.assertThatThrownBy(solverFactory::buildSolver)
+                .hasMessageContaining("unreachable phase");
+    }
+
+    @Test
     void validateInitializationPhases() {
         // Default configuration
         var solverConfig = PlannerTestUtils

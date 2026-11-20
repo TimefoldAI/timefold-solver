@@ -84,6 +84,15 @@ public final class SubPillarUnassignMoveProvider<Solution_, Entity_, Value_>
     }
 
     /**
+     * @return {@code SubPillarUnassignMoveProvider(<Entity>.<variable>,<sampler>)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(SubPillarUnassignMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler));
+    }
+
+    /**
      * Draws subpillars sharing an assigned value ("slice value") and unassigns every member,
      * producing a {@code MassChangeMove} with a null destination.
      * The destination is fixed at null, so a drawn subpillar's own move never gets rejected -

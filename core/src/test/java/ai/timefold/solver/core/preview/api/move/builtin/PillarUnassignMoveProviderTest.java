@@ -146,4 +146,12 @@ class PillarUnassignMoveProviderTest {
         assertThat(assignedEntity.getValue()).isEqualTo(originalValue);
     }
 
+    @Test
+    void id() {
+        var unassignedVariableMetaModel = TestdataAllowsUnassignedSolution.buildMetaModel()
+                .genuineEntity(TestdataAllowsUnassignedEntity.class).basicVariable("value");
+        assertThat(new PillarUnassignMoveProvider<>(unassignedVariableMetaModel).getId())
+                .isEqualTo("PillarUnassignMoveProvider(TestdataAllowsUnassignedEntity.value)");
+    }
+
 }

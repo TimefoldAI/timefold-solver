@@ -38,7 +38,6 @@ import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedEntity;
 import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedSolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataEntityCollectionPropertyEntity;
 import ai.timefold.solver.core.testdomain.collection.TestdataEntityCollectionPropertySolution;
-import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedEntity;
 import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedSolution;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
@@ -472,10 +471,10 @@ public abstract class AbstractSolutionClonerTest {
         var val1 = new TestdataValue("1");
         var val2 = new TestdataValue("2");
         var val3 = new TestdataValue("3");
-        var a = new TestdataSetBasedEntity("a", val1);
-        var b = new TestdataSetBasedEntity("b", val1);
-        var c = new TestdataSetBasedEntity("c", val3);
-        var d = new TestdataSetBasedEntity("d", val3);
+        var a = new TestdataEntity("a", val1);
+        var b = new TestdataEntity("b", val1);
+        var c = new TestdataEntity("c", val3);
+        var d = new TestdataEntity("d", val3);
 
         var original = new TestdataSetBasedSolution("solution");
         var valueSet = new TreeSet<TestdataValue>((a1, b1) -> {
@@ -483,7 +482,7 @@ public abstract class AbstractSolutionClonerTest {
         });
         valueSet.addAll(Arrays.asList(val1, val2, val3));
         original.setValueSet(valueSet);
-        Comparator<TestdataSetBasedEntity> entityComparator = (a1, b1) -> {
+        Comparator<TestdataEntity> entityComparator = (a1, b1) -> {
             return b1.getCode().compareTo(a1.getCode()); // Reverse alphabetic
         };
         var originalEntitySet = new TreeSet<>(entityComparator);
@@ -540,7 +539,7 @@ public abstract class AbstractSolutionClonerTest {
         assertCode("1", cloneB.getValue());
     }
 
-    private void assertSetBasedEntityClone(TestdataSetBasedEntity originalEntity, TestdataSetBasedEntity cloneEntity,
+    private void assertSetBasedEntityClone(TestdataEntity originalEntity, TestdataEntity cloneEntity,
             String entityCode, String valueCode) {
         assertThat(cloneEntity).isNotSameAs(originalEntity);
         assertCode(entityCode, originalEntity);

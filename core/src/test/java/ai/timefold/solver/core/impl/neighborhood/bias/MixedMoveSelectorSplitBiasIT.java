@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood.bias;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -25,6 +26,7 @@ import ai.timefold.solver.core.impl.solver.random.MockRandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.selection.FixedWeightMoveSelectionStrategy;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.jspecify.annotations.NonNull;
@@ -53,6 +55,7 @@ class MixedMoveSelectorSplitBiasIT extends AbstractBiasIT {
         solverScope.setScoreDirector(scoreDirector);
 
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        phaseScope.reset();
         var stepScope = new LocalSearchStepScope<>(phaseScope);
 
         // Classic side: 3 leaf move selectors, each an endless source of "classic" moves.
@@ -88,10 +91,12 @@ class MixedMoveSelectorSplitBiasIT extends AbstractBiasIT {
     private static @NonNull NeighborhoodsMoveSelector<TestdataSolution>
             getNeighborhoodsMoveSelector(SolutionDescriptor<TestdataSolution> solutionDescriptor) {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var neighborhoodProviderList =
-                List.of(neverEndingMoveProvider("neighborhood-a"), neverEndingMoveProvider("neighborhood-b"));
+        var neighborhoodProviderMap = new LinkedHashMap<String, MoveProvider<TestdataSolution>>();
+        neighborhoodProviderMap.put("neighborhood-a", neverEndingMoveProvider("neighborhood-a"));
+        neighborhoodProviderMap.put("neighborhood-b", neverEndingMoveProvider("neighborhood-b"));
         var neighborhoodsMoveRepository =
-                new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, neighborhoodProviderList);
+                new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, neighborhoodProviderMap,
+                        FixedWeightMoveSelectionStrategy::new);
         return new NeighborhoodsMoveSelector<>(neighborhoodsMoveRepository);
     }
 

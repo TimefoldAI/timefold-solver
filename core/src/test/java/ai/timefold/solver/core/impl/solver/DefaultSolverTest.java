@@ -69,6 +69,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
+import ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
@@ -130,7 +131,6 @@ import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedse
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
-import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstValue;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondValue;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
@@ -347,6 +347,33 @@ class DefaultSolverTest {
         assertThat(summary.termination())
                 .isEqualTo(new DefaultTerminationId(TerminationType.BEST_SCORE_LIMIT, ROOT_TERMINATION_ID, 0, null));
         assertThat(summary.lastPhase()).isEqualTo(new DefaultPhaseId(PhaseType.CONSTRUCTION_HEURISTIC, 0));
+    }
+
+    @Test
+    void solverLevelAndWaitsForPhaseOnlyTermination() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
+                        .withMoveCountLimit(10L)
+                        .withStepCountLimit(100));
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        // Every local search step evaluates at least one move.
+        assertThat(summary.moveEvaluationCount()).isGreaterThanOrEqualTo(100L);
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.AND, null, 0, null));
+    }
+
+    @Test
+    void solverLevelAndOfPhaseOnlyTerminationsRunsThePhases() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withTerminationCompositionStyle(TerminationCompositionStyle.AND)
+                        .withStepCountLimit(10)
+                        .withUnimprovedStepCountLimit(5));
+        var summary = solveAndSummarizeUninitialized(solverConfig);
+        assertThat(summary.moveEvaluationCount()).isGreaterThanOrEqualTo(10L);
+        assertThat(summary.termination()).isEqualTo(new DefaultTerminationId(TerminationType.AND, null, 0, null));
     }
 
     @Test
@@ -600,7 +627,8 @@ class DefaultSolverTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProviderClass(TestingNeighborhoodProvider.class));
+                        .withNeighborhoodsConfig(new LocalSearchNeighborhoodsConfig()
+                                .withNeighborhoodProviderClass(TestingNeighborhoodProvider.class)));
 
         var solution = TestdataSolution.generateSolution(3, 2);
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
@@ -2813,9 +2841,9 @@ class DefaultSolverTest {
                 .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
 
         var problem = new TestdataMixedMultiEntitySolution();
-        var v1a = new TestdataMixedMultiEntityFirstValue("1");
-        var v2a = new TestdataMixedMultiEntityFirstValue("2");
-        var v3a = new TestdataMixedMultiEntityFirstValue("3");
+        var v1a = new TestdataValue("1");
+        var v2a = new TestdataValue("2");
+        var v3a = new TestdataValue("3");
         var v1b = new TestdataMixedMultiEntitySecondValue("1", 1);
         var v2b = new TestdataMixedMultiEntitySecondValue("2", 1);
         var v3b = new TestdataMixedMultiEntitySecondValue("3", 1);

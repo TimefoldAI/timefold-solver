@@ -12,15 +12,15 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
-import ai.timefold.solver.service.definition.api.ModelInput;
-import ai.timefold.solver.service.definition.api.ModelOutput;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.Metadata;
-import ai.timefold.solver.service.definition.api.domain.ModelInputPatchRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
-import ai.timefold.solver.service.definition.api.domain.ModelResponse;
-import ai.timefold.solver.service.definition.api.log.LogInfo;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelInput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelOutput;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelResponse;
+import ai.timefold.solver.service.definition.api.dto.log.LogInfo;
+import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
@@ -137,18 +137,18 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
 
     @Override
     public <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest) {
-        var metadata = createPatchedDataset(id, select, runName, modelInputPatchRequest);
+        var metadata = createPatchedDataset(id, select, runName, tags, modelInputPatchRequest);
         datasetValidateComputeCommandEmitter.send(new DatasetValidateComputeCommand(metadata.getId(), false));
         return metadata;
     }
 
     @Override
     public <Score_, ModelConfigurationOverrides_ extends ModelConfigOverrides> Metadata<Score_> patchAndSolveDataset(String id,
-            DatasetSelector select, String runName,
+            DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest<ModelConfigurationOverrides_> modelInputPatchRequest) {
-        var metadata = createPatchedDataset(id, select, runName, modelInputPatchRequest);
+        var metadata = createPatchedDataset(id, select, runName, tags, modelInputPatchRequest);
         datasetValidateComputeCommandEmitter.send(new DatasetValidateComputeCommand(metadata.getId(), true));
         return metadata;
     }
@@ -272,7 +272,7 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
         return metadata;
     }
 
-    private Metadata createPatchedDataset(String id, DatasetSelector select, String runName,
+    private Metadata createPatchedDataset(String id, DatasetSelector select, String runName, Set<String> tags,
             ModelInputPatchRequest patchRequest) {
         var input =
                 select == DatasetSelector.UNSOLVED ? getModelInput(id) : getSolvedModelInput(id);
@@ -282,7 +282,8 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
         try {
             Configuration configuration =
                     patchRequest.config() != null ? patchRequest.config() : getConfiguration(id);
-            Configuration initialConfiguration = getUnprocessedConfiguration(id);
+            Configuration initialConfiguration =
+                    patchRequest.config() != null ? patchRequest.config() : getUnprocessedConfiguration(id);
             if (configuration == null) {
                 configuration = Configuration.empty();
                 initialConfiguration = Configuration.empty();
@@ -295,6 +296,7 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
             ModelInput patchedModelInput = mapper.treeToValue(patchedInput, input.getClass());
 
             Metadata metadata = new Metadata<>(runName);
+            metadata.setTags(tags);
             // set parent id to the id this data set is created from
             metadata.setParentId(id);
             // set origin id based on the origin id of the parent data set

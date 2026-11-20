@@ -52,24 +52,13 @@ public abstract class AbstractPhaseFactory<Solution_, PhaseConfig_ extends Phase
         var phaseName = this.getClass().getSimpleName()
                 .replace("PhaseFactory", "")
                 .replace("Default", "");
-        if (solverTermination != resultingTermination) {
-            // Only fail if the user put the inapplicable termination on the phase, not on the solver.
-            // On the solver level, inapplicable phase terminations are skipped.
-            // Otherwise you would only be able to configure a global phase-level termination on the solver
-            // if it was applicable to all phases.
-            if (!inapplicableTerminationList.isEmpty()) {
-                throw new IllegalStateException(
-                        """
-                                The phase (%s) configured with terminations (%s) includes some terminations which are not applicable to it (%s).
-                                Maybe remove these terminations from the phase's configuration."""
-                                .formatted(phaseName, phaseTermination, inapplicableTerminationList));
-            }
-        } else if (!inapplicableTerminationList.isEmpty()) {
-            logger.trace("""
-                    The solver-level termination ({}) includes phase-level terminations ({}) \
-                    which are not applicable to the phase ({}).
-                    These phase-level terminations will not take effect in this phase.""",
-                    solverTermination, inapplicableTerminationList, phaseName);
+        // Inapplicable solver-level terminations stay behind the bridge, which never counts them as met in this phase.
+        if (!inapplicableTerminationList.isEmpty()) {
+            throw new IllegalStateException(
+                    """
+                            The phase (%s) configured with terminations (%s) includes some terminations which are not applicable to it (%s).
+                            Maybe remove these terminations from the phase's configuration."""
+                            .formatted(phaseName, phaseTermination, inapplicableTerminationList));
         }
         return resultingTermination;
     }

@@ -10,11 +10,11 @@ import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.testdomain.score.TestdataSimpleScoreSolution;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
-class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSimpleScoreSolution, SimpleScore> {
+class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, SimpleScore> {
 
     @Test
     void defaultScore() {
@@ -63,8 +63,8 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSimpleScor
     }
 
     @Override
-    protected SolutionDescriptor<TestdataSimpleScoreSolution> buildSolutionDescriptor() {
-        return TestdataSimpleScoreSolution.buildSolutionDescriptor();
+    protected SolutionDescriptor<TestdataSolution> buildSolutionDescriptor() {
+        return TestdataSolution.buildSolutionDescriptor();
     }
 
     @Override

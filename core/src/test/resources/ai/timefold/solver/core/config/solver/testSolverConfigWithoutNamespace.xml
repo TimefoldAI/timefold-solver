@@ -12,6 +12,13 @@
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
   <nearbyDistanceMeterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyNearbyDistanceClass</nearbyDistanceMeterClass>
+  <neighborhoods>
+    <neighborhoodProviderClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyNeighborhoodProvider</neighborhoodProviderClass>
+    <moveSelectionStrategyClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyMoveSelectionStrategy</moveSelectionStrategyClass>
+    <moveSelectionStrategyCustomProperties>
+      <property name="solverWeight" value="1"/>
+    </moveSelectionStrategyCustomProperties>
+  </neighborhoods>
   <constructionHeuristic>
     <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
     <queuedEntityPlacer>
@@ -137,6 +144,12 @@
         <minutesSpentLimit>5</minutesSpentLimit>
         <bestScoreLimit>0hard/0soft</bestScoreLimit>
       </termination>
+      <neighborhoods>
+        <moveSelectionStrategyClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyPhaseMoveSelectionStrategy</moveSelectionStrategyClass>
+        <moveSelectionStrategyCustomProperties>
+          <property name="phaseWeight" value="2"/>
+        </moveSelectionStrategyCustomProperties>
+      </neighborhoods>
       <acceptor>
         <simulatedAnnealingStartingTemperature>2hard/10000soft</simulatedAnnealingStartingTemperature>
       </acceptor>

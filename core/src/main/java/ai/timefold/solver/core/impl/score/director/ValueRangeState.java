@@ -2,24 +2,31 @@ package ai.timefold.solver.core.impl.score.director;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.NullAllowingValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.SelectionSorterAdapter;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.SortableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.RangeIndex;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.ReachableItemValue;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.ReachableValuesIndex;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -43,6 +50,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
 
     // ReachableValues related field
     private @Nullable ValueRangeItem<Solution_, Entity_, ReachableValues<Entity_, Value_>, Value_> reachableValuesItem;
+    private @Nullable List<Value_> movableValueList;
 
     ValueRangeState(AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ cachedWorkingSolution) {
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);
@@ -268,20 +276,44 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
                                     variableDescriptor.getVariableName(), valueListSize));
         }
         var expectedTypeOfValue = valueRangeDescriptor.getVariableDescriptor().getVariableMetaModel().type();
-        var reachableValueList = initReachableValueList(valueList, entityList.size());
-        var valueIndexItem = new ReachableValuesIndex<>(valueIndexMap, reachableValueList);
+        // Equal ranges are deduplicated by getFromEntity, so entities with equal ranges share one range index.
         var entityIndicesByRange = new IdentityHashMap<ValueRange<Value_>, List<Integer>>();
         for (var i = 0; i < entityList.size(); i++) {
             var entity = entityList.get(i);
             var valueRange = getFromEntity(entity, null);
             entityIndicesByRange.computeIfAbsent(valueRange, k -> new ArrayList<>()).add(i);
         }
+        var rangeCount = entityIndicesByRange.size();
+        var reachableValueList = initReachableValueList(valueList, rangeCount);
+        var valueIndexItem = new ReachableValuesIndex<>(valueIndexMap, reachableValueList);
+        var rangeOfEntity = new int[entityList.size()];
+        var entitiesOfRange = new int[rangeCount][];
+        var valuesOfRange = new BitSet[rangeCount];
+        var rangeIndex = 0;
         for (var entry : entityIndicesByRange.entrySet()) {
-            loadEntityValueRange(entry.getValue(), valueIndexMap, entry.getKey(), reachableValueList);
+            var entityIndices = entry.getValue();
+            var rangeEntityIndices = new int[entityIndices.size()];
+            for (var i = 0; i < rangeEntityIndices.length; i++) {
+                rangeEntityIndices[i] = entityIndices.get(i);
+                rangeOfEntity[rangeEntityIndices[i]] = rangeIndex;
+            }
+            entitiesOfRange[rangeIndex] = rangeEntityIndices;
+            valuesOfRange[rangeIndex] = loadEntityValueRange(rangeIndex, entityList.get(rangeEntityIndices[0]), valueIndexMap,
+                    entry.getKey(), reachableValueList);
+            rangeIndex++;
         }
+        var groupByRanges = new HashMap<BitSet, Integer>();
+        for (var item : reachableValueList) {
+            item.setGroup(groupByRanges.computeIfAbsent(item.getRanges(), k -> groupByRanges.size()), rangeCount,
+                    reachableValueList.size());
+        }
+        var rangeIndexItem = new RangeIndex(rangeOfEntity, entitiesOfRange, valuesOfRange, groupByRanges.size());
         var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
-        return new ReachableValues<>(entityIndexItem, valueIndexItem, expectedTypeOfValue, sorterAdapter,
-                variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
+        Predicate<Entity_> movableEntityFilter = entityDescriptor.createMovableEntityFilter(cachedWorkingSolution);
+        Predicate<Value_> movableValueFilter = movableValueFilter(variableDescriptor, cachedWorkingSolution);
+        return new ReachableValues<>(entityIndexItem, valueIndexItem, rangeIndexItem, expectedTypeOfValue, sorterAdapter,
+                variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange(), movableEntityFilter,
+                movableValueFilter);
     }
 
     private static <Type_> Map<Type_, Integer> buildIndexMap(Iterator<@Nullable Type_> allValues, int size) {
@@ -297,45 +329,46 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
         return indexMap;
     }
 
-    private List<ReachableItemValue<Entity_, Value_>> initReachableValueList(ValueRange<Value_> valueRange,
-            int entityListSize) {
+    private List<ReachableItemValue<Value_>> initReachableValueList(ValueRange<Value_> valueRange,
+            int rangeCount) {
         var valuesSize = (int) valueRange.getSize();
         var iterator = valueRange.createOriginalIterator();
         var spliterator = Spliterators.spliterator(iterator, valuesSize, Spliterator.ORDERED | Spliterator.IMMUTABLE);
         var idx = new MutableInt(-1);
-        return StreamSupport.stream(spliterator, false).filter(Objects::nonNull)
-                .map(v -> new ReachableItemValue<Entity_, Value_>(idx.increment(), v, entityListSize, valuesSize)).toList();
+        return StreamSupport.stream(spliterator, false)
+                .filter(Objects::nonNull)
+                .map(v -> new ReachableItemValue<>(idx.increment(), v, rangeCount)).toList();
     }
 
-    private static <Entity_, Value_> void loadEntityValueRange(List<Integer> entityIndices, Map<Value_, Integer> valueIndexMap,
-            ValueRange<Value_> valueRange, List<ReachableItemValue<Entity_, Value_>> reachableValueList) {
-        // Build bitset once per distinct range to avoid redundant work for entities sharing a range.
-        var allValuesBitSet = buildBitSetForValueRange(valueRange, valueIndexMap);
-        // The second pass only iterates over the bits we already set.
-        var valueIndex = allValuesBitSet.nextSetBit(0);
-        while (valueIndex >= 0) {
-            var item = reachableValueList.get(valueIndex);
-            // Co-values populated once per distinct range; addValuesExcept is idempotent across shared ranges.
-            item.addValuesExcept(allValuesBitSet, valueIndex);
-            // Entity membership registered per entity.
-            for (var entityIndex : entityIndices) {
-                item.addEntity(entityIndex);
-            }
-            valueIndex = allValuesBitSet.nextSetBit(valueIndex + 1);
-        }
-    }
-
-    private static <Value_> BitSet buildBitSetForValueRange(ValueRange<Value_> valueRange, Map<Value_, Integer> valueIndexMap) {
-        var valueBitSet = new BitSet((int) valueRange.getSize());
+    /**
+     * @return the indices of the values in the range
+     */
+    private BitSet loadEntityValueRange(int rangeIndex, Entity_ entity, Map<Value_, Integer> valueIndexMap,
+            ValueRange<Value_> valueRange, List<ReachableItemValue<Value_>> reachableValueList) {
+        var valueIndices = new BitSet((int) valueRange.getSize());
         var iterator = valueRange.createOriginalIterator();
         while (iterator.hasNext()) {
             var value = iterator.next();
             if (value == null) {
                 continue;
             }
-            valueBitSet.set(valueIndexMap.get(value));
+            var valueIndex = valueIndexMap.get(value);
+            if (valueIndex == null) {
+                throw new IllegalStateException(
+                        """
+                                The value (%s) of the value range of entity (%s) is not in the values of the variable (%s).
+                                Maybe the @%s method on the entity returns different values on each call, or a value's hashCode() changed."""
+                                .formatted(value, entity, valueRangeDescriptor.getVariableDescriptor().getVariableName(),
+                                        ValueRangeProvider.class.getSimpleName()));
+            }
+            valueIndices.set(valueIndex);
         }
-        return valueBitSet;
+        // In index order, so that the value items are visited in memory order.
+        for (var valueIndex = valueIndices.nextSetBit(0); valueIndex >= 0; valueIndex =
+                valueIndices.nextSetBit(valueIndex + 1)) {
+            reachableValueList.get(valueIndex).addRange(rangeIndex);
+        }
+        return valueIndices;
     }
 
     private record ValueRangeItem<Solution_, Entity_, Type_, Value_>(@Nullable Entity_ entity, @Nullable Type_ leftItem,
@@ -382,6 +415,84 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
                     && hash == otherHash
                     && Objects.equals(item, otherItem);
         }
+    }
+
+    /**
+     * @return unmodifiable, random access; the values of the solution value range, without null and without pinned values
+     */
+    List<Value_> getMovableValueList(ListVariableDescriptor<Solution_> variableDescriptor) {
+        if (movableValueList == null) {
+            Predicate<Value_> movableValueFilter = movableValueFilter(variableDescriptor, cachedWorkingSolution);
+            var valueList = new ArrayList<Value_>();
+            var iterator = getFromSolution(cachedWorkingSolution, null).createOriginalIterator();
+            while (iterator.hasNext()) {
+                var value = iterator.next();
+                if (value != null && (movableValueFilter == null || movableValueFilter.test(value))) {
+                    valueList.add(value);
+                }
+            }
+            movableValueList = Collections.unmodifiableList(valueList);
+        }
+        return movableValueList;
+    }
+
+    /**
+     * A list variable value is pinned if its entity is pinned, or if it is below the entity's first unpinned index.
+     * Each entity is checked with the descriptor of its own class, as in {@link EntityDescriptor#createMovableEntityFilter}.
+     * Moves never change which values are pinned; only a problem change does.
+     *
+     * @return null if no value of the variable can be pinned
+     */
+    private static <Solution_, Value_> @Nullable Predicate<Value_> movableValueFilter(
+            GenuineVariableDescriptor<Solution_> variableDescriptor, Solution_ solution) {
+        if (!(variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor)) {
+            return null;
+        }
+        var movableEntityFilter = listVariableDescriptor.getEntityDescriptor().createMovableEntityFilter(solution);
+        if (movableEntityFilter == null && !listVariableDescriptor.supportsPinning()) {
+            return null;
+        }
+        return new MovableValueFilter<>(listVariableDescriptor, movableEntityFilter, solution);
+    }
+
+    /**
+     * Collects the pinned values on the first test, as most users of the filter never test a value.
+     */
+    @NullMarked
+    private static final class MovableValueFilter<Solution_, Value_> implements Predicate<Value_> {
+
+        private final ListVariableDescriptor<Solution_> listVariableDescriptor;
+        private final @Nullable Predicate<Object> movableEntityFilter;
+        private final Solution_ solution;
+        private @Nullable Set<Object> pinnedValueSet;
+
+        private MovableValueFilter(ListVariableDescriptor<Solution_> listVariableDescriptor,
+                @Nullable Predicate<Object> movableEntityFilter, Solution_ solution) {
+            this.listVariableDescriptor = listVariableDescriptor;
+            this.movableEntityFilter = movableEntityFilter;
+            this.solution = solution;
+        }
+
+        @Override
+        public boolean test(Value_ value) {
+            if (pinnedValueSet == null) {
+                pinnedValueSet = collectPinnedValues();
+            }
+            return !pinnedValueSet.contains(value);
+        }
+
+        private Set<Object> collectPinnedValues() {
+            var result = Collections.newSetFromMap(new IdentityHashMap<>());
+            for (var entity : listVariableDescriptor.getEntityDescriptor().extractEntities(solution)) {
+                var valueList = listVariableDescriptor.getValue(entity);
+                // The pinned values of an entity are a prefix of its list; all of them if the entity is pinned.
+                var pinnedCount = movableEntityFilter != null && !movableEntityFilter.test(entity) ? valueList.size()
+                        : Math.min(valueList.size(), listVariableDescriptor.getFirstUnpinnedIndex(entity));
+                result.addAll(valueList.subList(0, pinnedCount));
+            }
+            return result;
+        }
+
     }
 
 }

@@ -24,7 +24,14 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
                     "Impossible state: The childValueRange (%s) must not be a %s, because it is already wrapped in one."
                             .formatted(childValueRange, NullAllowingValueRange.class.getSimpleName()));
         }
-        size = childValueRange.getSize() + 1L;
+        var childSize = childValueRange.getSize();
+        if (childSize == Long.MAX_VALUE) {
+            throw new IllegalArgumentException("""
+                    The childValueRange (%s) has a size (%d) that does not fit in a long after null is added.
+                    Maybe use a narrower range."""
+                    .formatted(childValueRange, childSize));
+        }
+        size = childSize + 1L;
     }
 
     /**

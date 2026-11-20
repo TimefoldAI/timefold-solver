@@ -19,6 +19,7 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
     protected double[] temperatureLevels;
 
     protected double temperatureMinimum = 1.0E-100; // Double.MIN_NORMAL is E-308
+    private boolean noTimeGradientWarned;
 
     public void setStartingTemperature(Score startingTemperature) {
         this.startingTemperature = startingTemperature;
@@ -40,6 +41,7 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
         startingTemperatureLevels = startingTemperature.toLevelDoubles();
         temperatureLevels = startingTemperatureLevels;
         levelsLength = startingTemperatureLevels.length;
+        noTimeGradientWarned = false;
     }
 
     @Override
@@ -83,6 +85,16 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
         super.stepStarted(stepScope);
         // TimeGradient only refreshes at the beginning of a step, so this code is in stepStarted instead of stepEnded
         var timeGradient = stepScope.getTimeGradient();
+        if (timeGradient < 0.0) {
+            // Without a known end, such as when only terminateEarly() stops the solver, it keeps the starting temperature.
+            if (!noTimeGradientWarned) {
+                logger.warn("""
+                        Simulated annealing does not cool, because no termination can estimate how long the phase will continue.
+                        Maybe configure a time limit or a diminished returns termination.""");
+                noTimeGradientWarned = true;
+            }
+            timeGradient = 0.0;
+        }
         var reverseTimeGradient = 1.0 - timeGradient;
         temperatureLevels = new double[levelsLength];
         for (var i = 0; i < levelsLength; i++) {

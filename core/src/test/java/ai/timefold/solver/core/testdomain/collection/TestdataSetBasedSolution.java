@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -19,15 +20,15 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 public class TestdataSetBasedSolution extends TestdataObject {
 
     public static SolutionDescriptor<TestdataSetBasedSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataSetBasedSolution.class, TestdataSetBasedEntity.class);
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataSetBasedSolution.class, TestdataEntity.class);
     }
 
     private Set<TestdataValue> valueSet;
-    private Set<TestdataSetBasedEntity> entitySet;
+    private Set<TestdataEntity> entitySet;
 
-    private HashSet<TestdataSetBasedEntity> entityHashSet;
-    private LinkedHashSet<TestdataSetBasedEntity> entityLinkedHashSet;
-    private TreeSet<TestdataSetBasedEntity> entityTreeSet;
+    private HashSet<TestdataEntity> entityHashSet;
+    private LinkedHashSet<TestdataEntity> entityLinkedHashSet;
+    private TreeSet<TestdataEntity> entityTreeSet;
 
     private SimpleScore score;
 
@@ -49,36 +50,36 @@ public class TestdataSetBasedSolution extends TestdataObject {
     }
 
     @PlanningEntityCollectionProperty
-    public Set<TestdataSetBasedEntity> getEntitySet() {
+    public Set<TestdataEntity> getEntitySet() {
         return entitySet;
     }
 
-    public void setEntitySet(Set<TestdataSetBasedEntity> entitySet) {
+    public void setEntitySet(Set<TestdataEntity> entitySet) {
         this.entitySet = entitySet;
     }
 
-    public HashSet<TestdataSetBasedEntity> getEntityHashSet() {
+    public HashSet<TestdataEntity> getEntityHashSet() {
         return entityHashSet;
     }
 
-    public void setEntityHashSet(HashSet<TestdataSetBasedEntity> entityHashSet) {
+    public void setEntityHashSet(HashSet<TestdataEntity> entityHashSet) {
         this.entityHashSet = entityHashSet;
     }
 
-    public LinkedHashSet<TestdataSetBasedEntity> getEntityLinkedHashSet() {
+    public LinkedHashSet<TestdataEntity> getEntityLinkedHashSet() {
         return entityLinkedHashSet;
     }
 
     public void setEntityLinkedHashSet(
-            LinkedHashSet<TestdataSetBasedEntity> entityLinkedHashSet) {
+            LinkedHashSet<TestdataEntity> entityLinkedHashSet) {
         this.entityLinkedHashSet = entityLinkedHashSet;
     }
 
-    public TreeSet<TestdataSetBasedEntity> getEntityTreeSet() {
+    public TreeSet<TestdataEntity> getEntityTreeSet() {
         return entityTreeSet;
     }
 
-    public void setEntityTreeSet(TreeSet<TestdataSetBasedEntity> entityTreeSet) {
+    public void setEntityTreeSet(TreeSet<TestdataEntity> entityTreeSet) {
         this.entityTreeSet = entityTreeSet;
     }
 

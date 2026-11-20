@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableState;
-import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 
 final class KOptUtils {
@@ -174,21 +173,4 @@ final class KOptUtils {
         }
     }
 
-    /**
-     * Returns the number of unique ways a K-Opt can add K edges without reinserting a removed edge.
-     *
-     * @param k How many edges were removed/will be added
-     * @return the number of unique ways a K-Opt can add K edges without reinserting a removed edge.
-     */
-    public static long getPureKOptMoveTypes(int k) {
-        // This calculates the item at index k for the sequence https://oeis.org/A061714
-        long totalTypes = 0;
-        for (var i = 1; i < k; i++) {
-            for (var j = 0; j <= i; j++) {
-                var sign = ((k + j - 1) % 2 == 0) ? 1 : -1;
-                totalTypes += sign * MathUtils.binomialCoefficient(i, j) * MathUtils.factorial(j) * (1L << j);
-            }
-        }
-        return totalTypes;
-    }
 }

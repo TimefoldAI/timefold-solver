@@ -6,7 +6,7 @@ import java.util.Map;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.configuration.ConfigurationProfile;
+import ai.timefold.solver.service.definition.internal.configuration.ConfigurationProfile;
 import ai.timefold.solver.service.quarkus.deployment.testdata.defaultconfigprofile.TestdataConstraintProvider;
 import ai.timefold.solver.service.quarkus.deployment.testdata.defaultconfigprofile.TestdataEntity;
 import ai.timefold.solver.service.quarkus.deployment.testdata.defaultconfigprofile.TestdataModelConfigOverrides;

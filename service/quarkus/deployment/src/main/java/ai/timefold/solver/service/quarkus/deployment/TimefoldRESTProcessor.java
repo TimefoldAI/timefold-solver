@@ -13,11 +13,12 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.ext.MessageBodyReader;
 import jakarta.ws.rs.ext.Provider;
 
-import ai.timefold.solver.service.definition.api.data.AbstractBasicDemoDataGenerator;
-import ai.timefold.solver.service.definition.api.data.DemoDataGenerator;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
-import ai.timefold.solver.service.definition.api.domain.ScoreAnalysisRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
+import ai.timefold.solver.service.definition.api.dto.scoreanalysis.ScoreAnalysisRequest;
+import ai.timefold.solver.service.definition.preview.api.demo.AbstractBasicDemoDataGenerator;
+import ai.timefold.solver.service.definition.preview.api.demo.DemoDataGenerator;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelComponentsBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.ModelConvertorBuildItem;
 import ai.timefold.solver.service.quarkus.deployment.builditem.RestComponentsBuildItem;
@@ -28,6 +29,7 @@ import ai.timefold.solver.service.quarkus.deployment.rest.ModelResourceBeanGener
 import ai.timefold.solver.service.quarkus.deployment.rest.ModelResourceTypeInfo;
 import ai.timefold.solver.service.quarkus.deployment.rest.ModelResourceWithMapsTypeInfo;
 import ai.timefold.solver.service.quarkus.deployment.rest.io.AbstractModelConfigMessageBodyReaders;
+import ai.timefold.solver.service.quarkus.deployment.rest.io.AbstractModelInputPatchRequestMessageBodyReaders;
 import ai.timefold.solver.service.quarkus.deployment.rest.io.AbstractModelRequestMessageBodyReaders;
 import ai.timefold.solver.service.quarkus.deployment.rest.io.AbstractScoreAnalysisRequestMessageBodyReaders;
 import ai.timefold.solver.service.quarkus.deployment.util.ProcessorUtils;
@@ -116,6 +118,9 @@ class TimefoldRESTProcessor {
         }
         // generate message body reader for Configuration
         generateModelMessageBodyReader(Configuration.class, AbstractModelConfigMessageBodyReaders.class,
+                modelConfigOverrides, classOutput);
+        // generate message body reader for ModelInputPatchRequest
+        generateModelMessageBodyReader(ModelInputPatchRequest.class, AbstractModelInputPatchRequestMessageBodyReaders.class,
                 modelConfigOverrides, classOutput);
 
         if (restComponentsBuildItem.getRestResource().isPresent()) {

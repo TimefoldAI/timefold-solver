@@ -3218,6 +3218,9 @@ there are also restrictions on the use of inheritance and modeling planning enti
 . A child entity must not redefine any existing planning variable, but it can add new variables (genuine or shadow).
 . Inheriting properties from more than one parent entity, also known as multiple inheritance, is not allowed. Therefore, only one parent entity or one level of inheritance is allowed.
 . Mixing inheritance models with classes and interfaces is prohibited. Therefore, inheriting exclusively from classes or only from interfaces is acceptable.
+. An entity class with a planning list variable must not be extended by any other class, with or without the `@PlanningEntity` annotation.
+It is recommended for non-annotated entity classes to not be used at all,
+regardless of whether their parents carry basic variables or list variables.
 
 === Defining multiple planning variables
 
@@ -3319,6 +3322,36 @@ public interface BaseEntity {
 ----
 ====
 
+==== Inheriting list variables is not allowed
+
+An entity class with a planning list variable must not be extended by any other class (seventh rule).
+In the following example, `ChildEntity` extends `BaseEntity`, which declares the planning list variable `values`.
+The solver rejects this model when it builds it.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class ChildEntity extends BaseEntity {
+    ...
+}
+
+@PlanningEntity
+public class BaseEntity {
+    @PlanningListVariable
+    private List<Value> values;
+    ...
+}
+----
+====
+
+The rule also applies to a child class without the `@PlanningEntity` annotation.
+The solver can not detect such a child class, but such model is still likely to misbehave.
+
+
 === Non-entities cannot define planning variables
 
 The third rule states that non-entities are not permitted to define planning variables.
@@ -3344,10 +3377,7 @@ public class BaseEntity {
 ----
 ====
 
-[NOTE]
-====
-The rule also applies when the model uses interface.
-====
+NOTE: The rule also applies when the model uses interface.
 
 === Redefining planning variables
 
@@ -3376,10 +3406,7 @@ public class BaseEntity {
 ----
 ====
 
-[NOTE]
-====
-The rule also applies when the model uses interface.
-====
+NOTE: The rule also applies when the model uses interface.
 
 === Multiple inheritance
 
@@ -3410,10 +3437,7 @@ public class BaseEntity {
 ----
 ====
 
-[NOTE]
-====
-The rule also applies when the model uses interface.
-====
+NOTE: The rule also applies when the model uses interface.
 
 === Mixed inheritance
 

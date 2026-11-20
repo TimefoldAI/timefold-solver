@@ -65,6 +65,40 @@
         },
         {
           "ignore": true,
+          "code": "java.method.removed",
+          "old": "method <Solution_> java.lang.Class<? extends ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider<Solution_>> ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig::getNeighborhoodProviderClass()",
+          "justification": "Preview feature NEIGHBORHOODS: the phase-level neighborhoodProviderClass moves into LocalSearchNeighborhoodsConfig."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.removed",
+          "old": "method void ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig::setNeighborhoodProviderClass(java.lang.Class<? extends ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider>)",
+          "justification": "Preview feature NEIGHBORHOODS: the phase-level neighborhoodProviderClass moves into LocalSearchNeighborhoodsConfig."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+          "new": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"localSearchType\", \"moveSelectorConfig\", \"neighborhoodProviderClass\", \"acceptorConfig\", \"foragerConfig\"}",
+          "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"neighborhoodsConfig\", \"acceptorConfig\", \"foragerConfig\"}",
+          "justification": "Preview feature NEIGHBORHOODS: the phase-level neighborhoodProviderClass moves into the neighborhoods element."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "new": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\"}",
+          "newValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"neighborhoodsConfig\", \"phaseConfigList\"}",
+          "justification": "Preview feature NEIGHBORHOODS: new optional neighborhoods element."
+        },
+        {
+          "ignore": true,
           "code": "java.method.addedToInterface",
           "new": "method long ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::structuralScore()",
           "justification": "Score is a sealed interface that only the library's own Score implementations may implement; user code cannot be broken by a new method."

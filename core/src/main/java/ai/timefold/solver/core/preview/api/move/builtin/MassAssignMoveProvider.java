@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.move.builtin.MoveProviderUtil;
 import ai.timefold.solver.core.impl.move.builtin.SampleValueRanges;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -80,6 +81,15 @@ public final class MassAssignMoveProvider<Solution_, Entity_, Value_>
                 .asCachedDataset();
         return moveStreamFactory.buildMoveStream((session, random) -> new MassAssignMoveIterator<>(session, random,
                 variableMetaModel, unassignedEntityDataset, sampler));
+    }
+
+    /**
+     * @return {@code MassAssignMoveProvider(<Entity>.<variable>,<sampler>)};
+     *         {@code <sampler>} is the {@code toString()} of the sampler, or {@code custom} if it does not implement it
+     */
+    @Override
+    public String getId() {
+        return MoveProviderUtil.id(MassAssignMoveProvider.class, variableMetaModel, MoveProviderUtil.samplerId(sampler));
     }
 
     private static final class MassAssignMoveIterator<Solution_, Entity_, Value_>

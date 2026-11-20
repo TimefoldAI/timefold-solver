@@ -134,17 +134,8 @@ public class ConfigUtils {
         }
         var beanClass = bean.getClass();
         customProperties.forEach((propertyName, valueString) -> {
-            var setterMethod = getSetterMethod(beanClass, propertyName);
-            if (setterMethod == null) {
-                throw new IllegalStateException(
-                        """
-                                The custom property %s (%s) in the %s cannot be set on the %s (%s) because that class has no public setter for that property.
-                                Maybe add a public setter for that custom property (%s) on that class (%s).
-                                Maybe don't configure that custom property %s (%s) in the %s."""
-                                .formatted(propertyName, valueString, customPropertiesPropertyName, beanClassPropertyName,
-                                        beanClass, propertyName, beanClass.getSimpleName(), propertyName, valueString,
-                                        customPropertiesPropertyName));
-            }
+            var setterMethod = getSetterMethodOrFail(beanClass, beanClassPropertyName, propertyName, valueString,
+                    customPropertiesPropertyName);
             var propertyType = setterMethod.getParameterTypes()[0];
             Object typedValue;
             try {
@@ -307,11 +298,11 @@ public class ConfigUtils {
      * {@link #mergeProperty(Object, Object)}</li>
      * </ul>
      *
-     * @see #mergeProperty(Object, Object)
      * @param a property {@code a}
      * @param b property {@code b}
      * @param <T> the type of property {@code a} and {@code b}
      * @return sometimes null
+     * @see #mergeProperty(Object, Object)
      */
     public static <T> @Nullable T meldProperty(@Nullable T a, @Nullable T b) {
         if (a == null && b == null) {
@@ -334,10 +325,10 @@ public class ConfigUtils {
      * Divides and ceils the result without using floating point arithmetic. For floor division,
      * see {@link Math#floorDiv(long, long)}.
      *
-     * @throws ArithmeticException if {@code divisor == 0}
      * @param dividend the dividend
      * @param divisor the divisor
      * @return dividend / divisor, ceiled
+     * @throws ArithmeticException if {@code divisor == 0}
      */
     public static int ceilDivide(int dividend, int divisor) {
         if (divisor == 0) {
@@ -539,8 +530,8 @@ public class ConfigUtils {
      * This method is heavy, and it is effectively a computed constant.
      * It is recommended that its results are cached at call sites.
      *
-     * @return null if no accessor found
      * @param <C> the class type
+     * @return null if no accessor found
      */
     public static <C> @Nullable MemberAccessor findPlanningIdMemberAccessor(@NonNull Class<C> clazz,
             @NonNull MemberAccessorFactory memberAccessorFactory, @NonNull DomainAccessType domainAccessType) {
@@ -635,6 +626,34 @@ public class ConfigUtils {
                 .limit(4) // 4 letters
                 .forEach(value::appendCodePoint);
         return value.toString();
+    }
+
+    /**
+     * Fails fast, before any instance exists, if a custom property has no public setter on the bean class.
+     */
+    public static void assertCustomPropertiesSettable(@NonNull Class<?> beanClass, @NonNull String beanClassPropertyName,
+            @Nullable Map<@NonNull String, @NonNull String> customProperties, @NonNull String customPropertiesPropertyName) {
+        if (customProperties == null) {
+            return;
+        }
+        customProperties.forEach((propertyName, valueString) -> getSetterMethodOrFail(beanClass, beanClassPropertyName,
+                propertyName, valueString, customPropertiesPropertyName));
+    }
+
+    private static Method getSetterMethodOrFail(Class<?> beanClass, String beanClassPropertyName, String propertyName,
+            String valueString, String customPropertiesPropertyName) {
+        var setterMethod = getSetterMethod(beanClass, propertyName);
+        if (setterMethod == null) {
+            throw new IllegalStateException(
+                    """
+                            The custom property %s (%s) in the %s cannot be set on the %s (%s) because that class has no public setter for that property.
+                            Maybe add a public setter for that custom property (%s) on that class (%s).
+                            Maybe don't configure that custom property %s (%s) in the %s."""
+                            .formatted(propertyName, valueString, customPropertiesPropertyName, beanClassPropertyName,
+                                    beanClass, propertyName, beanClass.getSimpleName(), propertyName, valueString,
+                                    customPropertiesPropertyName));
+        }
+        return setterMethod;
     }
 
     /**

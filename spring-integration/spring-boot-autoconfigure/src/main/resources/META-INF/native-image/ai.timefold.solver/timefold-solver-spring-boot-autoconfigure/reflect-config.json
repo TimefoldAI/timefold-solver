@@ -479,6 +479,17 @@
     ]
   },
   {
+    "name": "ai.timefold.solver.core.config.localsearch.LocalSearchNeighborhoodsConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
     "allDeclaredFields": true,
     "queryAllDeclaredMethods": true,
@@ -582,6 +593,17 @@
   {
     "name": "ai.timefold.solver.core.config.solver.EnvironmentMode",
     "allDeclaredFields": true
+  },
+  {
+    "name": "ai.timefold.solver.core.config.solver.NeighborhoodsConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "ai.timefold.solver.core.config.solver.SolverConfig",

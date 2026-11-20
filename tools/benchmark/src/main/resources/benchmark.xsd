@@ -235,6 +235,8 @@
                     
           <xs:element minOccurs="0" name="nearbyDistanceMeterClass" type="xs:string"/>
                     
+          <xs:element minOccurs="0" name="neighborhoods" type="tns:solverNeighborhoodsConfig"/>
+                    
           <xs:choice maxOccurs="unbounded" minOccurs="0">
                         
             <xs:element name="constructionHeuristic" type="tns:constructionHeuristicPhaseConfig"/>
@@ -412,6 +414,28 @@
           <xs:element minOccurs="0" name="slidingWindowDays" type="xs:long"/>
                     
           <xs:element minOccurs="0" name="minimumImprovementRatio" type="xs:double"/>
+                  
+        </xs:sequence>
+              
+      </xs:extension>
+          
+    </xs:complexContent>
+      
+  </xs:complexType>
+    
+  <xs:complexType final="extension restriction" name="solverNeighborhoodsConfig">
+        
+    <xs:complexContent>
+            
+      <xs:extension base="tns:abstractConfig">
+                
+        <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="neighborhoodProviderClass" type="xs:string"/>
+                    
+          <xs:element minOccurs="0" name="moveSelectionStrategyClass" type="xs:string"/>
+                    
+          <xs:element minOccurs="0" name="moveSelectionStrategyCustomProperties" type="tns:jaxbAdaptedMap"/>
                   
         </xs:sequence>
               
@@ -1485,11 +1509,33 @@
                       
           </xs:choice>
                     
-          <xs:element minOccurs="0" name="neighborhoodProviderClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="neighborhoods" type="tns:localSearchNeighborhoodsConfig"/>
                     
           <xs:element minOccurs="0" name="acceptor" type="tns:localSearchAcceptorConfig"/>
                     
           <xs:element minOccurs="0" name="forager" type="tns:localSearchForagerConfig"/>
+                  
+        </xs:sequence>
+              
+      </xs:extension>
+          
+    </xs:complexContent>
+      
+  </xs:complexType>
+    
+  <xs:complexType final="extension restriction" name="localSearchNeighborhoodsConfig">
+        
+    <xs:complexContent>
+            
+      <xs:extension base="tns:abstractConfig">
+                
+        <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="neighborhoodProviderClass" type="xs:string"/>
+                    
+          <xs:element minOccurs="0" name="moveSelectionStrategyClass" type="xs:string"/>
+                    
+          <xs:element minOccurs="0" name="moveSelectionStrategyCustomProperties" type="tns:jaxbAdaptedMap"/>
                   
         </xs:sequence>
               

@@ -170,6 +170,12 @@ class SamplersTest {
     }
 
     @Test
+    void pillarDescribesBuiltInSampler() {
+        // A custom sampler is tested in SubPillarChangeMoveProviderTest; samplers of this package count as built-in.
+        assertThat(Samplers.pillar(Samplers.upTo(4))).hasToString("pillar(upTo(4))");
+    }
+
+    @Test
     void resetRunsBeforeTheFirstEvaluateCall() {
         var callOrder = new ArrayList<String>();
         var sampler = new Sampler<Integer>() {
