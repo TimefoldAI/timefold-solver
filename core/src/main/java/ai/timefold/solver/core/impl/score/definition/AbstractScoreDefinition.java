@@ -31,11 +31,11 @@ public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>>
     }
 
     protected static int divide(int dividend, int divisor) {
-        return (int) Math.floor(divide(dividend, (double) divisor));
+        return Math.floorDiv(dividend, divisor);
     }
 
     protected static long divide(long dividend, long divisor) {
-        return (long) Math.floor(divide(dividend, (double) divisor));
+        return Math.floorDiv(dividend, divisor);
     }
 
     protected static double divide(double dividend, double divisor) {
@@ -43,7 +43,7 @@ public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>>
     }
 
     protected static BigDecimal divide(BigDecimal dividend, BigDecimal divisor) {
-        return dividend.divide(divisor, ScoreUtil.nonNegativeScale(dividend.scale() - divisor.scale()), RoundingMode.FLOOR);
+        return dividend.divide(divisor, ScoreUtil.nonNegativeScale(dividend.scale()), RoundingMode.FLOOR);
     }
 
     /**
