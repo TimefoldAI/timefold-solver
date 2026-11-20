@@ -9,7 +9,7 @@ include::../../_attributes.adoc[]
 :framework: spring-boot
 :wiringannotation: @Autowired
 :wiringannotationfq: org.springframework.beans.factory.annotation.Autowired
-:testannotation: @SpringTest
+:testannotation: @SpringBootTest
 :testannotationfq: org.springframework.boot.test.context.SpringBootTest
 :framework-quickstart-url: {spring-boot-quickstart-url}
 
@@ -32,6 +32,37 @@ Use https://start.spring.io/[start.spring.io] to generate an application with th
 
 * Spring Web (`spring-boot-starter-web`)
 * Timefold Solver (`timefold-solver-spring-boot-starter`)
+
+The tests in this guide also use https://rest-assured.io/[REST Assured],
+which Spring Boot does not manage.
+Add it to your build file:
+
+[tabs]
+====
+Maven::
++
+--
+Add the subsequent dependency in your `pom.xml`:
+[source,xml]
+----
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>6.3.0</version>
+      <scope>test</scope>
+    </dependency>
+----
+--
+Gradle::
++
+--
+Add the subsequent dependency to your `build.gradle`:
+[source,groovy]
+----
+    testImplementation "io.rest-assured:rest-assured:6.3.0"
+----
+--
+====
 
 include::../shared/school-timetabling/_school-timetabling-model.adoc[leveloffset=+1]
 include::../shared/school-timetabling/_school-timetabling-constraints.adoc[leveloffset=+1]
@@ -73,13 +104,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class TimetableController {
 
     @Autowired
-    private SolverManager<Timetable, UUID> solverManager;
+    private SolverManager<Timetable> solverManager;
 
     @PostMapping
     public Timetable solve(@RequestBody Timetable problem) {
         UUID problemId = UUID.randomUUID();
         // Submit the problem to start solving
-        SolverJob<Timetable, UUID> solverJob = solverManager.solve(problemId, problem);
+        SolverJob<Timetable> solverJob = solverManager.solve(problemId, problem);
         Timetable solution;
         try {
             // Wait until the solving ends
@@ -115,7 +146,7 @@ import java.util.concurrent.ExecutionException
 @RequestMapping("/timetable")
 class TimetableController {
     @Autowired
-    private val solverManager: SolverManager<Timetable, UUID>? = null
+    private val solverManager: SolverManager<Timetable>? = null
 
     @PostMapping
     fun solve(@RequestBody problem: Timetable): Timetable {
@@ -200,12 +231,10 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 
 @SpringBootApplication
-open class TimetableSpringBootApp {
+open class TimetableSpringBootApp
 
-    fun main(args: Array<String>) {
-        SpringApplication.run(TimeTableSpringBootApp::class.java, *args)
-    }
-
+fun main(args: Array<String>) {
+    SpringApplication.run(TimetableSpringBootApp::class.java, *args)
 }
 ----
 --
@@ -308,7 +337,7 @@ Kotlin::
 ----
 package org.acme.schooltimetabling.config
 
-import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier
 import org.acme.schooltimetabling.domain.Lesson
 import org.acme.schooltimetabling.domain.Timetable
 import org.acme.schooltimetabling.solver.TimetableConstraintProvider
@@ -347,15 +376,18 @@ Create the `src/test/java/org/acme/schooltimetabling/rest/TimetableControllerTes
 ----
 package org.acme.schooltimetabling.rest;
 
-import ai.timefold.solver.core.api.solver.SolverStatus;
 import io.restassured.http.ContentType;
+import org.acme.schooltimetabling.domain.Lesson;
+import org.acme.schooltimetabling.domain.Room;
+import org.acme.schooltimetabling.domain.Timeslot;
 import org.acme.schooltimetabling.domain.Timetable;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.Duration;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.util.List;
 
-import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -368,15 +400,25 @@ class TimetableControllerTest {
 
     @Test
     void solveDemoDataUntilFeasible() {
-        Timetable testTimetable = // setup test data
+        // Provide the same input data shown in the text above.
+        Timetable testTimetable = new Timetable(
+                List.of(
+                        new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)),
+                        new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30))),
+                List.of(new Room("Room A"), new Room("Room B")),
+                List.of(
+                        new Lesson("1", "Math", "A. Turing", "9th grade"),
+                        new Lesson("2", "Chemistry", "M. Curie", "9th grade"),
+                        new Lesson("3", "French", "M. Curie", "10th grade"),
+                        new Lesson("4", "History", "I. Jones", "10th grade")));
 
         Timetable solution = given()
                 .contentType(ContentType.JSON)
                 .body(testTimetable)
-                .expect().contentType(ContentType.TEXT)
-                .when().post("/timetables")
+                .expect().contentType(ContentType.JSON)
+                .when().post("/timetable")
                 .then()
-                .statusCode(201)
+                .statusCode(200)
                 .extract()
                 .as(Timetable.class);
 
@@ -400,15 +442,17 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/rest/TimetableControllerT
 ----
 package org.acme.schooltimetabling.rest
 
-import ai.timefold.solver.core.api.solver.SolverStatus
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
+import org.acme.schooltimetabling.domain.Lesson
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
 import org.acme.schooltimetabling.domain.Timetable
-import org.awaitility.Awaitility
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
-import java.time.Duration
+import java.time.DayOfWeek
+import java.time.LocalTime
 
 @SpringBootTest(
     properties = [ // Effectively disable spent-time termination in favor of the best-score-limit
@@ -419,24 +463,34 @@ import java.time.Duration
 internal class TimetableControllerTest {
     @Test
     fun solveDemoDataUntilFeasible() {
-        val testTimetable = //setup test data
+        // Provide the same input data shown in the text above.
+        val testTimetable = Timetable(
+            listOf(
+                Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)),
+                Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30))),
+            listOf(Room("Room A"), Room("Room B")),
+            listOf(
+                Lesson("1", "Math", "A. Turing", "9th grade"),
+                Lesson("2", "Chemistry", "M. Curie", "9th grade"),
+                Lesson("3", "French", "M. Curie", "10th grade"),
+                Lesson("4", "History", "I. Jones", "10th grade")))
 
         val solution = RestAssured.given()
             .contentType(ContentType.JSON)
             .body(testTimetable)
-            .expect().contentType(ContentType.TEXT)
-            .`when`().post("/timetables")
+            .expect().contentType(ContentType.JSON)
+            .`when`().post("/timetable")
             .then()
-            .statusCode(201)
+            .statusCode(200)
             .extract()
-            .as(Timetable.class)
+            .`as`(Timetable::class.java)
 
         Assertions.assertNotNull(solution.lessons)
         Assertions.assertNotNull(solution.timeslots)
         Assertions.assertNotNull(solution.rooms)
         Assertions.assertNotNull(solution.lessons[0].room)
         Assertions.assertNotNull(solution.lessons[0].timeslot)
-        Assertions.assertTrue(solution.score.isFeasible)
+        Assertions.assertTrue(solution.score!!.isFeasible)
     }
 }
 ----

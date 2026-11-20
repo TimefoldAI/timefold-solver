@@ -12,6 +12,7 @@ image::quickstart/vehicle-routing/vehicleRoutingClassDiagramPure.png[]
 The `Location` class is used to represent the destination for deliveries or the home location for vehicles.
 The `drivingTimeSeconds` map contains the time required to drive from `this` location to any other location.
 This field will be initialized later.
+In JSON, a location is a `[latitude, longitude]` array, and the `drivingTimeSeconds` map is left out.
 
 [tabs]
 ====
@@ -26,14 +27,24 @@ package org.acme.vehiclerouting.domain;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+@JsonPropertyOrder({ "latitude", "longitude" })
 public class Location {
 
     private double latitude;
     private double longitude;
 
+    @JsonIgnore
     private Map<Location, Long> drivingTimeSeconds;
 
-    public Location(double latitude, double longitude) {
+    @JsonCreator
+    public Location(@JsonProperty("latitude") double latitude, @JsonProperty("longitude") double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -70,7 +81,19 @@ Create the `src/main/kotlin/org/acme/vehiclerouting/domain/Location.kt` class:
 ----
 package org.acme.vehiclerouting.domain
 
-class Location @JsonCreator constructor(val latitude: Double, val longitude: Double) {
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
+
+@JsonFormat(shape = JsonFormat.Shape.ARRAY)
+@JsonPropertyOrder("latitude", "longitude")
+class Location @JsonCreator constructor(
+    @JsonProperty("latitude") val latitude: Double,
+    @JsonProperty("longitude") val longitude: Double) {
+
+    @JsonIgnore
     var drivingTimeSeconds: Map<Location, Long>? = null
 
     fun getDrivingTimeTo(location: Location): Long {
@@ -124,6 +147,11 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(scope = Vehicle.class, generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @PlanningEntity
 public class Vehicle {
 
@@ -134,8 +162,9 @@ public class Vehicle {
 
     private LocalDateTime departureTime;
 
+    @JsonIdentityReference(alwaysAsId = true)
     @PlanningListVariable
-    private List<Visit> visits;
+    private List<Visit> visits = new ArrayList<>();
 
     public Vehicle() {
     }
@@ -145,30 +174,33 @@ public class Vehicle {
         this.capacity = capacity;
         this.homeLocation = homeLocation;
         this.departureTime = departureTime;
-        this.visits = new ArrayList<>();
     }
 
     // Getters and Setters excluded
 
     public int getTotalDemand() {
-        if (visits.isEmpty()) {
-            return 0;
+        int totalDemand = 0;
+        for (Visit visit : visits) {
+            totalDemand += visit.getDemand();
         }
-        Visit lastVisit = visits.get(visits.size() - 1);
-        Integer cumulativeDemand = lastVisit.getCumulativeDemand();
-        return cumulativeDemand == null ? 0 : cumulativeDemand;
+        return totalDemand;
     }
 
     public long getTotalDrivingTimeSeconds() {
         if (visits.isEmpty()) {
             return 0;
         }
-        Visit lastVisit = visits.get(visits.size() - 1);
-        Long cumulativeDrivingTime = lastVisit.getCumulativeDrivingTimeSeconds();
-        if (cumulativeDrivingTime == null) {
-            return 0;
+
+        long totalDrivingTime = 0;
+        Location previousLocation = homeLocation;
+
+        for (Visit visit : visits) {
+            totalDrivingTime += previousLocation.getDrivingTimeTo(visit.getLocation());
+            previousLocation = visit.getLocation();
         }
-        return cumulativeDrivingTime + lastVisit.getLocation().getDrivingTimeTo(homeLocation);
+        totalDrivingTime += previousLocation.getDrivingTimeTo(homeLocation);
+
+        return totalDrivingTime;
     }
 
     @Override
@@ -189,12 +221,16 @@ Create the `src/main/kotlin/org/acme/vehiclerouting/domain/Vehicle.kt` class:
 package org.acme.vehiclerouting.domain
 
 import java.time.LocalDateTime
-import java.util.ArrayList
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity
 import ai.timefold.solver.core.api.domain.common.PlanningId
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
+import com.fasterxml.jackson.annotation.JsonIdentityReference
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
+
+@JsonIdentityInfo(scope = Vehicle::class, generator = ObjectIdGenerators.PropertyGenerator::class, property = "id")
 @PlanningEntity
 class Vehicle {
     @PlanningId
@@ -203,8 +239,9 @@ class Vehicle {
     lateinit var homeLocation: Location
     lateinit var departureTime: LocalDateTime
 
+    @JsonIdentityReference(alwaysAsId = true)
     @PlanningListVariable
-    var visits: List<Visit>? = null
+    var visits: MutableList<Visit> = ArrayList()
 
     constructor()
 
@@ -213,13 +250,12 @@ class Vehicle {
         this.capacity = capacity
         this.homeLocation = homeLocation
         this.departureTime = departureTime
-        this.visits = ArrayList()
     }
 
     val totalDemand: Long
         get() {
             var totalDemand = 0L
-            for (visit in visits!!) {
+            for (visit in visits) {
                 totalDemand += visit.demand
             }
             return totalDemand
@@ -227,16 +263,16 @@ class Vehicle {
 
     val totalDrivingTimeSeconds: Long
         get() {
-            if (visits!!.isEmpty()) {
+            if (visits.isEmpty()) {
                 return 0
             }
 
             var totalDrivingTime: Long = 0
             var previousLocation = homeLocation
 
-            for (visit in visits!!) {
-                totalDrivingTime += previousLocation.getDrivingTimeTo(visit.location!!)
-                previousLocation = visit.location!!
+            for (visit in visits) {
+                totalDrivingTime += previousLocation.getDrivingTimeTo(visit.location)
+                previousLocation = visit.location
             }
             totalDrivingTime += previousLocation.getDrivingTimeTo(homeLocation)
 
@@ -289,13 +325,15 @@ import java.time.LocalDateTime;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
-import org.acme.vehiclerouting.solver.ArrivalTimeUpdatingVariableListener;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+@JsonIdentityInfo(scope = Visit.class, generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @PlanningEntity
 public class Visit {
 
@@ -308,9 +346,11 @@ public class Visit {
     private LocalDateTime maxEndTime;
     private Duration serviceDuration;
 
+    @JsonIdentityReference(alwaysAsId = true)
     @InverseRelationShadowVariable(sourceVariableName = "visits")
     private Vehicle vehicle;
 
+    @JsonIdentityReference(alwaysAsId = true)
     @PreviousElementShadowVariable(sourceVariableName = "visits")
     private Visit previousVisit;
 
@@ -333,7 +373,7 @@ public class Visit {
 
     // Getters and Setters excluded
 
-    private void updateArrivalTime() {
+    public void updateArrivalTime() {
         if (previousVisit == null && vehicle == null) {
             arrivalTime = null;
             return;
@@ -401,13 +441,15 @@ import java.time.LocalDateTime
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity
 import ai.timefold.solver.core.api.domain.common.PlanningId
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
-import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable
 
-import org.acme.vehiclerouting.solver.ArrivalTimeUpdatingVariableListener
+import com.fasterxml.jackson.annotation.JsonIdentityInfo
+import com.fasterxml.jackson.annotation.JsonIdentityReference
+import com.fasterxml.jackson.annotation.ObjectIdGenerators
 
+@JsonIdentityInfo(scope = Visit::class, generator = ObjectIdGenerators.PropertyGenerator::class, property = "id")
 @PlanningEntity
 class Visit {
     @PlanningId
@@ -419,9 +461,11 @@ class Visit {
     lateinit var maxEndTime: LocalDateTime
     lateinit var serviceDuration: Duration
 
+    @JsonIdentityReference(alwaysAsId = true)
     @InverseRelationShadowVariable(sourceVariableName = "visits")
-    private var vehicle: Vehicle? = null
+    var vehicle: Vehicle? = null
 
+    @JsonIdentityReference(alwaysAsId = true)
     @PreviousElementShadowVariable(sourceVariableName = "visits")
     var previousVisit: Visit? = null
 
@@ -443,13 +487,13 @@ class Visit {
         this.serviceDuration = serviceDuration
     }
 
-    private fun updateArrivalTime() {
+    fun updateArrivalTime() {
         if (previousVisit == null && vehicle == null) {
             arrivalTime = null
             return
         }
         val departureTime = previousVisit?.departureTime ?: vehicle?.departureTime
-        arrivalTime = departureTime?.plusSeconds(getDrivingTimeSecondsFromPreviousStandstill())
+        arrivalTime = departureTime?.plusSeconds(drivingTimeSecondsFromPreviousStandstill)
     }
 
     val departureTime: LocalDateTime?
@@ -524,3 +568,7 @@ NOTE: `@NextElementShadowVariable` also exists, which can be used to get a refer
 The `arrivalTime` field has a `@CascadingUpdateShadowVariable` annotation.
 This annotation indicates which method should be triggered to update this field whenever this entity is moved, in this case the `updateArrivalTime()` method.
 This change is automatically propagated to the subsequent visits and stops when the `arrivalTime` value hasn't changed or when it's reached the end of the chain of visit objects.
+
+The Jackson `@JsonIdentityInfo` and `@JsonIdentityReference` annotations on `Vehicle` and `Visit`
+serialize the `visits`, `vehicle`, and `previousVisit` references as IDs.
+Without them, a visit and its vehicle reference each other, so the JSON response never ends.
