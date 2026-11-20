@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,8 @@ public class LocalSearchDecider<Solution_> {
     protected boolean assertMoveScoreFromScratch = false;
     protected boolean assertExpectedUndoMoveScore = false;
 
+    private @Nullable Score<?> maxMoveScoreInStep;
+
     public LocalSearchDecider(String logIndentation, PhaseTermination<Solution_> termination,
             MoveRepository<Solution_> moveRepository, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
         this.logIndentation = logIndentation;
@@ -41,6 +44,7 @@ public class LocalSearchDecider<Solution_> {
         this.moveRepository = moveRepository;
         this.acceptor = acceptor;
         this.forager = forager;
+        this.maxMoveScoreInStep = null;
     }
 
     public Termination<Solution_> getTermination() {
@@ -84,6 +88,7 @@ public class LocalSearchDecider<Solution_> {
         moveRepository.stepStarted(stepScope);
         acceptor.stepStarted(stepScope);
         forager.stepStarted(stepScope);
+        this.maxMoveScoreInStep = null;
     }
 
     public void decideNextStep(LocalSearchStepScope<Solution_> stepScope) {
@@ -115,7 +120,15 @@ public class LocalSearchDecider<Solution_> {
                     .formatted(moveRepository, move));
         }
         var lowerBound = acceptor.<Score_> getMinimumScoreBound().getMinimumRequiredScoreForMove();
+        // Use the score of the best move found so far until that score is at least the acceptor's bound, so fallback moves have
+        // correct scores
+        if (lowerBound != null && (maxMoveScoreInStep == null || ((Score_) maxMoveScoreInStep).compareTo(lowerBound) < 0)) {
+            lowerBound = (Score_) maxMoveScoreInStep;
+        }
         var score = scoreDirector.executeTemporaryMove(move, lowerBound, assertMoveScoreFromScratch);
+        if (!score.isStructurallyFlawed() && (maxMoveScoreInStep == null || ((Score_) maxMoveScoreInStep).compareTo(score.raw()) < 0)) {
+            maxMoveScoreInStep = score.raw();
+        }
         moveScope.setScore(score);
         moveScope.setAccepted(acceptor.isAccepted(moveScope));
         forager.addMove(moveScope);
