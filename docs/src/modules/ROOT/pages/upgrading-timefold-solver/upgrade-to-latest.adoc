@@ -108,9 +108,6 @@ Moves to a vehicle, and basic change moves, keep the old ranking.
 
 As a result, a solver run with the same random seed can give different results.
 Building the swap candidates also asks the meter for twice as many distances.
-
-`NearbyDistanceMeter` has new default methods for xref:optimization-algorithms/move-selector-reference.adoc#nearbySelectionSeveralDistanceMatrices[several distance matrices].
-Existing meters compile and work without changes.
 ====
 
 icon:eye[set=far] Deprecation of `@ShadowVariableInconsistent`
