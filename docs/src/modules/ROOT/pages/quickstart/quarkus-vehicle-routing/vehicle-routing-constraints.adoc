@@ -241,6 +241,12 @@ public class VehicleRoutePlanConstraintProvider implements ConstraintProvider {
 }
 ----
 
+`vehicleCapacity` only compares the total demand of the route with the capacity.
+That works because every visit is a delivery, with a demand of zero or more,
+so the load of a vehicle is highest when it leaves home.
+A model that also has pickups, with a negative demand, must check the load after every visit instead:
+otherwise a pickup late in the route can hide an overload earlier in that route.
+
 Notice that `maximizeVisitsAssigned` starts from `forEachIncludingUnassigned(Visit.class)`.
 A plain `forEach(Visit.class)` skips visits that are not on any route,
 which are exactly the visits this constraint needs to penalize.

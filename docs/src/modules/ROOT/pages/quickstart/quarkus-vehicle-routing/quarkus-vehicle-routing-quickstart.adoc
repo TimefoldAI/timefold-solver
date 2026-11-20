@@ -208,6 +208,10 @@ timefold.platform.map-service.enable-fallback=true
 * `timefold.model.termination.spent-limit` sets the default maximum time the solver runs,
 in https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format].
 A request can override it with `config.run.termination.spentLimit`.
+On top of it, the service module enables
+xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns termination] by default,
+so the solver can stop earlier once the score barely improves any more.
+Setting an `unimprovedSpentLimit`, `stepCountLimit` or `moveCountLimit` replaces diminished returns termination.
 * `timefold.model.name` and the contact fields are *required* metadata.
 They identify your service and populate the generated OpenAPI specification.
 * The `timefold.platform.map-service` properties are explained in xref:#vrpQuarkusQuickStartMapService[Driving times from the map service].
@@ -421,6 +425,15 @@ This test verifies that the constraint `VehicleRoutePlanConstraintProvider::vehi
 when given two visits assigned to the same vehicle, penalizes with a match weight of `3` (exceeded capacity).
 So with a constraint weight of `1hard` it would reduce the score by `-3hard`.
 
+[NOTE]
+====
+The tests in the {vrp-quickstart-url}[complete quickstart] look different, but test the same way.
+They build the test data with the fluent builders of a shared `TestHelper` class,
+for example `aRoutePlan().route(aVehicle("1").capacity(10), aVisit("1").demand(5)).build()`,
+and cover every constraint, including the corner cases.
+This guide builds the domain objects directly, to keep the example self-contained.
+====
+
 Notice how `ConstraintVerifier` ignores the constraint weight during testing - even
 if those constraint weights are hard coded in the `ConstraintProvider` - because
 constraints weights change regularly before going into production.
@@ -445,10 +458,11 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import jakarta.inject.Inject;
+
+import ai.timefold.solver.service.definition.api.domain.ModelRequest;
 
 import org.acme.vehiclerouting.dto.input.LocationInputDTO;
 import org.acme.vehiclerouting.dto.input.VehicleInputDTO;
@@ -490,7 +504,7 @@ class VehicleRoutePlanResourceTest {
 
         String datasetId = given()
                 .contentType(ContentType.JSON)
-                .body(mapper.writeValueAsString(Map.of("modelInput", input)))
+                .body(mapper.writeValueAsString(new ModelRequest<>(input)))
                 .when().post("/v1/route-plans")
                 .then()
                 .statusCode(202)
@@ -516,6 +530,8 @@ class VehicleRoutePlanResourceTest {
 
 This test verifies that after solving, the service found a solution that assigns every visit
 without breaking a hard constraint.
+`ModelRequest` is the top-level request body of the service module:
+it wraps the `modelInput` and an optional `config`.
 
 The `%test` properties in `application.properties` terminate the solver
 as soon as such a solution (`0hard/0medium/*soft`) is found.
@@ -523,20 +539,13 @@ This avoids hard coding a solver time, because the test might run on arbitrary h
 This approach ensures that the test runs long enough to find a feasible solution, even on slow machines.
 But it does not run a millisecond longer than it strictly must, even on fast machines.
 
-=== Generate the initial OpenAPI specification
+=== The OpenAPI specification
 
-Before running a full build with `mvn install`, generate the initial OpenAPI specification file.
-The build compares the generated specification against `src/build/openapi.json` to catch accidental API changes,
-so the build fails if that file does not exist yet.
-
-Run the following command once to create it:
-
-[source,shell]
-----
-$ mvn clean package -Dupdate-api
-----
+The build compares the generated OpenAPI specification against `src/build/openapi.json` to catch accidental API changes.
+If that file does not exist yet, for example on the first build, the build creates it from the generated specification.
 
 We recommend committing `src/build/openapi.json` to version control.
+After a deliberate API change, update it with `mvn clean package -Dupdate-api`.
 See xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deliberate API changes] for more details.
 
 === Logging
@@ -625,7 +634,9 @@ public class LocationDistanceMeter implements NearbyDistanceMeter<Visit, Locatio
 
     @Override
     public double getNearbyDistance(Visit origin, LocationAware destination) {
-        return origin.getLocation().getTravelTimeTo(destination.getLocation()).seconds();
+        var travelTime = origin.getLocation().getTravelTimeTo(destination.getLocation());
+        // Two locations the road network does not connect are as far apart as possible.
+        return travelTime.isReachable() ? travelTime.seconds() : Double.MAX_VALUE;
     }
 }
 ----

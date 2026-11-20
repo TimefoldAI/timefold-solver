@@ -24,7 +24,6 @@ Create the `src/main/java/org/acme/vehiclerouting/domain/VehicleRoutePlan.java` 
 package org.acme.vehiclerouting.domain;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
@@ -73,15 +72,12 @@ public class VehicleRoutePlan implements LocationsAwareSolverModel<HardMediumSof
         if (vehicles == null || visits == null) {
             return List.of();
         }
+        // The model convertor makes equal coordinates share one Location instance, so distinct() removes repeats.
         return Stream.concat(
                 vehicles.stream().map(Vehicle::getHomeLocation),
-                visits.stream().map(Visit::getLocation)).toList();
-    }
-
-    // Every solve builds its own one-off matrix rather than reusing a named, pre-built one.
-    @Override
-    public Optional<String> getLocationSetName() {
-        return Optional.empty();
+                visits.stream().map(Visit::getLocation))
+                .distinct()
+                .toList();
     }
 
     @Override
@@ -149,24 +145,34 @@ Before every solve, the service module xref:running-timefold-solver/service/mode
 Because `VehicleRoutePlan` implements `LocationsAwareSolverModel`, the map service is one of those enrichers:
 
 * `getLocations()` returns every location the matrix needs to cover:
-every vehicle's home location plus every visit's location.
-* `getLocationSetName()` returns empty, so each solve builds its own one-off matrix
-rather than reusing a named, pre-built one.
+every vehicle's home location plus every visit's location, each only once.
 * `setLocationsNotInMap()` lets the map service report back any locations it could not resolve,
 so the model retains that information instead of silently dropping it.
 This only records them: the matrix has no entries for those locations.
+
+Each solve builds its own one-off matrix.
+To reuse a named, pre-built matrix instead, override `getLocationSetName()`,
+see xref:running-timefold-solver/service/map-service.adoc#mapServiceLocationSets[One-off matrices versus named location sets].
 
 After that, `Location.getTravelTimeTo(otherLocation)` returns the driving time between any two of the resolved locations.
 `Vehicle.getTotalDrivingTimeSeconds()` and `Visit.getDrivingTimeSecondsFromPreviousStandstill()` both rely on it.
 
 [WARNING]
 ====
-`getTravelTimeTo()` throws when either location is missing from the matrix,
-and the route calculations call it for every leg.
-A location reported through `setLocationsNotInMap()` would therefore fail the solve if it ended up in a route.
-Do not solve a plan whose `getLocationsNotInMap()` is not empty:
-check it right after enrichment and reject the request with a clear error that names those locations,
+The route calculations in this guide call `getTravelTimeTo(...).seconds()` for every leg, including the drive back home.
+That call fails fast in two cases:
+
+* A location is missing from the matrix.
+A location reported through `setLocationsNotInMap()` therefore fails the solve if it ends up in a route.
+* Two locations are in the matrix, but the road network does not connect them.
+`getTravelTimeTo()` then returns `TravelTime.UNREACHABLE`, and `seconds()` on it throws.
+
+The local computation always connects every pair of locations, so neither case occurs while running locally.
+With real road-network data, check both right after enrichment:
+reject the request with a clear error that names the affected locations,
 or remove the affected visits (and report them as unassigned) before the solver starts.
+See xref:running-timefold-solver/service/map-service.adoc#mapServiceUnreachableLocations[Locations not in the map]
+and xref:running-timefold-solver/service/map-service.adoc#mapServiceLocation[The `Location` type].
 ====
 
 Two properties control how the matrix gets built:
@@ -181,7 +187,9 @@ timefold.platform.map-service.enable-fallback=true
 which uses real road-network driving times, and a local computation.
 * `enable-fallback` allows falling back to the local computation when the remote service is unavailable.
 
-Running locally, you use the local computation.
+Running locally, you use the local computation:
+the straight-line (Haversine) distance between two locations, converted to a driving time at a fixed average speed of 50 km/h.
+It ignores roads and traffic, so it is fine for development and tests, but not for production.
 When you xref:deploying-to-platform/guide.adoc[deploy the model to the Timefold Platform],
 the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service[maps service] of the platform
 provides real road-network driving times without any change to your code.

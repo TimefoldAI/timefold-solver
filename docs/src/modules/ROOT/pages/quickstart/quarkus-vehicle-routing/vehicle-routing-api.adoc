@@ -31,6 +31,10 @@ In the input, a route is a list of visit IDs.
 A new problem has empty routes, but a user can also submit an existing plan, for example to improve it further.
 A visit that appears in no vehicle's `visitIds` is unassigned.
 
+The `Location` class of the map service is JSON-serializable too, so the input could use it directly.
+This guide uses a separate `LocationInputDTO` instead, to keep the API contract independent of the domain classes,
+the same way the other input records do.
+
 Create the `src/main/java/org/acme/vehiclerouting/dto/input/LocationInputDTO.java` record:
 
 [source,java,options="nowrap"]
@@ -254,6 +258,7 @@ import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.HardMediumSoftScore;
 import ai.timefold.solver.service.definition.api.ModelConvertor;
 import ai.timefold.solver.service.definition.api.domain.ModelConfig;
+import ai.timefold.solver.service.maps.api.LocationDeduplicator;
 import ai.timefold.solver.service.maps.api.model.Location;
 
 import org.acme.vehiclerouting.domain.Vehicle;
@@ -277,13 +282,15 @@ public class VehicleRoutePlanModelConvertor implements
     public VehicleRoutePlan toSolverModel(VehicleRoutePlanInput modelInput,
             ModelConfig<VehicleRoutePlanConfigOverrides> modelConfig,
             Optional<VehicleRoutePlanOutput> lastModelOutput) {
+        // Visits and vehicles at the same coordinates share one Location instance.
+        LocationDeduplicator locations = new LocationDeduplicator();
         Map<String, Visit> visitMap = modelInput.visits().stream()
-                .map(VehicleRoutePlanModelConvertor::toVisit)
+                .map(dto -> toVisit(dto, locations))
                 .collect(Collectors.toMap(Visit::getId, visit -> visit, (first, second) -> {
                     throw new IllegalArgumentException("Duplicate visit ID '%s'.".formatted(first.getId()));
                 }, LinkedHashMap::new));
         List<Vehicle> vehicles = modelInput.vehicles().stream()
-                .map(VehicleRoutePlanModelConvertor::toVehicle)
+                .map(dto -> toVehicle(dto, locations))
                 .toList();
 
         VehicleRoutePlan routePlan = new VehicleRoutePlan(vehicles, List.copyOf(visitMap.values()));
@@ -323,16 +330,16 @@ public class VehicleRoutePlanModelConvertor implements
         return modelInput.withVehicles(updatedVehicles);
     }
 
-    private static Location toLocation(LocationInputDTO dto) {
-        return new Location(dto.latitude(), dto.longitude());
+    private static Location toLocation(LocationInputDTO dto, LocationDeduplicator locations) {
+        return locations.same(new Location(dto.latitude(), dto.longitude()));
     }
 
-    private static Vehicle toVehicle(VehicleInputDTO dto) {
-        return new Vehicle(dto.id(), dto.capacity(), toLocation(dto.homeLocation()), dto.departureTime());
+    private static Vehicle toVehicle(VehicleInputDTO dto, LocationDeduplicator locations) {
+        return new Vehicle(dto.id(), dto.capacity(), toLocation(dto.homeLocation(), locations), dto.departureTime());
     }
 
-    private static Visit toVisit(VisitInputDTO dto) {
-        return new Visit(dto.id(), dto.name(), toLocation(dto.location()), dto.demand(), dto.minStartTime(),
+    private static Visit toVisit(VisitInputDTO dto, LocationDeduplicator locations) {
+        return new Visit(dto.id(), dto.name(), toLocation(dto.location(), locations), dto.demand(), dto.minStartTime(),
                 dto.maxEndTime(), Duration.ofMinutes(dto.serviceDurationMinutes()));
     }
 
@@ -390,6 +397,10 @@ public class VehicleRoutePlanModelConvertor implements
     }
 }
 ----
+
+The `LocationDeduplicator` makes every vehicle and visit at the same coordinates share one `Location` instance.
+Customers often share an address, and vehicles often share a depot,
+so this keeps the travel time matrix small: `VehicleRoutePlan.getLocations()` returns each shared instance only once.
 
 Notice that the convertor does not touch the travel time matrix.
 The service module calls the map service after `toSolverModel()`, as part of model enrichment,
