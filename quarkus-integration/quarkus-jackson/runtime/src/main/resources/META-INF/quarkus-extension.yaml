@@ -14,3 +14,4 @@ metadata:
   status: "stable"
   extension-dependencies:
     - "ai.timefold.solver:timefold-solver-quarkus"
+scm-url: "https://github.com/TimefoldAI/timefold-solver"

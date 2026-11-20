@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
@@ -20,9 +21,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class FilteringMoveSelectorTest {
 
@@ -44,6 +48,52 @@ class FilteringMoveSelectorTest {
     @Test
     void filterCacheTypeJustInTime() {
         filter(SelectionCacheType.JUST_IN_TIME, 5);
+    }
+
+    @Test
+    void hugeNeverEndingSizeDoesNotBailOutAtOnce() {
+        var phaseScope = mock(AbstractPhaseScope.class);
+        var moveSelector = mock(MoveSelector.class);
+        var termination = mock(BasicPlumbingTermination.class);
+        var iterator = mock(Iterator.class);
+        when(moveSelector.getSize()).thenReturn(Long.MAX_VALUE);
+        when(moveSelector.isNeverEnding()).thenReturn(true);
+        when(moveSelector.iterator()).thenReturn(iterator);
+        when(iterator.hasNext()).thenReturn(true);
+        when(iterator.next()).thenReturn(new SelectorBasedDummyMove("a"));
+        when(phaseScope.getTermination()).thenReturn(termination);
+        var filteredMoveSelector = FilteringMoveSelector.of(moveSelector, (scoreDirector, selection) -> true);
+        filteredMoveSelector.phaseStarted(phaseScope);
+        assertThat(filteredMoveSelector.iterator().hasNext()).isTrue();
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = { Long.MAX_VALUE, -5L })
+    void unusableNeverEndingSizeStillBailsOut(long size) {
+        var phaseScope = mock(AbstractPhaseScope.class);
+        var moveSelector = mock(MoveSelector.class);
+        var termination = mock(BasicPlumbingTermination.class);
+        var nextCount = new AtomicLong();
+        var iterator = new Iterator<Object>() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public Object next() {
+                nextCount.incrementAndGet();
+                return new SelectorBasedDummyMove("a");
+            }
+        };
+        when(moveSelector.getSize()).thenReturn(size);
+        when(moveSelector.isNeverEnding()).thenReturn(true);
+        when(moveSelector.iterator()).thenReturn(iterator);
+        when(phaseScope.getTermination()).thenReturn(termination);
+        var filteredMoveSelector = FilteringMoveSelector.of(moveSelector, (scoreDirector, selection) -> false);
+        filteredMoveSelector.phaseStarted(phaseScope);
+        assertThat(filteredMoveSelector.iterator().hasNext()).isFalse();
+        assertThat(nextCount).hasValue(size < 0 ? SelectionUtils.UNKNOWN_SIZE_BAIL_OUT : SelectionUtils.MAX_BAIL_OUT);
     }
 
     @Test

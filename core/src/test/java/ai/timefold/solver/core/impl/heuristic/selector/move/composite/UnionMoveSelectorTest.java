@@ -30,6 +30,17 @@ import org.junit.jupiter.api.Test;
 class UnionMoveSelectorTest {
 
     @Test
+    @SuppressWarnings("unchecked")
+    void sizeSaturatesInsteadOfOverflowing() {
+        var hugeMoveSelector = (MoveSelector<TestdataSolution>) mock(MoveSelector.class);
+        when(hugeMoveSelector.getSize()).thenReturn(Long.MAX_VALUE);
+        var smallMoveSelector = (MoveSelector<TestdataSolution>) mock(MoveSelector.class);
+        when(smallMoveSelector.getSize()).thenReturn(5L);
+        var moveSelector = new UnionMoveSelector<>(List.of(smallMoveSelector, hugeMoveSelector), false);
+        assertThat(moveSelector.getSize()).isEqualTo(Long.MAX_VALUE);
+    }
+
+    @Test
     void originSelection() {
         var childMoveSelectorList = new ArrayList<MoveSelector<TestdataSolution>>();
         childMoveSelectorList.add(SelectorTestUtils.mockMoveSelector(new SelectorBasedDummyMove("a1"),

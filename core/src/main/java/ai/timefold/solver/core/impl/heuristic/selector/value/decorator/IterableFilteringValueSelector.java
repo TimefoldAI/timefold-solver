@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 
 public final class IterableFilteringValueSelector<Solution_>
         extends FilteringValueSelector<Solution_>
@@ -29,7 +30,8 @@ public final class IterableFilteringValueSelector<Solution_>
         if (!bailOutEnabled) {
             return -1L;
         }
-        return ((IterableValueSelector<Solution_>) childValueSelector).getSize() * 10L;
+        return SelectionUtils.bailOutSize((IterableValueSelector<Solution_>) childValueSelector,
+                IterableValueSelector::getSize);
     }
 
 }

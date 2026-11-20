@@ -18,6 +18,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.valuerange.ListValueRange;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
@@ -98,10 +99,13 @@ class SampleValueRangesTest {
     }
 
     @Test
-    void bailOutSizeOf_clampsHugeSizeInsteadOfOverflowing() {
-        // Long.MAX_VALUE * BAIL_OUT_SAFETY_MULTIPLIER would overflow negative,
-        // and FilteringIterator reads a negative bailOutSize as "bail-out disabled" - turning hasNext() into an infinite loop.
-        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isPositive();
+    void bailOutSizeOf_capsHugeSize() {
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange())).isEqualTo(SelectionUtils.MAX_BAIL_OUT);
+    }
+
+    @Test
+    void bailOutSizeOf_fallsBackForNegativeSize() {
+        assertThat(SampleValueRanges.bailOutSizeOf(new HugeValueRange(-1))).isEqualTo(SelectionUtils.UNKNOWN_SIZE_BAIL_OUT);
     }
 
     @Test
@@ -174,8 +178,18 @@ class SampleValueRangesTest {
         assertThat(SampleValueRanges.of(Set.of(rangeA))).isNotEqualTo(SampleValueRanges.of(Set.of(rangeA, rangeB)));
     }
 
-    /** A range too large for {@code getSize() * BAIL_OUT_SAFETY_MULTIPLIER} to fit in a {@code long}. */
+    /** A range too large for a bail-out budget of 10 times its size. */
     private static final class HugeValueRange implements ValueRange<Long> {
+
+        private final long size;
+
+        HugeValueRange() {
+            this(Long.MAX_VALUE);
+        }
+
+        HugeValueRange(long size) {
+            this.size = size;
+        }
 
         @Override
         public boolean isEmpty() {
@@ -189,7 +203,7 @@ class SampleValueRangesTest {
 
         @Override
         public long getSize() {
-            return Long.MAX_VALUE;
+            return size;
         }
 
         @Override

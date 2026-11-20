@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
-import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
@@ -107,16 +107,8 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
     }
 
     /**
-     * @return {@code candidateCount * BAIL_OUT_SAFETY_MULTIPLIER}, or {@link Long#MAX_VALUE} if that overflows
-     */
-    protected static long bailOutBudget(long candidateCount) {
-        return candidateCount > Long.MAX_VALUE / FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER ? Long.MAX_VALUE
-                : candidateCount * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
-    }
-
-    /**
      * Draws with replacement until the filter accepts,
-     * at most {@code candidateList.size() * BAIL_OUT_SAFETY_MULTIPLIER} times.
+     * at most {@link SelectionUtils#bailOutSize(long)} times.
      *
      * @param candidateList random access, no null elements
      * @return null if nothing was accepted
@@ -126,7 +118,7 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
         if (size == 0) {
             return null;
         }
-        var budget = bailOutBudget(size);
+        var budget = SelectionUtils.bailOutSize(size);
         for (var attempt = 0L; attempt < budget; attempt++) {
             var candidate = candidateList.get(random.nextInt(size));
             if (filter.test(candidate)) {
@@ -144,7 +136,7 @@ public abstract sealed class AbstractLeftDrivenMoveIterator<Solution_, Left_> im
      */
     protected static <T extends @Nullable Object> @Nullable T drawMatching(Iterator<T> randomIterator, long candidateCount,
             Predicate<T> filter) {
-        var budget = bailOutBudget(candidateCount);
+        var budget = SelectionUtils.bailOutSize(candidateCount);
         for (var attempt = 0L; attempt < budget && randomIterator.hasNext(); attempt++) {
             var candidate = randomIterator.next();
             if (filter.test(candidate)) {

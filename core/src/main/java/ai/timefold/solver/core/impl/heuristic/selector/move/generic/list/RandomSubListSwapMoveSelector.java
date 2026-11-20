@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractR
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.AbstractGenericMoveSelector;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public class RandomSubListSwapMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
@@ -57,7 +58,7 @@ public class RandomSubListSwapMoveSelector<Solution_> extends AbstractGenericMov
     public long getSize() {
         long leftSubListCount = leftSubListSelector.getSize();
         long rightSubListCount = rightSubListSelector.getSize();
-        return leftSubListCount * rightSubListCount * (selectReversingMoveToo ? 2 : 1);
+        return SelectionUtils.product(leftSubListCount, rightSubListCount, selectReversingMoveToo ? 2 : 1);
     }
 
     boolean isSelectReversingMoveToo() {

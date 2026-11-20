@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -50,7 +51,7 @@ public final class ValueRangeChangeMoveIterator<Solution_, Entity_, Value_>
         var valueRange = solutionView.getValueRange(variableMetaModel, entity);
         // The range may hold null as one extra element; hence the +1.
         var size = valueRange.getSize();
-        var budget = bailOutBudget(size == Long.MAX_VALUE ? size : size + 1);
+        var budget = SelectionUtils.bailOutSize(SelectionUtils.sum(size, 1L));
         var valueIterator = valueRange.createRandomIterator(random);
         for (var attempt = 0L; attempt < budget && valueIterator.hasNext(); attempt++) {
             var value = valueIterator.next();

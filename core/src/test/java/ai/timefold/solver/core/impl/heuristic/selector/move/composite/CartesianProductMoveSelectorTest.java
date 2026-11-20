@@ -24,12 +24,31 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 
 import org.junit.jupiter.api.Test;
 
 class CartesianProductMoveSelectorTest {
+
+    @SuppressWarnings("unchecked")
+    private static MoveSelector<TestdataSolution> mockSizedMoveSelector(long size) {
+        var moveSelector = (MoveSelector<TestdataSolution>) mock(MoveSelector.class);
+        when(moveSelector.getSize()).thenReturn(size);
+        return moveSelector;
+    }
+
+    @Test
+    void sizeSaturatesInsteadOfOverflowing() {
+        var moveSelector = new CartesianProductMoveSelector<>(
+                List.of(mockSizedMoveSelector(Long.MAX_VALUE), mockSizedMoveSelector(2L)), false, true);
+        assertThat(moveSelector.getSize()).isEqualTo(Long.MAX_VALUE);
+        var withEmptyChild = new CartesianProductMoveSelector<>(
+                List.of(mockSizedMoveSelector(Long.MAX_VALUE), mockSizedMoveSelector(2L), mockSizedMoveSelector(0L)),
+                false, true);
+        assertThat(withEmptyChild.getSize()).isZero();
+    }
 
     @Test
     void originSelectionNotIgnoringEmpty() {

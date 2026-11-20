@@ -12,6 +12,7 @@ public record IssueMessage(String message) implements IssueMetadata {
 
     @RecordableConstructor
     public IssueMessage {
+        // used by Quarkus bytecode recording 
     }
 
     @Override

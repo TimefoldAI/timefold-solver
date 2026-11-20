@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class RuinRecreateMoveSelector<Solution_> extends AbstractGenericMoveSelector<Solution_> {
@@ -35,15 +35,9 @@ final class RuinRecreateMoveSelector<Solution_> extends AbstractGenericMoveSelec
 
     @Override
     public long getSize() {
-        var totalSize = 0L;
         var entityCount = entitySelector.getSize();
-        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(entityCount);
-        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(entityCount);
-        for (int selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
-            // Order is significant, and each entity can only be picked once
-            totalSize += MathUtils.factorial((int) entityCount) / MathUtils.factorial(selectedCount);
-        }
-        return totalSize;
+        return SelectionUtils.orderedPicksSum(entityCount, minimumSelectedCountSupplier.applyAsInt(entityCount),
+                maximumSelectedCountSupplier.applyAsInt(entityCount));
     }
 
     @Override
