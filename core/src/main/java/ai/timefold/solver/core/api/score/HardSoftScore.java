@@ -128,7 +128,7 @@ public record HardSoftScore(long structuralScore, long hardScore, long softScore
 
     @Override
     public HardSoftScore abs() {
-        return of(Math.abs(hardScore), Math.abs(softScore));
+        return of(ScoreUtil.abs(hardScore), ScoreUtil.abs(softScore));
     }
 
     @Override

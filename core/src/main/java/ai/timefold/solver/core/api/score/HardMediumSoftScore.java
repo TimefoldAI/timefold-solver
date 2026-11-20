@@ -156,7 +156,7 @@ public record HardMediumSoftScore(long structuralScore, long hardScore, long med
 
     @Override
     public HardMediumSoftScore abs() {
-        return of(Math.abs(hardScore), Math.abs(mediumScore), Math.abs(softScore));
+        return of(ScoreUtil.abs(hardScore), ScoreUtil.abs(mediumScore), ScoreUtil.abs(softScore));
     }
 
     @Override
