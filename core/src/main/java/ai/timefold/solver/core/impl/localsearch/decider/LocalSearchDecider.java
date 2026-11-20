@@ -126,7 +126,8 @@ public class LocalSearchDecider<Solution_> {
             lowerBound = (Score_) maxMoveScoreInStep;
         }
         var score = scoreDirector.executeTemporaryMove(move, lowerBound, assertMoveScoreFromScratch);
-        if (!score.isStructurallyFlawed() && (maxMoveScoreInStep == null || ((Score_) maxMoveScoreInStep).compareTo(score.raw()) < 0)) {
+        if (!score.isStructurallyFlawed()
+                && (maxMoveScoreInStep == null || ((Score_) maxMoveScoreInStep).compareTo(score.raw()) < 0)) {
             maxMoveScoreInStep = score.raw();
         }
         moveScope.setScore(score);
