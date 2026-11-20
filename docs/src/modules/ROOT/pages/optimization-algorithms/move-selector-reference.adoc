@@ -820,25 +820,25 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-public interface NearbyDistanceMeter<Origin_, Destination_> {
+public interface NearbyDistanceMeter<Moved_, Neighbor_> {
 
-    double getNearbyDistance(Origin_ origin, Destination_ destination);
+    double getNearbyDistance(Moved_ moved, Neighbor_ neighbor);
 
 }
 ----
 ====
 
 In a nutshell, when nearby selection is applied,
-the `Origin_` and `Destination_` types are determined by the relevant selectors within the `nearbySelection` configuration.
-For a <<basicVariableNearbySelection, basic variable>>, `Origin_`
+the `Moved_` and `Neighbor_` types are determined by the relevant selectors within the `nearbySelection` configuration.
+For a <<basicVariableNearbySelection, basic variable>>, `Moved_`
 is defined by the planning entity (for example `Lesson`) of the nearby definition,
-while `Destination_` can be either a planning value or a planning entity.
+while `Neighbor_` can be either a planning value or a planning entity.
 In the case of a <<listVariableNearbySelection, list variable>>,
-`Origin_` is always a planning value (for example `Customer`),
-but `Destination_` can be either a planning value or a planning entity.
+`Moved_` is always a planning value (for example `Customer`),
+but `Neighbor_` can be either a planning value or a planning entity.
 
 As an example, consider the Vehicle Routing Problem and a list variable to store the customer list for each vehicle.
-The distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
+The distance meter must be able to handle both `Customer` and `Vehicle` as the `Neighbor_` argument:
 
 [tabs]
 ====
@@ -848,8 +848,8 @@ Java::
 ----
 public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
 
-    public double getNearbyDistance(Customer origin, LocationAware destination) {
-        return origin.getDistanceTo(destination);
+    public double getNearbyDistance(Customer moved, LocationAware neighbor) {
+        return moved.getDistanceTo(neighbor);
     }
 
 }
@@ -1016,6 +1016,190 @@ to specify which destination, value, or subList should be nearby the selection.
       </subListSwapMoveSelector>
     </unionMoveSelector>
 ----
+
+[#_which_distances_rank_a_move]
+==== Which distances rank a move
+
+Distances can be asymmetric: on one-way streets, the trip from A to B can take longer than the trip back.
+Nearby selection ranks a move by the trips that the move creates.
+In the table, A is the item that the move moves and B is its candidate partner:
+
+[cols="1,2"]
+|===
+|Move |Distance that ranks B
+
+|List change, sub-list change
+|B→A, because the move puts A right after B.
+If B is a vehicle, A→B.
+
+|Basic change
+|A→B.
+
+|List swap, sub-list swap, basic swap, k-opt
+|A→B plus B→A, because a swap creates a trip in each direction.
+|===
+
+For example:
+
+* *List change.* A→B takes one minute, and B→A takes 11 minutes.
+B ranks with 11 minutes, because the move puts A after B.
+* *List swap.* A→B takes four minutes, and B→A takes six minutes.
+B ranks with ten minutes, the sum of both.
+
+For a meter with several distance matrices, see <<_which_matrix_measures_a_trip,which matrix measures each trip>>.
+
+[#nearbySelectionSeveralDistanceMatrices]
+==== Several distance matrices
+
+Some models need more than one meaning of "near".
+For example, a visit on a bike route is near other visits by bike paths,
+and a visit on a car route is near other visits by roads.
+Traffic can also change travel times during the day.
+For these models, implement the `MatrixAwareNearbyDistanceMeter` interface instead of `NearbyDistanceMeter`:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public interface MatrixAwareNearbyDistanceMeter<Solution_, Moved_, Neighbor_>
+        extends NearbyDistanceMeter<Moved_, Neighbor_> {
+
+    int initializeDistanceMatrices(Solution_ workingSolution);
+
+    int getDistanceMatrixIndex(Neighbor_ neighbor);
+
+    double getNearbyDistance(Moved_ moved, Neighbor_ neighbor, int matrix);
+
+    @Override
+    default double getNearbyDistance(Moved_ moved, Neighbor_ neighbor) {
+        return getNearbyDistance(moved, neighbor, 0);
+    }
+
+}
+----
+====
+
+`initializeDistanceMatrices()` returns the number of distance matrices.
+`getDistanceMatrixIndex()` returns the matrix that an item is on in the current solution.
+The three-argument `getNearbyDistance()` measures the distance in one matrix.
+The solver calls only the three-argument `getNearbyDistance()`.
+You do not need to implement the two-argument `getNearbyDistance()`.
+By default, the two-argument method returns the distance in matrix `0`.
+
+Unlike a plain `NearbyDistanceMeter`, a `MatrixAwareNearbyDistanceMeter` can hold state, which `initializeDistanceMatrices()` creates.
+In xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[partitioned search], each partition has its own meter instance.
+
+For example, the vehicles in this model use a car or a bike:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class CustomerNearbyDistanceMeter
+        implements MatrixAwareNearbyDistanceMeter<VehicleRoutePlan, Customer, LocationAware> {
+
+    @Override
+    public int initializeDistanceMatrices(VehicleRoutePlan workingSolution) {
+        return 2; // 0 = car, 1 = bike
+    }
+
+    @Override
+    public int getDistanceMatrixIndex(LocationAware item) {
+        // The transport type of the vehicle the item is on now.
+        Vehicle vehicle = item instanceof Customer customer ? customer.getVehicle() : (Vehicle) item;
+        return vehicle == null || vehicle.getTransportType() == TransportType.CAR ? 0 : 1;
+    }
+
+    @Override
+    public double getNearbyDistance(Customer moved, LocationAware neighbor, int matrix) {
+        return moved.getTravelTimeTo(neighbor, matrix);
+    }
+
+}
+----
+====
+
+Follow these rules:
+
+* *Use the same unit in every matrix*, for example seconds.
+The solver compares distances across matrices.
+With seconds for cars and meters for bikes, bike destinations would always look far.
+* *Return the matrix of the item you get, from the current solution.*
+The solver also asks about unassigned items.
+Return a default matrix for them, such as `0`.
+* *Keep `getDistanceMatrixIndex()` and the three-argument `getNearbyDistance()` cheap*,
+such as a few field reads and a table lookup.
+The solver calls these methods often.
+* *Never read the solution in `getNearbyDistance()`.*
+The solver can keep distances, and can compute them again when it needs them.
+* *Create the state of the meter in `initializeDistanceMatrices()`.*
+The solver calls `initializeDistanceMatrices()` each time solving starts, before any other method of the meter.
+Solving starts again after each xref:responding-to-change/real-time-planning.adoc#problemChange[problem change].
+Rebuild the state on each call, and do not add to the state of the previous call.
+The solution can be uninitialized, because solving starts before the construction heuristic.
+Only read the solution.
+Its data can change after the call.
+* *Return a matrix count from one to 16.*
+An empty dataset needs a count in that range too.
+The solver fails fast on any other count.
+Selection time grows with the number of matrices,
+and the work and memory to rank swap partners grow with the square of that number.
+* *With more than one matrix, configure a size maximum* for random nearby selection,
+for example `parabolicDistributionSizeMaximum` (the default parabolic distribution has one).
+The solver fails fast at startup without a size maximum.
+
+===== How properties combine into matrices
+
+Each property that changes travel, such as transport type or time of day, has a few values.
+One matrix exists for each combination of values:
+three transport types and three time slots give nine matrices,
+and the index numbers each combination, for example `transportType * 3 + timeSlot`.
+`initializeDistanceMatrices()` returns the number of combinations,
+and `getDistanceMatrixIndex()` returns the combination of the item.
+
+Keep the number of matrices small.
+Add a property only when it changes which items are near each other,
+not only how long the trips take.
+If traffic makes every trip in an area slower by about the same factor,
+leave the time of day out and return the transport type only.
+Nearby selection only decides which moves the solver tries;
+the score still uses the exact travel times.
+
+[#_which_matrix_measures_a_trip]
+===== Which matrix measures a trip
+
+Nearby selection ranks a move by the trips in the <<_which_distances_rank_a_move,ranking table>>.
+With several matrices, nearby selection measures each trip in the matrix of the candidate partner B.
+Only a swap also measures a trip in the matrix of A, the trip that starts at A:
+
+[cols="1,2"]
+|===
+|Move |Distance that ranks B
+
+|List change, sub-list change
+|B→A in B's matrix, because the move puts A right after B.
+If B is a vehicle, A→B in B's matrix.
+
+|Basic change
+|A→B in B's matrix.
+
+|List swap, sub-list swap, basic swap, k-opt
+|A→B in A's matrix plus B→A in B's matrix, because a swap creates a trip in each direction.
+|===
+
+For example:
+
+* *List change.* A is on a car; B is on a bike.
+A→B takes one minute by bike, and B→A takes 11 minutes by bike.
+B ranks with 11 minutes, because the move puts A after B.
+* *List swap.* A is on a car; B is on a bike.
+A→B takes four minutes by car, and B→A takes six minutes by bike.
+B ranks with ten minutes, the sum of both.
+If A moves to a bike route later, A→B is measured by bike from then on.
 
 ==== Power-tweaking distribution type
 
