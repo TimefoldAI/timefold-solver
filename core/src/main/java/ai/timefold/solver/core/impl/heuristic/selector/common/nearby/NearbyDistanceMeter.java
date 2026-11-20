@@ -49,9 +49,14 @@ public interface NearbyDistanceMeter<Moved_, Neighbor_> {
      * selection time grows with the number of matrices,
      * and the work and memory to build the lists of swap candidates grow with its square.
      *
-     * @return from 1 to 16; any other value fails fast when the solver starts
+     * <p>
+     * The solver calls this method once when solving starts, and again after each problem change.
+     * Treat the solution as read-only, and do not expect its data to stay constant after the call.
+     *
+     * @param workingSolution never null
+     * @return from 1 to 16, also for an empty dataset; any other value fails fast when the solver starts
      */
-    default int getDistanceMatrixCount() {
+    default int getDistanceMatrixCount(Object workingSolution) {
         return 1;
     }
 
@@ -66,7 +71,7 @@ public interface NearbyDistanceMeter<Moved_, Neighbor_> {
      * Read only the given item, and keep it to a few field reads.
      *
      * @param neighbor never null
-     * @return from 0 to {@link #getDistanceMatrixCount()} - 1; any other value fails fast
+     * @return from 0 to {@link #getDistanceMatrixCount(Object)} - 1; any other value fails fast
      */
     default int getDistanceMatrixIndex(Neighbor_ neighbor) {
         return 0;
@@ -84,7 +89,7 @@ public interface NearbyDistanceMeter<Moved_, Neighbor_> {
      *
      * @param moved never null
      * @param neighbor never null
-     * @param matrix from 0 to {@link #getDistanceMatrixCount()} - 1
+     * @param matrix from 0 to {@link #getDistanceMatrixCount(Object)} - 1
      * @return Preferably always {@code >= 0.0}. If moved == neighbor, it usually returns 0.0.
      */
     default double getNearbyDistance(Moved_ moved, Neighbor_ neighbor, int matrix) {

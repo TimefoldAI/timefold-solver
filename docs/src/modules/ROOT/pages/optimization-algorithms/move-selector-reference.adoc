@@ -825,7 +825,7 @@ public interface NearbyDistanceMeter<Moved_, Neighbor_> {
     double getNearbyDistance(Moved_ moved, Neighbor_ neighbor);
 
     // Only for several distance matrices.
-    default int getDistanceMatrixCount() { return 1; }
+    default int getDistanceMatrixCount(Object workingSolution) { return 1; }
     default int getDistanceMatrixIndex(Neighbor_ neighbor) { return 0; }
     default double getNearbyDistance(Moved_ moved, Neighbor_ neighbor, int matrix) {
         return getNearbyDistance(moved, neighbor);
@@ -1043,7 +1043,7 @@ Java::
 public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
 
     @Override
-    public int getDistanceMatrixCount() {
+    public int getDistanceMatrixCount(Object workingSolution) {
         return 2; // 0 = car, 1 = bike
     }
 
@@ -1080,6 +1080,9 @@ such as a few field reads and a table lookup.
 The solver calls them often.
 * *Never read the solution in `getNearbyDistance()`.*
 The solver can keep distances, and can compute them again when it needs them.
+* *Count the matrices from the solution you get, and return at least 1.*
+The solver calls `getDistanceMatrixCount()` once when solving starts, and again after each problem change.
+Only read the solution; its data can change after the call.
 * *Declare at most 16 matrices.*
 Selection time grows with the number of matrices,
 and the work and memory to rank swap partners grow with its square.
