@@ -47,7 +47,6 @@ import ai.timefold.solver.service.definition.internal.events.DatasetComputedEven
 import ai.timefold.solver.service.definition.internal.events.FinalBestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.InitSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
-import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
 import ai.timefold.solver.service.testmodel.domain.Employee;
 import ai.timefold.solver.service.testmodel.domain.EmployeeSchedule;
 import ai.timefold.solver.service.testmodel.domain.Shift;
@@ -351,9 +350,10 @@ public class EmployeeScheduleResourceTest {
     void postAcceptsCustomRunOptions() {
         RunConfiguration runConfiguration =
                 new RunConfiguration(null, null, null, Set.of("options-e2e"), Map.of("customOption", "customValue"));
-        ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides> modelRequest =
-                new ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides>(createInputEmployeeSchedule())
-                        .withConfiguration(Configuration.<EmptyModelConfigOverrides> empty().withRun(runConfiguration));
+        ModelRequest<EmployeeSchedule, EmployeeScheduleModelConfigOverrides> modelRequest =
+                new ModelRequest<EmployeeSchedule, EmployeeScheduleModelConfigOverrides>(createInputEmployeeSchedule())
+                        .withConfiguration(
+                                Configuration.<EmployeeScheduleModelConfigOverrides> empty().withRun(runConfiguration));
 
         // Options are hidden from the OpenAPI schema, so the generated JSON schema must not forbid them.
         given()
@@ -375,9 +375,9 @@ public class EmployeeScheduleResourceTest {
 
     @Test
     void postRejectsUnknownRunConfigurationProperty() throws Exception {
-        ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides> modelRequest =
-                new ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides>(createInputEmployeeSchedule())
-                        .withConfiguration(Configuration.<EmptyModelConfigOverrides> empty()
+        ModelRequest<EmployeeSchedule, EmployeeScheduleModelConfigOverrides> modelRequest =
+                new ModelRequest<EmployeeSchedule, EmployeeScheduleModelConfigOverrides>(createInputEmployeeSchedule())
+                        .withConfiguration(Configuration.<EmployeeScheduleModelConfigOverrides> empty()
                                 .withRun(new RunConfiguration("unknown-property-e2e")));
 
         ObjectNode body = objectMapper.valueToTree(modelRequest);
@@ -404,7 +404,17 @@ public class EmployeeScheduleResourceTest {
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .body("""
-                        {"config": {"run": {"name": "from-patch-e2e"}, "model": {"overrides": {}}}, "patch": []}""")
+                        {"config": {
+                           "run": {
+                             "name": "from-patch-e2e"
+                            },
+                            "model": {
+                              "overrides": {
+                                "assignShiftToEmployeeWeight":  10
+                              }
+                            }
+                          },
+                          "patch": []}""")
                 .when()
                 .post("/schedules/" + metadata.getId() + "/from-patch?select=UNSOLVED&operation="
                         + OperationOnPost.NONE.name())
@@ -415,7 +425,7 @@ public class EmployeeScheduleResourceTest {
                 .as(new TypeRef<>() {
                 });
 
-        Configuration<EmptyModelConfigOverrides> configuration = given()
+        Configuration<EmployeeScheduleModelConfigOverrides> configuration = given()
                 .accept(ContentType.JSON)
                 .when()
                 .get("/schedules/" + patchedMetadata.getId() + "/config")
@@ -426,6 +436,7 @@ public class EmployeeScheduleResourceTest {
                 .as(new TypeRef<>() {
                 });
         assertThat(configuration.run().name()).isEqualTo("from-patch-e2e");
+        assertThat(configuration.model().overrides().getAssignShiftToEmployeeWeight()).isEqualTo(10L);
 
         // Await both datasets so the asynchronous computation cannot leak into the next test.
         await()
@@ -451,7 +462,7 @@ public class EmployeeScheduleResourceTest {
                 .statusCode(400)
                 .extract()
                 .asString();
-        assertThat(errors).contains("notARealOverride", EmptyModelConfigOverrides.class.getSimpleName());
+        assertThat(errors).contains("notARealOverride", EmployeeScheduleModelConfigOverrides.class.getSimpleName());
 
         // Await the dataset so the asynchronous computation cannot leak into the next test.
         await()
@@ -501,7 +512,7 @@ public class EmployeeScheduleResourceTest {
 
     private static Metadata<HardMediumSoftScore> post(EmployeeSchedule inputSchedule,
             OperationOnPost operationOnPost) {
-        ModelRequest<EmployeeSchedule, EmptyModelConfigOverrides> modelRequest = new ModelRequest<>(inputSchedule);
+        ModelRequest<EmployeeSchedule, EmployeeScheduleModelConfigOverrides> modelRequest = new ModelRequest<>(inputSchedule);
 
         return given()
                 .contentType(ContentType.JSON)

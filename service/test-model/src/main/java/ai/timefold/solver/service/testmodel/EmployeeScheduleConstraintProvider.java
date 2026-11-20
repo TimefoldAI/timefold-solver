@@ -10,6 +10,8 @@ import org.jspecify.annotations.NonNull;
 
 public class EmployeeScheduleConstraintProvider implements ConstraintProvider {
 
+    public static final String ASSIGN_SHIFT_TO_EMPLOYEE = "Assign shift to employee";
+
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
@@ -32,6 +34,6 @@ public class EmployeeScheduleConstraintProvider implements ConstraintProvider {
         return constraintFactory.forEachIncludingUnassigned(Shift.class)
                 .filter(shift -> shift.getEmployee() == null)
                 .penalize(HardMediumSoftScore.ONE_MEDIUM)
-                .asConstraint("Assign shift to employee");
+                .asConstraint(ASSIGN_SHIFT_TO_EMPLOYEE);
     }
 }
