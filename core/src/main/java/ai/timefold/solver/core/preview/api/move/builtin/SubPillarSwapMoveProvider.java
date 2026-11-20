@@ -16,6 +16,7 @@ import ai.timefold.solver.core.impl.move.builtin.SampleValueRanges;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.RetiringBiWalk;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -230,7 +231,7 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
             var drawFromCandidates = candidateList != null && candidateList.size() < distinctKeysInstance.size();
             if (!drawFromCandidates) {
                 keyIterator = distinctKeysInstance.iterator(random);
-                bailOutSize = distinctKeysInstance.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+                bailOutSize = SelectionUtils.bailOutSize(distinctKeysInstance.size());
             } else if (candidateList.isEmpty()) {
                 pendingLeftPillar = null;
                 return Collections.emptyIterator();
@@ -241,7 +242,7 @@ public final class SubPillarSwapMoveProvider<Solution_, Entity_>
                         .distinct()
                         .toList();
                 keyIterator = Stream.generate(() -> candidateKeyList.get(random.nextInt(candidateKeyList.size()))).iterator();
-                bailOutSize = candidateKeyList.size() * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+                bailOutSize = SelectionUtils.bailOutSize(candidateKeyList.size());
             }
             var leftRangesPerVariable = MoveProviderUtil.rangesPerVariableOf(leftPillar, variableMetaModelList, solutionView);
             return new FilteringIterator<>(keyIterator, candidateKey -> {

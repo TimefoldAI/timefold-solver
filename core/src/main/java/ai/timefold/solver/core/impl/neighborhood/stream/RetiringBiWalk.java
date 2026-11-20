@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.RetiringRandomIterator;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -25,9 +26,9 @@ public interface RetiringBiWalk<L, R> {
      * How many independent, fresh right-iterator probes {@link #advance} gives a left before retiring it.
      * A {@link FilteringIterator} bail-out (see its javadoc) is a per-{@code hasNext()}-call false negative,
      * not proof of emptiness:
-     * {@code FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER} already bounds any single probe's false-negative rate
-     * at about {@code e^-BAIL_OUT_SAFETY_MULTIPLIER},
-     * so 3 independent probes compound that to about {@code e^-(3 * BAIL_OUT_SAFETY_MULTIPLIER)}.
+     * a budget of 10 times the right size bounds any single probe's false-negative rate at about {@code e^-10},
+     * so 3 independent probes compound that to about {@code e^-30}.
+     * Above {@link SelectionUtils#MAX_BAIL_OUT} the budget is capped, and the rate is higher.
      * This does not eliminate false retirement entirely, but bounds it significantly.
      */
     int PROBE_ATTEMPT_COUNT = 3;

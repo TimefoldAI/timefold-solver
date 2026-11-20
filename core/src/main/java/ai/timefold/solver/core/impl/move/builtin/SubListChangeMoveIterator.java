@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.move.builtin;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.neighborhood.stream.dataset.DefaultUniDatasetInstance;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -78,7 +77,7 @@ public final class SubListChangeMoveIterator<Solution_, Entity_, Value_>
     @Override
     protected boolean hasMove(Value_ sliceValue) {
         // A span can be invalid while another span of the same seed value is valid.
-        for (var spanAttempt = 0; spanAttempt < FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER; spanAttempt++) {
+        for (var spanAttempt = 0; spanAttempt < SPAN_ATTEMPT_COUNT; spanAttempt++) {
             var range = sampler.byValue(solutionView, sliceValue);
             if (range == null) {
                 return false;

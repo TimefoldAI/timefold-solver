@@ -5,6 +5,8 @@ import static ai.timefold.solver.core.impl.util.TriangularNumbers.triangularRoot
 
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+
 public final class TriangleElementFactory {
 
     private final int minimumSubListSize;
@@ -72,19 +74,28 @@ public final class TriangleElementFactory {
                             .formatted(listSize, minimumSubListSize));
         }
         // Reduce the triangle base by the minimum subList size.
-        var subListCount = nthTriangle(listSize - minimumSubListSize + 1);
+        var subListCount = nthTriangle(listSize - minimumSubListSize + 1L);
         // The top triangle represents all subLists of size greater or equal to maximum subList size. Remove them all.
-        var topTriangleSize = listSize <= maximumSubListSize ? 0 : nthTriangle(listSize - maximumSubListSize);
+        var topTriangleSize = listSize <= maximumSubListSize ? 0L : nthTriangle(listSize - maximumSubListSize);
+        var bound = subListCount - topTriangleSize;
+        var offset = RandomUtils.nextLong(workingRandom, bound);
         // Triangle elements are indexed from 1.
-        var subListIndex = workingRandom.nextInt(subListCount - topTriangleSize) + topTriangleSize + 1;
+        var subListIndex = offset + topTriangleSize + 1;
         return TriangleElement.valueOf(subListIndex);
     }
 
-    public record TriangleElement(int index, int level, int indexOnLevel) {
+    public record TriangleElement(long index, int level, int indexOnLevel) {
 
-        static TriangleElement valueOf(int index) {
+        static TriangleElement valueOf(long index) {
             var level = (int) Math.ceil(triangularRoot(index));
-            return new TriangleElement(index, level, index - nthTriangle(level - 1));
+            // The double root can be off by one for a large index; level is the smallest L with nthTriangle(L) >= index.
+            while (level > 1 && nthTriangle(level - 1) >= index) {
+                level--;
+            }
+            while (nthTriangle(level) < index) {
+                level++;
+            }
+            return new TriangleElement(index, level, (int) (index - nthTriangle(level - 1)));
         }
 
     }

@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.NullAllowingValueRange;
 import ai.timefold.solver.core.impl.neighborhood.stream.FilteringIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.dataset.sample.Sample;
@@ -35,8 +36,6 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet, ValueRange<Value_> smallestRange) {
-
-    private static final long MAX_SAFE_RANGE_SIZE = Long.MAX_VALUE / FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
 
     /**
      * @return the sample members' distinct {@link ValueRange}s for {@code variableMetaModel}.
@@ -106,10 +105,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
     }
 
     public static long bailOutSizeOf(ValueRange<?> range) {
-        // Clamped since a range's {@link ValueRange#getSize()} can be large enough that multiplying it here would
-        // overflow a {@code long} negative - which {@link FilteringIterator} reads as "bail-out disabled",
-        // turning {@code hasNext()} into an infinite loop.
-        return Math.min(unwrappedSize(range), MAX_SAFE_RANGE_SIZE) * FilteringIterator.BAIL_OUT_SAFETY_MULTIPLIER;
+        return SelectionUtils.bailOutSize(unwrappedSize(range));
     }
 
     /**
@@ -120,6 +116,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      * since every candidate it offers is already legal for every member and the first one is always accepted.
      * Only when sampling bails out does this fall back to {@link #pickExactly},
      * which proves the answer exactly instead of guessing again.
+     * That walk is in original order, so it always ends, but it reads the whole range.
      *
      * @return a value legal for every distinct range, or {@code null} if none exists
      */
@@ -145,7 +142,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      */
     public @Nullable Value_ pickExactly(RandomGenerator random, @Nullable Value_ excludedValue) {
         Value_ chosen = null;
-        var admittedCount = 0;
+        var admittedCount = 0L;
         var iterator = smallestRange.createOriginalIterator();
         while (iterator.hasNext()) {
             var candidate = iterator.next();
@@ -153,7 +150,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
                 continue;
             }
             admittedCount++;
-            if (random.nextInt(admittedCount) == 0) {
+            if (RandomUtils.nextLong(random, admittedCount) == 0L) {
                 chosen = candidate;
             }
         }
@@ -162,7 +159,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
 
     /**
      * @return {@code true} with probability {@code 1/(size+1)},
-     *         where {@code size} is {@link #smallestRange}'s clamped size - the same probability a
+     *         where {@code size} is {@link #smallestRange}'s size - the same probability a
      *         {@link NullAllowingValueRange} wrapper on {@link #smallestRange} would have given {@code null} as a candidate,
      *         without ever handing {@code null} to {@link #findTarget}/{@link #pickExactly},
      *         where it would collide with their "not found" signal.
@@ -170,8 +167,7 @@ public record SampleValueRanges<Value_>(Set<ValueRange<Value_>> distinctRangeSet
      *         so no range intersection is needed here - only the coin flip.
      */
     public boolean rollNull(RandomGenerator random) {
-        var size = Math.min(unwrappedSize(smallestRange), MAX_SAFE_RANGE_SIZE);
-        return RandomUtils.nextLong(random, size + 1L) == 0L;
+        return RandomUtils.nextLong(random, SelectionUtils.sum(unwrappedSize(smallestRange), 1L)) == 0L;
     }
 
     /**

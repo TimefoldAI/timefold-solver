@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import ai.timefold.solver.service.definition.api.dto.dataset.Configuration;
 import ai.timefold.solver.service.definition.api.dto.dataset.Metadata;
+import ai.timefold.solver.service.definition.api.dto.dataset.RunConfiguration;
 import ai.timefold.solver.service.definition.api.dto.dataset.SolvingStatus;
 import ai.timefold.solver.service.definition.api.dto.patch.ModelInputPatchRequest;
 import ai.timefold.solver.service.definition.api.rest.DatasetSelector;
@@ -18,6 +19,7 @@ import ai.timefold.solver.service.definition.internal.events.DatasetCreatedEvent
 import ai.timefold.solver.service.definition.internal.events.DatasetValidateComputeCommand;
 import ai.timefold.solver.service.definition.internal.events.SolveStartCommand;
 import ai.timefold.solver.service.definition.internal.events.SolveTerminateCommand;
+import ai.timefold.solver.service.worker.impl.testdata.TestdataModelConfigOverrides;
 import ai.timefold.solver.service.worker.impl.testdata.TestdataModelInput;
 import ai.timefold.solver.service.worker.impl.testdata.TestdataStorage;
 import ai.timefold.solver.service.worker.impl.testdata.TestdataStorageService;
@@ -228,6 +230,33 @@ class DefaultSolverWorkerFacadeTest {
         // parent input must not be affected
         assertThat(storageService.getModelInput(parent.getId()))
                 .isEqualTo(new TestdataModelInput("orig"));
+    }
+
+    @Test
+    void patchDataset_withConfiguration_returnsItAsTheModelRequestConfiguration() {
+        var parentConfiguration = Configuration.<TestdataModelConfigOverrides> empty().withRun(new RunConfiguration("parent"));
+        Metadata<?> parent = facade.createDataset(
+                uniqueRunName(), Set.of(), new TestdataModelInput("orig"), parentConfiguration);
+        var patchConfiguration = Configuration.<TestdataModelConfigOverrides> empty().withRun(new RunConfiguration("child"));
+
+        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(),
+                new ModelInputPatchRequest<>(patchConfiguration, List.of()));
+
+        assertThat(facade.getConfiguration(child.getId())).isEqualTo(patchConfiguration);
+        assertThat(facade.getModelRequest(child.getId()).configuration()).isEqualTo(patchConfiguration);
+    }
+
+    @Test
+    void patchDataset_withoutConfiguration_keepsTheModelRequestConfigurationOfTheParent() {
+        var parentConfiguration = Configuration.<TestdataModelConfigOverrides> empty().withRun(new RunConfiguration("parent"));
+        Metadata<?> parent = facade.createDataset(
+                uniqueRunName(), Set.of(), new TestdataModelInput("orig"), parentConfiguration);
+
+        Metadata<?> child = facade.patchDataset(parent.getId(), DatasetSelector.UNSOLVED, uniqueRunName(),
+                new ModelInputPatchRequest<>(null, List.of()));
+
+        assertThat(facade.getConfiguration(child.getId())).isEqualTo(parentConfiguration);
+        assertThat(facade.getModelRequest(child.getId()).configuration()).isEqualTo(parentConfiguration);
     }
 
     @Test

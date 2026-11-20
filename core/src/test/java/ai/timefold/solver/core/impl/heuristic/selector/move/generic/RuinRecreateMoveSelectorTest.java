@@ -2,6 +2,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -17,6 +19,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -27,6 +30,7 @@ import ai.timefold.solver.core.testutil.AbstractMeterTest;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import io.micrometer.core.instrument.Metrics;
 
@@ -139,4 +143,28 @@ class RuinRecreateMoveSelectorTest extends AbstractMeterTest {
         }
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void sizeCountsOrderedPicks() {
+        var entitySelector = (EntitySelector<TestdataSolution>) mock(EntitySelector.class);
+        when(entitySelector.getSize()).thenReturn(25L);
+        // Ordered picks of 1 or 2 out of 25: 25 + 25 * 24.
+        var selector = new RuinRecreateMoveSelector<TestdataSolution>(entitySelector, null, null, count -> 1, count -> 2);
+        assertThat(selector.getSize()).isEqualTo(625L);
+        var hugeSelector =
+                new RuinRecreateMoveSelector<TestdataSolution>(entitySelector, null, null, count -> 20, count -> 20);
+        assertThat(hugeSelector.getSize()).isEqualTo(Long.MAX_VALUE);
+    }
+
+    @Test
+    @Timeout(value = 10, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+    @SuppressWarnings("unchecked")
+    void sizeEndsForHugeMaximum() {
+        var entitySelector = (EntitySelector<TestdataSolution>) mock(EntitySelector.class);
+        when(entitySelector.getSize()).thenReturn(3L);
+        // Picks above the entity count add nothing: 3 + 3 * 2 + 3 * 2 * 1.
+        var selector = new RuinRecreateMoveSelector<TestdataSolution>(entitySelector, null, null, count -> 1,
+                count -> Integer.MAX_VALUE);
+        assertThat(selector.getSize()).isEqualTo(15L);
+    }
 }

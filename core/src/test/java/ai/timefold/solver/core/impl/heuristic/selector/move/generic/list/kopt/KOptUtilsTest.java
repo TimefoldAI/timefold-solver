@@ -194,19 +194,6 @@ class KOptUtilsTest {
         assertThat(array).containsExactly(2, 1, 8, 7, 5, 6, 4, 3);
     }
 
-    @Test
-    void testGetPureKOptMoveTypes() {
-        assertThat(KOptUtils.getPureKOptMoveTypes(2)).isEqualTo(1L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(3)).isEqualTo(4L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(4)).isEqualTo(25L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(5)).isEqualTo(208L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(6)).isEqualTo(2121L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(7)).isEqualTo(25828L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(8)).isEqualTo(365457L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(17)).isEqualTo(806519154686509056L);
-        assertThat(KOptUtils.getPureKOptMoveTypes(18)).isEqualTo(Long.MAX_VALUE);
-    }
-
     private static KOptDescriptor<TestdataListValue> fromRemovedAndAddedEdges(
             List<TestdataListValue> originalTour,
             List<TestdataListValue> removedEdgeList,

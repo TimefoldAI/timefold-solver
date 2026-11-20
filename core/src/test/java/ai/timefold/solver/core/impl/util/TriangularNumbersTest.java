@@ -15,9 +15,9 @@ class TriangularNumbersTest {
 
     @Test
     void overflow() {
-        assertThatThrownBy(() -> TriangularNumbers.nthTriangle(TriangularNumbers.HIGHEST_SAFE_N + 1))
+        assertThatThrownBy(() -> TriangularNumbers.nthTriangle(1L << 32))
                 .isInstanceOf(ArithmeticException.class)
-                .hasMessage("integer overflow");
+                .hasMessage("long overflow");
     }
 
     static Stream<Arguments> nthProvider() {
@@ -29,19 +29,22 @@ class TriangularNumbersTest {
                 arguments(4, 10),
                 arguments(5, 15),
                 arguments(23169, 268_412_865),
-                arguments(TriangularNumbers.HIGHEST_SAFE_N, 1_073_720_970));
+                arguments(46340, 1_073_720_970),
+                arguments(46341, 1_073_767_311L),
+                arguments(100_000, 5_000_050_000L),
+                arguments(Integer.MAX_VALUE, 2_305_843_008_139_952_128L));
     }
 
     @ParameterizedTest
     @MethodSource("nthProvider")
-    void nthTriangle(int n, int nthTriangularNumber) {
+    void nthTriangle(long n, long nthTriangularNumber) {
         assertThat(TriangularNumbers.nthTriangle(n)).isEqualTo(nthTriangularNumber);
     }
 
     @ParameterizedTest
     @MethodSource("nthProvider")
-    void triangularRoot(int n, int nthTriangularNumber) {
-        assertThat(TriangularNumbers.triangularRoot(nthTriangularNumber)).isEqualTo(n);
+    void triangularRoot(long n, long nthTriangularNumber) {
+        assertThat(TriangularNumbers.triangularRoot(nthTriangularNumber)).isEqualTo((double) n);
     }
 
     static Stream<Arguments> nonTriangularRoots() {

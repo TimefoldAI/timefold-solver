@@ -282,7 +282,8 @@ public class DefaultSolverWorkerFacade implements SolverWorkerFacade {
         try {
             Configuration configuration =
                     patchRequest.config() != null ? patchRequest.config() : getConfiguration(id);
-            Configuration initialConfiguration = getUnprocessedConfiguration(id);
+            Configuration initialConfiguration =
+                    patchRequest.config() != null ? patchRequest.config() : getUnprocessedConfiguration(id);
             if (configuration == null) {
                 configuration = Configuration.empty();
                 initialConfiguration = Configuration.empty();

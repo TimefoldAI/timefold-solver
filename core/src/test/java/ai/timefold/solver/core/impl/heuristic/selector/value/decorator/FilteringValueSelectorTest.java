@@ -3,10 +3,15 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelectorForEntity;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
@@ -14,11 +19,14 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.util.SelectionUtils;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class FilteringValueSelectorTest {
 
@@ -84,4 +92,29 @@ class FilteringValueSelectorTest {
         verify(childValueSelector, times(5)).getSize(entity);
     }
 
+    @ParameterizedTest
+    @ValueSource(longs = { Long.MAX_VALUE, -5L })
+    @SuppressWarnings("unchecked")
+    void unusableNeverEndingSizeStillBailsOut(long size) {
+        var nextCount = new AtomicLong();
+        var iterator = new Iterator<Object>() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public Object next() {
+                nextCount.incrementAndGet();
+                return new Object();
+            }
+        };
+        var childValueSelector = (ValueSelector<TestdataSolution>) mock(ValueSelector.class);
+        when(childValueSelector.isNeverEnding()).thenReturn(true);
+        when(childValueSelector.getSize(any())).thenReturn(size);
+        when(childValueSelector.iterator(any())).thenReturn(iterator);
+        var valueSelector = FilteringValueSelector.of(childValueSelector, (scoreDirector, value) -> false);
+        assertThat(valueSelector.iterator(new TestdataEntity("e")).hasNext()).isFalse();
+        assertThat(nextCount).hasValue(size < 0 ? SelectionUtils.UNKNOWN_SIZE_BAIL_OUT : SelectionUtils.MAX_BAIL_OUT);
+    }
 }
