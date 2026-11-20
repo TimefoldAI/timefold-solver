@@ -233,7 +233,7 @@ class VariableReferenceGraphBuilderTest {
             if (node.entity() == valueC) {
                 assertThat(node.variableReferences()).hasSize(2);
             } else {
-                if (node.variableReferences().getFirst().variableDescriptor().getVariableName().equals("startTime")) {
+                if (node.variableReferences().getFirst().id().name().equals("startTime")) {
                     assertThat(node.variableReferences()).hasSize(1);
                     assertThat(node.groupEntityIds()).hasSize(2);
                 } else {
@@ -284,25 +284,25 @@ class VariableReferenceGraphBuilderTest {
             // valueA is split at startTime
             if (node.entity() == valueA) {
                 if (node.variableReferences().size() == 1) {
-                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                    assertThat(node.variableReferences().getFirst().id().name())
                             .isEqualTo("serviceReadyTime");
                 } else {
                     assertThat(node.variableReferences().size()).isEqualTo(2);
-                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                    assertThat(node.variableReferences().getFirst().id().name())
                             .isEqualTo("serviceStartTime");
-                    assertThat(node.variableReferences().getLast().variableDescriptor().getVariableName())
+                    assertThat(node.variableReferences().getLast().id().name())
                             .isEqualTo("serviceFinishTime");
                 }
             } else {
                 // valueB is split at endTime
                 if (node.variableReferences().size() == 1) {
-                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                    assertThat(node.variableReferences().getFirst().id().name())
                             .isEqualTo("serviceFinishTime");
                 } else {
                     assertThat(node.variableReferences().size()).isEqualTo(2);
-                    assertThat(node.variableReferences().getFirst().variableDescriptor().getVariableName())
+                    assertThat(node.variableReferences().getFirst().id().name())
                             .isEqualTo("serviceReadyTime");
-                    assertThat(node.variableReferences().getLast().variableDescriptor().getVariableName())
+                    assertThat(node.variableReferences().getLast().id().name())
                             .isEqualTo("serviceStartTime");
                 }
             }

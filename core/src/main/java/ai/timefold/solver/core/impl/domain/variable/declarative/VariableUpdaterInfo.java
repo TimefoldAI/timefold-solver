@@ -18,7 +18,7 @@ public record VariableUpdaterInfo<Solution_>(
         EntityConsistencyState<Solution_, Object> entityConsistencyState,
         MemberAccessor memberAccessor,
         BiFunction<@Nullable Solution_, Object, Object> calculator,
-        Object @Nullable [] groupEntities) {
+        Object @Nullable [] groupEntities) implements VariableUpdater<Solution_> {
 
     public VariableUpdaterInfo(VariableMetaModel<Solution_, ?, ?> id,
             int groupId,
@@ -48,6 +48,15 @@ public record VariableUpdaterInfo<Solution_>(
     public VariableUpdaterInfo<Solution_> withGroupEntities(Object[] groupEntities) {
         return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, entityConsistencyState, memberAccessor,
                 calculator, groupEntities);
+    }
+
+    @Override
+    public boolean update(Object entity, boolean isEntityInconsistent,
+            ChangedVariableNotifier<Solution_> changedVariableNotifier) {
+        if (isEntityInconsistent) {
+            return updateIfChanged(entity, null, changedVariableNotifier);
+        }
+        return updateIfChanged(entity, changedVariableNotifier);
     }
 
     public boolean updateIfChanged(Object entity, ChangedVariableNotifier<Solution_> changedVariableNotifier) {

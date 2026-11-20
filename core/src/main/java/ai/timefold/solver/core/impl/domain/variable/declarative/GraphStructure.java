@@ -47,7 +47,21 @@ public enum GraphStructure {
     /**
      * A graph structure that accepts all graphs.
      */
-    ARBITRARY;
+    ARBITRARY,
+
+    /**
+     * A graph structure where the elements of a planning list variable,
+     * which declare the {@link GraphStructureAndDirection#parentMetaModel()}, are not graph nodes.
+     * Each list entity gets a single chain node for its elements instead,
+     * ordered after the variables its elements read through their inverse
+     * and before the variables sourced from its elements.
+     * Processing a chain node walks its list in the {@link GraphStructureAndDirection#direction()},
+     * from each element whose sources changed.
+     * See {@link ListChain} for the models it accepts.
+     * Built as {@link #ARBITRARY} without a score director or a list entity, when the graph around
+     * the chain nodes is not fixed, or when the chain nodes would close a dependency loop.
+     */
+    LIST_CHAIN;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphStructure.class);
 
@@ -66,6 +80,11 @@ public enum GraphStructure {
 
         if (!doEntitiesUseDeclarativeShadowVariables(declarativeShadowVariableDescriptors, entities)) {
             return new GraphStructureAndDirection(EMPTY, null, null);
+        }
+
+        var listChain = ListChain.of(solutionDescriptor);
+        if (listChain != null) {
+            return new GraphStructureAndDirection(LIST_CHAIN, listChain.parentMetaModel(), listChain.direction());
         }
 
         var multipleDeclarativeEntityClasses = declarativeShadowVariableDescriptors.stream()
