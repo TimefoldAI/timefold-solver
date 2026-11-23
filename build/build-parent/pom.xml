@@ -78,7 +78,7 @@
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
     <version.rewrite.plugin>6.46.1</version.rewrite.plugin>
     <version.site.plugin>3.22.0</version.site.plugin> <!-- We don't use site, but maven automatically configure it -->
-    <version.sonar.plugin>5.8.0.7211</version.sonar.plugin>
+    <version.sonar.plugin>5.9.0.7382</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
     <version.spotless.plugin>3.11.0</version.spotless.plugin>
     <version.surefire.plugin>3.6.1</version.surefire.plugin>
