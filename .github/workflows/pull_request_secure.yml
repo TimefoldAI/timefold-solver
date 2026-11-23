@@ -113,7 +113,7 @@ jobs:
 
       # Build and test
       - name: Setup Temurin and Maven
-        uses: actions/setup-java@v6.2.0
+        uses: actions/setup-java@v6.3.0
         with:
           java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
@@ -184,7 +184,7 @@ jobs:
           path: ./timefold-solver-enterprise
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
 
-      - uses: graalvm/setup-graalvm@d6eca2595046623d69d636041513c80abf745406 # v1.6.9
+      - uses: graalvm/setup-graalvm@60e76998d25690099182b796e99b8804da582d90 # v1.6.10
         with:
           java-version: ${{matrix.java-version}}
           distribution: 'graalvm-community'
@@ -235,7 +235,7 @@ jobs:
           # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
           allow-unsafe-pr-checkout: true
       - name: Set up JDK 21
-        uses: actions/setup-java@v6.2.0
+        uses: actions/setup-java@v6.3.0
         with:
           java-version: 21
           distribution: 'temurin'
