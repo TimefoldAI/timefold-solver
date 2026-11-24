@@ -1022,7 +1022,7 @@ to specify which destination, value, or subList should be nearby the selection.
 
 Distances can be asymmetric: on one-way streets, the trip from A to B can take longer than the trip back.
 Nearby selection ranks a move by the trips that the move creates.
-In the table, A is the item that the move moves and B is its candidate partner:
+In the table, A is the item that the move changes and B is its candidate partner:
 
 [cols="1,2"]
 |===
@@ -1030,7 +1030,7 @@ In the table, A is the item that the move moves and B is its candidate partner:
 
 |List change, sub-list change
 |B→A, because the move puts A right after B.
-If B is a vehicle, A→B.
+If B is a vehicle, A→B, because the meter measures only from the moved item to a vehicle.
 
 |Basic change
 |A→B.
@@ -1051,10 +1051,9 @@ For a meter with several distance matrices, see <<_which_matrix_measures_a_trip,
 [#nearbySelectionSeveralDistanceMatrices]
 ==== Several distance matrices
 
-Some models need more than one meaning of "near".
-For example, a visit on a bike route is near other visits by bike paths,
-and a visit on a car route is near other visits by roads.
-Traffic can also change travel times during the day.
+Some models need to estimate distances for different transport types or times of day.
+For example, by bike, the nearest visits are the visits along the bike paths.
+By car, other visits can be the nearest.
 For these models, implement the `MatrixAwareNearbyDistanceMeter` interface instead of `NearbyDistanceMeter`:
 
 [tabs]
@@ -1125,7 +1124,7 @@ public class CustomerNearbyDistanceMeter
 
 Follow these rules:
 
-* *Use the same unit in every matrix*, for example seconds.
+* *Use the same unit in every matrix*, for example, seconds.
 The solver compares distances across matrices.
 With seconds for cars and meters for bikes, bike destinations would always look far.
 * *Return the matrix of the item you get, from the current solution.*
@@ -1174,22 +1173,7 @@ the score still uses the exact travel times.
 
 Nearby selection ranks a move by the trips in the <<_which_distances_rank_a_move,ranking table>>.
 With several matrices, nearby selection measures each trip in the matrix of the candidate partner B.
-Only a swap also measures a trip in the matrix of A, the trip that starts at A:
-
-[cols="1,2"]
-|===
-|Move |Distance that ranks B
-
-|List change, sub-list change
-|B→A in B's matrix, because the move puts A right after B.
-If B is a vehicle, A→B in B's matrix.
-
-|Basic change
-|A→B in B's matrix.
-
-|List swap, sub-list swap, basic swap, k-opt
-|A→B in A's matrix plus B→A in B's matrix, because a swap creates a trip in each direction.
-|===
+Swaps and k-opt moves are the exception: they measure the trip A→B in the matrix of A.
 
 For example:
 

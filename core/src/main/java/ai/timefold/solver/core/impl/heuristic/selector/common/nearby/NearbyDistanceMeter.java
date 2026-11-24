@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.nearby;
 
 /**
- * Measures how near items are to each other, for nearby selection.
+ * Measures the distance between items for nearby selection.
  * Nearby selection uses the distances only to rank candidate moves;
  * the score still judges every move.
  * <p>
@@ -9,7 +9,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.nearby;
  * The solver may choose to reuse instances.
  * For more than one meaning of "near", see {@link MatrixAwareNearbyDistanceMeter}.
  *
- * @param <Moved_> the type of the item that a move moves
+ * @param <Moved_> the type of the item that a move changes
  * @param <Neighbor_> the type of the item that the moved item can be placed near
  */
 @FunctionalInterface

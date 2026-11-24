@@ -19,7 +19,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.nearby;
  * in partitioned search, each partition has its own instance.
  *
  * @param <Solution_> the solution type, the class with the {@code PlanningSolution} annotation
- * @param <Moved_> the type of the item that a move moves
+ * @param <Moved_> the type of the item that a move changes
  * @param <Neighbor_> the type of the item that the moved item can be placed near
  */
 public interface MatrixAwareNearbyDistanceMeter<Solution_, Moved_, Neighbor_> extends NearbyDistanceMeter<Moved_, Neighbor_> {
@@ -35,7 +35,7 @@ public interface MatrixAwareNearbyDistanceMeter<Solution_, Moved_, Neighbor_> ex
      * Treat it as read-only, and do not expect its data to stay constant after the call.
      *
      * @param workingSolution never null
-     * @return the number of distance matrices, from 1 to 16, also for an empty dataset;
+     * @return the number of distance matrices, from 1 to 16 inclusive, also for an empty dataset;
      *         any other value fails fast
      */
     int initializeDistanceMatrices(Solution_ workingSolution);

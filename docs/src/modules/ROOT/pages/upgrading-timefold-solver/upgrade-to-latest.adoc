@@ -102,9 +102,9 @@ nothing changes, apart from the order of candidates at equal distance.
 If it is asymmetric:
 
 - List change and sub-list change moves to a value D rank D by the distance from D to the moved value, not from the moved value to D.
-Moves to a vehicle, and basic change moves, keep the old ranking.
+If D is a vehicle, or the move is a basic change move, the ranking does not change.
 - Swap moves (list, sub-list and basic) and k-opt moves rank by the sum of both directions.
-- Nearby selection in original order, for example in exhaustive search, offers the candidates in the same new order.
+- Nearby selection in original order, for example, in exhaustive search, offers the candidates in the same new order.
 
 As a result, a solver run with the same random seed can give different results.
 Building the swap candidates also asks the meter for twice as many distances.
