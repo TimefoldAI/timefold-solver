@@ -554,6 +554,26 @@ that both represent an interval which overlap.
 All `Joiners` methods have an overloaded method to use the same property of the same class on both stream sides.
 For example, calling `equal(Shift::getEmployee)` is the same as calling `equal(Shift::getEmployee, Shift::getEmployee)`.
 
+The comparison joiners also accept an explicit `Comparator` as their last argument:
+
+[source,java,options="nowrap"]
+----
+    import static ai.timefold.solver.core.api.score.stream.Joiners.*;
+
+    private Constraint sameDepartmentInNameOrder(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Employee.class)
+                .join(Employee.class,
+                    greaterThan(Employee::getName, Employee::getName, String.CASE_INSENSITIVE_ORDER))
+                .penalize(HardSoftScore.ONE_SOFT)
+                .asConstraint("Employees in case-insensitive name order");
+    }
+----
+
+The property does not need to implement `Comparable`, and an alternative ordering can be used
+for properties that do.
+The comparator also defines equality for `lessThanOrEqual()` and `greaterThanOrEqual()`.
+The same overloads exist in `NeighborhoodsJoiners`.
+
 NOTE: If the other stream might match multiple times,
 but it must only impact the score once (for each element of the original stream),
 use <<constraintStreamsConditionalPropagation,ifExists>> instead.

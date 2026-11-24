@@ -1,9 +1,11 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.joiner;
 
+import java.util.Comparator;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.joiner.ComparatorFunction;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.FilteringBiNeighborhoodsJoiner;
@@ -234,6 +236,165 @@ public final class NeighborhoodsJoiners {
             Function<B, Property_> rightStartMapping, Function<B, Property_> rightEndMapping) {
         return NeighborhoodsJoiners.lessThan(leftStartMapping, rightEndMapping)
                 .and(NeighborhoodsJoiners.greaterThan(leftEndMapping, rightStartMapping));
+    }
+
+    /**
+     * As defined by {@link #lessThan(Function, Function, Comparator)} with the same mapping on both sides.
+     *
+     * @param mapping mapping function to apply to both A and B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of both objects
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, Property_> BiNeighborhoodsJoiner<A, A> lessThan(Function<A, Property_> mapping,
+            Comparator<? super Property_> comparator) {
+        return lessThan(mapping, mapping, comparator);
+    }
+
+    /**
+     * Joins every A and B where the comparator orders the property of A before the property of B.
+     *
+     * @param leftMapping mapping function to apply to A
+     * @param rightMapping mapping function to apply to B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of object on the left
+     * @param <B> the type of object on the right
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, B, Property_> BiNeighborhoodsJoiner<A, B> lessThan(Function<A, Property_> leftMapping,
+            Function<B, Property_> rightMapping, Comparator<? super Property_> comparator) {
+        return new DefaultBiNeighborhoodsJoiner<>(new ComparatorFunction<>(leftMapping, comparator), JoinerType.LESS_THAN,
+                new ComparatorFunction<>(rightMapping, comparator));
+    }
+
+    /**
+     * As defined by {@link #lessThanOrEqual(Function, Function, Comparator)} with the same mapping on both sides.
+     *
+     * @param mapping mapping function to apply to both A and B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of both objects
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, Property_> BiNeighborhoodsJoiner<A, A> lessThanOrEqual(Function<A, Property_> mapping,
+            Comparator<? super Property_> comparator) {
+        return lessThanOrEqual(mapping, mapping, comparator);
+    }
+
+    /**
+     * Joins every A and B where the comparator orders the property of A before or equal to the property of B.
+     *
+     * @param leftMapping mapping function to apply to A
+     * @param rightMapping mapping function to apply to B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of object on the left
+     * @param <B> the type of object on the right
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, B, Property_> BiNeighborhoodsJoiner<A, B> lessThanOrEqual(Function<A, Property_> leftMapping,
+            Function<B, Property_> rightMapping, Comparator<? super Property_> comparator) {
+        return new DefaultBiNeighborhoodsJoiner<>(new ComparatorFunction<>(leftMapping, comparator),
+                JoinerType.LESS_THAN_OR_EQUAL, new ComparatorFunction<>(rightMapping, comparator));
+    }
+
+    /**
+     * As defined by {@link #greaterThan(Function, Function, Comparator)} with the same mapping on both sides.
+     *
+     * @param mapping mapping function to apply to both A and B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of both objects
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, Property_> BiNeighborhoodsJoiner<A, A> greaterThan(Function<A, Property_> mapping,
+            Comparator<? super Property_> comparator) {
+        return greaterThan(mapping, mapping, comparator);
+    }
+
+    /**
+     * Joins every A and B where the comparator orders the property of A after the property of B.
+     *
+     * @param leftMapping mapping function to apply to A
+     * @param rightMapping mapping function to apply to B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of object on the left
+     * @param <B> the type of object on the right
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, B, Property_> BiNeighborhoodsJoiner<A, B> greaterThan(Function<A, Property_> leftMapping,
+            Function<B, Property_> rightMapping, Comparator<? super Property_> comparator) {
+        return new DefaultBiNeighborhoodsJoiner<>(new ComparatorFunction<>(leftMapping, comparator), JoinerType.GREATER_THAN,
+                new ComparatorFunction<>(rightMapping, comparator));
+    }
+
+    /**
+     * As defined by {@link #greaterThanOrEqual(Function, Function, Comparator)} with the same mapping on both sides.
+     *
+     * @param mapping mapping function to apply to both A and B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of both objects
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, Property_> BiNeighborhoodsJoiner<A, A> greaterThanOrEqual(Function<A, Property_> mapping,
+            Comparator<? super Property_> comparator) {
+        return greaterThanOrEqual(mapping, mapping, comparator);
+    }
+
+    /**
+     * Joins every A and B where the comparator orders the property of A after or equal to the property of B.
+     *
+     * @param leftMapping mapping function to apply to A
+     * @param rightMapping mapping function to apply to B
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of object on the left
+     * @param <B> the type of object on the right
+     * @param <Property_> the type of the property to compare
+     * @return a joiner that matches pairs ordered by the comparator, never null
+     */
+    public static <A, B, Property_> BiNeighborhoodsJoiner<A, B> greaterThanOrEqual(Function<A, Property_> leftMapping,
+            Function<B, Property_> rightMapping, Comparator<? super Property_> comparator) {
+        return new DefaultBiNeighborhoodsJoiner<>(new ComparatorFunction<>(leftMapping, comparator),
+                JoinerType.GREATER_THAN_OR_EQUAL, new ComparatorFunction<>(rightMapping, comparator));
+    }
+
+    /**
+     * As defined by {@link #overlapping(Function, Function)} with the same mappings on both sides.
+     *
+     * @param startMapping maps the argument to its interval start point (inclusive)
+     * @param endMapping maps the argument to its interval end point (exclusive)
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of both arguments
+     * @param <Property_> the type used to define the interval
+     * @return a joiner that matches overlapping intervals, never null
+     */
+    public static <A, Property_> BiNeighborhoodsJoiner<A, A> overlapping(Function<A, Property_> startMapping,
+            Function<A, Property_> endMapping, Comparator<? super Property_> comparator) {
+        return overlapping(startMapping, endMapping, startMapping, endMapping, comparator);
+    }
+
+    /**
+     * Joins every A and B whose intervals overlap, using the comparator to order interval bounds.
+     *
+     * @param leftStartMapping maps A to its interval start point (inclusive)
+     * @param leftEndMapping maps A to its interval end point (exclusive)
+     * @param rightStartMapping maps B to its interval start point (inclusive)
+     * @param rightEndMapping maps B to its interval end point (exclusive)
+     * @param comparator the comparator that defines the order
+     * @param <A> the type of the first argument
+     * @param <B> the type of the second argument
+     * @param <Property_> the type used to define the interval
+     * @return a joiner that matches overlapping intervals, never null
+     */
+    public static <A, B, Property_> BiNeighborhoodsJoiner<A, B> overlapping(Function<A, Property_> leftStartMapping,
+            Function<A, Property_> leftEndMapping, Function<B, Property_> rightStartMapping,
+            Function<B, Property_> rightEndMapping, Comparator<? super Property_> comparator) {
+        return lessThan(leftStartMapping, rightEndMapping, comparator)
+                .and(greaterThan(leftEndMapping, rightStartMapping, comparator));
     }
 
     private NeighborhoodsJoiners() {
