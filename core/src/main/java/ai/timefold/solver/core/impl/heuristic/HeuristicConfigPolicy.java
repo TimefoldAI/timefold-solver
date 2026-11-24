@@ -167,19 +167,32 @@ public class HeuristicConfigPolicy<Solution_> {
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
-        return copyConfigPolicy(null);
+        return copyConfigPolicyBuilder().build();
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy(EnvironmentMode environmentMode) {
-        var builder = cloneBuilder()
-                .withEntitySorterManner(entitySorterManner)
-                .withValueSorterManner(valueSorterManner)
-                .withReinitializeVariableFilterEnabled(reinitializeVariableFilterEnabled)
-                .withUnassignedValuesAllowed(unassignedValuesAllowed);
+        var builder = copyConfigPolicyBuilder();
         if (environmentMode != null) {
             builder.withEnvironmentMode(environmentMode);
         }
         return builder.build();
+    }
+
+    /**
+     * A copy that creates its own instances of user classes, such as a stateful nearby distance meter.
+     */
+    public HeuristicConfigPolicy<Solution_> copyConfigPolicy(ClassInstanceCache classInstanceCache) {
+        return copyConfigPolicyBuilder()
+                .withClassInstanceCache(classInstanceCache)
+                .build();
+    }
+
+    private Builder<Solution_> copyConfigPolicyBuilder() {
+        return cloneBuilder()
+                .withEntitySorterManner(entitySorterManner)
+                .withValueSorterManner(valueSorterManner)
+                .withReinitializeVariableFilterEnabled(reinitializeVariableFilterEnabled)
+                .withUnassignedValuesAllowed(unassignedValuesAllowed);
     }
 
     public HeuristicConfigPolicy<Solution_> copyPhaseConfigPolicy() {
