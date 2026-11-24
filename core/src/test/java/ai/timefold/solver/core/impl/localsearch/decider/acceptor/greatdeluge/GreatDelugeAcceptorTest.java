@@ -79,8 +79,8 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(moveScope2)).isTrue();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -500))).isTrue();
 
-        stepScope1.setStep(moveScope2.getMove());
-        stepScope1.setScore(moveScope2.getScore());
+        stepScope2.setStep(moveScope2.getMove());
+        stepScope2.setScore(moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
@@ -187,8 +187,8 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, -7))).isTrue();
         assertThat(acceptor.isAccepted(moveScope2)).isTrue();
 
-        stepScope1.setStep(moveScope2.getMove());
-        stepScope1.setScore(moveScope2.getScore());
+        stepScope2.setStep(moveScope2.getMove());
+        stepScope2.setScore(moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 

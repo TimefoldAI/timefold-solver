@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
@@ -13,6 +14,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.TabuS
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.bound.EmptyMinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -154,6 +157,11 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
                     logIndentation, moveScope.getMove(), Math.abs(decision));
         }
         return accepted;
+    }
+
+    @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return EmptyMinimumScoreBound.getInstance();
     }
 
     private int locateMaximumTabuStepIndex(LocalSearchMoveScope<Solution_> moveScope) {

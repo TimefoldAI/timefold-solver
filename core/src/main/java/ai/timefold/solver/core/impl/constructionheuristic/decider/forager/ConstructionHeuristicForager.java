@@ -4,9 +4,12 @@ import ai.timefold.solver.core.impl.constructionheuristic.event.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * @see AbstractConstructionHeuristicForager
  */
+@NullMarked
 public interface ConstructionHeuristicForager<Solution_>
         extends ConstructionHeuristicPhaseLifecycleListener<Solution_> {
 

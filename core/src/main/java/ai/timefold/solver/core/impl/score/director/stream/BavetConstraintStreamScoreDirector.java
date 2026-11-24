@@ -89,7 +89,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public InnerScore<Score_> innerCalculateScore() {
+    public InnerScore<Score_> innerCalculateScore(Score_ lowerBound) {
         variableSupport.assertShadowVariablesAreUpToDate();
         var score = session.calculateScore();
         setCalculatedScore(score);

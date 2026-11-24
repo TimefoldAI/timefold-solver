@@ -95,6 +95,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         }
         return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex, environmentMode, solverConfigPolicy.getLogIndentation(),
                 phaseTermination, nodeExplorationType.buildNodeComparator(scoreBounderEnabled), decider)
+                .withIsTieredScoreCalculationEnabled(solverConfigPolicy.isTieredScoreCalculationEnabled())
                 .enableAssertions().build();
     }
 

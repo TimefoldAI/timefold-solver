@@ -13,12 +13,13 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector.Builder;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
-import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSessionFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.DefaultBavetConstraintSessionFactory;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
@@ -44,10 +45,14 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         var constraintProvider = ConfigUtils.newInstance(config, "constraintProviderClass", constraintProviderClass);
         var profilingEnabled =
                 Objects.requireNonNullElse(config.getConstraintStreamProfilingEnabled(), false);
+        var constraintStreamTieredScoreCalculation =
+                Objects.requireNonNullElse(config.getConstraintStreamTieredScoreCalculation(),
+                        TimefoldSolverEnterpriseService.loadOrDefault(ignored -> true,
+                                () -> false));
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
-        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, globalEnvironmentMode,
-                profilingEnabled);
+        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
+                globalEnvironmentMode, profilingEnabled, constraintStreamTieredScoreCalculation);
     }
 
     private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config,
@@ -65,21 +70,26 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         }
     }
 
-    private final BavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;
+    private final DefaultBavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;
     private final ConstraintMetaModel constraintMetaModel;
+    private final boolean profilingEnabled;
+    private final boolean constraintStreamTieredScoreCalculation;
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode) {
-        this(solutionDescriptor, constraintProvider, globalEnvironmentMode, false);
+        this(solutionDescriptor, constraintProvider, globalEnvironmentMode, false, false);
     }
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode, boolean profilingEnabled) {
+            ConstraintProvider constraintProvider, EnvironmentMode globalEnvironmentMode, boolean profilingEnabled,
+            boolean constraintStreamTieredScoreCalculation) {
         super(solutionDescriptor, globalEnvironmentMode);
         var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, globalEnvironmentMode);
+        this.profilingEnabled = profilingEnabled;
+        this.constraintStreamTieredScoreCalculation = constraintStreamTieredScoreCalculation;
         constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
         constraintSessionFactory =
-                new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
+                new DefaultBavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingEnabled);
     }
 
     /**
@@ -93,6 +103,9 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         this.constraintMetaModel = inheritedScoreDirectorFactory.constraintMetaModel;
         this.initializingScoreTrend = inheritedScoreDirectorFactory.initializingScoreTrend;
         this.assertionScoreDirectorFactory = inheritedScoreDirectorFactory.assertionScoreDirectorFactory;
+        this.profilingEnabled = inheritedScoreDirectorFactory.profilingEnabled;
+        this.constraintStreamTieredScoreCalculation =
+                inheritedScoreDirectorFactory.constraintStreamTieredScoreCalculation;
     }
 
     public BavetConstraintSession<Score_> newSession(@Nullable Solution_ workingSolution,
@@ -117,9 +130,19 @@ public sealed class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ 
         return constraintMetaModel;
     }
 
+    public boolean isProfilingEnabled() {
+        return profilingEnabled;
+    }
+
     @Override
-    public Builder<Solution_, Score_> createScoreDirectorBuilder(EnvironmentMode environmentMode) {
-        return new Builder<>(this, environmentMode);
+    public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, ?>
+            createScoreDirectorBuilder(EnvironmentMode environmentMode) {
+        if (constraintStreamTieredScoreCalculation) {
+            return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.TIERED_SCORE_CALCULATION)
+                    .createTieredBavetScoreDirectorBuilder(this, environmentMode);
+        } else {
+            return new Builder<>(this, environmentMode);
+        }
     }
 
     @SuppressWarnings("unchecked")

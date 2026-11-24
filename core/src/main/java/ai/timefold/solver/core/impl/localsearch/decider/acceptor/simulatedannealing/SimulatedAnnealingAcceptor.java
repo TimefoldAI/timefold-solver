@@ -5,6 +5,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAccepto
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.bound.EmptyMinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
 
 /**
  * The time gradient implementation of simulated annealing.
@@ -106,4 +108,8 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
         // TODO implement reheating
     }
 
+    @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return EmptyMinimumScoreBound.getInstance();
+    }
 }

@@ -6,6 +6,8 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
+import ai.timefold.solver.core.impl.score.bound.MinimumScoreBound;
+import ai.timefold.solver.core.impl.score.bound.MoveBasedMinimumScoreBound;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
@@ -19,6 +21,8 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
 
     protected InnerScore<?>[] previousScores;
     protected int lateScoreIndex = -1;
+
+    private final MoveBasedMinimumScoreBound minimumScoreBound = new MoveBasedMinimumScoreBound<>();
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -38,6 +42,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         lateScoreIndex = 0;
         lateWorseOccurrences = lateAcceptanceSize;
         lateWorseScore = initialScore;
+        minimumScoreBound.setMinimumRequiredScore(initialScore.raw());
     }
 
     private void validate() {
@@ -73,6 +78,11 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         return accept;
     }
 
+    @Override
+    public <Score_ extends Score<Score_>> MinimumScoreBound<Score_> getMinimumScoreBound() {
+        return minimumScoreBound;
+    }
+
     private <Score_ extends Score<Score_>> void updateLateScore(InnerScore<Score_> newScore) {
         var castLateWorse = this.<Score_> getLateWorseScore();
         var newScoreWorseCmp = newScore.compareTo(castLateWorse);
@@ -103,6 +113,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
             }
         }
         lateWorseScore = castLateWorse;
+        minimumScoreBound.setMinimumRequiredScore(lateScore.raw());
     }
 
     @SuppressWarnings("unchecked")
@@ -122,6 +133,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         lateScoreIndex = -1;
         lateWorseScore = null;
         lateWorseOccurrences = -1;
+        minimumScoreBound.clear();
     }
 
 }

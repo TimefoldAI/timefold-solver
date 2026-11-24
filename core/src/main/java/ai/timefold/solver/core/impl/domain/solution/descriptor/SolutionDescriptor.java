@@ -263,7 +263,6 @@ public final class SolutionDescriptor<Solution_> {
     private ListVariableDescriptor<Solution_> listVariableDescriptor;
     @Nullable
     private List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptorList;
-
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************

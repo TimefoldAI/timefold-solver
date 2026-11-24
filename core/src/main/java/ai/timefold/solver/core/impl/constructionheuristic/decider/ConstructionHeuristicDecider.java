@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.decider;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
@@ -12,10 +13,12 @@ import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +35,8 @@ public class ConstructionHeuristicDecider<Solution_> {
 
     protected boolean assertMoveScoreFromScratch = false;
     protected boolean assertExpectedUndoMoveScore = false;
+
+    private @Nullable Score stepMaxScore = null;
 
     public ConstructionHeuristicDecider(String logIndentation, PhaseTermination<Solution_> termination,
             ConstructionHeuristicForager<Solution_> forager) {
@@ -88,6 +93,7 @@ public class ConstructionHeuristicDecider<Solution_> {
     public void decideNextStep(ConstructionHeuristicStepScope<Solution_> stepScope, Iterator<Move<Solution_>> moveIterator) {
         var moveIndex = 0;
         var terminatedPrematurely = false;
+        stepMaxScore = null;
         while (moveIterator.hasNext()) {
             var move = moveIterator.next();
             var allowedNonDoableMove = isAllowedNonDoableMove(move);
@@ -147,9 +153,13 @@ public class ConstructionHeuristicDecider<Solution_> {
         }
     }
 
-    protected void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
-        var scoreDirector = moveScope.getScoreDirector();
-        var score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
+    protected <Score_ extends Score<Score_>> void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
+        var scoreDirector = moveScope.<Score_> getScoreDirector();
+        InnerScore<?> score;
+        score = scoreDirector.executeTemporaryMove(moveScope.getMove(), (Score_) stepMaxScore, assertMoveScoreFromScratch);
+        if (!score.isStructurallyFlawed() && (stepMaxScore == null || ((Score) score.raw()).compareTo(stepMaxScore) > 0)) {
+            stepMaxScore = score.raw();
+        }
         moveScope.setScore(score);
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {

@@ -66,7 +66,8 @@ public interface TupleLifecycle<Tuple_ extends Tuple>
     }
 
     static <Stream_ extends BavetStream, Tuple_ extends Tuple> TupleLifecycle<Tuple_> profiling(
-            InnerConstraintProfiler constraintProfiler, int lifecycleId, Stream_ stream,
+            InnerConstraintProfiler constraintProfiler, int lifecycleId,
+            int networkId, Stream_ stream,
             TupleLifecycle<Tuple_> delegate) {
         if (delegate instanceof AggregatedTupleLifecycle) {
             // Do not profile aggregated tuple lifecycles; that will double
@@ -98,7 +99,7 @@ public interface TupleLifecycle<Tuple_ extends Tuple>
                     "Impossible state: encounter tuple lifecycle (%s) which is not a node and is not a known lifecycle implementation."
                             .formatted(delegate.getClass()));
         }
-        var profileId = new ConstraintNodeProfileId(lifecycleId, streamKind, qualifier, stream.getLocationSet());
+        var profileId = new ConstraintNodeProfileId(lifecycleId, networkId, streamKind, qualifier, stream.getLocationSet());
         return new ProfilingTupleLifecycle<>(constraintProfiler, profileId, delegate);
     }
 

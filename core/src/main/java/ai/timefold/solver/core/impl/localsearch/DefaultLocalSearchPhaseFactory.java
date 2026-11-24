@@ -71,7 +71,9 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination, phaseIndex);
         var decider = buildDecider(phaseConfigPolicy, phaseTermination);
         return new DefaultLocalSearchPhase.Builder<>(phaseIndex, environmentMode, solverConfigPolicy.getLogIndentation(),
-                phaseTermination, decider).enableAssertions().build();
+                phaseTermination, decider)
+                .withIsTieredScoreCalculationEnabled(solverConfigPolicy.isTieredScoreCalculationEnabled())
+                .enableAssertions().build();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
