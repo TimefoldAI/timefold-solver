@@ -27,12 +27,13 @@ When the trial ends, you need a paid subscription to keep creating new licenses.
 == Managing licenses
 
 Every user can add licenses for themselves, and view and download their own licenses.
-Users with the *admin* role within your company can also add licenses for other users in your company, and view and download all of your company's licenses.
+Users with the *admin* role within your company can also add licenses for other users in your company, and view, rename, and download all of your company's licenses.
 
 === View your licenses
 
 Click *Licenses* in the sidebar to see your active licenses, or switch to the *Expired* tab to see past ones.
-In the licenses table, each active license shows its owner, creation date, expiration date, type, and a download button.
+The licenses table shows each license's name, owner, creation date, expiration date, and type, with a download button for each active license.
+You can search the table by license name or by the owner's name or email address.
 
 .The Licenses list in the Timefold License Manager
 image::commercial-editions/license-manager-view-licenses.png[The Licenses list in the Timefold License Manager, showing active license cards with type, expiration date, and a download button]
@@ -40,17 +41,28 @@ image::commercial-editions/license-manager-view-licenses.png[The Licenses list i
 === Add a license
 
 . Click *Licenses* → *Add license key*.
-. Select an expiration date.
-It can't exceed your company's contract end date.
+. Optionally, enter a *Name* for the license, for example `Production cluster`.
 . If you have the *admin* role, optionally assign the license to another user in your company.
+. Select a *Valid until* date.
+It can't exceed your company's contract end date.
 . Click *Add license key*.
 
 Your company's plan determines the license type; you don't need to select it manually.
 
+=== Name a license
+
+A license name is a label of up to 100 characters that helps you tell licenses apart in the License Manager.
+The name isn't written into the `.pem` license file and doesn't change the download filename.
+
+To name or rename an existing license, click *Rename license* (the pencil icon) next to the license's name in the licenses table.
+Clearing the name removes it, and the license shows as *Unnamed*.
+
+The license owner and your company's admins can rename a license.
+
 === Download a license key
 
 Click *Download license key* next to a license to get its `.pem` file.
-Introduce it to your project as described in xref:commercial-editions/installation.adoc#solverSetupLicenseKey[Set up your license key].
+Introduce the `.pem` file to your project as described in xref:commercial-editions/installation.adoc#solverSetupLicenseKey[Set up your license key].
 
 [IMPORTANT]
 ====
@@ -70,6 +82,25 @@ Once a license expires, Timefold Solver refuses to start.
 There is no grace period.
 Renew your license before it expires to avoid downtime.
 ====
+
+=== Use several licenses
+
+There's no limit on the number of licenses per company.
+We recommend one license per environment, for example:
+
+* Production: valid until your contract end date.
+* CI and other shared environments: valid until your contract end date, or a few weeks before it.
+Letting CI expire a few weeks before production gives an early warning, because CI fails before production does.
+* Each developer: a personal license, valid for a few months.
+
+Assign each license to the person who owns that environment.
+The license owner receives the xref:commercial-editions/license-management.adoc#_email_reminders[expiry reminder emails].
+Give each license a xref:commercial-editions/license-management.adoc#_name_a_license[name] to tell the licenses apart.
+
+Timefold Solver validates the license file offline and never contacts Timefold's servers.
+As a result, a license can't be revoked: a license file stays valid until its expiry date.
+Offline validation is also why a license's expiry date can't exceed your contract end date.
+Keep licenses that leave your control, such as personal licenses, short-lived.
 
 == Notifications
 

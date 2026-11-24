@@ -44,6 +44,8 @@ public non-sealed interface ModelConvertor<Score_ extends Score<Score_>, ModelIn
      * Optionally, the {@code lastModelOutput} parameter can be provided to recover from a previous failure and restart
      * the solving process. In such cases, {@code lastModelOutput} represents the last stored output before the failure,
      * allowing the method to restore or reuse relevant state as needed.
+     * For non-disruptive replanning, make sure to correctly set original assignments from the {@link ModelInput_} and avoid
+     * overwriting them by the partially solved {@link ModelOutput_}.
      *
      * @param modelInput the model input part of the request, containing the data to be converted; never null
      * @param modelConfig the model configuration, including any overrides to be applied; never null
@@ -68,7 +70,10 @@ public non-sealed interface ModelConvertor<Score_ extends Score<Score_>, ModelIn
      * This method modifies the provided {@link ModelInput_} to create an updated {@link ModelInput_} that reflects
      * changes introduced by solving represented in the {@link ModelOutput_}.
      * <p>
-     * The updated {@link ModelInput_} can be used as a basis for new datasets by applying external changes.
+     * The updated {@link ModelInput_} can be used as a basis for new datasets, e.g. by applying external changes.
+     * <p>
+     * If the model supports non-disruptive replanning, the next solver run can use the updated {@link ModelInput_} to set
+     * original assignments to the {@link SolverModel_ solver model}.
      *
      * @param modelInput The model input to be updated; never null
      * @param modelOutput The model output containing changes to be applied to the model input; never null
