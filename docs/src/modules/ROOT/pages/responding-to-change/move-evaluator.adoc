@@ -1,0 +1,196 @@
+[#moveEvaluator]
+= Move Evaluator
+:doctype: book
+:sectnums:
+:icons: font
+
+include::../commercial-editions/_only-enterprise.adoc[]
+
+Sometimes you need to know what a specific change would do to a solution, without running the solver.
+For example, a planner wants to see the impact of moving a shift to another employee before committing to it,
+or an application wants to compare a handful of alternatives that it built itself.
+The _Move Evaluator_ answers such "what if" questions.
+
+The Move Evaluator executes xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsMove[moves] that you choose
+on a copy of your solution, and tells you the resulting score, and if needed its full xref:constraints-and-score/understanding-the-score.adoc#scoreAnalysis[score analysis].
+Like the solver, it uses xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental calculation],
+so evaluating a move takes far less time than calculating the score of the whole solution again.
+
+IMPORTANT: The Move Evaluator executes moves of the xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API],
+which is a preview feature.
+The `Move` interface, the built-in `Moves` and the Domain MetaModel API may still change.
+
+[#moveEvaluatorCreating]
+== Creating the Move Evaluator
+
+The Move Evaluator is created from a `SolutionManager`, for a given solution:
+
+[source,java,options="nowrap"]
+----
+SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
+EmployeeSchedule employeeSchedule = ...; // Our planning solution.
+
+try (MoveEvaluator<EmployeeSchedule, HardSoftScore> moveEvaluator = solutionManager.moveEvaluator(employeeSchedule)) {
+    ... // Evaluate moves.
+}
+----
+
+The Move Evaluator works on its own _working solution_, which is a planning clone of the solution it was created for.
+The solution you passed in is never changed.
+
+Keep the following in mind:
+
+- The Move Evaluator holds resources and must be closed when no longer needed,
+preferably using a try-with-resources block, as shown above.
+- It is stateful and not thread-safe.
+Unlike `SolutionManager`, it must not be shared between threads.
+If you need to evaluate moves in parallel, create one Move Evaluator per thread.
+- The solution must not be structurally flawed;
+otherwise `moveEvaluator(...)` throws `InconsistentSolutionException`.
+- The score calculator must support constraint matching,
+such as xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
+or an Incremental score calculator which implements `AnalyzableIncrementalScoreCalculator`;
+otherwise `moveEvaluator(...)` throws `IllegalStateException`.
+The Move Evaluator needs constraint matching to provide the score analysis.
+- The solution does not need to be fully initialized.
+
+[#moveEvaluatorBuildingMoves]
+== Building moves
+
+A move must only reference instances of the working solution, not of the solution you passed in.
+Use `lookUpWorkingObject(...)` to translate an entity or a problem fact of your solution to its working counterpart.
+The xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsDomainMetamodel[Domain MetaModel] which the built-in moves need
+is available from `getSolutionMetaModel()`:
+
+[source,java,options="nowrap"]
+----
+Shift shift = ...; // From employeeSchedule.
+Employee ann = ...; // From employeeSchedule.
+
+PlanningVariableMetaModel<EmployeeSchedule, Shift, Employee> employeeVariable =
+        moveEvaluator.getSolutionMetaModel()
+                .genuineEntity(Shift.class)
+                .basicVariable("employee", Employee.class);
+Move<EmployeeSchedule> move = Moves.change(employeeVariable,
+        moveEvaluator.lookUpWorkingObject(shift),
+        moveEvaluator.lookUpWorkingObject(ann));
+----
+
+Any move works: one of the xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsBuiltInMoves[built-in moves],
+several of them combined with `Moves.compose(...)`,
+or a xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsExampleMove[custom move].
+
+[#moveEvaluatorTemporaryMoves]
+== Evaluating moves temporarily
+
+A temporary move is executed, evaluated, and then undone.
+When `executeTemporaryMove(...)` returns, the working solution is in the same state as before the call.
+This makes temporary moves ideal for comparing alternatives against the same starting point:
+
+[source,java,options="nowrap"]
+----
+HardSoftScore currentScore = moveEvaluator.calculateScore();
+for (Employee employee : employeeSchedule.getEmployees()) {
+    Move<EmployeeSchedule> move = Moves.change(employeeVariable,
+            moveEvaluator.lookUpWorkingObject(shift),
+            moveEvaluator.lookUpWorkingObject(employee));
+    HardSoftScore scoreAfterMove = moveEvaluator.executeTemporaryMove(move);
+}
+----
+
+`calculateScore()` returns the score of the working solution in its current state, without executing any move.
+
+[#moveEvaluatorPostprocessor]
+=== Reading more than the score
+
+To learn more about the solution after the move, such as which constraints the move affected,
+pass a _postprocessor_ to `executeTemporaryMove(...)`.
+The postprocessor is called while the move is still applied,
+and receives a `MoveEvaluatorContext`, which gives access to:
+
+- `getScore()`, the score after the move;
+- `getScoreAnalysis()`, the xref:constraints-and-score/understanding-the-score.adoc#scoreAnalysis[score analysis] after the move,
+optionally with a `ScoreAnalysisFetchPolicy` to choose how much detail it includes;
+- `getWorkingSolution()`, the working solution with the move applied, including updated shadow variables.
+
+Whatever the postprocessor returns, `executeTemporaryMove(...)` returns:
+
+[source,java,options="nowrap"]
+----
+Map<String, HardSoftScore> scorePerConstraint = moveEvaluator.executeTemporaryMove(move, context -> {
+    ScoreAnalysis<HardSoftScore> scoreAnalysis = context.getScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT);
+    return scoreAnalysis.constraintAnalyses().stream()
+            .collect(Collectors.toMap(constraint -> constraint.constraintRef().id(), ConstraintAnalysis::score));
+});
+----
+
+The score and the score analysis are only calculated when the postprocessor asks for them,
+so a postprocessor only pays for what it uses.
+The score analysis is slower than the score, so only request it when you need the breakdown per constraint.
+
+Because the move is undone as soon as the postprocessor returns, the postprocessor must follow these rules:
+
+- It must not modify the working solution, nor execute other moves on the Move Evaluator.
+- It must not keep the context, which can no longer be used once the postprocessor returns.
+- Its result must not depend on the state that the move changed.
+After the undo, the planning variables of the working solution revert,
+so a returned entity would no longer show the state after the move.
+Extract the information you need into the result instead, such as the employee's name or the shift's start time.
+
+The score and match counts of the analysis, do not change when the move is undone,
+and so they are safe to return.
+The constraint justifications and indictments of the score analysis, however,
+reference entities and problem facts of the working solution, whose planning variables revert;
+extract what you need from them inside the postprocessor.
+
+[#moveEvaluatorPermanentMoves]
+== Executing moves permanently
+
+`executeMove(...)` executes a move and keeps its changes,
+so that subsequent moves build on top of it.
+It updates shadow variables, but does not calculate the score;
+call `calculateScore()` afterwards if you need it:
+
+[source,java,options="nowrap"]
+----
+moveEvaluator.executeMove(move);
+HardSoftScore score = moveEvaluator.calculateScore();
+EmployeeSchedule workingSolution = moveEvaluator.getWorkingSolution(); // Reflects the move.
+----
+
+Use permanent moves to set up a scenario, such as a shift that the planner has already reassigned,
+and then compare temporary moves against that new starting point.
+
+A permanent move cannot be undone.
+To return to the original state, create a new Move Evaluator from the original solution
+or execute another move that undoes the previous change.
+Do not modify the working solution directly; only change it through moves.
+
+[#moveEvaluatorFailures]
+== Handling failures
+
+If a move, a postprocessor, or a score calculation throws an exception,
+the working solution may be left half-changed.
+The Move Evaluator can then no longer be used:
+every further call throws `IllegalStateException`,
+and you need to create a new Move Evaluator from the original solution.
+
+There is one exception.
+If a temporary move makes the working solution structurally flawed,
+for example by creating a loop in shadow variables,
+the move is undone, the postprocessor is not called, and `executeTemporaryMove(...)` throws `IllegalArgumentException`.
+The Move Evaluator remains usable, so you can catch the exception and continue with the next move:
+
+[source,java,options="nowrap"]
+----
+try {
+    HardSoftScore scoreAfterMove = moveEvaluator.executeTemporaryMove(move);
+    ...
+} catch (IllegalArgumentException e) {
+    // The move would make the solution structurally flawed; skip it.
+}
+----
+
+A permanent move which makes the working solution structurally flawed cannot be undone,
+and so it makes the Move Evaluator unusable.
+If a move might do that, evaluate it with `executeTemporaryMove(...)` first.
