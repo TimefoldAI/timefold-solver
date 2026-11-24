@@ -106,12 +106,7 @@ If B is a vehicle, or the move is a basic change move, the ranking does not chan
 - Swap moves (list, sub-list and basic) and k-opt moves rank by the sum of both directions.
 - Nearby selection in original order, for example, in exhaustive search, offers the candidates in the same new order.
 
-These changes apply to every meter:
-
-- With value ranges on entities, list change and sub-list change moves only check that the entity of B accepts A.
-- Nearby sub-list selection accepts `minimumSubListSize` together with a distribution size maximum.
-If no element near the origin starts a long enough sub-list, the selector ends the step.
-It does not select a sub-list that is not near.
+With value ranges on entities, list change and sub-list change moves only check that the entity of B accepts A.
 
 As a result, solving the same dataset with the same random seed can give different results.
 Building the swap candidates also asks the meter for twice as many distances.
