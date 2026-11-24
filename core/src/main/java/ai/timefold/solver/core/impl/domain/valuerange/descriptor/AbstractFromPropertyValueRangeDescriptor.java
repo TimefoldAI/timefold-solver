@@ -92,13 +92,19 @@ public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
     }
 
     protected <Value_> ValueRange<Value_> readValueRange(Object bean, Object parameter) {
-        Object valueRangeObject;
+        return processValueRange(readRawValueRange(bean, parameter), bean);
+    }
+
+    /**
+     * @return the object returned by the {@link ValueRangeProvider} member, before any wrapping;
+     *         a {@link Collection}, an array or a {@link ValueRange}
+     */
+    protected Object readRawValueRange(Object bean, Object parameter) {
         if (memberAccessor.acceptsParameter()) {
-            valueRangeObject = memberAccessor.executeGetter(bean, parameter);
+            return memberAccessor.executeGetter(bean, parameter);
         } else {
-            valueRangeObject = memberAccessor.executeGetter(bean);
+            return memberAccessor.executeGetter(bean);
         }
-        return processValueRange(valueRangeObject, bean);
     }
 
     protected <Value_> ValueRange<Value_> processValueRange(Object valueRangeObject, Object bean) {
