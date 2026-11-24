@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.tools.maven.client.PlatformIdentityInfo;
@@ -30,6 +31,25 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
     protected static final String PROP_MODEL_NATIVE_SUPPORTED = "timefold.model.nativeSupported";
 
     protected static final String PROP_MODEL_CONFIG_SKIP = "timefold.model.configuration.skip";
+
+    protected static final String TIMEFOLD_MAVEN_PLUGIN_GROUP_ID = "ai.timefold.solver";
+
+    protected static final String TIMEFOLD_MAVEN_PLUGIN_ARTIFACT_ID = "timefold-maven-plugin";
+
+    protected static final String TIMEFOLD_MAVEN_PLUGIN_PREFIX = "timefold";
+
+    protected static final String TIMEFOLD_MAVEN_PLUGIN_DEPLOY_GOAL = "deploy";
+
+    protected static final String regex = "^(?:"
+            + Pattern.quote(TIMEFOLD_MAVEN_PLUGIN_PREFIX)
+            + "|"
+            + Pattern.quote(TIMEFOLD_MAVEN_PLUGIN_GROUP_ID) + ":" + Pattern.quote(TIMEFOLD_MAVEN_PLUGIN_ARTIFACT_ID)
+            + "(?::[^:@]+)?"
+            + "):"
+            + Pattern.quote(TIMEFOLD_MAVEN_PLUGIN_DEPLOY_GOAL)
+            + "(?:@[^:@]+)?$";
+
+    protected static final Pattern GOAL_PATTERN = Pattern.compile(regex);
 
     /**
      * Name of the generated properties file,
@@ -290,7 +310,7 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
      */
     protected boolean shouldExecute() {
         List<String> goals = session.getRequest().getGoals();
-        return goals.contains("timefold:deploy");
+        return goals.stream().anyMatch(g -> GOAL_PATTERN.matcher(g).matches());
     }
 
     /**
