@@ -462,7 +462,7 @@ import java.util.Set;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
+import ai.timefold.solver.service.definition.api.dto.dataset.ModelRequest;
 
 import org.acme.vehiclerouting.dto.input.LocationInputDTO;
 import org.acme.vehiclerouting.dto.input.VehicleInputDTO;

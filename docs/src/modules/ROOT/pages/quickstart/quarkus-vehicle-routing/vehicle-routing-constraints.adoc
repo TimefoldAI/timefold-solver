@@ -106,7 +106,7 @@ Create the `src/main/java/org/acme/vehiclerouting/domain/justification/VehicleRo
 ----
 package org.acme.vehiclerouting.domain.justification;
 
-import ai.timefold.solver.service.definition.api.ModelConstraintJustification;
+import ai.timefold.solver.service.definition.api.dto.scoreanalysis.ModelConstraintJustification;
 
 import org.acme.vehiclerouting.domain.Vehicle;
 
