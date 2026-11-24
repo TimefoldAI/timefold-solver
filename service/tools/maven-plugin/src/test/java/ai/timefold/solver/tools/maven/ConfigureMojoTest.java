@@ -256,6 +256,66 @@ public class ConfigureMojoTest {
 
     @Test
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureSuccessfullyWithGroupAndArtifact(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("ai.timefold.solver:timefold-maven-plugin:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Configured Timefold Platform integration; build properties written to", Level.INFO);
+
+        // load configured build properties and assert expected entry
+        assertThat(readBuildProperties(mojo))
+                // test is returned from aboutme endpoint as this is the namespace that access token grants
+                .containsEntry("quarkus.container-image.group", "test")
+                .containsEntry("quarkus.container-image.registry", "test.registry.com")
+                .containsEntry("quarkus.container-image.push", "true")
+                .containsEntry("image.native-suffix", "")
+                .containsEntry("timefold.platform.minimal-solver-version", "2.6.0")
+                .containsEntry("timefold.platform.maximal-solver-version", "2.7.0")
+                .containsEntry("timefold.platform.allow-solver-snapshot", "false");
+
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureSuccessfullyWithGroupAndArtifactAndVersion(ConfigureMojo mojo) throws Exception {
+
+        session.getRequest().setGoals(List.of("ai.timefold.solver:timefold-maven-plugin:2.6.0:deploy"));
+        setEnterpriseModel(mojo);
+
+        mojo.setAccessTokenProvider(new TestAccessTokenProvider("xxxx"));
+        mojo.setLog(log);
+        mojo.platformUrl = wm1.getRuntimeInfo().getHttpBaseUrl();
+        mojo.execute();
+
+        wm1.verify(1, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+
+        // assert that plugin executed and produced expected logs
+        log.assertContains("Configured Timefold Platform integration; build properties written to", Level.INFO);
+
+        // load configured build properties and assert expected entry
+        assertThat(readBuildProperties(mojo))
+                // test is returned from aboutme endpoint as this is the namespace that access token grants
+                .containsEntry("quarkus.container-image.group", "test")
+                .containsEntry("quarkus.container-image.registry", "test.registry.com")
+                .containsEntry("quarkus.container-image.push", "true")
+                .containsEntry("image.native-suffix", "")
+                .containsEntry("timefold.platform.minimal-solver-version", "2.6.0")
+                .containsEntry("timefold.platform.maximal-solver-version", "2.7.0")
+                .containsEntry("timefold.platform.allow-solver-snapshot", "false");
+
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
     public void testConfigureSuccessfullyMissingSolverParams(ConfigureMojo mojo) throws Exception {
 
         session.getRequest().setGoals(List.of("timefold:deploy"));
@@ -664,6 +724,34 @@ public class ConfigureMojoTest {
     @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
     public void testConfigureSkipsEnterpriseCheckWhenDeployNotRequested(ConfigureMojo mojo) throws Exception {
 
+        // neither the parent nor the enterprise artifacts are set, yet nothing fails
+        mojo.setLog(log);
+        mojo.execute();
+
+        assertThat(log.getEvents()).isEmpty();
+        wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+    }
+
+    @Test
+    @InjectMojo(goal = "configure", pom = "src/test/resources/project-to-test/pom.xml")
+    public void testConfigureSkipsEnterpriseCheckWhenDeployNotRequestedOrWrong(ConfigureMojo mojo) throws Exception {
+        session.getRequest().setGoals(List.of("timefold:undeploy@custom"));
+        // neither the parent nor the enterprise artifacts are set, yet nothing fails
+        mojo.setLog(log);
+        mojo.execute();
+
+        assertThat(log.getEvents()).isEmpty();
+        wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+
+        session.getRequest().setGoals(List.of("other:deploy"));
+        // neither the parent nor the enterprise artifacts are set, yet nothing fails
+        mojo.setLog(log);
+        mojo.execute();
+
+        assertThat(log.getEvents()).isEmpty();
+        wm1.verify(0, getRequestedFor(urlPathEqualTo("/api/platform/v1/aboutme")));
+
+        session.getRequest().setGoals(List.of("deploy"));
         // neither the parent nor the enterprise artifacts are set, yet nothing fails
         mojo.setLog(log);
         mojo.execute();
