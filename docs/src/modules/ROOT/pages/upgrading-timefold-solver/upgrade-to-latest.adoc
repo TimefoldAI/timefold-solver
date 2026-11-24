@@ -96,20 +96,14 @@ and they can only be automated partially, if at all.
 icon:eye[set=far] Nearby selection ranks moves by the trips they create
 [%collapsible%open]
 ====
-xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection] now ranks each candidate by the trips that the move creates.
-If your `NearbyDistanceMeter` is symmetric (the distance from A to B equals the distance from B to A),
-the ranking does not change, apart from the order of candidates at equal distance.
-If it is asymmetric, with A as the moved item and B as its candidate partner:
+xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection] now ranks each candidate B of a moved item A by the trips that the move creates.
+This changes the ranking only if your `NearbyDistanceMeter` is asymmetric:
 
-- List change and sub-list change moves rank B by the distance from B to A, not from A to B.
-If B is a vehicle, or the move is a basic change move, the ranking does not change.
-- Swap moves (list, sub-list and basic) and k-opt moves rank by the sum of both directions.
-- Nearby selection in original order, for example, in exhaustive search, offers the candidates in the same new order.
+- List change and sub-list change moves rank B by the distance from B to A, unless B is a vehicle.
+- Swap and k-opt moves rank B by the sum of both directions.
 
 With value ranges on entities, list change and sub-list change moves only check that the entity of B accepts A.
-
-As a result, solving the same dataset with the same random seed can give different results.
-Building the swap candidates also asks the meter for twice as many distances.
+The same random seed can give different results.
 ====
 
 icon:eye[set=far] Deprecation of `@ShadowVariableInconsistent`
