@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.mimic;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -58,7 +60,8 @@ public class MimicReplayingEntitySelector<Solution_>
 
     @Override
     public boolean isNeverEnding() {
-        return entityMimicRecorder.isNeverEnding();
+        // A replay contains at most the one entity that was recorded.
+        return false;
     }
 
     @Override
@@ -138,14 +141,20 @@ public class MimicReplayingEntitySelector<Solution_>
 
     @Override
     public ListIterator<Object> listIterator() {
-        // TODO Not yet implemented
-        throw new UnsupportedOperationException();
+        return buildRecordedList().listIterator();
     }
 
     @Override
     public ListIterator<Object> listIterator(int index) {
-        // TODO Not yet implemented
-        throw new UnsupportedOperationException();
+        return buildRecordedList().listIterator(index);
+    }
+
+    private List<Object> buildRecordedList() {
+        var recordedList = new ArrayList<Object>(1);
+        if (hasRecordingCreated && hasRecording && recordingCreated) {
+            recordedList.add(recording);
+        }
+        return recordedList;
     }
 
     @Override
