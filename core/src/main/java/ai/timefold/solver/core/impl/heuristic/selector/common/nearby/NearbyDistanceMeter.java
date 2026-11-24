@@ -20,8 +20,8 @@ public interface NearbyDistanceMeter<Moved_, Neighbor_> {
      * The distance can be in any unit, such a meters, foot, seconds or milliseconds.
      * For example, vehicle routing often uses driving time in seconds.
      * <p>
-     * Distances can be asymmetrical: the distance from an origin to a destination
-     * often differs from the distance from that destination to that origin.
+     * Distances can be asymmetrical: the distance from the moved item to the neighbor
+     * often differs from the distance back.
      * The solver asks for the other direction itself, where a move needs it.
      * <p>
      * The distance must not depend on the working solution.
