@@ -194,8 +194,10 @@ timefold.model.contact.url=https://acme.com
 
 timefold.model.max-thread-count=1
 timefold.model.default-config.max-thread-count=1
-timefold.platform.map-service.use-remote=false
-timefold.platform.map-service.enable-fallback=true
+%dev.timefold.platform.map-service.use-remote=false
+%dev.timefold.platform.map-service.enable-fallback=true
+%test.timefold.platform.map-service.use-remote=false
+%test.timefold.platform.map-service.enable-fallback=true
 
 ########################
 # Test overrides

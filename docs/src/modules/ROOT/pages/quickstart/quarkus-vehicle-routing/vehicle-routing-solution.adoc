@@ -179,8 +179,10 @@ Two properties control how the matrix gets built:
 
 [source,properties,options="nowrap"]
 ----
-timefold.platform.map-service.use-remote=false
-timefold.platform.map-service.enable-fallback=true
+%dev.timefold.platform.map-service.use-remote=false
+%dev.timefold.platform.map-service.enable-fallback=true
+%test.timefold.platform.map-service.use-remote=false
+%test.timefold.platform.map-service.enable-fallback=true
 ----
 
 * `use-remote` switches between the remote map service of the Timefold Platform,
