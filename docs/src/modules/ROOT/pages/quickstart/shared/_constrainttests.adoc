@@ -70,19 +70,19 @@ import java.time.LocalTime
 {testannotation}
 class TimetableConstraintProviderTest {
 
-    val ROOM1: Room = Room(1, "Room1")
-    private val TIMESLOT1: Timeslot = Timeslot(1, DayOfWeek.MONDAY, LocalTime.NOON)
-    private val TIMESLOT2: Timeslot = Timeslot(2, DayOfWeek.TUESDAY, LocalTime.NOON)
+    private val ROOM1: Room = Room("Room1")
+    private val TIMESLOT1: Timeslot = Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.NOON)
+    private val TIMESLOT2: Timeslot = Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 0), LocalTime.NOON)
 
     {wiringannotation}
-    lateinit var constraintVerifier: ConstraintVerifier<TimeTableConstraintProvider, Timetable>
+    lateinit var constraintVerifier: ConstraintVerifier<TimetableConstraintProvider, Timetable>
 
     @Test
     fun roomConflict() {
-        val firstLesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
-        val conflictingLesson = Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
-        val nonConflictingLesson = Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
-        constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
+        val firstLesson = Lesson("1", "Subject1", "Teacher1", "Group1").apply { timeslot = TIMESLOT1; room = ROOM1 }
+        val conflictingLesson = Lesson("2", "Subject2", "Teacher2", "Group2").apply { timeslot = TIMESLOT1; room = ROOM1 }
+        val nonConflictingLesson = Lesson("3", "Subject3", "Teacher3", "Group3").apply { timeslot = TIMESLOT2; room = ROOM1 }
+        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
             .given(firstLesson, conflictingLesson, nonConflictingLesson)
             .penalizesBy(1)
     }
