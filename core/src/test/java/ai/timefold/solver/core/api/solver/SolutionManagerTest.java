@@ -130,6 +130,31 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
+    void updateOnlyShadowVariablesClearsStaleShadowsOfUnassignedListValue(SolutionManagerSource solutionManagerSource) {
+        var a0 = new TestdataListValueWithShadowHistory("a0");
+        var a = new TestdataListEntityWithShadowHistory("a", a0);
+        var b = new TestdataListEntityWithShadowHistory("b");
+        var unassigned = new TestdataListValueWithShadowHistory("unassigned");
+        // Stale shadows, as if the value was removed from b's list without updating them.
+        unassigned.setEntity(b);
+        unassigned.setIndex(0);
+        unassigned.setPrevious(a0);
+        unassigned.setNext(a0);
+        var solution = new TestdataListSolutionWithShadowHistory();
+        solution.setEntityList(Arrays.asList(a, b));
+        solution.setValueList(Arrays.asList(a0, unassigned));
+
+        var solutionManager = solutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST);
+        solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY);
+
+        assertSoftly(softly -> {
+            assertShadowedListValue(softly, a0, a, 0, null, null);
+            assertShadowedListValueAllNull(softly, unassigned);
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
     void updateInconsistent(SolutionManagerSource solutionManagerSource) {
         var entity1 = new TestdataDependencyNoInconsistentFieldEntity("e1");
         var valueA1 = new TestdataDependencyNoInconsistentFieldValue("a1");
