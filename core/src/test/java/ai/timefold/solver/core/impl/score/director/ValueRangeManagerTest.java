@@ -5,6 +5,11 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertReversedNonNu
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -703,6 +708,46 @@ class ValueRangeManagerTest {
 
         initializationStats = valueRangeManager.getInitializationStatistics();
         assertThat(initializationStats.uninitializedVariableCount()).isEqualTo(entityCount);
+    }
+
+    @Test
+    void countAssignedListValues() {
+        var valueCount = 10;
+        var entityCount = 3;
+        var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        assertThat(valueRangeManager.getInitializationStatistics().assignedListValueCount()).isEqualTo(valueCount);
+
+        var valueList = solution.getEntityList().get(0).getValueList();
+        var unassignedValueCount = valueList.size();
+        valueList.forEach(value -> {
+            value.setEntity(null);
+            value.setIndex(null);
+        });
+        valueList.clear();
+        valueRangeManager.reset(solution);
+
+        assertThat(valueRangeManager.getInitializationStatistics().assignedListValueCount())
+                .isEqualTo(valueCount - unassignedValueCount);
+    }
+
+    @Test
+    void initializationStatisticsDoNotBuildValueRangesWhenUnassignedValuesAllowed() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(10, 3);
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var valueRangeManager = spy(ValueRangeManager.of(solutionDescriptor, solution));
+
+        var initializationStatistics = valueRangeManager.getInitializationStatistics();
+        assertThat(initializationStatistics.unassignedValueCount()).isZero();
+        assertThat(initializationStatistics.assignedListValueCount()).isZero();
+        verify(valueRangeManager, never()).countOnSolution(any(), any());
+        verify(valueRangeManager, never()).getReachableValues(any());
+
+        // The problem size statistics are computed on request.
+        assertThat(valueRangeManager.getProblemSizeStatistics().approximateValueCount()).isEqualTo(10);
+        verify(valueRangeManager, atLeastOnce()).getReachableValues(any());
     }
 
     @Test

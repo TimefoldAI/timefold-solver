@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.phase.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -69,8 +71,13 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             // as otherwise Ruin&Recreate doesn't work correctly with its nested CH phase.
             var scoreDirector = phaseScope.getScoreDirector();
             var valueRangeManager = scoreDirector.getValueRangeManager();
-            maxStepCount = valueRangeManager.computeInitializationStatistics(scoreDirector.getWorkingSolution(), null)
-                    .notInAnyListValueCount();
+            var workingSolution = scoreDirector.getWorkingSolution();
+            var assignedValueCount = valueRangeManager.computeInitializationStatistics(workingSolution, null)
+                    .assignedListValueCount();
+            var listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
+            maxStepCount = (int) valueRangeManager.countOnSolution(
+                    Objects.requireNonNull(listVariableDescriptor).getValueRangeDescriptor(), workingSolution)
+                    - assignedValueCount;
         }
 
         TerminationStatus earlyTerminationStatus = null;
