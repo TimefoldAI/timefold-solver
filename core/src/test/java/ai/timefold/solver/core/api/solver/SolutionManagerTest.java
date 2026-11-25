@@ -13,9 +13,16 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListValueWithShadowHistory;
@@ -415,6 +422,50 @@ public class SolutionManagerTest {
                         " and one of its elements (e1 -> a1 -> b1)" +
                         " which has a shadow variable (entity)" +
                         " has an oldInverseEntity (e2) which is not that entity.");
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateVisitsProblemFacts(SolutionManagerSource solutionManagerSource) {
+        var solverFactory = SolverFactory.<TestdataSolution> create(new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataValuePenalizingConstraintProvider.class));
+        var solution = TestdataSolution.generateSolution(3, 2);
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+
+        // Without lookup, the problem facts must still reach the score director.
+        var score = solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
+        assertThat(score).isEqualTo(SimpleScore.of(-3));
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateDoesNotValidateValueRanges(SolutionManagerSource solutionManagerSource) {
+        var solverFactory = SolverFactory.<TestdataSolution> create(new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataValuePenalizingConstraintProvider.class));
+        var solution = TestdataSolution.generateSolution(3, 2);
+        solution.getEntityList().get(0).setValue(new TestdataValue("outside of the value range"));
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+
+        // Value ranges are only validated when lookup is enabled, such as when solving.
+        assertThatCode(() -> solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY))
+                .doesNotThrowAnyException();
+    }
+
+    public static final class TestdataValuePenalizingConstraintProvider implements ConstraintProvider {
+
+        @Override
+        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+            return new Constraint[] {
+                    constraintFactory.forEach(TestdataValue.class)
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint("Penalize every value")
+            };
+        }
+
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

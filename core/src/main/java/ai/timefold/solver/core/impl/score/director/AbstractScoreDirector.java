@@ -290,9 +290,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var solutionDescriptor = getSolutionDescriptor();
 
         /*
-         * Both problem facts and entities need to be asserted,
-         * which requires iterating over all of them,
-         * possibly many thousands of objects.
+         * When lookup is enabled, problem facts and entities are registered for lookup
+         * and their assigned values are checked against the value ranges.
+         * Both require iterating over all of them, possibly many thousands of objects.
          * Providing the init score and genuine entity count requires another pass over the entities.
          * The following code does all of those operations in a single pass.
          * It will also run the optional entityAndFactVisitor from the calling code,
@@ -303,14 +303,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             Consumer<Object> workingObjectLookupVisitor = lookUpManager::addWorkingObject;
             entityAndFactVisitor = entityAndFactVisitor == null ? workingObjectLookupVisitor
                     : entityAndFactVisitor.andThen(workingObjectLookupVisitor);
+            // One-time check of value ranges
+            // to ensure assigned planning values are included in the solution range or any entity value range
+            entityAndFactVisitor = entityAndFactVisitor.andThen(this::assertValueRangeForEntity);
         }
-        // One-time check of value ranges
-        // to ensure assigned planning values are included in the solution range or any entity value range
-        entityAndFactVisitor = entityAndFactVisitor == null ? this::assertValueRangeForEntity
-                : entityAndFactVisitor.andThen(this::assertValueRangeForEntity);
         // This visits all the facts, applying the visitor if non-null.
-        solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
-
+        if (entityAndFactVisitor != null) {
+            solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
+        }
         // No two entities in the same solution may be equal.
         var entityClassToEntitySetMap = new HashMap<Class<?>, Set<Object>>();
         Consumer<Object> entityValidator = entity -> {
@@ -324,7 +324,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         .formatted(entity, entity.getClass()));
             }
         };
-        entityAndFactVisitor = entityAndFactVisitor.andThen(entityValidator);
+        entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
         setWorkingEntityListDirty(workingSolution);
 
         // This visits all the entities.
