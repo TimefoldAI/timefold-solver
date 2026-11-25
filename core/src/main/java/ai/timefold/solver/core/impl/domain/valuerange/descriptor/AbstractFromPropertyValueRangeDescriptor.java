@@ -20,6 +20,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.ListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.SetValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -108,11 +109,7 @@ public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
     }
 
     protected <Value_> ValueRange<Value_> processValueRange(Object valueRangeObject, Object bean) {
-        if (valueRangeObject == null) {
-            throw new IllegalStateException(
-                    "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
-                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
-        }
+        assertValueRangeObjectNotNull(valueRangeObject, bean);
         if (arrayWrapping) {
             List<Value_> list = transformArrayToList(valueRangeObject);
             assertNullNotPresent(list, bean);
@@ -120,21 +117,7 @@ public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
         } else if (collectionWrapping) {
             var collection = (Collection<Value_>) valueRangeObject;
             if (collection instanceof Set<Value_> set) {
-                if (!(collection instanceof SortedSet<Value_> || collection instanceof LinkedHashSet<Value_>)) {
-                    throw new IllegalStateException("""
-                            The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with undefined iteration order.
-                            Use SortedSet or LinkedHashSet to ensure solver reproducibility.
-                            """
-                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set.getClass()));
-                } else if (containsNull(set)) {
-
-                    throw new IllegalStateException("""
-                            The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with a null element.
-                            Maybe remove that null element from the dataset \
-                            and use @%s(allowsUnassigned = true) or @%s(allowsUnassignedValues = true) instead."""
-                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set,
-                                    PlanningVariable.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
-                }
+                assertSetIsValid(set, bean);
                 return buildValueRange(set);
             } else {
                 List<Value_> list = transformCollectionToList(collection);
@@ -147,7 +130,57 @@ public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
         }
     }
 
-    private <Value_> boolean containsNull(Set<Value_> set) {
+    /**
+     * Counts the values of the entity's value range, without the null value.
+     * Only a null {@link ValueRangeProvider} result is rejected;
+     * the other validations of {@link #processValueRange(Object, Object)}
+     * (null elements, a {@link Set} with undefined iteration order)
+     * run when the value range is built, for example by
+     * {@link ValueRangeManager#getFromEntity(AbstractValueRangeDescriptor, Object)}.
+     * For such invalid results, the count may include null elements.
+     */
+    public abstract long getValueRangeSize(Solution_ solution, Object entity);
+
+    protected long countValues(Object valueRangeObject, Object bean) {
+        assertValueRangeObjectNotNull(valueRangeObject, bean);
+        if (arrayWrapping) {
+            var array = (Object[]) valueRangeObject;
+            return array.length;
+        } else if (collectionWrapping) {
+            var collection = (Collection<?>) valueRangeObject;
+            return collection.size();
+        } else {
+            var valueRange = (ValueRange<?>) valueRangeObject;
+            return valueRange.isEmpty() ? 0L : valueRange.getSize();
+        }
+    }
+
+    private void assertValueRangeObjectNotNull(Object valueRangeObject, Object bean) {
+        if (valueRangeObject == null) {
+            throw new IllegalStateException(
+                    "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
+        }
+    }
+
+    private void assertSetIsValid(Set<?> set, Object bean) {
+        if (!(set instanceof SortedSet<?> || set instanceof LinkedHashSet<?>)) {
+            throw new IllegalStateException("""
+                    The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with undefined iteration order.
+                    Use SortedSet or LinkedHashSet to ensure solver reproducibility.
+                    """
+                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set.getClass()));
+        } else if (containsNull(set)) {
+            throw new IllegalStateException("""
+                    The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with a null element.
+                    Maybe remove that null element from the dataset \
+                    and use @%s(allowsUnassigned = true) or @%s(allowsUnassignedValues = true) instead."""
+                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set,
+                            PlanningVariable.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
+        }
+    }
+
+    private static boolean containsNull(Set<?> set) {
         try {
             return set.contains(null);
         } catch (NullPointerException e) {

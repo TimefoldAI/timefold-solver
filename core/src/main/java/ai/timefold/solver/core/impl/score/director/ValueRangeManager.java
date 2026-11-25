@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractFromPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -136,6 +137,16 @@ public final class ValueRangeManager<Solution_> {
     }
 
     /**
+     * Unlike {@link #fromDescriptor(AbstractValueRangeDescriptor)}, does not create the state.
+     */
+    @SuppressWarnings("unchecked")
+    private <Entity_, Value_> @Nullable ValueRangeState<Solution_, Entity_, Value_>
+            findDescriptorState(AbstractValueRangeDescriptor<Solution_> descriptor) {
+        return multipleValueRangeState == null ? (ValueRangeState<Solution_, Entity_, Value_>) singleValueRangeState
+                : (ValueRangeState<Solution_, Entity_, Value_>) multipleValueRangeState[descriptor.getOrdinal()];
+    }
+
+    /**
      * As defined by {@link #getFromSolution(AbstractValueRangeDescriptor, Object)},
      * but the solution is taken from the cached working solution.
      * This requires {@link #reset(Object)} to be called before the first call to this method,
@@ -193,7 +204,31 @@ public final class ValueRangeManager<Solution_> {
         return getFromSolution(abstractValueRangeDescriptor, solution).getSize();
     }
 
-    public <Entity_> long countOnEntity(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor, Entity_ entity) {
+    /**
+     * Returns the size of {@link #getFromEntity(AbstractValueRangeDescriptor, Object)}.
+     * If the entity's value range is not cached yet and comes from a single {@link ValueRangeProvider},
+     * the size is read from the provider's result directly and nothing is cached,
+     * so that counting values does not build and deduplicate value ranges.
+     *
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    public <Entity_, Value_> long countOnEntity(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor,
+            Entity_ entity) {
+        var state = this.<Entity_, Value_> findDescriptorState(abstractValueRangeDescriptor);
+        if (state != null) {
+            var cachedSize = state.getCachedEntityValueRangeSize(entity);
+            if (cachedSize >= 0) {
+                return cachedSize;
+            }
+        }
+        if (abstractValueRangeDescriptor instanceof AbstractFromPropertyValueRangeDescriptor<Solution_> propertyDescriptor) {
+            var count = propertyDescriptor.getValueRangeSize(Objects.requireNonNull(cachedWorkingSolution), entity);
+            if (!abstractValueRangeDescriptor.acceptsNullInValueRange()) {
+                return count;
+            } else if (count < Long.MAX_VALUE) {
+                return count + 1; // The null value.
+            }
+        }
         return getFromEntity(abstractValueRangeDescriptor, entity).getSize();
     }
 

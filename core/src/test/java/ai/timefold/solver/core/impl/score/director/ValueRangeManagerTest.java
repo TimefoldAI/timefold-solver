@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -34,12 +35,16 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.composite.TestdataA
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityWithArrayValueRange;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListSolutionWithArrayValueRange;
 import ai.timefold.solver.core.testdomain.list.valuerange.composite.TestdataListCompositeEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.composite.TestdataListCompositeEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.composite.TestdataListUnassignedCompositeEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.composite.TestdataListUnassignedCompositeEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.composite.TestdataAllowsUnassignedCompositeEntity;
@@ -1079,6 +1084,108 @@ class ValueRangeManagerTest {
         assertThatThrownBy(() -> valueRangeManager.getMovableValueList(listVariableDescriptor))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("movable values");
+    }
+
+    @Test
+    void countOnEntityDoesNotCacheTheValueRange() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var entity = solution.getEntityList().get(0);
+        var v1 = entity.getValueRange().get(0);
+        var v2 = entity.getValueRange().get(1);
+        var v3 = new TestdataValue("v3");
+
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
+        // Not cached: the next count reads the provider again.
+        entity.setValueRange(List.of(v1, v2, v3));
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
+        // Once the value range is cached, the count comes from the cached value range.
+        assertThat(valueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize()).isEqualTo(3);
+        entity.setValueRange(List.of(v1));
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
+    }
+
+    @Test
+    void countOnEntityCachedPlaceholder() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var e1 = solution.getEntityList().get(0);
+        var e2 = solution.getEntityList().get(1);
+        e2.setValueRange(List.copyOf(e1.getValueRange()));
+        valueRangeManager.getFromEntity(valueRangeDescriptor, e1);
+        valueRangeManager.getFromEntity(valueRangeDescriptor, e2); // Equal contents: e2 is a placeholder for e1.
+
+        e2.setValueRange(List.of(e1.getValueRange().get(0)));
+        // The count comes from e1's cached value range, not from e2's provider.
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, e2)).isEqualTo(2);
+    }
+
+    @Test
+    void countOnEntityDoesNotValidateElements() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var entity = solution.getEntityList().get(0);
+        entity.setValueRange(Arrays.asList(entity.getValueRange().get(0), null));
+
+        // Counting does not validate the elements; building the value range does.
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
+        assertThatThrownBy(() -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("with an element that is null");
+    }
+
+    @Test
+    void countOnEntityFailsOnNullValueRange() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var entity = solution.getEntityList().get(0);
+        entity.setValueRange(null);
+
+        assertThatThrownBy(() -> valueRangeManager.countOnEntity(valueRangeDescriptor, entity))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must not return a null valueRangeObject");
+    }
+
+    @Test
+    void countOnEntitySortedSet() {
+        var solution = TestdataListUnassignedEntityProvidingSortedSetSolution.generateSolution();
+        var valueRangeDescriptor = TestdataListUnassignedEntityProvidingSortedSetEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var countingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var cachingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        for (var entity : solution.getEntityList()) {
+            var expectedSize = cachingValueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize();
+            assertThat(countingValueRangeManager.countOnEntity(valueRangeDescriptor, entity))
+                    .isEqualTo(expectedSize)
+                    .isEqualTo(entity.getValueRange().size()); // List variables never add the null value.
+        }
+    }
+
+    @Test
+    void countOnEntityArrayOnSolution() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var solution = new TestdataListSolutionWithArrayValueRange();
+        solution.setValueArray(new TestdataValue[] { v1, v2, v3 });
+        var entity = new TestdataListEntityWithArrayValueRange("e1", v1);
+        solution.setEntity(entity);
+        var valueRangeDescriptor = TestdataListEntityWithArrayValueRange.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
+        assertThat(valueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize()).isEqualTo(3);
     }
 
 }

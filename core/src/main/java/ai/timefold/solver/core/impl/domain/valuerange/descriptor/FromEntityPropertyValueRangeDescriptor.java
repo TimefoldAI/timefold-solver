@@ -47,6 +47,11 @@ public final class FromEntityPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
+    public long getValueRangeSize(Solution_ solution, Object entity) {
+        return countValues(readRawValueRange(entity, solution), entity);
+    }
+
+    @Override
     public boolean canExtractValueRangeFromSolution() {
         return false;
     }

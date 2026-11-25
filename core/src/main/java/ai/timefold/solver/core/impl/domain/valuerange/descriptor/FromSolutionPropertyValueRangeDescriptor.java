@@ -30,6 +30,11 @@ public final class FromSolutionPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
+    public long getValueRangeSize(Solution_ solution, Object entity) {
+        return countValues(memberAccessor.executeGetter(solution), solution);
+    }
+
+    @Override
     public boolean canExtractValueRangeFromSolution() {
         return true;
     }
