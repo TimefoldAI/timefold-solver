@@ -70,6 +70,94 @@ import org.junit.jupiter.api.Test;
 
 class ValueRangeManagerTest {
 
+    // ************************************************************************
+    // Assertion methods
+    // ************************************************************************
+
+    private <Solution_> void assertSolutionValueRangeSortingOrder(Solution_ solution,
+            AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor, List<String> allValues) {
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // Default order
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+
+        // Desc comparator
+        SelectionSorter<Solution_, TestdataObject> sorterComparator =
+                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
+        var sortedValueRange =
+                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution, sorterComparator);
+        assertReversedNonNullCodesOfIterator(sortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+        assertThat(valueRange).isNotSameAs(sortedValueRange);
+
+        // Asc comparator
+        // Default order is still desc
+        var otherValueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+        assertThat(otherValueRange).isSameAs(sortedValueRange);
+
+        // Add the asc sorter
+        SelectionSorter<Solution_, TestdataObject> sorterComparatorFactory =
+                new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
+                        SelectionSorterOrder.ASCENDING);
+        var otherSortedValueRange =
+                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
+                        sorterComparatorFactory);
+        assertNonNullCodesOfIterator(otherSortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+        assertThat(otherSortedValueRange).isNotSameAs(otherValueRange);
+
+        // Using the same sorter
+        var anotherSortedValueRange =
+                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
+                        sorterComparatorFactory);
+        assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
+    }
+
+    private <Solution_, Entity_> void assertEntityValueRangeSortingOrder(Solution_ solution, Entity_ entity,
+            AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor, List<String> allValues) {
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // Default order
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+
+        // Desc comparator
+        SelectionSorter<Solution_, TestdataObject> sorterComparator =
+                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
+        var sortedValueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity, sorterComparator);
+        assertReversedNonNullCodesOfIterator(sortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+        assertThat(valueRange).isNotSameAs(sortedValueRange);
+
+        // Asc comparator
+        // Default order is still desc
+        var otherValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+        assertThat(otherValueRange).isSameAs(sortedValueRange);
+
+        // Add the asc sorter
+        SelectionSorter<Solution_, TestdataObject> sorterComparatorFactory =
+                new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
+                        SelectionSorterOrder.ASCENDING);
+        var otherSortedValueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
+                        sorterComparatorFactory);
+        assertNonNullCodesOfIterator(otherSortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
+        assertThat(otherSortedValueRange).isNotSameAs(otherValueRange);
+
+        // Using the same sorter
+        var anotherSortedValueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
+                        sorterComparatorFactory);
+        assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
+    }
+
+    // ************************************************************************
+    // Value ranges from the solution
+    // ************************************************************************
+
     @Test
     void extractValueFromSolutionUnassignedBasicVariable() {
         var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
@@ -188,6 +276,130 @@ class ValueRangeManagerTest {
         assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
                 "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
     }
+
+    @Test
+    void extractValueFromSolutionUnassignedListVariable() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
+        var valueRangeDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // The value range manager will not add the null value because it is a list variable
+        // 2 distinct values
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        assertThat(valueRange.getSize()).isEqualTo(2);
+
+        // Fetching from the descriptor does not include the null value
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        assertThat(otherValueRange.getSize()).isEqualTo(2);
+    }
+
+    @Test
+    void sortValueFromSolutionUnassignedListVariable() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(6, 2);
+        var valueRangeDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
+                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
+    }
+
+    @Test
+    void extractValueFromSolutionCompositeUnassignedListVariable() {
+        var solution = TestdataAllowsUnassignedCompositeListSolution.generateSolution(2, 2);
+        var valueRangeDescriptor = TestdataAllowsUnassignedCompositeListEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = TestdataAllowsUnassignedCompositeListSolution.buildSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // The value range manager will not add the null value because it is a list variable
+        // valueRange1 [v1, v2] -> 2 distinct values
+        // valueRange2 [v3, v4] -> 2 distinct values
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        assertThat(valueRange.getSize()).isEqualTo(4);
+
+        // Fetching from the descriptor does not include the null value
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        assertThat(otherValueRange.getSize()).isEqualTo(4);
+    }
+
+    @Test
+    void sortValueFromSolutionCompositeUnassignedListVariable() {
+        var solution = TestdataAllowsUnassignedCompositeListSolution.generateSolution(3, 2);
+        var valueRangeDescriptor = TestdataAllowsUnassignedCompositeListEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        // 3 values per range
+        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
+                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
+    }
+
+    @Test
+    void extractValueFromSolutionAssignedListVariable() {
+        var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var valueRangeDescriptor = TestdataListSolution.buildSolutionDescriptor()
+                .findEntityDescriptor(TestdataListEntity.class)
+                .getGenuineVariableDescriptor("valueList")
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // The value range manager will not add the null value
+        // 2 distinct values
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        assertThat(valueRange.getSize()).isEqualTo(2);
+
+        // Fetching from the descriptor does not include the null value
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        assertThat(otherValueRange.getSize()).isEqualTo(2);
+    }
+
+    @Test
+    void sortValueFromSolutionAssignedListVariable() {
+        var solution = TestdataListSolution.generateUninitializedSolution(6, 2);
+        var valueRangeDescriptor = TestdataListSolution.buildSolutionDescriptor()
+                .findEntityDescriptor(TestdataListEntity.class)
+                .getGenuineVariableDescriptor("valueList")
+                .getValueRangeDescriptor();
+        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
+                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
+    }
+
+    @Test
+    void extractValueFromSolutionCompositeAssignedListVariable() {
+        var solution = TestdataListCompositeSolution.generateSolution(2, 2);
+        var valueRangeDescriptor = TestdataListCompositeEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // The value range manager will not add the null value
+        // valueRange1 [v0, v1] -> 2 distinct values
+        // valueRange2 [v2, v3] -> 2 distinct values
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        assertThat(valueRange.getSize()).isEqualTo(4);
+
+        // Fetching from the descriptor does not include the null value
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        assertThat(otherValueRange.getSize()).isEqualTo(4);
+    }
+
+    @Test
+    void sortValueFromSolutionCompositeAssignedListVariable() {
+        var solution = TestdataListCompositeSolution.generateSolution(3, 2);
+        var valueRangeDescriptor = TestdataListCompositeEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        // 3 values per range
+        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
+                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
+    }
+
+    // ************************************************************************
+    // Value ranges from entities
+    // ************************************************************************
 
     @Test
     void extractValueFromEntityUnassignedBasicVariable() {
@@ -372,126 +584,6 @@ class ValueRangeManagerTest {
     }
 
     @Test
-    void extractValueFromSolutionUnassignedListVariable() {
-        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
-        var valueRangeDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        // The value range manager will not add the null value because it is a list variable
-        // 2 distinct values
-        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
-        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertThat(valueRange.getSize()).isEqualTo(2);
-
-        // Fetching from the descriptor does not include the null value
-        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
-        assertThat(otherValueRange.getSize()).isEqualTo(2);
-    }
-
-    @Test
-    void sortValueFromSolutionUnassignedListVariable() {
-        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(6, 2);
-        var valueRangeDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
-                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
-    }
-
-    @Test
-    void extractValueFromSolutionCompositeUnassignedListVariable() {
-        var solution = TestdataAllowsUnassignedCompositeListSolution.generateSolution(2, 2);
-        var valueRangeDescriptor = TestdataAllowsUnassignedCompositeListEntity.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        var solutionDescriptor = TestdataAllowsUnassignedCompositeListSolution.buildSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        // The value range manager will not add the null value because it is a list variable
-        // valueRange1 [v1, v2] -> 2 distinct values
-        // valueRange2 [v3, v4] -> 2 distinct values
-        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
-        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertThat(valueRange.getSize()).isEqualTo(4);
-
-        // Fetching from the descriptor does not include the null value
-        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
-        assertThat(otherValueRange.getSize()).isEqualTo(4);
-    }
-
-    @Test
-    void sortValueFromSolutionCompositeUnassignedListVariable() {
-        var solution = TestdataAllowsUnassignedCompositeListSolution.generateSolution(3, 2);
-        var valueRangeDescriptor = TestdataAllowsUnassignedCompositeListEntity.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        // 3 values per range
-        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
-                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
-    }
-
-    @Test
-    void extractValueFromSolutionAssignedListVariable() {
-        var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
-        var valueRangeDescriptor = TestdataListSolution.buildSolutionDescriptor()
-                .findEntityDescriptor(TestdataListEntity.class)
-                .getGenuineVariableDescriptor("valueList")
-                .getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        // The value range manager will not add the null value
-        // 2 distinct values
-        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
-        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertThat(valueRange.getSize()).isEqualTo(2);
-
-        // Fetching from the descriptor does not include the null value
-        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
-        assertThat(otherValueRange.getSize()).isEqualTo(2);
-    }
-
-    @Test
-    void sortValueFromSolutionAssignedListVariable() {
-        var solution = TestdataListSolution.generateUninitializedSolution(6, 2);
-        var valueRangeDescriptor = TestdataListSolution.buildSolutionDescriptor()
-                .findEntityDescriptor(TestdataListEntity.class)
-                .getGenuineVariableDescriptor("valueList")
-                .getValueRangeDescriptor();
-        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
-                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
-    }
-
-    @Test
-    void extractValueFromSolutionCompositeAssignedListVariable() {
-        var solution = TestdataListCompositeSolution.generateSolution(2, 2);
-        var valueRangeDescriptor = TestdataListCompositeEntity.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        // The value range manager will not add the null value
-        // valueRange1 [v0, v1] -> 2 distinct values
-        // valueRange2 [v2, v3] -> 2 distinct values
-        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
-        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertThat(valueRange.getSize()).isEqualTo(4);
-
-        // Fetching from the descriptor does not include the null value
-        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
-        assertThat(otherValueRange.getSize()).isEqualTo(4);
-    }
-
-    @Test
-    void sortValueFromSolutionCompositeAssignedListVariable() {
-        var solution = TestdataListCompositeSolution.generateSolution(3, 2);
-        var valueRangeDescriptor = TestdataListCompositeEntity.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        // 3 values per range
-        assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
-                "Generated Value 2", "Generated Value 3", "Generated Value 4", "Generated Value 5"));
-    }
-
-    @Test
     void extractValueFromEntityUnassignedListVariable() {
         var solution = TestdataListUnassignedEntityProvidingSolution.generateSolution();
         var valueRangeDescriptor = TestdataListUnassignedEntityProvidingEntity.buildVariableDescriptorForValueList()
@@ -673,6 +765,280 @@ class ValueRangeManagerTest {
                         "Generated Value 5"));
     }
 
+    // ************************************************************************
+    // Deduplication
+    // ************************************************************************
+
+    @Test
+    void deduplicationForSolution() {
+        var valueCount = 3;
+        var entityCount = 3;
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var valueRangeDescriptor =
+                TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList().getValueRangeDescriptor();
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
+
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        var valueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
+        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
+                solution.getValueList().stream().map(TestdataAllowsUnassignedValuesListValue::getCode).toArray(String[]::new));
+        var otherValueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
+        assertThat(valueRange).isSameAs(otherValueRange);
+        var yetAnotherValueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
+        assertThat(yetAnotherValueRange).isSameAs(otherValueRange);
+    }
+
+    @Test
+    void deduplicationForEntity() {
+        var valueCount = 3;
+        var entityCount = 3;
+        var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
+        var valueRangeDescriptor =
+                TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList().getValueRangeDescriptor();
+        var solution = TestdataListEntityProvidingSolution.generateSolution(valueCount, entityCount, true);
+
+        // One entity with a different range
+        solution.getEntityList().get(2).getValueRange().remove(0);
+
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // Entity 0 and Entity 1
+        var valueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
+        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
+                solution.getValueList().stream().map(TestdataListEntityProvidingValue::getCode).toArray(String[]::new));
+        var otherValueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
+        assertThat(valueRange).isSameAs(otherValueRange);
+
+        // Entity 2
+        var yetAnotherValueRange =
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
+        assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
+
+        // Sorting data
+        SelectionSorter<TestdataListEntityProvidingSolution, TestdataObject> sorterComparator =
+                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
+        valueRange = valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0), sorterComparator);
+        otherValueRange =
+                valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1), sorterComparator);
+        assertThat(valueRange).isSameAs(otherValueRange);
+        yetAnotherValueRange =
+                valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2), sorterComparator);
+        assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
+    }
+
+    // ************************************************************************
+    // Counting values on the solution
+    // ************************************************************************
+
+    @Test
+    void countOnSolutionDoesNotCacheTheValueRange() {
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var valueRangeDescriptor = TestdataEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var v1 = solution.getValueList().get(0);
+        var v2 = solution.getValueList().get(1);
+        var v3 = new TestdataValue("v3");
+
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
+        // Not cached: the next count reads the provider again.
+        solution.setValueList(List.of(v1, v2, v3));
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(3);
+        // Once the value range is cached, the count comes from the cached value range.
+        assertThat(valueRangeManager.getFromSolution(valueRangeDescriptor, solution).getSize()).isEqualTo(3);
+        solution.setValueList(List.of(v1));
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(3);
+    }
+
+    @Test
+    void countOnSolutionCachedSortedValueRange() {
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var valueRangeDescriptor = TestdataEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        SelectionSorter<TestdataSolution, TestdataObject> sorter =
+                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
+        valueRangeManager.getFromSolution(valueRangeDescriptor, solution, sorter);
+
+        solution.setValueList(List.of(solution.getValueList().get(0)));
+        // A sorted value range is cached as well, so the count comes from it.
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
+    }
+
+    @Test
+    void countOnSolutionAddsNullValue() {
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
+        var valueRangeDescriptor = TestdataAllowsUnassignedEntity.buildVariableDescriptorForValue()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var countingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var cachingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        assertThat(countingValueRangeManager.countOnSolution(valueRangeDescriptor, solution))
+                .isEqualTo(cachingValueRangeManager.getFromSolution(valueRangeDescriptor, solution).getSize())
+                .isEqualTo(3); // 2 values and the null value.
+    }
+
+    @Test
+    void countOnSolutionDoesNotValidateElements() {
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var valueRangeDescriptor = TestdataEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        solution.setValueList(Arrays.asList(solution.getValueList().get(0), null));
+
+        // Counting does not validate the elements; building the value range does.
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
+        assertThatThrownBy(() -> valueRangeManager.getFromSolution(valueRangeDescriptor, solution))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("with an element that is null");
+    }
+
+    @Test
+    void countOnSolutionFailsOnNullValueRange() {
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var valueRangeDescriptor = TestdataEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        solution.setValueList(null);
+
+        assertThatThrownBy(() -> valueRangeManager.countOnSolution(valueRangeDescriptor, solution))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must not return a null valueRangeObject");
+    }
+
+    @Test
+    void countOnSolutionFromEntitiesDeduplicatesValues() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var solution = new TestdataEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(new TestdataEntityProvidingEntity("e1", List.of(v1, v2)),
+                new TestdataEntityProvidingEntity("e2", List.of(v2, v3))));
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // The values of all entities, without the duplicate v2; counting them requires building the value range.
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(3);
+    }
+
+    // ************************************************************************
+    // Counting values on entities
+    // ************************************************************************
+
+    @Test
+    void countOnEntityDoesNotCacheTheValueRange() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var entity = solution.getEntityList().get(0);
+        var v1 = entity.getValueRange().get(0);
+        var v2 = entity.getValueRange().get(1);
+        var v3 = new TestdataValue("v3");
+
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
+        // Not cached: the next count reads the provider again.
+        entity.setValueRange(List.of(v1, v2, v3));
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
+        // Once the value range is cached, the count comes from the cached value range.
+        assertThat(valueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize()).isEqualTo(3);
+        entity.setValueRange(List.of(v1));
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
+    }
+
+    @Test
+    void countOnEntityCachedPlaceholder() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var e1 = solution.getEntityList().get(0);
+        var e2 = solution.getEntityList().get(1);
+        e2.setValueRange(List.copyOf(e1.getValueRange()));
+        valueRangeManager.getFromEntity(valueRangeDescriptor, e1);
+        valueRangeManager.getFromEntity(valueRangeDescriptor, e2); // Equal contents: e2 is a placeholder for e1.
+
+        e2.setValueRange(List.of(e1.getValueRange().get(0)));
+        // The count comes from e1's cached value range, not from e2's provider.
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, e2)).isEqualTo(2);
+    }
+
+    @Test
+    void countOnEntityDoesNotValidateElements() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var entity = solution.getEntityList().get(0);
+        entity.setValueRange(Arrays.asList(entity.getValueRange().get(0), null));
+
+        // Counting does not validate the elements; building the value range does.
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
+        assertThatThrownBy(() -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("with an element that is null");
+    }
+
+    @Test
+    void countOnEntityFailsOnNullValueRange() {
+        var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var entity = solution.getEntityList().get(0);
+        entity.setValueRange(null);
+
+        assertThatThrownBy(() -> valueRangeManager.countOnEntity(valueRangeDescriptor, entity))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must not return a null valueRangeObject");
+    }
+
+    @Test
+    void countOnEntitySortedSet() {
+        var solution = TestdataListUnassignedEntityProvidingSortedSetSolution.generateSolution();
+        var valueRangeDescriptor = TestdataListUnassignedEntityProvidingSortedSetEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var countingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        var cachingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        for (var entity : solution.getEntityList()) {
+            var expectedSize = cachingValueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize();
+            assertThat(countingValueRangeManager.countOnEntity(valueRangeDescriptor, entity))
+                    .isEqualTo(expectedSize)
+                    .isEqualTo(entity.getValueRange().size()); // List variables never add the null value.
+        }
+    }
+
+    @Test
+    void countOnEntityArrayOnSolution() {
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var solution = new TestdataListSolutionWithArrayValueRange();
+        solution.setValueArray(new TestdataValue[] { v1, v2, v3 });
+        var entity = new TestdataListEntityWithArrayValueRange("e1", v1);
+        solution.setEntity(entity);
+        var valueRangeDescriptor = TestdataListEntityWithArrayValueRange.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
+        assertThat(valueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize()).isEqualTo(3);
+    }
+
+    // ************************************************************************
+    // Initialization statistics
+    // ************************************************************************
+
     @Test
     void countEntities() {
         var valueCount = 10;
@@ -774,6 +1140,10 @@ class ValueRangeManagerTest {
         initializationStats = valueRangeManager.getInitializationStatistics();
         assertThat(initializationStats.unassignedValueCount()).isEqualTo(unassignedValueCount);
     }
+
+    // ************************************************************************
+    // Problem scale
+    // ************************************************************************
 
     @Test
     void problemScaleBasic() {
@@ -974,148 +1344,9 @@ class ValueRangeManagerTest {
         });
     }
 
-    @Test
-    void deduplicationForSolution() {
-        var valueCount = 3;
-        var entityCount = 3;
-        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
-        var valueRangeDescriptor =
-                TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList().getValueRangeDescriptor();
-        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
-
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        var valueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
-        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
-                solution.getValueList().stream().map(TestdataAllowsUnassignedValuesListValue::getCode).toArray(String[]::new));
-        var otherValueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
-        assertThat(valueRange).isSameAs(otherValueRange);
-        var yetAnotherValueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
-        assertThat(yetAnotherValueRange).isSameAs(otherValueRange);
-    }
-
-    @Test
-    void deduplicationForEntity() {
-        var valueCount = 3;
-        var entityCount = 3;
-        var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
-        var valueRangeDescriptor =
-                TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList().getValueRangeDescriptor();
-        var solution = TestdataListEntityProvidingSolution.generateSolution(valueCount, entityCount, true);
-
-        // One entity with a different range
-        solution.getEntityList().get(2).getValueRange().remove(0);
-
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        // Entity 0 and Entity 1
-        var valueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
-        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
-                solution.getValueList().stream().map(TestdataListEntityProvidingValue::getCode).toArray(String[]::new));
-        var otherValueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
-        assertThat(valueRange).isSameAs(otherValueRange);
-
-        // Entity 2
-        var yetAnotherValueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
-        assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
-
-        // Sorting data
-        SelectionSorter<TestdataListEntityProvidingSolution, TestdataObject> sorterComparator =
-                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
-        valueRange = valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0), sorterComparator);
-        otherValueRange =
-                valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1), sorterComparator);
-        assertThat(valueRange).isSameAs(otherValueRange);
-        yetAnotherValueRange =
-                valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2), sorterComparator);
-        assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
-    }
-
-    private <Solution_> void assertSolutionValueRangeSortingOrder(Solution_ solution,
-            AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor, List<String> allValues) {
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        // Default order
-        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-
-        // Desc comparator
-        SelectionSorter<Solution_, TestdataObject> sorterComparator =
-                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
-        var sortedValueRange =
-                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution, sorterComparator);
-        assertReversedNonNullCodesOfIterator(sortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-        assertThat(valueRange).isNotSameAs(sortedValueRange);
-
-        // Asc comparator
-        // Default order is still desc
-        var otherValueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-        assertThat(otherValueRange).isSameAs(sortedValueRange);
-
-        // Add the asc sorter
-        SelectionSorter<Solution_, TestdataObject> sorterComparatorFactory =
-                new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
-                        SelectionSorterOrder.ASCENDING);
-        var otherSortedValueRange =
-                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
-                        sorterComparatorFactory);
-        assertNonNullCodesOfIterator(otherSortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-        assertThat(otherSortedValueRange).isNotSameAs(otherValueRange);
-
-        // Using the same sorter
-        var anotherSortedValueRange =
-                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
-                        sorterComparatorFactory);
-        assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
-    }
-
-    private <Solution_, Entity_> void assertEntityValueRangeSortingOrder(Solution_ solution, Entity_ entity,
-            AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor, List<String> allValues) {
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        // Default order
-        var valueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
-        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-
-        // Desc comparator
-        SelectionSorter<Solution_, TestdataObject> sorterComparator =
-                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
-        var sortedValueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity, sorterComparator);
-        assertReversedNonNullCodesOfIterator(sortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-        assertThat(valueRange).isNotSameAs(sortedValueRange);
-
-        // Asc comparator
-        // Default order is still desc
-        var otherValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
-        assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-        assertThat(otherValueRange).isSameAs(sortedValueRange);
-
-        // Add the asc sorter
-        SelectionSorter<Solution_, TestdataObject> sorterComparatorFactory =
-                new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
-                        SelectionSorterOrder.ASCENDING);
-        var otherSortedValueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
-                        sorterComparatorFactory);
-        assertNonNullCodesOfIterator(otherSortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
-        assertThat(otherSortedValueRange).isNotSameAs(otherValueRange);
-
-        // Using the same sorter
-        var anotherSortedValueRange =
-                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
-                        sorterComparatorFactory);
-        assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
-    }
+    // ************************************************************************
+    // Movable entities and values
+    // ************************************************************************
 
     @Test
     void movableListsRequireWorkingSolution() {
@@ -1129,108 +1360,6 @@ class ValueRangeManagerTest {
         assertThatThrownBy(() -> valueRangeManager.getMovableValueList(listVariableDescriptor))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("movable values");
-    }
-
-    @Test
-    void countOnEntityDoesNotCacheTheValueRange() {
-        var solution = TestdataEntityProvidingSolution.generateSolution();
-        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-        var entity = solution.getEntityList().get(0);
-        var v1 = entity.getValueRange().get(0);
-        var v2 = entity.getValueRange().get(1);
-        var v3 = new TestdataValue("v3");
-
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
-        // Not cached: the next count reads the provider again.
-        entity.setValueRange(List.of(v1, v2, v3));
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
-        // Once the value range is cached, the count comes from the cached value range.
-        assertThat(valueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize()).isEqualTo(3);
-        entity.setValueRange(List.of(v1));
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
-    }
-
-    @Test
-    void countOnEntityCachedPlaceholder() {
-        var solution = TestdataEntityProvidingSolution.generateSolution();
-        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-        var e1 = solution.getEntityList().get(0);
-        var e2 = solution.getEntityList().get(1);
-        e2.setValueRange(List.copyOf(e1.getValueRange()));
-        valueRangeManager.getFromEntity(valueRangeDescriptor, e1);
-        valueRangeManager.getFromEntity(valueRangeDescriptor, e2); // Equal contents: e2 is a placeholder for e1.
-
-        e2.setValueRange(List.of(e1.getValueRange().get(0)));
-        // The count comes from e1's cached value range, not from e2's provider.
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, e2)).isEqualTo(2);
-    }
-
-    @Test
-    void countOnEntityDoesNotValidateElements() {
-        var solution = TestdataEntityProvidingSolution.generateSolution();
-        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-        var entity = solution.getEntityList().get(0);
-        entity.setValueRange(Arrays.asList(entity.getValueRange().get(0), null));
-
-        // Counting does not validate the elements; building the value range does.
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
-        assertThatThrownBy(() -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("with an element that is null");
-    }
-
-    @Test
-    void countOnEntityFailsOnNullValueRange() {
-        var solution = TestdataEntityProvidingSolution.generateSolution();
-        var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue().getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-        var entity = solution.getEntityList().get(0);
-        entity.setValueRange(null);
-
-        assertThatThrownBy(() -> valueRangeManager.countOnEntity(valueRangeDescriptor, entity))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("must not return a null valueRangeObject");
-    }
-
-    @Test
-    void countOnEntitySortedSet() {
-        var solution = TestdataListUnassignedEntityProvidingSortedSetSolution.generateSolution();
-        var valueRangeDescriptor = TestdataListUnassignedEntityProvidingSortedSetEntity.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var countingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-        var cachingValueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-        for (var entity : solution.getEntityList()) {
-            var expectedSize = cachingValueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize();
-            assertThat(countingValueRangeManager.countOnEntity(valueRangeDescriptor, entity))
-                    .isEqualTo(expectedSize)
-                    .isEqualTo(entity.getValueRange().size()); // List variables never add the null value.
-        }
-    }
-
-    @Test
-    void countOnEntityArrayOnSolution() {
-        var v1 = new TestdataValue("v1");
-        var v2 = new TestdataValue("v2");
-        var v3 = new TestdataValue("v3");
-        var solution = new TestdataListSolutionWithArrayValueRange();
-        solution.setValueArray(new TestdataValue[] { v1, v2, v3 });
-        var entity = new TestdataListEntityWithArrayValueRange("e1", v1);
-        solution.setEntity(entity);
-        var valueRangeDescriptor = TestdataListEntityWithArrayValueRange.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
-        assertThat(valueRangeManager.getFromEntity(valueRangeDescriptor, entity).getSize()).isEqualTo(3);
     }
 
 }

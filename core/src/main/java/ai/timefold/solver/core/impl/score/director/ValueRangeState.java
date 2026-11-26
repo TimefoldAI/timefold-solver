@@ -175,6 +175,19 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
     /**
      * Does not build the value range if it is not cached yet.
      *
+     * @return the size of the solution's cached value range, or -1 if it is not cached
+     */
+    long getCachedSolutionValueRangeSize() {
+        if (fromSolutionItem == null) {
+            return -1L;
+        }
+        // The left item is always set for the solution, sorted or not, and all sorted variants have the same size.
+        return Objects.requireNonNull(fromSolutionItem.leftItem()).getSize();
+    }
+
+    /**
+     * Does not build the value range if it is not cached yet.
+     *
      * @return the size of the entity's cached value range, or -1 if it is not cached
      */
     long getCachedEntityValueRangeSize(Entity_ entity) {
