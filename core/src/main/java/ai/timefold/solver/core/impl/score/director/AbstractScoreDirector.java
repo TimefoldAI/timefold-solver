@@ -76,7 +76,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final NeighborhoodNotifier<Solution_> neighborhoodsElementUpdateNotifier;
     private final boolean lookUpEnabled;
     private final @Nullable LookupManager lookUpManager;
-    private final boolean valueRangeValidationEnabled;
+    private final boolean assertValueRange;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     private boolean expectShadowVariablesInCorrectState;
     private final boolean ignoreInconsistentSolutions;
@@ -114,7 +114,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var solutionDescriptor = this.scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = builder.lookUpEnabled;
         this.lookUpManager = lookUpEnabled ? new LookupManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
-        this.valueRangeValidationEnabled = builder.valueRangeValidationEnabled;
+        this.assertValueRange = builder.assertValueRange;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.ignoreInconsistentSolutions = !solutionDescriptor.hasAnyShadowVariablesInconsistentMember()
@@ -306,7 +306,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             entityAndFactVisitor = entityAndFactVisitor == null ? workingObjectLookupVisitor
                     : entityAndFactVisitor.andThen(workingObjectLookupVisitor);
         }
-        if (valueRangeValidationEnabled) {
+        if (assertValueRange) {
             // One-time check of value ranges
             // to ensure assigned planning values are included in the solution range or any entity value range.
             // The unassigned count of the list variable relies on it.
@@ -559,7 +559,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 var childThreadScoreDirector =
                         scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(lookUpEnabled)
                                 // The solution partitioner builds the part solutions, so they need the same validation.
-                                .withValueRangeValidationEnabled(valueRangeValidationEnabled)
+                                .withAssertValueRange(assertValueRange)
                                 .withConstraintMatchPolicy(constraintMatchPolicy)
                                 .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
                                 .buildDerived();
@@ -572,7 +572,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 var childThreadScoreDirector =
                         scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(true)
                                 // The working solution is a clone of this one, whose value ranges are already validated.
-                                .withValueRangeValidationEnabled(false)
+                                .withAssertValueRange(false)
                                 .withConstraintMatchPolicy(constraintMatchPolicy)
                                 .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
                                 .buildDerived();
@@ -803,6 +803,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var score = getSolutionDescriptor().<Score_> getScore(solution);
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(environmentMode)
+                // The solution is a clone of the working solution, whose values are validated at every step
+                // in the environment modes that call this; only the raw score is compared, which doesn't rely on it.
+                .withAssertValueRange(false)
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
@@ -869,6 +872,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
+                // The assertion from scratch must assess the value range,
+                // as custom moves could lead to invalid solutions
+                .withAssertValueRange(true)
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
                 .buildDerived()) {
@@ -1070,7 +1076,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
-        protected boolean valueRangeValidationEnabled = true;
+        protected boolean assertValueRange = true;
         protected boolean expectShadowVariablesInCorrectState = true;
         protected boolean forceAllowInconsistentSolutions = false;
 
@@ -1100,8 +1106,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
          * or when nothing reads those counts.
          */
         @SuppressWarnings("unchecked")
-        public Builder_ withValueRangeValidationEnabled(boolean valueRangeValidationEnabled) {
-            this.valueRangeValidationEnabled = valueRangeValidationEnabled;
+        public Builder_ withAssertValueRange(boolean assertValueRange) {
+            this.assertValueRange = assertValueRange;
             return (Builder_) this;
         }
 

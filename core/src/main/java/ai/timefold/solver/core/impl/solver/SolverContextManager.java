@@ -204,7 +204,7 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> imple
         var newScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(phase.getEnvironmentMode())
                 .withLookUpEnabled(true)
                 // The best solution may include problem changes, which were never validated.
-                .withValueRangeValidationEnabled(true)
+                .withAssertValueRange(true)
                 .withConstraintMatchPolicy(
                         ScoreDirectorFactoryFactory.decideConstraintMatchPolicy(solverScope, phase.getEnvironmentMode()))
                 .build();

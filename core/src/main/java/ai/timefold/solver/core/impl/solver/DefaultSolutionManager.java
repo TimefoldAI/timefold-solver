@@ -61,20 +61,20 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         }
         // A shadow variable update reads neither the score nor the unassigned count,
         // which are the only things that rely on the value ranges being validated.
-        var valueRangeValidationEnabled = solutionUpdatePolicy.isScoreUpdateEnabled();
+        var assertValueRange = solutionUpdatePolicy.isScoreUpdateEnabled();
         return callScoreDirector("Solution update", solution, solutionUpdatePolicy,
                 (s, inconsistentEntities) -> s.getSolutionDescriptor().getScore(s.getWorkingSolution()),
-                ConstraintMatchPolicy.DISABLED, false, false, valueRangeValidationEnabled);
+                ConstraintMatchPolicy.DISABLED, false, false, assertValueRange);
     }
 
     private <Result_> Result_ callScoreDirector(String feature, Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy,
             BiFunction<InnerScoreDirector<Solution_, Score_>, List<VariableLoop>, Result_> function,
             ConstraintMatchPolicy constraintMatchPolicy,
-            boolean cloneSolution, boolean handlesStructurallyFlawedSolutions, boolean valueRangeValidationEnabled) {
+            boolean cloneSolution, boolean handlesStructurallyFlawedSolutions, boolean assertValueRange) {
         var isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
         var nonNullSolution = Objects.requireNonNull(solution);
         try (var scoreDirector = getScoreDirectorFactory().createScoreDirectorBuilder().withLookUpEnabled(cloneSolution)
-                .withValueRangeValidationEnabled(valueRangeValidationEnabled)
+                .withAssertValueRange(assertValueRange)
                 .withConstraintMatchPolicy(constraintMatchPolicy)
                 .withExpectShadowVariablesInCorrectState(!isShadowVariableUpdateEnabled)
                 .withForceAllowInconsistentSolutions(handlesStructurallyFlawedSolutions)
