@@ -31,6 +31,7 @@ public final class DefaultMoveTester<Solution_> implements MoveTester<Solution_>
         // Create a score director from the cached factory
         var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                 .withLookUpEnabled(false)
+                .withValueRangeValidationEnabled(true) // The solution comes from the user's test; fail fast.
                 .build();
         // Set the working solution, which triggers shadow variable initialization
         scoreDirector.setWorkingSolution(Objects.requireNonNull(solution, "solution"));

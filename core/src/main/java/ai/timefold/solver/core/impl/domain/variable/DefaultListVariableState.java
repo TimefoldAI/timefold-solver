@@ -149,7 +149,14 @@ final class DefaultListVariableState<Solution_> implements ListVariableState<Sol
             cachedValueCount = Objects.requireNonNull(valueRangeManager).countOnSolution(
                     sourceVariableDescriptor.getValueRangeDescriptor(), Objects.requireNonNull(workingSolution));
         }
-        return (int) (cachedValueCount - stateCarrier.getAssignedCount());
+        var unassignedCount = cachedValueCount - stateCarrier.getAssignedCount();
+        if (unassignedCount < 0) {
+            throw new IllegalStateException("""
+                    The list variable (%s) has more assigned values (%d) than values in its value range (%d).
+                    Maybe a value outside of the value range is assigned, or a value is assigned more than once?"""
+                    .formatted(sourceVariableDescriptor, stateCarrier.getAssignedCount(), cachedValueCount));
+        }
+        return (int) unassignedCount;
     }
 
     @Override

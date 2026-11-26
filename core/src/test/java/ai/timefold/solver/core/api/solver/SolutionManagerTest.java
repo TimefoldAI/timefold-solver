@@ -2,6 +2,7 @@ package ai.timefold.solver.core.api.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.time.Duration;
@@ -466,17 +467,38 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void updateDoesNotValidateValueRanges(SolutionManagerSource solutionManagerSource) {
+    void updateScoreFailsOnValueOutsideOfValueRange(SolutionManagerSource solutionManagerSource) {
+        var solverFactory = SolverFactory.<TestdataSolution> create(new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataValuePenalizingConstraintProvider.class));
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+
+        // The score relies on the value ranges being validated.
+        for (var solutionUpdatePolicy : List.of(SolutionUpdatePolicy.UPDATE_SCORE_ONLY, SolutionUpdatePolicy.UPDATE_ALL)) {
+            var solution = TestdataSolution.generateSolution(3, 2);
+            solution.getEntityList().get(0).setValue(new TestdataValue("x"));
+            assertThatThrownBy(() -> solutionManager.update(solution, solutionUpdatePolicy))
+                    .as(solutionUpdatePolicy.name())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("The value (x)")
+                    .hasMessageContaining("outside of the related value range");
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateShadowVariablesOnlyDoesNotValidateValueRanges(SolutionManagerSource solutionManagerSource) {
         var solverFactory = SolverFactory.<TestdataSolution> create(new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withConstraintProviderClass(TestdataValuePenalizingConstraintProvider.class));
         var solution = TestdataSolution.generateSolution(3, 2);
-        solution.getEntityList().get(0).setValue(new TestdataValue("outside of the value range"));
+        solution.getEntityList().get(0).setValue(new TestdataValue("x"));
         var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
 
-        // Value ranges are only validated when lookup is enabled, such as when solving.
-        assertThatCode(() -> solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY))
+        // Nothing reads the score or the unassigned count during a shadow variable update.
+        assertThatCode(() -> solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY))
                 .doesNotThrowAnyException();
     }
 

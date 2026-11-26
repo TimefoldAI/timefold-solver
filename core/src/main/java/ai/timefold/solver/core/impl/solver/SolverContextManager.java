@@ -203,6 +203,8 @@ public class SolverContextManager<Solution_, Score_ extends Score<Score_>> imple
         // and building a score director on top of an existing factory is cheap.
         var newScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(phase.getEnvironmentMode())
                 .withLookUpEnabled(true)
+                // The best solution may include problem changes, which were never validated.
+                .withValueRangeValidationEnabled(true)
                 .withConstraintMatchPolicy(
                         ScoreDirectorFactoryFactory.decideConstraintMatchPolicy(solverScope, phase.getEnvironmentMode()))
                 .build();

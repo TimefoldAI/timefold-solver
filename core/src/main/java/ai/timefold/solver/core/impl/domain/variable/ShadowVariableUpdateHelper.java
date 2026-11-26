@@ -59,7 +59,11 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         initialSolutionDescriptor.visitAllEntities(solution, entity -> entityClassSet.add(entity.getClass()));
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass,
                 entityClassSet.toArray(new Class<?>[0]));
-        try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
+        // A shadow variable update reads neither the score nor the unassigned count,
+        // which are the only things that rely on the value ranges being validated.
+        try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor)
+                .withValueRangeValidationEnabled(false)
+                .build()) {
             // When we have a solution, we can reuse the logic from VariableSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
         }

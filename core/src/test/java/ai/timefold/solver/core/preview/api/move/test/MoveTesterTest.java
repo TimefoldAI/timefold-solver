@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.preview.api.move.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -34,6 +35,16 @@ class MoveTesterTest {
         var runner = MoveTester.build(SOLUTION_META_MODEL);
         var context = runner.using(solution);
         assertThat(context).isNotNull();
+    }
+
+    @Test
+    void usingFailsOnValueOutsideOfValueRange() {
+        var solution = TestdataSolution.generateSolution(2, 3);
+        solution.getEntityList().get(0).setValue(new TestdataValue("x"));
+        var runner = MoveTester.build(SOLUTION_META_MODEL);
+        assertThatIllegalStateException().isThrownBy(() -> runner.using(solution))
+                .withMessageContaining("The value (x)")
+                .withMessageContaining("outside of the related value range");
     }
 
     @Test
