@@ -237,10 +237,10 @@ public record BendableScore(long structuralScore, long[] hardScores,
         var newHardScores = new long[hardScores.length];
         var newSoftScores = new long[softScores.length];
         for (var i = 0; i < newHardScores.length; i++) {
-            newHardScores[i] = Math.abs(hardScores[i]);
+            newHardScores[i] = ScoreUtil.abs(hardScores[i]);
         }
         for (var i = 0; i < newSoftScores.length; i++) {
-            newSoftScores[i] = Math.abs(softScores[i]);
+            newSoftScores[i] = ScoreUtil.abs(softScores[i]);
         }
         return new BendableScore(newHardScores, newSoftScores);
     }

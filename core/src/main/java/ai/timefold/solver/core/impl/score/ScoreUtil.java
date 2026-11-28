@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -333,14 +334,82 @@ public final class ScoreUtil {
     }
 
     /**
+     * Returns the absolute value of a long score level.
+     * The absolute value of {@link Long#MIN_VALUE} does not fit in a long,
+     * so this method fails fast instead of returning a negative absolute value.
+     *
+     * @param value the value to take the absolute value of
+     * @return the absolute value of value
+     */
+    public static long abs(long value) {
+        if (value == Long.MIN_VALUE) {
+            throw new ArithmeticException("""
+                    The value (%d), which is Long.MIN_VALUE, has no absolute value that fits in a long.
+                    Maybe use a BigDecimal score instead.""".formatted(value));
+        }
+        return Math.abs(value);
+    }
+
+    /**
      * Raises a {@link BigDecimal} score level to a double exponent.
      * See {@link #multiply(BigDecimal, double)} for the scale-flooring rationale.
+     * Integer exponents are computed exactly; other exponents are computed with double arithmetic
+     * on a mantissa in [1, 10), so large or small bases do not overflow or underflow.
+     *
+     * @param base never null
+     * @param exponent a finite number
+     * @return base to the power of exponent, never null
      */
     public static BigDecimal power(BigDecimal base, double exponent) {
-        // TODO FIXME remove .intValue() so non-integer exponents produce correct results
-        //      None of the normal Java libraries support BigDecimal.pow(BigDecimal)
-        var raw = base.pow(BigDecimal.valueOf(exponent).intValue());
-        return raw.setScale(nonNegativeScale(base.scale()), RoundingMode.FLOOR);
+        if (!Double.isFinite(exponent)) {
+            throw new IllegalArgumentException("The exponent (%s) must be a finite number.".formatted(exponent));
+        }
+        if (exponent == 0.0) {
+            return BigDecimal.ONE.setScale(nonNegativeScale(base.scale()));
+        }
+        if (base.signum() == 0) {
+            if (exponent < 0.0) {
+                throw new ArithmeticException("The base (0) cannot be raised to a negative exponent (%s).".formatted(exponent));
+            }
+            return BigDecimal.ZERO.setScale(nonNegativeScale(base.scale()));
+        }
+        if (exponent == Math.rint(exponent) && exponent >= -(double) Integer.MAX_VALUE && exponent <= Integer.MAX_VALUE) {
+            var integerExponent = (long) exponent;
+            if (integerExponent >= 0) {
+                return base.pow((int) integerExponent).setScale(nonNegativeScale(base.scale()), RoundingMode.FLOOR);
+            }
+            var positivePower = base.pow((int) -integerExponent);
+            return BigDecimal.ONE.divide(positivePower, MathContext.DECIMAL128)
+                    .setScale(nonNegativeScale(base.scale()), RoundingMode.FLOOR);
+        }
+        if (base.signum() < 0) {
+            throw new ArithmeticException("""
+                    The base (%s) cannot be raised to the non-integer exponent (%s), because the result is not a real number.
+                    Maybe use a positive base or an integer exponent.""".formatted(base, exponent));
+        }
+        return powerOfPositiveBase(base, exponent).setScale(nonNegativeScale(base.scale()), RoundingMode.FLOOR);
+    }
+
+    private static BigDecimal powerOfPositiveBase(BigDecimal base, double exponent) {
+        var magnitude = (long) base.precision() - base.scale() - 1L;
+        if (magnitude < Integer.MIN_VALUE || magnitude > Integer.MAX_VALUE) {
+            throw new ArithmeticException("The base (%s) has a magnitude (%d) that is too large to power."
+                    .formatted(base, magnitude));
+        }
+        var mantissa = base.movePointLeft((int) magnitude).doubleValue();
+        var scaledExponent = magnitude * exponent;
+        var wholeExponent = Math.floor(scaledExponent);
+        if (wholeExponent < Integer.MIN_VALUE || wholeExponent > Integer.MAX_VALUE) {
+            throw new ArithmeticException("The result of raising the base (%s) to the exponent (%s) is too large to represent."
+                    .formatted(base, exponent));
+        }
+        var fractionalExponent = scaledExponent - wholeExponent;
+        var coefficient = Math.pow(mantissa, exponent) * Math.pow(10.0, fractionalExponent);
+        if (!Double.isFinite(coefficient)) {
+            throw new ArithmeticException("The result of raising the base (%s) to the exponent (%s) is too large to represent."
+                    .formatted(base, exponent));
+        }
+        return BigDecimal.valueOf(coefficient).scaleByPowerOfTen((int) wholeExponent);
     }
 
     private ScoreUtil() {

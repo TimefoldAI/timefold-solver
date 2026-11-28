@@ -75,7 +75,7 @@ public record SimpleScore(long structuralScore, long score) implements Score<Sim
 
     @Override
     public SimpleScore abs() {
-        return of(Math.abs(score));
+        return of(ScoreUtil.abs(score));
     }
 
     @Override
