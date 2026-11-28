@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,6 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelat
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
@@ -26,10 +26,10 @@ final class ListVariableStateCarrier<Solution_> {
 
     private boolean requiresPositionMap = true;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
-    private int unassignedCount = 0;
+    private int assignedCount = 0;
     private Map<Object, MutablePosition> elementPositionMap;
     /**
-     * Whether {@link #initialize(InnerScoreDirector, int)} has run at least once.
+     * Whether {@link #initialize(InnerScoreDirector)} has run at least once.
      * Distinguishes a fresh director setup from a reset (e.g. problem change) that must clear unassigned shadows.
      */
     private boolean initialized = false;
@@ -58,17 +58,17 @@ final class ListVariableStateCarrier<Solution_> {
         this.externalizedNextElementProcessor = ExternalizedNextPrevElementVariableProcessor.ofNext(shadowVariableDescriptor);
     }
 
-    public void initialize(InnerScoreDirector<Solution_, ?> scoreDirector, int initialUnassignedCount) {
+    public void initialize(InnerScoreDirector<Solution_, ?> scoreDirector) {
         var isFirstInitialization = !initialized;
         initialized = true;
         this.scoreDirector = scoreDirector;
-        this.unassignedCount = initialUnassignedCount;
+        this.assignedCount = 0;
 
         this.requiresPositionMap = externalizedIndexProcessor == null || externalizedInverseProcessor == null
                 || externalizedPreviousElementProcessor == null || externalizedNextElementProcessor == null;
         if (requiresPositionMap) {
             if (elementPositionMap == null) {
-                elementPositionMap = new IdentityHashMap<>(unassignedCount);
+                elementPositionMap = new IdentityHashMap<>();
             } else {
                 elementPositionMap.clear();
             }
@@ -82,43 +82,53 @@ final class ListVariableStateCarrier<Solution_> {
                 externalizedPreviousElementProcessor != null || externalizedNextElementProcessor != null;
         var shouldUnassignElements = isAnythingExternalized &&
                 !(scoreDirector.expectShadowVariablesInCorrectState() && isFirstInitialization);
-        var unassignedValueSet = CollectionUtils.newIdentityHashSet(initialUnassignedCount);
+        // Without the position map, all shadows are externalized and possibly stale,
+        // so the assigned elements are tracked separately to find the unassigned ones.
+        var assignedElementSet = shouldUnassignElements && !requiresPositionMap
+                ? Collections.newSetFromMap(new IdentityHashMap<>())
+                : null;
 
-        if (shouldUnassignElements) {
-            for (var unassignedValue : (Iterable<Object>) scoreDirector.getValueRangeManager().getFromSolution(
-                    sourceVariableDescriptor.getValueRangeDescriptor(),
-                    scoreDirector.getWorkingSolution())::createOriginalIterator) {
-                unassignedValueSet.add(unassignedValue);
-            }
-        }
-
+        var workingSolution = scoreDirector.getWorkingSolution();
         // elements must be added even if we are not updating shadows
-        sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(
-                scoreDirector.getWorkingSolution(), entity -> {
-                    var index = 0;
-                    var assignedElements = sourceVariableDescriptor.getValue(entity);
-                    for (var element : assignedElements) {
-                        addElement(entity, assignedElements, element, index);
-                        unassignedValueSet.remove(element);
-                        index++;
-                    }
-                });
+        sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(workingSolution, entity -> {
+            var index = 0;
+            var assignedElements = sourceVariableDescriptor.getValue(entity);
+            for (var element : assignedElements) {
+                addElement(entity, assignedElements, element, index);
+                if (assignedElementSet != null) {
+                    assignedElementSet.add(element);
+                }
+                index++;
+            }
+        });
 
         if (shouldUnassignElements) {
-            for (var unassignedValue : unassignedValueSet) {
-                if (externalizedIndexProcessor != null) {
-                    externalizedIndexProcessor.unassignElement(scoreDirector, unassignedValue);
-                }
-                if (externalizedInverseProcessor != null) {
-                    externalizedInverseProcessor.unassignElement(scoreDirector, unassignedValue);
-                }
-                if (externalizedNextElementProcessor != null) {
-                    externalizedNextElementProcessor.unsetElement(scoreDirector, unassignedValue);
-                }
-                if (externalizedPreviousElementProcessor != null) {
-                    externalizedPreviousElementProcessor.unsetElement(scoreDirector, unassignedValue);
-                }
-            }
+            // The externalized shadow variables are declared on the element class, so it is an entity class.
+            // Visiting its entities avoids building the value range of the list variable.
+            sourceVariableDescriptor.getEntityDescriptor().getSolutionDescriptor().visitEntitiesByEntityClass(
+                    workingSolution, sourceVariableDescriptor.getElementType(), element -> {
+                        var assigned = assignedElementSet == null ? elementPositionMap.containsKey(element)
+                                : assignedElementSet.contains(element);
+                        if (!assigned) {
+                            unassignShadowVariables(element);
+                        }
+                        return false; // Visit all of them.
+                    });
+        }
+    }
+
+    private void unassignShadowVariables(Object element) {
+        if (externalizedIndexProcessor != null) {
+            externalizedIndexProcessor.unassignElement(scoreDirector, element);
+        }
+        if (externalizedInverseProcessor != null) {
+            externalizedInverseProcessor.unassignElement(scoreDirector, element);
+        }
+        if (externalizedNextElementProcessor != null) {
+            externalizedNextElementProcessor.unsetElement(scoreDirector, element);
+        }
+        if (externalizedPreviousElementProcessor != null) {
+            externalizedPreviousElementProcessor.unsetElement(scoreDirector, element);
         }
     }
 
@@ -146,7 +156,7 @@ final class ListVariableStateCarrier<Solution_> {
             elementUpdateSent =
                     externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index) || elementUpdateSent;
         }
-        unassignedCount--;
+        assignedCount++;
         // Trigger the notifier only if some piece of state is not externalized
         // and could therefore have changed without any shadow variable update event to report it.
         // If every piece of state is externalized (!requiresPositionMap)
@@ -179,7 +189,7 @@ final class ListVariableStateCarrier<Solution_> {
         if (externalizedNextElementProcessor != null) {
             elementUpdateSent = externalizedNextElementProcessor.unsetElement(scoreDirector, element) || elementUpdateSent;
         }
-        unassignedCount++;
+        assignedCount--;
         // Unlike addElement()/changeElement(), this does not also guard on requiresPositionMap:
         // externalizedIndexProcessor is non-null whenever requiresPositionMap is false,
         // and it always fires on this index-to-null transition, so elementUpdateSent is already true
@@ -226,7 +236,7 @@ final class ListVariableStateCarrier<Solution_> {
             var oldPosition = elementPositionMap.get(element);
             if (oldPosition == null) {
                 elementPositionMap.put(element, new MutablePosition(entity, index));
-                unassignedCount--;
+                assignedCount++;
                 return ChangeType.BOTH;
             }
             var changeType = comparePositions(entity, oldPosition.getEntity(), index, oldPosition.getIndex());
@@ -242,7 +252,7 @@ final class ListVariableStateCarrier<Solution_> {
         } else { // Read the position and figure out if it is different from previous.
             var oldEntity = getInverseSingleton(element);
             if (oldEntity == null) {
-                unassignedCount--;
+                assignedCount++;
                 return ChangeType.BOTH;
             }
             var oldIndex = getIndex(element);
@@ -373,8 +383,11 @@ final class ListVariableStateCarrier<Solution_> {
         return externalizedNextElementProcessor.getElement(element);
     }
 
-    public int getUnassignedCount() {
-        return unassignedCount;
+    /**
+     * @return how many elements are in the list variable, the sum of the sizes of all lists
+     */
+    public int getAssignedCount() {
+        return assignedCount;
     }
 
     private enum ChangeType {

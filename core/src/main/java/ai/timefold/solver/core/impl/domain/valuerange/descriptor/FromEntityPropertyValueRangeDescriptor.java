@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.CompositeValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -27,9 +28,15 @@ public final class FromEntityPropertyValueRangeDescriptor<Solution_>
     public <T> ValueRange<T> extractAllValues(Solution_ solution) {
         var entityList = variableDescriptor.getEntityDescriptor().extractEntities(solution);
         var rangesFromEntities = new ArrayList<AbstractValueRange<T>>(entityList.size());
+        // Entities can share the same value range instance, such as one list of all values.
+        // Its values are already in the composite, so expanding it again would only cost hash lookups.
+        var rawValueRangeSet = CollectionUtils.newIdentityHashSet(entityList.size());
         for (var entity : entityList) {
-            var valueRange = (AbstractValueRange<T>) this.<T> extractValuesFromEntity(solution, entity);
-            rangesFromEntities.add(valueRange);
+            var rawValueRange = readRawValueRange(entity, solution);
+            if (!rawValueRangeSet.add(rawValueRange)) {
+                continue;
+            }
+            rangesFromEntities.add((AbstractValueRange<T>) this.<T> processValueRange(rawValueRange, entity));
         }
         return new CompositeValueRange<>(rangesFromEntities);
     }
@@ -37,6 +44,11 @@ public final class FromEntityPropertyValueRangeDescriptor<Solution_>
     @Override
     public <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity) {
         return readValueRange(entity, solution);
+    }
+
+    @Override
+    public long getValueRangeSize(Solution_ solution, Object entity) {
+        return countValues(readRawValueRange(entity, solution), entity);
     }
 
     @Override

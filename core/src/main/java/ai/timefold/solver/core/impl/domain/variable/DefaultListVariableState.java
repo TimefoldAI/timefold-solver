@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelat
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 import org.jspecify.annotations.NullMarked;
@@ -24,6 +25,10 @@ final class DefaultListVariableState<Solution_> implements ListVariableState<Sol
 
     @Nullable
     private Solution_ workingSolution;
+    @Nullable
+    private ValueRangeManager<Solution_> valueRangeManager;
+    // Negative if the values of the list variable's value range are not counted since the last reset.
+    private long cachedValueCount = -1L;
 
     public DefaultListVariableState(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
             Consumer<Object> notifier) {
@@ -73,11 +78,12 @@ final class DefaultListVariableState<Solution_> implements ListVariableState<Sol
 
     @Override
     public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        workingSolution = scoreDirector.getWorkingSolution();
-
-        // Will run over all entities and unmark all present elements as unassigned.
-        stateCarrier.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
-                .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
+        this.workingSolution = scoreDirector.getWorkingSolution();
+        this.valueRangeManager = scoreDirector.getValueRangeManager();
+        // Counting the values requires the value range, which is only built when the unassigned count is requested.
+        this.cachedValueCount = -1L;
+        // Will run over all entities and mark all present elements as assigned.
+        stateCarrier.initialize(scoreDirector);
     }
 
     @Override
@@ -139,7 +145,18 @@ final class DefaultListVariableState<Solution_> implements ListVariableState<Sol
 
     @Override
     public int getUnassignedCount() {
-        return stateCarrier.getUnassignedCount();
+        if (cachedValueCount < 0) {
+            cachedValueCount = Objects.requireNonNull(valueRangeManager).countOnSolution(
+                    sourceVariableDescriptor.getValueRangeDescriptor(), Objects.requireNonNull(workingSolution));
+        }
+        var unassignedCount = cachedValueCount - stateCarrier.getAssignedCount();
+        if (unassignedCount < 0) {
+            throw new IllegalStateException("""
+                    The list variable (%s) has more assigned values (%d) than values in its value range (%d).
+                    Maybe a value outside of the value range is assigned, or a value is assigned more than once?"""
+                    .formatted(sourceVariableDescriptor, stateCarrier.getAssignedCount(), cachedValueCount));
+        }
+        return (int) unassignedCount;
     }
 
     @Override

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.api.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.time.Duration;
@@ -13,9 +14,16 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.analysis.EntityVariablePair;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListValueWithShadowHistory;
@@ -118,6 +126,31 @@ public class SolutionManagerTest {
             assertShadowedListValue(softly, b1, b, 1, b0, b2);
             assertShadowedListValue(softly, b2, b, 2, b1, null);
             assertShadowedListValue(softly, c0, c, 0, null, null);
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateOnlyShadowVariablesClearsStaleShadowsOfUnassignedListValue(SolutionManagerSource solutionManagerSource) {
+        var a0 = new TestdataListValueWithShadowHistory("a0");
+        var a = new TestdataListEntityWithShadowHistory("a", a0);
+        var b = new TestdataListEntityWithShadowHistory("b");
+        var unassigned = new TestdataListValueWithShadowHistory("unassigned");
+        // Stale shadows, as if the value was removed from b's list without updating them.
+        unassigned.setEntity(b);
+        unassigned.setIndex(0);
+        unassigned.setPrevious(a0);
+        unassigned.setNext(a0);
+        var solution = new TestdataListSolutionWithShadowHistory();
+        solution.setEntityList(Arrays.asList(a, b));
+        solution.setValueList(Arrays.asList(a0, unassigned));
+
+        var solutionManager = solutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST);
+        solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY);
+
+        assertSoftly(softly -> {
+            assertShadowedListValue(softly, a0, a, 0, null, null);
+            assertShadowedListValueAllNull(softly, unassigned);
         });
     }
 
@@ -415,6 +448,71 @@ public class SolutionManagerTest {
                         " and one of its elements (e1 -> a1 -> b1)" +
                         " which has a shadow variable (entity)" +
                         " has an oldInverseEntity (e2) which is not that entity.");
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateVisitsProblemFacts(SolutionManagerSource solutionManagerSource) {
+        var solverFactory = SolverFactory.<TestdataSolution> create(new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataValuePenalizingConstraintProvider.class));
+        var solution = TestdataSolution.generateSolution(3, 2);
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+
+        // Without lookup, the problem facts must still reach the score director.
+        var score = solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
+        assertThat(score).isEqualTo(SimpleScore.of(-3));
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateScoreFailsOnValueOutsideOfValueRange(SolutionManagerSource solutionManagerSource) {
+        var solverFactory = SolverFactory.<TestdataSolution> create(new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataValuePenalizingConstraintProvider.class));
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+
+        // The score relies on the value ranges being validated.
+        for (var solutionUpdatePolicy : List.of(SolutionUpdatePolicy.UPDATE_SCORE_ONLY, SolutionUpdatePolicy.UPDATE_ALL)) {
+            var solution = TestdataSolution.generateSolution(3, 2);
+            solution.getEntityList().get(0).setValue(new TestdataValue("x"));
+            assertThatThrownBy(() -> solutionManager.update(solution, solutionUpdatePolicy))
+                    .as(solutionUpdatePolicy.name())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("The value (x)")
+                    .hasMessageContaining("outside of the related value range");
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateShadowVariablesOnlyDoesNotValidateValueRanges(SolutionManagerSource solutionManagerSource) {
+        var solverFactory = SolverFactory.<TestdataSolution> create(new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataValuePenalizingConstraintProvider.class));
+        var solution = TestdataSolution.generateSolution(3, 2);
+        solution.getEntityList().get(0).setValue(new TestdataValue("x"));
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+
+        // Nothing reads the score or the unassigned count during a shadow variable update.
+        assertThatCode(() -> solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY))
+                .doesNotThrowAnyException();
+    }
+
+    public static final class TestdataValuePenalizingConstraintProvider implements ConstraintProvider {
+
+        @Override
+        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+            return new Constraint[] {
+                    constraintFactory.forEach(TestdataValue.class)
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint("Penalize every value")
+            };
+        }
+
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

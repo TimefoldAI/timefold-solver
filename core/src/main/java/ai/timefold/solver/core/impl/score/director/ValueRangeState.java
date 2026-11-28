@@ -172,6 +172,36 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
         }
     }
 
+    /**
+     * Does not build the value range if it is not cached yet.
+     *
+     * @return the size of the solution's cached value range, or -1 if it is not cached
+     */
+    long getCachedSolutionValueRangeSize() {
+        if (fromSolutionItem == null) {
+            return -1L;
+        }
+        // The left item is always set for the solution, sorted or not, and all sorted variants have the same size.
+        return Objects.requireNonNull(fromSolutionItem.leftItem()).getSize();
+    }
+
+    /**
+     * Does not build the value range if it is not cached yet.
+     *
+     * @return the size of the entity's cached value range, or -1 if it is not cached
+     */
+    long getCachedEntityValueRangeSize(Entity_ entity) {
+        if (fromEntityMap == null) {
+            return -1L;
+        }
+        var item = fromEntityMap.get(entity);
+        if (item == null) {
+            return -1L;
+        }
+        // Without a sorter, this is the left item, or the owner's value range if the item is a placeholder.
+        return Objects.requireNonNull(pickValueBySorter(item, null, this::getFromEntity)).getSize();
+    }
+
     private Map<Entity_, ValueRangeItem<Solution_, Entity_, ValueRange<Value_>, Value_>>
             ensureEntityMapIsInitialized() {
         if (fromEntityMap == null) {

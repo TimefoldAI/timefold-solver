@@ -30,6 +30,21 @@ public final class FromSolutionPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
+    public long getValueRangeSize(Solution_ solution, Object entity) {
+        return getValueRangeSize(solution);
+    }
+
+    /**
+     * Counts the values of the solution's value range, without the null value,
+     * with the same limitations as {@link #getValueRangeSize(Object, Object)}.
+     * Unlike value ranges from entities, the solution's value range isn't deduplicated when built,
+     * so this is also the size of the built value range.
+     */
+    public long getValueRangeSize(Solution_ solution) {
+        return countValues(memberAccessor.executeGetter(solution), solution);
+    }
+
+    @Override
     public boolean canExtractValueRangeFromSolution() {
         return true;
     }

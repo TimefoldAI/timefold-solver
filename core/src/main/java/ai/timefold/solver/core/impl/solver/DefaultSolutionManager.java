@@ -59,18 +59,22 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                     "Cannot call %s.update() with this solutionUpdatePolicy (%s), since it would do nothing."
                             .formatted(this.getClass().getSimpleName(), solutionUpdatePolicy));
         }
+        // A shadow variable update reads neither the score nor the unassigned count,
+        // which are the only things that rely on the value ranges being validated.
+        var assertValueRange = solutionUpdatePolicy.isScoreUpdateEnabled();
         return callScoreDirector("Solution update", solution, solutionUpdatePolicy,
                 (s, inconsistentEntities) -> s.getSolutionDescriptor().getScore(s.getWorkingSolution()),
-                ConstraintMatchPolicy.DISABLED, false, false);
+                ConstraintMatchPolicy.DISABLED, false, false, assertValueRange);
     }
 
     private <Result_> Result_ callScoreDirector(String feature, Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy,
             BiFunction<InnerScoreDirector<Solution_, Score_>, List<VariableLoop>, Result_> function,
             ConstraintMatchPolicy constraintMatchPolicy,
-            boolean cloneSolution, boolean handlesStructurallyFlawedSolutions) {
+            boolean cloneSolution, boolean handlesStructurallyFlawedSolutions, boolean assertValueRange) {
         var isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
         var nonNullSolution = Objects.requireNonNull(solution);
         try (var scoreDirector = getScoreDirectorFactory().createScoreDirectorBuilder().withLookUpEnabled(cloneSolution)
+                .withAssertValueRange(assertValueRange)
                 .withConstraintMatchPolicy(constraintMatchPolicy)
                 .withExpectShadowVariablesInCorrectState(!isShadowVariableUpdateEnabled)
                 .withForceAllowInconsistentSolutions(handlesStructurallyFlawedSolutions)
@@ -151,7 +155,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                 (scoreDirector, inconsistentEntities) -> enterpriseService.analyze(scoreDirector.calculateScore(),
                         scoreDirector.getConstraintMatchTotalMap(), inconsistentEntities,
                         scoreDirector.getScoreDefinition(), fetchPolicy),
-                ConstraintMatchPolicy.match(fetchPolicy), false, true);
+                ConstraintMatchPolicy.match(fetchPolicy), false, true, true);
         assertFreshScore(solution, currentScore, analysis.score(), solutionUpdatePolicy);
         return analysis;
     }
@@ -174,7 +178,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                 solution, SolutionUpdatePolicy.UPDATE_ALL,
                 (scoreDirector, inconsistentEntities) -> enterpriseService.buildRecommender(solverFactory, solution,
                         evaluatedEntityOrElement, propositionFunction, fetchPolicy).apply((InnerScoreDirector) scoreDirector),
-                ConstraintMatchPolicy.match(fetchPolicy), true, false);
+                ConstraintMatchPolicy.match(fetchPolicy), true, false, true);
     }
 
 }

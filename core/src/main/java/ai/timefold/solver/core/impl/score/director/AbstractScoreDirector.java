@@ -76,6 +76,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final NeighborhoodNotifier<Solution_> neighborhoodsElementUpdateNotifier;
     private final boolean lookUpEnabled;
     private final @Nullable LookupManager lookUpManager;
+    private final boolean assertValueRange;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     private boolean expectShadowVariablesInCorrectState;
     private final boolean ignoreInconsistentSolutions;
@@ -113,6 +114,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var solutionDescriptor = this.scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = builder.lookUpEnabled;
         this.lookUpManager = lookUpEnabled ? new LookupManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
+        this.assertValueRange = builder.assertValueRange;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.ignoreInconsistentSolutions = !solutionDescriptor.hasAnyShadowVariablesInconsistentMember()
@@ -290,9 +292,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var solutionDescriptor = getSolutionDescriptor();
 
         /*
-         * Both problem facts and entities need to be asserted,
-         * which requires iterating over all of them,
-         * possibly many thousands of objects.
+         * When lookup is enabled, problem facts and entities are registered for lookup.
+         * When value range validation is enabled, their assigned values are checked against the value ranges.
+         * Both require iterating over all of them, possibly many thousands of objects.
          * Providing the init score and genuine entity count requires another pass over the entities.
          * The following code does all of those operations in a single pass.
          * It will also run the optional entityAndFactVisitor from the calling code,
@@ -304,13 +306,18 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             entityAndFactVisitor = entityAndFactVisitor == null ? workingObjectLookupVisitor
                     : entityAndFactVisitor.andThen(workingObjectLookupVisitor);
         }
-        // One-time check of value ranges
-        // to ensure assigned planning values are included in the solution range or any entity value range
-        entityAndFactVisitor = entityAndFactVisitor == null ? this::assertValueRangeForEntity
-                : entityAndFactVisitor.andThen(this::assertValueRangeForEntity);
+        if (assertValueRange) {
+            // One-time check of value ranges
+            // to ensure assigned planning values are included in the solution range or any entity value range.
+            // The unassigned count of the list variable relies on it.
+            Consumer<Object> valueRangeValidator = this::assertValueRangeForEntity;
+            entityAndFactVisitor = entityAndFactVisitor == null ? valueRangeValidator
+                    : entityAndFactVisitor.andThen(valueRangeValidator);
+        }
         // This visits all the facts, applying the visitor if non-null.
-        solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
-
+        if (entityAndFactVisitor != null) {
+            solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
+        }
         // No two entities in the same solution may be equal.
         var entityClassToEntitySetMap = new HashMap<Class<?>, Set<Object>>();
         Consumer<Object> entityValidator = entity -> {
@@ -324,7 +331,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         .formatted(entity, entity.getClass()));
             }
         };
-        entityAndFactVisitor = entityAndFactVisitor.andThen(entityValidator);
+        entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
         setWorkingEntityListDirty(workingSolution);
 
         // This visits all the entities.
@@ -551,6 +558,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             case PART_THREAD -> {
                 var childThreadScoreDirector =
                         scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(lookUpEnabled)
+                                // The solution partitioner builds the part solutions, so they need the same validation.
+                                .withAssertValueRange(assertValueRange)
                                 .withConstraintMatchPolicy(constraintMatchPolicy)
                                 .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
                                 .buildDerived();
@@ -562,6 +571,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             case MOVE_THREAD -> {
                 var childThreadScoreDirector =
                         scoreDirectorFactory.createScoreDirectorBuilder(environmentMode).withLookUpEnabled(true)
+                                // The working solution is a clone of this one, whose value ranges are already validated.
+                                .withAssertValueRange(false)
                                 .withConstraintMatchPolicy(constraintMatchPolicy)
                                 .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
                                 .buildDerived();
@@ -792,6 +803,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var score = getSolutionDescriptor().<Score_> getScore(solution);
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(environmentMode)
+                // The solution is a clone of the working solution, whose values are validated at every step
+                // in the environment modes that call this; only the raw score is compared, which doesn't rely on it.
+                .withAssertValueRange(false)
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
@@ -858,6 +872,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
+                // The assertion from scratch must assess the value range,
+                // as custom moves could lead to invalid solutions
+                .withAssertValueRange(true)
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .withForceAllowInconsistentSolutions(!ignoreInconsistentSolutions)
                 .buildDerived()) {
@@ -1042,6 +1059,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * <ul>
      * <li>With {@link ConstraintMatchPolicy#DISABLED}.</li>
      * <li>With lookup disabled.</li>
+     * <li>With value range validation enabled.</li>
      * <li>Expecting shadow variables in their correct state.</li>
      * </ul>
      *
@@ -1058,6 +1076,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
+        protected boolean assertValueRange = true;
         protected boolean expectShadowVariablesInCorrectState = true;
         protected boolean forceAllowInconsistentSolutions = false;
 
@@ -1075,6 +1094,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         @SuppressWarnings("unchecked")
         public Builder_ withLookUpEnabled(boolean lookUpEnabled) {
             this.lookUpEnabled = lookUpEnabled;
+            return (Builder_) this;
+        }
+
+        /**
+         * Whether {@link AbstractScoreDirector#setWorkingSolution(Object)} checks
+         * that every assigned planning value is in its value range.
+         * The unassigned count of the list variable and the init score assume it;
+         * without the check, a value outside of the value range makes them wrong without any error.
+         * Only disable it when the working solution was validated before,
+         * or when nothing reads those counts.
+         */
+        @SuppressWarnings("unchecked")
+        public Builder_ withAssertValueRange(boolean assertValueRange) {
+            this.assertValueRange = assertValueRange;
             return (Builder_) this;
         }
 
